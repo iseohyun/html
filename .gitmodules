@@ -1,0 +1,3 @@
+[submodule "repos/calculator"]
+	path = repos/calculator
+	url = https://github.com/codegoogit/calculator.git
