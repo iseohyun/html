@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <marker id="ah1" markerWidth="20" markerHeight="20" viewBox="0 0 20 10" orient="auto">
+      <path d="M9 0L0 4 0 -4 9 0z" />
+    </marker>
+    <marker id="ah2" markerWidth="20" markerHeight="20" viewBox="0 0 20 10" orient="auto">
+      <path d="M9 0L0 4 0 -4 9 0z" style="fill:#F88" />
+    </marker>
+    <marker id="at1" markerWidth="20" markerHeight="20" viewBox="-5 -5 10 10" orient="auto">
+      <ellipse rx="2" ry="2" />
+    </marker>
+  </defs>
+
+  <g style="stroke: #000;fill:none">
+    <path d="M100 30V85" marker-end="url(#ah1)" />
+    <ellipse cx="100" cy="100" rx="5" ry="5" />
+    <path d="M100 105v80" marker-end="url(#ah1)" />
+    <ellipse cx="100" cy="200" rx="5" ry="5" />
+    <path d="M100 205v80" marker-end="url(#ah1)" />
+    <path d="M225 80v130" marker-end="url(#ah1)" marker-start="url(#at1)" />
+
+    <path d="M107 97L210 80" marker-end="url(#ah1)" style="stroke-dasharray:2" />
+    <path d="M217 210L112 112" marker-end="url(#ah1)" style="stroke-dasharray:2" />
+    <path d="M107 197L213 90" marker-end="url(#ah2)" style="stroke-dasharray:2;stroke: #F88" />
+    <path d="M218 217L117 202" marker-end="url(#ah2)" style="stroke-dasharray:2;stroke: #F88" />
+    <rect width="50" height="30" x="200" y="132" style="fill:white" />
+
+  </g>
+  <g style="font-family:'times new roman';font-size: 16.4px;font-style:italic;text-anchor:middle">
+    <text x="100" y="20">main stream</text>
+    <text x="230" y="55">function</text>
+    <text x="75" y="105">call</text>
+    <text x="75" y="205">call</text>
+    <text x="255" y="225">return</text>
+    </g>
+    <g style="font-size: 14px; fill:#888">
+      <text x="105" y="45">global var</text>
+      <text x="235" y="95">local var</text>
+      <text x="130" y="90" transform="rotate(-9 130 90)">argument</text>
+    </g>
+</svg>

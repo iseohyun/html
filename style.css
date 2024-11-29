@@ -24,14 +24,11 @@
   font-weight: 400;
   font-style: normal;
   src: url('https://cdn.jsdelivr.net/gh/webfontworld/tmoney/TmoneyRoundWind-Regular.eot');
-  src: url('https://cdn.jsdelivr.net/gh/webfontworld/tmoney/TmoneyRoundWind-Regular.eot?#iefix') format('embedded-opentype'),
-    url('https://cdn.jsdelivr.net/gh/webfontworld/tmoney/TmoneyRoundWind-Regular.woff2') format('woff2'),
-    url('https://cdn.jsdelivr.net/gh/webfontworld/tmoney/TmoneyRoundWind-Regular.woff') format('woff'),
-    url('https://cdn.jsdelivr.net/gh/webfontworld/tmoney/TmoneyRoundWind-Regular.ttf') format("truetype");
+  src: url('https://cdn.jsdelivr.net/gh/webfontworld/tmoney/TmoneyRoundWind-Regular.eot?#iefix') format('embedded-opentype');
   font-display: swap;
 }
 
-* {
+html {
   scroll-behavior: smooth;
 }
 
@@ -46,7 +43,7 @@ body {
   justify-content: space-between;
   text-align: justify;
   font-family: var(--font-main);
-  color: #888;
+  color: #444;
   line-height: 1.8em;
   word-break: keep-all;
 }
@@ -243,7 +240,7 @@ ul {
 }
 
 li {
-  line-height: 1.2em;
+  line-height: 1.8em;
   margin-bottom: 0;
 }
 
@@ -297,12 +294,6 @@ article>span.list-title {
   margin-left: 1em;
   color: #000;
   font-weight: bold;
-}
-
-.list-title+ul>li:first-child,
-.list-title+ol>li:first-child {
-  line-height: 0.5em;
-  padding-bottom: 0.5em;
 }
 
 td>.list-title+ul>li:first-child,
@@ -388,7 +379,7 @@ blockquote {
 
 a {
   text-decoration: none;
-  color: #89f;
+  color: rgb(0, 38, 255);
   font-style: normal;
   /* font-weight: 650; */
 }
@@ -399,7 +390,7 @@ a:hover {
   /* text-decoration-style: wavy; */
   text-underline-offset: 5px;
   cursor: pointer;
-  font-weight: bold;
+  /* font-weight: bold; */
 }
 
 u {
@@ -596,7 +587,7 @@ button:disabled {
   --font-table: 'Open Sans', 'NanumBarunpen', sans-serif;
   --font-title: 'Times New Roman', Arial, serif;
   --font-monospace: 'D2Coding', monospace;
-  --board-font-color: #aaaaaa;
+  --board-font-color: #444;
   --board-head-font-color: #888;
   --button-color: #888;
   --button-bg-color: #eee;
@@ -755,7 +746,7 @@ q,
   margin: 0;
   width: 100%;
   font-family: var(--font-monospace);
-  font-size: 0.7rem;
+  font-size: 0.9rem;
 }
 
 .hljs-ln td {
@@ -844,12 +835,13 @@ pre .copy-button {
   height: 30px;
   color: white;
   background-color: black;
-  top: 10px;
-  right: 10px;
+  top: 7%;
+  right: 5%;
   border-radius: 15px;
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 10;
 }
 
 code {
@@ -881,10 +873,10 @@ em {
   height: 100vh;
   width: min(300px, 30vw);
   top: 0;
-  padding: 32px 0 0 32px;
+  padding: 0 0 0 32px;
   background-color: #FFF;
   border-right: 1px solid #ddd;
-  z-index: 11;
+  z-index: 13;
   overflow-y: scroll;
 }
 
@@ -936,8 +928,8 @@ em {
 }
 
 #board a:hover {
-  color: black;
-  text-decoration-color: red;
+  color: white;
+  text-decoration-color: transparent;
 }
 
 #board li.collapsed ul {
@@ -962,10 +954,11 @@ em {
   padding: 2px 15px 0 0;
   font-family: var(--font-main);
   z-index: -2;
+  border-right: 7px solid #ddd;
 }
 
 #board .this-doc ul {
-  border-left: 1px solid #ddd;
+  border-left: 3px solid #ddd;
 }
 
 #board .this-doc a span {
@@ -985,12 +978,13 @@ em {
   content: " ";
   position: absolute;
   inset: 0 0 0 0;
-  background: #fff0fa;
+  /* background: #fff0fa; */
+  background: #000;
   z-index: -1;
-  transition: transform .5s ease;
+  /* transition: transform .5s ease; */
 }
 
-#board span::before{
+#board span::before {
   background: #f0f0f0;
 }
 

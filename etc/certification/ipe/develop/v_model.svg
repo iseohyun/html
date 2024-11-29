@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 500 410" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs>
+  <marker id="marker01" markerWidth="15" markerHeight="15" viewBox="0 -3 6 6" orient="auto">
+    <path d="M0 -2L5 0 0 2z"/>
+  </marker>
+  <marker id="marker02" markerWidth="15" markerHeight="15" viewBox="-6 -3 6 6" orient="auto">
+    <path d="M0 -2L-5 0 0 2z"/>
+  </marker>
+</defs>
+<g style="fill:none; stroke:#000">
+  <path d="M185 55h130" marker-start="url(#marker02)" marker-end="url(#marker01)" />
+  <path d="M210 155h80" marker-start="url(#marker02)" marker-end="url(#marker01)" />
+  <path d="M235 255h30" marker-start="url(#marker02)" marker-end="url(#marker01)" />
+  <path d="M240 355h20" marker-start="url(#marker02)" marker-end="url(#marker01)" />
+  <path d="M15 45L100 390 400 390 480 85" marker-end="url(#marker01)" style="stroke-width:2;"/>
+</g>
+  <g style="fill: none; stroke: #888">
+    <rect x="5" y="5" rx="10" ry="10" width="240" height="400" />
+    <rect x="255" y="5" rx="10" ry="10" width="240" height="400" />
+    <rect x="15" y="15" rx="10" ry="10" width="150" height="80" />
+    <rect x="40" y="115" rx="10" ry="10" width="150" height="80" />
+    <rect x="65" y="215" rx="10" ry="10" width="150" height="80" />
+    <rect x="90" y="315" rx="10" ry="10" width="150" height="80" />
+    <rect x="260" y="315" rx="10" ry="10" width="150" height="80" />
+    <rect x="285" y="215" rx="10" ry="10" width="150" height="80" />
+    <rect x="310" y="115" rx="10" ry="10" width="150" height="80" />
+    <rect x="335" y="15" rx="10" ry="10" width="150" height="80" />
+  </g>
+  <g style="text-anchor: middle; font-size: 20; fill: black; stroke: none;">
+    <text x="200" y="25">개발단계</text>
+    <text x="300" y="25">검증단계</text>
+    <text x="90" y="50">Requirements</text>
+    <text x="90" y="75">요구사항</text>
+    <text x="115" y="150">Specification</text>
+    <text x="115" y="175">분석</text>
+    <text x="140" y="250">Design</text>
+    <text x="140" y="275">설계</text>
+    <text x="165" y="350">Code</text>
+    <text x="165" y="375">구현</text>
+    <text x="335" y="350">Unit Test</text>
+    <text x="335" y="375">단위 테스트</text>
+    <text x="360" y="250">Integration Test</text>
+    <text x="360" y="275">통합 테스트</text>
+    <text x="385" y="150">System Test</text>
+    <text x="385" y="175">시스템 테스트</text>
+    <text x="410" y="50">Acceptance Test</text>
+    <text x="410" y="75">인수 테스트</text>
+  </g>
+</svg>

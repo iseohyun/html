@@ -26,9 +26,15 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- 목차 생성 -->
   <script src="/modules/hd_list.js" defer></script>
-  <!-- 공통스킨 -->
+  <!-- 공통 스킨 -->
   <style type="text/css">
     @import url("/style.css");
+
+    .comment {
+      color: #888;
+      font-size: 0.95em;
+      font-weight: normal;
+    }
   </style>
 </head>
 
@@ -56,14 +62,14 @@
           </li>
           <li>Stack: LIFO(Last in, First out), 바구니에 쌓는 방식</li>
           <li>Queue: FIFO(First in, First out), 순차처리</li>
-          <li>Deque: 양방형 Queue처리</li>
+          <li>Deque: 양방형 Queue 처리</li>
         </ul>
       </li>
       <li>
         Non-Linear Structure(비선형)
         <ul>
           <li>
-            Tree: 하나의 부모로 시작하여, 여러개의 가지를 갖는 방식으로 저장
+            Tree: 하나의 부모로 시작하여, 여러 개의 가지를 갖는 방식으로 저장
             <ul>
               <li>Preorder(전행): A → B(전) → C</li>
               <li>Inorder(중위): B → A(중) → C</li>
@@ -77,7 +83,7 @@
       </li>
     </ul>
     <table class="all-td-left">
-      <caption>tree연산 연습</caption>
+      <caption>tree 연산 연습</caption>
       <thead>
         <tr>
           <th>상황</th>
@@ -117,7 +123,7 @@
       </li>
       <li>
         <span class="header" onclick="toggleContent(this)">
-          Selection Sort(선택 정렬): 최소값을 찾아 1번자리에, 두번째로 작은 값을 찾아 2번째 자리에...</span>
+          Selection Sort(선택 정렬): 최솟값을 찾아 1번 자리에, 두 번째로 작은 값을 찾아 2번째 자리에...</span>
         <pre class="content"><code href="selectionSort.py"></code></pre>
       </li>
       <li>
@@ -134,7 +140,7 @@
       </li>
       <li>
         <span class="header" onclick="toggleContent(this)">Heap Sort: 최악=평균 O(n log<sub>2</sub>n)<br>
-          1: 모든 트리에 대해 제일 큰 놈을 부모로 만듬, 2:제일 큰 놈을 뒤로 옮기고, 결승만 진행</span>
+          1: 모든 트리에 대해 제일 큰 놈을 부모로 만듦, 2:제일 큰 놈을 뒤로 옮기고, 결승만 진행</span>
         <pre class="content"><code href="HeapSort.py"></code></pre>
       </li>
       <li>
@@ -159,10 +165,10 @@
 
     <span class="list-title">hash 용어</span>
     <ul>
-      <li>Hash Table: 여러 버킷으로 구성된 기억공간</li>
+      <li>Hash Table: 여러 버킷으로 구성된 기억 공간</li>
       <li>Bucket: 하나의 주소를 갖는 하나의 구역, 버킷의 크기 = 레코드 수</li>
       <li>Slot: 한 개의 레코드를 저장할 수 있는 공간</li>
-      <li>Collision(충돌): 두개 이상의 레코드가 같은 주소를 갖는 현상
+      <li>Collision(충돌): 두 개 이상의 레코드가 같은 주소를 갖는 현상
         <ul>
           <li>Chaining: 버킷을 Linked List로 구성하여 충돌 데이터를 버리거나 덮어쓰지 않고 계속 수집</li>
           <li>Open Address(개방 주소법): 다음 빈 버킷에 저장</li>
@@ -215,21 +221,267 @@
     <ul>
       <li>외부 스키마: 논리적 구조 정의</li>
       <li>개념 스키마: 개체간 관계와 제약조건, 접근권한, 보안, 무결성 규칙을 명세</li>
-      <li>내부 스키마: 물리적 저장장치 입장에서 본 구조, 형식, 항목 표현방법, 순서 등...</li>      
+      <li>내부 스키마: 물리적 저장장치 입장에서 본 구조, 형식, 항목 표현방법, 순서 등...</li>
+    </ul>
+
+    <h3>절차형 SQL</h3>
+    <ul>
+      <li>단일 SQL로 처리하기 힘든 명령어 Block을 BEGIN ~ END형식으로 구조화함</li>
+      <li>Procedure: 특정 기능을 수행하는 트랜젝션 언어</li>
+      <li>Tirgger: Event가 발생할 때 마다 자동으로 수행하도록 정의</li>
+      <li>User Definition(사용자 정의) 함수: return을 활용하여 처리 결과를 반환하는 함수</li>
     </ul>
 
 
     <h1>통합 구현</h1>
+    <span class="list-title">단위 모듈 <tspan class="comment">한 가지 동작을 수행하기 위한 SW</tspan></span>
+    <ul>
+      <li>단독으로 컴파일하여 프로젝트에 삽입 가능</li>
+      <li>명세 작성 → 입출력 기능 구현 → 알고리즘 구현</li>
+      <li>Unit Test: 단위 검증(화이트박스, 블랙박스)</li>
+      <li>Test Case명세 항목(표준:ISO/ IEC/IEEE 29119-3):
+        <ul>
+          <li>Identifier(ID: 식별자), Test item(항목), input specification, output specification(입력, 예상 출력값), Environmental
+            Needs(테스트 환경), Special Procedure Requirement, Inter-case Dependencies(의존성)</li>
+        </ul>
+      </li>
+      <li>테스트: 계획 → 설계 → 구현 → 평가 → 완료</li>
+    </ul>
 
+    <span class="list-title"> IPC(Inter-process Communication) </span>
+    <ul>
+      <li>Shared Memory: 다수의 프로세스가 공유 가능한 메모리를 구성하여 통신</li>
+      <li>Socket: 네트워크 소켓을 이용하여 프로세스간 통신</li>
+      <li>Semaphores: 공유 자원 접근 제어를 통해서 프로세스 간 통신을 수행</li>
+      <li>Pipes&named Pipes : 선입선출형 메모리 구성을 통해 통신 수행</li>
+      <li>Message Queueing: 선입선출형 프로세스를 이용</li>
+    </ul>
+
+    <span class="list-title"> 개발환경 </span>
+    <ul>
+      <li>Coding: 다양한 프로그램 언어의 편집을 도와주는 기능</li>
+      <li>Compile: 실행 가능한 형태로 변환하는 기능</li>
+      <li>debugging: Bug를 찾기 위해 오류추적이나 메모리, 레지스터 등의 상태를 모니터링 할 수 있는 기능 </li>
+      <li>depolyment: 배포 가능한 형태로 패키징하는 기능 </li>
+      <li>IDE(Integrated Development Environment): 위 기능들을 포함한 개발 패키지(예: ANT, Maven, Gradle) </li>
+    </ul>
 
     <h1>패키징</h1>
+    <div class="img-box" style="float: right;width:400px">
+      <img src="../source/drm.svg" />
+      <span class="caption">DRM흐름도</span>
+      <span class="description">"drm.svg", iseohyun.com, 2024, CC BY-SA 4.0</span>
+    </div>
+    <span class="list-title">DRM(Digital Right Management): 디지털 저작권관리</span>
+    <ul>
+      <li>Clearing House: 오프라인(생산→유통→판매)에서 저작권 관리를 위해 추가된 주체(권한관리 및 정산 처리)</li>
+      <li>저작권자, 전자서명 정보를 포함한 정보를 Clearing House에 등록</li>
+      <li>요구 기술: Encryption(암호화), Key Management(키 관리), Packager, Identification, Right Expression(저작권 세분화), Policy
+        Management(정책관리), Tamper Rasistance(크랙(해킹) 방지), Authentication</li>
+    </ul>
 
+    <span class="list-title">설치 메뉴얼</span>
+    <ul>
+      <li>목차, 개요, 기본 요구 사항 등을 포함</li>
+      <li>사용자를 기준으로 설치(+삭제) 과정을 순서대로 설명</li>
+      <li>예외 상황의 기재</li>
+    </ul>
+
+    <span class="list-title">사용자 메뉴얼</span>
+    <ul>
+      <li>작성 지침 정의 → 요소 정의 → 작성 → 검토</li>
+      <li>내용: SW개요, 사용 환경(최소 환경, 보안 주의사항), 관리, 모델/버전 정보, 기능/인터페이스 요약, 운영 환경(OS 등)</li>
+      <li>SW등록: SW명칭, 모델명, 문서번호, 제품번호(S/N), 구입 날짜 등</li>
+    </ul>
+
+    <span class="list-title">형상 관리(SCM: Software Configuration Management)</span>
+    <ul>
+      <li>SW의 변경 이력을 보관, 관리 및 추적을 용이</li>
+      <li>공동 개발시 서버에 원본 파일을 두고, 개별 환경에 다운받아 작업 후, 테스트가 완료된 코드를 업데이트</li>
+      <li>목적: 전체 비용 감소, 개발 과정의 방해요소를 최소화되도록 보증</li>
+      <li>대상: 소스코드, 계획, 분석서, 설계서, 테스트 케이스 ...</li>
+      <li>알려진 도구: Git(분산 저장 방식), CVS, Subversion(서버-클라이언트 방식)</li>
+      <li>용어:
+        <ul>
+          <li>Repository: 저장소(서버 저장소, 내 저장소 ...)</li>
+          <li>Import: 나 → 서버, 최초 복사</li>
+          <li>Update, Check Out, pull: 서버 → 나, 최신화</li>
+          <li>Check-In, push: 나 → 서버</li>
+          <li>Commit: 갱신 내용 반영(작업내역 → 내 저장소)</li>
+        </ul>
+      </li>
+    </ul>
+
+    <span class="list-title">빌드 자동화</span>
+    <ul>
+      <li>빌드, 테스트, 배포 과정을 자동화하는 도구</li>
+      <li>알려진 도구: Ant, Make, Maven, Gradle, Jenkins</li>
+      <li>Jenkins: Java환경, Servlet Container에서 실행(서버기반)</li>
+      <li>Gradle: 안드로이드 환경, DSL(Domain Specific Language) script사용</li>
+    </ul>
 
     <h1>테스트 관리</h1>
+    <ul>
+      <li>Validation: 확인(요구사항 충족), 고객 중심, 결과물에서</li>
+      <li>Verification: 검증(기능 정상 동작), 개발자 중심, 개발과정에서</li>
+    </ul>
 
+    <span class="list-title">테스트 기본 원리</span>
+    <ul>
+      <li>완벽한 테스팅은 불가능하다.</li>
+      <li><b>파레토 법칙(Pareto Principle)</b>: 특정 모듈에 결함이 집중되어 있다.(부, 매출, 결함 등 전체의 80%를 상위 20%가 가지고 있다)</li>
+      <li><b>살충제 패러독스(Pesticide Paradox)</b>: 동일한 테스트케이스로 검증하면, 결함 검출의 효율이 떨어지므로, 테스트 케이스를 주기적으로 업데이트 해야한다.</li>
+      <li><b>오류-부재의 궤변(Absence of Errors Fallacy)</b>: 오류가 없는 것이 최고의 프로그램이 아니다. 사용자의 needs를 최고로 만족해야 최고의 프로그램이다.</li>
+      <li>테스트를 많이 진행하면 위험이 줄어든다.</li>
+      <li>테스터와 개발자가 별토의 팀에서 운영된다.</li>
+    </ul>
+
+    <h3>분류</h3>
+    <ul>
+      <li>실행 여부에 따른: 정적 테스트(워크스루, 인스펙션, 코드 검사...), 동적 테스트(블랙박스, 화이트박스) </li>
+      <li>Test Bases에 따른: 명세 기반(동등 분할, 경계 값 분석), 구조기반(구문, 조건 기반), 경험 기반(에러 추정, 체크 리스트, 탐색적 테스팅)</li>
+      <li>대상(주체)에 따른: 검증(Varification)-개발자, 확인(Validation)-고객</li>
+      <li>목적에 따른: Recovery(복구 여부), Security(침입 방지), Stress(반복, 과부하), Performance(응답시간, 처리량), Structure(복잡도),
+        Regression(변경, 수정), Parallel(버전 변경으로 입출력 변화 확인)</li>
+    </ul>
+
+    <span class="list-title">White Box</span>
+    <ul>
+      <li>종류: Base Path Testing, Control Structure Testing(Condidtion Testing, Loop Testing, Data Flow Testing) </li>
+      <li>기준: Statement Coverage(모든 명령어(코드)), Branch Coverage(모든 분기), Condition Coverage(개별 조건식), Branch/Conditiion
+        Coverage</li>
+    </ul>
+
+    <span class="list-title">Black Box</span>
+    <ul>
+      <li>Equivalence Partitioning Testing: 입력 조건(영역)을 균등하게 나누어 테스트</li>
+      <li>Boundary Value Analysis: 입력 조건 중, 분기가 결정되는 경계의 값을 선정하여 테스트</li>
+      <li>Cause-Effect Graphing Testing: 결과에 영향이 큰 입력을 위주로 테스트</li>
+      <li>Error Guessing: 과거 경험을 기반으로, 높은 확률의 버그럴 예상하는 보충적 테스트 방법</li>
+      <li>Comparison Testing: 이전 버전의 테스트 자료를 기반으로 테스트</li>
+    </ul>
+
+    <h3>V 모델</h3>
+    <div class="img-box" style="width:300px; float: right">
+      <img src="v_model.svg" />
+      <span class="caption">V모델</span>
+      <span class="description">"v_model.svg", iseohyun.com, 2024, CC BY-SA 4.0</span>
+    </div>
+    <p>
+      개발 프로세스 각 단계가 잘 수행되었는지 확인해야 합니다. 각 단계는 순차적으로 이루어지므로, 각 단계에 대응하는 테스트는 역순으로 이루어집니다.
+    </p>
+    <ul>
+      <li>유닛 테스트: 단, 상호작용을 검출 할 수 없다.</li>
+      <li>통합 테스트: 모듈간 상호작용 검사
+        <ul>
+          <li>Top Down Integration Test: 하위 더미 모듈(Stub)을 구성하여 테스트를 수행, 깊이 우선 vs 너비 우선</li>
+          <li>Bottom Up Integration Test: 상위 더미 모듈(Driver)을 구성하여 테스트를 수행</li>
+        </ul>
+      </li>
+      <li>시스템 테스트: 기능적-블랙박스, 비기능적-화이트박스</li>
+      <li>인수 테스트: 알파 테스트(개발자 앞에서), 베타 테스트</li>
+    </ul>
+
+    <h3>테스트 케이스</h3>
+    <ul>
+      <li>검토 및 자료확보 → 위험 평가 → 요구사항 정의 → 방법 설계 → 정의 → 검토, 유지보수</li>
+      <li>Test Scenario: Test Case 집합</li>
+      <li>Test Oracle: 사전에 정의된 참 값을 대입하여 비교하는 기법
+        <ul>
+          <li>True Oracle: 정답 제공</li>
+          <li>Sampling Oracle: 몇몇 TC에 국한해서 제공</li>
+          <li>Heuristic Oracle: Sampling으로부터 나머지 값을 추정</li>
+          <li>Consistent Oracle: TC후 변경사항을 확인</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h3>테스트 자동화</h3>
+
+    <ul>
+      <li>Static Analysis Tools: SW를 실행하지 않고, 코딩 표준, 스타일, 복잡도, 결함 등을 검출</li>
+      <li>Test Case Generation Tools: 입력 도메인 분석, 랜덤 테스트, 자료 흐름도</li>
+      <li>Test Excution Tools: 스크립트 언어를 사용하여 테스트 실행</li>
+      <li>Performance test Tools: 처리량, 응답시간, 경과시간, 자원 사용률 등을 관찰, 목표 달성 여부 확인</li>
+      <li>Test Harness Tools:
+        <ul>
+          <li>Test Driver: 상향식 테스트에서 사용할 상위 가상 모듈</li>
+          <li>Test Stub: 하향식 테스트에서 사용할 하위 가상 모듈</li>
+          <li>Test Suites: TC집합</li>
+          <li>Test Script: 테스트를 절차대로 실행하기 위한 명세(코드)</li>
+          <li>Mock Object: 사용자 행위를 대신할 더미 모듈</li>
+        </ul>
+      </li>
+    </ul>
+
+    <h3>Fault</h3>
+    <p>Fault(결함): 설계한 것과 다르게 동작하는 것, 고장(Failure)로 인해 오류(Error)가 발생하는 것</p>
+    <ul>
+      <li>결함 관리 절차: 계획 → 기록 → 검토 → 수정 → 재확인 → 보고서 작성 (전과정 모니터링)</li>
+      <li>QA(Quality Assurance) Manager: 품질 관리 담당자</li>
+      <li>추적 단계 Open(등록) → Reviewed(검토, QA수행) → Assigned(개발 담당자 할당) → Resolved(수정, 개발자 수행) → Closed(종료, QA판단), Deferred(보류, QA판단), Clarified(해제, 불기소, QA판단)</li>
+      <li>분류: 시스템 결함(시스템 다운, 응답 지연..), 기능 결함(요구사항 미준수/미반영..), GUI 결함(일관성 훼손, 부정확한 메시지..), 문서결함(메뉴얼 불일치..)</li>
+      <li>심각도: Critical, High(진행 불가), Medium(흐름에 영향을 미침), Low(사소한 문제)</li>
+      <li>결함 에이징: 결함상태로 지속되는 시간을 측정</li>
+      <li>알려진 도구: Mantis, Trac Redmine, Bugzilla...</li>
+    </ul>
+
+    <h3>복잡도</h3>
+    <ul>
+      <li>Complexity: LOC(Line Of Code, 코드량), Cyclomatic Complexity(순환 복잡도)</li>
+      <li>표기: Big-O(최악의 수행 시간), Big-θ(평균), Big-Ω(최상)</li>
+      <li>big-O:
+        <ul>
+          <li>O(1): 수행 시간 일정</li>
+          <li>O(log<sub>2</sub>n): 입력값 개수(n)의 log<sub>2</sub>n만큼의 수행, 예: 이진 검색</li>
+          <li>O(n): 입력값 개수(n) 만큼 수행, 예: for문</li>
+          <li>O(n log<sub>2</sub>n): Heap Sort, 2-way Marge Sort</li>
+          <li>O(n<sup>2</sup>): Insertion Sort, Shell Sort, Selection Solrt, Bubble Sort, Quick Sort</li>
+          <li>O(2<sup>n</sup>): 최악, Fibonacci Sequence</li>
+        </ul>
+      </li>
+      <li>순환 복잡도(McCave's Cyclomatic) V(G) = E - N + 2, E: 화살표 수, N: 노드 수</li>
+    </ul>
+
+    <h3>성능 개선</h3>
+
+    <ul>
+      <li>Clean Code(좋은 코드) ↔ Spaghetti Code, Alien Code(참고 문헌 부족)
+        <ul>
+          <li>가독성(일관적 형식, 좋은 이름, 적절한 주석), 단순성, 의존성 배제, 중복 최소, (상위클래스) 추상화</li>
+        </ul>
+      </li>
+      <li>알려진 도구: pmd, cppcheck, SonarQube, checkstyle, ccm, cobertura, Avalanche, Valgrind</li>
+    </ul>
 
     <h1>인터페이스 구현</h1>
+    <ul>
+      <li>시스템 인터페이스 설계서: </li>
+      <li>상세 기능별 인터페이스 설계서: 사전/사후 조건, 인터페이스 데이터, 반환값 등 명시</li>
+      <li>정적, 동적 모형을 통한 인터페이스 설계서: 구성요소 다이어그램을 이용하여 작성, 인터페이스 소속과 교환대상을 알기 쉽다.</li>
+      <li>데이터 정의를 통한 인터페이스 설계서</li>
+    </ul>
 
+    <span class="list-title">EAI(Enterprise Application Integration)</span>
+    <ul>
+      <li>인터페이스 관련 구조적 담론</li>
+      <li>방식: Point-to-Point, Hub & Spoke, Message Bus(ESB; Enterprise Service Bus), Hybrid</li>
+    </ul>
+
+    <span class="list-title">Data format</span>
+    <ul>
+      <li>Json(JavaScript Object Notation)</li>
+      <li>XML(eXtensible Markup Language)</li>
+      <li>AJAX(Asynchronous JavaScript and XML): XML 데이터(파일)을 비동기식으로 통신하기 위한 기술(규약)</li>
+    </ul>
+
+    <h3>보안</h3>
+    <ul>
+      <li>IPsec(IP Security): IP계층의 보안 규약</li>
+      <li>SSL(Secure Sockets Layer)</li>
+      <li>S-HTTP(Secure HyperText Transfer Protocol)</li>
+      <li>APM(Application Performance Management)관리</li>
+    </ul>
   </article>
 </body>
 

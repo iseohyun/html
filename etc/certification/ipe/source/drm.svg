@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <marker id="marker01" markerWidth="7" markerHeight="6" viewBox="0 -3 6 6" orient="auto">
+    <path d="M0 -2L5 0 0 2 5 0 0 0 5 0 0-2" stroke="#000" />
+  </marker>
+  <g style="fill:none; stroke:#000">
+    <rect x="100" y="0" width="300" height="100" />
+    <rect x="0" y="200" width="120" height="190" />
+    <rect x="190" y="200" width="120" height="190" />
+    <rect x="380" y="200" width="120" height="190" />
+    <path d="M80 200L150 110" marker-end="url(#marker01)" />
+    <path d="M120 250h60" marker-end="url(#marker01)" />
+    <path d="M430 200L350 110" marker-end="url(#marker01)" />
+    <path d="M360 100L440 190" marker-end="url(#marker01)" />
+    <path d="M380 250h-60" marker-end="url(#marker01)" />
+    <path d="M270 200V110" marker-end="url(#marker01)" />
+    <path d="M310 270h60" marker-end="url(#marker01)" />
+  </g>
+  <g style="fill:#eee; stroke:none;">
+    <rect x="120" y="40" rx="10" ry="10" width="120" height="50" />
+    <rect x="260" y="40" rx="10" ry="10" width="120" height="50" />
+    <rect x="10" y="260" rx="10" ry="10" width="100" height="50" />
+    <rect x="10" y="320" rx="10" ry="10" width="100" height="50" />
+    <rect x="200" y="260" rx="10" ry="10" width="100" height="50" />
+    <rect x="390" y="260" rx="10" ry="10" width="100" height="50" />
+    <rect x="390" y="320" rx="10" ry="10" width="100" height="50" />
+  </g>
+  <g style="fill:#000; stroke:none; font-size:20; text-anchor:middle">
+    <text x="250" y="25">Clearing House</text>
+    <text x="60" y="225">Contents<tspan x="60" dy="1.2em">Provider</tspan></text>
+    <text x="250" y="225">Contents<tspan x="250" dy="1.2em">Distributor</tspan></text>
+    <text x="440" y="225">Customer</text>
+    <g style="text-anchor:start; font-size:15">
+      <text x="5" y="135">① 라이선스 등록</text>
+      <text x="122" y="220">② 콘텐츠 <tspan x="142" dy="1.2em">등록</tspan></text>
+      <text x="330" y="160">③ 요금 <tspan x="360" dy="1.2em">지불</tspan></text>
+      <text x="400" y="135">④ 라이선스 <tspan x="420" dy="1.2em">발급</tspan></text>
+      <text x="320" y="220">⑤ 구매 <tspan x="340" dy="1.2em">증명</tspan></text>
+      <text x="180" y="150">⑥ 라이선스 <tspan x="230" dy="1.2em">확인</tspan></text>
+      <text x="312" y="290">⑦ 컨텐츠 <tspan x="332" dy="1.2em">제공</tspan></text>
+    </g>
+    <g style="font-size:15">
+      <text x="180" y="70">Authorization</text>
+      <text x="320" y="70">License</text>
+      <text x="60" y="290">Contents</text>
+      <text x="60" y="350">Meta-Data</text>
+      <text x="250" y="282">Distribute <tspan x="250" dy="1.2em">System</tspan></text>
+      <text x="440" y="290">DRM ctrl</text>
+      <text x="440" y="342">Security<tspan x="440" dy="1.2em">Container</tspan></text>
+    </g>
+  </g>
+</svg>

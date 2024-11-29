@@ -9,10 +9,10 @@ const boardIcons = document.createElement("div");
 boardIcons.setAttribute("id", "board-icons");
 board.appendChild(boardIcons);
 
-const exit = document.createElement("div");
-exit.setAttribute("id", "exit");
-exit.addEventListener("click", function (ev) { trigBoard(); });
-boardIcons.appendChild(exit);
+// const exit = document.createElement("div");
+// exit.setAttribute("id", "exit");
+// exit.addEventListener("click", function (ev) { trigBoard(); });
+// boardIcons.appendChild(exit);
 
 const baseUl = document.createElement("ul");
 board.appendChild(baseUl);
@@ -36,6 +36,9 @@ request.onload = function () {
 
   // 헤더를 작성한다. (본인 경로를 알아야 한다.)
   createHeader();
+
+  // 주소창에 해쉬가 있다면 해쉬로 이동
+  scrollToHash();
 }
 
 function renderHierarchy(data, parentElement, parentDirectories, directory) {
@@ -141,12 +144,13 @@ function addContentsList(object) {
     // 목차를 클릭했을 때, 스크롤이 올라가든 올라가지 않든 헤더를 숨깁니다.
     anchor.addEventListener("click", function (ev) {
       ev.stopPropagation();
-      var header = document.querySelector("header");
-      if (!header.classList.contains("hide")) {
-        header.classList.add("hide");
-        header.style.top = "-" + header.offsetHeight + "px";
-        document.documentElement.style.setProperty('--header-height', '10px');
-      }
+      document.getElementById("board").style.visibility = "hidden";
+      // var header = document.querySelector("header");
+      // if (!header.classList.contains("hide")) {
+      //   header.classList.add("hide");
+      //   header.style.top = "-" + header.offsetHeight + "px";
+      //   document.documentElement.style.setProperty('--header-height', '10px');
+      // }
     });
 
 
@@ -243,7 +247,7 @@ document.addEventListener("scroll", function () {
         header.classList.remove("hide");
       }
       accumulatedScroll++;
-      if (accumulatedScroll > 10) {
+      if (accumulatedScroll > 5) { // 얼마나 sencitive하게 숨길 것인가
         // 올라간 상태 : 헤더 숨겨짐
         header.style.top = "-" + header.offsetHeight + "px";
         document.documentElement.style.setProperty('--header-height', '10px');
@@ -322,7 +326,7 @@ function createHeader() {
 
   const boardIcon = document.createElement('div');
   boardIcon.innerHTML = '<img src="/source/icon_list.svg">';
-  boardIcon.addEventListener('click', trigBoard, true);
+  // boardIcon.addEventListener('click', trigBoard, true);
   icons.appendChild(boardIcon);
   header.appendChild(icons);
 }
@@ -340,7 +344,7 @@ elementsToCopy.forEach(function (element) {
   element.addEventListener("click", function () {
     var textToCopy = this.textContent || this.innerText;
     navigator.clipboard.writeText(textToCopy).then(function () {
-      alert("\"" + textToCopy + "\"가 클립보드에 복사되었습니다.");
+      showTemporaryMessage("\"" + textToCopy + "\"가 클립보드에 복사되었습니다.");
     }, function (err) {
       console.error('클립보드 복사 실패: ', err);
     });
@@ -365,13 +369,43 @@ preTags.forEach(function (element) {
 
   copyBtn.addEventListener("click", function () {
     navigator.clipboard.writeText(textToCopy).then(function () {
-      alert("코드가 클립보드에 복사되었습니다.");
+      showTemporaryMessage("코드가 클립보드에 복사되었습니다.");
+      document.getElementById("board").style.visibility = "hidden";
     }, function (err) {
       console.error('클립보드 복사 실패: ', err);
     });
   });
   element.appendChild(copyBtn);
 });
+
+function showTemporaryMessage(message, duration = 2000) {
+  // 메시지 표시를 위한 요소 생성
+  const messageElement = document.createElement("div");
+  messageElement.textContent = message;
+  messageElement.style.position = "fixed";
+  messageElement.style.bottom = "20px";
+  messageElement.style.right = "20px";
+  messageElement.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+  messageElement.style.color = "white";
+  messageElement.style.padding = "10px 20px";
+  messageElement.style.borderRadius = "5px";
+  messageElement.style.fontSize = "14px";
+  messageElement.style.boxShadow = "0 2px 5px rgba(0, 0, 0, 0.3)";
+  messageElement.style.zIndex = "1000";
+  messageElement.style.opacity = "1";
+  messageElement.style.transition = "opacity 0.5s";
+
+  // 메시지를 DOM에 추가
+  document.body.appendChild(messageElement);
+
+  // 일정 시간이 지나면 메시지를 숨기고 삭제
+  setTimeout(() => {
+    messageElement.style.opacity = "0"; // 페이드 아웃 효과
+    setTimeout(() => {
+      messageElement.remove(); // DOM에서 제거
+    }, 500); // 페이드 아웃 효과가 끝난 뒤 제거
+  }, duration);
+}
 
 // board의 스크롤 이벤트가 본문에 영향이 가지 않도록 확장되지 않도록 합니다.
 board.addEventListener('scroll', (e) => {
@@ -550,3 +584,32 @@ function toggleContent(header) {
     content.style.display = "none"; // 내용을 접음
   }
 }
+
+// 주소창 열리고, 해쉬가 모두 생성(등록)이 마친 뒤에 스크롤하기
+function scrollToHash() {
+  const hash = window.location.hash
+  if (hash) {
+    const decodedHash = decodeURIComponent(hash);
+    const targetElement = document.querySelector(decodedHash);
+    if (targetElement) {
+      targetElement.scrollIntoView({ behavior: "smooth" })
+    }
+  }
+}
+
+// 기본 이벤트 삭제
+document.addEventListener("DOMContentLoaded", () => { });
+
+window.addEventListener("hashchange", (event) => {
+  event.preventDefault(); // 기본 동작 방지
+  let hash = window.location.hash;
+
+  if (hash) {
+    scrollToHash(hash);
+  }
+});
+
+
+document.addEventListener("click", () => {
+  trigBoard();
+});

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <marker id="ah1" markerWidth="20" markerHeight="20" viewBox="0 0 20 10" orient="auto">
+      <path d="M9 0L0 4 0 -4 9 0z" />
+    </marker>
+    <symbol id="diamond" viewBox="0 0 200 250">
+      <path style="stroke:#000;fill:none" d="M30 2L2 20 30 38 58 20Z" />
+    </symbol>
+  </defs>
+
+  <g style="stroke: #000;fill:none">
+    <path d="M200 10V200" marker-end="url(#ah1)" />
+    <use transform="matrix(1, 0, 0, 1, 134, 208)" xlink:href="#diamond" />
+    <path d="M200 254V280" marker-end="url(#ah1)" />
+
+    <path d="M166 232h-80v-20" marker-end="url(#ah1)" />
+    <rect width="50" height="25" x="60" y="177" />
+    <path d="M86 177v-15" marker-end="url(#ah1)" />
+    <path d="M60 190h-30v75h160" marker-end="url(#ah1)" />
+    <rect width="50" height="25" x="60" y="127" />
+    <path d="M86 127v-15" marker-end="url(#ah1)" />
+    <path d="M110 140h80" marker-end="url(#ah1)" />
+    <rect width="50" height="30" x="60" y="72" />
+    <path d="M86 72v-30h104" marker-end="url(#ah1)" />
+  </g>
+  <g style="font-family:'times new roman';font-size: 16.4px;font-style:italic;text-anchor:middle">
+    <text x="200" y="235">loop</text>
+    <text x="140" y="224">true</text>
+    <text x="225" y="265">false</text>
+    <text x="85" y="195">break</text>
+    <text x="85" y="145">cont.</text>
+  </g>
+</svg>

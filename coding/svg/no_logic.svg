@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <marker id="ah1" markerWidth="20" markerHeight="20" viewBox="0 0 20 10" orient="auto">
+      <path d="M9 0L0 4 0 -4 9 0z" />
+    </marker>
+    <symbol id="diamond" viewBox="0 0 200 250">
+      <path style="stroke:#000;fill:none" d="M30 2L2 20 30 38 58 20Z"/>
+    </symbol>
+  </defs>
+
+  <g style="stroke: #000;fill:none">
+    <path d="M150 30 v30" marker-end="url(#ah1)" />
+    <rect width="50" height="30" x="125" y="70" />
+    <path d="M150 100 v25" marker-end="url(#ah1)" />
+    <rect width="50" height="30" x="125" y="135" />
+    <path d="M150 165 v25" marker-end="url(#ah1)" />
+    <rect width="50" height="30" x="125" y="200" />
+    <path d="M150 230 v30" marker-end="url(#ah1)" />
+  </g>
+  <g style="font-family:'times new roman';font-size: 16.4px;font-style:italic;text-anchor:middle">
+    <text x="150" y="25">start</text>
+    <text x="150" y="285">end</text>
+  </g>
+</svg>

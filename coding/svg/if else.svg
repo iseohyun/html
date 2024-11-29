@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <marker id="ah1" markerWidth="20" markerHeight="20" viewBox="0 0 20 10" orient="auto">
+      <path d="M9 0L0 4 0 -4 9 0z" />
+    </marker>
+    <symbol id="diamond" viewBox="0 0 200 250">
+      <path style="stroke:#000;fill:none" d="M30 2L2 20 30 38 58 20Z"/>
+    </symbol>
+  </defs>
+
+  <g style="stroke: #000;fill:none">
+    <path d="M200 10v15" marker-end="url(#ah1)" />
+    <use transform="matrix(1, 0, 0, 1, 134, 33)" xlink:href="#diamond"/>
+    <path d="M200 79v15" marker-end="url(#ah1)" />
+    <use transform="matrix(1, 0, 0, 1, 134, 102)" xlink:href="#diamond"/>
+    <path d="M200 148v15" marker-end="url(#ah1)" />
+    <use transform="matrix(1, 0, 0, 1, 134, 171)" xlink:href="#diamond"/>
+    <path d="M200 217v10" marker-end="url(#ah1)" />
+    <rect width="50" height="30" x="175" y="237" />
+    <path d="M200 267v24" marker-end="url(#ah1)" />
+
+    <path d="M166 57h-120v15" marker-end="url(#ah1)" />
+    <rect width="50" height="30" x="20" y="82" />
+    <path d="M46 112v170h145" marker-end="url(#ah1)" />
+    <path d="M166 126h-80v25" marker-end="url(#ah1)" />
+    <rect width="50" height="30" x="60" y="161" />
+    <path d="M86 192v90"/>
+    <path d="M166 195h-40v25" marker-end="url(#ah1)" />
+    <rect width="50" height="30" x="100" y="230" />
+    <path d="M126 260v22"/>
+  </g>
+  <g style="font-family:'times new roman';font-size: 16.4px;font-style:italic;text-anchor:middle">
+    <text x="198" y="62">if</text>
+    <text x="198" y="132">elif</text>
+    <text x="198" y="202">elif</text>
+    <text x="155" y="50">yes</text>
+    <text x="155" y="120">yes</text>
+    <text x="155" y="190">yes</text>
+    <text x="218" y="227">else</text>
+  </g>
+</svg>

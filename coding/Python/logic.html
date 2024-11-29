@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta discription="Python의 기초 문법과 구성에 대해서 설명합니다.">
+  <meta keywords="iseohyun, 튜토리얼, Python, 문법, syntax">
+  <meta author="iseohyun">
+
+  <!-- 페이지 타이틀 -->
+  <title>기초 문법: Python - iseohyun </title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-453XSP5W9M');
+  </script>
+
+  <!-- 소스코드 스타일 -->
+  <link rel="stylesheet" href="/highlight/styles/github.min.css" />
+  <script src="/highlight/highlight.min.js"></script>
+  <script src="/highlight/highlightjs-line-numbers.js"></script>
+  <script>
+    hljs.highlightAll();
+    hljs.initLineNumbersOnLoad();
+  </script>
+
+  <!-- 목차 생성 -->
+  <script src="/modules/hd_list.js" defer></script>
+
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("/style.css");
+
+    h1>sub {
+      color: #884;
+    }
+  </style>
+</head>
+
+<body>
+  <article>
+    <div id="title">Python 로직의 구성</div>
+    <ul>
+      <li>예제코드는 <a href="https://github.com/iseohyun/python-example"
+          target="_blank">https://github.com/iseohyun/python-example</a>에서 다운로드 받을 수 있습니다.</li>
+      <li>예제코드 적용 방법 및 환경설정은 <a href="setup.html">여기</a>를 참고하십시오 </li>
+      <li>VScode의 사용법 안내는 <a href="/etc/column/vscode/start.html">여기</a>를 참고하십시오</li>
+    </ul>
+
+    <div style="width: 90%; border: 1px solid black; padding: 15px; border-radius: 15px;
+margin: 0 auto;">
+      <details close>
+        <summary onclick="event.stopPropagation();">목차보기</summary>
+        <ul>
+          <li><a href="setup.html">환경구축하기</a> : <b>실습 준비</b>, 프로그램, 예제코드 다운로드 방법</li>
+          <li><a href="start.html#시작하기1_HelloWorld">시작하기 1_HelloWorld</a> : 예제코드 실행 및 <b>코드 보는 방법</b></li>
+          <li><a href="start.html#변수2_variable">변수 2_variable</a> : 데이터를 <b>순서대로 읽고,</b> 쓰는(<b>저장</b>하는) 방법</li>
+          <li><a href="start.html#출력%20테크닉3_print">출력 테크닉 3_print</a> : 저장된 데이터를 잘<b>(보기 좋게) 출력</b>하는 방법</li>
+          <li><a href="logic.html#로직4_Logic">로직 4_Logic</a> : 조건에 따라 <b>실행 순서를 변경</b>(추가, 건너뜀, 반복)하는 방법</li>
+          <li><a href="logic.html#함수5_Function">함수 5_Function</a> : 만들어진 <b>로직을 재사용</b> 하는 방법</li>
+          <li><a href="logic.html#콜렉션6_Collections">콜렉션 6_Collections</a> : [저장 단위 확장] 코드에 사용될 데이터를 <b>묶음 단위로 사용</b>하는
+            방법</li>
+          <li><a href="exception.html#모듈7_Module">모듈 7_Module</a> : [프로그램 연계] 작성한(작성된) 코드를 <b>파일 단위</b>로(또는 더 큰 단위로) 가져다
+            쓰는 방법</li>
+          <li><a href="exception.html#예외8_Exception ">예외 8_Exception</a> : 프로그램 <b>오류에 대한</b> 대처</li>
+          <li><a href="object.html#객체9_Class">객체 9_Class</a> : [더 큰 프로젝트] 프로그램을 <b>순서지가 아닌 객체로</b>(대상으로) 대하는 자세(문법)</li>
+          <li><a href="object.html#표준%20라이브러리 10_Std lib">표준 라이브러리 10_Std lib</a> : <b>기본</b>으로 <b>제공</b>되는
+            객체(<b>예제</b>)</li>
+        </ul>
+      </details>
+    </div>
+
+    <h1>로직<sub>4_Logic</sub></h1>
+    <p>
+      분기문은 어떤 특정 조건에 따라서, 임무를 추가로 수행하거나, 건너뛸 수 있습니다. 분기문의 조건에는 사용자의 입력이나, 센서의 반응, 시간 충족 등이 변수에 영향을 주고, 변수의 상태에 따라 분기가
+      결정됩니다.
+    </p>
+    <div
+      style="margin: 10px auto; border: 1px solid black; border-radius: 10px; width: 90%; display: flex; justify-content: space-around;">
+      <img src="../svg/no_logic.svg" style="width:40%">
+      <img src="../svg/if.svg" style="width:40%">
+    </div>
+
+    <h3>들여쓰기</h3>
+    <p>로직, 함수, 모듈, 객체 등 sub루틴에 진입할 때, 들여쓰기를 합니다. 문법에 위배되지 않지만, <a href="https://peps.python.org/pep-0008/"
+        target="_blank">PEP 8(Python Enhancement Proposal 8)</a>에서는 들여쓰기를 'tab'을 사용하기보다, '띄어쓰기 4회'를 사용할 것을 권장합니다. 이는 코드를
+      작성, 공유하는 사람들에게 일관성을 부여합니다.</p>
+    <p>모든 .py파일에 대하여 tab size를 4로 고정하기 위해서는 "setting.json"에 다음과 같이 추가해야 합니다.</p>
+    <pre><code class="json">"[python]": {
+  "editor.insertSpaces": true,
+  "editor.tabSize": 4
+},</code></pre>
+
+    <h2>if</h2>
+    <div style="display: flex; justify-content: space-around;">
+      <div style="width:40%">
+        <p>
+          if문은 가장 단순한 분기를 만들어냅니다.
+        </p>
+        <pre><code class="python">if val == 1:
+    print("val is 1")
+  </code></pre>
+        <pre><code class="python">if val == 1:
+    print("val is 1")
+elif val == 2:
+    print("val is 2")
+elif val == 3:
+    print("val is 3")
+else:
+    print("val is not 1, 2 or 3")</code></pre>
+      </div>
+      <img src="../svg/if else.svg" style="width:40%">
+    </div>
+
+    <h2>match</h2>
+    <div style="display: flex; justify-content: space-around;">
+      <div style="width:40%">
+        <p>
+          match문은 if문이 연속으로 있는 것과 같습니다. 가독성이 좋아집니다.
+        </p>
+        <p>
+          case _:는 다른 언어의 default:와 동일합니다. 모든 case에 해당사항이 없을 때, 수행됩니다.
+        </p>
+        <pre><code class="python">match val:
+    case 1:
+        print("first")
+    case 2:
+        print("second")
+    case 3:
+        print("third")
+    case _:
+        print("none of those")</code></pre>
+      </div>
+      <img src="../svg/match.svg" style="width:40%">
+    </div>
+
+    <h2>for</h2>
+    <div style="display: flex; justify-content: space-around;">
+      <div style="width: 40%;">
+        <p>
+          for문은 n번 반복합니다.
+        </p>
+        <pre><code class="python">for i in (1, 2, 3, 4, 5):
+    print(i, end=" ")  # 0 1 2 3 4</code></pre>
+        <pre><code class="python">for i in range(5):  # 0이상 5미만
+    print(i, end=" ")  # 0 1 2 3 4
+  
+for i in range(1, 5):  # 1이상 5미만
+    print(i, end=" ")  # 1 2 3 4</code></pre>
+      </div>
+      <img src="../svg/for.svg" style="width:40%">
+    </div>
+
+    <h2>while</h2>
+    <div style="display: flex; justify-content: space-around;">
+      <div style="width: 40%;">
+        <p>
+          while문은 조건이 참이면 반복합니다. 조건의 변화가 없다면 무한으로 반복합니다.
+        </p>
+        <pre><code class="python">while i < 5:
+    print(i)
+    i += 1</code></pre>
+      </div>
+      <img src="../svg/while.svg" style="width:40%">
+    </div>
+
+    <h2>break/continue</h2>
+    <div style="display: flex; justify-content: space-around;">
+      <div style="width: 40%;">
+        <ul>
+          <li>break를 만나면, loop를 탈출합니다.</li>
+          <li>countinue를 만나면, loop의 처음으로 이동합니다.</li>
+        </ul>
+        <pre><code class="python">for i in range(10):
+    if i == 2:
+        continue # 이번 루틴만 건너 뜀
+    if i == 5:
+        break # 현재 루프를 종료
+    print("%d 번째" % i)</code></pre>
+      </div>
+      <img src="../svg/break.svg" style="width:40%">
+    </div>
+
+    <h2>pass, 미구현</h2>
+    <p>
+      로직, 함수, 모듈, 객체 등 구현할 때, 반드시 내용을 포함해야 합니다. 다만, 당장 구현이 어려운 경우 해당 부분을 미구현으로 남겨둘 수 있습니다.
+    </p>
+    <pre><code class="python">val = 1
+if val == 1:
+    pass
+else:
+    print(val)
+</code></pre>
+
+    <h1>함수<sub>5_Function</sub></h1>
+    <div style="display: flex; justify-content: space-around;">
+      <div style="width: 60%;">
+        <ul>
+          <li>코드의 재사용을 위해 함수를 사용합니다.</li>
+          <li>함수를 호출하기 위해서는 먼저 함수가 정의되어야 합니다.</li>
+          <li>함수의 작명규칙은 변수와 동일합니다(소문자+'_' 권장).</li>
+          <li>함수는 정의 및 호출시 소괄호()를 붙여야 합니다.</li>
+        </ul>
+        <pre><code class="python">def func1(): # define 정의
+    print("contents 1") # 함수 내용
+    print("contents 2") # 함수 내용2
+
+func1() # call 호출
+func1() # call 호출(2번째)</code></pre>
+      </div>
+      <img src="../svg/function.svg" style="width:40%">
+    </div>
+
+    <h2>scope</h2>
+    <table class="last-td-left">
+      <caption>global vs. local</caption>
+      <thead>
+        <tr>
+          <th></th>
+          <th>global</th>
+          <th>local</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>위치</td>
+          <td>main stream</td>
+          <td>sub stream(function, object ...)</td>
+        </tr>
+        <tr>
+          <td>접근</td>
+          <td>모든 위치에서 접근 가능</td>
+          <td>해당 위치에서만 접근 가능</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>local변수가 필요한 이유</p>
+    <ul>
+      <li>함수가 많아질수록 변수끼리의 충돌가능성이 있음</li>
+      <li>충돌하지 않기 위해 불필요하게 이름이 길어짐</li>
+      <li>신경써야 할 변수가 많아지면 관리가 어려움</li>
+    </ul>
+    <p>그럼에도 불구하고 구조적으로 global변수에 접근을 하려면 global keywords를 사용합니다.</p>
+    <pre><code class="python">def scope_test():
+    def do_local():
+        spam = "local spam"
+
+    def do_nonlocal():
+        nonlocal spam
+        spam = "nonlocal spam"
+
+    def do_global():
+        global spam
+        spam = "global spam"
+
+    spam = "test spam"
+    do_local()
+    print("After local assignment:", spam) # After local assignment: test spams
+    do_nonlocal()
+    print("After nonlocal assignment:", spam) # After nonlocal assignment: nonlocal spam
+    do_global()
+    print("After global assignment:", spam) # After global assignment: nonlocal spam
+    # 접근 위치가 scope_test()이기 때문에 nonlocal이 호출
+
+print("In global scope:", spam) # In global scope: global spam</code></pre>
+
+    <h2>arguments</h2>
+    <h3>기본 호출</h3>
+    <pre><code class="python">def func1(x): # step 2: 100 받음
+    print(x) # step 3: 100 출력
+  
+func1(100); # step 1: 100 전달</code></pre>
+    <h3>기본 값</h3>
+    <p>다음과 같이 선언할 때, 값을 지정하면, 호출할 때 값을 전달하지 않으면 기본값으로 설정됩니다.</p>
+    <pre><code class="python">def func1(x=1):
+    print(x)
+
+func1(); # x=1</code></pre>
+
+    <h3>호출 방법</h3>
+    <p>함수에게 정보를 전달하는 방법은 소괄호()안에 작성하는 방법입니다. 호출방법으로는:</p>
+    <ul>
+      <li><b>Positional</b> : 호출 위치(순서)에 따라 값을 전달
+        <pre><code class="python">def add(arg1, arg2):
+    print(f"Data : {arg1}, {arg2}")
+  
+add(10, 20)</code></pre>
+      </li>
+      <li><b>Keyword</b> : 인자명을 명시하여 값을 전달
+        <pre><code class="python">def func1(x, y, z):
+    print(x, y, z)
+
+func1(y=8, z=9, x=10)  # 순서 무관</code></pre>
+      </li>
+      <li><b>combined</b> : 특수 기호를 사용해서, 해당 argument의 속성을 지정
+        <blockquote>
+          <pre>def f(pos1, pos2, /, pos_or_kwd, *, kwd1, kwd2):
+      --┬--------    -┬--------     -----┬----
+        |             |                  |
+        |        Positional or keyword   |
+        |                                └- Keyword only
+        └-- Positional only</pre>
+        </blockquote>
+        <pre><code class="python">def combined_example(pos_only, /, standard, *, kwd_only):
+    print(pos_only, standard, kwd_only)
+
+combined_example("POS_ONLY_ARG", standard="STD_ARG", kwd_only="KW_ONLY_ARG")</code></pre>
+      </li>
+    </ul>
+
+    <h3>모호함</h3>
+    <p>'/', '*' 특수문자를 이용해서 argument의 특징을 강제할 수 있습니다.</p>
+    <pre><code class="python">def foo(name, /, **kwds): # '/' 문자로 name의 성격을 pos로 강제
+    return "name" in kwds  # name은 kwds의 name임이 확실합니다.
+
+def bar(name, **kwds):
+    return "name" in kwds  # kwds의 name인지, bar arg의 name인지???
+
+ret = foo(1, **{"name": 2})
+
+ret = bar(1, **{"name": 2})  # TypeError: bar()...</code></pre>
+
+    <h3>return 반환</h3>
+    <pre><code class="python">def ret100(): # step 2: 함수 시작
+    return 100 # step 3: 100 반환
+  
+ans = ret100() # step 1: 함수 호출
+# step 4: ans에 100 저장</code></pre>
+
+    <h3>가변 함수</h3>
+    <p>입력 인자의 갯수가 일정하지 않을 때(가변), '*'기호를 이용해서 전달 받을 수 있습니다.</p>
+    <pre><code class="python">def concat(*args, sep="/"):
+    return sep.join(args)
+
+concat("earth", "mars", "venus", "mercury", "jupiter")
+# 출력: earth/mars/venus/mercury/jupiter</code></pre>
+
+    <pre><code class="python">def unpack(*args):
+  for i in args:
+      print(i, end=" ")
+
+unpack("earth", "mars", "venus") # 출력: earth mars venus</code></pre>
+
+    <h3>딕션네리(자료형) 전달</h3>
+
+    <pre><code class="python">def search(index="name", **dict):
+  print(dict[index])
+
+dict = {"name": "광해군", "year": 1592} # 출력: 광해군</code></pre>
+
+    <h2>함수 부가 정보 관리</h2>
+    <p><b>Documentation, 문서화(함수 설명서)</b></p>
+    <p> &nbsp; - 함수 뒤에 """로 작성된 문자열을 반환합니다.</p>
+
+    <pre><code class="python">def f():
+    """
+    This is a function that prints the string 'Hello, world!'
+    :return: None
+    """
+    print("Hello, world!")
+    
+print(f.__doc__)</code></pre>
+
+    <p><b>Annotation, 주석(함수 인자, 리턴의 성격 출력)</b></p>
+
+    <pre><code class="python">def f(ham: str, eggs: str = "eggs") -> str:
+    print("Annotations:", f.__annotations__)
+    # 출력: Annotations: {'ham': <class 'str'>, 'eggs': <class 'str'>, 'return': <class 'str'>}
+
+f("spam")</code></pre>
+
+    <h2>Lambda</h2>
+    <p>Lambda(람다) 함수는 함수의 이름을 기술하지 않고, 간략하게 작성됩니다. 다음 경우에 설계합니다.</p>
+    <ul>
+      <li>함수의 구조가 너무 간단하거나,</li>
+      <li>함수가 반복적으로 호출되지 않고, 단 한 번 사용될 때</li>
+    </ul>
+    <pre><code class="python">def make_incrementor(n):
+    return lambda x: x + n
+
+f = make_incrementor(42)
+print(f(0)) # 출력 : 42
+print(f(1)) # 출력 : 43</code></pre>
+
+    <h1>콜렉션<sub>6_Collections</sub></h1>
+    <p>콜렉션은 자료구조, 데이터 묶음에 대하여 다룹니다.</p>
+    <h2>list</h2>
+    <ul>
+      <li>[]로 감싸고, ,(콤마)로 구분합니다.</li>
+      <li>숫자, 문자열, 콜렉션(리스트, 튜플, 딕셔네리), 오브젝트 등을 멤버로 저장할 수 있습니다.</li>
+      <li>모든 멤버가 순서대로 index(순번)을 갖고 있습니다(0부터 시작).</li>
+      <li>반복작업에 유리합니다.</li>
+    </ul>
+    <pre><code class="python">#         0         1        2       3         4       5        6
+fruits = ["orange", "apple", "pear", "banana", "kiwi", "apple", "banana"]
+
+fruits[0] # orange
+
+fruits[6] # banana
+
+fruits[3] = "tomato" # banana -> tomato
+# ['orange', 'apple', 'pear', 'tomato', 'kiwi', 'apple', 'banana']
+</code></pre>
+
+    <pre><code class="python">for fruit in fruits:
+    print(fruit, end=", ")
+# 출력: orange, apple, pear, banana, kiwi, apple, banana, </code></pre>
+
+    <p>리스트의 찾기, 통계, 추가/삭제, 역순, 정렬 예제</p>
+    <pre><code class="python">print(fruits.count("apple"))  # 2, 통계(갯수)
+print(fruits.index("banana"))  # 3, 찾기(0부터)
+
+fruits.reverse()
+# 거꾸로 나열: ["banana", "apple", "kiwi", "banana", "pear", "apple", "orange"]
+
+fruits.append("grape")
+# 멤버 추가: ["banana", "apple", "kiwi", "banana", "pear", "apple", "orange", "grape"]
+
+fruits.sort()
+# 정렬(a~z): ["apple", "apple", "banana", "banana", "grape", "kiwi", "orange", "pear"]
+
+print(fruits.pop()) # pear, 마지막 멤버</code></pre>
+
+    <h3>리스트 묶기</h3>
+    <p>2개 이상의 리스트를 동시에 취급할 수 있습니다.</p>
+
+    <pre><code class="python">questions = ["name", "quest", "favorite color"]
+answers = ["lancelot", "the holy grail", "blue"]
+for q, a in zip(questions, answers):
+    print("What is your {0}?  It is {1}.".format(q, a))
+# What is your name?  It is lancelot.
+# What is your quest?  It is the holy grail.
+# What is your favorite color?  It is blue.</code></pre>
+
+    <h3>리스트간 비교하기</h3>
+    <ol>
+      <li>앞의 멤버부터 비교한다.</li>
+      <li>멤버의 수가 많은 것이 우선한다.</li>
+      <li>세부 리스트가 있다면, 세부 리스트끼리 비교한다.</li>
+    </ol>
+    <pre><code class="python">a = (1, 2, 3, 100)
+b = (1, 2, 4, -100)
+# (1, 2, 4, -100) > (1, 2, 3, 100)
+
+a = (1, 2)
+b = (1, 2, -1)
+# (1, 2, -1) > (1, 2)
+
+a = (1, 2, ("zz", "aa"))
+b = (1, 2, ("aa", "ab", "ac"), 4)
+# (1, 2, ('zz', 'aa')) > (1, 2, ('aa', 'ab', 'ac'), 4)
+</code></pre>
+    <h3>응용</h3>
+    <h4>stack으로 이용하기</h4>
+    <pre><code class="python">stack = [3, 4, 5]
+
+stack.append(6)  # [3, 4, 5, 6]
+stack.append(7)  # [3, 4, 5, 6, 7]
+
+stack.pop()  # 7  # [3, 4, 5, 6]
+
+stack.pop()  # 6  # [3, 4, 5]
+
+stack.pop()  # 5  # [3, 4]</code></pre>
+
+    <h4>queue로 이용하기</h4>
+    <pre><code class="python">queue = deque(["Eric", "John", "Michael"])
+queue.append("Terry") # deque(['Eric', 'John', 'Michael', 'Terry'])
+
+queue.append("Graham") # deque(['Eric', 'John', 'Michael', 'Terry', 'Graham'])
+
+print(queue.popleft())  # "Eric" - The first to arrive now leaves
+print(queue.popleft())  # "John" - The second to arrive now leaves
+# deque(['Michael', 'Terry', 'Graham'])</code></pre>
+
+    <h3>자동생성하기 Comprehension</h3>
+    <pre><code class="python">squares = []
+for x in range(10):
+    squares.append(x**2)
+# [0, 1, 4, 9, 16, 25, 36, 49, 64, 81]
+
+comb = [(x, y) for x in [1, 2, 3] for y in [3, 1, 4] if x != y]
+# [(1, 3), (1, 4), (2, 3), (2, 1), (2, 4), (3, 1), (3, 4)]</code></pre>
+
+    <h3>다중 리스트</h3>
+    <pre><code class="python">matrix = [
+  [1, 2, 3, 4],
+  [5, 6, 7, 8],
+  [9, 10, 11, 12],
+]
+
+matrix[1][1] #6
+
+transposed = [[row[i] for row in matrix] for i in range(4)]
+# [ [1, 5, 9],
+#   [2, 6, 10],
+#   [3, 7, 11],
+#   [4, 8, 12]
+#]</code></pre>
+
+    <h3>멤버 삭제</h3>
+    <pre><code class="python">a = [i for i in range(6)] # [0, 1, 2, 3, 4, 5]
+
+del a[0] # [1, 2, 3, 4, 5]
+
+del a[2:4] # [1, 2, 5]
+
+del a[:] # []</code></pre>
+
+    <h2>tuple</h2>
+    <pre><code class="python">t = (12345, 54321, "hello!")
+t2 = 12345, 54321, "hello!" # 생략 가능
+
+empty = () # 빈 튜플
+len(empty)  # 길이: 0
+
+singleton = ("hello",)  # comma로 끝나도 무시함
+# 출력: ('hello',)
+len(singleton)  # 길이: 1
+</code></pre>
+
+    <p>튜플 복사 예제(피보나치 수열): 데이터의 교환(a↔b)시 임시변수를 만드는 방법보다 효율적</p>
+    <pre><code class="python">a, b = 0, 1
+while a < 10:
+    print(a)
+    a, b = b, a + b  # (a, b) = (b, a + b) 튜플 복사  </code></pre>
+
+    <h2>set</h2>
+    <p>중복을 인정하지 않는 리스트</p>
+    <pre><code class="python">basket = {"apple", "orange", "apple", "pear", "orange", "banana"}
+# {"orange", "banana", "pear", "apple"} - 중복된 것 삭제
+
+"orange" in basket  # True - fast membership testing
+"crabgrass" in basket  # False</code></pre>
+    <h4>합집합, 교집합, 차집합</h4>
+    <pre><code class="python">a = set("abracadabra") # {'b', 'c', 'r', 'a', 'd'}
+b = set("alacazam") # {'c', 'z', 'a', 'l', 'm'}
+
+print(a - b)  # {'b', 'r', 'd'} = 차집합(A-B), 그룹A에만 있음
+
+print(a | b)  # {'b', 'c', 'r', 'z', 'a', 'l', 'd', 'm'} = 합집합
+
+print(a & b)  # {'c', 'a'} = 교집합
+
+print(a ^ b)  # {'b', 'm', 'd', 'r', 'z', 'l'} = 합집합 - 교집합</code></pre>
+    <h2>dictionary</h2>
+    <p>key:value(색인:값)을 하나의 멤버로 저장합니다.</p>
+    <pre><code class="python">tel = {"jack": 4098, "sape": 4139}
+tel["guido"] = 4127  # guido의 전화번호를 등록
+# {"jack": 4098, "sape": 4139, "guido": 4127}
+
+tel["jack"]  # 4098
+
+del tel["sape"]  # sape 삭제
+tel["irv"] = 4127  # irv 등록
+# {"jack": 4098, "guido": 4127, "irv": 4127}
+
+list(tel)  # ["jack", "guido", "irv"]
+
+tel = sorted(tel)  # 정렬(오름차순)
+# ["guido", "irv", "jack"]
+
+"guido" in tel  # True
+"jack" not in tel  # False</code></pre>
+
+    <h3>자동완성</h3>
+    <pre><code class="python">dict = {x: x**2 for x in (2, 4, 6)}
+# {2: 4, 4: 16, 6: 36}</code></pre>
+
+    <h3>루프 기술</h3>
+    <pre><code class="python">knights = {"gallahad": "the pure", "robin": "the brave"}
+for k, v in knights.items():
+    print(k, v)
+# gallahad the pure
+# robin the brave</code></pre>
+    <h2>typecast</h2>
+    <p>강제로 콜렉션 타입을 변경 할 수 있습니다.</p>
+    <pre><code class="python">menu = {"커피", "우유", "주스"}
+# {'커피', '우유', '주스'} <class 'set'>
+
+menu = list(menu)
+# ['커피', '우유', '주스'] <class 'list'>
+
+menu = tuple(menu)
+# ('커피', '우유', '주스') <class 'tuple'>
+
+menu = set(menu)
+# {'커피', '주스', '우유'} <class 'set'>
+</code></pre>
+  </article>
+</body>
+
+</html>
