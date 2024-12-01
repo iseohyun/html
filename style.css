@@ -687,7 +687,7 @@ q,
 .hl,
 .hl1,
 .highlight1 {
-  background-color: #f3f3fd;
+  background-color: #bfb;
 }
 
 .hl2,
@@ -1088,7 +1088,7 @@ header #headerIcons #tutorial-icon {
   width: 0;
   animation: 2s ease infinite alternate tutorial-show;
   font-weight: bold;
-  margin: 0 20px 0 auto;
+  margin: 1px 20px 1px auto;
 }
 
 span.tutorial {

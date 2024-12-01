@@ -171,6 +171,7 @@ function trigBoard() {
 
 // 튜토리얼 목록을 보이거나 숨깁니다.
 function trigTutorial() {
+  document.getElementById("board").style.visibility = "hidden";
   var tutorials = document.querySelectorAll(".tutorial");
   var iconText = document.querySelector("#tutorial-icon span");
 
@@ -309,7 +310,8 @@ function createHeader() {
     const tutorialIcon = document.createElement('div');
     tutorialIcon.setAttribute('id', 'tutorial-icon');
     tutorialIcon.innerHTML = "totorial<br><span>SHOW</span>";
-    tutorialIcon.addEventListener('click', () => {
+    tutorialIcon.addEventListener('click', (e) => {
+      e.stopPropagation();
       trigTutorial();
     });
     icons.appendChild(tutorialIcon);
@@ -318,7 +320,8 @@ function createHeader() {
   const HeaderUpIcon = document.createElement('div');
   HeaderUpIcon.setAttribute('id', 'header-up-icon');
   HeaderUpIcon.innerHTML = "▲<br><span>UP</span>";
-  HeaderUpIcon.addEventListener('click', () => {
+  HeaderUpIcon.addEventListener('click', (e) => {
+    e.stopPropagation();
     const header = document.querySelector("header");
     header.style.top = "-" + header.offsetHeight + "px";
   }, true);
@@ -326,7 +329,7 @@ function createHeader() {
 
   const boardIcon = document.createElement('div');
   boardIcon.innerHTML = '<img src="/source/icon_list.svg">';
-  // boardIcon.addEventListener('click', trigBoard, true);
+  boardIcon.addEventListener('click', trigBoard, true);
   icons.appendChild(boardIcon);
   header.appendChild(icons);
 }
@@ -610,6 +613,6 @@ window.addEventListener("hashchange", (event) => {
 });
 
 
-document.addEventListener("click", () => {
+document.addEventListener("dblclick", () => {
   trigBoard();
 });

@@ -103,9 +103,11 @@ margin: 0 auto;">
         <p>
           if문은 가장 단순한 분기를 만들어냅니다.
         </p>
+        <span class="tutorial">4_Logic > 01_IF.py</span>
         <pre><code class="python">if val == 1:
     print("val is 1")
   </code></pre>
+        <span class="tutorial">4_Logic > 01-1_else.py</span>
         <pre><code class="python">if val == 1:
     print("val is 1")
 elif val == 2:
@@ -127,6 +129,7 @@ else:
         <p>
           case _:는 다른 언어의 default:와 동일합니다. 모든 case에 해당사항이 없을 때, 수행됩니다.
         </p>
+        <span class="tutorial">4_Logic > 02_Match.py</span>
         <pre><code class="python">match val:
     case 1:
         print("first")
@@ -146,8 +149,11 @@ else:
         <p>
           for문은 n번 반복합니다.
         </p>
+        <span class="tutorial">4_Logic > 03_For.py</span>
         <pre><code class="python">for i in (1, 2, 3, 4, 5):
     print(i, end=" ")  # 0 1 2 3 4</code></pre>
+
+        <span class="tutorial">4_Logic > 03-1_Range.py</span>
         <pre><code class="python">for i in range(5):  # 0이상 5미만
     print(i, end=" ")  # 0 1 2 3 4
   
@@ -163,7 +169,8 @@ for i in range(1, 5):  # 1이상 5미만
         <p>
           while문은 조건이 참이면 반복합니다. 조건의 변화가 없다면 무한으로 반복합니다.
         </p>
-        <pre><code class="python">while i < 5:
+        <span class="tutorial">4_Logic > 04_While.py</span>
+        <pre><code class="python">while i &lt; 5:
     print(i)
     i += 1</code></pre>
       </div>
@@ -177,6 +184,7 @@ for i in range(1, 5):  # 1이상 5미만
           <li>break를 만나면, loop를 탈출합니다.</li>
           <li>countinue를 만나면, loop의 처음으로 이동합니다.</li>
         </ul>
+        <span class="tutorial">4_Logic > 05_Break.py</span>
         <pre><code class="python">for i in range(10):
     if i == 2:
         continue # 이번 루틴만 건너 뜀
@@ -191,6 +199,7 @@ for i in range(1, 5):  # 1이상 5미만
     <p>
       로직, 함수, 모듈, 객체 등 구현할 때, 반드시 내용을 포함해야 합니다. 다만, 당장 구현이 어려운 경우 해당 부분을 미구현으로 남겨둘 수 있습니다.
     </p>
+    <span class="tutorial">4_Logic > 06_Pass.py</span>
     <pre><code class="python">val = 1
 if val == 1:
     pass
@@ -204,9 +213,13 @@ else:
         <ul>
           <li>코드의 재사용을 위해 함수를 사용합니다.</li>
           <li>함수를 호출하기 위해서는 먼저 함수가 정의되어야 합니다.</li>
+          <li>함수를 정의 할 때 def(define, 정의하다) 키워드를 사용합니다.</li>
+          <li>:(콜론)으로 마무리 합니다.</li>
+          <li>내용(body)는 들여쓰기(indentation) 후 작성합니다.</li>
           <li>함수의 작명규칙은 변수와 동일합니다(소문자+'_' 권장).</li>
           <li>함수는 정의 및 호출시 소괄호()를 붙여야 합니다.</li>
         </ul>
+        <span class="tutorial">5_Function > 01_Function.py</span>
         <pre><code class="python">def func1(): # define 정의
     print("contents 1") # 함수 내용
     print("contents 2") # 함수 내용2
@@ -247,6 +260,7 @@ func1() # call 호출(2번째)</code></pre>
       <li>신경써야 할 변수가 많아지면 관리가 어려움</li>
     </ul>
     <p>그럼에도 불구하고 구조적으로 global변수에 접근을 하려면 global keywords를 사용합니다.</p>
+    <span class="tutorial">5_Function > 01-3_Scope.py</span>
     <pre><code class="python">def scope_test():
     def do_local():
         spam = "local spam"
@@ -271,13 +285,15 @@ func1() # call 호출(2번째)</code></pre>
 print("In global scope:", spam) # In global scope: global spam</code></pre>
 
     <h2>arguments</h2>
-    <h3>기본 호출</h3>
+    <h3>입력인자를 통한 정보전달</h3>
+    <span class="tutorial">5_Function > 02_Arguments.py</span>
     <pre><code class="python">def func1(x): # step 2: 100 받음
     print(x) # step 3: 100 출력
   
 func1(100); # step 1: 100 전달</code></pre>
     <h3>기본 값</h3>
     <p>다음과 같이 선언할 때, 값을 지정하면, 호출할 때 값을 전달하지 않으면 기본값으로 설정됩니다.</p>
+    <span class="tutorial">5_Function > 02-1_Keywords.py</span>
     <pre><code class="python">def func1(x=1):
     print(x)
 
@@ -307,6 +323,7 @@ func1(y=8, z=9, x=10)  # 순서 무관</code></pre>
         |                                └- Keyword only
         └-- Positional only</pre>
         </blockquote>
+        <span class="tutorial">5_Function > 02-2_Pos-or-key.py</span>
         <pre><code class="python">def combined_example(pos_only, /, standard, *, kwd_only):
     print(pos_only, standard, kwd_only)
 
@@ -316,6 +333,7 @@ combined_example("POS_ONLY_ARG", standard="STD_ARG", kwd_only="KW_ONLY_ARG")</co
 
     <h3>모호함</h3>
     <p>'/', '*' 특수문자를 이용해서 argument의 특징을 강제할 수 있습니다.</p>
+    <span class="tutorial">5_Function > 02-3_Ambiguity.py</span>
     <pre><code class="python">def foo(name, /, **kwds): # '/' 문자로 name의 성격을 pos로 강제
     return "name" in kwds  # name은 kwds의 name임이 확실합니다.
 
@@ -327,6 +345,7 @@ ret = foo(1, **{"name": 2})
 ret = bar(1, **{"name": 2})  # TypeError: bar()...</code></pre>
 
     <h3>return 반환</h3>
+    <span class="tutorial">5_Function > 03_Return.py</span>
     <pre><code class="python">def ret100(): # step 2: 함수 시작
     return 100 # step 3: 100 반환
   
@@ -335,12 +354,14 @@ ans = ret100() # step 1: 함수 호출
 
     <h3>가변 함수</h3>
     <p>입력 인자의 갯수가 일정하지 않을 때(가변), '*'기호를 이용해서 전달 받을 수 있습니다.</p>
+    <span class="tutorial">5_Function > 04_Sequence.py</span>
     <pre><code class="python">def concat(*args, sep="/"):
     return sep.join(args)
 
 concat("earth", "mars", "venus", "mercury", "jupiter")
 # 출력: earth/mars/venus/mercury/jupiter</code></pre>
 
+    <span class="tutorial">5_Function > 04-1_Unpack.py</span>
     <pre><code class="python">def unpack(*args):
   for i in args:
       print(i, end=" ")
@@ -348,7 +369,7 @@ concat("earth", "mars", "venus", "mercury", "jupiter")
 unpack("earth", "mars", "venus") # 출력: earth mars venus</code></pre>
 
     <h3>딕션네리(자료형) 전달</h3>
-
+    <span class="tutorial">5_Function > 05_Dictionary.py</span>
     <pre><code class="python">def search(index="name", **dict):
   print(dict[index])
 
@@ -357,7 +378,7 @@ dict = {"name": "광해군", "year": 1592} # 출력: 광해군</code></pre>
     <h2>함수 부가 정보 관리</h2>
     <p><b>Documentation, 문서화(함수 설명서)</b></p>
     <p> &nbsp; - 함수 뒤에 """로 작성된 문자열을 반환합니다.</p>
-
+    <span class="tutorial">5_Function > 06_Documentation.py</span>
     <pre><code class="python">def f():
     """
     This is a function that prints the string 'Hello, world!'
@@ -368,7 +389,7 @@ dict = {"name": "광해군", "year": 1592} # 출력: 광해군</code></pre>
 print(f.__doc__)</code></pre>
 
     <p><b>Annotation, 주석(함수 인자, 리턴의 성격 출력)</b></p>
-
+    <span class="tutorial">5_Function > 07_Annotation.py</span>
     <pre><code class="python">def f(ham: str, eggs: str = "eggs") -> str:
     print("Annotations:", f.__annotations__)
     # 출력: Annotations: {'ham': <class 'str'>, 'eggs': <class 'str'>, 'return': <class 'str'>}
@@ -381,6 +402,7 @@ f("spam")</code></pre>
       <li>함수의 구조가 너무 간단하거나,</li>
       <li>함수가 반복적으로 호출되지 않고, 단 한 번 사용될 때</li>
     </ul>
+    <span class="tutorial">5_Function > 08_Lambda.py</span>
     <pre><code class="python">def make_incrementor(n):
     return lambda x: x + n
 
@@ -397,6 +419,7 @@ print(f(1)) # 출력 : 43</code></pre>
       <li>모든 멤버가 순서대로 index(순번)을 갖고 있습니다(0부터 시작).</li>
       <li>반복작업에 유리합니다.</li>
     </ul>
+    <span class="tutorial">6_Collections > 01_List.py</span>
     <pre><code class="python">#         0         1        2       3         4       5        6
 fruits = ["orange", "apple", "pear", "banana", "kiwi", "apple", "banana"]
 
@@ -408,11 +431,81 @@ fruits[3] = "tomato" # banana -> tomato
 # ['orange', 'apple', 'pear', 'tomato', 'kiwi', 'apple', 'banana']
 </code></pre>
 
+    <span class="tutorial">6_Collections > 01-1_Loop technique.py</span>
     <pre><code class="python">for fruit in fruits:
     print(fruit, end=", ")
 # 출력: orange, apple, pear, banana, kiwi, apple, banana, </code></pre>
 
     <p>리스트의 찾기, 통계, 추가/삭제, 역순, 정렬 예제</p>
+    <table class="all-td-left">
+      <caption>List 함수</caption>
+      <thead>
+        <tr>
+          <th>함수명</th>
+          <th>기능</th>
+          <th>비고</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>append(x)</td>
+          <td>아이템 추가</td>
+          <td>a[len(a):] = [x]</td>
+        </tr>
+        <tr>
+          <td>extend(iterable)</td>
+          <td>아이템 추가</td>
+          <td>a[len(a):] = iterable</td>
+        </tr>
+        <tr>
+          <td>insert(i, x)</td>
+          <td>주어진 위치(i)에 항목(x)을 삽입</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>remove(x)</td>
+          <td>리스트에서 값이 x와 같은 첫 번째 항목을 삭제. 없으면 ValueError</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>pop([i])</td>
+          <td>주어진 위치(i)를 삭제, 생략시 마지막 아이템 삭제</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>clear()</td>
+          <td>모든 리스트 내 아이템 삭제</td>
+          <td>del a[:]</td>
+        </tr>
+        <tr>
+          <td>index(x[, start[, end]])</td>
+          <td>리스트에 있는 항목 중 값이 x 와 같은 첫 번째 것의 인덱스 반환. 없으면 ValueError</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>count(x)</td>
+          <td>리스트에서 x 가 등장하는 횟수</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>sort(*, key=None, reverse=False)</td>
+          <td>정렬, 정렬 기준과 규칙(오름차순)</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>reverse()</td>
+          <td>리스트의 요소들을 거꾸로 배치</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>copy()</td>
+          <td>리스트 복사</td>
+          <td>b = a[:]</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <span class="tutorial">6_Collections > 01-2_List method.py</span>
     <pre><code class="python">print(fruits.count("apple"))  # 2, 통계(갯수)
 print(fruits.index("banana"))  # 3, 찾기(0부터)
 
@@ -430,6 +523,7 @@ print(fruits.pop()) # pear, 마지막 멤버</code></pre>
     <h3>리스트 묶기</h3>
     <p>2개 이상의 리스트를 동시에 취급할 수 있습니다.</p>
 
+    <span class="tutorial">6_Collections > 01-2a_Zip.py</span>
     <pre><code class="python">questions = ["name", "quest", "favorite color"]
 answers = ["lancelot", "the holy grail", "blue"]
 for q, a in zip(questions, answers):
@@ -444,6 +538,7 @@ for q, a in zip(questions, answers):
       <li>멤버의 수가 많은 것이 우선한다.</li>
       <li>세부 리스트가 있다면, 세부 리스트끼리 비교한다.</li>
     </ol>
+    <span class="tutorial">6_Collections > 01-3_Compare.py</span>
     <pre><code class="python">a = (1, 2, 3, 100)
 b = (1, 2, 4, -100)
 # (1, 2, 4, -100) > (1, 2, 3, 100)
@@ -456,8 +551,10 @@ a = (1, 2, ("zz", "aa"))
 b = (1, 2, ("aa", "ab", "ac"), 4)
 # (1, 2, ('zz', 'aa')) > (1, 2, ('aa', 'ab', 'ac'), 4)
 </code></pre>
+
     <h3>응용</h3>
     <h4>stack으로 이용하기</h4>
+    <span class="tutorial">6_Collections > 01-4_As stack.py</span>
     <pre><code class="python">stack = [3, 4, 5]
 
 stack.append(6)  # [3, 4, 5, 6]
@@ -470,6 +567,7 @@ stack.pop()  # 6  # [3, 4, 5]
 stack.pop()  # 5  # [3, 4]</code></pre>
 
     <h4>queue로 이용하기</h4>
+    <span class="tutorial">6_Collections > 01-5_As queue.py</span>
     <pre><code class="python">queue = deque(["Eric", "John", "Michael"])
 queue.append("Terry") # deque(['Eric', 'John', 'Michael', 'Terry'])
 
@@ -480,6 +578,7 @@ print(queue.popleft())  # "John" - The second to arrive now leaves
 # deque(['Michael', 'Terry', 'Graham'])</code></pre>
 
     <h3>자동생성하기 Comprehension</h3>
+    <span class="tutorial">6_Collections > 01-6_List Comprehensions.py</span>
     <pre><code class="python">squares = []
 for x in range(10):
     squares.append(x**2)
@@ -489,6 +588,7 @@ comb = [(x, y) for x in [1, 2, 3] for y in [3, 1, 4] if x != y]
 # [(1, 3), (1, 4), (2, 3), (2, 1), (2, 4), (3, 1), (3, 4)]</code></pre>
 
     <h3>다중 리스트</h3>
+    <span class="tutorial">6_Collections > 01-7_Nested list.py</span>
     <pre><code class="python">matrix = [
   [1, 2, 3, 4],
   [5, 6, 7, 8],
@@ -505,6 +605,7 @@ transposed = [[row[i] for row in matrix] for i in range(4)]
 #]</code></pre>
 
     <h3>멤버 삭제</h3>
+    <span class="tutorial">6_Collections > 01-8_Del.py</span>
     <pre><code class="python">a = [i for i in range(6)] # [0, 1, 2, 3, 4, 5]
 
 del a[0] # [1, 2, 3, 4, 5]
@@ -514,6 +615,7 @@ del a[2:4] # [1, 2, 5]
 del a[:] # []</code></pre>
 
     <h2>tuple</h2>
+    <span class="tutorial">6_Collections > 02_Tuples.py</span>
     <pre><code class="python">t = (12345, 54321, "hello!")
 t2 = 12345, 54321, "hello!" # 생략 가능
 
@@ -526,13 +628,15 @@ len(singleton)  # 길이: 1
 </code></pre>
 
     <p>튜플 복사 예제(피보나치 수열): 데이터의 교환(a↔b)시 임시변수를 만드는 방법보다 효율적</p>
+    <span class="tutorial">6_Collections > 02-9a_Fibonacci.py</span>
     <pre><code class="python">a, b = 0, 1
 while a < 10:
     print(a)
     a, b = b, a + b  # (a, b) = (b, a + b) 튜플 복사  </code></pre>
 
     <h2>set</h2>
-    <p>중복을 인정하지 않는 리스트</p>
+    <p>Set(집합): 중복을 인정하지 않는 리스트</p>
+    <span class="tutorial">6_Collections > 03_Set.py</span>
     <pre><code class="python">basket = {"apple", "orange", "apple", "pear", "orange", "banana"}
 # {"orange", "banana", "pear", "apple"} - 중복된 것 삭제
 
@@ -549,8 +653,10 @@ print(a | b)  # {'b', 'c', 'r', 'z', 'a', 'l', 'd', 'm'} = 합집합
 print(a & b)  # {'c', 'a'} = 교집합
 
 print(a ^ b)  # {'b', 'm', 'd', 'r', 'z', 'l'} = 합집합 - 교집합</code></pre>
+
     <h2>dictionary</h2>
     <p>key:value(색인:값)을 하나의 멤버로 저장합니다.</p>
+    <span class="tutorial">6_Collections > 04_Dictionary.py</span>
     <pre><code class="python">tel = {"jack": 4098, "sape": 4139}
 tel["guido"] = 4127  # guido의 전화번호를 등록
 # {"jack": 4098, "sape": 4139, "guido": 4127}
@@ -570,17 +676,21 @@ tel = sorted(tel)  # 정렬(오름차순)
 "jack" not in tel  # False</code></pre>
 
     <h3>자동완성</h3>
+    <span class="tutorial">6_Collections > 04-1_DictionaryComprehension.py</span>
     <pre><code class="python">dict = {x: x**2 for x in (2, 4, 6)}
 # {2: 4, 4: 16, 6: 36}</code></pre>
 
     <h3>루프 기술</h3>
+    <span class="tutorial">6_Collections > 04-2_Loop technique.py</span>
     <pre><code class="python">knights = {"gallahad": "the pure", "robin": "the brave"}
 for k, v in knights.items():
     print(k, v)
 # gallahad the pure
 # robin the brave</code></pre>
+
     <h2>typecast</h2>
     <p>강제로 콜렉션 타입을 변경 할 수 있습니다.</p>
+    <span class="tutorial">6_Collections > 05_Typecast.py</span>
     <pre><code class="python">menu = {"커피", "우유", "주스"}
 # {'커피', '우유', '주스'} <class 'set'>
 
@@ -593,6 +703,14 @@ menu = tuple(menu)
 menu = set(menu)
 # {'커피', '주스', '우유'} <class 'set'>
 </code></pre>
+    <div
+      style="margin: 100px auto; display: flex; flex-direction: row; align-content: center; justify-content: space-evenly; align-items: center;">
+      <a href="start.html">이전</a>
+      <span> | </span>
+      <span> 로직 </span>
+      <span> | </span>
+      <a href="exception.html">다음</a>
+    </div>
   </article>
 </body>
 

@@ -78,6 +78,7 @@ margin: 0 auto;">
 
 
     <h1>객체<sub>9_Class</sub></h1>
+    <h2>객체 생성</h2>
     <p>
       객체란 객체가 가진 특성(Attribute)과 기능(method)으로 정의됩니다. 객체 지향 프로그래밍은 코드 뭉치를 하나의 대상으로 취급하는 방법론입니다. 이 때 코딩은 인간의 인지와 유사하게
       작동합니다. 작은 개념들을 연결해서 더 큰 개념을 만들기 때문에 보다 직관적이고, 거대한 프로젝트를 가능하게 합니다. class 문법은 객체를 기술하는 방법을 제시합니다.
@@ -90,6 +91,7 @@ margin: 0 auto;">
       <li>(권장)객체명은 대문자로 시작하고(단어마다), '_'는 사용 X</li>
     </ul>
 
+    <span class="tutorial">9_Class > 00_Class.py</span>
     <pre><code class="python">class MyClass:
     i = 12345
 
@@ -101,7 +103,7 @@ print(MyClass.i) # 12345</code></pre>
 
     <h3>Instance</h3>
     <p>class는 '설계도', instance(인스턴스)는 '실체'입니다. <u>instance에서 호출되는 method는 self argument를 반드시 갖습니다.</u></p>
-
+    <span class="tutorial">9_Class > 00-1_Instance.py</span>
     <pre><code class="python">class MyClass:
     i = 12345
 
@@ -119,6 +121,7 @@ my1.seti(99999) # i = 99999</code></pre>
 
     <h2>초기화</h2>
     <p>instance가 생성될 때, 반드시 실행되는 method의 이름은 __init__ 내장변수를 사용합니다.</p>
+    <span class="tutorial">9_Class > 02_Init.py</span>
     <pre><code class="python">class MyClass:
     def __init__(self, i): # 초기화 할 수 있다. 생성시 반드시 호출된다.
         self.i = i
@@ -129,13 +132,15 @@ my1 = MyClass(777) # 초기화 i = 777
     <h2>method object</h2>
     <p>instance의 method를 복사한 것이 object로 볼 수 있는가에 대한 설명으로, python의 모든 것이 객체이므로 부를 수 있다와 애초에 복사된 method라는 주장이 가능하지만, 어쨌든
       공식적으로 "메서드 객체"라고 부릅니다.</p>
+    <span class="tutorial">9_Class > 03_method object.py</span>
     <pre><code class="python">my1 = MyClass(777)
 
 mo = my1.printi  # method object 생성
 
 mo()</code></pre>
 
-    <h2>attribute 관리</h2>
+    <h2>attribute 공유</h2>
+    <span class="tutorial">9_Class > 04_Instance Variable.py</span>
     <pre><code class="python">class Dog:
     kind = "canine"  # 모든 instance에 공유되는 class 변수
 
@@ -153,6 +158,7 @@ d.kind = "pooch"   # d.kind = pooch   > d: pooch , e: Hound
 Dog.kind = "Furry" # Dog.kind = Furry > d: pooch , e: Furry</code></pre>
 
     <h3>리스트인 경우</h3>
+    <span class="tutorial">9_Class > 04-1_List variable.py</span>
     <pre><code class="python">class Dog:
     tricks = []  # mistaken use of a class variable
 
@@ -163,6 +169,7 @@ d.add_trick("roll over") # ['roll over']
 e.add_trick("play dead") # ['roll over', 'play dead']</code></pre>
 
     <h3>각자 관리되는 리스트</h3>
+    <span class="tutorial">9_Class > 04-2_List variable2.py</span>
     <pre><code class="python">class Dog:
     def __init__(self, name):
         self.name = name
@@ -175,6 +182,7 @@ d.add_trick("roll over") # ['roll over']
 e.add_trick("play dead") # ['play dead']</code></pre>
 
     <h2>함수 결합</h2>
+    <span class="tutorial">9_Class > 05-Declaration.py</span>
     <pre><code class="python">def f1(self, x, y):  # outside the class
     return min(x, x + y)
 
@@ -190,6 +198,7 @@ class C:
     <p>
       상속은 이미 만든 객체에서 기능을 추가/변경 할 때 사용됩니다. 간단한 개념을 구현한 뒤에 조금의 노력으로 더 큰 개념을 구현할 수 있게 합니다.
     </p>
+    <span class="tutorial">9_Class > 06_Extends.py</span>
     <pre><code class="python"># 부모 클래스: Parent
 class Parent:
     def __init__(self, name):
@@ -211,12 +220,6 @@ child_instance = Child("Bob")
 print(parent_instance.greet())  # I am Alice, a Parent.
 print(child_instance.greet())  # I am Bob, a Child.</code></pre>
 
-    <h3>다중 상속</h3>
-    <pre><code class="python">class C(A, B):
-    def __init__(self, a, b):
-        A.__init__(self, a)
-        B.__init__(self, b)</code></pre>
-
     <h2>Super</h2>
     <p>
       부모의 객체게 자식의 객체에서 동일한 이름을 갖는 경우는 빈번하게 일어납니다. 그 이유는 동일한 기능을 업그레이드 하기 위함입니다. 이를 <u>오버라이딩(overriding)</u>이라고 합니다.
@@ -228,6 +231,7 @@ print(child_instance.greet())  # I am Bob, a Child.</code></pre>
     <p>
       이 때, 자식의 obj가 오버라이딩 되더라도 부모의 obj가 사라지는 것(덮어씌움)은 아니고, 감춰집니다. <u>"자식.부모.obj"를 호출하려면 super 키워드를 사용</u>합니다.
     </p>
+    <span class="tutorial">9_Class > 07_Super.py</span>
     <pre><code class="python">class Child(Parent):
     data = "Child" # Parent에도 data가 있음
     
@@ -238,43 +242,28 @@ print(child_instance.greet())  # I am Bob, a Child.</code></pre>
         super().show() # Parent의 show를 실행
 </code></pre>
 
-    <h2>다중 상속</h2>
-    <p>
-      <u>일부 언어(예: java, C#)에서는 다중 상속을 불허</u>합니다. 이유는 부모1과 부모2에 동일한 이름의 객체가 있을 때(충돌시), 호출의 모호함이 발생하기 때문입니다. 하지만 단일 속성 설계로
-      인해서 설계에 제약이 생기는 것도 사실입니다. <u>python에서는 다중상속을 지원하고(예: C++, python), 충돌이 있을 때, 우선 상속한 객체</u>를 따릅니다.
-    </p>
-    <pre><code class="python">class C(A, B):
-    def __init__(self):
-        super().__init__()
-
-class D(B, A):
-    def __init__(self):
-        super().__init__()
-
-c = C()  # A를 먼저 상속받음, A 호출
-d = D()  # B를 먼저 상속받음, B 호출</code></pre>
-
     <h3>다형성</h3>
+    <span class="tutorial">9_Class > 07-2_Polymorphism.py</span>
     <p>
       객체가 상속받을 때, 상속된 객체끼리는 속성과 메서드를 공유합니다. 따라서 상속받은 객체들의 이름이 다를지라도 충분히 코드를 재사용 할 수 있습니다.
     </p>
     <pre><code class="python">class Parent:
-    def hello(self):
-        return "I'm parent"
+def hello(self):
+return "I'm parent"
 
 class Child(Parent):
-    def hello(self):
-        return "I'm first child"
+def hello(self):
+return "I'm first child"
 
-    def hello2(self):
-        return "I'm first child"
+def hello2(self):
+return "I'm first child"
 
 class Child2(Parent):
-    def hello(self):
-        return "I'm second child"
+def hello(self):
+return "I'm second child"
 
 def greeting(person: Parent):  # person의 type이 Parent임을 힌트
-    print(f"Greeting: {person.hello()}")
+print(f"Greeting: {person.hello()}")
 
 p = Parent()
 c = Child()
@@ -289,21 +278,44 @@ greeting(c2) # Greeting: I'm second child</code></pre>
       다만 기존의 언어들(예: c, java)의 '컴파일 타입 강제'가 아닌, 힌트 제공의 역할만 수행합니다.
     </p>
     <pre><code class="python">def greeting2(person: Child):  # Child type으로 강제하지 않음
-    print(f"Greeting2: {person.hello()}")
+print(f"Greeting2: {person.hello()}")
 
 greeting2(p)  # 에러가 발생하지 않는다
 greeting2(c)
 
 class Stranger:
-    def hello(self):
-        return "I'm ananymous."
+def hello(self):
+return "I'm ananymous."
 
 s = Stranger()
 greeting2(s) # 심지어 힌트와 연간도 없음, 하지만 통과했죠</code></pre>
 
+    <h2>다중 상속</h2>
+    <span class="tutorial">9_Class > 08_Extends_Multi.py</span>
+    <pre><code class="python">class C(A, B):
+def __init__(self, a, b):
+    A.__init__(self, a)
+    B.__init__(self, b)</code></pre>
+
+    <p>
+      <u>일부 언어(예: java, C#)에서는 다중 상속을 불허</u>합니다. 이유는 부모1과 부모2에 동일한 이름의 객체가 있을 때(충돌시), 호출의 모호함이 발생하기 때문입니다. 하지만 단일 속성 설계로
+      인해서 설계에 제약이 생기는 것도 사실입니다. <u>python에서는 다중상속을 지원하고(예: C++, python), 충돌이 있을 때, 우선 상속한 객체</u>를 따릅니다.
+    </p>
+    <span class="tutorial">9_Class > 08-2_Preference.py</span>
+    <pre><code class="python">class C(A, B):
+def __init__(self):
+    super().__init__()
+
+class D(B, A):
+def __init__(self):
+    super().__init__()
+
+c = C()  # A를 먼저 상속받음, A 호출
+d = D()  # B를 먼저 상속받음, B 호출</code></pre>
+
     <h2>import</h2>
     <p>'import 폴더.클래스명' 또는 'import 폴더.클래스명.메서드'</p>
-
+    <span class="tutorial">9_Class > 09_Package.py</span>
     <pre><code class="python">import myPackage.myPack1
 pack = myPackage.myPack1.pack1()
 
@@ -317,6 +329,7 @@ pack = pack2()</code></pre>
     <p>
       Name Mangling(네임 맹글링)은 <var>__</var> 접두사를 추가하여 외부에서 접근하기 어렵게 만들었습니다.
     </p>
+    <span class="tutorial">10_Private > filename.py</span>
     <pre><code class="python">class Mapping:
     def __init__(self, iterable):
         self.items_list = []
@@ -343,6 +356,7 @@ mapping_subclass = MappingSubclass([4, 5, 6]) # [4, 5, 6]
 
     <h2>데이터 클레스</h2>
     <p>단순 정보 저장용 객체</p>
+    <span class="tutorial">9_Class > 11_Dataclass.py</span>
     <pre><code class="python">@dataclass
 class Employee:
     name: str
@@ -354,6 +368,7 @@ class Employee:
       <li>__next__()를 정의하는 iterator객체를 반환</li>
       <li>next()를 통해, __next__()를 호출하지만, 남은 요소가 없을 때, stopIteration예외가 발생</li>
     </ul>
+    <span class="tutorial">9_Class > 12_Iteration.py</span>
     <pre><code class="python">s = 'abc'
 it = iter(s)
 
@@ -365,6 +380,8 @@ print(next(it)) # StopIteration Error</code></pre>
     <h1>표준 라이브러리<sub>10_Std lib</sub></h1>
     <p>이 단원은 유용한 내장 모듈을 열거식으로 소개합니다.</p>
     <h2>디렉토리 정보조회, 생성, 변경</h2>
+    <span class="tutorial">10_Std lib > 01_Os interface.py</span>
+    <span class="tutorial">10_Std lib > 01-1_shutil.py</span>
     <pre><code class="python">import os
 
 os.getcwd()  # 현재 작업중인 디렉토리 정보 가져오기
@@ -372,6 +389,7 @@ os.chdir("otherDir")  # 작업디렉토리 변경
 os.system("mkdir data")  # data라는 디렉토리 생성</code></pre>
 
     <h2>디렉토리 내용조회</h2>
+    <span class="tutorial">10_Std lib > 02_Glob.py</span>
     <pre><code class="python">import glob
 
 files = glob.glob("*")
@@ -379,6 +397,7 @@ for file in files:
     print(file)</code></pre>
 
     <h2>입력인자 분석</h2>
+    <span class="tutorial">10_Std lib > 03_PrintArgs.py</span>
     <pre><code class="python">import sys
 
 print(sys.argv)
@@ -386,7 +405,7 @@ print(sys.argv)
 # 입력 예: c:/> python example.py abc de fgh
 # 출력 예: ['c:/example.py', 'abc', 'de', 'fgh']</code></pre>
 
-
+    <span class="tutorial">10_Std lib > 03-1_Argparse2.py</span>
     <pre><code class="python">import argparse
 
 parser = argparse.ArgumentParser(
@@ -405,6 +424,7 @@ args = parser.parse_args()
 </code></pre>
 
     <h2>에러출력과 종료</h2>
+    <span class="tutorial">10_Std lib > 04_Error redirection.py</span>
     <pre><code class="python">import sys
 
 sys.stderr.write("Warning, log file not found starting a new one\n")
@@ -415,7 +435,9 @@ print("running") # 출력되지 않음</code></pre>
 
     <h2>정규표현식</h2>
     <p>정규표현식(Regular Expression)은 문자열의 검색, 편집과 관련하여 정확한 문자열이 아닌 문자열 패턴을 기술하는 방법론입니다. 거의 모든 프로그램 언어 및 문서 편집기가 지원할 정도로
-      막강하고 보편적이지만 표현방식 숙지가 요구됩니다. 해당 칼럼은 <a href="/etc/column/regularExpress/regularExpress.html" target="_blank">여기</a>를 참고해주십시오.</p>
+      막강하고 보편적이지만 표현방식 숙지가 요구됩니다. 해당 칼럼은 <a href="/etc/column/regularExpress/regularExpress.html"
+        target="_blank">여기</a>를 참고해주십시오.</p>
+    <span class="tutorial">10_Std lib > 05_Re.py</span>
     <pre><code class="python">import re
 
 r = re.findall(r"\bf[a-z]*", "which foot or hand fell fastest")
@@ -425,6 +447,7 @@ r = re.sub(r"(\b[a-z]+) \1", r"\1", "cat in the the hat")
 # cat in the hat</code></pre>
 
     <h2>통계</h2>
+    <span class="tutorial">10_Std lib > 06_Statistics.py</span>
     <pre><code class="python">import statistics
 
 data = [2.75, 1.75, 1.25, 0.25, 0.5, 1.25, 3.5]
@@ -434,6 +457,7 @@ statistics.variance(data) # 분산
 </code></pre>
 
     <h2>크롤링</h2>
+    <span class="tutorial">10_Std lib > 07_Internet access.py</span>
     <pre><code class="python">from urllib.request import urlopen
 
 site = "iseohyun.com"
@@ -445,6 +469,7 @@ with open(f"10_Std lib/{site}.html", "w+", encoding="utf8") as f:
             f.write(line.rstrip())</code></pre>
 
     <h2>압축과 해제</h2>
+    <span class="tutorial">10_Std lib > 08_zlib.py</span>
     <pre><code class="python">### 압축 : zlib, gzip, bz2, lzma, zipfile, tarfile 지원 ###
 import zlib
 
@@ -458,6 +483,7 @@ zlib.crc32(s) # CRC코드: 226805979 - 압축 해시, 확인용
 </code></pre>
 
     <h2>성능 측정</h2>
+    <span class="tutorial">10_Std lib > 9_Performace.py</span>
     <pre><code class="python">from timeit import Timer
 
 print(Timer("t=a; a=b; b=t", "a=1; b=2").timeit())  # 1번 임시변수
@@ -472,6 +498,7 @@ print(Timer("a,b = b,a", "a=1; b=2").timeit())  # 2번 튜플 언패킹(승)
     <h2>코드 테스트(검증)</h2>
     <ul>
       <li>방법 1
+        <span class="tutorial">10_Std lib > 10_Doctest.py</span>
         <pre><code class="python">def average(values):
     """Computes the arithmetic mean of a list of numbers.
 
@@ -487,6 +514,7 @@ import doctest
 resault = doctest.testmod()  # >>>로 정의된 TC(Test Case)를 수행합니다.</code></pre>
       </li>
       <li> 방법 2
+        <span class="tutorial">10_Std lib > 10-1_unittest.py</span>
         <pre><code class="python">import unittest
 
 def average(values):
@@ -509,6 +537,7 @@ resault = unittest.main()  # 테스트 수행
     <h2>인터프리터 출력</h2>
     <ul>
       <li> 너비 조정
+        <span class="tutorial">10_Std lib > 11_reprlib.py</span>
         <pre><code class="python">import reprlib
 
 print(set("supercalifragilisticexpialidocious"))
@@ -518,6 +547,7 @@ print(reprlib.repr(set("supercalifragilisticexpialidocious")))
 # {'a', 'c', 'd', 'e', 'f', 'g', ...}</code></pre>
       </li>
       <li> 자료형 정렬
+        <span class="tutorial">10_Std lib > 11-1_pprint.py</span>
         <pre><code class="python">import pprint
 
 t = [[[["black", "cyan"], "white", ["green", "red"]], [["magenta", "yellow"], "blue"]]]
@@ -531,6 +561,7 @@ pprint.pprint(t, width=30)
 #    'blue']]]</code></pre>
       </li>
       <li> 출력 폭 변경
+        <span class="tutorial">10_Std lib > 11-2_textwrap.py</span>
         <pre><code class="python">import textwrap
 doc = """The wrap() method is just like fill() except that it returns
 a list of strings instead of one big string with newlines to separate
@@ -544,6 +575,7 @@ print(textwrap.fill(doc, width=40))
 # to separate the wrapped lines.</code></pre>
       </li>
       <li> 출력 형식 변경
+        <span class="tutorial">10_Std lib > 11-3_locale.py</span>
         <pre><code class="python">import locale
 
 locale.setlocale(locale.LC_ALL, "English_United States.1252")
@@ -563,6 +595,7 @@ print(locale.format_string(
     </ul>
 
     <h2>템플릿</h2>
+    <span class="tutorial">10_Std lib > 12_template.py</span>
     <pre><code class="python">from string import Template
 
 t = Template("$village에서 $cause으로 10,000원을 기부해주셨습니다.")
@@ -574,6 +607,7 @@ print(t.safe_substitute(village="부산", cause="현장모금"))
 # 부산에서 현장모금으로 10,000원을 기부해주셨습니다.</code></pre>
 
     <h2>쓰레드(멀티테스킹)</h2>
+    <span class="tutorial">10_Std lib > 13_Thread.py</span>
     <pre><code class="python">import threading
 import time
 
@@ -610,6 +644,7 @@ thread2.join()</code></pre>
       <li>빈도 &lt;&lt;&lt;&lt; DEBUG - INFO - WARNING - ERROR - CRITICAL >>> 중요도</li>
       <li>예시. 출력레벨=WARNING (WARNING, ERROR, CRITICAL만 보여줌)</li>
     </ul>
+    <span class="tutorial">10_Std lib > 14_log.py</span>
     <pre><code class="python">import logging
 logging.basicConfig(level=logging.DEBUG)  # 기본 로깅 수준을 DEBUG로 설정
 
@@ -620,6 +655,7 @@ logging.error('Error occurred')
 logging.critical('Critical error -- shutting down')</code></pre>
 
     <h2>약한 참조</h2>
+    <span class="tutorial">10_Std lib > 15_Weakref.py</span>
     <pre><code class="python">class A:
     def __init__(self, value):
         self.value = value
@@ -640,6 +676,7 @@ gc.collect()  # Step 5. garbage collection(메모리에서 제거)
 print(d["primary"]) # Step 6. 약한참조 조회 - ERROR: 존재하지않음</code></pre>
 
     <h2>리스트(내장형)</h2>
+    <span class="tutorial">10_Std lib > 16_Array.py</span>
     <pre><code class="python">from array import array
 
 a = array("H", [4000, 10, 700, 22222])  # 'H'는 부호없는 2byte숫자를 의미(0 ~ 65,536)
@@ -657,6 +694,7 @@ bisect.insort(scores, (300, "ruby")) # 순서에 맞춰 중간에 들어감
 # [(100, 'perl'), (200, 'tcl'), (300, 'ruby'), (400, 'lua'), (500, 'python')]</code></pre>
 
     <h3>2진 트리</h3>
+    <span class="tutorial">10_Std lib > 16-4_Heapq.py</span>
     <pre><code class="python">from heapq import heapify, heappop, heappush
 
 data = [1, 3, 5, 7, 9, 2, 4, 6, 8, 0]
@@ -749,21 +787,32 @@ print([heappop(data) for i in range(3)])  # fetch the three smallest entries</co
       2진수의 소수점 표현과 관련된 자세한 정보는
       <a href="/etc/column/binary/binary.html" target="_blank">이곳</a>을 참고하십시오.
     </p>
+    <span class="tutorial">10_Std lib > 17_Decimal.py</span>
     <pre><code class="python">from decimal import *
 
 print(Decimal("1.00") % Decimal(".10")) # 1을 0.1로 나누면... : 0 (정상)
 print(1.00 % 0.10) # 0.09999999999999995 (비정상)
 </code></pre>
-<p>
-  파이썬 예제에서, 1행과 2행의 비교가 부자연스러운 이유(sum함수 적용 유무, 동일 조건이 아님)는 파이썬 내장 함수 sum에서 유효자리 보정을 지원하기 때문이다.
-</p>
-<pre><code class="python">print(sum([Decimal("0.1")] * 10) == Decimal("1.0")) # true
+    <p>
+      파이썬 예제에서, 1행과 2행의 비교가 부자연스러운 이유(sum함수 적용 유무, 동일 조건이 아님)는 파이썬 내장 함수 sum에서 유효자리 보정을 지원하기 때문이다.
+    </p>
+    <pre><code class="python">print(sum([Decimal("0.1")] * 10) == Decimal("1.0")) # true
 print(0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 == 1.0) # false
 
 # 파이썬 내장 함수가 오류를 예방해준다.
 print(sum([0.1] * 10) == 1) # true</code></pre>
 
-<p>따라서, sum 함수를 멍청(단순)하게 업그레이드 해주면, 정상적으로 Fail 할 수 있습니다.</p>
+    <p>따라서, sum 함수를 멍청(단순)하게 업그레이드 해주면, 정상적으로 Fail 할 수 있습니다.</p>
+
+    <div
+      style="margin: 100px auto; display: flex; flex-direction: row; align-content: center; justify-content: space-evenly; align-items: center;">
+      <a href="exception.html">이전</a>
+      <span> | </span>
+      <span> 객체지향 </span>
+      <span> | </span>
+      <span>마지막</span>
+    </div>
+
   </article>
 </body>
 

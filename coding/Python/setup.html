@@ -45,24 +45,47 @@
 
     <div style="width: 90%; border: 1px solid black; padding: 15px; border-radius: 15px;
 margin: 0 auto;">
-      <details close>
+      <details open>
         <summary onclick="event.stopPropagation();">목차보기</summary>
-        <ul>
-          <li><a href="setup.html">환경구축하기</a> : <b>실습 준비</b>, 프로그램, 예제코드 다운로드 방법</li>
-          <li><a href="start.html#시작하기1_HelloWorld">시작하기 1_HelloWorld</a> : 예제코드 실행 및 <b>코드 보는 방법</b></li>
-          <li><a href="start.html#변수2_variable">변수 2_variable</a> : 데이터를 <b>순서대로 읽고,</b> 쓰는(<b>저장</b>하는) 방법</li>
-          <li><a href="start.html#출력%20테크닉3_print">출력 테크닉 3_print</a> : 저장된 데이터를 잘<b>(보기 좋게) 출력</b>하는 방법</li>
-          <li><a href="logic.html#로직4_Logic">로직 4_Logic</a> : 조건에 따라 <b>실행 순서를 변경</b>(추가, 건너뜀, 반복)하는 방법</li>
-          <li><a href="logic.html#함수5_Function">함수 5_Function</a> : 만들어진 <b>로직을 재사용</b> 하는 방법</li>
-          <li><a href="logic.html#콜렉션6_Collections">콜렉션 6_Collections</a> : [저장 단위 확장] 코드에 사용될 데이터를 <b>묶음 단위로 사용</b>하는
-            방법</li>
-          <li><a href="exception.html#모듈7_Module">모듈 7_Module</a> : [프로그램 연계] 작성한(작성된) 코드를 <b>파일 단위</b>로(또는 더 큰 단위로) 가져다
-            쓰는 방법</li>
-          <li><a href="exception.html#예외8_Exception ">예외 8_Exception</a> : 프로그램 <b>오류에 대한</b> 대처</li>
-          <li><a href="object.html#객체9_Class">객체 9_Class</a> : [더 큰 프로젝트] 프로그램을 <b>순서지가 아닌 객체로</b>(대상으로) 대하는 자세(문법)</li>
-          <li><a href="object.html#표준%20라이브러리 10_Std lib">표준 라이브러리 10_Std lib</a> : <b>기본</b>으로 <b>제공</b>되는
-            객체(<b>예제</b>)</li>
-        </ul>
+        <ol style="margin-left: 2em;">
+          <li>준비하기
+            <ul>
+              <li><a href="setup.html">환경구축하기</a> : <b>실습 준비</b>(프로그램 설치, 환경 설정, 예제코드 다운로드)</li>
+            </ul>
+          </li>
+          <li>읽고, 쓰기
+            <ul>
+              <li><a href="start.html#시작하기1_HelloWorld">시작하기 1_HelloWorld</a> : 예제코드 실행 및 <b>코드 보는 방법</b> </li>
+              <li><a href="start.html#변수2_variable">변수 2_variable</a> : 데이터를 <b>순서대로 읽고,</b> 쓰는(<b>저장</b>하는) 방법</li>
+              <li><a href="start.html#출력%20테크닉3_print">출력 테크닉 3_print</a> : 저장된 데이터를 잘<b>(보기 좋게) 출력</b>하는 방법</li>
+            </ul>
+          </li>
+          <li>논리 구조 만들기
+            <ul>
+              <li><a href="logic.html#로직4_Logic">로직 4_Logic</a> : 조건에 따라 <b>실행 순서를 변경</b>(추가, 건너뜀, 반복)하는 방법</li>
+              <li><a href="logic.html#함수5_Function">함수 5_Function</a> : 만들어진 <b>로직을 재사용</b> 하는 방법</li>
+              <li><a href="logic.html#콜렉션6_Collections">콜렉션 6_Collections</a> : [저장 단위 확장] 코드에 사용될 데이터를 <b>묶음 단위로
+                  사용</b>하는
+                방법</li>
+            </ul>
+          </li>
+          <li>내장함수와 에러처리
+            <ul>
+              <li><a href="exception.html#모듈7_Module">모듈 7_Module</a> : [프로그램 연계] 작성한(작성된) 코드를 <b>파일
+                  단위</b>로(또는 더 큰 단위로) 가져다
+                쓰는 방법</li>
+              <li><a href="exception.html#예외8_Exception ">예외 8_Exception</a> : 프로그램 <b>오류에 대한</b> 대처</li>
+            </ul>
+          </li>
+          <li>객체 지향이란
+            <ul>
+              <li><a href="object.html#객체9_Class">객체 9_Class</a> : [더 큰 프로젝트] 프로그램을 <b>순서지가 아닌
+                  객체로</b>(대상으로) 대하는 자세(문법)</li>
+              <li><a href="object.html#표준%20라이브러리 10_Std lib">표준 라이브러리 10_Std lib</a> : <b>기본</b>으로 <b>제공</b>되는
+                객체(<b>예제</b>)</li>
+            </ul>
+          </li>
+        </ol>
       </details>
     </div>
 
@@ -77,6 +100,10 @@ margin: 0 auto;">
     <img src="/source/coding.svg">
 
     <h2>에디터</h2>
+    <p>
+      메모장으로도 충분히 코딩이 가능합니다. C, Java, Phthon을 메모장으로 코딩하고 컴파일, 실행하는 영상[<a
+        href="https://www.youtube.com/watch?v=TLqLKbmBOrk" target="_blank">링크</a>]입니다.
+    </p>
     <p>기본적으로 <u>'메모장'을 사용해도 무방하나</u>, 가독성 및 코드추천 및 빌드, 디버깅 자동화로 인해 대세 에디터를 사용합니다. 추천하는 에디터는 vscode이며, 설치는 <a
         href="https://code.visualstudio.com/download" target="_blank">https://code.visualstudio.com/download</a>에서, 사용법은
       <a href="/etc/column/vscode/start.html">여기</a>를 참고합니다.
@@ -87,13 +114,14 @@ margin: 0 auto;">
       다운받아 설치합니다.</p>
     <h3>컴파일러-에디터 연결하기</h3>
     <p>컴파일러-에디터 연결이라 함은, 에디터에서 단축키를 눌렀을 때, 자주 사용하는 입력을 자동으로 컴파일러에서 수행해주는 행위를 말합니다.</p>
-    <p>Extensions:Marketplace(<var>ctrl</var> + <var>shift</var> + <var>x</var>)에서 "Python"과 "Python Debugger"를 검색하여
+    <p>Extensions:Marketplace(<var>ctrl</var> + <var>shift</var> + <var>x</var>)에서 "<q>Python</q>"과 "<q>Python
+        Debugger</q>"를 검색하여
       설치합니다.</p>
 
     <h2>소스코드(실습코드) 불러오기</h2>
     <p>
-      <a href="https://github.com/iseohyun/python-example.git"
-        target="_blank">https://github.com/iseohyun/python-example.git</a> (클립보드에 복사)
+    <blockquote><a href="https://github.com/iseohyun/python-example.git"
+        target="_blank">https://github.com/iseohyun/python-example.git</a></blockquote>
     </p>
     <p>
       실습코드는 python공식 <a href="https://docs.python.org/ko/3.13/tutorial/" target="_blank">홈페이지의 튜토리얼(ver 3.13)</a> 예제코드와
@@ -105,6 +133,15 @@ margin: 0 auto;">
       src="https://docs.google.com/presentation/d/e/2PACX-1vRk3ztUIwfdXE8i8JWQoTc1POYUuVOyrWA2LTUXJZXOQLpq8uZ8Gf9kY1wNJDV1DHQK6y-IipaK_-QF/embed?start=false&loop=false&delayms=3000"
       frameborder="0" width="960" height="569" allowfullscreen="true" mozallowfullscreen="true"
       webkitallowfullscreen="true"></iframe>
+
+    <div
+      style="margin: 100px auto; display: flex; flex-direction: row; align-content: center; justify-content: space-evenly; align-items: center;">
+      <span>이전</span>
+      <span> | </span>
+      <span> 환경설정하기 </span>
+      <span> | </span>
+      <a href="start.html">다음</a>
+    </div>
   </article>
 </body>
 
