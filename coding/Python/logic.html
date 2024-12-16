@@ -163,6 +163,23 @@ for i in range(1, 5):  # 1이상 5미만
       <img src="../svg/for.svg" style="width:40%">
     </div>
 
+    <h3>for ... else</h3>
+    <p>
+      for ... else는 for문이 break없이 모두 수행 되었을 때, 수행합니다.
+    </p>
+    <span class="tutorial">4_Logic > 03-2_For_else.py</span>
+    <pre><code class="python">for i in range(5):
+    print(i, end=" ")
+else:
+    print("for else #1") # 수행 됩니다.
+
+for i in range(5):
+    if i == 3:
+        break
+    print(i, end=" ")
+else:
+    print("for else #2") # 수행되지 않습니다.</code></pre>
+
     <h2>while</h2>
     <div style="display: flex; justify-content: space-around;">
       <div style="width: 40%;">
@@ -309,10 +326,10 @@ func1(); # x=1</code></pre>
 add(10, 20)</code></pre>
       </li>
       <li><b>Keyword</b> : 인자명을 명시하여 값을 전달
-        <pre><code class="python">def func1(x, y, z):
-    print(x, y, z)
+        <pre><code class="python">def func1(arg1, arg2):
+    print(f"Data : {arg1}, {arg2}")
 
-func1(y=8, z=9, x=10)  # 순서 무관</code></pre>
+func1(arg2=100, arg1=200)  # 순서 무관</code></pre>
       </li>
       <li><b>combined</b> : 특수 기호를 사용해서, 해당 argument의 속성을 지정
         <blockquote>
@@ -615,6 +632,13 @@ del a[2:4] # [1, 2, 5]
 del a[:] # []</code></pre>
 
     <h2>tuple</h2>
+    <p>튜플의 특징은 불변(선언하면 추후에 변경이 불가함)입니다. 단순 나열이라는 성질은 리스트와 동일한데, 굳이 튜플을 사용하는 이유는:</p>
+    <ol>
+      <li>나중이라도 데이터가 변경되면 안 될 때(해쉬(지문)이라던가, 원본데이터 라든가)</li>
+      <li>(리스트보다) 더 적은 메모리 사용</li>
+      <li>(리스트보다) 더 빠른 성능</li>
+      <li>의도를 명확히 하고자 (이 변수는 앞으로 불변입니다.)</li>
+    </ol>
     <span class="tutorial">6_Collections > 02_Tuples.py</span>
     <pre><code class="python">t = (12345, 54321, "hello!")
 t2 = 12345, 54321, "hello!" # 생략 가능

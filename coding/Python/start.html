@@ -174,10 +174,10 @@ print("This file is encorded by EUC-KR. EUC-KR로 인코딩 된 파일입니다.
     <p>변수의 이름에는 작명 규칙이 존재합니다. (참고 : <a href="https://peps.python.org/pep-0008/#naming-conventions"
         target="_blank">파이썬-스타일가이드-이름 규칙(링크)</a>)</p>
     <ul>
-      <li>(필수)사용 가능한 문자: 알파벳(a-z, A-Z), 숫자(0-9), 밑줄(_, underbar)</li>
-      <li>(필수)숫자 시작 X (var1 (o), 1var (x))</li>
-      <li>(필수)대소문자를 구분 (Abc != abc)</li>
-      <li>(필수)예약어(keywords, 제어를 위해 미리 약속된 단어) X</li>
+      <li>(필수) 사용 가능한 문자: 알파벳(a-z, A-Z), 숫자(0-9), 밑줄(_, undersocre)</li>
+      <li>(필수) 숫자 시작 X (var1 (o), 1var (x))</li>
+      <li>(필수) 대소문자를 구분 (Abc != abc)</li>
+      <li>(필수) 예약어(keywords, 제어를 위해 미리 약속된 단어) X</li>
       <li><u>(권장) 소문자를 사용하십시오</u></li>
       <li>(권장) 명확하고 간결하게 (문장x)</li>
       <li>(권장) 두 단어 사이에 "_"를 사용합니다 (추가 "_" 용법)
@@ -481,6 +481,141 @@ complex_num1 = 3 + 4j # 복소수(complex number)
           <td>속성 접근</td>
           <td>obj.attr</td>
           <td>속성 값</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table class="all-td-center">
+      <caption>진리표(truth table)</caption>
+      <thead>
+        <tr>
+          <th colspan="2" style="border-right: 1px solid #000;">조건</th>
+          <th>모두 참이어야</th>
+          <th>하나라도 참이라면</th>
+          <th>참이 홀수라면</th>
+        </tr>
+        <tr>
+          <th>A</th>
+          <th style="border-right: 1px solid #000;">B</th>
+          <th>AND</th>
+          <th>OR</th>
+          <th>XOR</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>false (0)</td>
+          <td style="border-right: 1px solid #000;">false (0)</td>
+          <td>false (0)</td>
+          <td>false (0)</td>
+          <td>false (0)</td>
+        </tr>
+        <tr>
+          <td>false (0)</td>
+          <td style="background-color: #ddd;border-right: 1px solid #000;">true (1)</td>
+          <td>false (0)</td>
+          <td style="background-color: #ddd;">true (1)</td>
+          <td style="background-color: #ddd;">true (1)</td>
+        </tr>
+        <tr>
+          <td style="background-color: #ddd;">true (1)</td>
+          <td style="border-right: 1px solid #000;">false (0)</td>
+          <td>false (0)</td>
+          <td style="background-color: #ddd;">true (1)</td>
+          <td style="background-color: #ddd;">true (1)</td>
+        </tr>
+        <tr>
+          <td style="background-color: #ddd;">true (1)</td>
+          <td style="background-color: #ddd;border-right: 1px solid #000;">true (1)</td>
+          <td style="background-color: #ddd;">true (1)</td>
+          <td style="background-color: #ddd;">true (1)</td>
+          <td>false (0)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table class="all-td-center">
+      <caption>진리표(truth table) 3단</caption>
+      <thead>
+        <tr>
+          <th colspan="3" style="border-right: 1px solid #000;">조건</th>
+          <th>모두 참이어야</th>
+          <th>하나라도 참이라면</th>
+          <th>참이 홀수라면</th>
+        </tr>
+        <tr>
+          <th>A</th>
+          <th>B</th>
+          <th style="border-right: 1px solid #000;">C</th>
+          <th>AND</th>
+          <th>OR</th>
+          <th>XOR</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>false (0)</td>
+          <td>false (0)</td>
+          <td style="border-right: 1px solid #000;">false (0)</td>
+          <td>false (0)</td>
+          <td>false (0)</td>
+          <td>false (0)</td>
+        </tr>
+        <tr>
+          <td>false (0)</td>
+          <td>false (0)</td>
+          <td style="background-color: #ddd; border-right: 1px solid #000;">true (1)</td>
+          <td>false (0)</td>
+          <td style="background-color: #ddd;">true (1)</td>
+          <td style="background-color: #ddd;">true (1)</td>
+        </tr>
+        <tr>
+          <td>false (0)</td>
+          <td style="background-color: #ddd;">true (1)</td>
+          <td style="border-right: 1px solid #000;">false (0)</td>
+          <td>false (0)</td>
+          <td style="background-color: #ddd;">true (1)</td>
+          <td style="background-color: #ddd;">true (1)</td>
+        </tr>
+        <tr>
+          <td>false (0)</td>
+          <td style="background-color: #ddd;">true (1)</td>
+          <td style="background-color: #ddd; border-right: 1px solid #000;">true (1)</td>
+          <td>false (0)</td>
+          <td style="background-color: #ddd;">true (1)</td>
+          <td>false (0)</td>
+        </tr>
+        <tr>
+          <td style="background-color: #ddd;">true (1)</td>
+          <td>false (0)</td>
+          <td style="border-right: 1px solid #000;">false (0)</td>
+          <td>false (0)</td>
+          <td style="background-color: #ddd;">true (1)</td>
+          <td style="background-color: #ddd;">true (1)</td>
+        </tr>
+        <tr>
+          <td style="background-color: #ddd;">true (1)</td>
+          <td>false (0)</td>
+          <td style="background-color: #ddd; border-right: 1px solid #000;">true (1)</td>
+          <td>false (0)</td>
+          <td style="background-color: #ddd;">true (1)</td>
+          <td>false (0)</td>
+        </tr>
+        <tr>
+          <td style="background-color: #ddd;">true (1)</td>
+          <td style="background-color: #ddd;">true (1)</td>
+          <td style="border-right: 1px solid #000;">false (0)</td>
+          <td>false (0)</td>
+          <td style="background-color: #ddd;">true (1)</td>
+          <td>false (0)</td>
+        </tr>
+        <tr>
+          <td style="background-color: #ddd;">true (1)</td>
+          <td style="background-color: #ddd;">true (1)</td>
+          <td style="background-color: #ddd; border-right: 1px solid #000;">true (1)</td>
+          <td style="background-color: #ddd;">true (1)</td>
+          <td style="background-color: #ddd;">true (1)</td>
+          <td style="background-color: #ddd;">true (1)</td>
         </tr>
       </tbody>
     </table>
