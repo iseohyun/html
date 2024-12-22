@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <!-- 모바일 스케일 고정 -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta description="git의 원격서버 이용방법에 대한 설명">
+  <meta keywords="remote, 정보 공유, 자유주제">
+  <meta author="iseohyun">
+  <!-- 페이지 타이틀 -->
+  <title>정보 공유: 자유주제</title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>window.dataLayer = window.dataLayer || []; function gtag() { dataLayer.push(arguments); } gtag('js', new Date()); gtag('config', 'G-453XSP5W9M');</script>
+  <!-- 소스코드 스타일 -->
+  <link rel="stylesheet" href="/highlight/styles/base16/classic-light.min.css" />
+  <script src="/highlight/highlight.min.js"></script>
+  <script src="/highlight/highlightjs-line-numbers.js"></script>
+  <script>hljs.highlightAll(); hljs.initLineNumbersOnLoad();</script>
+  <!-- 수식 -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <!-- 차트 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- 목차 생성 -->
+  <script src="/modules/hd_list.js" defer></script>
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("/style.css");
+  </style>
+</head>
+
+<body>
+  <article>
+    <div id="title">정보 공유</div>
+    <h1>복제</h1>
+    <p>
+      git repository의 복사는 <u>단순 파일 복사</u> 외에 <u>config, log, history 복사</u> 및 <u>원본 repository와의 연결을 기억</u>하여 sync를 쉽게
+      맞출 수 있게 합니다.
+    </p>
+
+    <h2>Clone</h2>
+    <table class="last-td-left last-second-td-left">
+      <caption>복제 프로토콜</caption>
+      <thead>
+        <tr>
+          <th>위치</th>
+          <th>프로토콜</th>
+          <th>설명</th>
+          <th>예시</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>로컬</td>
+          <td>-</td>
+          <td>다른 폴더에 복사합니다.</td>
+          <td>git clone .\myProject\ clonePrj</td>
+        </tr>
+        <tr>
+          <td rowspan="4">원격</td>
+          <td>SSH</td>
+          <td>- 가장 일반적<br>
+            - 암호화된 안전한 연결</td>
+          <td>git clone git@&lt;server-ip>:&lt;repo>.git</td>
+        </tr>
+        <tr>
+          <td>HTTP/HTTPS</td>
+          <td>- 웹 서비스 채널(방화벽 우회 가능성)<br>
+            - HTTPS: SSL 보안</td>
+          <td>git clone https://&lt;server-ip>/&lt;repo>.git</td>
+        </tr>
+        <tr>
+          <td>Git</td>
+          <td>- Git 전용 프로토콜<br>
+            - 매우 빠른 속도 제공<br>
+            - 보안이 상대적으로 낮음</td>
+          <td>git clone git://&lt;server-ip>/&lt;repo>.git</td>
+        </tr>
+        <tr>
+          <td>FTP/SFTP</td>
+          <td>
+            - 파일 전송 채널(방화벽 우회 가능성)<br>
+            - 일반적으로 SFTP 사용(암호화)</td>
+          <td>git clone sftp://&lt;server-ip>/&lt;repo>.git</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      ※ 원격 복사에서 서버가 인증 정보를 요구하는 경우, 서버에 미리 인증 정보를 등록해야 합니다.
+    </p>
+
+    <h3>clone 예시(로컬):</h3>
+    <blockquote class="shell">
+      <pre>C:\> <span style="color:yellow">git</span> clone .\myProject\ clonePrj
+Cloning into 'clonePrj'...
+done.
+C:\> <span style="color:yellow">cd</span> .\clonePrj\
+C:\clonePrj> <span style="color:yellow">git</span> log
+<span style="color:goldenrod">commit e8d0165528478436ec15f6562fece49d2f18da06 (<span style="color:cyan">HEAD -></span> <span style="color:#0F0">master</span>, <span style="color:red">origin/master</span>, <span style="color:red">origin/HEAD</span>)</span>
+Author: Seohyun Jung &lt;iseohyun@hanmail.net>
+Date:   Sun Dec 22 20:56:19 2024 +0900
+
+    last</pre>
+    </blockquote>
+
+    <h2>Push/Pull</h2>
+
+    <h1>github</h1>
+    <h2>인증서</h2>
+    <h2>setting</h2>
+    <h3>repo생성</h3>
+    <h3>인증서 등록</h3>
+
+    <h1>문제 해결</h1>
+    <h2>push 번복</h2>
+    <div class="page-move">
+      <span><a href="git.html">기초 사용법</a></span>
+      <span> &DoubleLongLeftArrow; </span>
+      <span> 정보 공유 </span>
+      <span> &DoubleLongRightArrow; </span>
+      <span><a href="branch.html">병렬 처리</a></span>
+    </div>
+  </article>
+</body>
+
+</html>
