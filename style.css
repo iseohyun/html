@@ -190,12 +190,18 @@ table.last-td-left td:last-child {
   padding-left: 10px;
 }
 
-table.snd-last-td-left td:nth-last-child(2) {
+table.snd-last-td-left td:nth-last-child(2),
+table.last-second-td-left td:nth-last-child(2) {
   text-align: left;
   padding-left: 10px;
 }
 
 table.first-td-left td:first-child {
+  text-align: left;
+  padding-left: 10px;
+}
+
+table.second-td-left td:nth-child(2) {
   text-align: left;
   padding-left: 10px;
 }
@@ -351,6 +357,16 @@ blockquote {
   line-height: 1.5em;
   text-align: left;
   position: relative;
+  overflow-y: hidden;
+}
+
+blockquote.shell {
+  background: #000;
+  color: #FFF;
+  font-style: normal;
+  padding: 1px 1em;
+  border: 0;
+  margin: 1em;
 }
 
 .blockquote-title,
@@ -816,6 +832,7 @@ pre {
   font-family: var(--font-monospace);
   white-space: pre-wrap;
   overflow-x: auto;
+  overflow-y: hidden;
   position: relative;
 }
 
@@ -832,16 +849,21 @@ pre .copy-button {
   opacity: 0;
   position: absolute;
   width: 50px;
-  height: 30px;
+  height: 1.4em;
   color: white;
   background-color: black;
-  top: 7%;
-  right: 5%;
+  top: 0;
+  right: 0;
+  border: 1px solid #FFF;
   border-radius: 15px;
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 10;
+}
+
+blockquote .copy-button:hover,
+pre .copy-button:hover {
+  cursor:grab
 }
 
 code {
@@ -1212,6 +1234,24 @@ button.quiz2 {
 
 .clear-left {
   clear: both;
+}
+
+div.page-move {
+  margin: 250px auto 0;
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+div.page-move>span:nth-child(1),
+div.page-move>span:nth-child(5) {
+  font-size: 1.1em
+}
+
+div.page-move>span:nth-child(3) {
+  font-size: 1.7em
 }
 
 @media screen and (max-width: 400px) {
