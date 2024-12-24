@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 250 190" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <marker id="marker01" markerWidth="7" markerHeight="6" viewBox="0 -3 6 6" orient="auto">
+      <path d="M0 -2L5 0 0 2 5 0 0 0 5 0 0-2" stroke="#000" />
+    </marker>
+    <marker id="marker02" markerWidth="7" markerHeight="6" viewBox="-5 -3 6 6" orient="auto">
+      <path d="M0 -2L-5 0 0 2 -5 0 0 0 -5 0 0-2" stroke="#000" />
+    </marker>
+  </defs>
+  <g style="stroke:#000; fill:#FFF">
+    <rect x="10" y="30" width="80" height="40" />
+    <path d="M90 40h60" marker-end="url(#marker01)" />
+    <rect x="157" y="30" width="80" height="40" />
+    <path d="M157 60h-60" marker-end="url(#marker01)" />
+    <rect x="10" y="120" width="80" height="40" />
+    <path d="M35 70v43" marker-end="url(#marker01)" />
+    <path d="M65 70v43" marker-end="url(#marker01)" />
+    <path d="M100 140h100v-60" marker-end="url(#marker01)" marker-start="url(#marker02)" stroke-dasharray="3" />
+  </g>
+  <g style="text-anchor:middle; dominant-baseline: middle;">
+    <text x="50" y="50">original</text>
+    <text x="197" y="50">clone 1</text>
+    <text x="50" y="140">clone 2</text>
+    <g style="font-size:10px">
+      <text x="120" y="35">① clone</text>
+      <text x="0" y="0" transform="translate(41,92) rotate(90)">① clone</text>
+      <text x="120" y="55">② push</text>
+      <text x="0" y="0" transform="translate(71,92) rotate(90)">③ pull</text>
+      <text x="170" y="130">sync</text>
+    </g>
+  </g>
+</svg>
