@@ -1,0 +1,38 @@
+ul#update-list {
+  width: 95%;
+  margin: 0 auto 300px;
+  border: 1px solid #aaa;
+  padding: 1em;
+  border-radius: 22px;
+}
+
+ul#update-list li {
+  margin-bottom: 1em;
+}
+
+ul#update-list li::marker {
+  content: "";
+}
+
+ul#update-list div {
+  margin: 1px 0 5px 2em;
+}
+
+ul#update-list span.date {
+  font-size: 0.8em;
+  color: #999;
+}
+
+ul#update-list span.content {
+  display: block;
+  font-size: 0.9em;
+  color: #444;
+}
+
+ul#update-list a:visited {
+  color: #44c;
+}
+
+ul#update-list a:visited {
+  color: #44c;
+}
