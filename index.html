@@ -33,7 +33,7 @@
       column-width: 10rem;
       text-align: justify;
       width: 95%;
-      margin: 0 auto 30vh;
+      margin: 0 auto 10vh;
     }
 
     #search {
@@ -160,7 +160,7 @@
     @media screen and (max-width: 500px) {
       #main {
         column-count: 1;
-        margin-bottom: 50vh;
+        margin-bottom: 10vh;
       }
 
       #search {
@@ -232,6 +232,8 @@
     </div> -->
 
     <div id="main"></div>
+
+    <ul id="update-list"></ul>
   </article>
   <footer>
     <div>
@@ -313,3 +315,12 @@
     return div;
   }
 </script>
+
+  <!-- 업데이트 관련 -->
+  <script src="update.js"></script>
+  <script>
+    getUpdateList(cnt = 10);
+  </script>
+  <style>
+    @import url("update.css");
+  </style>
