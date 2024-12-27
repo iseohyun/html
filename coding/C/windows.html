@@ -22,16 +22,12 @@
   </script>
 
   <!-- 소스코드 스타일 -->
-  <link rel="stylesheet" href="/highlight/styles/base16/classic-light.min.css" />
+  <link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css" />
   <script src="/highlight/highlight.min.js"></script>
   <script src="/highlight/highlightjs-line-numbers.js"></script>
-  <script>
-    hljs.highlightAll();
-    hljs.initLineNumbersOnLoad();
-  </script>
 
   <!-- 목차 생성 -->
-  <script src="/modules/hd_list.js" defer></script>
+  <script src="/modules/script.js" defer></script>
 
   <!-- 공통스킨 -->
   <style type="text/css">
@@ -51,16 +47,18 @@
   <article>
     <div id="title">C 윈도우 프로그램</div>
     MSVS(Microsoft Visual Studio)가 필요합니다.<br>
-    <a href="https://github.com/iseohyun/C-Example/tree/master/VSprj/WindowsProject"
-      target="_blank">https://github.com/iseohyun/C-Example/tree/master/VSprj/WindowsProject</a>의 내용을 설명합니다.
+    <a href="https://github.com/iseohyun/C-tutorial/tree/master/VSprj/WindowsProject"
+      target="_blank">https://github.com/iseohyun/C-tutorial/tree/master/VSprj/WindowsProject</a>의 내용을 설명합니다.
     <h1 data-ke-size="size23">기초지식</h1>
     <ul style="list-style-type: disc;" data-ke-list-type="disc">
       <li>C에서는 Desktop Application이라고 부릅니다.</li>
       <li>OS에 등록하고, 보여지고, 메시지 처리(무한루프)로 처리합니다.</li>
       <li>메시지 처리 함수에서, HWND는 ID, Message는 이벤트 대분류, WPARAM/LPARAM은 세부정보를 의미합니다.</li>
     </ul>
-    <p style="font-size:0.8em">코드 참조 :
-      https://docs.microsoft.com/ko-kr/cpp/windows/walkthrough-creating-windows-desktop-applications-cpp</p>
+    <p style="font-size:0.8em">
+      코드 참조 :
+      https://docs.microsoft.com/ko-kr/cpp/windows/walkthrough-creating-windows-desktop-applications-cpp
+    </p>
 
     <iframe
       src="https://docs.google.com/presentation/d/e/2PACX-1vQBXnjf2PNM6LjR3D6Y4H8I8Di7HZiWxebLoZ27dUaOJ-otz4w8t6lIWCoN6DxnFjihZhgnznNMG1eh/embed?start=false&amp;loop=false&amp;delayms=3000"
@@ -79,9 +77,9 @@
     </p>
 
     <h1>예제모음</h1>
-    <p><iframe
+    <iframe
         src="https://docs.google.com/presentation/d/e/2PACX-1vS25DoZdrRyGSBHGHSZeAVtFWYOT4D_wXRwTWEWlNCbDHBxgQpX9mV31T3m4AyQe4CMdPKEAYN3r49m/embed?start=false&amp;loop=false&amp;delayms=3000"
-        width="960" height="749" frameborder="0" allowfullscreen="true"></iframe></p>
+        width="960" height="749" frameborder="0" allowfullscreen="true"></iframe>
 
     <style>
       img.tut_img {

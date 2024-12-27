@@ -1599,7 +1599,6 @@ https://highlightjs.org/
 @typedef {import('highlight.js').HighlightResult} HighlightResult
 */
 
-
 const escape = escapeHTML;
 const inherit = inherit$1;
 const NO_MATCH = Symbol("nomatch");

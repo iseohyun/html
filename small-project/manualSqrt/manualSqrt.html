@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+
+<head>
+  <meta charset="UTF-8" lang="eng">
+  <meta discription="제곱근을 수기로 구하는 예제를 작성합니다.">
+  <meta keywords="iseohyun, 제곱근, 수기">
+  <meta author="iseohyun">
+
+  <!-- 모바일 스케일 고정 -->
+  <meta name="viewport" charset="UTF-8"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- 타이틀 설정 -->
+  <title>손으로 제곱근 구하기: 기초수학 - iseohyun</title>
+  <link rel="shortcut icon" type="image/x-icon" href="/img/icon_seohyun.svg">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-453XSP5W9M');
+  </script>
+
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("/style.css");
+  </style>
+
+  <!-- 폰트 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;700&display=swap" rel="stylesheet">
+</head>
+
+<style>
+  input[type=text] {
+    width: 45%;
+    border: 0;
+    display: block;
+    text-align: left;
+    font-family: monospace;
+    /* font-size: 2em; */
+    background-color: white;
+  }
+
+  hr {
+    width: 95%;
+    border: 1px solid #f4f4f4
+  }
+
+  em {
+    color: yellow;
+    /* font-size: 1.5em; */
+    font-weight: bold;
+  }
+
+  sup {
+    color: yellow;
+  }
+
+  #title {
+    padding: 0;
+  }
+
+  #guide {
+    font-family: 'Times New Roman', Arial, Cambria, Georgia, '강원교육모두';
+    font-style: italic;
+    position: absolute;
+    width: min(50vw, 400px);
+    border-radius: 10px;
+    background-color: #8088;
+    backdrop-filter: blur(4px);
+    padding: 20px;
+    box-shadow: #ddd 5px 5px 5px;
+    z-index: 1;
+    top: 10em;
+    left: 40vw;
+    color: white;
+  }
+
+  #guide>button {
+    display: block;
+    box-shadow: none;
+    border: 2px solid #808;
+    margin-left: auto;
+    background: transparent;
+    color: #808;
+    font-weight: 900;
+    /* font-size: 2em; */
+    padding: 0 10px;
+  }
+
+  #control-board {
+    position: relative;
+    padding: 10px;
+    border-radius: 10px;
+    background: #f4f8ff;
+  }
+
+  #next-button {
+    background-color: #fcf;
+  }
+
+  #main {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  #first-line {
+    width: 100%;
+    height: 1.5em;
+    margin: 0;
+    padding: 0;
+    position: relative;
+  }
+
+  #div-simbol {
+    position: absolute;
+    border-width: 3px 0 0 3px;
+    border-style: solid;
+    width: 50%;
+    height: 2.5em;
+    right: -0.5em;
+    top: 1em;
+  }
+
+  #quotient {
+    margin-left: auto;
+  }
+
+  #num0 {
+    background-color: rgb(255, 228, 196);
+    border: 1px solid rgb(255, 210, 156);
+    z-index: 2;
+  }
+</style>
+</head>
+
+<body>
+  <article>
+    <div id="title">Finding Square Roots</div>
+    <div id="control-board">
+      <div id="guide">
+
+      </div>
+      <button onclick="nextStep();" id="next-button">Next</button>
+      <button onclick="changeLanguage();" id="language">Language</button>
+      <button onclick="toggleGuide();">hide</button>
+    </div>
+    <div id="main">
+      <div id="first-line">
+        <input type="text" id="quotient" disabled>
+        <div id="div-simbol"></div>
+      </div>
+
+      <input type="text" id="divisor0" disabled>
+      <input type="text" id="num0" value="2" onchange="init(parseInt(this.value))" autofocus>
+      <input type="text" id="divisor0_" disabled>
+      <input type="text" id="num0_" disabled>
+      <hr>
+
+      <input type="text" id="divisor1" disabled>
+      <input type="text" id="num1" disabled>
+      <input type="text" id="divisor1_" disabled>
+      <input type="text" id="num1_" disabled>
+      <hr>
+
+      <input type="text" id="divisor2" disabled>
+      <input type="text" id="num2" disabled>
+      <input type="text" id="divisor2_" disabled>
+      <input type="text" id="num2_" disabled>
+      <hr>
+
+      <input type="text" id="divisor3" disabled>
+      <input type="text" id="num3" disabled>
+      <input type="text" id="divisor3_" disabled>
+      <input type="text" id="num3_" disabled>
+      <hr>
+
+      <input type="text" id="divisor4" disabled>
+      <input type="text" id="num4" disabled>
+      <input type="text" id="divisor4_" disabled>
+      <input type="text" id="num4_" disabled>
+      <hr>
+
+      <input type="text" id="divisor5" disabled>
+      <input type="text" id="num5" disabled>
+      <input type="text" id="divisor5_" disabled>
+      <input type="text" id="num5_" disabled>
+      <hr>
+
+      <input type="text" id="divisor6" disabled>
+      <input type="text" id="num6" disabled>
+      <input type="text" id="divisor6_" disabled>
+      <input type="text" id="num6_" disabled>
+      <hr>
+
+      <input type="text" id="divisor7" disabled>
+      <input type="text" id="num7" disabled>
+      <input type="text" id="divisor7_" disabled>
+      <input type="text" id="num7_" disabled>
+    </div>
+  </article>
+</body>
+
+</html>
+<script>
+  let max_line = 8;
+  var inputs = new Array();
+  var lines;
+  var cur_step = 1;
+  var cur_line = 0;
+  var fStep1_1 = false;
+  var pointpos = 0;
+  var language = 1;
+  var guide_step = 0;
+  var argv1 = 2;
+  var argv2 = 0;
+  var argv3 = 0;
+  var N = 2, D, Q;
+  var div_guide_top = 6;
+
+  const titleText = [
+    "Finding Square Roots",
+    "제곱근 구하기"
+  ]
+  const sentences = [
+    [
+      "1. Please enter the number for which you want to find the square root. If you wish to proceed with <em>$argv1</em>, simply click the [Next] button. <button onclick='nextGuide();'>></button>",
+      "1. 제곱근을 구하고 싶은 숫자를 입력하세요. 만약, <em>$argv1</em>의 제곱근을 구하고 싶다면 [다음]버튼을 누르면 됩니다. <button onclick='nextGuide();'>></button>",
+    ],
+    [
+      "$guide_step. click the [Next] button.",
+      "$guide_step. [Next] 버튼을 누릅니다.",
+    ],
+    [ // 제수 구하기
+      "$guide_step. The largest number x that is less than or equal to <em>$argv1</em> among the squares of x is <em>$D <sup>2</sup></em>.",
+      "$guide_step. x의 제곱 중, <em>$argv1</em>을 넘지 않는 가장 큰 x는 <em>$D<sup>2</sup></em> 입니다."
+    ],
+    [
+      "$guide_step. specify x = <em>$Q</em>.",
+      "$guide_step. x = <em>$Q</em>를 작성합니다."
+    ],
+    [ // 몫 구하기
+      "$guide_step. Add <em>$Q</em> to the end of the number.",
+      "$guide_step. 가장 뒷 자리에 <em>$Q</em>을 붙여 줍니다."
+    ],
+    [
+      "$guide_step. Calculate <em>$D</em> × <em>$Q</em>.",
+      "$guide_step. <em>$D</em> × <em>$Q</em>를 구합니다."
+    ],
+    [
+      "$guide_step. Subtract <em>$argv1</em> from <em>$argv2</em> to get <em>$argv3</em>, then append '00' at the end.",
+      "$guide_step. <em>$argv2</em> - <em>$argv1</em> = <em>$argv3</em>, 뒤에 '00'을 붙입니다."
+    ],
+    [
+      "$guide_step. <em>$argv1</em> + <em>$argv2</em> = <em>$D</em>",
+      "$guide_step. <em>$argv1</em> + <em>$argv2</em> = <em>$D</em>"
+    ],
+    [
+      "$guide_step. Find x where <em>$argv1</em>x × x <= <em>$N</em>.<br>Since $D × $Q <= $N, x is equal to <em>$Q</em>.",
+      "$guide_step. <em>$argv1</em>x × x &lt;= <em>$N</em>인 x를 찾습니다.<br>$D × $Q <= $N이므로 x=<em>$Q</em> 입니다."
+    ]
+  ];
+
+  const guidePos = [
+    ['7em', 1], // 0: start
+    ['3em', 0], // 1:next Button
+    ['6em', 0], // 2:
+    ['$top', 0], // 3:
+    ['4em', 1], // 4:
+    ['$top', 1], // 5:
+    ['$top', 1], // 6:
+    ['$top', 0], // 7:
+    ['$top', 0], // 8:
+  ]
+
+  for (var i = 0; i < max_line; i++) {  // 컨트롤러 초기화
+    lines = new Array();
+    lines.push(document.getElementById('num' + i));
+    lines.push(document.getElementById('divisor' + i));
+    lines.push(document.getElementById('divisor' + i + "_"));
+    lines.push(document.getElementById('quotient'));
+    lines.push(document.getElementById('num' + i + "_"));
+    inputs.push(lines);
+  }
+
+  const queryString = window.location.search;
+  const urlParams = new URLSearchParams(queryString);
+  const lang = urlParams.get('lang');
+  if (lang == "ko") {
+    language = 0;
+    changeLanguage();
+  }
+
+  init(N);
+
+  function changeLanguage() {
+    let langBtn = document.getElementById("language");
+    let title = document.getElementById("title");
+    switch (language) {
+      case 0:
+        langBtn.textContent = "언어";
+        language = 1;
+        title.innerHTML = titleText[1];
+        break;
+      case 1:
+        langBtn.textContent = "language";
+        language = 0;
+        title.innerHTML = titleText[0];
+        break;
+    }
+    guide();
+  }
+
+  function nextGuide() {
+    guide_step++;
+    console.log(`${guide_step} : N = ${N}, D = ${D}, Q = ${Q}, line = ${cur_line}, step = ${cur_step}`);
+    div_guide_top = cur_line * 2.85 + 6;
+    if (guide_step >= 6) {
+      switch (guide_step % 6) {
+        case 0:
+          argv1 = inputs[cur_line - 1][4].value;  // num#_
+          argv2 = inputs[cur_line - 1][0].value;  // num#
+          argv3 = parseInt(inputs[cur_line][0].value) / 100;  // num#
+          div_guide_top += 1.5;
+          break;
+        case 1:
+          argv1 = inputs[cur_line - 1][1].value;  // div#
+          argv2 = inputs[cur_line - 1][2].value;  // div#_
+          div_guide_top += 1.5;
+          break;
+        case 2:
+          argv1 = parseInt(inputs[cur_line - 1][1].value) + parseInt(inputs[cur_line - 1][2].value);
+          argv2 = inputs[cur_line - 1][2].value;
+          div_guide_top += 1.5;
+          break;
+        case 3:
+          div_guide_top += 1.5;
+          break;
+      }
+      if (guide_step > 8) {
+        guide_step -= 6;
+      }
+    }
+    else if (guide_step == 3) {
+      div_guide_top += 1;
+    }
+    else if (guide_step == 2) {
+      argv1 = (Math.round(N * 100) / 100).toString();
+    }
+
+    if (guide_step <= 2) {
+      let num0 = document.getElementById('num0');
+      num0.style.zIndex = 0;
+    }
+    guide();
+  }
+
+  function guide() {
+    const sentence = sentences[guide_step][language]
+      .replaceAll("$argv1", argv1)
+      .replaceAll("$argv2", argv2)
+      .replaceAll("$argv3", argv3)
+      .replaceAll("$N", N)
+      .replaceAll("$D", D)
+      .replaceAll("$Q", Q)
+      .replace("$guide_step", guide_step);
+
+    const guide = document.getElementById("guide");
+    guide.innerHTML = sentence;
+    guide.style.top = guidePos[guide_step][0].replace("$top", div_guide_top + "em");
+    if (guidePos[guide_step][1] == 0) {
+      guide.style.left = '10px';
+      guide.style.right = 'auto';
+    } else {
+      guide.style.left = 'auto';
+      guide.style.right = '10px';
+    }
+  }
+
+  function init(value) {
+    guide_step = 0;
+
+    N = value;
+    argv1 = N;
+    guide();
+
+    for (var i = 0; i < max_line; i++) {
+      for (var j = 0; j < 5; j++) {
+        inputs[i][j].value = "";
+      }
+    }
+
+    // 변수 및 설정 초기화
+    cur_line = 0;
+    cur_step = 1;
+    D = 0;
+    Q = 0;
+    fStep1_1 = false;
+    pointpos = 1;
+    inputs[0][0].value = N;
+
+    while (N > 10) {
+      pointpos++;
+      N = N / 10;
+    }
+
+    if (pointpos % 2 == 0) {
+      N = N * 10;
+      inputs[0][3].value = " ";
+    }
+  }
+
+  /*
+  * 0. 피젯수를 구한다. (num#)
+  * 1. 제수를 구한다. (divisor#)
+  * 2. 제수_를 적는다. (divisor#_)
+  * 3. 몫을 갱신한다. (quotient)
+  * 4. 피젯수에 곱한 값을 쓴다. (num#_)
+  */
+  function nextStep() {
+    switch (cur_step) {
+      case 0:
+        N = Math.round((N - D * Q) * 100);
+        inputs[cur_line][cur_step].value = spacings((cur_line) * 2 + 1 - Number(N).toString().length) + N;
+        break;
+      case 1:
+        if (fStep1_1) {
+          fStep1_1 = false;
+          D = D + D % 10;
+          inputs[cur_line][cur_step].value = D;
+          cur_step--;
+        } else {
+          fStep1_1 = true;
+          for (var i = 9; i >= 0; i--) {
+            if ((D * 10 + i) * i <= N) {
+              D = D * 10 + i;
+              Q = i;
+              inputs[cur_line][cur_step].value = D;
+              break;
+            }
+          }
+        }
+        break;
+      case 2:
+        inputs[cur_line][cur_step].value = spacings(cur_line) + Q;
+        break;
+      case 3:
+        if (cur_line == 0) {
+          inputs[cur_line][cur_step].value = "";
+        }
+        inputs[cur_line][cur_step].value += Q;
+        if (pointpos <= 2) {
+          inputs[cur_line][cur_step].value += ".";
+          pointpos = 1000000;
+        } else {
+          inputs[cur_line][cur_step].value += " ";
+          pointpos -= 2;
+        }
+
+        break;
+      case 4:
+        inputs[cur_line][cur_step].value = spacings((cur_line) * 2 + 1 - Number(D * Q).toString().length) + D * Q;
+        break;
+    }
+    if (cur_step >= 4) {
+      cur_step = 0;
+      cur_line++;
+      if (cur_line >= max_line) {
+        cur_line = 0;
+        cur_step = 1;
+      }
+    } else {
+      cur_step++;
+    }
+
+    if (guide_step == 0) {
+      guide_step++;
+    }
+    nextGuide();
+  }
+
+  function spacings(num) {
+    var text = "";
+    while (num-- > 0) {
+      text += " ";
+    }
+    return text;
+  }
+
+  let isHidden = false;
+
+  function toggleGuide() {
+    const guide = document.getElementById('guide');
+    if (isHidden) {
+      guide.style.display = 'block';
+      isHidden = false;
+    } else {
+      guide.style.display = 'none';
+      isHidden = true;
+    }
+  }
+
+</script>

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <!-- 모바일 스케일 고정 -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta discription="vscode에밋">
+  <meta keywords="iseohyun">
+  <meta author="iseohyun">
+
+  <!-- 페이지 타이틀 -->
+  <title>에밋: VScode - iseohyun </title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-453XSP5W9M');
+  </script>
+
+  <!-- 목차 생성 -->
+  <script src="/modules/script.js" defer></script>
+
+  <!-- 수식 -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <!-- 소스코드 스타일 -->
+  <link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css" />
+  <script src="/highlight/highlight.min.js"></script>
+  <script src="/highlight/highlightjs-line-numbers.js"></script>
+
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("/style.css");
+  </style>
+</head>
+
+<body>
+  <article>
+    <div id="title"> VScode: 에밋 </div>
+
+    <h1>에밋 사용 방법</h1>
+    <p>
+      이 문서는 다음을 참조하여 제작되었습니다.<br>
+      : <a href="https://code.visualstudio.com/docs/editor/emmet" target="_blank">VScode 공식 페이지 링크</a><br>
+      : <a href="https://www.smashingmagazine.com/2021/06/custom-emmet-snippets-vscode/" target="_blank">매거진, Creating
+        Custom Emmet Snippets In VS Code</a>
+    </p>
+    <h3>사용 예: 자동완성 기능 사용하기</h3>
+    <div style="width:90%; margin:10px auto">
+      <img src="https://code.visualstudio.com/assets/docs/editor/emmet/emmet.gif" width="100%" />
+      이미지 출처:
+      <a href="https://code.visualstudio.com/assets/docs/editor/emmet/emmet.gif">
+        https://code.visualstudio.com/assets/docs/editor/emmet/emmet.gif</a>
+    </div>
+    <p>
+      예시에 사용된 코드는 <q>ul>li*3>span.hello$</q> 입니다.
+    </p>
+    <ul>
+      <li>">"기호는 하위 element를 의미합니다.</li>
+      <li>"*"기호는 갯수를 의미합니다.</li>
+      <li>"."기호는 class를 의미합니다.</li>
+      <li>"$"기호는 sequence를 의미합니다.</li>
+    </ul>
+    <p>
+      따라서 이 코드로 생성되는 에밋은 다음과 같습니다.
+    </p>
+    <pre><blockquote>&ltul>
+  &ltli>&ltspan class="hello1">&lt/span>&lt/li>
+  &ltli>&ltspan class="hello2">&lt/span>&lt/li>
+  &ltli>&ltspan class="hello3">&lt/span>&lt/li>
+&lt/ul></blockquote></pre>
+
+    <h3>사용 예: 이미 작성한 코드 테그로 감싸기</h3>
+    <p>
+      Command Palette(<var>Ctrl</var> + <var>Shift</var> + <var>p</var>)<br>
+      "wrap with abbreviation" <var>Enter</var> 감싸고 싶은 테그 입력<br>
+      [영상자료: <a href="https://youtu.be/-pAoHcqXTVQ?si=NaoXK7FJmj8LsH-Q" target="_blank">생활코딩, emmet예제</a>(52초) ]
+    </p>
+
+    <h1>커스텀 설정파일</h1>
+    <p>
+      기호에 맞게 에밋을 생성하여 사용할 수 있습니다.
+    </p>
+    <iframe
+      src="https://docs.google.com/presentation/d/e/2PACX-1vTlyWyQI5F6ZCZURj_l4NE52FXn8ZYS2Vbn1et8PpoybWWcPZy-rlx3a86YarhJ3pjvjJn07cujLT-0/embed?start=false&loop=false&delayms=3000"
+      frameborder="0" width="960" height="569" allowfullscreen="true" mozallowfullscreen="true"
+      webkitallowfullscreen="true"></iframe>
+
+    <p>
+      기존의 설정파일을 열거나, 설정파일을 만들어서 추가합니다.<br>
+      <span style="color:#aaa; font-size: 0.9em;">※ snippet(스니펫, 코드조각), emmet(에밋, 개미)</span>
+    </p>
+
+    <h2>설정파일 연결</h2>
+    <ol>
+      <li>가급적이면 <q>C:\Users\사용자명\AppData\Roaming\Code\User\snippets\</q>에 '<q>snippets.json</q>'으로 파일을 생성합니다.<br>
+        ※ 주소명의 '사용자명'은 각자의 사용자명을 사용합니다.<br>
+        ※ 파일명을 css.json으로 지정하면 CSS언어에서 동작, javascript.json으로 저장하면 JavaScript언어에서 동작합니다(파일 확장자나 테그의 영향을 받음).
+      </li>
+      <li>설정(<var>ctrl</var> + <var>,(콤마)</var>)에서 "<q>Emmet: Extention Path</q>"를 설정합니다.</li>
+      <li><u>파일경로</u>를 입력하고 OK를 클릭합니다.</li>
+    </ol>
+    <p>
+      직접 snippets을 만든 경우 여러 언어에서 사용할 수 있는 장점이있지만, 생성시 언어를 명시해야합니다.
+      (구조가 약간 다릅니다.)
+    </p>
+
+    <h2>설정파일 열기</h2>
+    <ol>
+      <li>Command Palette(<var>Ctrl</var> + <var>Shift</var> + <var>p</var>)에서 "snippets: Configure User Snippets"를
+        검색합니다.<br>
+        또는, 좌측하단 설정 아이콘에서 "User Snippets"을 클릭합니다.</li>
+      <li>원하는 json을 선택합니다.<br>
+        예제에서는 "html.json(HTML)"을 선택하였습니다.</li>
+    </ol>
+
+    <h2>설정파일 쓰기</h2>
+    <p>
+      아래는 커스텀 파일 쓰기 예제입니다.
+      각 파일마다 형식이 호환되지 않으므로 적용하고자 하는 파일 구조에 맞추어 작성해야 합니다.
+      3중에 하나만 작성하면 됩니다.
+    </p>
+    <h3>html.json, css.json ...(언어 확정된) 파일</h3>
+    <pre><code class="language-json">"korean html file start":{
+  "prefix": "!!"
+  "body": [
+  "&lt;!DOCTYPE html>",
+  "&lt;html lang=\"ko\">",
+  "",
+  "&lt;head>",
+  "  &lt;meta charset=\"UTF-8\">",
+  "  &lt;title>타이틀&lt;/title>",
+  "&lt;/head>",
+  "",
+  "&lt;body>",
+  "&lt;/body>",
+  "",
+  "&lt;/html>"
+  ],
+  "description":"간단한 html파일 형식을 완성합니다."
+},
+"user-define": {
+  "prefix": "aaaa",
+  "body": [
+  "테스트 파일입니다입력1:\"$1\",입력2:\"$2\")",
+  "입력3:\"$3\""
+  ],
+  "description": "포멧 예제입니다."
+}</code></pre>
+
+    <h3>snippet.json 파일</h3>
+    <pre><code class="language-json">{
+  "html": {
+    "snippets": {
+      "signup": "p>a{Sign Up}",
+      "img:l": "img[width height loading='lazy']",
+      "page": "header>h1^main+footer{${0:©}}",
+      "nav": "nav[aria-label='${1:Main}']>ul>(li>a[aria-current='page']{${2:Current Page}})+(li*3>a{${0:Another Page}})",
+      "!": "{&lt;!DOCTYPE html>}+html[lang=${1}${lang}]>(head>meta:utf+meta:vp+{}+title{${2}${author}}+{}+style)+body>(h1>{${3: New Document}})+{${0}}",
+      "!!": "{&lt;!DOCTYPE html>}+html[lang=${1}${lang}].no-js>{&lt;!-- TODO: Check lang attribute --> }+(head>meta:utf+meta:vp+{}+title{${1:🛑 Change me}}+{}+(script[type=\"module\"]>{document.documentElement.classList.replace('no-js', 'js');})+{}+link:css+link:print+{}+meta[name=\"description\"][content=\"${2:🛑 Change me (up to ~155 characters)}\"]+{&lt;!-- TODO: Change page description --> }+meta[name=\"theme-color\"][content=\"${2:#FF00FF}\"])+body>page"
+    }
+  },
+  "css": {
+    "snippets": {
+      "debug": "outline: 5px solid red;\noutline-offset: -5px;"
+    }
+  }
+}</code></pre>
+    <h3>snippet.json.code-snippets 파일</h3>
+    <pre><code class="language-json">{
+  "Print to console": {
+    "scope": "javascript,typescript",
+    "prefix": "logaa",
+    "body": [
+      "console.log('$1');",
+      "$2"
+    ],
+    "description": "Log output to console"
+  },
+  "Print to console": {
+    "scope": "html,vue-html",
+    "prefix": "loghtml",
+    "body": [
+      "console.log('$1:aa');",
+      "$2"
+    ],
+    "description": "Log output to console"
+  },
+}</code></pre>
+    <h2>사용해보기</h2>
+    <p>
+      본문에서 "!!"이나 "aaaa"를 입력해서 등장하는 auto-suggestion을 선택합니다.<br>
+      (atuo-suggestion이 나오지 않는다면, <var>ctrl</var> + <var>space</var>를 누릅니다.)
+    </p>
+    <pre><blockquote>&lt;!DOCTYPE html>
+&lt;html lang="ko">
+
+&lt;head>
+  &lt;meta charset="UTF-8">
+  &lt;title>타이틀&lt;/title>
+&lt;/head>
+
+&lt;body>
+&lt;/body>
+
+&lt;/html></blockquote></pre>
+
+    <h1>문법</h1>
+    <p>
+      json은 데이터베이스를 저장하기위한 형식 중 하나입니다.
+      자세한 내용은 <a href="/etc/column/fileformat/json.html">여기</a>를 참조하십시오.
+      아래 문법은 body를 작성하는데 사용된 문법입니다.
+    </p>
+
+    <style>
+      #snippet-symbol td:last-child {
+        text-align: left;
+        padding: 0 10px;
+      }
+    </style>
+    <table id="snippet-symbol">
+      <caption>snippets기호 및 역할</caption>
+      <thead>
+        <tr>
+          <th>기호</th>
+          <th>역할</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>$1, $2, ...</td>
+          <td>커서가 머무는 순서</td>
+        </tr>
+        <tr>
+          <td>$0</td>
+          <td>커서의 마지막 위치</td>
+        </tr>
+        <tr>
+          <td>${0:디폴트문자}</td>
+          <td>커서가 입력을 대기 할 때, 예비로 입력되어 있는 문자</td>
+        </tr>
+        <tr>
+          <td>${미리지정한예약어}</td>
+          <td>setting( <var>Ctrl</var> + <var>,콤마</var>의 <q>Emmet: Variables</q>에 지정한 예약어를 가져올 수 있다.</td>
+        </tr>
+        <tr>
+          <td>[attribute:attribute-value]</td>
+          <td>속성값을 설정</td>
+        </tr>
+        <tr>
+          <td>.class-name</td>
+          <td>.(마침표)를 이용해서 클래스 설정</td>
+        </tr>
+        <tr>
+          <td>+</td>
+          <td>다음줄</td>
+        </tr>
+        <tr>
+          <td>{}</td>
+          <td>반복주기, 내용이 없으면 빈줄</td>
+        </tr>
+        <tr>
+          <td>></td>
+          <td>하위 element</td>
+        </tr>
+        <tr>
+          <td>\"</td>
+          <td>" (json파일에서는 "가 데이터를 구분하는 문자로 쓰이므로, 문자로써의 "를 구분하려면 escape문자(\)를 사용해야한다.)</td>
+        </tr>
+    </table>
+
+  </article>
+</body>

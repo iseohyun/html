@@ -22,16 +22,12 @@
   </script>
 
   <!-- 소스코드 스타일 -->
-  <link rel="stylesheet" href="/highlight/styles/github.min.css" />
+  <link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css" />
   <script src="/highlight/highlight.min.js"></script>
   <script src="/highlight/highlightjs-line-numbers.js"></script>
-  <script>
-    hljs.highlightAll();
-    hljs.initLineNumbersOnLoad();
-  </script>
 
   <!-- 목차 생성 -->
-  <script src="/modules/hd_list.js" defer></script>
+  <script src="/modules/script.js" defer></script>
 
   <!-- 공통스킨 -->
   <style type="text/css">
@@ -47,8 +43,8 @@
   <article>
     <div id="title">Python 객체지향</div>
     <ul>
-      <li>예제코드는 <a href="https://github.com/iseohyun/python-example"
-          target="_blank">https://github.com/iseohyun/python-example</a>에서 다운로드 받을 수 있습니다.</li>
+      <li>예제코드는 <a href="https://github.com/iseohyun/python-tutorial"
+          target="_blank">https://github.com/iseohyun/python-tutorial</a>에서 다운로드 받을 수 있습니다.</li>
       <li>예제코드 적용 방법 및 환경설정은 <a href="setup.html">여기</a>를 참고하십시오 </li>
       <li>VScode의 사용법 안내는 <a href="/etc/column/vscode/start.html">여기</a>를 참고하십시오</li>
     </ul>
@@ -76,7 +72,6 @@ margin: 0 auto;">
       </details>
     </div>
 
-
     <h1>객체<sub>9_Class</sub></h1>
     <h2>객체 생성</h2>
     <p>
@@ -102,7 +97,10 @@ MyClass.f()
 print(MyClass.i) # 12345</code></pre>
 
     <h3>Instance</h3>
-    <p>class는 '설계도', instance(인스턴스)는 '실체'입니다. <u>instance에서 호출되는 method는 self argument를 반드시 갖습니다.</u></p>
+    <p>
+      class는 '설계도', instance(인스턴스)는 '실체'입니다.
+      <u>instance에서 호출되는 method는 self argument를 반드시 갖습니다.</u>
+    </p>
     <span class="tutorial">9_Class > 00-1_Instance.py</span>
     <pre><code class="python">class MyClass:
     i = 12345
@@ -120,7 +118,9 @@ my1.printi() # 12345
 my1.seti(99999) # i = 99999</code></pre>
 
     <h2>초기화</h2>
-    <p>instance가 생성될 때, 반드시 실행되는 method의 이름은 __init__ 내장변수를 사용합니다.</p>
+    <p>
+      instance가 생성될 때, 반드시 실행되는 method의 이름은 __init__ 내장변수를 사용합니다.
+    </p>
     <span class="tutorial">9_Class > 02_Init.py</span>
     <pre><code class="python">class MyClass:
     def __init__(self, i): # 초기화 할 수 있다. 생성시 반드시 호출된다.
@@ -130,8 +130,11 @@ my1 = MyClass(777) # 초기화 i = 777
   </code></pre>
 
     <h2>method object</h2>
-    <p>instance의 method를 복사한 것이 object로 볼 수 있는가에 대한 설명으로, python의 모든 것이 객체이므로 부를 수 있다와 애초에 복사된 method라는 주장이 가능하지만, 어쨌든
-      공식적으로 "메서드 객체"라고 부릅니다.</p>
+    <p>
+      instance의 method를 복사한 것이 object로 볼 수 있는가에 대한 설명으로,
+      python의 모든 것이 객체이므로 부를 수 있다와 애초에 복사된 method라는 주장이 가능하지만,
+      어쨌든 공식적으로 "메서드 객체"라고 부릅니다.
+    </p>
     <span class="tutorial">9_Class > 03_method object.py</span>
     <pre><code class="python">my1 = MyClass(777)
 
@@ -314,7 +317,9 @@ c = C()  # A를 먼저 상속받음, A 호출
 d = D()  # B를 먼저 상속받음, B 호출</code></pre>
 
     <h2>import</h2>
-    <p>'import 폴더.클래스명' 또는 'import 폴더.클래스명.메서드'</p>
+    <p>
+      'import 폴더.클래스명' 또는 'import 폴더.클래스명.메서드'
+    </p>
     <span class="tutorial">9_Class > 09_Package.py</span>
     <pre><code class="python">import myPackage.myPack1
 pack = myPackage.myPack1.pack1()
@@ -355,7 +360,9 @@ mapping_subclass = MappingSubclass([4, 5, 6]) # [4, 5, 6]
 </code></pre>
 
     <h2>데이터 클레스</h2>
-    <p>단순 정보 저장용 객체</p>
+    <p>
+      단순 정보 저장용 객체
+    </p>
     <span class="tutorial">9_Class > 11_Dataclass.py</span>
     <pre><code class="python">@dataclass
 class Employee:
@@ -378,7 +385,9 @@ print(next(it)) # c
 print(next(it)) # StopIteration Error</code></pre>
 
     <h1>표준 라이브러리<sub>10_Std lib</sub></h1>
-    <p>이 단원은 유용한 내장 모듈을 열거식으로 소개합니다.</p>
+    <p>
+      이 단원은 유용한 내장 모듈을 열거식으로 소개합니다.
+    </p>
     <h2>디렉토리 정보조회, 생성, 변경</h2>
     <span class="tutorial">10_Std lib > 01_Os interface.py</span>
     <span class="tutorial">10_Std lib > 01-1_shutil.py</span>
@@ -434,9 +443,11 @@ sys.exit() # 프로그램 종료
 print("running") # 출력되지 않음</code></pre>
 
     <h2>정규표현식</h2>
-    <p>정규표현식(Regular Expression)은 문자열의 검색, 편집과 관련하여 정확한 문자열이 아닌 문자열 패턴을 기술하는 방법론입니다. 거의 모든 프로그램 언어 및 문서 편집기가 지원할 정도로
-      막강하고 보편적이지만 표현방식 숙지가 요구됩니다. 해당 칼럼은 <a href="/etc/column/regularExpress/regularExpress.html"
-        target="_blank">여기</a>를 참고해주십시오.</p>
+    <p>
+      정규표현식(Regular Expression)은 문자열의 검색, 편집과 관련하여 정확한 문자열이 아닌 문자열 패턴을 기술하는 방법론입니다.
+      거의 모든 프로그램 언어 및 문서 편집기가 지원할 정도로 막강하고 보편적이지만 표현방식 숙지가 요구됩니다.
+      해당 칼럼은 <a href="/etc/column/regularExpress/regularExpress.html" target="_blank">여기</a>를 참고해주십시오.
+    </p>
     <span class="tutorial">10_Std lib > 05_Re.py</span>
     <pre><code class="python">import re
 
@@ -493,7 +504,10 @@ print(Timer("a,b = b,a", "a=1; b=2").timeit())  # 2번 튜플 언패킹(승)
 # 출력 예:
 # 0.012652999954298139
 # 0.010185600025579333</code></pre>
-    <p>1번과 2번은 모두 a <-> b swap(교환)방법으로, 임시변수를 사용한 방법과 튜플 언패킹을 사용한 방법의 성능차이를 보여줍니다.</p>
+    <p>
+      1번과 2번은 모두 a &lt;-> b swap(교환)방법으로,
+      임시변수를 사용한 방법과 튜플 언패킹을 사용한 방법의 성능차이를 보여줍니다.
+    </p>
 
     <h2>코드 테스트(검증)</h2>
     <ul>
@@ -681,11 +695,9 @@ print(d["primary"]) # Step 6. 약한참조 조회 - ERROR: 존재하지않음</c
 
 a = array("H", [4000, 10, 700, 22222])  # 'H'는 부호없는 2byte숫자를 의미(0 ~ 65,536)
 
-
 from collections import deque
 
 d = deque(["task1", "task2", "task3"])
-
 
 import bisect
 
@@ -770,7 +782,6 @@ print([heappop(data) for i in range(3)])  # fetch the three smallest entries</co
 #   7  8 9
 # [0, 1, 2, 6, 3, 5, 4, 7, 8, 9]
 
-
 # [-5 추가]
 #          -5
 #        /     \
@@ -802,7 +813,9 @@ print(0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 + 0.1 == 1.0) # false
 # 파이썬 내장 함수가 오류를 예방해준다.
 print(sum([0.1] * 10) == 1) # true</code></pre>
 
-    <p>따라서, sum 함수를 멍청(단순)하게 업그레이드 해주면, 정상적으로 Fail 할 수 있습니다.</p>
+    <p>
+      따라서, sum 함수를 멍청(단순)하게 업그레이드 해주면, 정상적으로 Fail 할 수 있습니다.
+    </p>
 
     <div
       style="margin: 100px auto; display: flex; flex-direction: row; align-content: center; justify-content: space-evenly; align-items: center;">

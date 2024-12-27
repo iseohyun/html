@@ -23,16 +23,12 @@
   <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
 
   <!-- 소스코드 스타일 -->
-  <link rel="stylesheet" href="/highlight/styles/base16/classic-light.min.css" />
+  <link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css" />
   <script src="/highlight/highlight.min.js"></script>
   <script src="/highlight/highlightjs-line-numbers.js"></script>
-  <script>
-    hljs.highlightAll();
-    hljs.initLineNumbersOnLoad();
-  </script>
 
   <!-- 목차 생성 -->
-  <script src="/modules/hd_list.js" defer></script>
+  <script src="/modules/script.js" defer></script>
 
   <!-- 공통스킨 -->
   <style type="text/css">
@@ -45,8 +41,9 @@
     <div id="title">SVG: 애니메이션</div>
 
     <p>
-      참조 :<br>(<a href="https://developer.mozilla.org/en-US/docs/Web/SVG/Element/animate#animation_attributes"
-        target="_blank">developer.mozilla.org/.../SVG/Element/animate#animation_attributes</a>)
+      이 페이지는 다음 사이트를 참고하였습니다.<br>
+      <a href="https://developer.mozilla.org/en-US/docs/Web/SVG/Element/animate#animation_attributes"
+        target="_blank">developer.mozilla.org/.../SVG/Element/animate#animation_attributes</a>
     </p>
 
     <h1>애니메이션 요소</h1>
@@ -281,12 +278,12 @@
       </g>
     </svg>
 
-
     <h1>고려할 요소</h1>
     <h2>CSS연계</h2>
     <p>
-      &nbsp;'예제1'과 '예제2'는 같은 내용입니다. 단지 css에서 제공하는 애니메이션 문법을 쓸 것인가(좌), svg에서 제공하는 애니메이션을 쓸 것인가(중)만 다릅니다. (우):
-      offset테스트<br>
+      '예제1'과 '예제2'는 같은 내용입니다.
+      단지 css에서 제공하는 애니메이션 문법을 쓸 것인가(좌), svg에서 제공하는 애니메이션을 쓸 것인가(중)만 다릅니다.
+      (우): offset테스트
     </p>
 
     <style>
@@ -395,7 +392,9 @@
     </pre>
 
     <h2>회전 중심점</h2>
-    <p>&nbsp;아래 예제는 "from="0 60 70" to="360 60 70""에 의하여 화전 중심점을 지정하였습니다.</p>
+    <p>
+      아래 예제는 "from="0 60 70" to="360 60 70""에 의하여 화전 중심점을 지정하였습니다.
+    </p>
     <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"
       style="border: 1px solid #ddd; border-radius: 15px;">
       <polygon points="60,30 90,90 30,90">
@@ -411,11 +410,12 @@
 &lt;/svg></code></pre>
     <a href="https://developer.mozilla.org/en-US/docs/Web/SVG/Element/animateTransform">출처:mozilla</a>
 
-    <p>&nbsp;또는 아래와 같이 "transform-origin:"로 회전 중심점을 지정 할 수 있습니다.</p>
+    <p>
+      또는 아래와 같이 "transform-origin:"로 회전 중심점을 지정 할 수 있습니다.
+    </p>
     <pre><code>&lt;path d="M 100 105 L 139 132 L 124 176 L 76 176 L 61 132 Z" style="transform-origin: 100px 145px;">
   &lt;animateTransform type="rotate" attributeName="transform" values="0;360" dur="2s" repeatCount="1" begin="mouseenter"/>
 &lt;/path></code></pre>
-
 
     <h2>애니메이션 진행방향</h2>
     <svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg" style="border: 1px solid #ddd; border-radius: 15px;">

@@ -24,21 +24,16 @@
   </script>
 
   <!-- 소스코드 스타일 -->
-  <link rel="stylesheet" href="/highlight/styles/base16/classic-light.min.css" />
+  <link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css" />
   <script src="/highlight/highlight.min.js"></script>
   <script src="/highlight/highlightjs-line-numbers.js"></script>
-  <script>
-    hljs.highlightAll();
-    hljs.initLineNumbersOnLoad();
-  </script>
 
   <!-- 수식 -->
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
-
   <!-- 목차 생성 -->
-  <script src="/modules/hd_list.js" defer></script>
+  <script src="/modules/script.js" defer></script>
 
   <!-- 공통스킨 -->
   <style type="text/css">
@@ -55,8 +50,7 @@
       <b>save</b>(); <font color='#8a8'>// stack처럼 여러번 저장이 가능</font><br>
       <b>restore</b>(); <font color='#8a8'>// 최근에 저장한 것부터 불러오기</font><br>
     </blockquote>
-    <pre>
-    <code class="language-java">ctx.fillStyle = '#000'; // 검정
+    <pre><code class="language-java">ctx.fillStyle = '#000'; // 검정
 ctx.fillRect(0, 0, 150, 150); // 제일 바깥
 ctx.save();
 
@@ -71,20 +65,17 @@ ctx.restore(); // 파랑 복원
 ctx.fillRect(45, 45, 60, 60);
 
 ctx.restore(); // 검정 복원
-ctx.fillRect(60, 60, 30, 30);</code>
-  </pre>
+ctx.fillRect(60, 60, 30, 30);</code></pre>
     <span class="tutorial">D_Transform > a_save_restore.html</span>
-    <a href="demo_saveNrestore.html" download><button class="download">예제파일</button></a>
-    <iframe src="demo_saveNrestore.html" height="180"></iframe>
-
+    <a href="demo/demo_saveNrestore.html" download><button class="download">예제파일</button></a>
+    <iframe src="demo/demo_saveNrestore.html" height="180"></iframe>
 
     <h1>변환</h1>
     <h2>translate</h2>
     <blockquote>
       <b>translate</b>(x축 이동, y축 이동);
     </blockquote>
-    <pre>
-    <code class="language-java">for (var i = 0; i < 5; i++) {
+    <pre><code class="language-java">for (var i = 0; i < 5; i++) {
   for (var j = 0; j < 5; j++) {
     ctx.save(); // translate를 save에서 수행하고 restore로 날려버림. 안그러면 밀기가 계속 쌓임
     ctx.fillStyle = `rgb(${(51 * i)}, ${(255 - 51 * j)}, 255)`;
@@ -92,19 +83,16 @@ ctx.fillRect(60, 60, 30, 30);</code>
     ctx.fillRect(0, 0, 25, 25);
     ctx.restore();
   }
-}
-    </code>
-  </pre>
+}</code></pre>
     <span class="tutorial">D_Transform > b_translate.html</span>
-    <a href="demo_translating.html" download><button class="download">예제파일</button></a>
-    <iframe src="demo_translating.html" height="180"></iframe>
+    <a href="demo/demo_translating.html" download><button class="download">예제파일</button></a>
+    <iframe src="demo/demo_translating.html" height="180"></iframe>
 
     <h2>rotating</h2>
     <blockquote>
       <b>ratate</b>(각도(라디안)); <font color='#8a8'>// 원점 기준 시계방향으로 회전</font><br>
     </blockquote>
-    <pre>
-    <code class="language-java">// 원점 중심으로 회전하기 예제(25도)
+    <pre><code class="language-java">// 원점 중심으로 회전하기 예제(25도)
 ctx.save();
 ctx.fillStyle = '#0095DD';  // 파란 사각형
 ctx.fillRect(30, 30, 100, 100);
@@ -125,19 +113,16 @@ ctx.translate(-200, -80); // 예전 위치로 이동하기
 
 ctx.fillStyle = '#4D4E53'; // 회색 사각형
 ctx.fillRect(150, 30, 100, 100);
-ctx.restore();
-    </code>
-  </pre>
+ctx.restore();</code></pre>
     <span class="tutorial">D_Transform > b2_rotate.html</span>
-    <a href="demo_rotate.html" download><button class="download">예제파일</button></a>
-    <iframe src="demo_rotate.html" height="180"></iframe>
+    <a href="demo/demo_rotate.html" download><button class="download">예제파일</button></a>
+    <iframe src="demo/demo_rotate.html" height="180"></iframe>
 
     <h2>scale</h2>
     <blockquote>
       <b>scale</b>(x확대율, y확대율); <font color='#8a8'>// 응용 : -1을 넣어 뒤집힌 효과도 가능</font><br>
     </blockquote>
-    <pre>
-    <code class="language-java">ctx.fillRect(1, 10, 10, 10); // 원본
+    <pre><code class="language-java">ctx.fillRect(1, 10, 10, 10); // 원본
 ctx.save();
 ctx.scale(10, 3);
 ctx.fillRect(1, 10, 10, 10); // 짭
@@ -147,15 +132,15 @@ ctx.restore();
 ctx.scale(-1, 1);
 ctx.font = '48px serif';
 ctx.textAlign = 'end';  // 뒤집힌 좌표기 때문에 2사분면이 출력됨에 유의!
-ctx.fillText('안녕하세요.', 0, 120);
-    </code>
-  </pre>
+ctx.fillText('안녕하세요.', 0, 120);</code></pre>
     <span class="tutorial">D_Transform > b3_scale.html</span>
-    <a href="demo_scale.html" download><button class="download">예제파일</button></a>
-    <iframe src="demo_scale.html" height="180"></iframe>
+    <a href="demo/demo_scale.html" download><button class="download">예제파일</button></a>
+    <iframe src="demo/demo_scale.html" height="180"></iframe>
 
     <h2>transforms</h2>
-    <p>&nbsp;이동, 확대축소, 회전을 한번에 지정할 수 있는 행렬입니다.</p>
+    <p>
+      이동, 확대축소, 회전을 한번에 지정할 수 있는 행렬입니다.
+    </p>
     <div class="simple-box">
       $$ transform(a, b, c, d, e, f) = \begin{bmatrix} a & c & e \\ b & d & f \\ 0 & 0 & 1 \end{bmatrix} $$
     </div>
@@ -169,8 +154,7 @@ ctx.fillText('안녕하세요.', 0, 120);
     </blockquote>
     $$ resetTransform() = \begin{bmatrix} 1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{bmatrix} = transform(1, 0, 0, 1, 0,
     0)$$
-    <pre>
-    <code class="language-java">// 검정 색상 예제
+    <pre><pre class="language-java">// 검정 색상 예제
 ctx.translate(100, 100);    // 중심점을 이동
 
 var sin = Math.sin(Math.PI / 6); // 30도
@@ -186,20 +170,17 @@ for (var i = 0; i <= 12; i++) {
 // 핑크 색 예제
 ctx.setTransform(-1, 0, 0, 1, 110, 110);    // 중심 (110,110), x축반전
 ctx.fillStyle = 'rgba(255, 128, 255, 0.5)';
-ctx.fillRect(0, 0, 50, 50);
-    </code>
+ctx.fillRect(0, 0, 50, 50);</code></pre>
     <span class="tutorial">D_Transform > b4_transform.html</span>
-  </pre>
-    <a href="demo_transform.html" download><button class="download">예제파일</button></a>
-    <iframe src="demo_transform.html" height="230"></iframe>
 
+    <a href="demo/demo_transform.html" download><button class="download">예제파일</button></a>
+    <iframe src="demo/demo_transform.html" height="230"></iframe>
 
     <h1>마스크</h1>
     <blockquote>
       <b>clip</b>(); <font color='#8a8'>// 자르기</font><br>
     </blockquote>
-    <pre>
-    <code class="language-java">ctx.fillRect(0, 0, 150, 150);   // 검정배경
+    <pre><code class="language-java">ctx.fillRect(0, 0, 150, 150);   // 검정배경
 
 // 동그란 모양의 잘라내기 경로를 생성한다
 ctx.beginPath();
@@ -215,15 +196,13 @@ for (var j = 0; j < 50; j++) {
   ctx.translate(Math.floor(Math.random() * 150), Math.floor(Math.random() * 150));
   drawStar(ctx, Math.floor(Math.random() * 4) + 2);
   ctx.restore();
-}
-    </code>
-  </pre>
+}</code></pre>
     <p>
       새로고침 할 때마다 별의 위치와 갯수가 달리 보이는 예제
     </p>
     <span class="tutorial">D_Transform > c_clip.html</span>
-    <a href="demo_stars.html" download><button class="download">예제파일</button></a>
-    <iframe src="demo_stars.html" height="450"></iframe>
+    <a href="demo/demo_stars.html" download><button class="download">예제파일</button></a>
+    <iframe src="demo/demo_stars.html" height="450"></iframe>
   </article>
 </body>
 

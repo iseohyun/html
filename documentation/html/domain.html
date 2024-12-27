@@ -23,7 +23,7 @@
   </script>
 
   <!-- 목차 생성 -->
-  <script src="/modules/hd_list.js" defer></script>
+  <script src="/modules/script.js" defer></script>
 
   <!-- 공통스킨 -->
   <style type="text/css">
@@ -35,6 +35,10 @@
       text-align: left;
       padding-left: 8pt;
     }
+
+    sub {
+      color: brown;
+    }
   </style>
 </head>
 
@@ -42,89 +46,163 @@
   <article>
     <div id="title">HTML 시작하기</div>
 
-    <h1>서문</h1>
-    <p>학습을 실습하기 위한 <b>환경을 세팅</b>합니다.</p>
-
     <h1>왜 HTML인가?</h1>
-    <p>&nbsp;HTML<sub>HyperText Markup Language</sub>은 브라우저<sub>browser</sub>가 사이트에 저장된 문서를 보기좋게 해석해서 보여지도록 기술된 세계표준의
-      문서양식입니다.</p>
-
-    <p>&nbsp;이 때, 해석방식에 따라, 크게 2개의 방법으로 나뉘어집니다.[아래 그림]</p>
-    <img src="HowToWork.svg" id="affix-image-how-to-work">
-
-    <p>&nbsp;최초의 웹서버<sub>Web Server</sub>는 고객<sub>Client</sub>의 요청이 있을 때, 단순하게 고객이 요청한 문서를 전달하면 됐습니다<span
-        style="color:red">(빨간색 화살표)</span>. 하지만 이 방식에는 단점이 있습니다. 모든 고객이 언제 방문하더라도 똑같은 페이지를 받게 됩니다.</p>
-
-    <p>&nbsp;게시판이나 쇼핑몰과 같은 사이트는 언제, 누가 방문하는가에 따라서 보여지는 페이지가 다릅니다. 이는 데이터베이스<sub>Database, DB</sub>를 이용했기 때문입니다. 데이터베이스
-      서버는 물리적으로 다른 머신을 사용 할 수도 있고, 소프트웨어적으로만 분리가 될 수 있습니다.</p>
-
-    <p>&nbsp;<span style="color:green;">녹색 화살표</span>는 DB서버가 개입된 루트를 보여줍니다. ①고객의 요청이 들어오면, 웹 서버는 요청하는 문서의 확장자를 보고,
-      해석자<sub>interpreter</sub>에게 해석을 요구합니다. ②해석자는 문서 곳곳에 위치한 내용을 DB서버에게 질의(<span
-        style="color:blue">쿼리</span><sub>Query</sub>)해서 채우게 됩니다. 개념상, DB가 개입된 원래의 문서는 사용자가 볼 필요도 없고, 봐서는 안 될 문서가 될 수
-      있습니다.</p>
-
-    <p>&nbsp;Html은 위 두 상황 모두에서 문서의 뼈대를 만드는데 사용됩니다. 다만 확장자를 html로 지정하면 웹서버에게 추가적인 해석이 필요없는 문서임을 명시하게 됩니다.</p>
-
-
-
-    <h2>뼈대란 무엇인가?</h2>
-    <div style="display: flex;flex-direction: row;">
-      <div width="50%">
-        <p>
-          &nbsp;오른쪽 예시는 html으로만 작성되었습니다. 대표적인 기능은 아래와 같습니다.
-        <ul>
-          <li>글씨의 크기, 위치, 색을 표현</li>
-          <li>표 작성</li>
-          <li>리스트 작성</li>
-          <li>그림 불러오기</li>
-        </ul>
-        </p>
-
-        <p>
-          ※ 내용(Contents)과 디자인(Design)의 분리: 업무 효율을 위해 html을 작성할 때에는 디자인 요소를 제외하는 것이 권장됩니다.
-        </p>
-      </div>
-      <div id="affix-only-html" style="width:50%">
-        <style>
-          #affix-only-html table {
-            border: 1px solid black;
-            border-spacing: 1px;
-            width: auto;
-          }
-
-          #affix-only-html table td {
-            color: #000;
-            border: 1px solid black;
-          }
-
-          #affix-only-html table tr {
-            background-color: #fff;
-          }
-        </style>
-        <h3>제목입니다.</h3>
-        <i>
-          <font size="5">안</font>녕하세요.(이텔릭)
-        </i>
-        <font color="red">예제</font>파일입니다.
-        <table>
-          <tr>
-            <td>품목</td>
-            <td>수량</td>
-          </tr>
-          <tr>
-            <td>바나나</td>
-            <td>2</td>
-          </tr>
-        </table>
-        <img src="/source/capitan_meadows,_yosemite_national_park.jpg" width="100%">
-      </div>
+    <p>
+      html로 만들어진 문서는 국제규격을 지원하는 모든 브라우저에서 동작하면서, 남들과 공유하기도 좋습니다.
+    </p>
+    <ul>
+      <li>HTML<sub>HyperText Markup Language</sub>은 문서를 표현하는 국제 표준규격입니다.</li>
+      <li>서버<sub>Server</sub>는 클라이언트<sub>Client</sub>의 요청이 있을 때, 가지고 있는 문서를 전달합니다.</li>
+      <li>브라우저<sub>browser</sub> 전달 받은 문서를 해석합니다.</li>
+    </ul>
+    <div class="img-box">
+      <img src="src/HowToWork.svg" />
+      <span class="caption">Web service가 응답하는 순서</span>
+      <span class="description">"HowToWork.svg", iseohyun.com, CC-BY-SA<br>
+        Google, font, icon: Person, Host, rule-setting, database. Apache 2.0 license</span>
     </div>
+    <table class="last-td-left last-second-td-left">
+      <caption>Web Server의 동작 방식</caption>
+      <thead>
+        <tr>
+          <th></th>
+          <th>HTML</th>
+          <th>DB 연동언어</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>구분</td>
+          <td style="color:red">빨간색 화살표 →</td>
+          <td style="color: green">녹색 화살표 →</td>
+        </tr>
+        <tr>
+          <td>동작</td>
+          <td>고객<sub>Client</sub>의 요청이 있을 때, 요청 문서를 반환</td>
+          <td>데이터베이스<sub>Database, DB</sub>에 질의<sub>Query</sub>해 페이지를 생성</td>
+        </tr>
+        <tr>
+          <td>결과물</td>
+          <td>항상 같음</td>
+          <td>DB 상황이나 요청사항에 따라 다름</td>
+        </tr>
+        <tr>
+          <td>사용 예</td>
+          <td>단순 정보 전달 페이지</td>
+          <td>게시판, 내 정보조회, 쇼핑몰 상품정보</td>
+        </tr>
+        <tr>
+          <td>파일명</td>
+          <td>html</td>
+          <td>php(C 계열), asp(basic 계열), jsp(java 계열)</td>
+        </tr>
+      </tbody>
+    </table>
 
-    <br><br><br>
-    <h3>CSS<sub>Cascading Style Sheets</sub> 추가</h3>
+    <h2>HTML의 구조</h2>
+    <table class="last-td-left">
+      <caption>html의 구조</caption>
+      <thead>
+        <tr>
+          <th></th>
+          <th>건축</th>
+          <th>html</th>
+          <th>설명</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>골조</td>
+          <td>html</td>
+          <td>전체적인 구조를 잡습니다</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>인테리어</td>
+          <td>css</td>
+          <td>마감을 합니다. 보기좋게 만듭니다.</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>전기, 수도 배관</td>
+          <td>javascript</td>
+          <td>기능을 제공합니다.</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>창호 전문 업체<br>
+            시스템 에어컨 전문 업체...</td>
+          <td>svg, canvas, latex</td>
+          <td>특정 기능을 좀 더 쉽고 전문적으로 구현합니다.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>html만 사용</h3>
+    <div id="affix-only-html">
+      <style>
+        #affix-only-html {
+          width: 400px;
+          float: right;
+          min-width: 40vw;
+          max-width: 50vw;
+        }
+
+        #affix-only-html table {
+          border: 1px solid black;
+          border-spacing: 1px;
+          width: auto;
+        }
+
+        #affix-only-html table td {
+          color: #000;
+          border: 1px solid black;
+        }
+
+        #affix-only-html table tr {
+          background-color: #fff;
+        }
+      </style>
+      <h3>제목입니다.</h3>
+      <i><span size="5">안</span>녕하세요.(이텔릭)</i>
+      <span style="color:red">예제</span>파일입니다.
+      <table>
+        <tr>
+          <td>품목</td>
+          <td>수량</td>
+        </tr>
+        <tr>
+          <td>바나나</td>
+          <td>2</td>
+        </tr>
+      </table>
+      <img src="../Canvas/src/capitan_meadows,_yosemite_national_park.jpg" width="100%">
+    </div>
+    <p>
+      오른쪽 예시는 html으로만 작성되었습니다. 대표적인 기능은 아래와 같습니다.
+    </p>
+    <ul>
+      <li>글씨의 크기, 위치, 색을 표현</li>
+      <li>표 작성</li>
+      <li>리스트 작성</li>
+      <li>그림 불러오기</li>
+    </ul>
+    <p>
+      ※ 내용(Contents)과 디자인(Design)의 분리: 업무 효율을 위해 html을 작성할 때에는 디자인 요소를 제외하는 것이 권장됩니다.
+    </p>
+
+    <h3 style="clear:both;">CSS<sub>Cascading Style Sheets</sub> 추가</h3>
     <div style="display: flex;flex-direction: row;">
-      <div id="affix-only-css" style="width: 300px;">
+      <div id="affix-only-css">
         <style>
+          #affix-only-css {
+            width: 300px;
+            min-width: 30vw;
+            max-width: 40vw;
+            float: left;
+          }
+
           #affix-only-css h3 {
             text-shadow: rgba(0, 0, 0, 0.35) 5px 5px 5px;
           }
@@ -174,9 +252,9 @@
         </style>
         <h3>제목입니다.</h3>
         <i>
-          <font size="5">안</font>녕하세요.(이텔릭)
+          <span size="5">안</span>녕하세요.(이텔릭)
         </i>
-        <font color="red">예제</font>파일입니다.
+        <span style="color:red">예제</span>파일입니다.
         <table>
           <tr>
             <td>품목</td>
@@ -188,12 +266,13 @@
           </tr>
         </table>
         <span>요새미티 국립공원<br>(마우스를 올려보세요)
-          <img src="/source/capitan_meadows,_yosemite_national_park.jpg">
+          <img src="../Canvas/src/capitan_meadows,_yosemite_national_park.jpg">
         </span><br>
       </div>
       <div width="50%">
         <p>
-          &nbsp;CSS는 HTML과 마찬가지로 국제 표준 언어입니다. CSS는 디자인을 담당합니다. 대표적인 기능은 아래와 같습니다.
+          CSS는 HTML과 마찬가지로 국제 표준 언어입니다.
+          CSS는 디자인을 담당합니다.
         </p>
 
         <ul>
@@ -206,42 +285,42 @@
         </ul>
 
         <p>
-          ※ 적응형: 웹 페이지의 접근은 PC, 테블릿, 모바일 등의 다양한 환경에서 보여집니다. 따라서, 각 환경에 맞추어 콘텐츠를 배치하는 것을 적응형이라고 합니다.
+          ※ 적응형: 웹 페이지의 접근은 PC, 테블릿, 모바일 등의 다양한 환경에서 보여집니다.
+          따라서, 각 환경에 맞추어 콘텐츠를 배치하는 것을 적응형이라고 합니다.
         </p>
       </div>
     </div>
 
-
-    <br><br><br><br>
     <h3>JavaScript추가</h3>
-    <div style="display: flex;flex-direction: row;">
-      <div width="50%">
-        <p>
-          &nbsp;오른쪽 예제는 사용자가 올바른 비밀번호를 입력했을 때, "정답입니다"를 출력합니다. (F12를 눌러서, 비밀번호가 무엇인지 알아봅시다)
-        </p>
-        <p>
-          &nbsp;Javascript는 Client의 브라우저에서 동작하기 때문에 DB와 소통할 수 없습니다. 하지만 CSS보다 더 구체적이고 복잡한 동작을 수행 할 수 있습니다.
-        </p>
-
-      </div>
-      <div id="affix-only-js">
-        비밀번호를 입력해주세요:<br> <input type="text" onchange="check_pw(this.value)">
-        <script>
-          function check_pw(input) {
-            if (input == "password") {
-              alert("정답입니다.");
-            } else {
-              alert("틀렸습니다.");
-            }
+    <div id="affix-only-js">
+      <style>
+        #affix-only-js {
+          float: right;
+        }
+      </style>
+      비밀번호를 입력해주세요:<br> <input type="text" onchange="check_pw(this.value)">
+      <script>
+        function check_pw(input) {
+          if (input == "password") {
+            alert("정답입니다.");
+          } else {
+            alert("틀렸습니다.");
           }
-        </script>
-      </div>
+        }
+      </script>
     </div>
-
-    <br><br><br><br>
-    <h3>그림(SVG, canvas)추가하기</h3>
     <p>
-      &nbsp;이미 그려진 그림을 불러올 수도 있지만, 직접 말로(프로그램으로) 그림을 그릴 수도 있습니다. 다음과 같은 장점이 있습니다.
+      오른쪽 예제는 사용자가 올바른 비밀번호를 입력했을 때, "정답입니다"를 출력합니다.
+      (F12를 눌러서, 비밀번호가 무엇인지 알아봅시다)
+    </p>
+    <p>
+      Javascript는 Client의 브라우저에서 동작하기 때문에 DB와 소통할 수 없습니다.
+      하지만 CSS보다 더 구체적이고 복잡한 동작을 수행 할 수 있습니다.
+    </p>
+
+    <h3 style="clear:both">그림(SVG, canvas)추가하기</h3>
+    <p>
+      이미 그려진 그림을 불러올 수도 있지만, 직접 말로(프로그램으로) 그림을 그릴 수도 있습니다. 다음과 같은 장점이 있습니다.
     </p>
 
     <ul>
@@ -301,7 +380,10 @@
     </div>
 
     <h1>작업환경 설정</h1>
-    <p>작업환경이란 다음과 같은 준비과정을 의미합니다. 환경 설정이란 단순히 프로그램 설치 뿐 아니라, 각 프로그램에 대한 지식, 단축키 및 커스터마이징을 포함합니다.</p>
+    <p>
+      작업환경이란 다음과 같은 준비과정을 의미합니다.
+      환경 설정이란 단순히 프로그램 설치 뿐 아니라, 각 프로그램에 대한 지식, 단축키 및 커스터마이징을 포함합니다.
+    </p>
     <ul>
       <li>코딩할 프로그램: 에디터</li>
       <li>결과를 확인할 프로그램: 브라우저</li>
@@ -311,22 +393,22 @@
 
     <h2>브라우저</h2>
     <p>
-      &nbsp;Chrome, Edge, Safari, Opera, Firefox 중 하나를 선택합니다. <u>단, Explorer는 표준 미준수. 지원 중단</u>
+      Chrome, Edge, Safari, Opera, Firefox 중 하나를 선택합니다. <u>단, Explorer는 표준 미준수. 지원 중단</u>
     </p>
     <table class="last-td-align-left">
       <caption>브라우저 종류</caption>
       <thead>
         <tr>
-          <td>브라우저명</td>
-          <td>특징</td>
+          <th>브라우저명</th>
+          <th>특징</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td>크롬 Chrome</td>
           <td>구글 지원, 높은 점유율[
-            <a href=https://gs.statcounter.com/browser-market-share/desktop">PC</a> |
-            <a href="https://gs.statcounter.com/browser-market-share/mobile">모바일</a> ], 균형잡힌 성능(메모리, 속도)
+            <a href="https://gs.statcounter.com/browser-market-share/desktop" target="_blank">PC</a> |
+            <a href="https://gs.statcounter.com/browser-market-share/mobile" target="_blank">모바일</a> ], 균형잡힌 성능(메모리, 속도)
           </td>
         </tr>
         <tr>
@@ -347,9 +429,10 @@
         </tr>
       </tbody>
     </table>
+
     <h3>디버깅</h3>
     <p>
-      &nbsp;대부분의 브라우저는 디버깅을 지원합니다(F12). 대표적인 기능은 다음과 같습니다.
+      대부분의 브라우저는 디버깅을 지원합니다(F12). 대표적인 기능은 다음과 같습니다.
     </p>
     <ul>
       <li>각 객체의 속성 확인</li>
@@ -378,9 +461,10 @@
       </li>
     </ul>
 
-
     <h2>에디터</h2>
-    <p>&nbsp;에디터는 기본적으로 문서를 저장 할 수 있으면 됩니다. vscode를 추천하는 이유는 다음과 같습니다.</p>
+    <p>
+      에디터는 기본적으로 문서를 저장 할 수 있으면 됩니다. vscode를 추천하는 이유는 다음과 같습니다.
+    </p>
     <ul>
       <li>가독성 높은 비주얼(알록달록)</li>
       <li>쉬운 편집: 예약어 추천 기능, 각종 단축키</li>
@@ -389,13 +473,18 @@
     </ul>
 
     <p>
-      다운로드 : <a href="https://code.visualstudio.com/">https://code.visualstudio.com/</a><br>
+      다운로드 : <a href="https://code.visualstudio.com/" target="_blank">https://code.visualstudio.com/</a><br>
     </p>
 
-    <p>자세한 내용은 <a href="/etc/column/vscode/start.html">vscode 사용법</a>문서를 참조 하십시오.</p>
+    <p>
+      자세한 내용은 <a href="/basicStudy/engineering/vscode/start.html">vscode 사용법</a>문서를 참조 하십시오.
+    </p>
 
     <h2>Git</h2>
-    <p>&nbsp;Git은 코드관리 프로그램입니다. 코드관리란 수정 이력을 보관하고, 오류 발생시 정상버전으로 복구하는 작업을 의미합니다. 장점으로는</p>
+    <p>
+      Git은 코드관리 프로그램입니다.
+      코드관리란 수정 이력을 보관하고, 오류 발생시 정상버전으로 복구하는 작업을 의미합니다. 장점으로는:
+    </p>
     <ul>
       <li>간단한 명령어로 이력관리 자동화</li>
       <li>압축저장으로 공간 확보</li>
@@ -403,110 +492,28 @@
       <li>인증을 통한 보안기능 제공</li>
       <li>Github, MS에서 지원하는 무료서버(+웹 서버 제공)</li>
     </ul>
-    <h3>다운로드</h3>
-    <ul>
-      <li>
-        git-bash 다운로드 : <a href="https://git-scm.com/downloads">https://git-scm.com/downloads</a><br>
-        &nbsp; - git프로그램이 <span class="tooltip">CLI<sub>Command Line Interface</sub><span class="tt_ctx"
-            style="width: 300px;">명령어를 입력하여 동작시키는 방법, 다른 방법 : GUI(Graphic User Interface), 마우스로 입력하는
-            방법</span></span>다보니 명령어를 수행할 인터페이스와 모듈을을 다운로드 받아야 합니다.
-      </li>
-      <li>
-        github가입 : <a href="https://github.com/">https://github.com/</a><br>
-        &nbsp; - 작업한 페이지를 업로드 하기 위해서 가입합니다.
-      </li>
-    </ul>
+    <p>
+      자세한 내용은 <a href="/basicStudy/engineering/git/git.html">여기</a>를 참조하십시오.
+    </p>
 
-    <h3>자동인증 세팅</h3>
-    <ol>
-      <li>내 컴퓨터에서 ~/.ssh 폴더로 이동합니다.(예:c:\Users\iseoh\.ssh)</li>
-      <li><u>ssh-keygen</u>을 입력합니다.<br>
-        &nbsp;아래는 예시를 보여줍니다. 빈 부분은 엔터를 입력합니다.<br>
-        &nbsp; 두개의 키가 생성될텐데, 비밀키-공개키 쌍으로, <u>.pub이 공개키</u>입니다.
-        <blockquote>
-          <pre>PS C:\Users\iseoh\.ssh> <u>ssh-keygen</u>
-Generating public/private rsa key pair.
-Enter file in which to save the key (C:\Users\iseoh/.ssh/id_rsa): <u>iseohyun</u>
-Enter passphrase (empty for no passphrase): <u> </u>
-Enter same passphrase again: <u> </u>
-Your identification has been saved in iseohyun
-Your public key has been saved in iseohyun.pub
-The key fingerprint is:
-SHA256:LhutlVawvKoWmw5sSIrqiEqgapLQK7+WWLjTucz6Mkg iseoh@SeohyunBook
-The key's randomart image is:
-+---[RSA 3072]----+
-|                 |
-|                 |
-|        .        |
-|       . o       |
-|.+      S .      |
-|OEo .  o +       |
-|OB++ +o B        |
-|^=*.+  O         |
-|%@B=o.+          |
-+----[SHA256]-----+
-PS C:\Users\iseoh\.ssh>
-</pre>
-        </blockquote>
-      </li>
-      <li>.ssh폴더 이하에 "config"파일과 "known_hosts"파일이 있습니다.<br>아래는 <u>"config" 예시</u>를 보여줍니다.
-        <blockquote>
-          <pre>Host github.com
-  User iseohyun
-  Hostname github.com
-  PreferredAuthentications publickey
-  IdentityFile ~/.ssh/iseoBook/iseohyun</pre>
-        </blockquote>
-      </li>
-      <li> "known_hosts"는 최초접속시 기억할 내용을 기계가 작성합니다. <br>
-        아래 예시는 "known_hosts" 접속정보를 강제로 지운 뒤, 접속을 진행했더니 발생한 로그입니다. <u>yes</u>를 입력하면 자동으로 생성됩니다.
-        <blockquote>
-          <pre>$ <u>git push</u>
-  The authenticity of host 'github.com (20.200.245.247)' can't be established.
-  ED25519 key fingerprint is SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU.
-  This key is not known by any other names
-  Are you sure you want to continue connecting (yes/no/[fingerprint])? <u>yes</u>
-  Warning: Permanently added 'github.com' (ED25519) to the list of known hosts.
-  Everything up-to-date</pre>
-        </blockquote>
-      </li>
-      <li>
-        github.com에서 <u>psrsonal account >> Access >> SSH and GPG keys >> SSH keys</u>에 방금만든 공개키(...._pub)의 내용을 메모장으로
-        열어서 복붙합니다.
-      </li>
-      <img src="https://blog.kakaocdn.net/dn/KPvmr/btrRiZWv1xr/mFWTYpu5wr6MKr3cbakVNK/img.png"
-        id="affix-image-sshkey-reg">
-    </ol>
-    <h3>github사이트 가입</h3>
-    생략<br>
-    <h3>저장공간 만들기(<u>github사이트에서 수행</u>)</h3>
-    <img src="https://blog.kakaocdn.net/dn/l3w1k/btrRhJAqhjU/XBaLxlgKi0KR7czhVkovkk/img.png"
-      id="affix-image-create-repo" style="margin-bottom: 50px;">
-    등록하면 아래와 같이 저장공간을 만들라고 나옵니다.<br>
-    <div style="width:100%; height:500px; overflow:hidden; position:relative;margin-bottom: 50px;"
-      id="affix-image-create-repo2">
-      <img src="https://blog.kakaocdn.net/dn/bhtzBW/btrRhJ8bvJO/I3ECLMKmDX7epNVKhKTSm0/img.png"
-        style="position:absolute; top:-42px">
-    </div>
-    아래 내용을 복사해서 git-bash에 넣으면 됩니다.
-    <blockquote>
-      echo "# Test" >> README.md<br>
-      git init<br>
-      git add README.md<br>
-      git commit -m "first commit"<br>
-      git branch -M main<br>
-      git remote add origin git@github.com:iseohyun/Test.git<br>
-      git push -u origin main<br>
-    </blockquote>
     <h2>IIS서버 설치</h2>
-    &nbsp;웹 서버 설치과정입니다. apaphe를 설치해도 됩니다. 다만, 윈도우 사용자라면 이미 설치된 서비스를 켜주기만 하면 되는 거라서 IIS를 사용합니다.<br>
+    <p>
+      웹 서버 설치과정입니다.
+      apaphe를 설치해도 됩니다.
+      다만, 윈도우 사용자라면 이미 설치된 서비스를 켜주기만 하면 되는 거라서 IIS를 사용합니다.
+    </p>
+
     <h3>설치</h3>
-    - 윈도우 11기준 : <u>설정판>>앱 >> 선택적 기능 >> 관련설정 >> 기타 Windows기능>> Windows 기능 켜기/끄기 창에서 >> 인터넷 정보 서비스 >> 확인</u><br>
-    (윈도우10:<a href="https://jsitclub.tistory.com/56">https://jsitclub.tistory.com/56</a>)
+    <p>
+      - 윈도우 11기준 : <u>설정판>>앱 >> 선택적 기능 >> 관련설정 >> 기타 Windows기능>> Windows 기능 켜기/끄기 창에서 >> 인터넷 정보 서비스 >> 확인</u><br>
+      (윈도우10:<a href="https://jsitclub.tistory.com/56">https://jsitclub.tistory.com/56</a>)
+    </p>
+
     <h3>환경설정</h3>
     <ol>
       <li>
-        좌측 "<u>연결</u>"메뉴바에서, <u>Default Web Site</u>를 클릭하면 오른쪽에 <u>작업</u>탭이 열립니다. 작업탭에서 <u>기본설정...</u>을 엽니다<br>
+        좌측 "<u>연결</u>"메뉴바에서, <u>Default Web Site</u>를 클릭하면 오른쪽에 <u>작업</u>탭이 열립니다.
+        작업탭에서 <u>기본설정...</u>을 엽니다<br>
         <img src="https://blog.kakaocdn.net/dn/bGMvsJ/btrRiks9xsp/flIJWxNuEebeF5X6oBNap1/img.png"
           id="affix-image-IIS-setting" style="width:100%">
       </li>
@@ -515,7 +522,9 @@ PS C:\Users\iseoh\.ssh>
         <img src="https://blog.kakaocdn.net/dn/clDVLo/btrRhHbxPqk/UHKzCaguEH0Ke0klp2Wuuk/img.png"
           id="affix-image-IIS-set-folder" style="width:100%">
       </li>
-      <li>폴더의 권한을 변경해줍니다. 윈도우에서 권한 부여방법은 해당 폴더에서 <u>우클릭>>속성>>보안>>편집>>추가</u>로 진행 할 수 있습니다.<br>
+      <li>
+        폴더의 권한을 변경해줍니다.
+        윈도우에서 권한 부여방법은 해당 폴더에서 <u>우클릭>>속성>>보안>>편집>>추가</u>로 진행 할 수 있습니다.<br>
         <blockquote>
           CREATOR OWNER(없음)<br>
           SYSTEM(모든권한)<br>
@@ -528,37 +537,35 @@ PS C:\Users\iseoh\.ssh>
       <li>브라우저에서 127.0.0.1로 접속해봅니다.</li>
     </ol>
 
-
-
     <h1>도메인 구매(옵션)</h1>
 
-    <p>&nbsp;모든 서버는 <span class="tooltip">IP<span class="tt_ctx" style="width: 300px;">IPv4는 IP version 4, IPv6는 IP
-          version 6를 의미합니다. v4는 255이하의 4개 정수로 이루어져 있습니다. 예를들어, 192.168.0.1</span></span>를 반드시 가지고 있고, <span
-        class="tooltip">도메인<span class="tt_ctx" style="width: 300px;">여기서 도메인이란, <span
-            style="font-weight: bold;font-size: 1.2em;">iseohyun.com</span>과 같이 글자로 이루어진 주소를 이야기 합니다.</span></span>
-      없이 <u>IP만으로도 얼마든지 서버를 운영할 수 있습니다.</u>
+    <p>
+      모든 서버는 <span class="tooltip">IP
+        <span class="tt_ctx" style="width: 300px;">IPv4는 IP version 4, IPv6는 IP version 6를 의미합니다.
+          v4는 255이하의 4개 정수로 이루어져 있습니다.
+          예를들어, 192.168.0.1</span>
+      </span>
+      를 만으로 충분히 동작합니다. 다만 <span class="tooltip">도메인
+        <span class="tt_ctx" style="width: 300px;">
+          <span style="font-weight: bold;font-size: 1.2em;">iseohyun.com</span>과 같이 글자로 이루어진 주소를 이야기 합니다.
+        </span>
+      </span>이 있으면 기억, 홍보하기 좋습니다.
     </p>
+
     <h3>도메인 구매</h3>
     <p>
-      &nbsp;후이즈, 예스닉, 가비아, wix, GoDaddy 등등 검색창에 "도메인 구매"라고 검색하면 나오는 어지간한 사이트에서 구매하면 됩니다. 보통 도메인 회사들이 사업다각화를 위해서 홈페이지를
-      끼워서 파는데,
-      우리는 그럴 것이 아니기 때문에, 그냥 싼데서 구매하면 됩니다.
+      후이즈, 예스닉, 가비아, wix, GoDaddy 등 DNS 업체를 통해 구매할 수 있습니다.
     </p>
     <ul>
-      <li><u>싼데서 구입합니다.</u> 보통 1년에 15,000원 선입니다. 키워드가 좋을수록 비쌉니다.</li>
-      <li><u>하나만 구입합니다.</u> 몇 회사에서 .com, .co.kr, .net등을 묶어서 파는데 낭비 또는 손해입니다. 결국 검색에 노출되는 주소는 대표 주소 하나입니다. 게다가 홍보할 때
-        오히려 좋지 않습니다.</li>
+      <li>키워드가 좋을수록(간단할수록) 비쌉니다. 보통 1년에 15,000원 선입니다.</li>
+      <li>.com, .co.kr, .net등을 묶어서 팔기도 합니다. 개인에겐 추천하지 않는편입니다.</li>
     </ul>
+
     <h3>도메인 연결</h3>
     <p>
-      &nbsp;도메인을 <u>내가 만든 문서가 저장된 서버로 연결</u>을 해주어야 합니다.<br>
-      &nbsp;내 컴퓨터에 저장해 두고, 하루종일 컴퓨터를 켜놔도 됩니다. <del>다소 무식한 방법 같지만 옛날엔 이렇게 많이 했습니다.</del> 우리는 <u>github(Microsoft)에다가
-        서버를 만들(무료)예정</u>입니다. tistory에 만들어도 됩니다. <u>Tistory(Kakao) 역시(무료+) 엄청난 자유도를 자랑하기 때문에 매우 좋은 선택</u>입니다. 강력한 편집 및
-      관리툴을 제공하기 때문에 고려해 볼 만 합니다.
-      도메인을 구매한 사이트에서 내 계정에 찾아가면 어느 주소로 연결할 것인지 물어봅니다.<br><br>
-
-      &nbsp;포워딩에는 2가지 방법이 있습니다. 구매한 사이트에 서버의 도메인을 등록하는 방법, 서버의 네임서버를 등록하는 방법. 내가 구매한 주소는 iseohyun.com인데, 연결은 둘 다 됩니다만,
-      내 사이트의 민낯이 그대로 보이는 것이 어째 마음에 들지 않습니다. 따라서, <u>반드시 네임서버 등록을 통해서 포워딩을 하시기</u> 바랍니다.
+      <u>github(Microsoft)에서 무료로</u> 서버를 만들 수 있습니다. 유명한 블로그에 도메인을 연결할 수도 있습니다.
+      이제 도메인을 <u>내가 만든 문서가 저장된 서버로 연결</u>을 해주어야 합니다.
+      이것을 <u>포워딩</u>이라고 합니다.
     </p>
     <table>
       <caption>네임서버 등록의 필요성</caption>
@@ -583,8 +590,8 @@ PS C:\Users\iseoh\.ssh>
 
     <h3>네임서버</h3>
     <p>
-      &nbsp;도메인으로 서버에 접근하기 위해서는 NS<sub>Name Server;네임서버</sub>를 거쳐야 합니다. cmd를 열고,
-      ipconfig/all 명령어를 통해 본인이 현재 사용중인 DNS(Domain Name Server)를 알 수 있습니다.
+      도메인으로 서버에 접근하기 위해서는 NS<sub>Name Server;네임서버</sub>를 거쳐야 합니다.
+      cmd를 열고, ipconfig/all 명령어를 통해 본인이 현재 사용중인 DNS(Domain Name Server)를 알 수 있습니다.
     </p>
     <table>
       <caption>한국인들이 자주 사용하는 DNS 주소</caption>
@@ -616,22 +623,24 @@ PS C:\Users\iseoh\.ssh>
       </tr>
     </table>
     <p>
-      &nbsp;위의 서버는 도메인 시스템의 가장 시작점이고, 우리가 등록할 도메인 서버는 가장 마지막에 위치할 서버입니다. 그 서버는 각 서비스 업자가 공개하고 있습니다.<u>공개된 IP주소를 구매한
-        사이트 계정에서 A레코드 관리(네임서버 호스팅)으로 등록하거나, 타입을 A로 하여 등록하면 됩니다.</u>
+      위의 서버는 도메인 시스템의 가장 시작점이고, 우리가 등록할 도메인 서버는 가장 마지막에 위치할 서버입니다.
+      그 서버는 각 서비스 업자가 공개하고 있습니다.
+      <u>공개된 IP주소를 구매한 사이트 계정에서 A레코드 관리(네임서버 호스팅)으로 등록하거나, 타입을 A로 하여 등록하면 됩니다.</u>
     </p>
     <table>
       <caption>파일서버의 DNS 주소</caption>
       <thead>
         <tr>
-          <td>서버명</td>
-          <td>주소</td>
+          <th>서버명</th>
+          <th>주소</th>
         </tr>
       </thead>
       <tr>
         <td>Github</td>
         <td style="text-align: center;">185.199.108.153<br>185.199.109.153<br>185.199.110.153<br>185.199.111.153<br>
           [ <a
-            href="https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site">
+            href="https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site"
+            target="_blank">
             상세 정보</a> ]</td>
       </tr>
       <tr>
@@ -640,53 +649,14 @@ PS C:\Users\iseoh\.ssh>
       </tr>
     </table>
     <p>
-      &nbsp;<u>마지막으로 문서가 저장된 서버에 구매한 도메인 이름을 알려주어야 합니다.</u> 이를 그림으로 나타내면 다음과 같습니다.
+      <u>마지막으로 문서가 저장된 서버에 구매한 도메인 이름을 알려주어야 합니다.</u>
+      이를 그림으로 나타내면 다음과 같습니다.
     </p>
-    <svg viewBox="0 0 500 300" xmlns="http://www.w3.org/2000/svg" id="affix-about-buying-domain">
-      <marker id="ah1" markerWidth="20" markerHeight="20" viewBox="0 0 20 10" orient="auto">
-        <path d="M9 0L0 4 0 -4 9 0z" />
-      </marker>
-      <g style="fill:none; stroke:#888;stroke-width:3px">
-        <ellipse cx="50" cy="200" rx="15" ry="15" />
-        <ellipse cx="50" cy="200" rx="10" ry="10" />
-        <ellipse cx="200" cy="200" rx="15" ry="15" />
-        <ellipse cx="200" cy="200" rx="10" ry="10" />
-        <ellipse cx="200" cy="100" rx="15" ry="15" />
-        <ellipse cx="200" cy="100" rx="10" ry="10" />
-        <ellipse cx="400" cy="100" rx="15" ry="15" />
-        <ellipse cx="400" cy="100" rx="10" ry="10" />
-      </g>
-      <g
-        style="fill:none; stroke:black;stroke-width:2px;stroke-dasharray:10 5;stroke-dashoffset:0;stroke-linejoin:round; stroke-linecap:round">
-        <path marker-end="url(#ah1)"
-          d="M 70 200 H180 a20 20 0 0 1 20 -20 V120 a20 20 0 0 0 20 -20 H380 a20 20 0 0 0 20 20 V250 a20 20 0 0 1 -20 20 H70 a20 20 0 0 1 -20 -20 v-10" />
-        <animate attributeName="stroke-dashoffset" values="15;0" dur="1s" repeatCount="indefinite" />
-      </g>
-      <g style="fill:#888;font-size:17px">
-        <text x="14" y="175"> 내 컴퓨터 </text>
-        <text x="110" y="60"> 도메인 판매처 </text>
-        <text x="350" y="60"> 파일 업로드 서버 </text>
-      </g>
-      <g style="fill:#499180;font-size:13px">
-        <text x="200" y="230"> 예) 이통사, 구글 등</text>
-        <text x="110" y="80"> 예) 가비아, 후이즈, 예스닉 등 </text>
-        <text x="350" y="80"> 예) git, tistory 등</text>
-      </g>
-      <g style="fill:red;font-size:13px">
-        <text x="80" y="100"> 1) 도메인 구매
-          <animate attributeName="fill" values="#FFF;#F00;#F00;#F00;#F00;#F00" dur="5s" repeatCount="indefinite" />
-        </text>
-        <text x="80" y="120"> 2) 업로드서버의
-          <animate attributeName="fill" values="#FFF;#FFF;#F00;#F00;#F00;#F00" dur="5s" repeatCount="indefinite" />
-        </text>
-        <text x="96" y="136"> 네임서버 등록
-          <animate attributeName="fill" values="#FFF;#FFF;#F00;#F00;#F00;#F00" dur="5s" repeatCount="indefinite" />
-        </text>
-        <text x="410" y="130"> 3) 도메인 등록
-          <animate attributeName="fill" values="#FFF;#FFF;#FFF;#F00;#F00;#F00" dur="5s" repeatCount="indefinite" />
-        </text>
-      </g>
-    </svg>
+    <div class="img-box">
+      <img src="src/Domain.svg" />
+      <span class="caption">도메인 구매시 응답 원리</span>
+      <span class="description">"Domain.svg", iseohyun.com, CC-BY-SA </span>
+    </div>
 
   </article>
 </body>

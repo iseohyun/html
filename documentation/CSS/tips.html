@@ -18,7 +18,7 @@
 </script>
 
 <!-- 소스코드 스타일 -->
-<link rel="stylesheet" href="/highlight/styles/base16/classic-light.min.css" />
+<link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css" />
 <script src="/highlight/highlight.min.js"></script>
 <script src="/highlight/highlightjs-line-numbers.js"></script>
 
@@ -27,7 +27,7 @@
 <link rel="shortcut " type="image/x-" href="/source/_seohyun.svg">
 
 <!-- 목차 생성 -->
-<script src="/modules/hd_list.js" defer></script>
+<script src="/modules/script.js" defer></script>
 
 <!-- 공통스킨 -->
 <style type="text/css">
@@ -40,10 +40,10 @@
     <div id="title"> CSS 팁 </div>
     <h1>표준과 비표준</h1>
     <p>
-      W3C홈페이지(w3.org)에는 CSS 표준(standard)를 발표하고 있습니다.
+      W3C홈페이지(w3.org)에는 CSS 표준<sub>standard</sub>를 발표하고 있습니다.
       문제는 기술선도보다 표준이 항상 늦다는 겁니다(당연하게도).
       각 진영에서는 해당브라우저의 실험버전의 테그들을 선보이고 있습니다. 물론 지금도 진행중입니다.
-      퍼블리셔(제작자) 입장에서는 최신기술을 접목하는 것과 레거시 사용자들에 대한 서비스 둘 다 제공하고 싶어합니다.
+      제작자<sub>publisher</sub> 입장에서는 최신기술을 접목하는 것과 레거시 사용자들에 대한 서비스 둘 다 제공하고 싶어합니다.
     </p>
     <table class="all-td-left">
       <caption>
@@ -180,7 +180,6 @@ div {
       webkit이 선두하는 분위기가 당분간은 지속될 것 같습니다. 역시 좋은 전략입니다.
     </p>
 
-
     <h1>캐시 데이터 업데이트</h1>
     <h3 id="캐시 데이터">캐시 데이터 컨트롤(새로고침)</h3>
     <p>
@@ -277,7 +276,9 @@ div {
       위 예제는 기본 디자인이고, 바로 아래는 marker를 변경한 디자인, 마지막은 marker를 제거한 디자인입니다.
       기본 디자인에서 <u>marker와 항목의 거리가 유독 멀어보이는 이유</u>는 marker의 특수문자를 잘 못 선택해서 그렇습니다.
     </p>
-    <p><a href="/etc/column/font/symbol.html" target="_blank">특수문자 보기</a></p>
+    <p>
+      <a href="/column/font/symbol.html" target="_blank">특수 문자 table</a>
+    </p>
     <p>
       선택한 특수문자에 좌우 여백이 상당히 있는 편에 사이띄기까지 더해져 더 멀어보입니다.
       아래 코드는 다음과 같은 스타일을 적용하였습니다.

@@ -24,16 +24,12 @@
   <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
 
   <!-- 소스코드 스타일 -->
-  <link rel="stylesheet" href="/highlight/styles/base16/classic-light.min.css" />
+  <link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css" />
   <script src="/highlight/highlight.min.js"></script>
   <script src="/highlight/highlightjs-line-numbers.js"></script>
-  <script>
-    hljs.highlightAll();
-    hljs.initLineNumbersOnLoad();
-  </script>
 
   <!-- 목차 생성 -->
-  <script src="/modules/hd_list.js" defer></script>
+  <script src="/modules/script.js" defer></script>
 
   <!-- 공통스킨 -->
   <style type="text/css">
@@ -51,46 +47,18 @@
     <div id="title"> javascript 기초문법 </div>
 
     <h1>강의노트</h1>
-    <p>&nbsp;아래주소의 github에 업로드된 예제코드를 다운받아 실습 할 수 있습니다.<br>
-      &nbsp;환경설정에 관한 정보는 <a href="../html/domain.html#%EC%9E%91%EC%97%85%ED%99%98%EA%B2%BD%20%EC%84%A4%EC%A0%95"
-        target="_blank">여기</a>를 참조해주세요.
-
+    <p>
+      아래주소의 github에 업로드된 예제코드를 다운받아 실습 할 수 있습니다(C_Javascript 참조).
     </p>
-    <div style="border: 1px solid;
-    padding: 5px 30px;
-    border-radius: 8px;
-    width: fit-content;
-    margin-left: 30px;">
-      <span id="textToCopy">
-        https://github.com/iseohyun/html-example.git
-      </span>
-      <button type="button" onclick="copyToClipboard()">복사하기</button>
-    </div>
-    <script>
-      function copyToClipboard() {
-        const textToCopy = document.getElementById("textToCopy").innerText;
-
-        navigator.clipboard.writeText(textToCopy)
-          .then(() => {
-            alert("텍스트가 클립보드에 복사되었습니다.");
-          })
-          .catch(err => {
-            console.error('클립보드에 텍스트를 복사하는 중 오류가 발생했습니다: ', err);
-          });
-      }
-    </script>
-
-
+    <blockquote>
+      https://github.com/iseohyun/html-tutorial.git
+    </blockquote>
     <iframe
       src="https://docs.google.com/presentation/d/e/2PACX-1vRWdMu3YIng9H-JtxV7m_okSPgllb4iIcnNjITR4_KckQA-rvqjaHyVV2Pwe577vNIl5SvHDgswYu5W/embed?start=false&loop=false&delayms=3000"
       frameborder="0" width="960" height="569" allowfullscreen="true" mozallowfullscreen="true"
       webkitallowfullscreen="true"></iframe>
 
-    <p>&nbsp;레포지토리에서
-      <span class="tutorial" style="display:inline;padding:5px 10px; margin:0">C_Javascript</span>폴더를 참고해주십시오.
-    </p>
-    <hr>
-
+    <h3>기본 규칙</h3>
     <ol>
       <li>
         <u>선언: &lt;script>...&lt;/script>에 코딩</u>합니다.<br>
@@ -101,9 +69,9 @@
       <li>
         수행: <u>위에서 부터 수행합니다.</u>
         <ul>
-          <li> 아직 로딩되지 않은 객체를 불러온다던가, 준비되지 않은 작업을 수행할 수 없습니다. </li>
-          <li> 실행중에 <u>에러가 발생하면, 다음 줄을 수행하지 않고, 중단</u>합니다.</li>
-          <li> function은 수행하지 않습니다. 호출되었을 때, 수행합니다.</li>
+          <li>아직 로딩되지 않은 객체를 불러온다던가, 준비되지 않은 작업을 수행할 수 없습니다.</li>
+          <li>실행중에 <u>에러가 발생하면, 다음 줄을 수행하지 않고, 중단</u>합니다.</li>
+          <li>function은 수행하지 않습니다. 호출되었을 때, 수행합니다.</li>
         </ul>
       </li>
       <li>
@@ -157,18 +125,26 @@
     </blockquote>
 
     <h2>환경2 : Node.js</h2>
-    <p>&nbsp;Node.js는 javascript runtime환경을 구축하고, 서버를 개설해주는 어플리케이션입니다. 아래 링크에서 다운로드 받습니다.</p>
+    <p>
+      Node.js는 javascript runtime환경을 구축하고, 서버를 개설해주는 어플리케이션입니다.
+      아래 링크에서 다운로드 받습니다.
+    </p>
     <a href="https://nodejs.org/en/download" target="_blank">https://nodejs.org/en/download</a>
 
-    <p>&nbsp;Extension(<var>ctrl</var> + <var>shift</var> + <var>x</var>)에서 vscode와 Node.js를 연결해 줄 <a href=""
-        target="_blank">code runner</a>를 설치합니다.</p>
+    <p>
+      Extension(<var>ctrl</var> + <var>shift</var> + <var>x</var>)에서
+      vscode와 Node.js를 연결해 줄 <a href="" target="_blank">code runner</a>를 설치합니다.
+    </p>
 
-    <p>&nbsp;(option)단축키 설정(Command Palette(<var>ctrl</var> + <var>shift</var> + <var>p</var>)에서 "keyboard
-      shortcuts"검색)에서 "code runner.run"항목의 단축키를 <var>F5</var>로 교체합니다.</p>
+    <p>
+      (option)단축키 설정(Command Palette(<var>ctrl</var> + <var>shift</var> + <var>p</var>)에서
+      "keyboard shortcuts"검색)에서 "code runner.run"항목의 단축키를 <var>F5</var>로 교체합니다.
+    </p>
 
     <span class="tutorial">A_Start > a2_notejs.js</span>
-    <p>&nbsp;실습파일(.js)에서 우상단 Run Code(<var>F5</var>) 실행</p>
-
+    <p>
+      실습파일(.js)에서 우상단 Run Code(<var>F5</var>) 실행
+    </p>
 
     <h1>기초문법</h1>
     <h2>변수</h2>
@@ -209,7 +185,8 @@
       </tbody>
     </table>
 
-    <p>&nbsp;※ 모든 변수는 초기화이전에 'undefined'라는 상태를 갖습니다.<br>
+    <p>
+      ※ 모든 변수는 초기화이전에 'undefined'라는 상태를 갖습니다.<br>
       &nbsp;※ hoisting: 변수의 선언이 스코프scope의 최상단에 끌어올려지는 현상(초기화X)
     </p>
 
@@ -302,21 +279,29 @@ console.log(what, typeof what); // 출력: null 'object'
         </tr>
       </tbody>
     </table>
-    <p>&nbsp;※ 원시타입과 참조타입의 구분은 "직접 저장하는가" vs" 저장된 주소를 가리키는가" 입니다. 임베디드 개발이 아니라면 크게 의미가 없을 수도 있습니다. 일례로 typeof null은
-      object로 출력되지만 고치지 않고 있습니다.</p>
-    <p>&nbsp;※ 특수문자(<a
-        href="https://ko.wikipedia.org/wiki/%EC%9D%B4%EC%8A%A4%EC%BC%80%EC%9D%B4%ED%94%84_%EB%AC%B8%EC%9E%90"
-        target="_blank">이스케이프 문자:위키</a>) : (\n) 줄바꿈, (\") 큰따옴표, (\')작은 따옴표...</p>
+    <p>
+      ※ 원시타입과 참조타입의 구분은 "직접 저장하는가" vs" 저장된 주소를 가리키는가" 입니다.
+      임베디드 개발이 아니라면 크게 의미가 없을 수도 있습니다.
+      일례로 typeof null은 object로 출력되지만 고치지 않고 있습니다.
+    </p>
+    <p>
+      ※ 특수문자(<a href="https://ko.wikipedia.org/wiki/%EC%9D%B4%EC%8A%A4%EC%BC%80%EC%9D%B4%ED%94%84_%EB%AC%B8%EC%9E%90"
+        target="_blank">이스케이프 문자:위키</a>) : (\n) 줄바꿈, (\") 큰따옴표, (\')작은 따옴표...
+    </p>
 
     <h3>typeof</h3>
-    <p>&nbsp;변수 타입을 알고 싶을 때, typeof를 사용합니다.</p>
+    <p>
+      변수 타입을 알고 싶을 때, typeof를 사용합니다.
+    </p>
     <blockquote>
       typeof(변수명); 또는<br>
       typeof 변수명;
     </blockquote>
 
     <div class="simple-box">
-      <p>바람직한 이름이란?</p>
+      <p>
+        바람직한 이름이란?
+      </p>
       <p>
         _(underbar, 밑줄)을 제외한 특수기호를 사용 할 수 없습니다.<br>
         숫자나 _(underbar, 밑줄)로 시작 할 수 없습니다.<br>
@@ -455,7 +440,9 @@ console.log(what, typeof what); // 출력: null 'object'
       </tbody>
     </table>
 
-    <p>&nbsp;Bit와 관련하여 <a href="/etc/column/binary/binary.html">2진법 문서</a>를 참고하십시오.</p>
+    <p>
+      비트<sub>Bit</sub>와 관련하여 <a href="/etc/column/binary/binary.html">2진법 문서</a>를 참고하십시오.
+    </p>
 
     <style>
       .rbb {
@@ -752,7 +739,6 @@ console.log(what, typeof what); // 출력: null 'object'
       </tbody>
     </table>
 
-
     <h2>문법(syntax)</h2>
     <div class="blockquote-title">함수를 선언 할 때</div>
     <blockquote>
@@ -778,7 +764,9 @@ function max(a, b) {
 }</pre>
     </blockquote>
 
-    <p>&nbsp;함수는 기능을 하나로 묶어서 호출이 되었을 때, 기술된 내용을 수행합니다.</p>
+    <p>
+      함수는 기능을 하나로 묶어서 호출이 되었을 때, 기술된 내용을 수행합니다.
+    </p>
     <ul>
       <li>전달인자(Argument)는 여러개이거나 생략될 수 있습니다.</li>
       <li>전달인자는 넘겨주는 순서가 중요합니다.</li>
@@ -788,10 +776,17 @@ function max(a, b) {
     <span class="tutorial">A_Start > e_function.html</span>
 
     <h2>함수객체</h2>
-    <p>&nbsp;함수란 하나의 코드 덩어리이고, 어딘가에 저장되어 있을 것 입니다. '어딘가'를 변수로 갖고, 동작방식만 함수와 같이 수행한다면 함수도 변수와 같이 취급할 수 있게 됩니다.</p>
+    <p>
+      함수란 하나의 코드 덩어리이고, 어딘가에 저장되어 있을 것 입니다.
+      '어딘가'를 변수로 갖고, 동작방식만 함수와 같이 수행한다면 함수도 변수와 같이 취급할 수 있게 됩니다.
+    </p>
 
-    <p>&nbsp;함수를 변수처럼 저장하고 사용할 수 도 있습니다. 아래 예시에서, myfunc은 이미 선언된 함수입니다. myVarFunc에서 myfunc를 마치 변수처럼 저장하였습니다. 마지막으로
-      myVarFunc()을 함수처럼 호출하면서 사용할 수 있습니다.</p>
+    <p>
+      함수를 변수처럼 저장하고 사용할 수 도 있습니다.
+      아래 예시에서, myfunc은 이미 선언된 함수입니다.
+      myVarFunc에서 myfunc를 마치 변수처럼 저장하였습니다.
+      마지막으로 myVarFunc()을 함수처럼 호출하면서 사용할 수 있습니다.
+    </p>
 
     <div class="blockquote-title">사용 예</div>
     <blockquote>
@@ -802,7 +797,9 @@ function max(a, b) {
     <span class="tutorial">A_Start > e2_functionObj.js</span>
 
     <h3>즉시 실행</h3>
-    <p>&nbsp;다음과 같이 선언하면, 선언과 동시에 실행이 됩니다.</p>
+    <p>
+      다음과 같이 선언하면, 선언과 동시에 실행이 됩니다.
+    </p>
     <span class="tutorial">A_Start > e3_immediately.js</span>
     <pre><code>(function func1(arg1) {
   console.log(arg1);
@@ -810,8 +807,12 @@ function max(a, b) {
     </pre>
 
     <h2>익명함수</h2>
-    <p>&nbsp;함수의 가장 큰 목적은 재사용성에 있습니다. 이 때, 호출을 위해서 함수이름이 필요합니다. 만약 한번만 쓰이는 함수라면, 굳이 함수의 이름을 작성하지 않아도 됩니다. 호출 방식은 다음과
-      같습니다.</p>
+    <p>
+      함수의 가장 큰 목적은 재사용성에 있습니다.
+      이 때, 호출을 위해서 함수이름이 필요합니다.
+      만약 한번만 쓰이는 함수라면, 굳이 함수의 이름을 작성하지 않아도 됩니다.
+      호출 방식은 다음과 같습니다.
+    </p>
 
     <div class="blockquote-title">익명함수 선언방법</div>
     <blockquote>
@@ -825,16 +826,18 @@ function max(a, b) {
     <span class="tutorial">A_Start > e5_anony_example.js</span>
 
     <h2>가변인자</h2>
-    <p>&nbsp;입력 인자의 갯수가 고정되어있지 않을 때(예:log함수) 다음과 같이 설졍할 수 있습니다.</p>
+    <p>
+      입력 인자의 갯수가 고정되어있지 않을 때(예:log함수) 다음과 같이 설졍할 수 있습니다.
+    </p>
     <span class="tutorial">A_Start > e6_variable_args.js</span>
     <pre><code>function func1(...arguments) {
   arguments.forEach((arg) => console.log(arg));
 }</code></pre>
 
-
-
     <h1>기본제공 함수</h1>
-    <p>&nbsp;Javascript가 기본적으로 제공하는 메소드(method, =function함수)를 이용한 예제</p>
+    <p>
+      Javascript가 기본적으로 제공하는 메소드(method, =function함수)를 이용한 예제
+    </p>
     <style>
       .second-last-td-left td:nth-last-child(2) {
         text-align: left;
@@ -977,7 +980,6 @@ function max(a, b) {
         </tr>
       </tbody>
     </table>
-
 
   </article>
 </body>

@@ -35,20 +35,16 @@
   <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
 
   <!-- 목차 생성 -->
-  <script src="/modules/hd_list.js" defer></script>
+  <script src="/modules/script.js" defer></script>
 
   <!-- 수식 -->
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
   <!-- 소스코드 스타일 -->
-  <link rel="stylesheet" href="/highlight/styles/base16/darkmoss.min.css" />
+  <link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css" />
   <script src="/highlight/highlight.min.js"></script>
   <script src="/highlight/highlightjs-line-numbers.js"></script>
-  <script>
-    hljs.highlightAll();
-    hljs.initLineNumbersOnLoad();
-  </script>
 
   <!-- 공통스킨 -->
   <style type="text/css">
@@ -146,14 +142,20 @@
     $$ A^c = \{4, 5\} $$
 
     <h2> 벤다이어그램<sub>Venn diagram</sub> </h2>
-    <p>&nbsp; 벤다이어그램은 앞서 언급했던 집합의 형태를 그림으로 보여줍니다. 각 연산 결과는 음영으로 표시합니다. 오른쪽 버튼을 눌러서 어떤 결과를 가져오는지 직접 시험해봅시다.</p>
+    <p>
+      벤다이어그램은 앞서 언급했던 집합의 형태를 그림으로 보여줍니다.
+      각 연산 결과는 음영으로 표시합니다.
+      오른쪽 버튼을 눌러서 어떤 결과를 가져오는지 직접 시험해봅시다.
+    </p>
     <iframe src="vanndiag.html" width="100%" height="330px"></iframe>
     <a href="vanndiag.html" download><button>파일 다운로드</button></a>
     <h1>조건</h1>
 
-    &nbsp; 여기까지 알아본바로 정리하자면, 1 + 1 = 2 가 맞습니다만, 세트의 경우 {1} + {1} = {1} 이고, 이것도 엄연한 수학의 영역입니다. 알아본 김에 세트의 표기법에 대해서 좀
-    더
-    알아보겠습니다.<br>
+    <p>
+      여기까지 알아본바로 정리하자면, 1 + 1 = 2 가 맞습니다만,
+      세트의 경우 {1} + {1} = {1} 이고, 이것도 엄연한 수학의 영역입니다.
+      알아본 김에 세트의 표기법에 대해서 좀 더 알아보겠습니다.
+    </p>
     &nbsp; 집합을 서술하고자 할 때, 원소를 단순히 나열하는 것만으로도 충분합니다. 하지만, <span class=highlight1>간결하게 표현하고 싶을 때 조건을 나열</span>함으로써 해결
     할 수
     있습니다. 예를 들어보겠습니다.
@@ -378,8 +380,6 @@
           있습니다.</span> 명제C는 '사람', '동물'이라는 개념이 들어가 있고, 명제D는 작은 명제들로 이루어진 복합명제입니다. 명제든 명사든 개념으로써 그 범위가 존재하고 어려운
         말로는
         외연이라고 합니다.
-
-
 
         <h2>재정의</h2>
         &nbsp; 수에서 합은 +, 명제에서 합은 ∨, 집합에서 합은 ∪기호를 씁니다. 다만 언어로써 우리는 모두 '합'이라고 하고, 다른 표현으로 "더하기", "그리고"를 사용합니다. 우리가
