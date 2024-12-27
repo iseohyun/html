@@ -179,12 +179,10 @@
       line-height: 1.1em;
     }
   </style>
+
 </head>
 
 <body>
-  <style>
-
-  </style>
   <header>
     <div class="home-icon">
       <a href="/index.html">
@@ -258,150 +256,24 @@
     <div id="Update정보"></div>
 
     <h1>Update / news</h1>
-    <span class="update-date">2024.3.1</span>
-    <p class="update-details">
-      예제코드가 있는 문서는 상단메뉴에 "저작권표시와 링크"가 표시됩니다.<br>
-    </p>
-    <span class="update-date">2024.2.29</span>
-    <p class="update-details">
-      예제코드가 있는 문서는 상단메뉴에 "예제코드 보이기" 버튼이 활성화 됩니다.<br>
-      예시: <a href="/documentation//Javascript/basic.html">문서화> 자바스크립트> 시작하기</a>
-    </p>
-    <span class="update-date">2024.2.27</span>
-    <p class="update-details">
-      클립보드 복사기능이 업데이트 되었습니다. 이제 인용구(quote)를 클릭하거나, 코드블럭(blockquote), 코드하이라이트(pre-code-highligh)에 마우스를 올리면 COPY버튼이
-      생성됩니다.
-      드레그 없이 클릭과 동시에 클립보드에 복사가 가능합니다.<br>
-      <a href="/etc/column/vscode/emmet.html">칼럼> VScode> 에밋</a>문서가 업로드 되었습니다.
-    </p>
-    <span class="update-date">2024.2.26</span>
-    <p class="update-details">
-      최근 수정 기능이 업데이트 되었습니다. 페이지 최상단 우측에 최근 수정된 날짜를 확인 할 수 있습니다.<br>
-      <a href="/etc/column/vscode/start.html">칼럼> VScode> VScode시작하기</a>가 업로드 되었습니다.
-    </p>
-    <span class="update-date">2024.2.25</span>
-    <p class="update-details">
-      홈페이지를 재구성하였습니다. 디자인 및 구조가 바뀌었습니다(기존의 링크 중 일부가 오류가 발생할 수 있습니다).
-    </p>
+    <p>
+      조건:
+      <var onclick="clearUpdateList(); getUpdateList();">#모든 기간</var>
+      <var onclick="clearUpdateList(); getUpdateList(cnt = 'all', date = '2023-01-01', edate='2023-12-31');">#2023</var>
+      <var onclick="clearUpdateList(); getUpdateList(cnt = 'all', date = '2024-01-01');">#2024</var>
+      검색 : <input type="text" onchange="clearUpdateList(); getUpdateList('all', '2023-01-01', '', this.value)"><br>
 
-    <span class="update-date">2023.5.22</span>
-    <p class="update-details">
-      java 튜토리얼 > GUI프로그래밍 : window프로그래밍 코드에 대한 설명<br>
-      java 강의노트, 총 6강 업데이트 완료 - 디자인 패턴 등은 다른 문서를 통해 업로드 예정
+      필터:
+      <var onclick="toggle('all')">#모두</var>
+      <var onclick="toggle('new')">#신규</var>
+      <var onclick="toggle('youtube')">#영상</var>
+      <var onclick="toggle('update')">#기능개선</var>
+      <var onclick="toggle('bugfix')">#버그</var>
+      <var onclick="toggle('modify')">#수정</var>
     </p>
+    <ul id="update-list"></ul>
 
-    <span class="update-date">2023.5.21</span>
-    <p class="update-details">
-      java 튜토리얼 > 라이브러리 사용법 : 표준 라이브러리 메서드 예제 설명<br>
-      java기본 문법 및 기존 링크/형식 복구, <br>
-      언어별 코딩 환경 재현 영상 업로드
-    </p>
-
-    <span class="update-date">2023.5.18</span>
-    <p class="update-details">
-      C언어 튜토리얼 > 클래스 :
-      C++ 강의, 객체지향에 대한 내용입니다.<br>
-      C언어 튜토리얼 > 예외처리 등 :
-      예외처리, namespace, using, new, delete등 c++에 추가된 내용을 설명합니다.<br>
-      C언어 튜토리얼 > windows :
-      Visual Studio 2023환경에서 Desktop application에 대한 구현을 설명합니다.<br>
-      C강의노트, 1차 업데이트 완료
-    </p>
-
-    <span class="update-date">2023.5.10</span>
-    <p class="update-details">
-      C언어 튜토리얼 > 기타 예약어 : C언어 예약어 중 아직 다루지 않은 내용을
-      다룹니다.(전처리기, volatile, extern, inline, Math, Malloc, File 등)
-    </p>
-    <span class="update-date">2023.5.9</span>
-    <p class="update-details">
-      C언어 튜토리얼 > 포인터, 구조체: 포인터를 다룹니다. 구조체 및 확장 데이터 타입(배열,
-      구조체, 공용체, 열거체)에 대해 서술합니다.
-    </p>
-    <span class="update-date">2023.5.1</span>
-    <p class="update-details">
-      C언어 튜토리얼 > 함수: 함수를 호출하는 방법, 변수를 전달하는 방법, 함수를 참조하는
-      방법에 대해서 다룹니다.
-    </p>
-    <span class="update-date">2023.4.30</span>
-    <p class="update-details">
-      자유주제 > 숫자 접두어: 그리스. 라틴의 숫자 접두어와 달력의 유래에 대해
-      설명합니다.<br>
-      C언어 튜토리얼 > 기초 문법: C언어 문법 중, 데이터형과 연산에 대해 다룹니다.<br>
-      C언어 튜토리얼 > 제어문: 제어문의 사용법에 대해 다룹니다.
-    </p>
-    <span class="update-date">2023.4.29</span>
-    <p class="update-details">
-      C언어 튜토리얼:
-      Github에 업로드된 C언어 예제를 이용할 수 있도록 안내합니다.
-    </p>
-    <span class="update-date">2023.4.13</span>
-    <p class="update-details">
-      남아선호사상 시뮬레이션 $2:
-      남아가 태어날 때까지 출산을 했을 때, 과연 성비가 변할지 시뮬레이션을 통해서 결과를 도출합니다.
-    </p>
-
-    <span class="update-date">2023.4.6</span>
-    <p class="update-details">
-      온라인 장기판 을 작성하였습니다.
-    </p>
-
-    <span class="update-date">2023.3.23</span>
-    <p class="update-details">
-      SVG드레그 컨트롤을 이용하여 실습페이지가 작성되었습니다.<br>
-      베지어 곡선 실습,
-      복소평면 실습
-    </p>
-
-    <span class="update-date">2023.3.20</span>
-    <p class="update-details">
-      나머지 문제에 대한 풀이법을 완성하였습니다. 자동출제를 통해서 연습할 수 있습니다.<br>
-      페이지: 나머지 문제
-    </p>
-
-    <span class="update-date">2023.3.19</span>
-    <p class="update-details">
-      "다항식 연산"과 관련된 자동 출제 페이지를 생성하였습니다.
-      <br>
-      페이지 : 덧셈 문제, 곱셈 문제, 나눗셈 문제
-    </p>
-    <span class="update-date">2023.3.18</span>
-    <p class="update-details">
-      자유주제 > 폰트:
-      명조, 고딕, 무료배포 폰트에 대해 설명합니다.<br>
-      유클리드 알고리즘 수기 구하기:
-      유클리드 알고리즘에 의해 베주 방정식을 도출하는 과정을 툴팁으로 설명합니다.<br>
-    </p>
-
-    <span class="update-date">2023.3.8</span>
-    <p class="update-details">기초학문> 삼각함수 > sin문서,
-      cos문서,
-      반각, 배각 공식 문서 작성: 애니메이션 효과를 이용하여 설명합니다.
-    </p>
-
-    <span class="update-date">2023.3.4</span>
-    <p class="update-details">기초학문> 자유주제 > 베지어: 베지어
-      곡선을 2차함수와 비교하여 설명합니다.
-    </p>
-
-    <span class="update-date">2023.3.3</span>
-    <p class="update-details">문서화> CSS팁: flex-grow, calc 함수에 대한 내용이 추가되었습니다.
-    </p>
-
-    <span class="update-date">2023.3.2</span>
-    <p class="update-details">
-      문서화> 수식입력기: Latex을 사용하는 방법에 대해 설명합니다.<br>
-      문서화> CSS > 폰트: 온라인 폰트를 이용하는 방법에 대한 내용이 추가 되었습니다.
-    </p>
-
-    <span class="update-date">2023.3.1</span>
-    <p class="update-details">
-      모든 페이지에 Google Analysis가 적용됩니다. 방문자 분석을 할 수 있습니다. (개인정보는 수집되지 않습니다.)<br>
-      info페이지(현재 페이지)가 생성되었습니다.<br>
-      문서화> Javascript> 팁: JQuery에 대한 내용이 추가되었습니다.
-    </p>
     <div id="저작권"></div>
-
     <h1>저작권 방침</h1>
     <p>
       (C) 2023. iseohyun, All rights reserved. CC BY-SA
@@ -438,3 +310,16 @@
 </body>
 
 </html>
+
+<!-- 업데이트 관련 -->
+<script src="update.js"></script>
+<script>
+  getUpdateList(cnt = 'all', date = '2023-01-01');
+</script>
+<style>
+  @import url("update.css");
+
+  ul#update-list {
+    border: none;
+  }
+</style>
