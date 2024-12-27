@@ -1,0 +1,244 @@
+<style>
+  .menu input {
+    outline: none;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .menu textarea {
+    height: 80vh;
+    width: 40%;
+  }
+</style>
+<div class="menu">
+  <span>그림 높이</span>
+  <input type="number" id="height" onchange="changeHeight(this.value)">
+</div>
+<div class="menu">
+  <span>시작 연도</span>
+  <input type="number" id="start" value="-3000" onchange="setTimeline(this.value, null)">
+</div>
+<div class="menu">
+  <span>종말 연도</span>
+  <input type="number" id="end" value="" onchange="setTimeline(null, this.value)">
+</div>
+<div class="menu">
+  <span>국가</span>
+  <textarea id="nations" " onchange=" updateNationArray(this.value)">
+  '고대 이집트'	-3150	-30	북아프리카
+  '페르시아 제국'	-550	-330	중앙아시아
+  '마케도니아'	-808	-148	지중해
+  '고대 로마'	-753	1453	지중해
+  '오스만'	1299	1922	중앙아시아
+  '사산 제국'	224	651	중앙아시아
+  '칼리파국'	632	1171	중앙아시아
+  '아이유브 술탄국'	1171	1341	중앙아시아
+  '티무르'	1370	1507	중앙아시아
+  '무굴 제국'	1526	1857	중앙아시아
+  '포르투갈 제국'	1415	2002	중앙아시아
+  '스페인 제국'	1492	1975	유럽
+  '프랑스 식민제국'	1534	1980	유럽
+  '대영 제국'	1583	1997	유럽
+  '프로이센'	1525	1918	유럽
+  '러시아 제국'	1721	1917	유럽
+  '아즈텍'	1428	1521	신대륙
+  '잉카'	1438	1533	신대륙
+  '그란콜롬비아'	1819	1831	신대륙
+  '미국'	1776	2022	신대륙
+  '춘추전국'	-770	-221	중국
+  '한'	-202	220	중국
+  '수'	220	618	중국
+  '당'	618	907	중국
+  '송'	960	1279	중국
+  '원(몽골 제국)'	1271	1370	중국 중앙아시아
+  '명'	1368	1644	중국
+  '청'	1636	1912	중국
+  '일본제국'	1868	1947	중국 한국
+  '삼국시대'	-57	668	한국
+  '통일신라'	676	935	한국
+  '고려'	918	1392	한국
+  '조선'	1392	1897	한국</textarea>
+</div>
+
+<canvas id="canvas" style="width:95%;padding:5px;border:1px solid #eee;margin:5px auto;display: block;"></canvas>
+
+<script>
+  const height = document.getElementById("height");
+  const canvas = document.getElementById("canvas");
+  const nations = document.getElementById("nations");
+  const ctx = canvas.getContext("2d");
+
+  // Canvas 요소의 너비와 높이를 실제 픽셀 크기로 조정하기
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  const canvasWidth = canvas.clientWidth * devicePixelRatio;
+  const canvasHeight = canvas.clientHeight * devicePixelRatio;
+  canvas.width = canvasWidth;
+  canvas.height = canvasHeight;
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+
+  // 높이값 가져오기
+  height.value = canvas.height;
+
+  // 날짜 세팅하기
+  const endInput = document.getElementById("end");
+  endInput.value = new Date().getFullYear();
+
+  var timelineStart = -3000;
+  var timelineEnd = endInput.value;
+  var subTime = 500;
+  var szColumnHeaders = 100;
+  var szRowHeaders = 50;
+  var regionWidth;
+  let nation = [];
+  const columnRegions = [
+    { name: "유럽/북아프리카", start: 0 },
+    { name: "지중해", start: 0 },
+    { name: "중앙아시아", start: 0 },
+    { name: "중국", start: 0 },
+    { name: "한국", start: 0 },
+    { name: "신대륙", start: 0 }
+  ];
+  const colors = ["#EEAFAF", "#AFC4E7", "#BAE7AF", "#FFF77F", "#FF7f7f", "#FDC4F8", "#CB9FFD", "#A9E1ED", "#F3CDAD"];
+
+  updateNationArray(nations.value);
+
+  // 데이터 분석
+  function updateNationArray(text) {
+    nation = text.split("\n").map((line) => {
+      const [nameWithQuotes, ...rest] = line.match(/[^']+'?[^']*/g);
+      const name = nameWithQuotes.trim().slice(1, nameWithQuotes.length);
+      const [start, end, ...regions] = rest
+        .map((str) => str.trim())
+        .join("\t")
+        .split(/[\t ]+/);
+      const nth = 0;
+      return {
+        name,
+        start: parseFloat(start),
+        end: parseFloat(end),
+        regions: regions.map((region) => {
+          const index = columnRegions.findIndex((col) =>
+            col.name.includes(region)
+          );
+          return index !== -1 ? index : null;
+        }),
+        nth
+      };
+    });
+    draw();
+  }
+
+  function draw() {
+    nation.forEach(n => { n.nth = 0; });
+    ctx.strokeStyle = "#ddd";
+
+    // 왼쪽 타임라인 그리기
+    ctx.beginPath();
+    ctx.moveTo(szColumnHeaders, 10);
+    ctx.lineTo(szColumnHeaders, canvas.height);
+    ctx.moveTo(10, szRowHeaders);
+    ctx.lineTo(canvas.width, szRowHeaders);
+
+    // 구역 이름 출력
+    ctx.font = "bold 16px Arial";
+    ctx.fillStyle = "black";
+    for (var i = 0; i < columnRegions.length; i++) {
+      regionWidth = (canvas.width - szColumnHeaders) / columnRegions.length;
+      columnRegions[i].start = szColumnHeaders + i * regionWidth;
+      ctx.fillText(columnRegions[i].name, columnRegions[i].start, (szRowHeaders / 2));
+    }
+
+    //연도 그리기
+    for (var i = timelineStart; i < timelineEnd; i += subTime) {
+      i = Math.ceil(i / subTime) * subTime;
+      drawHorizen(i, 1);
+    }
+
+    // 날짜 그리기
+    ctx.fillStyle = "black";
+    for (var i = timelineStart; i < timelineEnd; i += subTime) {
+      var yearHeight = year2height(i);
+      ctx.fillText(i.toString(), 20, yearHeight + 5);
+    }
+
+    ctx.stroke();
+
+    // 나라 그리기
+    for (let i = 0; i < nation.length; i++) {
+      const { name, start, end, regions, nth } = nation[i];
+      const startY = year2height(start);
+      const endY = year2height(end);
+
+      const gradient = ctx.createLinearGradient(
+        columnRegions[regions[0]].start,
+        endY,
+        columnRegions[regions[0]].start,
+        startY
+      );
+
+      gradient.addColorStop(0, "rgba(255, 255, 255, 0)");
+      gradient.addColorStop(0.1, colors[i % colors.length]);
+      gradient.addColorStop(0.9, colors[i % colors.length]);
+      gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+      ctx.fillStyle = gradient;
+
+      const cnt = getNumOfSameRegionInSamePeriod(nation[i], nation);
+      ctx.fillRect(
+        columnRegions[regions[0]].start + (regionWidth / cnt) * nth,
+        endY,
+        regionWidth / cnt,
+        startY - endY
+      );
+
+      ctx.fillStyle = "rgba(0, 0, 0)";
+      ctx.fillText(name, columnRegions[regions[0]].start + (regionWidth / cnt) * nth, endY + (startY - endY) / 2);
+    }
+  }
+
+  function getNumOfSameRegionInSamePeriod(my, nation) {
+    const myDuration = my.end - my.start;
+    const sameRegionNation = nation.filter((item) => {
+      if (item.name === my.name) {
+        return false;
+      }
+      const duration = Math.min(my.end, item.end) - Math.max(my.start, item.start);
+      const overlapPercentage = (duration / myDuration) * 100;
+      return (
+        overlapPercentage > 10 &&
+        item.regions.some((region) => my.regions.includes(region))
+      );
+    });
+
+    sameRegionNation.forEach(element => {
+      element.nth++;
+    });
+    return sameRegionNation.length + 1;
+  }
+
+  function drawHorizen(year, lineWidth) {
+    var start = 95;
+    if (!(year % 1000)) {
+      start = 50;
+    }
+    ctx.moveTo(start, year2height(year));
+    ctx.lineTo(canvas.width, year2height(year));
+  }
+
+  function year2height(year) {
+    // 전체 중 현재 위치를 비율로 찾음
+    let pos = (timelineEnd - year) / (timelineEnd - timelineStart);
+    // 캔버스 영역(50 ~ height)에서 현재 위치를 찾음
+    return (canvas.height - 70) * pos + 50;
+  }
+
+  function changeHeight(height) {
+    canvas.height = height;
+    draw();
+  }
+
+  function setTimeline(start, end) {
+    if (start != null)
+      timelineStart = start;
+    if (end != null)
+      timelineEnd = end;
+  }
+</script>

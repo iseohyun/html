@@ -24,16 +24,12 @@
   </script>
 
   <!-- 소스코드 스타일 -->
-  <link rel="stylesheet" href="/highlight/styles/base16/classic-light.min.css" />
+  <link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css" />
   <script src="/highlight/highlight.min.js"></script>
   <script src="/highlight/highlightjs-line-numbers.js"></script>
-  <script>
-    hljs.highlightAll();
-    hljs.initLineNumbersOnLoad();
-  </script>
 
   <!-- 목차 생성 -->
-  <script src="/modules/hd_list.js" defer></script>
+  <script src="/modules/script.js" defer></script>
 
   <!-- 공통스킨 -->
   <style type="text/css">
@@ -49,8 +45,9 @@
     <blockquote>
       <b>font</b>('css font 값');
       <ul>
-        <li> 반드시 추가되어야 할 내용 : font-size, font-family<sub>글자체</sub><sup>[<a
-              href="https://developer.mozilla.org/en-US/docs/Web/CSS/font" target="_blank">참고</a>]<sup></sup>
+        <li>
+          반드시 추가되어야 할 내용 : font-size, font-family<sub>글자체</sub>
+          <sup>[<a href="https://developer.mozilla.org/en-US/docs/Web/CSS/font" target="_blank">참고</a>]</sup>
         </li>
         <li> 옵션 : font-style, font-variant, font-weight, font-stretch, line-height</li>
         <li> 문법<sub>Syntax</sub> : font = <br>
@@ -66,19 +63,18 @@
       </ul>
     </blockquote>
 
-
-    <pre>
-        <code>ctx.font = "italic bolder 48px '궁서'";
+    <pre><code>ctx.font = "italic bolder 48px '궁서'";
 ctx.fillText('안녕하십니까?', 10, 50);
-ctx.strokeText('안녕하십니까?', 10, 150);
-        </code>
-    </pre>
+ctx.strokeText('안녕하십니까?', 10, 150);</code></pre>
     <span class="tutorial">C_Text_Image > a_textout.html</span>
-    <a href="demo_text1.html" download><button class="download">예제파일</button></a>
-    <iframe src="demo_text1.html" height="220"></iframe>
+    <a href="demo/demo_text1.html" download><button class="download">예제파일</button></a>
+    <iframe src="demo/demo_text1.html" height="220"></iframe>
 
     <h2>특성</h2>
-    아래와 같은 특성을 지정 할 수 있습니다. 예제는 textBaseline을 이용하여 출력되는 높이를 조절하는 예시입니다.
+    <p>
+      아래와 같은 특성을 지정 할 수 있습니다.
+      예제는 textBaseline을 이용하여 출력되는 높이를 조절하는 예시입니다.
+    </p>
     <table>
       <caption>font특성 overview</caption>
       <thead>
@@ -111,18 +107,19 @@ ctx.strokeText('안녕하십니까?', 10, 150);
         <td>글자 방향</td>
       </tr>
     </table>
-
-    </pre>
     <span class="tutorial">C_Text_Image > a2_baseline.html</span>
-    <a href="demo_baseline.html" download><button class="download">예제파일</button></a>
-    <iframe src="demo_baseline.html" height="180"></iframe>
+    <a href="demo/demo_baseline.html" download><button class="download">예제파일</button></a>
+    <iframe src="demo/demo_baseline.html" height="180"></iframe>
 
     <h2>측정</h2>
-    <p>&nbsp;글자 정보를 읽어 올 수 있습니다. 출력될 글자의 길이를 측정한 뒤에 붉은색 x를 그리는 예제입니다.</p>
+    <p>
+      글자 정보를 읽어 올 수 있습니다.
+      출력될 글자의 길이를 측정한 뒤에 붉은색 x를 그리는 예제입니다.
+    </p>
 
     <span class="tutorial">C_Text_Image > a3_textSz.html</span>
-    <a href="demo_measure.html" download><button class="download">예제파일</button></a>
-    <iframe src="demo_measure.html" height="180"></iframe>
+    <a href="demo/demo_measure.html" download><button class="download">예제파일</button></a>
+    <iframe src="demo/demo_measure.html" height="180"></iframe>
 
     <h1>그림</h1>
     <blockquote>
@@ -132,8 +129,7 @@ ctx.strokeText('안녕하십니까?', 10, 150);
       ※ x, y = 좌표, w = 넓이, h = 높이
     </blockquote>
 
-    <pre>
-        <code calss="language-java">img.src = "/source/icon_homeColor.svg";
+    <pre><code calss="language-java">img.src = "/source/icon_homeColor.svg";
 // 이미지가 로딩이 끝나면..
 img.addEventListener('load', function () {
   ctx.strokeStyle = "#aaa";
@@ -153,32 +149,25 @@ img.addEventListener('load', function () {
   // 3: 가장 큰 출력
   // 원본을 (250, 0)의 위치에 붙이시오
   ctx.drawImage(img, 250, 0);
-}</code>
-    </pre>
+}</code></pre>
     <span class="tutorial">C_Text_Image > b_image.html</span>
-    <a href="demo_image.html" download><button class="download">예제파일</button></a>
+    <a href="demo/demo_image.html" download><button class="download">예제파일</button></a>
 
-    <iframe src="demo_image.html" height="457"></iframe>
+    <iframe src="demo/demo_image.html" height="457"></iframe>
 
     <h2>html img테그 불러오기</h2>
-    <pre>
-        <code clas="language-java">ctx.drawImage(document.getElementById('canvas_drawimage'), 50, 50, 200, 200, 50, 50, 200, 200);
-ctx.fillText('Canvas image', 30, 40);
-        </code>
-        </pre>
-    <pre>
-        <code clas="language-html">&lt;div style="display: none;">
-    &lt;img id="canvas_drawimage" src="/source/canvas_drawimage.jpg">
-&lt;/div>
-        </code>
-    </pre>
+    <pre><code clas="language-java">ctx.drawImage(document.getElementById('canvas_drawimage'), 50, 50, 200, 200, 50, 50, 200, 200);
+ctx.fillText('Canvas image', 30, 40);</code></pre>
+    <pre><code clas="language-html">&lt;div style="display: none;">
+  &lt;img id="canvas_drawimage" src="/source/canvas_drawimage.jpg">
+&lt;/div></code></pre>
     <p>
       원본 이미지(상), 캔버스에서 불러온 뒤 잘라서 출력한 이미지(하)
     </p>
 
     <span class="tutorial">C_Text_Image > b2_imageTag.html</span>
-    <a href="demo_img_from_tag.html" download><button class="download">예제파일</button></a>
-    <iframe src="demo_img_from_tag.html" width="100%" height="400"></iframe>
+    <a href="demo/demo_img_from_tag.html" download><button class="download">예제파일</button></a>
+    <iframe src="demo/demo_img_from_tag.html" width="100%" height="400"></iframe>
   </article>
 </body>
 

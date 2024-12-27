@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <!-- 모바일 스케일 고정 -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta discription="다항식의 나눗셈문제를 자동 생성합니다.">
+  <meta keywords="iseohyun, 자동생성, 다항식, 나눗셈">
+  <meta author="iseohyun">
+
+  <!-- 페이지 타이틀 -->
+  <title>나눗셈: 다항식 - iseohyun </title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-453XSP5W9M');
+  </script>
+
+  <!-- 수식 -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <!-- 폰트 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("../style.css");
+  </style>
+</head>
+
+<body>
+  <article>
+    <div id="info">
+      <div id="category">다항식</div>
+      <div id="title">다항식의 나눗셈</div>
+      <div id="about">Practice polynomial multiplication.</div>
+    </div>
+    <div id="main">
+      <div id=quiz></div>
+      <div id="hint" onclick="showAns();"></div>
+    </div>
+    <div id="answer">
+      <details>
+        <summary>Answer</summary>
+        <p>
+          "Let's fix the coefficient of the highest degree term of the divisor as 1. If the coefficient of the highest
+          degree term is not 1, be careful as it may cause errors in the calculation."
+        </p>
+        <p>
+          "Please refer to the following for detailed calculation methods"[<a
+            href="/project/math/polynomial/div_order.html" target="_blank">link</a>]
+        </p><br>
+        <span id="solution"></span>
+      </details>
+    </div>
+    <div id="bottom">
+      <button id="reload" onclick="reopen()">Try Again</button>
+    </div>
+  </article>
+</body>
+
+</html>
+
+<script>
+  // id의 형식은 ####-###(#=[0 .. 9]의 형태로 입력됩니다.
+  // 만약, ####가 9382가 입력이 되었다면 4x^3 - 1x^2 + 3x - 2로 가정합니다. (계수: #-4)
+  var C = [new Array(), new Array()];
+  var Ca = new Array();
+  var Cr = new Array();
+
+  // 문제를 만들 정보를 id로 입력받습니다.
+  const urlParams = new URLSearchParams(window.location.search);
+  id = urlParams.get('id');
+  if (id == undefined) {
+    reopen();
+  }
+
+  // 문제를 출력합니다.
+  quiz = document.getElementById('quiz');
+  quiz.innerHTML = createQuiz(id);
+
+  solution = document.getElementById('solution');
+  solution.innerHTML = createSolution();
+
+  hint = document.getElementById('hint');
+  hint.innerHTML = createHint();
+
+  function reopen() {
+    const A_len = 5;
+    var id = "";
+    var tmp = (rand(10) - 4);
+
+    if (tmp == 0) tmp++;
+    id = tmp;
+    for (var i = 1; i < A_len; i++) {
+      id += "," + (rand(10) - 4);
+    }
+
+    id += "_";
+
+    B_len = rand(A_len - 3) + 3;
+    var tmp = (rand(10) - 4);
+    if (tmp == 0) tmp++;
+    id += tmp;
+    for (var i = 1; i < B_len; i++) {
+      id += "," + (rand(10) - 4);
+    }
+
+    window.location = `?id=${id}`;
+  }
+
+  function rand(upto) {
+    r = Math.floor(Math.random() * upto);
+    return (r == upto) ? r - 1 : r;
+  }
+
+  function toTex(string, arg1 = "", arg2 = "") {
+    string = string.replace("$1", arg1).replace("$2", arg2);
+    return "\\(" + string + "\\)";
+  }
+
+  // 1은 생략할 수 있습니다. 단, x^0은 생략하지 않습니다.
+  // x^1승은 x로, x^0승은 계수만 표기합니다.
+  // 최고차항의 부호가 +일 때는 부호를 생략합니다.
+  function toPolynomial(C) {
+    // 첫 계수를 출력
+    string = ((C[0] < 0) ? "-" : "") + (Math.abs(C[0]) == 1 ? "" : Math.abs(C[0])) + "x" + ((C.length == 2) ? "" : ("^" + (C.length - 1)));
+    for (var i = 1; i < C.length; i++) {
+      if (C[i] == 0)
+        continue;
+      string += ((C[i] < 0) ? "-" : "+");
+      switch ((C.length - i - 1)) {
+        case 0:
+          string += Math.abs(C[i]);
+          break;
+        case 1:
+          string += (Math.abs(C[i]) == 1 ? "" : Math.abs(C[i]));
+          string += "x";
+          break;
+        default:
+          string += (Math.abs(C[i]) == 1 ? "" : Math.abs(C[i]));
+          string += "x^" + (C.length - i - 1);
+      }
+    }
+    return string;
+  }
+
+  function createQuiz() {
+    id.split('_').forEach(
+      (sub_id, index) => {
+        sub_id.split(',').forEach(arg => {
+          C[index].push(parseInt(arg));
+        })
+      });
+
+    poly1 = toPolynomial(C[0]);
+    poly2 = toPolynomial(C[1]);
+
+    tex = toTex("($1) ~ ÷ ~ ($2) = ~ ?", poly1, poly2);
+    console.log(tex);
+    return tex;
+  }
+
+  function createSolution() {
+    answer = "<span style=font-family:monospace;>";
+    Cr = new Array(C[0].length).fill(0);
+    // 해법과 과정을 계산합니다.
+    for (let i = 0; i < C[0].length; i++) {
+      Cr[i] = C[0][i];
+      Ca.forEach(row => { Cr[i] += row[i] });
+      if (i < C[0].length - C[1].length + 1) {
+        // n번째 과정을 기록합니다.
+        var terms = new Array(C[0].length).fill(0);
+        for (let j = 1; j < C[1].length; j++) {
+          terms[i + j] = Cr[i] * (-C[1][j]);
+        }
+        Ca[i] = terms;
+      }
+    }
+
+    // 몫을 출력
+    for (let j = 1; j < C[1].length; j++) {
+      answer += "&nbsp; &nbsp; &nbsp; ";
+    }
+    answer += "&nbsp; &nbsp; &nbsp;";
+    for (let i = 0; i < Cr.length; i++) {
+      if (i == (C[0].length - C[1].length + 1)) {
+        answer += ",";
+      } else {
+        answer += " ";
+      }
+      for (let j = (5 - (Cr[i]).toString(10).length); j > 0; j--) {
+        answer += "&nbsp;";
+      }
+
+      // answer += (Cr[i] < 0) ? "-" : "&nbsp;";
+      answer += Cr[i];
+    }
+    answer += "<br>";
+
+    // hr
+    for (let i = 1; i < C[1].length; i++) {
+      answer += "&nbsp; &nbsp; &nbsp; ";
+    }
+    answer += "&nbsp; |--";
+    for (let i = 0; i < C[0].length; i++) {
+      answer += "------";
+    }
+    answer += "<br>";
+
+    // 제수 출력
+    for (let i = 1; i < C[1].length; i++) {
+      answer += "&nbsp; &nbsp; ";
+      answer += (C[1][i] >= 0) ? "-" : "&nbsp;";
+      answer += Math.abs(C[1][i]);
+    }
+
+    // 피제수 출력
+    answer += "&nbsp; | &nbsp;";
+    for (let i = 0; i < C[0].length; i++) {
+      answer += "&nbsp; &nbsp; ";
+      answer += (C[0][i] < 0) ? "-" : "&nbsp;";
+      answer += Math.abs(C[0][i]);
+    }
+    answer += "<br>";
+
+    // 해법 과정을 출력합니다.
+    for (let i = 0; i < Ca.length; i++) {
+      for (let j = 1; j < C[1].length; j++) {
+        answer += "&nbsp; &nbsp; &nbsp; ";
+      }
+      answer += "&nbsp; | &nbsp;";
+      for (let j = 0; j < Ca[i].length; j++) {
+        for (let k = (6 - (Ca[i][j]).toString(10).length); k > 0; k--) {
+          answer += "&nbsp;";
+        }
+        answer += (Ca[i][j] == 0) ? " " : Ca[i][j];
+      }
+      answer += "<br>";
+    }
+
+    answer += "</span><br><br> Ans :<br> Q = ";
+    answer += toTex(toPolynomial(Cr.slice(0, C[0].length - C[1].length + 1)));
+    answer += "<br><br> R = ";
+    answer += toTex(toPolynomial(Cr.slice(C[0].length - C[1].length + 1, C[0].length)));
+    return answer;
+  }
+
+  function createHint() {
+    hint = "Sum of all coefficients : ";
+    sumCr = 0;
+
+    Cr.forEach((x) => sumCr += x);
+    hint += sumCr;
+    return hint;
+  }
+
+  function showAns() {
+    document.getElementById('hint').style.backgroundColor = '#FFF';
+  }
+</script>

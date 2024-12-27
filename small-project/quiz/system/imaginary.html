@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <!-- 모바일 스케일 고정 -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta discription="복소평면에서의 허수를 해석합니다.">
+  <meta keywords="iseohyun, 기출문제, 복소평면, 허수, 그래프">
+  <meta author="iseohyun">
+
+  <!-- 페이지 타이틀 -->
+  <title>허수: 수체계 - iseohyun </title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-453XSP5W9M');
+  </script>
+
+  <!-- 수식 -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <!-- 폰트 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("../style.css");
+  </style>
+</head>
+
+<body>
+  <article>
+    <div id="info">
+      <div id="category">정수론</div>
+      <div id="title">나머지 문제</div>
+      <div id="about">This page creates additional problems and provides solutions for them</div>
+    </div>
+    <div id="main">
+      <div id=quiz></div>
+      <div id="hint" onclick="showAns();"></div>
+    </div>
+    <div id="answer">
+      <details open>
+        <summary>Answer</summary>
+        <p>
+          Solving the Bézout's identity is the key to solving this problem. You can practice deriving Bézout's identity
+          on the following website.<br>
+          <a href="/examples/javascript/manualEuclidean/manualEuclidean.html"
+            target="_blank">https://iseohyun.com/examples/javascript/manualEuclidean/manualEuclidean.html</a><br><br>
+          \[ x \equiv R_i ~ (\mod M_i ~ ) \]
+
+          <sup style="color:red">*</sup>However, if M1, M2, and M3 are in a multiple relationship, you need to apply an
+          exception to the calculation formula.
+        </p><br>
+        <span id="solution"></span>
+      </details>
+    </div>
+    <div id="bottom">
+      <button id="reload" onclick="reopen()">Try Again</button>
+    </div>
+  </article>
+</body>
+
+</html>
+
+<script>
+  // id의 형식은 ##,##,##_@@@ 으로 문제를 생성합니다.
+  // ##은 2개 또는 3개가 됩니다.
+  var M = new Array(); // ##
+  var R = new Array();
+  var I = new Array(); // reverse R;
+  var GCD;
+  var LCM;
+  var N; // @@@
+
+  // 문제를 만들 정보를 id로 입력받습니다.
+  const urlParams = new URLSearchParams(window.location.search);
+
+  // 문제를 출력합니다.
+  quiz = document.getElementById('quiz');
+  quiz.innerHTML = createQuiz(urlParams);
+
+  solution = document.getElementById('solution');
+  solution.innerHTML = createSolution();
+
+  hint = document.getElementById('hint');
+  hint.innerHTML = createHint();
+
+  function reopen() {
+    var id, r;
+    if (M.length == 3) {
+      M[0] = rand(3) + 2;
+      M[1] = rand(2) + M[0] + 1;
+      N = rand(lcm(M[0], M[1]));
+      id = `${M[0]},${M[1]}`;
+      r = `${N % M[0]},${N % M[1]}`;
+    } else {
+      M[0] = rand(3) + 2;
+      M[1] = rand(2) + M[0] + 1;
+      M[2] = rand(2) + M[1] + 1;
+      N = rand(lcm(M[0], M[1], M[2]));
+      id = `${M[0]},${M[1]},${M[2]}`;
+      r = `${N % M[0]},${N % M[1]},${N % M[2]}`;
+    }
+    window.location = `?M=${id}&R=${r}&N=${N}`;
+  }
+
+  // 0 부터 upto 미만의 정수를 반환합니다.
+  function rand(upto) {
+    tmp = Math.floor(Math.random() * upto);
+    return (tmp == upto) ? (tmp - 1) : tmp;
+  }
+
+  function toTex(string, arg1 = "", arg2 = "") {
+    string = string.replace("$1", arg1).replace("$2", arg2);
+    return "\\(" + string + "\\)";
+  }
+
+  function createQuiz(urlParams) {
+    urlM = urlParams.get('M');
+    if (urlM == undefined) {
+      reopen();
+    }
+    urlM.split(',').forEach(arg => {
+      M.push(parseInt(arg));
+    });
+
+    urlN = urlParams.get('N');
+    if (urlN == undefined) {
+      urlR = urlParams.get('R');
+      urlR.split(',').forEach(arg => {
+        R.push(parseInt(arg));
+      });
+    } else {
+      for (i = 0; i < M.length; i++) {
+        R[i] = urlN % M[i];
+      }
+    }
+    console.log(R);
+
+    quiz = "<div style='display: inline;position: absolute;'>"
+    quiz += toTex("x \\equiv {\\color{red}$1} ~ (\\mod $2 ~)", R[0], M[0]) + "<br>";
+    quiz += toTex("x \\equiv {\\color{red}$1} ~ (\\mod $2 ~)", R[1], M[1]) + "<br>";
+    if (M.length == 3)
+      quiz += toTex("x \\equiv {\\color{red}$1} ~ (\\mod $2 ~)", R[2], M[2]) + "<br>";
+    quiz += "</div>";
+
+    if (M.length == 3) {
+      GCD = gcd(M[0], M[1], M[2]);
+      LCM = lcm(M[0], M[1], M[2]);
+    } else {
+      GCD = gcd(M[0], M[1]);
+      LCM = lcm(M[0], M[1]);
+    }
+    console.log(`GCD: ${GCD}, LCM: ${LCM}`);
+    return quiz;
+  }
+
+  function createSolution() {
+    var sol;
+    var sum = new Array();
+    if (M.length == 2) {
+      bez = bezout(M[0], M[1]);
+      sol = toTex(`{\\color{blue}GCD} = {\\color{blue}${bez[0]}} = (${bez[1]}) \\times ${M[0]} + (${bez[2]}) \\times ${M[1]}`) + "<br><br>";
+      sol += toTex(`\\displaystyle x = \\frac{{\\color{red}${R[0]}} \\times (${bez[2]}) \\times ${M[1]}} {{\\color{blue}${bez[0]}}} + \\frac{{\\color{red}${R[1]}} \\times (${bez[1]}) \\times ${M[0]}} {{\\color{blue}${bez[0]}}}`) + "<br><br>";
+      N = R[0] * (bez[2]) * M[1] / bez[0] + R[1] * (bez[1]) * M[0] / bez[0];
+      sol += toTex(`x = ${N} \\equiv ${(N + LCM) % LCM} ~ (\\mod {${LCM}}~)`);
+    } else {
+      ret = (printBezout(M[0], M[1], M[2], R[0]));
+      sum[0] = ret[0]; sol = "\\displaystyle \\begin{aligned} x &= " + ret[1];
+      ret = (printBezout(M[1], M[0], M[2], R[1]));
+      sum[1] = ret[0]; sol += "+" + ret[1];
+      ret = (printBezout(M[2], M[0], M[1], R[2]));
+      sum[2] = ret[0]; sol += "+" + ret[1];
+      N = (((sum[0] + sum[1] + sum[2]) % LCM) + LCM) % LCM;
+      sol += `\\\\ &= ${sum[0]} + ${sum[1]} + ${sum[2]} \\\\ &= ${sum[0] + sum[1] + sum[2]} \\\\ &= ${N} \\end{aligned}`
+      sol = toTex("\\displaystyle x = \\frac {{\\color{red}R_1} \\times bezout(lcm(M_2,M_3), M_1) \\times lcm(M_2,M_3)}{gcd(M_1, lcm(M_2,M_3))}") + "<br><br>" + toTex(sol);
+    }
+
+    return sol;
+  }
+
+  function printBezout(a, b, c, r) {
+    l = lcm(b, c);
+    bez = bezout(a, l);
+    sum = r * bez[2] * l / bez[0];
+    str = `\\frac {{\\color{red}${r}} \\times ${bez[2]} \\times ${l}}{${bez[0]}}`;
+    return [sum, str];
+  }
+
+  function createHint() {
+    hint = N;
+    return hint;
+  }
+
+  function showAns() {
+    document.getElementById('hint').style.backgroundColor = '#FFF';
+  }
+
+  // 1/n (mod r)
+  function reciprocal(n, r) {
+    for (var i = 0; i < r; i++) {
+      if ((i * n) % r == 1) {
+        return i;
+      }
+    }
+  }
+
+  function lcm(a, b, c = 1) {
+    max = Math.max(a, b, c);
+    ret = 1;
+    for (i = 2; i <= max;) {
+      if (a % i == 0 || b % i == 0 || c % i == 0) {
+        if (a % i == 0) a /= i;
+        if (b % i == 0) b /= i;
+        if (c % i == 0) c /= i;
+        ret *= i;
+      } else {
+        i++;
+      }
+    }
+
+    return ret;
+  }
+
+  function gcd(a, b, c = b) {
+    // a, b, c의 최대 공약수 계산
+    function gcd_two(x, y) {
+      while (y !== 0) {
+        var temp = y;
+        y = x % y;
+        x = temp;
+      }
+      return x;
+    }
+    return gcd_two(a, gcd_two(b, c));
+  }
+
+  function bezout(a, b) {
+    let r0 = a, r1 = b, s0 = 1, s1 = 0, t0 = 0, t1 = 1;
+    while (r1 !== 0) {
+      const q = Math.floor(r0 / r1);
+      const r2 = r0 % r1;
+      const s2 = s0 - q * s1;
+      const t2 = t0 - q * t1;
+      r0 = r1; r1 = r2;
+      s0 = s1; s1 = s2;
+      t0 = t1; t1 = t2;
+    }
+    return [r0, s0, t0];
+  }
+
+</script>

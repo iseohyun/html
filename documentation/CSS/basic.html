@@ -1,149 +1,113 @@
 <!DOCTYPE html>
 <html>
-<meta charset="UTF-8" lang="ko">
-<!-- 모바일 스케일 고정 -->
-<meta name="viewport"
-  content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta discription="튜토리얼을 제공합니다.">
-<meta keywords="iseohyun, 튜토리얼">
-<meta author="iseohyun">
 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag() { dataLayer.push(arguments); }
-  gtag('js', new Date());
-  gtag('config', 'G-453XSP5W9M');
-</script>
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <!-- 모바일 스케일 고정 -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta description="튜토리얼을 제공합니다.">
+  <meta keywords="시작하기, CSS">
+  <meta author="iseohyun">
+  <!-- 페이지 타이틀 -->
+  <title>시작하기: CSS</title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>window.dataLayer = window.dataLayer || []; function gtag() { dataLayer.push(arguments); } gtag('js', new Date()); gtag('config', 'G-453XSP5W9M');</script>
+  <!-- 소스코드 스타일 -->
+  <link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css" />
+  <script src="/highlight/highlight.min.js"></script>
+  <script src="/highlight/highlightjs-line-numbers.js"></script>
+  
+  <!-- 수식 -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <!-- 차트 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- 목차 생성 -->
+  <script src="/modules/script.js" defer></script>
 
-<!-- 페이지 타이틀 -->
-<title>시작하기: css - iseohyun </title>
-<link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("/style.css");
+  </style>
+  <style type="text/css">
+    table {
+      word-break: keep-all;
+    }
 
-<!-- 소스코드 스타일 -->
-<link rel="stylesheet" href="/highlight/styles/base16/darkmoss.min.css" />
-<script src="/highlight/highlight.min.js"></script>
-<script src="/highlight/highlightjs-line-numbers.js"></script>
-<script>
-  hljs.highlightAll();
-  hljs.initLineNumbersOnLoad();
-</script>
+    table table {
+      border-width: 0px;
+      width: 100%;
+    }
 
-<!-- jquery -->
-<script src="https://code.jquery.com/jquery-latest.min.js"></script>
+    table table td {
+      background-color: #fff;
+      border-color: #eee;
+      line-height: 1.2em;
+      vertical-align: top;
+    }
 
-<!-- 목차 생성 -->
-<script src="/modules/hd_list.js" defer></script>
+    table table td:nth-child(1) {
+      width: 30%;
+    }
 
-<!-- 공통스킨 -->
-<style type="text/css">
-  @import url("/style.css");
-</style>
-<style type="text/css">
-  table {
-    word-break: keep-all;
-  }
+    details>table>tbody>tr:nth-child(1)>td:nth-child(1) {
+      width: 10%;
+    }
 
-  table table {
-    border-width: 0px;
-    width: 100%;
-  }
+    details>table>tbody>tr:nth-child(1)>td:nth-child(2) {
+      width: 15%;
+    }
 
-  table table td {
-    background-color: #fff;
-    border-color: #eee;
-    line-height: 1.2em;
-    vertical-align: top;
-  }
+    details>table>tbody>tr:nth-child(1)>td:nth-child(3) {
+      width: 25%;
+    }
 
-  table table td:nth-child(1) {
-    width: 30%;
-  }
+    table td:last-child {
+      text-align: left;
+    }
 
-  details>table>tbody>tr:nth-child(1)>td:nth-child(1) {
-    width: 10%;
-  }
+    table td:nth-last-child(2) {
+      text-align: left;
+    }
 
-  details>table>tbody>tr:nth-child(1)>td:nth-child(2) {
-    width: 15%;
-  }
+    table i {
+      color: #bbb;
+    }
 
-  details>table>tbody>tr:nth-child(1)>td:nth-child(3) {
-    width: 25%;
-  }
+    table b {
+      color: #88F;
+    }
 
-  table td:last-child {
-    text-align: left;
-  }
-
-  table td:nth-last-child(2) {
-    text-align: left;
-  }
-
-  table i {
-    color: #bbb;
-  }
-
-  table b {
-    color: #88F;
-  }
-
-  table td.hidden {
-    height: 0px;
-    padding: 0px;
-    border: 0px;
-  }
-</style>
+    table td.hidden {
+      height: 0px;
+      padding: 0px;
+      border: 0px;
+    }
+  </style>
 </head>
 
 <body>
   <article>
     <div id="title"> CSS 시작하기 </div>
+
     <h1>강의노트</h1>
-    <p>&nbsp;아래주소의 github에 업로드된 예제코드를 다운받아 실습 할 수 있습니다.<br>
-      &nbsp;환경설정에 관한 정보는 <a href="../html/domain.html#%EC%9E%91%EC%97%85%ED%99%98%EA%B2%BD%20%EC%84%A4%EC%A0%95"
-        target="_blank">여기</a>를 참조해주세요.
-
+    <p>
+      아래주소의 github에 업로드된 예제코드를 다운받아 실습 할 수 있습니다(B_CSS 참조).
     </p>
-    <div style="border: 1px solid;
-    padding: 5px 30px;
-    border-radius: 8px;
-    width: fit-content;
-    margin-left: 30px;">
-      <span id="textToCopy">
-        https://github.com/iseohyun/html-example.git
-      </span>
-      <button type="button" onclick="copyToClipboard()">복사하기</button>
-    </div>
-    <script>
-      function copyToClipboard() {
-        const textToCopy = document.getElementById("textToCopy").innerText;
-
-        navigator.clipboard.writeText(textToCopy)
-          .then(() => {
-            alert("텍스트가 클립보드에 복사되었습니다.");
-          })
-          .catch(err => {
-            console.error('클립보드에 텍스트를 복사하는 중 오류가 발생했습니다: ', err);
-          });
-      }
-    </script>
-
+    <blockquote>
+      https://github.com/iseohyun/html-tutorial.git
+    </blockquote>
 
     <iframe
       src="https://docs.google.com/presentation/d/e/2PACX-1vRWdMu3YIng9H-JtxV7m_okSPgllb4iIcnNjITR4_KckQA-rvqjaHyVV2Pwe577vNIl5SvHDgswYu5W/embed?start=false&loop=false&delayms=3000"
       frameborder="0" width="960" height="569" allowfullscreen="true" mozallowfullscreen="true"
       webkitallowfullscreen="true"></iframe>
-    <p>&nbsp;레포지토리에서
-      <span class="tutorial" style="display:inline;padding:5px 10px; margin:0">B_CSS</span>폴더를 참고해주십시오.
-    </p>
-    <hr>
-
 
     <h1>문법</h1>
     <h2>용어</h2>
-    <p>CSS 작성시 각 부분을 지칭하는 용어입니다.</p>
     <svg viewbox="0 0 1050 300" version="1.1" xmlns="http://www.w3.org/2000/svg"
       style="border:1px solid #ccc;padding:10px;border-radius: 15px;width: 80%;margin: 10px auto 50px;box-shadow: #8888 5px 5px 5px;display: flex;">
       <!-- 드레그 순서를 고려한 배치입니다. -->
@@ -154,7 +118,6 @@
         <text x="155" y="70">선언(Declaration)</text>
         <text x="535" y="70">선언(Declaration)</text>
       </g>
-
       <g style="font-size: 3.8em;font-family: Arial, Helvetica, sans-serif;">
         <!-- p{color:red; padding:5px;} -->
         <text x="30" y="160" fill="blue">p</text>
@@ -187,79 +150,59 @@
         <path d="M430,165 v45" />
       </g>
     </svg>
-    <span class="blockquote-name">예시</span>
-    <blockquote>
-      <span style="color:blue">article</span> {<br>
-      &nbsp; <span style="color:green">width</span>: <span style="color:red">95%</span>;<br>
-      &nbsp; <span style="color:green">max-width</span>: <span style="color:red">860px</span>;<br>
-      &nbsp; <span style="color:green">margin</span>: <span style="color:red">0 auto</span>;<br>
-      &nbsp; <span style="color:green">padding</span>: <span style="color:red">0 5px</span>;<br>
-      &nbsp; <span style="color:green">counter-increment</span>: <span style="color:red">table-no 0</span>;<br>
-      &nbsp; <span style="color:green">padding-bottom</span>: <span style="color:red">50vh</span>;<br>
-      }
-    </blockquote>
+    <pre><code class="language-css">article {
+  width: 95%;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 5px;
+  counter-increment: table-no 0;
+  padding-bottom: 50vh;
+}</code></pre>
 
-
-    <style>
-      #how-declare {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-around;
-      }
-
-      #how-declare div {
-        width: fit-content;
-      }
-    </style>
     <h2>선언</h2>
-    <p>상황에 맞춰서 혼합해서 사용하면 됩니다.</p>
-    <div id="how-declare">
-      <div>
-        <h3>방법1: 외부 파일</h3>
-        <span class="tutorial">A_declare >> b_linkFile.html</span>
+    <p>
+      상황에 맞춰서 혼합해서 사용하면 됩니다.
+    </p>
 
+    <h3>방법1: 외부 파일</h3>
+    <span class="tutorial">A_declare >> b_linkFile.html</span>
+    <blockquote>
+      &lt;link rel="stylesheet" href="style.css">
+    </blockquote>
+    <p>
+      또는
+    </p>
+    <blockquote>
+      &lt;style type="text/css"><br>
+      &nbsp; @import url("style.css");<br>
+      &lt;/style>
+    </blockquote>
+    <ul>
+      <li>장점: 사이트를 통일성 있게 구성할 수 있다.</li>
+      <li>단점: 세세한 설정이 어렵다.</li>
+    </ul>
 
-        <blockquote>
-          &lt;link rel="stylesheet" href="style.css">
-        </blockquote>
-        또는
-        <blockquote>
-          &lt;style type="text/css"><br>
-          &nbsp; @import url("style.css");<br>
-          &lt;/style>
-        </blockquote>
-        <p>장점: 사이트를 통일성 있게 구성할 수 있다.<br>
-          단점: 세세한 설정이 어렵다.
-        </p>
-      </div>
-      <div>
-
-        <h3>방법2: 내부 파일</h3>
-        <span class="tutorial">A_declare >> a_innerFile.html</span>
-
-        <blockquote>
-          <pre>&lt;style>
+    <h3>방법2: 내부 파일</h3>
+    <span class="tutorial">A_declare >> a_innerFile.html</span>
+    <blockquote>
+      <pre>&lt;style>
 span {
   color: red;
 }
 &lt;/style>
 이것은 &lt;span><span style="color:red">빨간색</span>&lt;/span>입니다.</pre>
-        </blockquote>
-        <p>
-          또는
-        </p>
+    </blockquote>
+    <p>
+      또는
+    </p>
 
-        <blockquote>
-          이것은 &lt;span style="color:red"><span style="color:red">빨간색</span>&lt;/span>입니다.</pre>
-        </blockquote>
-        <p>장점: 세세한 설정이 가능하다.<br>
-          단점: 통일성이 떨어질 수 있다. 유지보수가 어렵다.
-        </p>
-      </div>
-    </div>
-
-
-
+    <blockquote>
+      이것은 &lt;span style="color:red"><span style="color:red">빨간색</span>&lt;/span>입니다.</pre>
+    </blockquote>
+    <ul>
+      <li>장점: 세세한 설정이 가능하다.</li>
+      <li>단점: 통일성이 떨어질 수 있다. 유지보수가 어렵다.</li>
+    </ul>
 
     <h2>우선순위</h2>
     <span class="tutorial">A_declare >> c_priority.html</span>
@@ -332,7 +275,6 @@ span {
         padding-left: 5mm;
         vertical-align: top;
       }
-
 
       #priority-table tr.new-subject td {
         border-top: 2px solid black;
@@ -909,8 +851,10 @@ span {
     </table>
 
     <h3>상속(상위 요소 vs 최상위 요소)</h3>
-    <p>&nbsp;아래와 같은 구조에서, 1.5em으로 설정한(A)의 경우 이전의 크기를 참조해서 계속 커지지만, 1.5rem으로 설정한(R)의 경우 기본 크기를 참조하기 때문에 더 커지지 않고 일정하게
-      표시됩니다.</p>
+    <p>
+      아래와 같은 구조에서, 1.5em으로 설정한(A)의 경우 이전의 크기를 참조해서 계속 커지지만,
+      1.5rem으로 설정한(R)의 경우 기본 크기를 참조하기 때문에 더 커지지 않고 일정하게 표시됩니다.
+    </p>
     <pre><blockquote>&lt;span> A1<span style="color:red">(1.5em)</span>, R1<span style="color:#f08">(1.5<b>r</b>em)</span>
   &lt;span> A2<span style="color:red">(1.5em)</span>, R2<span style="color:#f08">(1.5<b>r</b>em)</span>
     &lt;span> A3<span style="color:red">(1.5em)</span>, R3<span style="color:#f08">(1.5<b>r</b>em)</span>
@@ -1035,12 +979,17 @@ span {
       ]
     </span>
 
-    <p><u>설정 폰트의 조절은 브라우저가 제공하는 확대/축소(ctrl + '+/-')와는 다릅니다.</u> 브라우저의 확대/축소는 보여지는 크기 전체를 동일비율로 변경합니다. 반면, 설정 폰트의 조절은
-      디자인을 유지한 상태에서 글자의 크기만 조절합니다.</p>
+    <p>
+      <u>설정 폰트의 조절은 브라우저가 제공하는 확대/축소(ctrl + '+/-')와는 다릅니다.</u>
+      브라우저의 확대/축소는 보여지는 크기 전체를 동일비율로 변경합니다.
+      반면, 설정 폰트의 조절은 디자인을 유지한 상태에서 글자의 크기만 조절합니다.
+    </p>
 
     <h2>함수</h2>
     <span class="tutorial">D_function >> [No].html</span>
-    <p>값<sub>value</sub>를 직접 입력할 수도 있지만, 참조할 상수들을 조합하여 작성할 수 있습니다.</p>
+    <p>
+      값<sub>value</sub>를 직접 입력할 수도 있지만, 참조할 상수들을 조합하여 작성할 수 있습니다.
+    </p>
     <table>
       <thead>
         <tr>
@@ -1278,7 +1227,9 @@ li::before {
               }
             </style>
             <p my-attr="Hello">&nbsp; &nbsp; &nbsp; &nbsp; World</p>
-            <p>(데이터를 가져와 동적으로 사용하는 것에는 한계가 있음 -> javascript)</p>
+            <p>
+              (데이터를 가져와 동적으로 사용하는 것에는 한계가 있음 -> javascript)
+            </p>
           </td>
           <td>
             <pre>&lt;style>
@@ -1548,7 +1499,9 @@ ul {
     </table>
 
     <h2>속기</h2>
-    <p>속기<sub>shorthands</sub>란 여러개의 속성을 한 번에 지정하는 것을 말합니다.</p><br>
+    <p>
+      속기<sub>shorthands</sub>란 여러개의 속성을 한 번에 지정하는 것을 말합니다.
+    </p>
     <blockquote>
       <span class="comment">/* 개별 속성 지정 */</span><br>
       padding-top: 10px;<br>

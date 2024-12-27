@@ -22,17 +22,13 @@
   </script>
 
   <!-- 소스코드 스타일 -->
-  <link rel="stylesheet" href="/highlight/styles/base16/classic-light.min.css" />
+  <link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css" />
   <script src="/highlight/highlight.min.js"></script>
   <script src="/highlight/highlightjs-line-numbers.js"></script>
-  <script>
-    hljs.highlightAll();
-    hljs.initLineNumbersOnLoad();
-  </script>
 
   <!-- 목차 생성 -->
-  <script src="/modules/hd_list.js" defer></script>
-  
+  <script src="/modules/script.js" defer></script>
+
   <!-- 공통스킨 -->
   <style type="text/css">
     @import url("/style.css");
@@ -170,7 +166,10 @@ int main()
     </blockquote>
 
     <h2>코딩 스타일</h2>
-    <p>&nbsp;코딩 스타일은 띄어쓰기, 들여쓰기, 새 줄과 같은 코드의 문법적인 부분과 직접적인 연관이 없지만, 전체적인 포멧을 제안하여 가독성과 생산성을 올리려는 시도입니다. </p>
+    <p>
+      코딩 스타일은 띄어쓰기, 들여쓰기, 새 줄과 같은 코드의 문법적인 부분과 직접적인 연관이 없지만,
+      전체적인 포멧을 제안하여 가독성과 생산성을 올리려는 시도입니다.
+    </p>
 
     <table>
       <thead>
@@ -270,12 +269,16 @@ else
       </tr>
     </table>
 
-
     <h2>printf</h2>
-    <p>&nbsp;출력을 나타내는 명령어는 printf입니다. 단, printf의 인자(arguments)로 넘겨주는 문자열에 삽입되는 명령어는 따로 암기가 필요합니다.</p>
+    <p>
+      출력을 나타내는 명령어는 printf입니다.
+      단, printf의 인자(arguments)로 넘겨주는 문자열에 삽입되는 명령어는 따로 암기가 필요합니다.
+    </p>
     <div class="simple-box">
-      <p>&nbsp;접두 규칙은 대부분 영미권의 단어를 차용하지만 그 유래가 그리스, 로마에서 출발 한 것들이 많습니다. <a href="/project/open/prefix/prefix.html#title"
-          target="_blank">자료</a>를 참고하세요.</p>
+      <p>
+        접두 규칙은 대부분 영미권의 단어를 차용하지만 그 유래가 그리스, 로마에서 출발 한 것들이 많습니다.
+        <a href="/project/open/prefix/prefix.html#title" target="_blank">자료</a>를 참고하세요.
+      </p>
     </div>
     <blockquote>
       <pre>
@@ -372,7 +375,9 @@ printf("> 문자 출력 예제\n");</pre>
     </table>
 
     <h2>printf % rule</h2>
-    <p>&nbsp;<q>%좌우정렬-공백설정-총자릿수-마침표(.)-소수자릿수-출력기호</q>의 규칙을 갖습니다.</p>
+    <p>
+      <q>%좌우정렬-공백설정-총자릿수-마침표(.)-소수자릿수-출력기호</q>의 규칙을 갖습니다.
+    </p>
     <blockquote>
       <pre>
 printf("%-7.2f", 1.264);</pre>
@@ -413,9 +418,12 @@ printf("%-7.2f", 1.264);</pre>
     </table>
 
     <h2>진법</h2>
-    <p>&nbsp;<u>숫자가 0으로 시작하면 10진법이 아닌 경우를 의미합니다.</u> 0뒤의 문자에 따라서 b(binary)는 2진법 x(hex)는 16진법을 의미하고, 문자가 없는 경우(예:030)은
-      8진법으로 표기합니다.
-      많은 컴파일 언어에서 2진법과 16진법을 채용하지만 8진법은 누락되는 경우가 있습니다.</p>
+    <p>
+      <u>숫자가 0으로 시작하면 10진법이 아닌 경우를 의미합니다.
+      </u> 0뒤의 문자에 따라서 b(binary)는 2진법 x(hex)는 16진법을 의미하고,
+      문자가 없는 경우(예:030)은 8진법으로 표기합니다.
+      많은 컴파일 언어에서 2진법과 16진법을 채용하지만 8진법은 누락되는 경우가 있습니다.
+    </p>
     <blockquote>
       <pre>
 printf("16진법 : %X\n", 0x1A);</pre>
@@ -446,23 +454,33 @@ printf("16진법 : %X\n", 0x1A);</pre>
     </table>
     <div class="simple-box">
       <p>
-        &nbsp;진법에 대한 자세한 이해는 아래 사이트를 참조 합니다.<br>
+        진법에 대한 자세한 이해는 아래 사이트를 참조 합니다.<br>
         <a href="/project/open/binary/binary.html#title" target="_blank">자유주제 > 진법</a>
       </p>
     </div>
 
     <h2>Ascii</h2>
-    <p>&nbsp;0~128까지의 숫자를 문자와 1:1대응하여 만든 코드입니다. 알파벳과 일부 특수기호, 특수코드(예:문자열 변경)등이 포함되어있습니다. 다국어지원을 위해서 UniCode를
-      사용합니다.(~65536)</p>
+    <p>
+      0~128까지의 숫자를 문자와 1:1대응하여 만든 코드입니다.
+      알파벳과 일부 특수기호, 특수코드(예:문자열 변경)등이 포함되어있습니다.
+      다국어지원을 위해서 UniCode를 사용합니다.(~65536)
+    </p>
     <div class="simple-box">
-      <p>한글을 표현하려면 최소한 2bytes이상이 필요합니다. Unicode는 저장방식이고, EUC-KR, UTF-8은 표현방식(인코딩 방식) 입니다. 자세한 내용은 <a
-          href="https://iseohyun.tistory.com/93" target="_blank">여기</a>를 참조하세요.</p>
+      <p>
+        한글을 표현하려면 최소한 2bytes이상이 필요합니다.
+        Unicode는 저장방식이고, EUC-KR, UTF-8은 표현방식(인코딩 방식) 입니다.
+        자세한 내용은 <a href="https://iseohyun.tistory.com/93" target="_blank">여기</a>를 참조하세요.
+      </p>
     </div>
 
     <h1>데이터형</h1>
     <h2>변수 선언(declaration)</h2>
-    <p>&nbsp;변수의 선언(declaration)은 컴파일러에게 앞으로 사용하게 될 메모리를 할당을 요청하고, 그 메모리에 이름을 붙여주는, 등록과정을 의미하며,
-      (준비자세로) <u>프로그램상으론 아무런 동작을 하지 않습니다.</u> 변수의 이름은 다음을 피해야 합니다.</p>
+    <p>
+      변수의 선언(declaration)은 컴파일러에게 앞으로 사용하게 될 메모리를 할당을 요청하고,
+      그 메모리에 이름을 붙여주는, 등록과정을 의미하며,
+      (준비자세로) <u>프로그램상으론 아무런 동작을 하지 않습니다.</u>
+      변수의 이름은 다음을 피해야 합니다.
+    </p>
     <ul>
       <li>밑줄(underline, '_')을 제외한 특수기호를 사용할 수 없습니다.</li>
       <li>숫자로 시작 할 수 없습니다.</li>
@@ -474,9 +492,7 @@ printf("16진법 : %X\n", 0x1A);</pre>
       <li>(제안)코딩 스타일 가이드가 있다면, 준수합니다. (프로젝트 접두어 규칙 등)</li>
     </ul>
 
-
     <h2>변수형(DataType)</h2>
-
     <ul>
       <li>1 bit는 정보를 저장하는 가장 작은 단위입니다. 0 또는 1을 기억할 수 있습니다.</li>
       <li>1 byte는 8 bit입니다.</li>
@@ -534,7 +550,10 @@ double d = 123456789.987654321;</pre>
       </tr>
     </table>
     <h2>부호(Signed)</h2>
-    <p>&nbsp;부호를 기록하지 않아도 될 때, 1비트를 절약 할 수 있습니다. 예약어 <u>unsigned</u>를 사용합니다.</p>
+    <p>
+      부호를 기록하지 않아도 될 때, 1비트를 절약 할 수 있습니다.
+      예약어 <u>unsigned</u>를 사용합니다.
+    </p>
     <blockquote>
       unsigned char uc = 127;
     </blockquote>
@@ -565,20 +584,24 @@ double d = 123456789.987654321;</pre>
         <text x="580" y="130">LSB = Least Significant Bit ▲</text>
       </g>
     </svg>
-    <p>&nbsp;위 그림은 8 bit 변수를 나타냅니다. 32bit 또는 64bit 데이터타입(Data Type)은 그 만큼의 저장공간을 가질 것입니다. 부호 비트에 1이 저장되어 있다면 음수, 0이 저장되어
-      있다면 양수를 의미합니다.<br>
-      &nbsp;단, 2의 보수로 저장되기 때문에 양수에 부호비트만 변경하면 음수가 되는 것은 아닙니다. 자세한 내용은 <a href="/project/open/binary/binary.html#title"
-        target="_blank">2진수</a>를 참조하십시오. 2의 보수를 사용하는 이유는 가산기(덧셈기)로 감산이 가능하기 때문입니다.
+    <p>
+      위 그림은 8 bit 변수를 나타냅니다.
+      32bit 또는 64bit 데이터타입(Data Type)은 그 만큼의 저장공간을 가질 것입니다.
+      부호 비트에 1이 저장되어 있다면 음수, 0이 저장되어 있다면 양수를 의미합니다.<br>
+      &nbsp;단, 2의 보수로 저장되기 때문에 양수에 부호비트만 변경하면 음수가 되는 것은 아닙니다.
+      자세한 내용은 <a href="/project/open/binary/binary.html#title" target="_blank">2진수</a>를 참조하십시오.
+      2의 보수를 사용하는 이유는 가산기(덧셈기)로 감산이 가능하기 때문입니다.
     </p>
 
     <h2>sizeof</h2>
-    <p>&nbsp;sizeof 예약어는 해당 변수에 할당된 byte를 반환합니다.</p>
+    <p>
+      sizeof 예약어는 해당 변수에 할당된 byte를 반환합니다.
+    </p>
     <blockquote>
       <pre>
 char c;
 printf("char: %llu / %llu\n", sizeof(c), sizeof(char));</pre>
     </blockquote>
-
 
     <h2>연산자</h2>
     <ul style="list-style-type: disc;" data-ke-list-type="disc">
@@ -588,9 +611,9 @@ printf("char: %llu / %llu\n", sizeof(c), sizeof(char));</pre>
         타 언어는 boolean type에 true/false만 입력이 가능하도록 따로 관리(위험관리)</li>
       <li><u>연산자 우선순위는</u> 언어별로 버전별로 다르므로, 정확히 암기하기보다 <u>괄호()를 적극적으로 쓰는 것을 권장</u></li>
     </ul>
-    <p><iframe
-        src="https://docs.google.com/presentation/d/e/2PACX-1vRGR7ri_TU-17M64wQZ2eG-08p_tClG7m36Zy174xCYfb9K4fK6SZTaAW352MNOZ1LZMFelsCezCyPP/embed?start=false&amp;loop=false&amp;delayms=3000"
-        width="95%" height="500px" frameborder="0" allowfullscreen="true"></iframe></p>
+    <iframe
+      src="https://docs.google.com/presentation/d/e/2PACX-1vRGR7ri_TU-17M64wQZ2eG-08p_tClG7m36Zy174xCYfb9K4fK6SZTaAW352MNOZ1LZMFelsCezCyPP/embed?start=false&amp;loop=false&amp;delayms=3000"
+      width="95%" height="500px" frameborder="0" allowfullscreen="true"></iframe>
 
     <h3>기본 연산자 분류</h3>
     <table>

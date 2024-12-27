@@ -23,12 +23,12 @@
   <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
 
   <!-- 소스코드 스타일 -->
-  <link rel="stylesheet" href="/highlight/styles/base16/classic-light.min.css" />
+  <link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css" />
   <script src="/highlight/highlight.min.js"></script>
   <script src="/highlight/highlightjs-line-numbers.js"></script>
 
   <!-- 목차 생성 -->
-  <script src="/modules/hd_list.js" defer></script>
+  <script src="/modules/script.js" defer></script>
 
   <!-- 공통스킨 -->
   <style type="text/css">
@@ -40,24 +40,30 @@
   <article>
     <div id="title">팁</div>
 
-
     <h1>사소한 디자인</h1>
     <h2>p 테그</h2>
     <div style="border:1px solid #ddd; width:300px; text-align: left; float:right; margin-right:50px">
-      <p>긴 문장 쓰기에는 들여쓰기가 들어가지 않습니다.</p>
-      <p>&nbsp; 들여쓰기를 위해서 특수문자를 사용합니다.</p>
-      <p style="text-indent: 1em;">들여쓰기를 위해서 스타일을 사용합니다.<br> 다음문장에서는 적용되지 않습니다.</p>
+      <p>
+        긴 문장 쓰기에는 들여쓰기가 들어가지 않습니다.
+      </p>
+      <p>
+        들여쓰기를 위해서 특수문자를 사용합니다.
+      </p>
+      <p style="text-indent: 1em;">
+        들여쓰기를 위해서 스타일을 사용합니다.<br> 다음문장에서는 적용되지 않습니다.
+      </p>
     </div>
     <pre><code>&lt;p>긴 문장 쓰기에는 들여쓰기가 들어가지 않습니다.&lt;/p>
-      &lt;p>&amp;nbsp;들여쓰기를 위해서 특수문자를 사용합니다.&lt;/p>
-      &lt;p style="text-indent: 1em;">들여쓰기를 위해서 스타일을 사용합니다. &lt;br>
-      다음문장에서는 적용되지 않습니다.
-      &lt;/p>
+&lt;p>&amp;nbsp;들여쓰기를 위해서 특수문자를 사용합니다.&lt;/p>
+&lt;p style="text-indent: 1em;">들여쓰기를 위해서 스타일을 사용합니다. &lt;br>
+다음문장에서는 적용되지 않습니다.
+&lt;/p>
     </code></pre>
     <p style="clear:both; padding:20px 0;">
       위 예제를 살펴보면, 들여쓰기가 부자연스럽거나, 들여쓰기를 위해 특수기호를 사용해야합니다.
       코드가 지저분하고 관리가 어렵습니다.
-      새로운 문단은 아래와 같이 p테그 후 줄바꿈하면 자연스럽게 해결됩니다.</p>
+      새로운 문단은 아래와 같이 p테그 후 줄바꿈하면 자연스럽게 해결됩니다.
+    </p>
     <div style="border:1px solid #ddd; width:300px; text-align: left; float:right; margin-right:50px;">
       <p>
         긴 문장 쓰기에는 들여쓰기를 사용합니다.
@@ -73,32 +79,32 @@
       </p>
     </div>
     <pre><code>&lt;p>
-      긴 문장 쓰기에는 들여쓰기를 사용합니다.
-      &lt;/p>
-&lt;p>
-들여쓰기를 위해서 특수문자를 사용하지 않습니다.
+  긴 문장 쓰기에는 들여쓰기를 사용합니다.
 &lt;/p>
 &lt;p>
-들여쓰기를 위해서 스타일을 사용하지 않습니다.
+  들여쓰기를 위해서 특수문자를 사용하지 않습니다.
 &lt;/p>
 &lt;p>
-다음문장은 새로운 문단을 사용합니다.
+  들여쓰기를 위해서 스타일을 사용하지 않습니다.
+&lt;/p>
+&lt;p>
+  다음문장은 새로운 문단을 사용합니다.
 &lt;/p></code></pre>
-
 
     <h1>VS Code설정</h1>
     <h2>짜증나는 .(Dot) 에밋</h2>
     <p>
       문장을 작성하고 마침표<var>.</var> + 엔터<var>enter</var>를 누르는 순간 &lt;div>테그가 열립니다.
       재빨리 실행취소(<var>ctrl</var> + <var>z</var>)를 누르고 다시 <var>.</var>, 방향키를 누릅니다.
-      참 귀찮습니다. 그리고 정확히 5분후에 똑같은 짓을 반복합니다.
+      참 귀찮습니다.
+      그리고 정확히 5분후에 똑같은 짓을 반복합니다.
     </p>
     <p>
       기본 에밋은 수정할 수도 없고, 그렇다고 에밋을 기능을 끄자니 아쉽습니다.
       그냥 사용하자니, 화가납니다. 이 때는 <var>.</var> 에밋을 또 정의 하면 됩니다.
     </p>
     <p>
-      에밋 커스터마이즈는 <a href="/etc/column/vscode/emmet.html">이 문서</a>를 참조하십시오.
+      에밋 커스터마이즈는 <a href="/basicStudy//engineering/vscode/emmet.html">이 문서</a>를 참조하십시오.
     </p>
     <blockquote>
       <pre>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <!-- 모바일 스케일 고정 -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta discription="기출문제 자동생성">
+  <meta keywords="iseohyun, 기출문제, 수열">
+  <meta author="iseohyun">
+
+  <!-- 페이지 타이틀 -->
+  <title>double sequence: 수열 - iseohyun </title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-453XSP5W9M');
+  </script>
+
+  <!-- 수식 -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("style.css");
+  </style>
+
+  <!-- 폰트 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <article>
+    <div id="info">
+      <div id="category">수열</div>
+      <div id="title">이중 수열</div>
+      <div id="about">(작성중) 수열의 기호는 각각 독립적으로 연산 될 수 있습니다.</div>
+    </div>
+    <div id="main">
+      <div id=quiz></div>
+      <div id="hint" onclick="showAns();">2 &pi;</div>
+    </div>
+    <div id="answer">
+      <details>
+        <summary>해설</summary>
+        문제의 시발점은 "<u>sin과 cos을 하나의 식에서 풀 수 없다.</u>"입니다.<br>
+        <span id="solution"></span>
+      </details>
+    </div>
+    <div id="bottom">
+      <button id="reload" onclick="reopen()">문제
+        새로받기</button>
+    </div>
+  </article>
+</body>
+
+</html>
+
+<script>
+  var i;
+  var j;
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    i = parseInt(urlParams.get('i'));
+    j = parseInt(urlParams.get('j'));
+
+    if (isNaN(i)) {
+      throw 'i';
+    }
+
+    if (isNaN(j)) {
+      throw 'j';
+    }
+
+    const sum = i + j;
+    console.log(`i + j = ${sum}`);
+  } catch (error) {
+    console.error(error);
+    reopen();
+  }
+
+  function reopen() {
+    i = Math.floor(Math.random() * 10);
+    j = Math.floor(Math.random() * 10);
+    window.location = `?i=${i}&j=${j}`;
+  }
+
+  quiz = document.getElementById('quiz');
+  quiz.innerHTML = "\\( \\displaystyle{ \\sum _{i=" + i + "}^{10} \\sum _{j=" + j + "}^{10} j = ? }\\)";
+  // quiz.innerHTML = "\\( \\displaystyle{ \\sum _{i=1}^{10} \\sum _{j=1}^{"+ j +"} j = ? }\\)";
+  function showAns() {
+    document.getElementById('hint').style.backgroundColor = '#FFF';
+  }
+</script>

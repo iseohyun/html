@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <!-- 모바일 스케일 고정 -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta description="표준문서를 읽는데 필요한 스킬입니다.">
+  <meta keywords="표준 문서, 기초공학">
+  <meta author="iseohyun">
+  <!-- 페이지 타이틀 -->
+  <title>표준 문서: 기초공학</title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>window.dataLayer = window.dataLayer || []; function gtag() { dataLayer.push(arguments); } gtag('js', new Date()); gtag('config', 'G-453XSP5W9M');</script>
+  <!-- 소스코드 스타일 -->
+  <link rel="stylesheet" href="/highlight/styles/base16/base16/github.min.css" />
+  <script src="/highlight/highlight.min.js"></script>
+  <script src="/highlight/highlightjs-line-numbers.js"></script>
+  <!-- 수식 -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <!-- 차트 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- 목차 생성 -->
+  <script src="/modules/script.js" defer></script>
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("/style.css");
+  </style>
+</head>
+
+<body>
+  <article>
+    <div id="title">표준 문서</div>
+
+    <table class="last-td-left">
+      <caption>표 정의</caption>
+      <thead>
+        <tr>
+          <th>기호</th>
+          <th>의미</th>
+          <th>예시</th>
+          <th>해석</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>""</td>
+          <td>문자열</td>
+          <td>"none"</td>
+          <td>문자열 "none"을 입력</td>
+        </tr>
+        <tr>
+          <td>{ }</td>
+          <td>의미 단위, 객체</td>
+          <td>{color}</td>
+          <td>color입력 규칙에 맞게 입력</td>
+        </tr>
+        <tr>
+          <td>[ ]</td>
+          <td>생략 가능</td>
+          <td>[font-family]</td>
+          <td>작성해도 되지만, 안해도</td>
+        </tr>
+        <tr>
+          <td>.</td>
+          <td>하위 객체</td>
+          <td>filter.id</td>
+          <td>filter가 소유한 id 항목</td>
+        </tr>
+        <tr>
+          <td>..</td>
+          <td>범위</td>
+          <td>0..1</td>
+          <td>0부터 1사이의 값([포함, (: 미포함)</td>
+        </tr>
+        <tr>
+          <td>|</td>
+          <td>선택</td>
+          <td>x | y | z</td>
+          <td>x, y, z중 하나만 선택</td>
+        </tr>
+        <tr>
+          <td>()</td>
+          <td>함수</td>
+          <td>url()</td>
+          <td>url함수</td>
+        </tr>
+    </table>
+  </article>
+</body>
+
+</html>

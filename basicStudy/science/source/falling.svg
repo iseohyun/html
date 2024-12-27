@@ -149,7 +149,6 @@
     <!-- animation-direction -->
   </path>
 
-
   <path style="stroke: rgb(0, 0, 0); fill: none; stroke-width:2">
     <animate attributeName="d" values="
     M184 60C196 52 196 61 201 66C205 70 212 66 212 75; 

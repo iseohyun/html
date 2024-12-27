@@ -121,8 +121,6 @@
     <text x="570" y="270">JCheckBox</text>
     <text x="570" y="295">JRadioButton</text>
     <text x="570" y="335">JMenu</text>
-
-
   </g>
   <g style="stroke:#bbb;fill:none">
     <path d="M140 50 v-10" marker-end="url(#ah1)"/>
@@ -175,7 +173,6 @@
     <path d="M530 270 a5 5 0 0 0 -5 5 v5 a5 5 0 0 1 -5 5 h-5" marker-end="url(#ah1)"/>
     <path d="M530 295 a5 5 0 0 1 -5 -5 a5 5 0 0 0 -5 -5" />
     <path d="M530 335 h-15" marker-end="url(#ah1)"/>
-
 
     <path d="M200 100 h-10" marker-end="url(#ah2)"/>
 

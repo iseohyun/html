@@ -22,16 +22,12 @@
   </script>
 
   <!-- 소스코드 스타일 -->
-  <link rel="stylesheet" href="/highlight/styles/base16/classic-light.min.css" />
+  <link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css" />
   <script src="/highlight/highlight.min.js"></script>
   <script src="/highlight/highlightjs-line-numbers.js"></script>
-  <script>
-    hljs.highlightAll();
-    hljs.initLineNumbersOnLoad();
-  </script>
 
   <!-- 목차 생성 -->
-  <script src="/modules/hd_list.js" defer></script>
+  <script src="/modules/script.js" defer></script>
 
   <!-- 공통스킨 -->
   <style type="text/css">
@@ -50,7 +46,9 @@
   <article>
     <div id="title">C: 환경설정</div>
     <h1>C, Java, Python ...</h1>
-    <P>&nbsp;어떤 관광지에 관람객을 모집한다고 할 때, 안내판을 작성하는 회의를 하고 있습니다.</P>
+    <P>
+      어떤 관광지에 관람객을 모집한다고 할 때, 안내판을 작성하는 회의를 하고 있습니다.
+    </P>
     <ol>
       <li>많이 오는 국가순으로 그 국가의 언어로 추가로 작성합니다.
         <blockquote><span style="font-size:1.2em">화장실</span> toilet <br><span class="comment">化粧室 トイレ</span>
@@ -92,7 +90,9 @@
         <td>python: 번역하지 않고, 실행시 툴로 번역</td>
       </tr>
     </table>
-    <p>&nbsp;어느 관광지를 가든, 상황에 맞춰서 대응할 수 있습니다. C는 빠르기 때문에 주로 기계제어에 쓰이지만 원한다면 대형 어플리케이션도 얼마든지 가능합니다. <br>
+    <p>
+      어느 관광지를 가든, 상황에 맞춰서 대응할 수 있습니다.
+      C는 빠르기 때문에 주로 기계제어에 쓰이지만 원한다면 대형 어플리케이션도 얼마든지 가능합니다.<br>
       즉, <em>언어의 선택은 환경의 문제에 달린 것이지 어느 언어가 더 우수하다고 보기 어렵습니다.</em>
     </p>
     <div class="simple-box">
@@ -152,7 +152,9 @@
       </tr>
     </table>
     <div class="simple-box">
-      <p>&nbsp;다음은 아래 코드를 어셈블리로 변경한 예제입니다.</p>
+      <p>
+        다음은 아래 코드를 어셈블리로 변경한 예제입니다.
+      </p>
       <div class="blockquote-title">C 코드</div>
       <blockquote>
         <pre>
@@ -205,9 +207,7 @@ main:
       </blockquote>
     </div>
 
-
     <h1>C 작업 환경설정</h1>
-
     <h3>다른 언어와 비교</h3>
     <table>
       <thead>
@@ -238,36 +238,49 @@ main:
       frameborder="0"
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
       allowfullscreen></iframe>
-    <p>앞으로 이 두가지 목표를 수행하면 C를 개발/실습할 수 있는 환경이 준비가 끝납니다.</p>
+    <p>
+      앞으로 이 두가지 목표를 수행하면 C를 개발/실습할 수 있는 환경이 준비가 끝납니다.
+    </p>
     <ul>
       <li>컴파일러 설치: 기계어 번역기</li>
       <li>에디터 설치: 전문 메모장</li>
     </ul>
     <div class="simple-box">
-      <p>&nbsp;컴파일러를 구하기 앞서서 컴파일러에 대해서 간단하게 알아봐야 합니다.</p>
-      <p>&nbsp;칩의 언어를 각각 대응한다는 말은 칩셋 제조사마다 C언어 번역기(컴파일러)가 있어야 한다는 의미입니다. 다행히 C언어는 매우 간단한 언어이기 때문에 거의 모든 제조사는 칩셋을 구매하는
-        고객에게 컴파일러를 제공합니다. 앞으로 다룰 주제가 범용PC에서 Windows를 설치하고 그 위에 돌아가는 프로그램을 만들어야 하기 때문에 이에 적합한 컴파일러를 구해야합니다.</p>
+      <p>
+        컴파일러를 구하기 앞서서 컴파일러에 대해서 간단하게 알아봐야 합니다.
+      </p>
+      <p>
+        칩의 언어를 각각 대응한다는 말은 칩셋 제조사마다 C언어 번역기(컴파일러)가 있어야 한다는 의미입니다.
+        다행히 C언어는 매우 간단한 언어이기 때문에 거의 모든 제조사는 칩셋을 구매하는 고객에게 컴파일러를 제공합니다.
+        앞으로 다룰 주제가 범용PC에서 Windows를 설치하고 그 위에 돌아가는 프로그램을 만들어야 하기 때문에 이에 적합한 컴파일러를 구해야합니다.
+      </p>
       <hr>
-      <p>&nbsp;외국 자료에는 이 프로그램이 이런 기능을 하고, 이 행위를 왜 하는지에 대한 설명을 자세히 기술한 문서가 종종 눈에 띄는 반면, 국내 문서들은 일단 따라해보자는 취지가 많은 것
-        같습니다.<br>
-        &nbsp;APM(apache + php + mySQL)이나, eclipse, Visual Studio와 같이 통합환경을 제공하는 툴은 왜 라는 질문을 할 이유가 없었던 것 같습니다. 오픈마켓형태인
-        Visual Studio Code환경을 만들면서,
-        해야 할 것들이 늘어난건 아쉬운 일입니다. 게다가 그냥 문자나 디엠을 쓰면 되는데 카톡을 왜 설치해야하는지도 설명해야하지 않습니까?
+      <p>
+        외국 자료에는 이 프로그램이 이런 기능을 하고, 이 행위를 왜 하는지에 대한 설명을 자세히 기술한 문서가 종종 눈에 띄는 반면, 국내 문서들은 일단 따라해보자는 취지가 많은 것 같습니다.<br>
+        &nbsp;APM(apache + php + mySQL)이나, eclipse, Visual Studio와 같이 통합환경을 제공하는 툴은 왜 라는 질문을 할 이유가 없었던 것 같습니다.
+        오픈마켓형태인 Visual Studio Code환경을 만들면서, 해야 할 것들이 늘어난건 아쉬운 일입니다.
+        게다가 그냥 문자나 디엠을 쓰면 되는데 카톡을 왜 설치해야하는지도 설명해야하지 않습니까?
       </p>
     </div>
 
-
     <h2>컴파일러</h2>
-    <p>&nbsp;C컴파일러인 gcc컴파일러는 Linux OS를 타겟으로 하기 때문에, Windows환경에서 컴파일러를 따로 설치해 주어야 합니다.
-      아래사이트는 minGW(minimalist for GCC for Windows)를 다운로드 받을 수 있는 사이트입니다.</p>
-    <p><a href="https://winlibs.com/#download-release" target="_blank">https://winlibs.com/#download-release</a></p>
-    <p><q>최신버전의 UCRT 64bit 7-Zip</q>(용량이 작은)을 다운로드 받습니다. 압축을 해제하면 mingw64폴더가 나옵니다.
+    <p>
+      C컴파일러인 gcc컴파일러는 Linux OS를 타겟으로 하기 때문에, Windows환경에서 컴파일러를 따로 설치해 주어야 합니다.
+      아래사이트는 minGW(minimalist for GCC for Windows)를 다운로드 받을 수 있는 사이트입니다.
+    </p>
+    <p>
+      <a href="https://winlibs.com/#download-release" target="_blank">https://winlibs.com/#download-release</a>
+    </p>
+    <p>
+      <q>최신버전의 UCRT 64bit 7-Zip</q>(용량이 작은)을 다운로드 받습니다.
+      압축을 해제하면 mingw64폴더가 나옵니다.
       <span style="font-family: serif;">C:\mingw64</span>폴더에 넣는 예제도 있습니다. 선택입니다.
       저는 <span style="font-family:serif">C:\program files\mingw64</span>에 넣었습니다.
     </p>
 
     <h3>시스템 환경 변수 편집</h3>
-    <p>&nbsp;mingw64이하 bin폴더의 gcc.exe와 같은 프로그램을 수행하는 것이 목표이기 때문에 path에 해당 폴더를 등록하면 앞으로 편하게 사용할 수 있습니다.<br>
+    <p>
+      mingw64이하 bin폴더의 gcc.exe와 같은 프로그램을 수행하는 것이 목표이기 때문에 path에 해당 폴더를 등록하면 앞으로 편하게 사용할 수 있습니다.<br>
       제 경우 Path에 다음 경로를 추가하였습니다. <br>
     <div class="blockquote-title"> Path </div>
     <blockquote>
@@ -283,7 +296,9 @@ main:
     </blockquote>
     </p>
 
-    <p>&nbsp;컴파일러 버젼과 C++표준은 다릅니다. 다음은 c++표준을 정리한 것입니다.</p>
+    <p>
+      컴파일러 버젼과 C++표준은 다릅니다. 다음은 c++표준을 정리한 것입니다.
+    </p>
     <table>
       <thead>
         <tr>
@@ -341,18 +356,27 @@ main:
     </table>
 
     <h2>에디터</h2>
-    <p>&nbsp;VS Code를 사용합니다. VS Code는 범용 에디터이기 때문에 C용 환경설정을 추가로 해주어야 합니다.</p>
+    <p>
+      VS Code를 사용합니다. VS Code는 범용 에디터이기 때문에 C용 환경설정을 추가로 해주어야 합니다.
+    </p>
     <h3>C/C++ Extension Pack</h3>
-    <p>&nbsp;이 확장팩은 실질적으로 컴파일러를 제공하지는 않고, 컴파일러 명령으로 나온 결과물을 VSCode의 환경에 맞게 출력하는 기능을 도와준다. 아래 페이지는 참조를 위한 페이지이고, 툴에서
-      <var>Ctrl</var> + <var>shift</var> + <var>X</var>로 검색해서 설치하면 된다.
+    <p>
+      이 확장팩은 실질적으로 컴파일러를 제공하지는 않고, 컴파일러 명령으로 나온 결과물을 VSCode의 환경에 맞게 출력하는 기능을 도와준다.
+      아래 페이지는 참조를 위한 페이지이고, 툴에서 <var>Ctrl</var> + <var>shift</var> + <var>X</var>로 검색해서 설치하면 된다.
     </p>
     <p>
       <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools-extension-pack"
         target="_blank">https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools-extension-pack</a>
     </p>
     <h3>.json 설정</h3>
-    <p>&nbsp;json은 VSCode가 체택한 데이터 관리기법입니다. Excel파일과 같이 데이터를 저장하는 약속 중 하나입니다. 리스트는 []로, MAP은 {}로 표현하는 방식으로 기술됩니다.</p>
-    <p>&nbsp;작업디렉토리 이하 .vscode폴더에 아래와 같은 파일을 생성(또는 자동생성됨)하면 VSCode가 알아서 읽어가는 방식입니다.</p>
+    <p>
+      json은 VSCode가 체택한 데이터 관리기법입니다.
+      Excel파일과 같이 데이터를 저장하는 약속 중 하나입니다.
+      리스트는 []로, MAP은 {}로 표현하는 방식으로 기술됩니다.
+    </p>
+    <p>
+      작업디렉토리 이하 .vscode폴더에 아래와 같은 파일을 생성(또는 자동생성됨)하면 VSCode가 알아서 읽어가는 방식입니다.
+    </p>
 
     <table>
       <caption>참고: <a href="https://code.visualstudio.com/docs/cpp/config-mingw"
@@ -377,7 +401,9 @@ main:
       </tr>
     </table>
     <br><br>
-    <p>&nbsp;다음은 각 설정 예시입니다.</p>
+    <p>
+      다음은 각 설정 예시입니다.
+    </p>
     <div class="blockquote-title">c_cpp_properties.json</div>
     <blockquote class="highlight">
       <pre>
@@ -436,7 +462,9 @@ main:
 }</pre>
     </blockquote>
     <div class="simple-box">
-      <p>&nbsp;C++표준라이브러리를 추가하지 않고 namespace를 사용하면, <var>Error "undefined reference to 'std::cout'"</var>에러가 발생합니다.</p>
+      <p>
+        C++표준라이브러리를 추가하지 않고 namespace를 사용하면, <var>Error "undefined reference to 'std::cout'"</var>에러가 발생합니다.
+      </p>
     </div>
     앞으로 간단한 프로그램을 작성하고 <var>F5</var>를 눌러 실행해 볼 수 있습니다.
     <blockquote>
@@ -447,9 +475,12 @@ int main() {
     </blockquote>
 
     <h2>MSVS(Visual Studio 2022)</h2>
-    <p>&nbsp;에디터를 VScode를 설치했다면, 설치하지 않아도 됩니다. Visual Studio는 용량이 크고, 회원가입이 필요합니다. 컴파일러를 내장하고 있기 때문에(All-in-one)설정이
-      간편합니다.<br> <a href="https://visualstudio.microsoft.com/ko/" target="_blank"
-        rel="noopener">https://visualstudio.microsoft.com/ko/</a></p>
+    <p>
+      에디터를 VScode를 설치했다면, 설치하지 않아도 됩니다. Visual Studio는 용량이 크고, 회원가입이 필요합니다.
+      컴파일러를 내장하고 있기 때문에(All-in-one)설정이 간편합니다.<br>
+      <a href="https://visualstudio.microsoft.com/ko/" target="_blank"
+        rel="noopener">https://visualstudio.microsoft.com/ko/</a>
+    </p>
     <iframe
       src="https://docs.google.com/presentation/d/e/2PACX-1vT5s1Ymk5s1uu5gByrMKirtJPPIinsROGZoxDclpENb4FyGc2rGl8zXmYSKj1hG5jPwz1nSRbPwQk9d/embed?start=false&amp;loop=false&amp;delayms=3000"
       width="95%" height="450" frameborder="0" allowfullscreen="true"></iframe>
@@ -473,10 +504,16 @@ int main() {
       </li>
     </ul>
     <h3>UTF-8</h3>
-    <p>&nbsp;Visual Studio와 command(windows) 기본적으로 EUC-KR을 사용합니다. 다만, EUC-KR은 다국어 지원에서 불리한 코딩방법이고, 따라서 공유와 배포를 위해 UTF-8을
-      사용하는 것이 좋습니다. 따라서 UTF-8로 세팅하는 방법을 안내합니다.</p>
+    <p>
+      Visual Studio와 command(windows) 기본적으로 EUC-KR을 사용합니다.
+      다만, EUC-KR은 다국어 지원에서 불리한 코딩방법이고, 따라서 공유와 배포를 위해 UTF-8을 사용하는 것이 좋습니다.
+      따라서 UTF-8로 세팅하는 방법을 안내합니다.
+    </p>
     <h4>cmd</h4>
-    <p>&nbsp;chcp는 코드 페이지(code page)를 확인/변경하는 명령어입니다. default setting은 euc-kr(949)입니다. 변경을 위해서:</p>
+    <p>
+      chcp는 코드 페이지(code page)를 확인/변경하는 명령어입니다.
+      default setting은 euc-kr(949)입니다. 변경을 위해서:
+    </p>
     <div class="blockquote-title">1회 사용하는 방법</div>
     <blockquote>
       chcp 65001
@@ -485,7 +522,9 @@ int main() {
     <blockquote>
       \HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Command Processor\Autorun "chcp 65001"
     </blockquote>
-    <p>&nbsp;만약 autorun이 없다면, "우클릭" > 새로만들기 > 문자열 값(S) > "Autorun" 생성 > "chcp 65001" 입력</p>
+    <p>
+      만약 autorun이 없다면, "우클릭" > 새로만들기 > 문자열 값(S) > "Autorun" 생성 > "chcp 65001" 입력
+    </p>
 
     <h4>Visual Studio Setting</h4>
     <div class="blockquote-title">"메뉴" > "디버그" > "... 속성 페이지" > "C/C++" > "명령줄" > "추가 옵션(D)"에 다음을 추가</div>
@@ -494,9 +533,12 @@ int main() {
     </blockquote>
 
     <h1>예제코드 다운로드</h1>
-    <p>&nbsp;코드는 <a href="https://github.com/iseohyun/C-Example"
-        target="_blank">https://github.com/iseohyun/C-Example</a>에서 확인 할 수 있습니다. git clone주소는:<br>
-      https://github.com/iseohyun/C-Example.git</p>
+    <p>
+      코드는 <a href="https://github.com/iseohyun/C-tutorial" target="_blank">
+        https://github.com/iseohyun/C-tutorial</a>에서 확인 할 수 있습니다.
+      git clone주소는:<br>
+      https://github.com/iseohyun/C-tutorial.git
+    </p>
   </article>
 </body>
 

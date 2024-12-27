@@ -120,7 +120,7 @@
 
     footer {
       position: fixed;
-      left:0;
+      left: 0;
       bottom: 0;
       width: 100%;
       height: fit-content;
@@ -244,9 +244,9 @@
     </div>
     <div>
       예제 코드<br>
-      <a href="https://github.com/iseohyun/java-example" target="_blank">java</a>,
-      <a href="https://github.com/iseohyun/c-example" target="_blank">C</a>,
-      <a href="https://github.com/iseohyun/python-example" target="_blank">python</a>
+      <a href="https://github.com/iseohyun/java-tutorial" target="_blank">java</a>,
+      <a href="https://github.com/iseohyun/c-tutorial" target="_blank">C</a>,
+      <a href="https://github.com/iseohyun/python-tutorial" target="_blank">python</a>
     </div>
     <div>
       <a href="/info.html#소개">페이지 소개</a><br>
@@ -284,12 +284,20 @@
     for (var i = 0; i < list.목록.length; i++) {
       var li = document.createElement('li');
       var ul = document.createElement('ul');
+      if (list.목록[i].display == "hidden")
+        continue;
 
       if (typeof list.목록[i].파일명 == "undefined") {
         li.innerHTML = list.목록[i].주제;
         for (var j = 0; j < list.목록[i].목록.length; j++) {
+          if (list.목록[i].목록[j].display == "hidden")
+            continue;
           var li_sub = document.createElement('li');
-          li_sub.innerHTML = "<a href='" + list.디렉토리 + list.목록[i].디렉토리 + list.목록[i].목록[j].디렉토리 + list.목록[i].목록[j].파일명 + "#title'>" + list.목록[i].목록[j].주제 + "</a>";
+          if (typeof list.목록[i].목록[j].파일명 == "undefined") {
+            li_sub.innerHTML = "<a href='" + list.디렉토리 + list.목록[i].디렉토리 + list.목록[i].목록[j].디렉토리 + list.목록[i].목록[j].목록[0].파일명 + "#title'>" + list.목록[i].목록[j].주제 + "</a>";
+          } else {
+            li_sub.innerHTML = "<a href='" + list.디렉토리 + list.목록[i].디렉토리 + list.목록[i].목록[j].디렉토리 + list.목록[i].목록[j].파일명 + "#title'>" + list.목록[i].목록[j].주제 + "</a>";
+          }
           ul.appendChild(li_sub);
         }
       } else {
@@ -304,32 +312,4 @@
     div.appendChild(details);
     return div;
   }
-</script>
-
-<!-- <script defer>
-  var request_search = new XMLHttpRequest();
-  var search_list;
-  request_search.open('GET', 'search.json');
-  request_search.responseType = 'json';
-  request_search.send();
-  request_search.onload = function () {
-    search_list = request_search.response;
-  }
-
-  $('#search input').on("keyup", function (e) {
-    if (this.value.length == 0) {
-      $('#search>div:last-child').css('visibility', 'hidden');
-    } else {
-      $('#search>div:last-child').css('visibility', 'visible');
-      document.querySelector('#search>div:last-child').innerHTML = "";
-      for (var i = 0; i < search_list.length; i++) {
-        if (search_list[i].키워드.match(this.value))
-          document.querySelector('#search>div:last-child').innerHTML +=
-            "<a href=" + search_list[i].링크 + "#title target=_blank>" + search_list[i].주제 + "</a><br>";
-      }
-      if (document.querySelector('#search>div:last-child').textContent.trim().length === 0) {
-        document.querySelector('#search>div:last-child').innerHTML = "<추천 키워드 없음>";
-      }
-    }
-  }); -->
 </script>

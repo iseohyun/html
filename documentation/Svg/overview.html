@@ -24,16 +24,12 @@
   <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
 
   <!-- 소스코드 스타일 -->
-  <link rel="stylesheet" href="/highlight/styles/base16/classic-light.min.css" />
+  <link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css" />
   <script src="/highlight/highlight.min.js"></script>
   <script src="/highlight/highlightjs-line-numbers.js"></script>
-  <script>
-    hljs.highlightAll();
-    hljs.initLineNumbersOnLoad();
-  </script>
 
   <!-- 목차 생성 -->
-  <script src="/modules/hd_list.js" defer></script>
+  <script src="/modules/script.js" defer></script>
 
   <!-- 공통스킨 -->
   <style type="text/css">
@@ -79,174 +75,170 @@
   <article>
     <div id="title">SVG 개념</div>
     <h1>강의노트</h1>
-    <p>&nbsp;아래주소의 github에 업로드된 예제코드를 다운받아 실습 할 수 있습니다.<br>
-      &nbsp;환경설정에 관한 정보는 <a href="../html/domain.html#%EC%9E%91%EC%97%85%ED%99%98%EA%B2%BD%20%EC%84%A4%EC%A0%95"
-        target="_blank">여기</a>를 참조해주세요.
-
+    <p>
+      아래 github에 업로드된 예제코드를 다운받아 실습 할 수 있습니다(D_SVG 참조).
     </p>
-    <div style="border: 1px solid;
-    padding: 5px 30px;
-    border-radius: 8px;
-    width: fit-content;
-    margin-left: 30px;">
-      <span id="textToCopy">
-        https://github.com/iseohyun/html-example.git
-      </span>
-      <button type="button" onclick="copyToClipboard()">복사하기</button>
-    </div>
-    <script>
-      function copyToClipboard() {
-        const textToCopy = document.getElementById("textToCopy").innerText;
-
-        navigator.clipboard.writeText(textToCopy)
-          .then(() => {
-            alert("텍스트가 클립보드에 복사되었습니다.");
-          })
-          .catch(err => {
-            console.error('클립보드에 텍스트를 복사하는 중 오류가 발생했습니다: ', err);
-          });
-      }
-    </script>
+    <blockquote>
+      https://github.com/iseohyun/html-tutorial.git
+    </blockquote>
 
     <iframe
       src="https://docs.google.com/presentation/d/e/2PACX-1vRWdMu3YIng9H-JtxV7m_okSPgllb4iIcnNjITR4_KckQA-rvqjaHyVV2Pwe577vNIl5SvHDgswYu5W/embed?start=false&loop=false&delayms=3000"
       frameborder="0" width="960" height="569" allowfullscreen="true" mozallowfullscreen="true"
       webkitallowfullscreen="true"></iframe>
-    <p>&nbsp;레포지토리에서
-    <span class="tutorial" style="display:inline;padding:5px 10px; margin:0">D_SVG</span>폴더를 참고해주십시오.</p>
-    <hr>
-
-    <p>&nbsp;SVG는 그림파일의 작성 형식 중 하나입니다. 특징 및 장점은 다음과 같습니다.</p>
-    <liㅣ>
+    <p>
+      SVG는 그림파일의 작성 형식 중 하나입니다. 특징 및 장점은 다음과 같습니다.
+    </p>
+    <ul>
       <li>확대시 품질 저하X (벡터기반)</li>
-      <li>작은 용량 (코드기반, 재사용/수정 용이)</li>
+      <li>일반적으로 작은 용량 (코드기반, 재사용/수정 용이)</li>
       <li>문서 내 직접 구현이 가능 (포함된 글을 선택 가능)</li>
       <li>애니메이션 효과 지원</li>
       <li>그림 삽입 가능</li>
-      </ul>
+    </ul>
 
-      <h1>생성</h1>
-      <h3>SVG를 단독으로 구성할 때</h3>
-      - heart.svg<br>
-      <pre>
-        <code class="hljs language-html">&lt;svg xmlns="http://www.w3.org/2000/svg" width="500" height="500">
+    <h1>코딩 위치</h1>
+    <p>
+      단독 구성하거나<sub>stand alone</sub> html파일 속에 svg테그로 첨부<sub>include</sub> 할 수 있습니다.
+    </p>
+    <table id="insert-svg">
+      <style>
+        #insert-svg {
+          width: 100%;
+          margin-left: 0;
+        }
+        
+        #insert-svg tr:nth-child(2) td {
+          padding: 0;
+          align-content: start;
+        }
+
+        #insert-svg tr:nth-child(2) pre {
+          margin: 0;
+        }
+
+        #insert-svg tr:nth-child(2) code {
+          margin: 0;
+          width: 100%;
+        }
+      </style>
+      <tr>
+        <td width="50%" style="font-size: 2em;">stand alone</td>
+        <td width="50%" style="font-size: 2em;">include svg code</td>
+      </tr>
+      <tr>
+        <td>
+          <span>heart.svg</span>
+          <pre><code class="language-html">&lt;svg xmlns="http://www.w3.org/2000/svg" width="500" height="500">
   &lt;!-- TODO : add your code -->
-  &lt;path style="fill:black;stroke-width:1px" d="M433,67c-24-24-57-38...(중략)" />
-&lt;/svg></code>
-      </pre>
-      <h3>SVG를 html에 포함 할 때</h3>
-      - include_ver.html<br>
-      <pre>
-        <code class="language-html">&lt;html>
-&lt;head>
-&lt;/head>
+  &lt;path style="fill:black;stroke-width:1px"
+    d="M433,67c-24-24-57-38...(중략)" />
+&lt;/svg></code></pre>
+          <span style="display: block; margin-top: 10px;">stand_alone.html</span>
+          <pre><code class="language-html">&lt;body>
+  &lt;img src="heart.svg" width="500" height="500">
+&lt;/body></code></pre>
+        </td>
+        <td>
+          <span>include_svg.html</span>
+          <pre><code class="language-html">&lt;html>
 &lt;body>
   &lt;svg xmlns="http://www.w3.org/2000/svg" width="500" height="500">
     &lt;!-- TODO : add your code -->
     &lt;path style="fill:black;stroke-width:1px" d="M433,67c-24-24-57-38...(중략)" />
   &lt;/svg>
 &lt;/body>
-&lt;/html>
-        </code>
-      </pre>
-      <table class="minimize">
-        <tr>
-          <td width="50%" style="font-size: 2em;">stand_alone_ver.html</td>
-          <td width="50%" style="font-size: 2em;">include_ver.html</td>
-        </tr>
-        <tr>
-          <td style="height:500px;padding:0px;vertical-align:top;overflow: hidden;"><img src="heart.svg"></td>
-          <td style="height:500px;padding:0px;vertical-align:top;overflow: hidden;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="500" height="500">
-              <!-- TODO : add your code -->
-              <path style="fill:black;stroke-width:1px" d="M433,67c-24-24-57-38-92-38s-67,13-92,38l-12,12l-13-13
+&lt;/html></code></pre>
+        </td>
+      </tr>
+      <tr>
+        <td><img src="src/heart.svg" style="width:100%"></td>
+        <td>
+          <span>include_ver은 글자를 선택 할 수 있습니다.</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 500 500">
+            <!-- TODO : add your code -->
+            <path style="fill:black;stroke-width:1px" d="M433,67c-24-24-57-38-92-38s-67,13-92,38l-12,12l-13-13
               c-24-24-57-38-92-38c-34,0-67,13-92,38c-24,24-38,57-38,92c0,34,13,67,38,92
               
               C471,124,458,91,433,67z M414,232l-178,178l-178-178c-19-19-30-45-30-73
               s10-53,30-73c19-19,45-30,73-30c27,0,53,10,73,30l22,22c5,5,13,5,19,0l22-22
               c19-19,45-30,73-30c27,0,53,10,73,30c19,19,30,45,30,73
               C444,187,434,213,414,232z " />
-              <!--l187,187c2,2,6,4,9,4c3,0,6-1,9-3l188-187c24-24,38-57,38-92-->
-              <text dx="100" dy="100" style="font-size:30px;">안녕하세요. 테스트 글자입니다.</text>
-            </svg>
-          </td>
-        </tr>
-        <tr>
-          <td><a href="stand_alone_ver.html" download><button class="download"
-                style="font-size: 2em;">stand_alone_ver.html</button></a>
-            <a href="heart.svg" download><button class="download" style="font-size: 2em;">heart.svg</button></a>
-          </td>
-          <td><a href="include_ver.html" download><button class="download"
-                style="font-size: 2em;">include_ver.html</button></a></td>
-        </tr>
-      </table>
-      <div style="height: 300px;"></div>
-      <span class="tutorial">A_Start > a_helloworld.html</span>
+            <!--l187,187c2,2,6,4,9,4c3,0,6-1,9-3l188-187c24-24,38-57,38-92-->
+            <text dx="100" dy="100" style="font-size:30px;">안녕하세요. 테스트 글자입니다.</text>
+          </svg>
+        </td>
+      </tr>
+    </table>
+    <span class="tutorial">A_Start > a_helloworld.html</span>
 
-      <h1>좌표계</h1>
-
-      좌상단이 (0,0)입니다. 오른쪽으로 갈수록 X가 증가, 아래로 갈수록 Y가 증가합니다. (X좌표, y좌표)로 나타냅니다.
+    <h1>좌표계</h1>
+    <p>
+      좌상단이 (0,0)입니다. 오른쪽으로 갈수록 X가 증가, 아래로 갈수록 Y가 증가합니다.
+      (X좌표, y좌표)로 나타냅니다.<br>
       ※ 아래 테스트 코드는 SVG로 작성되었습니다.<br>
-      <ul>
-        <li>마우스 위치(브라우저 기준) : e.clientX, e.clientY</li>
-        <li>svg 위치(브라우저 기준) : svg.getClientRects()[0].x<br><span style="color:#f88">var svg =
-            document.getElementById("svg");</span></li>
-        <li>text 위치(svg 기준) : text.x.baseVal[0].value = ?<br><span style="color:#f88">var text =
-            svg.getElementById("text");</span></li>
-        <li>rect 위치(svg 기준) : rect.x.baseVal.value = ?<br><span style="color:#f88">var rect =
-            svg.getElementById("rect");</span></li>
-        <li>mouse 숨기기 : style="cursor:none;"</li>
-      </ul>
-      <svg id="svg" xmlns="http://www.w3.org/2000/svg" width="500" height="300" viewBox="0 0 500 300"
-        style="cursor:none;max-width: 100%;">
-        <marker id="ah1" markerWidth="20" markerHeight="20" viewBox="0 0 20 10" orient="auto">
-          <path d="M9 0L0 4 0 -4 z" />
-        </marker>
-        <path class="lineDet1"
-          d="M1,25 h1000 M1,75 h1000 M1,125 h1000 M1,175 h1000 M1,225 h1000 M1,275 h1000 M1,325 h1000 M1,375 h1000 M1,425 h1000 M1,475 h1000 M1,525 h1000 M1,575 h1000 M1,625 h1000 M1,675 h1000 M1,725 h1000 M1,775 h1000 M1,825 h1000 M1,875 h1000 M1,925 h1000 M1,975 h1000" />
-        <path class="lineDet1"
-          d="M25,1 v1000 M75,1 v1000 M125,1 v1000 M175,1 v1000 M225,1 v1000 M275,1 v1000 M325,1 v1000 M375,1 v1000 M425,1 v1000 M475,1 v1000 M525,1 v1000 M575,1 v1000 M625,1 v1000 M675,1 v1000 M725,1 v1000 M775,1 v1000 M825,1 v1000 M875,1 v1000 M925,1 v1000 M975,1 v1000" />
-        <rect width="1000" height="440" style="fill:white;" />
-        <path class="lineOdd"
-          d="M1,50 h1000 M1,150 h1000 M1,250 h1000 M1,350 h1000 M1,450 h1000 M1,550 h1000 M1,650 h1000 M1,750 h1000 M1,850 h1000 M1,950 h1000" />
-        <path class="lineOdd"
-          d="M50,1 v1000 M150,1 v1000 M250,1 v1000 M350,1 v1000 M450,1 v1000 M550,1 v1000 M650,1 v1000 M750,1 v1000 M850,1 v1000 M950,1 v1000" />
-        <path class="lineEven"
-          d="M1,1 h1000 M1,100 h1000 M1,200 h1000 h1000 M1,300 h1000 M1,400 h1000 M1,500 h1000 M1,600 h1000 M1,700 h1000 M1,800 h1000 M1,900 h1000" />
-        <path class="lineEven"
-          d="M1,1 v1000 M100,1 v1000 M200,1 v1000 h1000 M300,1 v1000 M400,1 v1000 M500,1 v1000 M600,1 v1000 M700,1 v1000 M800,1 v1000 M900,1 v1000" />
-        <path marker-end="url(#ah1)" d="M20 10 h100" style="fill:none;stroke:#000" />
-        <text style="font: size 29px" x="23" y="13" alignment-baseline="hanging">x축 증가방향.</text>
-        <path marker-end="url(#ah1)" d="M10 35 v100" style="fill:none;stroke:#000" />
-        <text style="font: size 29px" x="0" y="0" alignment-baseline="hanging"
-          transform="translate(35,35) rotate(90)">y축
-          증가방향.</text>
-        <text style="font: size 29px" x="73" y="63" alignment-baseline="hanging">좌표 = (x, y)</text>
+    </p>
+    <ul>
+      <li>마우스 위치(브라우저 기준) : e.clientX, e.clientY</li>
+      <li>svg 위치(브라우저 기준) : svg.getClientRects()[0].x<br><span style="color:#f88">var svg =
+          document.getElementById("svg");</span></li>
+      <li>text 위치(svg 기준) : text.x.baseVal[0].value = ?<br><span style="color:#f88">var text =
+          svg.getElementById("text");</span></li>
+      <li>rect 위치(svg 기준) : rect.x.baseVal.value = ?<br><span style="color:#f88">var rect =
+          svg.getElementById("rect");</span></li>
+      <li>mouse 숨기기 : style="cursor:none;"</li>
+    </ul>
+    <svg id="svg" xmlns="http://www.w3.org/2000/svg" width="500" height="300" viewBox="0 0 500 300"
+      style="cursor:none;max-width: 100%;">
+      <marker id="ah1" markerWidth="20" markerHeight="20" viewBox="0 0 20 10" orient="auto">
+        <path d="M9 0L0 4 0 -4 z" />
+      </marker>
+      <path class="lineDet1"
+        d="M1,25 h1000 M1,75 h1000 M1,125 h1000 M1,175 h1000 M1,225 h1000 M1,275 h1000 M1,325 h1000 M1,375 h1000 M1,425 h1000 M1,475 h1000 M1,525 h1000 M1,575 h1000 M1,625 h1000 M1,675 h1000 M1,725 h1000 M1,775 h1000 M1,825 h1000 M1,875 h1000 M1,925 h1000 M1,975 h1000" />
+      <path class="lineDet1"
+        d="M25,1 v1000 M75,1 v1000 M125,1 v1000 M175,1 v1000 M225,1 v1000 M275,1 v1000 M325,1 v1000 M375,1 v1000 M425,1 v1000 M475,1 v1000 M525,1 v1000 M575,1 v1000 M625,1 v1000 M675,1 v1000 M725,1 v1000 M775,1 v1000 M825,1 v1000 M875,1 v1000 M925,1 v1000 M975,1 v1000" />
+      <rect width="1000" height="440" style="fill:white;" />
+      <path class="lineOdd"
+        d="M1,50 h1000 M1,150 h1000 M1,250 h1000 M1,350 h1000 M1,450 h1000 M1,550 h1000 M1,650 h1000 M1,750 h1000 M1,850 h1000 M1,950 h1000" />
+      <path class="lineOdd"
+        d="M50,1 v1000 M150,1 v1000 M250,1 v1000 M350,1 v1000 M450,1 v1000 M550,1 v1000 M650,1 v1000 M750,1 v1000 M850,1 v1000 M950,1 v1000" />
+      <path class="lineEven"
+        d="M1,1 h1000 M1,100 h1000 M1,200 h1000 h1000 M1,300 h1000 M1,400 h1000 M1,500 h1000 M1,600 h1000 M1,700 h1000 M1,800 h1000 M1,900 h1000" />
+      <path class="lineEven"
+        d="M1,1 v1000 M100,1 v1000 M200,1 v1000 h1000 M300,1 v1000 M400,1 v1000 M500,1 v1000 M600,1 v1000 M700,1 v1000 M800,1 v1000 M900,1 v1000" />
+      <path marker-end="url(#ah1)" d="M20 10 h100" style="fill:none;stroke:#000" />
+      <text style="font: size 29px" x="23" y="13" alignment-baseline="hanging">x축 증가방향.</text>
+      <path marker-end="url(#ah1)" d="M10 35 v100" style="fill:none;stroke:#000" />
+      <text style="font: size 29px" x="0" y="0" alignment-baseline="hanging" transform="translate(35,35) rotate(90)">y축
+        증가방향.</text>
+      <text style="font: size 29px" x="73" y="63" alignment-baseline="hanging">좌표 = (x, y)</text>
 
-        <text id="text" style="font: size 29px" x="105" y="105" alignment-baseline="hanging">마우스를 가져가세요.</text>
-        <rect id="rect" x="100" y="100" width="150" height="75" style="fill:#F88; opacity: 0.3;" />
-      </svg>
-      <div><a href="position.svg" download><button class="download">position.svg</button></a> * 파일에 Javascirpt가 포함되어
-        있습니다.
-        브라우저로 열어주세요.@iseohyun.com CC-BY-SA</div>
+      <text id="text" style="font: size 29px" x="105" y="105" alignment-baseline="hanging">마우스를 가져가세요.</text>
+      <rect id="rect" x="100" y="100" width="150" height="75" style="fill:#F88; opacity: 0.3;" />
+    </svg>
+    <div>
+      <a href="src/position.svg" download><button class="download">position.svg</button></a>
+      * 파일에 Javascirpt가 포함되어 있습니다.
+      브라우저로 열어주세요.@iseohyun.com CC-BY-SA
+    </div>
 
-      <script>
-        var svg = document.getElementById("svg");
-        var text = svg.getElementById("text");
-        var rect = svg.getElementById("rect");
+    <script>
+      var svg = document.getElementById("svg");
+      var text = svg.getElementById("text");
+      var rect = svg.getElementById("rect");
 
-        svg.addEventListener("mousemove", (e) => {
-          x = Math.round(e.clientX - svg.getClientRects()[0].x);
-          y = Math.round(e.clientY - svg.getClientRects()[0].y);
-          text.textContent = "(" + x + "," + y + ")";
+      svg.addEventListener("mousemove", (e) => {
+        x = Math.round(e.clientX - svg.getClientRects()[0].x);
+        y = Math.round(e.clientY - svg.getClientRects()[0].y);
+        text.textContent = "(" + x + "," + y + ")";
 
-          rect.x.baseVal.value = x;
-          rect.y.baseVal.value = y;
-          text.x.baseVal[0].value = x + 5;
-          text.y.baseVal[0].value = y + 5;
-        });
-      </script>
-      <pre>
+        rect.x.baseVal.value = x;
+        rect.y.baseVal.value = y;
+        text.x.baseVal[0].value = x + 5;
+        text.y.baseVal[0].value = y + 5;
+      });
+    </script>
+    <pre>
         <code>&lt;script>
   var svg = document.getElementById("svg");
   var text = svg.getElementById("text");
@@ -266,374 +258,318 @@
         </code>
       </pre>
 
-      <h1>구조</h1>
-      <table class="last-td-left">
-        <caption>표 정의</caption>
-        <thead>
-          <tr>
-            <th>기호</th>
-            <th>의미</th>
-            <th>예시</th>
-            <th>해석</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>""</td>
-            <td>문자열</td>
-            <td>"none"</td>
-            <td>문자열 "none"을 입력</td>
-          </tr>
-          <tr>
-            <td>{ }</td>
-            <td>의미 단위, 객체</td>
-            <td>{color}</td>
-            <td>color입력 규칙에 맞게 입력</td>
-          </tr>
-          <tr>
-            <td>[ ]</td>
-            <td>생략 가능</td>
-            <td>[font-family]</td>
-            <td>작성해도 되지만, 안해도</td>
-          </tr>
-          <tr>
-            <td>.</td>
-            <td>하위 객체</td>
-            <td>filter.id</td>
-            <td>filter가 소유한 id 항목</td>
-          </tr>
-          <tr>
-            <td>..</td>
-            <td>범위</td>
-            <td>0..1</td>
-            <td>0부터 1사이의 값([포함, (: 미포함)</td>
-          </tr>
-          <tr>
-            <td>|</td>
-            <td>선택</td>
-            <td>x | y | z</td>
-            <td>x, y, z중 하나만 선택</td>
-          </tr>
-          <tr>
-            <td>()</td>
-            <td>함수</td>
-            <td>url()</td>
-            <td>url함수</td>
-          </tr>
-      </table>
+    <h1>구조</h1>
+    <p>
+      'svg 메타정보 + 참조 + 도형'로 구성됩니다.
+    </p>
+    <pre><code class="svg">&lt;svg 메타정보>
+  &lt;defs>
+    그림에 사용될 속성1(id1)
+    그림에 사용될 속성2(id2)
+  &lt;/defs>
+  &lt;도형1 />
+  &lt;도형2 xlink:href="id1"/>  &lt;!-- 도형1을 가릴수도 있다. -->
+  &lt;g style="그룹 공통 속성">
+    &lt;도형3 />
+    &lt;도형4 />
+  &lt;/g>
+&lt;/svg></code></pre>
+    <table class="all-td-left">
+      <caption>svg 파일 구조</caption>
+      <thead>
+        <tr>
+          <th>분류</th>
+          <th>항목</th>
+          <th>설명</th>
+          <th>Attr & &lt;하위 항목></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>svg</td>
+          <td>메타 정보</td>
+          <td>제목, 상세설명, 언어, ID, class, 분류</td>
+          <td>&lt;title(제목)>, &lt;desc(상세설명)>, &lt;def(참조객체)>, &lt;{object}(그림)>, &lt;g(그룹된 객체)></td>
+        </tr>
+        <tr>
+          <td rowspan="7">def<br>(참조용)</td>
+          <td>linearGradient</td>
+          <td>채색 규칙(칠하기)</td>
+          <td>id &lt;stop style="stop-color:{color} offset=[0..1]></td>
+        </tr>
+        <tr>
+          <td>pattern</td>
+          <td>채색 규칙(무늬 삽입)</td>
+          <td>viewBox, patternUnits preserveAspectRatio, width, height</td>
+        </tr>
+        <tr>
+          <td>marker</td>
+          <td>선의 시작, 중간, 끝점 삽입이미지</td>
+          <td>id, viewBox, overflow, orlent, refX, refY &lt;{objects}></td>
+        </tr>
+        <tr>
+          <td>symbol</td>
+          <td>재사용 될 이미지</td>
+          <td>id, viewBox &lt;{objects}></td>
+        </tr>
+        <tr>
+          <td>clip-path</td>
+          <td>마스크</td>
+          <td>id, &lt;{objects}></td>
+        </tr>
+        <tr>
+          <td>filter</td>
+          <td>적용할 특수효과</td>
+          <td>id, viewBox &lt;{objects}></td>
+        </tr>
+        <tr>
+          <td>view</td>
+          <td>sub창, ~.svg#view로 선택</td>
+          <td>id, viewBox</td>
+        </tr>
+        <tr>
+          <td rowspan="9">{object}<br>(직접 삽입)</td>
+          <td>path</td>
+          <td>자유 선 그리기</td>
+          <td>d(경로)</td>
+        </tr>
+        <tr>
+          <td>rect</td>
+          <td>사각형 그리기</td>
+          <td>x, y(좌상 좌표), width(넓이), hight(높이), rx, ry(round XY둥근 모서리)</td>
+        </tr>
+        <tr>
+          <td>circle</td>
+          <td>원 그리기</td>
+          <td>cx, cy(중심위치), r(반지름)</td>
+        </tr>
+        <tr>
+          <td>ellipse</td>
+          <td>타원 그리기</td>
+          <td>cx, cy(중심위치), rx, ry(축 반지름)</td>
+        </tr>
+        <tr>
+          <td>line</td>
+          <td>직선</td>
+          <td>x1, x2(시작점), x2, y2(도착점)</td>
+        </tr>
+        <tr>
+          <td>polyline</td>
+          <td>도형(열림)</td>
+          <td>points({점 나열})</td>
+        </tr>
+        <tr>
+          <td>polygon</td>
+          <td>도형(닫힘)</td>
+          <td>points({점 나열})</td>
+        </tr>
+        <tr>
+          <td>text</td>
+          <td>글자 출력</td>
+          <td>x, y(좌상 좌표), &lt;span x, y, dx, dy></td>
+        </tr>
+        <tr>
+          <td>use</td>
+          <td>심볼 출력</td>
+          <td>width(가로), height(세로), xlink:href="#{symbol.id}"</td>
+        </tr>
+        <tr>
+          <td rowspan="2">global</td>
+          <td>g</td>
+          <td>그룹</td>
+          <td>{object}, g</td>
+        </tr>
+        <tr>
+          <td>AnimateMotion</td>
+          <td>애니메이션 효과</td>
+          <td>path(경로) calcMode(동작방법) dur(재생시간), repeatCount(반복)...</td>
+        </tr>
+      </tbody>
+    </table>
 
-      <table class="all-td-left">
-        <caption>svg 파일 구조</caption>
-        <thead>
-          <tr>
-            <th>분류</th>
-            <th>항목</th>
-            <th>설명</th>
-            <th>Attr & &lt;하위 항목></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>svg</td>
-            <td>메타 정보</td>
-            <td>제목, 상세설명, 언어, ID, class, 분류</td>
-            <td>&lt;title(제목)>, &lt;desc(상세설명)>, &lt;def(참조객체)>, &lt;{object}(그림)>, &lt;g(그룹된 객체)></td>
-          </tr>
-          <tr>
-            <td rowspan="10">def<br>(참조용)</td>
-            <td>linearGradient</td>
-            <td>채색 규칙(칠하기)</td>
-            <td>id, bx:pinned& &lt;stop style="stop-color:{color} offset=[0..1]></td>
-          </tr>
-          <tr>
-            <td>pattern</td>
-            <td>채색 규칙(무늬 삽입)</td>
-            <td>viewBox, patternUnits preserveAspectRatio, width, height bx:pinned</td>
-          </tr>
-          <tr>
-            <td>marker</td>
-            <td>선의 시작, 중간, 끝점 삽입이미지</td>
-            <td>id, viewBox, overflow, orlent, refX, refY, bx:pinned &lt;{objects}></td>
-          </tr>
-          <tr>
-            <td>symbol</td>
-            <td>재사용 될 이미지</td>
-            <td>id, viewBox, bx:pinned &lt;{objects}></td>
-          </tr>
-          <tr>
-            <td>clip-path</td>
-            <td>마스크</td>
-            <td>id, &lt;{objects}></td>
-          </tr>
-          <tr>
-            <td>filter</td>
-            <td>적용할 특수효과</td>
-            <td>id, viewBox, bx:pinned &lt;{objects}></td>
-          </tr>
-          <tr>
-            <td>style</td>
-            <td>적용할 폰트</td>
-            <td>bx:fonts, bx:pinned</td>
-          </tr>
-          <tr>
-            <td>bx:guide</td>
-            <td>가이드 라인(직선):출력X</td>
-            <td>x, y, angle</td>
-          </tr>
-          <tr>
-            <td>bx:grid</td>
-            <td>가이드 라인(그리드):출력X</td>
-            <td>x, y, width, height</td>
-          </tr>
-          <tr>
-            <td>view</td>
-            <td>sub창, ~.svg#view로 선택</td>
-            <td>id, viewBox</td>
-          </tr>
-          <tr>
-            <td rowspan="9">{object}<br>(직접 삽입)</td>
-            <td>path</td>
-            <td>자유 선 그리기</td>
-            <td>d(경로)</td>
-          </tr>
-          <tr>
-            <td>rect</td>
-            <td>사각형 그리기</td>
-            <td>x, y(좌상 좌표), width(넓이), hight(높이), rx, ry(round XY둥근 모서리)</td>
-          </tr>
-          <tr>
-            <td>circle</td>
-            <td>원 그리기</td>
-            <td>cx, cy(중심위치), r(반지름)</td>
-          </tr>
-          <tr>
-            <td>ellipse</td>
-            <td>타원 그리기</td>
-            <td>cx, cy(중심위치), rx, ry(축 반지름)</td>
-          </tr>
-          <tr>
-            <td>line</td>
-            <td>직선</td>
-            <td>x1, x2(시작점), x2, y2(도착점)</td>
-          </tr>
-          <tr>
-            <td>polyline</td>
-            <td>도형(열림)</td>
-            <td>points({점 나열})</td>
-          </tr>
-          <tr>
-            <td>polygon</td>
-            <td>도형(닫힘)</td>
-            <td>points({점 나열})</td>
-          </tr>
-          <tr>
-            <td>text</td>
-            <td>글자 출력</td>
-            <td>x, y(좌상 좌표), &lt;span x, y, dx, dy></td>
-          </tr>
-          <tr>
-            <td>use</td>
-            <td>심볼 출력</td>
-            <td>width(가로), height(세로), xlink:href="#{symbol.id}"</td>
-          </tr>
-          <tr>
-            <td rowspan="2">global</td>
-            <td>g</td>
-            <td>그룹</td>
-            <td>{object}, g</td>
-          </tr>
-          <tr>
-            <td>AnimateMotion</td>
-            <td>애니메이션 효과</td>
-            <td>path(경로) calcMode(동작방법) dur(재생시간), repeatCount(반복)...</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <table class="all-td-left">
-        <caption>공통속성</caption>
-        <thead>
-          <tr>
-            <th>속성명</th>
-            <th>세부 항목명</th>
-            <th>설명</th>
-            <th>입력 값</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td rowspan="14">style</td>
-            <td>fill</td>
-            <td>채우기</td>
-            <td>{color} | url(#{gradient.id | pattern.id}) | "none"</td>
-          </tr>
-          <tr>
-            <td>fill-opacity</td>
-            <td>투명도</td>
-            <td>[0 .. 1]</td>
-          </tr>
-          <tr>
-            <td>fill-rule</td>
-            <td>채우기 규칙</td>
-            <td>"nonezero" | "evenodd"</td>
-          </tr>
-          <tr>
-            <td>stroke</td>
-            <td>태두리 색</td>
-            <td>{color}</td>
-          </tr>
-          <tr>
-            <td>stroke-width</td>
-            <td>테두리 두께</td>
-            <td>{size}</td>
-          </tr>
-          <tr>
-            <td>vector-effect</td>
-            <td></td>
-            <td>"non-scaling-stroke"</td>
-          </tr>
-          <tr>
-            <td>stroke-linecap</td>
-            <td>테두리(선) 끝처리</td>
-            <td>"butt" | "round" | "square"</td>
-          </tr>
-          <tr>
-            <td>stroke-linejoin</td>
-            <td>테두리(선) 이음부</td>
-            <td>"miter" | "round" | "bevel"</td>
-          </tr>
-          <tr>
-            <td>stroke-dasharray</td>
-            <td>선 스타일(점선 규칙)</td>
-            <td>{size array}</td>
-          </tr>
-          <tr>
-            <td>marker-start</td>
-            <td>선 시작 모양</td>
-            <td rowspan="3">url(#{marker.id})</td>
-          </tr>
-          <tr>
-            <td>marker-mid</td>
-            <td>선 중간 모양</td>
-          </tr>
-          <tr>
-            <td>marker-end</td>
-            <td>선 끝 모양</td>
-          </tr>
-          <tr>
-            <td>filter</td>
-            <td>특수효과</td>
-            <td>url(#{filter.id})</td>
-          </tr>
-          <tr>
-            <td>miter linit</td>
-            <td></td>
-            <td></td>
-          </tr>
-          <tr>
-            <td rowspan="14">style<sup>*</sup><br>(font)</td>
-            <td>font-family</td>
-            <td>서체</td>
-            <td>{font}</td>
-          </tr>
-          <tr>
-            <td>font-size</td>
-            <td>글자 크기</td>
-            <td>{size}</td>
-          </tr>
-          <tr>
-            <td>font-style</td>
-            <td>기울임 등 스타일</td>
-            <td>"italic" |</td>
-          </tr>
-          <tr>
-            <td>font-weight</td>
-            <td>글자 두께</td>
-            <td>[0 .. 1000] | "normal" | "bold" | ...</td>
-          </tr>
-          <tr>
-            <td>letter-spacing</td>
-            <td>자간</td>
-            <td>{size}</td>
-          </tr>
-          <tr>
-            <td>word-spacing</td>
-            <td>사이띄기 간격</td>
-            <td>{size}</td>
-          </tr>
-          <tr>
-            <td>text-transform</td>
-            <td>대소문자 규칙</td>
-            <td>["capitalize" | "uppercase" | "lowercase"]</td>
-          </tr>
-          <tr>
-            <td>white-space-collapse</td>
-            <td>빈칸 유지 규칙</td>
-            <td>"preserve"</td>
-          </tr>
-          <tr>
-            <td>text-anchor</td>
-            <td>단어시작 위치(좌상단 기준)</td>
-            <td>[start | "middle" | "end"]</td>
-          </tr>
-          <tr>
-            <td>text-wrap</td>
-            <td>줄바꿈 규칙</td>
-            <td>"nowrap"</td>
-          </tr>
-          <tr>
-            <td>text-decoration-line</td>
-            <td>밑줄, 취소선, 윗줄</td>
-            <td>"underline", "overline", "line-through"</td>
-          </tr>
-          <tr>
-            <td>text-decoration-thickness</td>
-            <td>밑줄 등 두께</td>
-            <td>"initial" ...</td>
-          </tr>
-          <tr>
-            <td>text-decoration-style</td>
-            <td>밑줄 등 스타일(실선, 점선 ...)</td>
-            <td>["solid" | ... ]</td>
-          </tr>
-          <tr>
-            <td>text-decoration-color</td>
-            <td>밑줄 등 색</td>
-            <td>{color}</td>
-          </tr>
-          <tr>
-            <td rowspan="3">transform</td>
-            <td>translate</td>
-            <td>이동</td>
-            <td>translate(x, y)</td>
-          </tr>
-          <tr>
-            <td>rotate</td>
-            <td>회전</td>
-            <td>rotate(deg)</td>
-          </tr>
-          <tr>
-            <td>matrix</td>
-            <td>변형</td>
-            <td>matrix(a, b, c, d, e, f)<sup>**</sup></td>
-          </tr>
-          <tr>
-            <td>bx:pinned</td>
-            <td>(box, pin)</td>
-            <td>CSS position:fixed와 유사한 동작</td>
-            <td>"true" | "false"</td>
-          </tr>
-        </tbody>
-      </table>
-      <p>
-        <sup>*</sup>font도 글자색(fill-..), 글자 테두리(stroke-..) 적용이 가능<br>
-        <sup>**</sup>a : x 확대/축소 |
-        b : x 기울기 |
-        c : y 기울기 |
-        d : y 확대/축소 |
-        e : x 이동 |
-        f : y 이동
-      </p>
+    <table class="all-td-left">
+      <caption>공통속성</caption>
+      <thead>
+        <tr>
+          <th>속성명</th>
+          <th>세부 항목명</th>
+          <th>설명</th>
+          <th>입력 값</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td rowspan="14">style</td>
+          <td>fill</td>
+          <td>채우기</td>
+          <td>{color} | url(#{gradient.id | pattern.id}) | "none"</td>
+        </tr>
+        <tr>
+          <td>fill-opacity</td>
+          <td>투명도</td>
+          <td>[0 .. 1]</td>
+        </tr>
+        <tr>
+          <td>fill-rule</td>
+          <td>채우기 규칙</td>
+          <td>"nonezero" | "evenodd"</td>
+        </tr>
+        <tr>
+          <td>stroke</td>
+          <td>태두리 색</td>
+          <td>{color}</td>
+        </tr>
+        <tr>
+          <td>stroke-width</td>
+          <td>테두리 두께</td>
+          <td>{size}</td>
+        </tr>
+        <tr>
+          <td>vector-effect</td>
+          <td></td>
+          <td>"non-scaling-stroke"</td>
+        </tr>
+        <tr>
+          <td>stroke-linecap</td>
+          <td>테두리(선) 끝처리</td>
+          <td>"butt" | "round" | "square"</td>
+        </tr>
+        <tr>
+          <td>stroke-linejoin</td>
+          <td>테두리(선) 이음부</td>
+          <td>"miter" | "round" | "bevel"</td>
+        </tr>
+        <tr>
+          <td>stroke-dasharray</td>
+          <td>선 스타일(점선 규칙)</td>
+          <td>{size array}</td>
+        </tr>
+        <tr>
+          <td>marker-start</td>
+          <td>선 시작 모양</td>
+          <td rowspan="3">url(#{marker.id})</td>
+        </tr>
+        <tr>
+          <td>marker-mid</td>
+          <td>선 중간 모양</td>
+        </tr>
+        <tr>
+          <td>marker-end</td>
+          <td>선 끝 모양</td>
+        </tr>
+        <tr>
+          <td>filter</td>
+          <td>특수효과</td>
+          <td>url(#{filter.id})</td>
+        </tr>
+        <tr>
+          <td>miter linit</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td rowspan="14">style<sup>*</sup><br>(font)</td>
+          <td>font-family</td>
+          <td>서체</td>
+          <td>{font}</td>
+        </tr>
+        <tr>
+          <td>font-size</td>
+          <td>글자 크기</td>
+          <td>{size}</td>
+        </tr>
+        <tr>
+          <td>font-style</td>
+          <td>기울임 등 스타일</td>
+          <td>"italic" |</td>
+        </tr>
+        <tr>
+          <td>font-weight</td>
+          <td>글자 두께</td>
+          <td>[0 .. 1000] | "normal" | "bold" | ...</td>
+        </tr>
+        <tr>
+          <td>letter-spacing</td>
+          <td>자간</td>
+          <td>{size}</td>
+        </tr>
+        <tr>
+          <td>word-spacing</td>
+          <td>사이띄기 간격</td>
+          <td>{size}</td>
+        </tr>
+        <tr>
+          <td>text-transform</td>
+          <td>대소문자 규칙</td>
+          <td>["capitalize" | "uppercase" | "lowercase"]</td>
+        </tr>
+        <tr>
+          <td>white-space-collapse</td>
+          <td>빈칸 유지 규칙</td>
+          <td>"preserve"</td>
+        </tr>
+        <tr>
+          <td>text-anchor</td>
+          <td>단어시작 위치(좌상단 기준)</td>
+          <td>[start | "middle" | "end"]</td>
+        </tr>
+        <tr>
+          <td>dominant-baseline</td>
+          <td>단어의 세로 정렬 기준</td>
+          <td>middle</td>
+        </tr>
+        <tr>
+          <td>text-wrap</td>
+          <td>줄바꿈 규칙</td>
+          <td>"nowrap"</td>
+        </tr>
+        <tr>
+          <td>text-decoration-line</td>
+          <td>밑줄, 취소선, 윗줄</td>
+          <td>"underline", "overline", "line-through"</td>
+        </tr>
+        <tr>
+          <td>text-decoration-thickness</td>
+          <td>밑줄 등 두께</td>
+          <td>"initial" ...</td>
+        </tr>
+        <tr>
+          <td>text-decoration-style</td>
+          <td>밑줄 등 스타일(실선, 점선 ...)</td>
+          <td>["solid" | ... ]</td>
+        </tr>
+        <tr>
+          <td>text-decoration-color</td>
+          <td>밑줄 등 색</td>
+          <td>{color}</td>
+        </tr>
+        <tr>
+          <td rowspan="3">transform</td>
+          <td>translate</td>
+          <td>이동</td>
+          <td>translate(x, y)</td>
+        </tr>
+        <tr>
+          <td>rotate</td>
+          <td>회전</td>
+          <td>rotate(deg)</td>
+        </tr>
+        <tr>
+          <td>matrix</td>
+          <td>변형</td>
+          <td>matrix(a, b, c, d, e, f)<sup>**</sup></td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      <sup>*</sup>font도 글자색(fill-..), 글자 테두리(stroke-..) 적용이 가능<br>
+      <sup>**</sup>a : x 확대/축소 |
+      b : x 기울기 |
+      c : y 기울기 |
+      d : y 확대/축소 |
+      e : x 이동 |
+      f : y 이동
+    </p>
 
   </article>
 </body>

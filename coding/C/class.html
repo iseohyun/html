@@ -22,16 +22,12 @@
   </script>
 
   <!-- 소스코드 스타일 -->
-  <link rel="stylesheet" href="/highlight/styles/base16/classic-light.min.css" />
+  <link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css" />
   <script src="/highlight/highlight.min.js"></script>
   <script src="/highlight/highlightjs-line-numbers.js"></script>
-  <script>
-    hljs.highlightAll();
-    hljs.initLineNumbersOnLoad();
-  </script>
 
   <!-- 목차 생성 -->
-  <script src="/modules/hd_list.js" defer></script>
+  <script src="/modules/script.js" defer></script>
 
   <!-- 공통스킨 -->
   <style type="text/css">
@@ -51,14 +47,20 @@
   <article>
     <div id="title">C: 클래스</div>
     <h1>C++</h1>
-    <p>&nbsp;C++은 1980년대 초에 개발된 언어입니다.(공식 발표는 ISO.IEC 14882:1998, 1998년). 기존언어와의 차이점은:</p>
+    <p>
+      C++은 1980년대 초에 개발된 언어입니다(공식 발표는 ISO.IEC 14882:1998, 1998년).
+      기존언어와의 차이점은:
+    </p>
     <ul>
       <li>OOP(Object-Oriented Programming): 클래스 문법 - 캡슐화, 상속, 다형성을 지원</li>
       <li>표준 라이브러리: 함수 형태 제공(X), 컨테이너 클래스(구조화된 클래스) 제공(방대함)</li>
       <li>예외처리: 오류처리, 유지보수 등 지원</li>
     </ul>
-    <p>&nbsp;CPP문법은 C보다 <u>좀 더 큰 프로젝트를 관리할 수 있도록 구조화된 언어</u>입니다. 따라서 C언어에서 명령어 묶어서 함수로 관리했다면, C++에서는 함수와 변수를 클래스로 묶어
-      관리합니다.(<em>클래스 = 함수 + 변수</em>)</p>
+    <p>
+      CPP문법은 C보다 <u>좀 더 큰 프로젝트를 관리할 수 있도록 구조화된 언어</u>입니다.
+      따라서 C언어에서 명령어 묶어서 함수로 관리했다면,
+      C++에서는 함수와 변수를 클래스로 묶어 관리합니다.(<em>클래스 = 함수 + 변수</em>)
+    </p>
     <div class="blockquote-title">Struct로 함수와 변수를 클래스처럼 관리 예</div>
     <blockquote>
       <pre>
@@ -75,14 +77,22 @@ typedef struct {
       width="95%" height="500px" frameborder="0" allowfullscreen="true"></iframe>
 
     <h2>접근제어</h2>
-    <p>&nbsp;CPP = 객체지향 = 클래스 = <em>캡슐화(Encapsulation)</em>란 다음을 목료로 합니다.</p>
+    <p>
+      CPP = 객체지향 = 클래스 = <em>캡슐화(Encapsulation)</em>란 다음을 목료로 합니다.
+    </p>
     <ul>
       <li>정보 은닉(Information Hiding)</li>
       <li>모듈화(Modularity)</li>
     </ul>
-    <p>&nbsp;하나의 객체는 하나의 완성된 목표를 갖아야 하며, 내부적인 구체적인 모습을 가림으로써, 비정상적인 접근과 제어를 최대한 통제하고, 제어점을 단순화하게 됩니다. 제공자는 이러한 인터페이스에 대해
-      정확하게 기술해야하는 의무가 있습니다.</p>
-    <p>&nbsp;하위 객체를 접근할 때, .(dot)연산자를 사용합니다. 접근제어자는 인터페이스의 접근권한을 기술하는 언어입니다.</p>
+    <p>
+      하나의 객체는 하나의 완성된 목표를 갖아야 하며, 내부적인 구체적인 모습을 가림으로써,
+      비정상적인 접근과 제어를 최대한 통제하고, 제어점을 단순화하게 됩니다.
+      제공자는 이러한 인터페이스에 대해 정확하게 기술해야하는 의무가 있습니다.
+    </p>
+    <p>
+      하위 객체를 접근할 때, .(dot)연산자를 사용합니다.
+      접근제어자는 인터페이스의 접근권한을 기술하는 언어입니다.
+    </p>
     <table>
       <thead>
         <tr>
@@ -118,7 +128,9 @@ class A {
     </blockquote>
 
     <h2>friend</h2>
-    <p>&nbsp;접근제어자를 공유할 수 있는 키워드 입니다.</p>
+    <p>
+      접근제어자를 공유할 수 있는 키워드 입니다.
+    </p>
     <div class="blockquote-title">friend 사용 예</div>
     <blockquote>
       <pre>
@@ -128,7 +140,10 @@ class A {
     </blockquote>
 
     <h2>this</h2>
-    <p>&nbsp;this는 스스로를 가리키는 예약어입니다. 아래 예시는 멤버 변수가 받은 argument와 멤버 변수의 구분을 하는 예시입니다.</p>
+    <p>
+      this는 스스로를 가리키는 예약어입니다.
+      아래 예시는 멤버 변수가 받은 argument와 멤버 변수의 구분을 하는 예시입니다.
+    </p>
     <blockquote>
       <pre>
 void setName(string name) {
@@ -137,7 +152,9 @@ void setName(string name) {
     </blockquote>
 
     <h2>생성자/소멸자</h2>
-    <p>&nbsp;생성자와 소멸자는 객체가 생성 소멸될 때, 자동으로 호출되는 함수입니다.</p>
+    <p>
+      생성자와 소멸자는 객체가 생성 소멸될 때, 자동으로 호출되는 함수입니다.
+    </p>
     <ul>
       <li>생성자: 클래스명과 동일한 멤버함수, 오버로딩 가능</li>
       <li>소멸자: ~로 시작하면서 클래스명과 동일한 멤버함수, <u>소멸자가 호출되는 시기는 클래스가 소멸하는 시기</u></li>
@@ -153,9 +170,13 @@ class Example {
     </blockquote>
 
     <h2>연산자 재정의</h2>
-    <p>&nbsp;객체지향 코드를 수행하면서, 객체는 인간의 인식과 흡사하게 구성하면 관리면에서 유리해집니다. 예를들어, A반과 B반이 더한다면, 생물학적으로 융합된다기 보다, 인원이 합쳐진다고 인식하는
-      편입니다.</p>
-    <p>&nbsp;연산자의 재정의는 해당 객체에서 연산자가 수행할 동작을 구체적으로 명기합니다.</p>
+    <p>
+      객체지향 코드를 수행하면서, 객체는 인간의 인식과 흡사하게 구성하면 관리면에서 유리해집니다.
+      예를들어, A반과 B반이 더한다면, 생물학적으로 융합된다기 보다, 인원이 합쳐진다고 인식하는 편입니다.
+    </p>
+    <p>
+      연산자의 재정의는 해당 객체에서 연산자가 수행할 동작을 구체적으로 명기합니다.
+    </p>
     <div class="blockquote-title">덧셈(+)연산 재정의</div>
     <blockquote>
       <pre>class school {}
@@ -163,7 +184,9 @@ school <em>operator</em>+( ... ) { ... }</pre>
     </blockquote>
 
     <h2>클래스 프로토타입</h2>
-    <p>&nbsp;클래스 프로토타입을 사용할 수 있습니다.</p>
+    <p>
+      클래스 프로토타입을 사용할 수 있습니다.
+    </p>
     <blockquote>
       class A; <span class="comment"> <- 프로토타입 </span><br>
           class B { A a; };<br>
@@ -171,7 +194,10 @@ school <em>operator</em>+( ... ) { ... }</pre>
     </blockquote>
 
     <h1>상속</h1>
-    <p>&nbsp;구조화, 코드 재사용과 관련하여 크고 복잡한 객체를 한 번에 생성하는 것은 어려운 일일 것입니다. 작고 간단한 구조를 연결하는 방법(문법)을 제시합니다.</p>
+    <p>
+      구조화, 코드 재사용과 관련하여 크고 복잡한 객체를 한 번에 생성하는 것은 어려운 일일 것입니다.
+      작고 간단한 구조를 연결하는 방법(문법)을 제시합니다.
+    </p>
 
     <h2>Extends</h2>
     <ul>
@@ -236,9 +262,14 @@ class 자식 : 접근제어자 부모1 <em>,</em> 접근제어자 부모2 ... {
     </ul>
 
     <h2>Override</h2>
-    <p>&nbsp;당연하게도 자식객체는 언제나 부모객체 이상의 기능을 갖습니다. 상속이 복잡해 질수록 구조의 관리가 어려워 질 수 있습니다. 만약 자식객체의 기능이 부모객체의 기능을 약간 수정해서 쓴다면 새로
-      함수를 정의할 필요가 없어집니다. override(오버라이드)의 문법은 overload(오버로드)의 문법과 동일합니다. 동일한 함수명일 때, 호출되는 위치에 따라서 호출되는 함수를 선택할 수 있습니다.
-      내가 "아빠"를 부를 때와, 당신이 "아빠"를 부를 때, 대상은 동일하지 않지만 우리는 특정할 수 있습니다.</p>
+    <p>
+      당연하게도 자식객체는 언제나 부모객체 이상의 기능을 갖습니다.
+      상속이 복잡해 질수록 구조의 관리가 어려워 질 수 있습니다.
+      만약 자식객체의 기능이 부모객체의 기능을 약간 수정해서 쓴다면 새로 함수를 정의할 필요가 없어집니다.
+      override(오버라이드)의 문법은 overload(오버로드)의 문법과 동일합니다.
+      동일한 함수명일 때, 호출되는 위치에 따라서 호출되는 함수를 선택할 수 있습니다.
+      내가 "아빠"를 부를 때와, 당신이 "아빠"를 부를 때, 대상은 동일하지 않지만 우리는 특정할 수 있습니다.
+    </p>
     <ul>
       <li>오버로딩(overloading) : 동일한 함수명 + 다른 전달인자(argument)를 갖는 함수를 여러개 정의</li>
       <li>오버라이딩(overriding) : 동일한 함수명 + <u>같은 전달인자</u>(argument)를 갖는 함수를 <u>상속받은 클래스에서 재정의</u></li>
@@ -258,28 +289,39 @@ class B : public A {
     </blockquote>
 
     <h2>Super</h2>
-    <p>&nbsp;만약 부모객체의 멤버객체를 사용하려면,</p>
+    <p>
+      만약 부모객체의 멤버객체를 사용하려면,
+    </p>
     <ul>
       <li>Visual Studio 에서: "<em>__super</em>"" 키워드를 사용</li>
       <li>GDB(VS code) 에서: "<em>부모객체::</em>"를 사용</li>
     </ul>
 
     <h2>Virtual</h2>
-    <p>&nbsp;가상함수는 동적 다형성의 개념으로 인해, 언제든 재정의(override) 될 수 있음을 선언하게 됩니다. 내용이 없는 경우(= 0으로 정의) '순수 가상 함수'(Pure Virtual
-      Function)라고 합니다.</p>
+    <p>
+      가상함수는 동적 다형성의 개념으로 인해, 언제든 재정의(override) 될 수 있음을 선언하게 됩니다.
+      내용이 없는 경우(= 0으로 정의) '순수 가상 함수'(Pure Virtual Function)라고 합니다.
+    </p>
     <div class="simple-box">
-      <p>&nbsp;<span style="font-size: 1.2em;font-weight: bold;">다형성</span>(Polymorphism)은 자녀객체가 부모객체의 역할을 모두 수행할 수 있는
-        장점을 이용해서, 코드내에서 형 변환 없이 유연하게 사용가능 한 개념입니다.</p>
+      <p>
+        <span style="font-size: 1.2em;font-weight: bold;">다형성</span>(Polymorphism)은
+        자녀객체가 부모객체의 역할을 모두 수행할 수 있는 장점을 이용해서,
+        코드내에서 형 변환 없이 유연하게 사용가능 한 개념입니다.
+      </p>
     </div>
     <h3>추상클래스(Abstract Class)</h3>
-    <p>&nbsp;추상클래스는 한 개 이상의 <u>순수 가상 함수</u>를 갖는 클래스를 의미합니다.</p>
+    <p>
+      추상클래스는 한 개 이상의 <u>순수 가상 함수</u>를 갖는 클래스를 의미합니다.
+    </p>
     <div class="blockquote-title">순수 가상 함수 예시</div>
     <blockquote class="blockquote">
       virtual string act() = 0;
     </blockquote>
 
     <h2>Multi Extends</h2>
-    <p>&nbsp;다중 상속을 위해서 ,(콤마)연산자를 사용합니다.</p>
+    <p>
+      다중 상속을 위해서 ,(콤마)연산자를 사용합니다.
+    </p>
     <blockquote>
       <pre>
 class 부모 {

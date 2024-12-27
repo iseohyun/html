@@ -22,16 +22,12 @@
   <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
 
   <!-- 소스코드 스타일 -->
-  <link rel="stylesheet" href="/highlight/styles/base16/darkmoss.min.css" />
+  <link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css" />
   <script src="/highlight/highlight.min.js"></script>
   <script src="/highlight/highlightjs-line-numbers.js"></script>
-  <script>
-    hljs.highlightAll();
-    hljs.initLineNumbersOnLoad();
-  </script>
 
   <!-- 목차 생성 -->
-  <script src="/modules/hd_list.js" defer></script>
+  <script src="/modules/script.js" defer></script>
 
   <!-- 공통스킨 -->
   <style type="text/css">
@@ -45,26 +41,37 @@
     <h1>추천 툴</h1>
     <h3>boxy-svg</h3>
     <a href="https://boxy-svg.com/app" target="_blank">https://boxy-svg.com/app</a>
-    <p>&nbsp;오로지 SVG제작을 위한 툴입니다. 튜토리얼 영상이 제법 예전에 작성되었는지, 예전 버젼은 이해가가지 않는 인터페이스가 간간히 보입니다. 지금은 튜토리얼 없이 사용가능합니다. 다만,
-      유료화되어서 연 15,000원정도 결제가 필요하네요. 결제하지 않더라도 찾아보고 싶은 테그를 찾아볼 때 유용하게 쓸 수 있을 것 같습니다. 라이브러리 연결을 상당히 잘 해놓았는데, 저장을 하려면 유료를
-      결제해야 합니다.<br>
-      단점이 있다면, 결과물이 깔끔하게 떨어지지는 않습니다. 중복 코드나, 삭제된 코드가 남아있는 경향이 있습니다. 자사 link가 삽입되어 있습니다.
+    <p>
+      오로지 SVG제작을 위한 툴입니다.
+      사이트에서 제공하는 튜토리얼 영상이 제법 예전에 작성되었는지, 예전 버젼은 이해가가지 않는 인터페이스가 간간히 보입니다.
+      지금은 튜토리얼 없이 사용가능합니다.
+      다만, 유료화되어서 연 15,000원정도 결제가 필요하네요.
+      결제하지 않더라도 찾아보고 싶은 테그를 찾아볼 때 유용하게 쓸 수 있을 것 같습니다.
+      라이브러리 연결을 상당히 잘 해놓았는데, 저장을 하려면 유료를 결제해야 합니다.
+      단점이 있다면, 결과물이 깔끔하게 떨어지지는 않습니다.
+      중복 코드나, 삭제된 코드가 남아있는 경향이 있습니다.
+      자사 link가 삽입되어 있습니다.
     </p>
 
     <h3>iodraw</h3>
     <a href="https://www.iodraw.com/ko/svg" target="_blank">https://www.iodraw.com/ko/svg</a>
-    <p>&nbsp;상당히 깔끔한 인터페이스를 가지고 있습니다. 게다가 무료로 사용할 수 있습니다.<br>
-      단점이 있다면, 코드를 확인하려면 다운을 받아서 열어봐야 합니다. 차후에 수정을 한다기보다 그 자체로 완성을 목표로 작성되기에 좋습니다.
+    <p>
+      상당히 깔끔한 인터페이스를 가지고 있습니다.
+      게다가 무료로 사용할 수 있습니다.
+      단점이 있다면, 코드를 확인하려면 다운을 받아서 열어봐야 합니다.
+      차후에 수정을 한다기보다 그 자체로 완성을 목표로 작성되기에 좋습니다.
     </p>
 
     <h3>변환 사이트</h3>
-    <p>&nbsp;변환 사이트는 대체적으로 추천하지 않습니다. 왜냐하면 미묘하게 다른 폰트 추천이나 간격이 다르게 측정되기 때문입니다. 정말 SVG를 사용해야 한다면, PPT나 PDF에디터에서 직접적으로
-      SVG로 저장하는 방법을 사용하는게 그나마 나을 것입니다. 하지만 이미 SVG가 의미없는 상황에서 굳이, 억지로 사용해야 할까요?</p>
-
+    <p>
+      변환 사이트는 대체적으로 추천하지 않습니다.
+      왜냐하면 미묘하게 다른 폰트 추천이나 간격이 다르게 측정되기 때문입니다.
+      정말 SVG를 사용해야 한다면, PPT나 PDF에디터에서 직접적으로 SVG로 저장하는 방법을 사용하는게 그나마 나을 것입니다.
+      하지만 이미 SVG가 의미없는 상황에서 굳이, 억지로 사용해야 할까요?
+    </p>
 
     <h1>다른 예제</h1>
     <h2>CSS와 연계</h2>
-
     <a href="https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/SVG_and_CSS"
       target="_blank">developer.mozilla.org</a>
     <a href="mozit_demo.svg" download>(이미지 다운로드)</a><br>
@@ -381,15 +388,20 @@
     </svg>
 
     <h2>Snap</h2>
-    <p>&nbsp;아래 예제는 SVG를 Drag & Drop 하는 동작을 보여줍니다.[출처:<a href="https://oreillymedia.github.io/svg-essentials-examples/"
+    <p>
+      아래 예제는 SVG를 Drag & Drop 하는 동작을 보여줍니다.
+      [출처:<a href="https://oreillymedia.github.io/svg-essentials-examples/"
         target="_blank">oreillymedia.github.io/svg-essentials-examples/</a>]<br>
-      <a href="http://snapsvg.io/">http://snapsvg.io/</a>에서 svg를 쉽게 컨트롤 하기 위한 도구를 공유합니다.<br>
+      <a href="http://snapsvg.io/">http://snapsvg.io/</a>에서 svg를 쉽게 컨트롤 하기 위한 도구를 공유합니다.
     </p>
     <iframe src="http://oreillymedia.github.io/svg-essentials-examples/ch14/snap_events.html"
       style="height: 300px;width:500px; border:1px solid #eee; padding:15px; border-radius: 15px;margin:30px auto"></iframe>
 
     <h1>저작권</h1>
-    <p>&nbsp;아래 나열한 사이트가 제시하는 대부분의 라이선스는, 상업적 사용, 2차 창작이 가능하며, 저작자 언급을 요청하지 않는 라이선스도 존재합니다. 정확한 정보는 링크를 확인하십시오.</p>
+    <p>
+      아래 나열한 사이트가 제시하는 대부분의 라이선스는, 상업적 사용, 2차 창작이 가능하며, 저작자 언급을 요청하지 않는 라이선스도 존재합니다.
+      정확한 정보는 링크를 확인하십시오.
+    </p>
     <table class="last-td-left">
       <caption>저작권</caption>
       <thead>
@@ -458,20 +470,20 @@
           <td>fonts.google.com/icons</td>
           <td>Apache License 2.0</td>
           <td><a href="https://www.apache.org/licenses/LICENSE-2.0.html"
-            target="_blank">www.apache.org/licenses/LICENSE-2.0.html</a></td>
+              target="_blank">www.apache.org/licenses/LICENSE-2.0.html</a></td>
         </tr>
         <tr>
           <td>zhangxiaochun.com/</td>
           <td>Apache License 2.0</td>
           <td><a href="https://www.apache.org/licenses/LICENSE-2.0.html"
-            target="_blank">www.apache.org/licenses/LICENSE-2.0.html</a></td>
+              target="_blank">www.apache.org/licenses/LICENSE-2.0.html</a></td>
         </tr>
         <tr>
           <td rowspan="2">emoji</td>
           <td>github.com/googlefonts/noto-emoji</td>
           <td>Apache License 2.0</td>
           <td><a href="https://www.apache.org/licenses/LICENSE-2.0.html"
-            target="_blank">www.apache.org/licenses/LICENSE-2.0.html</a></td>
+              target="_blank">www.apache.org/licenses/LICENSE-2.0.html</a></td>
         </tr>
         <tr>
           <td>github.com/twitter/twemoji</td>

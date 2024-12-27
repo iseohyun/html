@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <!-- 모바일 스케일 고정 -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta discription="qr코드를 생성하는 javscript예제입니다.">
+  <meta keywords="iseohyun, 튜토리얼">
+  <meta author="iseohyun">
+
+  <!-- 페이지 타이틀 -->
+  <title>QR코드 생성: javascript - iseohyun </title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-453XSP5W9M');
+  </script>
+
+  <!-- qrcode 라이브러리 불러오기
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/dist/qrcode.min.js"></script> -->
+
+  <!-- 수식 -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <!-- 소스코드 스타일 -->
+  <link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css" />
+  <script src="/highlight/highlight.min.js"></script>
+  <script src="/highlight/highlightjs-line-numbers.js"></script>
+
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("/style.css");
+  </style>
+</head>
+
+<body>
+
+  <div id="board"></div>
+  <article>
+    <div id="title"> ***** </div>
+    <!-- QR 코드를 보여줄 캔버스 요소 -->
+    <canvas id="qrcode"></canvas>
+
+    <h1>주제1/h1>
+  </article>
+  <div id="qrcode"></div>
+  <script type="text/javascript">
+    new QRCode(document.getElementById("qrcode"), "http://jindo.dev.naver.com/collie");
+  </script>
+
+</body>
+
+</html>
+
+<!-- footer/header 분리 -->
+<script defer>
+  let url = window.location.href;
+  let objs = url.split("/");
+  var filenname = objs[objs.length - 1];
+  var subject = "기초수학";
+  var requestURL = '/hierarchy.json';
+</script>
+<script src="/modules/createhead_deep.js" defer></script>
+
+<!-- 상단 메뉴 스크롤 -->
+<script src="/modules/scroll.js" defer></script>
+
+<!-- 목차 생성 -->
+<script src="/modules/script.js" defer></script>
+
+<script>
+  var qrcode = new QRCode("test", {
+    text: "http://jindo.dev.naver.com/collie",
+    width: 128,
+    height: 128,
+    colorDark: "#000000",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.H
+  });
+
+  // QR 코드 생성
+  qrcode.clear(); // clear the code.
+  qrcode.makeCode("http://naver.com"); // make another code.
+</script>

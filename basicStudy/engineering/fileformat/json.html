@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <!-- 모바일 스케일 고정 -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta discription="*****">
+  <meta keywords="iseohyun">
+  <meta author="iseohyun">
+
+  <!-- 페이지 타이틀 -->
+  <title>*****: ***** - iseohyun </title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-453XSP5W9M');
+  </script>
+
+  <!-- 목차 생성 -->
+  <script src="/modules/script.js" defer></script>
+
+  <!-- 수식 -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <!-- 소스코드 스타일 -->
+  <link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css" />
+  <script src="/highlight/highlight.min.js"></script>
+  <script src="/highlight/highlightjs-line-numbers.js"></script>
+
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("/style.css");
+  </style>
+</head>
+
+<body>
+  <article>
+    <div id="title"> ***** </div>
+    <style>
+      #ing {
+        width: 100%;
+        font-size: 5vw;
+        text-align: center;
+      }
+    </style>
+    <p id="ing">작성 중인 문서입니다.</p>
+    <h1>주제1</h1>
+    <h1>Json</h1>
+    <h3>Javascript 배열 예시</h3>
+    <pre><code>var hierachy = [
+  ["math", "set", "polynomial", "exponent, "log"],
+  ["html", "basic", "tags", "example" , "tips"]
+]</code></pre>
+    접근 방법<br>
+    <blockquote>
+      hierachy[0][1] <samp> // set</samp>
+    </blockquote>
+    <h3 id="json접근 방법">
+      Json(.json) 예시 [예시 링크:<a href="https://github.com/iseohyun/html/blob/main/hierarchy.json"
+        target="_blank">hierarchy.json</a>]
+    </h3>
+    <pre><code>[
+  {
+  "기초학문" : [
+    "디렉토리" : "project",
+    "단원" : [
+      { 
+        "주제": "집합",
+        "파일명":"set.html"
+      },
+      {
+        "주제": "다항식",
+        "파일명": "polynomial.html"
+      }
+    ]
+  }
+]</code></pre>
+    접근 방법<br>
+    <blockquote>
+      <pre>
+var requestURL = 'hierarchy.json'; <samp> // 저장된 파일을 불러온다. </samp>
+var request = new XMLHttpRequest();
+request.open('GET', requestURL);
+request.responseType = 'json';
+request.send();                   <samp> // 파일 요청을 하고, </samp>
+request.onload = function () {    <samp> // 로딩이 완료되었을 때 동작을 정의 </samp>
+  var file = request.response;
+  var dir = file[0].단원[1].파일명  <samp> // dir에 "polynomial.html"을 저장 </samp></pre>
+    </blockquote>
+    규칙
+    <ul>
+      <li>집합<sub>set</sub>은 {}기호를, 배열<sub>array</sub>은 []을 사용합니다.</li>
+      <li>집합은 key, value로 구성합니다.(map구조)</li>
+      <li>원소간의 구분은 콤마(,)로 합니다.</li>
+      <li>권고 : 하위 구조는 들여쓰기로 가독성을 지원합니다.(space:2)</li>
+    </ul>
+  </article>
+</body>
+
+</html>
