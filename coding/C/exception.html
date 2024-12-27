@@ -22,16 +22,12 @@
   </script>
 
   <!-- 소스코드 스타일 -->
-  <link rel="stylesheet" href="/highlight/styles/base16/classic-light.min.css" />
+  <link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css" />
   <script src="/highlight/highlight.min.js"></script>
   <script src="/highlight/highlightjs-line-numbers.js"></script>
-  <script>
-    hljs.highlightAll();
-    hljs.initLineNumbersOnLoad();
-  </script>
 
   <!-- 목차 생성 -->
-  <script src="/modules/hd_list.js" defer></script>
+  <script src="/modules/script.js" defer></script>
 
   <!-- 공통스킨 -->
   <style type="text/css">
@@ -76,7 +72,6 @@
       </tr>
     </table>
 
-
     <h1>예외처리</h1>
     <ul>
       <li>예외처리는 에러에 대응하기 위한 코딩기법</li>
@@ -88,11 +83,13 @@
           target="_blank">https://learn.microsoft.com/ko-kr/cpp/cpp/exception-handling-in-visual-cpp?view=msvc-170</a>
       </p>
     </div>
-    <p>&nbsp;C 스타일의 주요 버그 클래스는 메모리 누수입니다. 획득된 자원의 초기화(RAII;Resource Acquisition Is Initialization)원칙은 리소스의 획득과 해제를 자동으로
+    <p>
+      C 스타일의 주요 버그 클래스는 메모리 누수입니다.
+      획득된 자원의 초기화(RAII;Resource Acquisition Is Initialization)원칙은 리소스의 획득과 해제를 자동으로
       처리하겠다는 것을 목표로 합니다.
       이는 디자인 패턴, 즉 개발자가 직접 리소스를 획득/해제 해야하는 책임이 있음을 의미합니다. <br>
-      &nbsp;Java의 Garbage Collection 메모리 관리기법은 java머신(JVM)이 더 이상 사용되지 않는 객체를 자동으로 탐지하고 해제합니다. 따라서, 개발자가 직접 개입하지 않습니다.
-      <br>
+      &nbsp;Java의 Garbage Collection 메모리 관리기법은 java머신(JVM)이 더 이상 사용되지 않는 객체를 자동으로 탐지하고 해제합니다.
+      따라서, 개발자가 직접 개입하지 않습니다. <br>
       &nbsp;예외처리 루틴에서 메모리 관련 예제가 많은 것은 그것이 주요이슈이기 때문이지 전부가 아닙니다. java를 포함한 대부분의 언어가 예외처리 루틴을 가지고 있습니다.
     </p>
     <blockquote>
@@ -112,7 +109,9 @@
       width="95%" height="500px" frameborder="0" allowfullscreen="true"></iframe>
 
     <h2>stack unwinding</h2>
-    <p>&nbsp;stack unwinding(스텍풀기)는 메모리 해제(관리)등 에러관리에 의해 발생할 수 있는 수행에 관한 처리를 의미합니다.</p>
+    <p>
+      stack unwinding(스텍풀기)는 메모리 해제(관리)등 에러관리에 의해 발생할 수 있는 수행에 관한 처리를 의미합니다.
+    </p>
     <blockquote>
       <pre>
 try {
@@ -140,8 +139,11 @@ try {
     </blockquote>
 
     <h2>다중 오류처리</h2>
-    <p>&nbsp;에러메시지의 데이터타입에 따라서 어떤 catch문을 수행할지 결정합니다. 여러 종류의 에러를 처리할 때, 가장 구체적인(자식) 에러부터, 보편적인(부모) 에러를 배치해야하며, 가장 마지막에
-      모든에러(<u>...</u>)가 배치됩니다.</p>
+    <p>
+      에러메시지의 데이터타입에 따라서 어떤 catch문을 수행할지 결정합니다.
+      여러 종류의 에러를 처리할 때, 가장 구체적인(자식) 에러부터, 보편적인(부모) 에러를 배치해야하며,
+      가장 마지막에 모든에러(<u>...</u>)가 배치됩니다.
+    </p>
     <blockquote>
       <pre>
 try {
@@ -157,7 +159,9 @@ try {
   ... 처리되지 못한 모든 에러 처리
 }</pre>
     </blockquote>
-    <p>&nbsp;에러메시지의 데이터타입에 따라서 어떤 catch문을 수행할지 결정합니다.</p>
+    <p>
+      에러메시지의 데이터타입에 따라서 어떤 catch문을 수행할지 결정합니다.
+    </p>
     <blockquote>
       <pre>
 class A;
@@ -173,7 +177,9 @@ try {
     </blockquote>
 
     <h2>Except Object</h2>
-    <p>#include &lt;exception>을 통해 C++ 표준 예외 클래스들을 사용 할 수 있습니다.</p>
+    <p>
+      #include &lt;exception>을 통해 C++ 표준 예외 클래스들을 사용 할 수 있습니다.
+    </p>
     <table>
       <thead>
         <tr>
@@ -211,12 +217,16 @@ try {
       </tr>
     </table>
 
-
     <h2>noexcept</h2>
-    <p>&nbsp;어떤 함수 내에서 예외가 발생하지 않는다고 명시하려면, noexcept예약어를 사용합니다. 해당 함수에서 throw가 발생하면 비정상 종료가 됩니다.</p>
+    <p>
+      어떤 함수 내에서 예외가 발생하지 않는다고 명시하려면, noexcept예약어를 사용합니다.
+      해당 함수에서 throw가 발생하면 비정상 종료가 됩니다.
+    </p>
 
     <h1>scope</h1>
-    <p>&nbsp;class나 struct에 속한 멤버 함수/변수를 ::연산자(scope resolution operator)를 이용해 선택할 수 있습니다.</p>
+    <p>
+      class나 struct에 속한 멤버 함수/변수를 ::연산자(scope resolution operator)를 이용해 선택할 수 있습니다.
+    </p>
     <blockquote>
       <pre>
 class A { int foo; };
@@ -225,7 +235,9 @@ A::foo = 10;<span class="comment">// Class에 속한 멤버를 선택합니다.<
     </blockquote>
 
     <h2>using</h2>
-    <p>&nbsp;namespace로 여러개의 객체와 함수를 하나의 단위로 묶을 수 있습니다.</p>
+    <p>
+      namespace로 여러개의 객체와 함수를 하나의 단위로 묶을 수 있습니다.
+    </p>
     <blockquote>
       <pre>
 namespace myName {
@@ -237,13 +249,17 @@ myName::foo(); <span class="comment">// Namespace에 속한 객체를 선택합�
 myName::bar; </pre>
     </blockquote>
 
-    <p>&nbsp;재정의 할 수 있습니다.</p>
+    <p>
+      재정의 할 수 있습니다.
+    </p>
     <blockquote>
       using U8 = char;
     </blockquote>
 
     <h1>동적 할당</h1>
-    <p>&nbsp;프로그램 수행 중, 상황에 따라 메모리 요청을 해야 할 때, 힙(heap)영역에 할당됩니다.</p>
+    <p>
+      프로그램 수행 중, 상황에 따라 메모리 요청을 해야 할 때, 힙(heap)영역에 할당됩니다.
+    </p>
     <table>
       <caption>메모리 영역과 역할</caption>
       <thead>
@@ -329,8 +345,6 @@ B* pb;
 pb = static_cast<B*>(pa); <span class="comment"> // downcast</span>
 pa = static_cast<A*>(pb); <span class="comment"> // upcast(Error)</span></pre>
     </blockquote>
-
-
     <div class="blockquote-title">reinterpret cast</div>
     <blockquote>
       <pre>
@@ -340,7 +354,9 @@ doubleValue = reinterpret_cast<double&>(intValue);</pre>
     </blockquote>
 
     <h1>C++ types</h1>
-    <p>&nbsp;C++98부터 도입되었습니다. bool, wchar_t, char16_t, char32_t, auto 등의 타입을 사용할 수 있습니다.</p>
+    <p>
+      C++98부터 도입되었습니다. bool, wchar_t, char16_t, char32_t, auto 등의 타입을 사용할 수 있습니다.
+    </p>
     <table>
       <thead>
         <tr>
@@ -384,7 +400,9 @@ foo(nullptr);<span class="comment"> // 2 호출</span></pre>
     </blockquote>
 
     <h1>C++연산자</h1>
-    <p>C++98부터 아래 연산자가 추가되었습니다.</p>
+    <p>
+      C++98부터 아래 연산자가 추가되었습니다.
+    </p>
     <table>
       <thead>
         <tr>

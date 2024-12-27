@@ -23,16 +23,12 @@
   </script>
 
   <!-- 소스코드 스타일 -->
-  <link rel="stylesheet" href="/highlight/styles/base16/classic-light.min.css" />
+  <link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css" />
   <script src="/highlight/highlight.min.js"></script>
   <script src="/highlight/highlightjs-line-numbers.js"></script>
-  <script>
-    hljs.highlightAll();
-    hljs.initLineNumbersOnLoad();
-  </script>
 
   <!-- 목차 생성 -->
-  <script src="/modules/hd_list.js" defer></script>
+  <script src="/modules/script.js" defer></script>
 
   <!-- 공통스킨 -->
   <style type="text/css">
@@ -48,7 +44,9 @@
 <body>
   <article>
     <div id="title">SVG: 참조영역</div>
-    <p>&nbsp;&lt;refs>영역에는 실제로 객체가 그려지기 이전에 참조할만한 데이터들을 정의합니다. 색, 패턴모양, 끝선 모양, 심볼, 필터, 글꼴을 미리 지정할 수 있습니다. id를 통해 불러옵니다.
+    <p>
+      &lt;refs>영역에는 실제로 객체가 그려지기 이전에 참조할만한 데이터들을 정의합니다.
+      색, 패턴모양, 끝선 모양, 심볼, 필터, 글꼴을 미리 지정할 수 있습니다. id를 통해 불러옵니다.
     </p>
     <table class="last-td-left">
       <caption>참조영역 정의 및 불러오기</caption>
@@ -105,7 +103,6 @@
       </tbody>
     </table>
 
-
     <h1>채우기</h1>
     <table>
       <caption>그라데이션 종류</caption>
@@ -140,7 +137,10 @@
           style="color:red">grad_id</span>">...&lt;/linearGradient>&lt;/defx></b><br>
       &lt;object ... fill="url(#<span style="color:red">grad_id</span>") />
     </blockquote>
-    <p>아래 예제는 2가지 예제를 다루고 있습니다. 시작점(x1, y1)과 끝점(x2, y2)를 이용하여 방향을 결정 할 수 있습니다.</p>
+    <p>
+      아래 예제는 2가지 예제를 다루고 있습니다.
+      시작점(x1, y1)과 끝점(x2, y2)를 이용하여 방향을 결정 할 수 있습니다.
+    </p>
     <svg width="240" height="240" version="1.1" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="Gradient1">
@@ -207,9 +207,7 @@
 &lt;rect id="rect1" x="10" y="10" rx="15" ry="15" width="100" height="100" />
 &lt;rect x="10" y="120" rx="15" ry="15" width="100" height="100" fill="url(#Gradient2)" />
 &lt;circle cx="170" cy="60" r="50" fill="url(#Gradient1)" />
-&lt;circle cx="170" cy="170" r="50" fill="url(#Gradient2)" />
-      </code>
-    </pre>
+&lt;circle cx="170" cy="170" r="50" fill="url(#Gradient2)" /></code></pre>
 
     <h2>원형 그라디언트</h2>
     <span class="tutorial">C_Reference >> radialGradient.svg</span>
@@ -218,7 +216,9 @@
           style="color:red">grad_id</span>">...&lt;/<u>radial</u>Gradient>&lt;/defx></b><br>
       &lt;object ... fill="url(#<span style="color:red">grad_id</span>") />
     </blockquote>
-    <p>&nbsp;마우스를 올려서 두 그라데이션의 차이를 알아봅니다.(모바일:터치)</p>
+    <p>
+      마우스를 올려서 두 그라데이션의 차이를 알아봅니다.(모바일:터치)
+    </p>
     <svg id="grad_2d" viewbox="0 0 220 220" version="1.1" xmlns="http://www.w3.org/2000/svg" width="220"
       style="cursor:none;border:1px solid gray;padding:5px;border-radius: 15px;">
       <defs>
@@ -269,11 +269,11 @@
     &lt;stop offset="100%" stop-color="white" />
   &lt;/radialGradient>
 &lt;/defs>
-&lt;rect x="10" y="10" rx="15" ry="15" width="200" height="200" fill="url(#RadialGradient)" />
-      </code>
-    </pre>
+&lt;rect x="10" y="10" rx="15" ry="15" width="200" height="200" fill="url(#RadialGradient)" /></code></pre>
 
-    <p>&nbsp;초점 테스트(마우스를 올려서 테스트 해보세요. 모바일:터치)</p>
+    <p>
+      초점 테스트(마우스를 올려서 테스트 해보세요. 모바일:터치)
+    </p>
     <svg id="grad_2d2" viewbox="0 0 220 220" version="1.1" xmlns="http://www.w3.org/2000/svg" width="220"
       style="cursor:none;border:1px solid gray;padding:5px;border-radius: 15px;">
       <defs>
@@ -333,7 +333,9 @@
     </svg>
 
     <h1>패턴</h1>
-    <p>&nbsp;정해진 모양을 반복해서 붙여넣는 것을 패턴이라고 합니다.</p>
+    <p>
+      정해진 모양을 반복해서 붙여넣는 것을 패턴이라고 합니다.
+    </p>
     <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="Grad1">
@@ -368,13 +370,11 @@
 
     <h1>끝선</h1>
     <span class="tutorial">C_Reference >> marker.svg</span>
-    <blockquote>
-      <ul>
-        <li>ah1은 끝 화살표, ah2는 시작화살표, cir는 원형 끝선을 그립니다.</li>
-        <li>marker-start또는 marker-end를 이용해서 시작과 끝을 불러옵니다.</li>
-        <li>화살표의 방향은 path의 방향에 맞춰서 자동으로 그려줍니다.(오른쪽 화살표(3개)참조)</li>
-      </ul>
-    </blockquote>
+    <ul>
+      <li>ah1은 끝 화살표, ah2는 시작화살표, cir는 원형 끝선을 그립니다.</li>
+      <li>marker-start또는 marker-end를 이용해서 시작과 끝을 불러옵니다.</li>
+      <li>화살표의 방향은 path의 방향에 맞춰서 자동으로 그려줍니다.(오른쪽 화살표(3개)참조)</li>
+    </ul>
     <svg viewbox="0 0 250 170" version="1.1" xmlns="http://www.w3.org/2000/svg"
       xmlns:xlink="http://www.w3.org/1999/xlink"
       style="width: 80%;min-height: 170px;border: 1px solid #eee;margin: 10px; padding:20px; border-radius: 15px;">
@@ -416,7 +416,9 @@
 
     <h1>심볼</h1>
     <span class="tutorial">C_Reference >> symbol.svg</span>
-    <p>&nbsp;한 번 저장한 경로를 두고두고 가져올 수 있습니다.</p>
+    <p>
+      한 번 저장한 경로를 두고두고 가져올 수 있습니다.
+    </p>
 
     <style>
       svg {
@@ -473,9 +475,7 @@
 &lt;use width="100" height="100" xlink:href="#symbol-0" transform="matrix(3, 0, 0, 3, -31, 176)"
   style="mix-blend-mode: difference; fill:white; stroke:gray" />
 &lt;use width="100" height="100" xlink:href="#symbol-0" transform="matrix(1, 0, 0, 1, 264, 60)"
-  style="mix-blend-mode: difference; fill:black; stroke:black" />
-    </code></pre>
-
+  style="mix-blend-mode: difference; fill:black; stroke:black" /></code></pre>
 
     <h1>필터</h1>
     <span class="tutorial">C_Reference >> filter.svg</span>
@@ -550,8 +550,11 @@
 
     <h1>글꼴</h1>
     <span class="tutorial">C_Reference >> font.svg</span>
-    <p>&nbsp;글꼴을 link이외에 embed로 삽입 할 수 있습니다. 파일 용량이 무의미하게 커지는 이유와, 핸드컨트롤이 어렵다는 이유로 생략합니다.</p>
-    <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
+    <p>
+      글꼴을 link이외에 embed로 삽입 할 수 있습니다.
+      파일 용량이 무의미하게 커지는 이유와, 핸드컨트롤이 어렵다는 이유로 생략합니다.
+    </p>
+    <svg viewBox="0 0 260 90" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
       <desc>
         (c) 2024 @iseohyun.com
         All rights reserved.
@@ -563,17 +566,18 @@
           @import url(https://fonts.googleapis.com/css2?family=ABeeZee%3Aital%2Cwght%400%2C400%3B1%2C400&amp;display=swap);
         </style>
       </defs>
-      <text style="fill: rgb(51, 51, 51); font-family: ABeeZee; font-size: 16.7px; white-space: pre;" x="100" y="215"
-        transform="matrix(2, 0, 0, 5, -113, -824)">This is a ABeeZee.</text>
+      <text style="fill: #444; font-family: ABeeZee; font-size: 20px;" x="50" y="50">This is a ABeeZee.</text>
     </svg>
     <pre><code>&lt;defs>
   &lt;style bx:fonts="ABeeZee" bx:pinned="true">@import url(https://fonts.googleapis.com/css2?family=ABeeZee%3Aital%2Cwght%400%2C400%3B1%2C400&amp;display=swap);&lt;/style>
 &lt;/defs>
-&lt;text style="fill: rgb(51, 51, 51); font-family: ABeeZee; font-size: 16.7px; white-space: pre;" x="100" y="215" transform="matrix(2, 0, 0, 5, -113, -824)">This is a ABeeZee.&lt;/text></code></pre>
+&lt;text style="font-family: ABeeZee; font-size: 20px;" x="50" y="50">This is a ABeeZee.&lt;/text></code></pre>
 
     <h1>오리기</h1>
     <span class="tutorial">C_Reference >> clipPath.svg</span>
-    <p>&nbsp;원본의 그림을 원하는 부분만 출력 할 수 있습니다.</p>
+    <p>
+      원본의 그림을 원하는 부분만 출력 할 수 있습니다.
+    </p>
     <style>
       .clippath-imgs {
         display: flex;
@@ -581,17 +585,24 @@
       }
 
       .clippath-imgs img {
-        width: 45%
+        width: 100%
       }
     </style>
     <div class="clippath-imgs">
-      <img src="clipPath_origin.svg">
-      <img src="clipPath.svg">
+      <div class="img-box">
+        <img src="src/clipPath_origin.svg" />
+        <span class="caption">원본 이미지</span>
+        <span class="description">"clipPath_origin.svg", insspirito,
+          https://pixabay.com/vectors/mountains-landscape-nature-travel-8314422/, Pixbay License
+        </span>
+      </div>
+      <div class="img-box">
+        <img src="src/clipPath.svg" />
+        <span class="caption">수정된 이미지</span>
+        <span class="description">"clipPath_origin.svg", iseohyun, 2차 수정(원본 이미지 참조), CC-BY-SA
+        </span>
+      </div>
     </div>
-    <div class="simple-box">
-      https://pixabay.com/vectors/mountains-landscape-nature-travel-8314422/<br>
-      Uploader: insspirito<br>
-      License: Pixbay License
     </div>
 
     <pre><code>&lt;svg width="40%" viewbox="0 0 210 110" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -601,9 +612,10 @@
     &lt;/clipPath>
   &lt;/defs>
   &lt;circle cx="100" cy="100" r="100" clip-path="url(#cut-off-bottom)" />
-&lt;/svg>
-    </code></pre>
-    <p>&nbsp;circle은 반지름이 100인 원을 그리는것이지만, clipPath를 이용하여, 200 x 100으로 잘랐습니다.</p>
+&lt;/svg></code></pre>
+    <p>
+      circle은 반지름이 100인 원을 그리는것이지만, clipPath를 이용하여, 200 x 100으로 잘랐습니다.
+    </p>
     <svg height="250px" viewbox="0 0 310 110" version="1.1" xmlns="http://www.w3.org/2000/svg"
       xmlns:xlink="http://www.w3.org/1999/xlink" style="border:1px solid #aaa;border-radius: 10px;padding:15px">
       <defs>

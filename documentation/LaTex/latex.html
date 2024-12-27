@@ -27,16 +27,12 @@
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
   <!-- 소스코드 스타일 -->
-  <link rel="stylesheet" href="/highlight/styles/base16/classic-light.min.css" />
+  <link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css" />
   <script src="/highlight/highlight.min.js"></script>
   <script src="/highlight/highlightjs-line-numbers.js"></script>
-  <script>
-    hljs.highlightAll();
-    hljs.initLineNumbersOnLoad();
-  </script>
 
   <!-- 목차 생성 -->
-  <script src="/modules/hd_list.js" defer></script>
+  <script src="/modules/script.js" defer></script>
 
   <!-- 공통스킨 -->
   <style type="text/css">
@@ -51,41 +47,34 @@
 
 <body>
   <article>
-    <div id="title"> latex 수식입력기 시작하기 </div>
+    <div id="title">latex 시작하기</div>
     <p>
-      &nbsp;latex('레이텍')은 세계적으로 가장 보편적으로 사용되는
+      latex('레이텍')은 세계적으로 가장 보편적으로 사용되는
       <span class="reference">Markup language
         <tspan class="discription">다른 언어를 기술하기 위한 기술적 언어</tspan>
-      </span>
-      입니다. <u>어떤 툴을 가져와서 표현하는가가 이 장에서 다룰 내용입니다.</u> 따라서, 한 번 작성된 언어를 영구적으로 관리할 수 있고, 해당 툴에 얽메이지 않아도 되서 좋습니다.
-      <span class="reference">위키백과
-        <tspan class="discription">TeX_문법</tspan>
-        <tspan class="link">https://ko.wikipedia.org/wiki/위키백과:TeX_문법</tspan>
-      </span>,
-      <span class="reference">확장 문법
-        <tspan class="discription">LaTeX/Advanced Mathematics</tspan>
-        <tspan class="link">https://en.wikibooks.org/wiki/LaTeX/Advanced_Mathematics</tspan>
-      </span>,
-      <span class="reference">블로그
-        <tspan class="discription">이슬비, "MATHJAX로 수식 입력하는 방법", 2021.9.12</tspan>
-        <tspan class="link">https://sasamath.com/blog/tip-collection/how-to-write-equations-in-mathjax/</tspan>
-      </span>,
-      <span class="reference">나무위키
-        <tspan class="discription">문법 도움말/심화/TeX</tspan>
-        <tspan class="link">https://namu.wiki/w/나무위키:문법%20도움말/심화/TeX</tspan>
-      </span>를 참고 하였습니다.
+      </span>입니다.
+      <u>어떤 툴을 가져와서 표현하는가가 이 장에서 다룰 내용입니다.</u>
+      따라서, 한 번 작성된 언어를 영구적으로 관리할 수 있고, 해당 툴에 얽메이지 않아도 되서 좋습니다.
+      다음 사이트를 참고하였습니다.
     </p>
-
+    <ul>
+      <li><a href="https://ko.wikipedia.org/wiki/위키백과:TeX_문법">TeX_문법(위키백과)</a></li>
+      <li><a href="https://en.wikibooks.org/wiki/LaTeX/Advanced_Mathematics">확장 문법(LaTeX/Advanced Mathematics)</a></li>
+      <li><a href="https://sasamath.com/blog/tip-collection/how-to-write-equations-in-mathjax/">이슬비, "MATHJAX로 수식 입력하는
+          방법", 2021.9.12</a></li>
+      <li><a href="https://namu.wiki/w/나무위키:문법%20도움말/심화/TeX">문법 도움말/심화/TeX(나무위키)</a></li>
+    </ul>
 
     <h1>MathJax</h1>
     <p>
-      &nbsp;mathjax.org에서는 설명서(<a href="https://docs.mathjax.org/en/latest/"
-        target="_blank">https://docs.mathjax.org/en/latest/</a>)는
-      물론,코드 공유도 이루어지고 있습니다. 최신 버전에 대한 내용은 <a href="https://www.mathjax.org/#gettingstarted" target="_blank">여기</a>에서 확인
-      할 수 있습니다.<br>
+      mathjax.org에서는 설명서(<a href="https://docs.mathjax.org/en/latest/" target="_blank">
+        https://docs.mathjax.org/en/latest/</a>)는 물론,코드 공유도 이루어지고 있습니다. 최신 버전에 대한 내용은
+      <a href="https://www.mathjax.org/#gettingstarted" target="_blank">여기</a>에서 확인 할 수 있습니다.<br>
     </p>
 
-    <p>&nbsp;아래 코드를 페이지에 삽입하면 아래와 같은 수식을 표현할 수 있습니다.</p>
+    <p>
+      아래 코드를 페이지에 삽입하면 아래와 같은 수식을 표현할 수 있습니다.
+    </p>
     <pre><code>&lt;script src="https://polyfill.io/v3/polyfill.min.js?features=es6">&lt;/script>
 &lt;script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">&lt;/script></code></pre>
     </script>
@@ -100,11 +89,10 @@
 
     <h2>버전</h2>
     <p>
-      &nbsp;버전에 따라 브라우저에서 바로 실행하면 정상적으로 보이지 않는 경우가 있는데, 이 때는 apache나 IIS를 설치하고, 127.0.0.1 (localhost)로 접속하면 정상적으로 동작하는
-      것을 확인 할 수 있습니다.<br>
+      버전에 따라 브라우저에서 바로 실행하면 정상적으로 보이지 않는 경우가 있는데,
+      이 때는 apache나 IIS를 설치하고, 127.0.0.1 (localhost)로 접속하면 정상적으로 동작하는 것을 확인 할 수 있습니다.<br>
       <a href="https://jsbin.com/qocicuzazu/edit?html,output"
-        target="_blank">https://jsbin.com/qocicuzazu/edit?html,output</a>에서 바로 테스트 해
-      볼 수 있습니다.
+        target="_blank">https://jsbin.com/qocicuzazu/edit?html,output</a>에서 바로 테스트 해 볼 수 있습니다.
     </p>
     <style>
       #version271 {
@@ -192,9 +180,10 @@
       </tbody>
     </table>
 
-
     <h1>기본 문법</h1>
-    <p><var>\( ... \)</var> 또는 <var>\[ ... \]</var>를 페이지 중간에 삽입합니다.</p>
+    <p>
+      <var>\( ... \)</var> 또는 <var>\[ ... \]</var>를 페이지 중간에 삽입합니다.
+    </p>
     <table>
       <caption>수식 문서에 삽입방법</caption>
       <thead>
@@ -246,32 +235,42 @@ MathJax = {
 
     <h2>줄 바꿈</h2>
     <p>
-      &nbsp;줄 바꿈을 하기 위해서 수식의 시작과 끝에 <var>\begin{aligned}</var>과 <var>\end{aligned}</var>으로 감싸주어야 합니다. 이후 \\를 이용하여 새 줄을
-      표시할 수 있습니다.
+      줄 바꿈을 하기 위해서 수식의 시작과 끝에 <var>\begin{aligned}</var>과 <var>\end{aligned}</var>으로 감싸주어야 합니다.
+      이후 \\를 이용하여 새 줄을 표시할 수 있습니다.
       단, 세로줄을 일치시키기 위해서는 <var>&</var>기호를 사용합니다.
     </p>
-    <p>- 사용 안함</p>
+    <p>
+      - 사용 안함
+    </p>
     <blockquote>
       \\[ a = b + c <em>\\\\</em> = d + e = f +g <em>\\\\</em> = h = i \\]
     </blockquote>
     \[ a = b + c \\ = d + e = f +g \\ = h = i \]
-    <p>- 줄 바꿈 사용</p>
+    <p>
+      - 줄 바꿈 사용
+    </p>
     <blockquote>
       \\[ <em>\\begin{aligned}</em> a = b + c \\\\ = d + e = f +g \\\\ = h = i <em>\\end{aligned}</em> \\]
     </blockquote>
     \[ \begin{aligned} a = b + c \\ = d + e = f +g \\ = h = i \end{aligned} \]
-    <p>- <var>&</var> 사용</p>
+    <p>
+      - <var>&</var> 사용
+    </p>
     <blockquote>
       \\[ \\begin{aligned} a <em>&</em>= b + c \\\\ <em>&</em>= d + e = f +g \\\\ <em>&</em>= h = i \\end{aligned} \\]
     </blockquote>
     \[ \begin{aligned} a &= b + c \\ &= d + e = f +g \\ &= h = i \end{aligned} \]
-    <p>&nbsp; - 문제점: "=f+g"와 "=i" 의 정렬기준이 맞지 않습니다.</p>
+    <p>
+      - 문제점: "=f+g"와 "=i" 의 정렬기준이 맞지 않습니다.
+    </p>
     <blockquote>
       \\[ \\begin{aligned} a <em>&</em>= b + c \\\\ <em>&</em>= d + e <em>&</em>= f +g \\\\ <em>&</em>= h <em>&</em>= i
       \\end{aligned} \\]
     </blockquote>
     \[ \begin{aligned} a &= b + c \\ &= d + e &= f +g \\ &= h &= i \end{aligned} \]
-    <p>- "\begin{array}"사용 (c:center, l:left, r:right)</p>
+    <p>
+      - "\begin{array}"사용 (c:center, l:left, r:right)
+    </p>
     <blockquote>
       \\[ <em>\begin{array}{lll}</em> a &= b + c \\\\ &= d + e &= f +g \\\\ &= h &= i <em>\end{array}</em>\\]
     </blockquote>
@@ -282,15 +281,17 @@ MathJax = {
       \\( a^<em> {\\color{red}</em> b <em> }</em> \\)
     </blockquote>
     \[ a^{\color{red}b} \]
-    <p>&nbsp;RGB(예:#AAAAAA, #888)또는 예약어(red, blue...)를 사용할 수 있습니다.</p>
+    <p>
+      RGB(예:#AAAAAA, #888)또는 예약어(red, blue...)를 사용할 수 있습니다.
+    </p>
 
     <h2>크기</h2>
     <h3>글자의 크기</h3>
     <p>
-      &nbsp;글자 크기는 <var>\tiny</var>, <var>\scriptsize</var>, <var>\footnotesize</var>, <var>\small</var>,
+      글자 크기는 <var>\tiny</var>, <var>\scriptsize</var>, <var>\footnotesize</var>, <var>\small</var>,
       <var>\normalsize</var>, <var>\large</var>, <var>\Large</var>, <var>\LARGE</var>, <var>\huge</var>,
-      <var>\Huge</var>로
-      크기를 조절 할 수 있습니다. 다만 디자인 관점에서 <u>CSS를 이용해서 다루는 것이 더 통일성 있고 수월하게</u> 다룰 수 있습니다.
+      <var>\Huge</var>로 크기를 조절 할 수 있습니다.
+      다만 디자인 관점에서 <u>CSS를 이용해서 다루는 것이 더 통일성 있고 수월하게</u> 다룰 수 있습니다.
     </p>
     <blockquote>
       &lt;mjx-container ...
@@ -374,9 +375,11 @@ MathJax = {
         </tr>
       </tbody>
     </table>
+
     <h1>기호</h1>
     <p>
-      &nbsp;html 예약기호를 \를 이용해서 latex에서 구현 할 수 있습니다. <a href="/etc/column/font/symbol.html" target="_blank">참고</a><br>
+      html 예약기호를 \를 이용해서 latex에서 구현 할 수 있습니다.
+      <a href="/etc/column/font/symbol.html" target="_blank">참고</a><br>
       <sup>*</sup>클릭하면 클립보드로 복사됩니다.
     </p>
     <style>

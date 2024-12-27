@@ -1,0 +1,385 @@
+<html>
+
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <!-- 모바일 스케일 고정 -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta discription="베지어 곡선을 표현합니다.">
+  <meta keywords="iseohyun, 좌표계, 베지어 곡선, bezier">
+  <meta author="iseohyun">
+
+  <!-- 페이지 타이틀 -->
+  <title>좌표계 - iseohyun </title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-453XSP5W9M');
+  </script>
+
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("/style.css");
+
+    article {
+      padding-bottom: 0px;
+    }
+
+    .control-box {
+      background-color: #F8F8F8;
+      border: 1px solid #eee;
+      border-radius: 15px;
+      padding: 10px;
+      margin: 10px auto;
+    }
+
+    svg text {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+  </style>
+</head>
+
+<body>
+  <article>
+    <div class="control-box">
+      <button id="play" onclick="onAnimate()" style="width:5em">play</button>
+      <input id="t-value" type="range" min="0" max="1000" value="500" onmousedown="dragT()"        >
+      <button onclick="reload()">reload</button>
+      <button id="btn-add" onclick="addPoint()">+</button>
+      <button id="btn-remove" onclick="removePoint()">-</button>
+    </div>
+    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xml="http://www.w3.org/XML/1998/namespace"
+      xmlns:xlink="http://www.w3.org/1999/xlink" height="550px" width="100%">
+
+      <defs>
+        <pattern id="Pat01" width="10" height="10" patternUnits="userSpaceOnUse">
+          <rect width="20" height="20" fill="#FFF" stroke="#eee" stroke-width="1" />
+        </pattern>
+      </defs>
+
+      <rect id="ground" x="0" y="0" fill="url(#Pat01)" />
+
+      <!-- 보조 곡선 -->
+      <path id="control-path" stroke="#E8C48E" fill="none" />
+      <path id="animate-path" stroke="#FFDDCC" fill="none" />
+
+      <!-- 베지어 곡선 -->
+      <path id="bezier-path" d="" stroke="red" fill="none" />
+
+      <circle id="cur-position" r="4" fill="red" cx="20" cy="20" />
+    </svg>
+  </article>
+</body>
+
+</html>
+
+<script>
+  ////////////////////////////////////////////////////////////////
+  // 초기화
+
+  const svg = document.getElementsByTagName("svg")[0];
+  const ground = document.getElementById("ground");
+  var points = new Array();
+  var target = undefined;
+  var t = 0;
+  var timer;
+
+  //  초기 변수를 가져옵니다
+  const urlParams = new URLSearchParams(window.location.search);
+  param_P = urlParams.get('p');
+  if (param_P == undefined) {
+    points = [{ x: 0, y: 0 }, { x: 0.5, y: 0.5 }, { x: 1, y: 1 }];
+  } else {
+    var points_tmp;
+    param_P.split(',').forEach((arg, i) => {
+      if (i % 2 == 0)
+        points_tmp = arg;
+      else
+        points.push({ x: points_tmp, y: arg });
+    });
+  }
+
+  // points의 갯수에 따라서 버튼을 비활성화 합니다.
+  switch (points.length) {
+    case 2:
+      document.getElementById('btn-remove').disabled = true;
+      break;
+    case 3:
+      break;
+    case 4:
+      document.getElementById('btn-add').disabled = true;
+      break;
+  }
+
+  ground.setAttribute('width', svg.clientWidth);
+  ground.setAttribute('height', svg.clientHeight);
+
+  // <g x="0" y="0" id="svg-ptr#">
+  //   <circle r="4" fill="white" stroke="#E8C48E" stroke-width="1" cx="20" cy="20" style="cursor: pointer" />
+  //   <text x="12" y="12" style="font-size:16px;font-weight:bold">1</text>
+  // </g>
+  for (let i = 0; i < points.length; i++) {
+    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    g.setAttribute('id', 'svg-ptr' + i);
+    points[i].x *= svg.clientWidth;
+    points[i].y *= svg.clientHeight;
+    g.setAttribute("transform", `translate(${points[i].x}, ${points[i].y})`);
+    circle.setAttribute('r', '4');
+    circle.setAttribute('fill', 'white');
+    circle.setAttribute('stroke', '#EBC48E');
+    circle.setAttribute('stroke-width', 1);
+    circle.setAttribute('cx', '0');
+    circle.setAttribute('cy', '0');
+    circle.style.cursor = 'pointer';
+    g.appendChild(circle);
+
+    text.style.fontSize = '16px';
+    text.style.fontWeight = 'bold';
+    text.textContent = i + 1;
+    g.appendChild(text);
+    setTextPos(g, points[i].x, points[i].y);
+    points[i].g = g;
+
+    g.onmousedown = function (e) {
+      target = { element: g, index: i };
+      svg.onmousemove = function (e) {
+        if (target != null) {
+          points[target.index].x = e.offsetX;
+          points[target.index].y = e.offsetY;
+          setTextPos(target.element, e.offsetX, e.offsetY);
+
+          target.element.setAttribute("transform", `translate(${e.offsetX}, ${e.offsetY})`);
+        }
+        drawPath();
+      }
+    };
+
+    svg.appendChild(g);
+  }
+
+  svg.onmouseup = function (e) {
+    if (target !== undefined) {
+      target = undefined;
+    }
+    svg.onmousemove = null;
+  }
+
+  drawPath();
+
+  /////////////////////////////////////////////
+  // 초기화 끝, 함수 기술
+
+  function setTextPos(element, x, y) {
+
+    if (x > svg.clientWidth - 20)
+      element.children[1].setAttribute("x", -15);
+    else
+      element.children[1].setAttribute("x", 12);
+
+    if (y > svg.clientHeight - 10)
+      element.children[1].setAttribute("y", 0);
+    else
+      element.children[1].setAttribute("y", 12);
+  }
+
+  // 드레그 함수
+
+  document.documentElement.ondragstart = function () {
+    return false;
+  };
+
+  function drawBezierPath() {
+    let path = "M" + points[0].x + ',' + points[0].y + ' ';
+    switch (points.length) {
+      case 4:
+        path += 'C';
+        break;
+      case 3:
+        path += 'Q';
+        break;
+      default:
+        path += 'L';
+    }
+    for (let i = 1; i < points.length; i++) {
+      path += points[i].x + ',' + points[i].y + ' ';
+    }
+
+    document.getElementById("bezier-path").setAttribute('d', path);
+  }
+
+  function drawControlPath() {
+    let path = "M" + points[0].x + ',' + points[0].y + ' L';
+    for (let i = 1; i < points.length; i++) {
+      path += points[i].x + ',' + points[i].y + ' ';
+    }
+
+    document.getElementById("control-path").setAttribute('d', path);
+  }
+
+  function drawAnimatePath() {
+    var m = new Array();// = new Array(Math.max(points.length - 1, 0)).fill({ x: 0, y: 0 }); // 배열 초기화
+    for (let i = 0; i < points.length - 1; i++) {
+      x = (points[i + 1].x - points[i].x) * t + points[i].x;
+      y = (points[i + 1].y - points[i].y) * t + points[i].y;
+      m.push({ x, y });
+    }
+
+    path = "M" + m[0].x + ',' + m[0].y + ' L';
+    for (let i = 1; i < m.length; i++) {
+      path += m[i].x + ',' + m[i].y + ' ';
+    }
+
+    if (points.length == 4) {
+      var m2 = new Array();
+      for (let i = 0; i < 2; i++) {
+        x = (m[i + 1].x - m[i].x) * t + m[i].x;
+        y = (m[i + 1].y - m[i].y) * t + m[i].y;
+        m2.push({ x, y });
+      }
+      path += "M" + m2[0].x + ',' + m2[0].y + ' L';
+      path += m2[1].x + ',' + m2[1].y + ' ';
+
+      cur_pos = document.getElementById('cur-position');
+      cur_pos.setAttribute('cx', ((m2[1].x - m2[0].x) * t + m2[0].x));
+      cur_pos.setAttribute('cy', ((m2[1].y - m2[0].y) * t + m2[0].y));
+      document.getElementById("animate-path").setAttribute('d', path);
+    } else if (points.length == 3) {
+      cur_pos = document.getElementById('cur-position');
+      cur_pos.setAttribute('cx', ((m[1].x - m[0].x) * t + m[0].x));
+      cur_pos.setAttribute('cy', ((m[1].y - m[0].y) * t + m[0].y));
+      document.getElementById("animate-path").setAttribute('d', path);
+    } else {
+      cur_pos = document.getElementById('cur-position');
+      cur_pos.setAttribute('cx', ((points[1].x - points[0].x) * t + points[0].x));
+      cur_pos.setAttribute('cy', ((points[1].y - points[0].y) * t + points[0].y));
+    }
+  }
+
+  function drawPath() {
+    drawBezierPath();
+    drawControlPath();
+    drawAnimatePath();
+  }
+
+  // draw point connectors which form the curve
+  function drawT(points, t) {
+    let path = document.getElementById('t-' + points.length);
+
+    if (!path) {
+      path = tPathTemplate.cloneNode(true);
+      path.setAttribute('stroke', ["blue", "#0a0", "red"][points.length % 3]);
+      path.setAttribute('id', 't-' + points.length);
+      document.documentElement.appendChild(path);
+    }
+
+    let subPoints = [];
+    let x = points[0].x + (points[1].x - points[0].x) * t;
+    let y = points[0].y + (points[1].y - points[0].y) * t;
+
+    let tPathD = "M" + x + ',' + y + ' L';
+    subPoints.push({ x, y });
+
+    for (let i = 1; i < points.length - 1; i++) {
+      let x = points[i].x + (points[i + 1].x - points[i].x) * t;
+      let y = points[i].y + (points[i + 1].y - points[i].y) * t;
+      subPoints.push({ x: x, y: y });
+
+      tPathD += x + ',' + y + ' ';
+    }
+
+    if (points.length <= 3) {
+      let m = document.getElementById('marker');
+      let mx, my;
+      if (t == 1) {
+        mx = -10, my = -10;
+      } else {
+        mx = subPoints[0].x + (subPoints[1].x - subPoints[0].x) * t;
+        my = subPoints[0].y + (subPoints[1].y - subPoints[0].y) * t;
+      }
+      m.setAttribute('cx', mx);
+      m.setAttribute('cy', my);
+      path.setAttribute('stroke-width', 2);
+    }
+    if (points.length == 2) {
+      // only 2 points provided, special case
+      tPathD = "M" + points[0].x + "," + points[0].y + " L" + x + "," + y;
+    }
+
+    path.setAttribute('d', tPathD);
+
+    if (subPoints.length > 2) {
+      drawT(subPoints, t);
+    }
+  }
+
+  // animate the curve
+  function animate() {
+    timer = setInterval(function () {
+      if (t >= 1) {
+        clearInterval(timer);
+        t = 0;
+        timer = 0;
+        document.getElementById('play').innerText = "Play"
+        return;
+      }
+
+      t += 0.005;
+      document.getElementById('t-value').value = t * 1000;
+      drawAnimatePath();
+
+    }, 30);
+  }
+
+  function onAnimate() {
+    if (timer) {
+      clearInterval(timer);
+      timer = 0;
+      document.getElementById('play').innerText = "Play"
+    } else {
+      animate();
+      document.getElementById('play').innerText = "Pause"
+    }
+  }
+
+  function reload() {
+    url = "?p=";
+    for (i = 0; i < points.length; i++) {
+      x = Math.round((points[i].x / svg.clientWidth * 1000)) / 1000;
+      y = Math.round((points[i].y / svg.clientHeight * 1000)) / 1000;
+      url += x + "," + y + ",";
+    }
+    location.href = url;
+  }
+
+  function addPoint() {
+    points.push({ x: svg.clientWidth / 2, y: svg.clientHeight / 2 });
+    reload();
+  }
+
+  function removePoint() {
+    points.pop();
+    reload();
+  }
+
+  function dragT() {
+    trange = document.getElementById('t-value');
+    trange.onmousemove = function () {
+      t = trange.value / 1000;
+      drawAnimatePath();
+      trange.onmouseup = function () {
+        trange.onmousemove = null;
+      }
+    }
+  }
+</script>
+</svg>

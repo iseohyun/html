@@ -24,16 +24,12 @@
   </script>
 
   <!-- 소스코드 스타일 -->
-  <link rel="stylesheet" href="/highlight/styles/base16/classic-light.min.css">
+  <link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css">
   <script src="/highlight/highlight.min.js"></script>
   <script src="/highlight/highlightjs-line-numbers.js"></script>
-  <script>
-    hljs.highlightAll();
-    hljs.initLineNumbersOnLoad();
-  </script>
 
   <!-- 목차 생성 -->
-  <script src="/modules/hd_list.js" defer></script>
+  <script src="/modules/script.js" defer></script>
 
   <!-- 공통스킨 -->
   <style type="text/css">
@@ -45,7 +41,11 @@
   <article>
     <div id="title">SVG: 선 그리기</div>
 
-    <p>&nbsp;도형을 그립니다. <u>모든 도형은 그리기(윤곽선)와 채우기 중 적어도 하나는 선택해야 합니다.</u> 아래는 그리기와 채우기의 예시를 보여줍니다.</p>
+    <p>
+      도형을 그립니다.
+      <u>모든 도형은 그리기(윤곽선)와 채우기 중 적어도 하나는 선택해야 합니다.</u>
+      아래는 그리기와 채우기의 예시를 보여줍니다.
+    </p>
 
     <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg"
       style="font-size: 30px; width: 300px; border: 1px solid #eee; border-radius: 15px; padding: 20px; margin: 20px auto; box-shadow: #8888 5px 5px 5px;">
@@ -161,7 +161,9 @@
         <td style="text-align: left;">원호 그리기</td>
       </tr>
     </table>
-    <p>&nbsp;좌표(x, y)는 가독성을 위해서 <var>,</var>(콤마)를 작성해도 되고, 작성하지 않아도 됩니다.</p>
+    <p>
+      좌표(x, y)는 가독성을 위해서 <var>,</var>(콤마)를 작성해도 되고, 작성하지 않아도 됩니다.
+    </p>
     <blockquote>
       <pre>&lt;path d="M100<span style="color:red">,</span>50 L200<span style="color:red">,</span>50 m0<span style="color:red">,</span>50 l200<span style="color:red">,</span>50" style="stroke:#000;" />
 또는
@@ -231,7 +233,7 @@
       <span style="color: blue;">이동</span>
     </blockquote>
     <blockquote>
-      &lt;path d="M200,150 h-100 v-100<u> Z </u>M300,200 v-100 h-100<u> z</u>" style="stroke:#000; fill:none" />
+      &lt;path d="M200,150 h-100 v-100 <u>Z</u> M300,200 v-100 h-100 <u>z</u>" style="stroke:#000; fill:none" />
     </blockquote>
     <svg id="svgzero" xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 500 300"
       style="border:1px solid #aaa;">
@@ -257,13 +259,13 @@
 
     <h2>베지어 곡선(Q,T,C,S)</h2>
     <p>
-      베지어 곡선은 n차 함수를 좀 더 직관적으로 작성하도록 도와줍니다. 이론적 이해는 <a href="/etc/column/bezier/bezier.html" target="_blank">베지어 곡선의
-        이해</a> 문서를 참조하십시오.
+      베지어 곡선은 n차 함수를 좀 더 직관적으로 작성하도록 도와줍니다.
+      이론적 이해는 <a href="/column/bezier/bezier.html" target="_blank">베지어 곡선의 이해</a> 문서를 참조하십시오.
     </p>
     <iframe style="width:100%;height:650px"
-      src="http://127.0.0.1:5500/etc/fun/Bezier/Bezier.html?p=0.156,0.336,0.35,0.678,0.798,0.693,"></iframe>
+      src="/small-project/Bezier/Bezier.html?p=0.156,0.336,0.35,0.678,0.798,0.693,"></iframe>
     <p>
-      <a href="/etc/fun/Bezier/Bezier.html" download>
+      <a href="/small-project/Bezier/Bezier.html" download>
         <button>bazier.html 다운로드</button></a> @iseohyun.com CC-BY-SA
     </p>
 
@@ -292,17 +294,19 @@
       <path marker-end="url(#ah-blue)" stroke="blue" stroke-width="3" fill="none" d="M320 220 300 100" />
     </svg>
 
-
     <blockquote>
       2차곡선은(시작점, 제어점, 종착점)을 필요로 합니다.<br>
       시작점은 이전노드를 사용합니다.<br>
-      T는 제어점을 생략할 때 사용합니다. 제어점은 곡선의 제어점180도 위치에 있거나 참조 할 수 없을 때, 시작점으로 간주합니다.
+      T는 제어점을 생략할 때 사용합니다.
+      제어점은 곡선의 제어점180도 위치에 있거나 참조 할 수 없을 때, 시작점으로 간주합니다.
     </blockquote>
 
     <h2>타원(A)</h2>
 
-    <p><a href="https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths" target="_blank">mozila.org > SVG >
-        Tutorial > Paths</a>의 예제를 재구성하였습니다.</p>
+    <p>
+      <a href="https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths" target="_blank">
+        mozila.org > SVG > Tutorial > Paths</a>의 예제를 재구성하였습니다.
+    </p>
     <blockquote>
       A(또는 a)(<br>
       &nbsp; rx, ry(타원반지름),<br>
@@ -338,7 +342,7 @@
 
     <p>
       도착점이 생각보다 가까우면, 타원의 중심점을 외각으로 미뤄주고,<br>
-      도착점이 생각보다 멀면, 타원을 임의로 키워서 어쨌든 도착점에 도착할 수 있도록 계산해준다.
+      &nbsp;도착점이 생각보다 멀면, 타원을 임의로 키워서 어쨌든 도착점에 도착할 수 있도록 계산해줍니다.
     </p>
     <pre><code class="language-html">&lt;path d="M10 315
           L 110 215
@@ -410,8 +414,10 @@
     <pre><code class="language-html">&lt;marker id="ah1" markerWidth="20" markerHeight="20" viewBox="0 0 20 10" orient="auto">
   &lt;path d="M9 0 L0 4 0 -4z" />
 &lt;/marker></code></pre>
-    <p>"M9,0 L0,4 0,-4z" 코드를 보면 앞으로 이동(M9,0), 화살표 왼쪽(L0,4). 화살표 오른쪽(4,0), 제자리(z)인 것을 확인 할 수 있다. 이를 원하는 직선에 다음과 같이 적용이
-      가능하다.</p>
+    <p>
+      "M9,0 L0,4 0,-4z" 코드를 보면 앞으로 이동(M9,0), 화살표 왼쪽(L0,4). 화살표 오른쪽(4,0), 제자리(z)인 것을 확인 할 수 있습니다.
+      이를 원하는 직선에 다음과 같이 적용이 가능합니다.
+    </p>
     <blockquote>
       &lt;path d="M100 50 L300 180" <u>marker-end="url(#ah1)</u>"/>
     </blockquote>
@@ -424,9 +430,7 @@
       <path d="M100 50 L300 180" style="stroke:#000;" marker-end="url(#ah1)" />
     </svg>
 
-
     <h1>도형 그리기</h1>
-
     <svg width="350" height="250" version="1.1" xmlns="http://www.w3.org/2000/svg"
       style="display: block;margin-left: 5vw;">
       <text x="0" y="30" fill="black">사각형:</text>
@@ -544,7 +548,6 @@
     </blockquote>
     <svg width="200" height="150" xmlns="http://www.w3.org/2000/svg" version="1.1"
       style="border:1px solid #aaa;border-radius: 10px;padding:3px;display:block;margin-left:5vw">
-
       <path d="M 10 75 Q 50 10 100 75 T 190 75" stroke="black" stroke-linecap="round" stroke-dasharray="3 6 9"
         fill="none" />
       <path d="M 10 75 L 190 75" stroke="red" stroke-linecap="round" stroke-width="1" stroke-dasharray="5 5"

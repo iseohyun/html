@@ -14,14 +14,13 @@
   <title>팁: javascript - iseohyun </title>
   <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
 
-
   <!-- 소스코드 스타일 -->
-  <link rel="stylesheet" href="/highlight/styles/base16/classic-light.min.css" />
+  <link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css-light.min.css" />
   <script src="/highlight/highlight.min.js"></script>
   <script src="/highlight/highlightjs-line-numbers.js"></script>
 
   <!-- 목차 생성 -->
-  <script src="/modules/hd_list.js" defer></script>
+  <script src="/modules/script.js" defer></script>
 
   <!-- 공통스킨 -->
   <style type="text/css">
@@ -38,12 +37,12 @@
       JQuery는 조금 더 간결하게 javascript를 작성하게 도와줍니다. 선택사항입니다.
       JQuery를 사용하기 위해서는 반드시 jquery가 먼저 불려야 합니다.
     </p>
-    <pre><code>// JQuery를 사용하겠다는 선언
+    <pre><code class="language-html">// JQuery를 사용하겠다는 선언
 &lt;script src="https://code.jquery.com/jquery-latest.min.js">&lt;/script>
     </code></pre>
 
     <h2>querySelector</h2>
-    <pre><code>&lt;table id="data-news">
+    <pre><code class="language-html">&lt;table id="data-news">
   &lt;tr>
     &lt;td>&lt;/td>
     &lt;td>여기&lt;/td>
@@ -58,7 +57,7 @@ lastTd.style.fontSize = "1.1em";</code></pre>
     <p>
       jQuery를 사용한다면 다음과 같습니다.
     </p>
-    <pre><code> // JQuery
+    <pre><code class="javascript"> // JQuery
 $("#data-news tr>td:last-child").css({backgroundColor: "red", fontSize: "1.1em"});</code></pre>
     <span class="tutorial">E_tips >> a_jQuery.html</span>
 
@@ -79,7 +78,6 @@ $("body")[0].appendChild(header);
 
 // 방볍3
 $("body").append("<div>test1</div>");</code></pre>
-
 
     <h2>속성 편집</h2>
     <pre><code>$("myQuery").addClass("hide"); // 클레스 추가
@@ -111,7 +109,7 @@ if ($("#myDiv").attr("attr1") === "value1") { ... } // 속성 확인
     </p>
 
     <pre><code>&lt;!-- 소스코드 스타일 -->
-&lt;link rel="stylesheet" href="/highlight/styles/base16/classic-light.min.css" />
+&lt;link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css-light.min.css" />
 &lt;script src="/highlight/highlight.min.js">&lt;/script>
 &lt;script src="/highlight/highlightjs-line-numbers.js">&lt;/script>
 &lt;script>
@@ -128,7 +126,6 @@ if ($("#myDiv").attr("attr1") === "value1") { ... } // 속성 확인
     ...
   &lt;/code>
 &lt;/pre></code></pre>
-
 
     <h1>방문자 기록</h1>
     <h2>기본 설정</h2>

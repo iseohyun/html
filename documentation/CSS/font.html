@@ -20,20 +20,13 @@
   gtag('config', 'G-453XSP5W9M');
 </script>
 
-<!-- jquery -->
-<script src="https://code.jquery.com/jquery-latest.min.js"></script>
-
 <!-- 목차 생성 -->
-<script src="/modules/hd_list.js" defer></script>
+<script src="/modules/script.js" defer></script>
 
 <!-- 소스코드 스타일 -->
-<link rel="stylesheet" href="/highlight/styles/base16/classic-light.min.css" />
+<link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css" />
 <script src="/highlight/highlight.min.js"></script>
 <script src="/highlight/highlightjs-line-numbers.js"></script>
-<script>
-  hljs.highlightAll();
-  hljs.initLineNumbersOnLoad();
-</script>
 
 <!-- 공통스킨 -->
 <style type="text/css">
@@ -55,18 +48,19 @@
     <div id="title">CSS 폰트</div>
 
     <h1>폰트 이해</h1>
-    <p>폰트<sub>font</sub>&nbsp;계열의 이해가 필요한 이유는, 모든 사용자가 모든 글씨를 소유하고 있지 않기 때문에 중요합니다. 설계자는 선호하는 글씨체를 지정하되 마지막에는 반드시 누구나
-      가지고 있는 폰트로 지정해야합니다.
+    <p>
+      우리는 우리가 보는 화면을 모든 독자가 공유하기를 바랍니다.
+      하지만, 일부 독자는 작성자가 가진 폰트<sub>font</sub>&nbsp;가 없을 수도 있습니다.
+      이 때, 작성자는 여러 대체 폰트를 제시할 수 있습니다.
+      최대한 비슷한 대체 폰트를 제시하려면 폰트계열에 대한 이해가 필요합니다.
     </p>
-    <p>&nbsp;sarif, sans-sarif, monospace는 존재하는 폰트가 아닙니다(계열명 입니다). 시스템은 최소 1개 이상의 글씨체를 저장하고 있을 것이므로, 상기 폰트를 만나면 시스템이 가지고
-      있는 기본default 계열의 글씨체로 대체합니다.</p>
-    <style>
-      #font-classify td:last-child {
-        text-align: left;
-        padding-left: 1em;
-      }
-    </style>
-    <table id="font-classify">
+    <p>
+      아래 표는 5가지 폰트 계열을 소개합니다.
+      sarif, sans-sarif, monospace는 존재하는 폰트가 아닙니다(폰트 계열명 입니다).
+      문서를 표현하는 시스템이라면 최소 1개 이상의 글씨체를 저장하고 있을 것이므로,
+      상기 폰트를 만나면 시스템이 가지고 있는 기본default 계열의 글씨체로 대체합니다.
+    </p>
+    <table class="last-td-left">
       <caption>폰트의 종류</caption>
       <thead>
         <tr>
@@ -105,37 +99,69 @@
     </table>
 
     <h2>serif</h2>
-    <p>&nbsp;명조(sarif)의 획 끝 부분은 휘어져 있지만, 고딕(sans-sarif)는 그렇지 않습니다.</p>
-    <style>
-      #what-is-serif {
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        padding: 5px;
-        margin: 10px auto;
-        width: min(200px, 90%);
-      }
-    </style>
-    <img src="/source/whatserif.svg" id="what-is-serif">
+    <p>
+      명조(sarif)의 획 끝 부분은 휘어져 있지만, 고딕(sans-sarif)는 그렇지 않습니다.
+    </p>
+    <div class="img-box">
+      <svg viewBox="0 0 40 50" version="1.1" xmlns="http://www.w3.org/2000/svg" style="width: min(200px, 90%);">
+        <g style="font-size:20px">
+          <text id="serif" x="0" y="20" style="font-family:'Nanum Myeongjo'">명조</text>
+          <text id="sans-serif" x="0" y="45" style="font-family:'Nanum Gothic'">고딕</text>
+        </g>
+        <g style="fill:transparent; stroke:red; stroke-width:1px; opacity:0.7">
+          <circle cx="14" cy="4" r="4" />
+          <circle cx="11.5" cy="15.5" r="3" />
+          <circle cx="28.5" cy="14.5" r="3.5" />
+
+          <circle cx="8.5" cy="37" r="3.5" />
+          <circle cx="34" cy="30" r="3.5" />
+        </g>
+      </svg>
+      <span class="caption">명조(serif)와 고딕(sans-sarif) 비교</span>
+      <span class="description">"what-is-serif.svg", iseohyun.com, CC-BY-SA</span>
+    </div>
 
     <h2>monospace</h2>
-    <p>&nbsp;monospace는 <u>모든 글자 및 띄어쓰기의 가로넓이가 동일</u>하지만, 일반 글씨는 그렇지 않습니다.
-      'ㅇㅇ체'라고 불리는 폰트는 해당 폰트의 가로넓이를 일정하게 유지하는 성격으로 작성된 경우가 많습니다.</p>
-    <img style="width: 50%; border: 1px solid #aaa; padding: 10px; border-radius: 10px; margin: 10px;"
-      src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FccwBXS%2Fbtr4vIWeyO7%2FvMHJVbJaGF8TdTnOkxH811%2Fimg.png">
-
-    <p>참고자료: <a href="/etc/column/font/font.html" target="_blank">폰트의 이해(적용사례, 다운로드, 나눔/두부 시리즈)</a></p>
-
+    <p>
+      monospace는 <u>모든 글자 및 띄어쓰기의 가로넓이가 동일</u>하지만, 일반 글씨는 그렇지 않습니다.
+    </p>
+    <p>
+      일반 글씨의 너비는 폰트파일에 정의된 제각각의 너비를 갖지만, monospace는 한글은 2칸, 영문과 사이띄기<sub>space</sub>는 1칸을 차지합니다.
+    </p>
+    <div class="img-box">
+      <svg viewBox="0 0 210 50" version="1.1" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M8 0V50M16 0V50M24 0V50M32 0V50M40 0V50M48 0V50M56 0V50M64 0V50M72 0V50M80 0V50M88 0V50M96 0V50M104 0V50M112 0V50M120 0V50M128 0V50M136 0V50M144 0V50M152 0V50M160 0V50M168 0V50M176 0V50M184 0V50M192 0V50M200 0V50M208 0V50"
+          style="fill:transparent; stroke:skyblue; stroke-width:.5px;" />
+        <g style="font-size:16px">
+          <text id="serif" x="0" y="20" style="font-family:var(--font-serif);">이 글꼴은 serif입니다.</text>
+          <text id="sans-serif" x="0" y="45" style="font-family:var(--font-monospace);">이 글꼴은 monospace입니다.</text>
+        </g>
+      </svg>
+      <span class="caption">monospace란</span>
+      <span class="description">"what-is-monospace.svg", iseohyun.com, CC-BY-SA</span>
+    </div>
+    <p>
+      참고자료: <a href="/column/font/font.html" target="_blank">폰트의 이해(적용사례, 다운로드, 나눔/두부 시리즈)</a>
+    </p>
 
     <h1>폰트 문법</h1>
     <div class="blockquote-title">폰트 지정 예시</div>
+    <p>
+      다음 예시에서 3가지 폰트가 등장합니다. 셋 다 고딕계열입니다.
+      일반적으로 '맑은 고딕'은 윈도우 사용자의 경우 대부분 가지고 있을 수 있습니다.
+      sans-serif는 엄연히 말하면 폰트 명은 아니고, 시스템 폰트명입니다.
+    </p>
     <blockquote>
       body{<br>
       &nbsp; font-family: '나눔고딕', '맑은 고딕', sans-serif;<br>
       }<br>
     </blockquote>
-    <p>&nbsp;위 예제에서 3가지 폰트가 등장합니다. 셋 다 고딕계열입니다. 일반적으로 '맑은 고딕'은 윈도우 사용자의 경우 대부분 가지고 있을 수 있습니다. sans-serif는 엄연히 말하면 폰트 명은
-      아니고, 시스템 폰트명입니다. <u>'나눔고딕'을 가지고 있다면 우선 적용하고, 그렇지 않다면 '맑은 고딕'을 적용하시오. 그마저도 없다면 시스템이 정한 고딕계열을 적용하시오.</u> 라는 의미입니다.
-    </p>
+    <ol>
+      <li>'나눔고딕'을 가지고 있다면 우선 적용하시오.</li>
+      <li>그렇지 않다면 '맑은 고딕'을 적용하시오</li>
+      <li>그마저도 없다면 시스템이 정한 고딕계열을 적용하시오.</li>
+    </ol>
 
     <table>
       <caption>폰트의 세부설정</caption>
@@ -362,8 +388,10 @@
           </table>
           출처: <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/font-stretch#description"
             target="_blank">예제코드:mozilla</a>
-            <span class="tutorial">F_Font >> b_stretch.html</span>
-          <p style="text-align: left;">font-stretch를 지원하는 글꼴은 정확히 넚이를 반영하지만, 그렇지 않으면 넓은 것과 좁은 것만 구분합니다.</p>
+          <span class="tutorial">F_Font >> b_stretch.html</span>
+          <p style="text-align: left;">
+            font-stretch를 지원하는 글꼴은 정확히 넚이를 반영하지만, 그렇지 않으면 넓은 것과 좁은 것만 구분합니다.
+          </p>
         </td>
       </tr>
       <tr>
@@ -425,13 +453,13 @@
       </ul>
     </blockquote>
 
-
     <h1>온라인 폰트</h1>
+    <p>
+      만약 내가 가지고 있는 '나눔고딕'을 적용하게 하고 싶다면 다운로드 받게 할 수 있습니다.
+      다운로드 받을 경로를 지정해 줍니다.
+    </p>
 
-    <p>&nbsp;만약 내가 가지고 있는 '나눔고딕'을 적용하게 하고 싶다면 다운로드 받게 할 수 있습니다. 다운로드 받을 경로를 지정해 줍니다.</p>
-
-    <pre><code>
-@font-face {
+    <pre><code>@font-face {
   font-family: '나눔고딕';
   src: url('/source/NanumGothic.otf') format('OpenType');
   src: url('/source/NanumGothic.ttf') format('OpenType');
@@ -446,8 +474,10 @@
 
     <h3>구글 폰트</h3>
     <span class="tutorial">F_Font >> c_googleFont.html</span>
-    <p>&nbsp;<a href="https://fonts.google.com/?subset=korean&noto.script=Kore" target="_blank">구글 폰트</a>에서 다운받아 사용할 수
-      있다.</p>
+    <p>
+      <a href="https://fonts.google.com/?subset=korean&noto.script=Kore" target="_blank">구글 폰트</a>에서
+      다운받아 사용할 수 있습니다.
+    </p>
     <pre><code class="language-html">&lt;style>
   @import url('https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap');
 
@@ -469,11 +499,13 @@
         font-size: 1cm;
       }
     </style>
-    <p>예시: <span class="nanum-pen">가나다라 abcd</span></p>
+    <p>
+      예시: <span class="nanum-pen">가나다라 abcd</span>
+    </p>
 
     <h2>format</h2>
     <p>
-      &nbsp;파일의 타입은 파일을 열어보고 확인 할 수 있습니다. 가장 널리 사용되는 두 타입(truetype, opentype)의 특징은 다음과 같습니다.
+      파일의 타입은 파일을 열어보고 확인 할 수 있습니다. 가장 널리 사용되는 두 타입(truetype, opentype)의 특징은 다음과 같습니다.
     </p>
 
     <style>

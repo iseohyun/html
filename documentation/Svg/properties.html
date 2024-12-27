@@ -27,16 +27,12 @@
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
   <!-- 소스코드 스타일 -->
-  <link rel="stylesheet" href="/highlight/styles/base16/darkmoss.min.css" />
+  <link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css" />
   <script src="/highlight/highlight.min.js"></script>
   <script src="/highlight/highlightjs-line-numbers.js"></script>
-  <script>
-    hljs.highlightAll();
-    hljs.initLineNumbersOnLoad();
-  </script>
 
   <!-- 목차 생성 -->
-  <script src="/modules/hd_list.js" defer></script>
+  <script src="/modules/script.js" defer></script>
 
   <!-- 공통스킨 -->
   <style type="text/css">
@@ -53,8 +49,7 @@
   <article>
     <div id="title">특성</div>
 
-    <h1>선, 색 특징</h1>
-
+    <h1>테두리, 채우기</h1>
     <svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
       <g style="fill:none; stroke: black;">
         <rect x="20" y="16" width="40" height="40" />
@@ -135,36 +130,81 @@
     </table>
 
     <h1>글자 스타일</h1>
-    <svg viewBox="0 0 450 400" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com"
-      style="border:1px #ddd solid">
-      <title>선, 색 예제</title>
-      <defs>
-        <style bx:fonts="Nanum Brush Script">
-          @import url(https://fonts.googleapis.com/css2?family=Nanum+Brush+Script%3Aital%2Cwght%400%2C400&amp;display=swap);
-        </style>
-      </defs>
+    <style>
+      .font-styles svg {
+        border: 1px #ddd solid;
+        border-radius: 10px;
+        min-width: 300px;
+        width: 45%;
+        margin: 1px;
+      }
+    </style>
+    <div style="display: flex; flex-direction: row; flex-wrap: wrap;" class="font-styles">
+      <svg viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com"
+        style="border:1px #ddd solid">
+        <title>선, 색 예제</title>
+        <defs>
+          <style bx:fonts="Nanum Brush Script">
+            @import url(https://fonts.googleapis.com/css2?family=Nanum+Brush+Script%3Aital%2Cwght%400%2C400&amp;display=swap);
+          </style>
+        </defs>
 
-      <g style="fill: rgb(51, 51, 51);font-family: Arial, sans-serif; font-size: 16px;">
-        <text x="100" y="25">테스트 문자열 입니다.</text>
-        <text style="font-family: 'Nanum Brush Script';" x="100" y="50">나눔 브러쉬 폰트를 사용합니다.</text>
-        <text style="font-size: 7px;" x="100" y="75">글자의 크기를 줄입니다. 16 -&gt; 7</text>
-        <text style="font-weight: 900;" x="100" y="100">굵은 글씨를 사용합니다.</text>
-        <text style="font-style: italic;" x="100" y="125">이텔릭체를 사용합니다.</text>
-        <text style="letter-spacing: 4px;" x="100" y="150">문자간 간격이 늘어납니다(4)</text>
-        <text style="word-spacing: 20px;" x="100" y="175">단어간 간격이 늘어납니다.(20)</text>
-        <text style="text-transform: capitalize;" x="100" y="200">영문자 첫글자는 대문자로 aaaa aaa a aa</text>
-        <text style="text-anchor: end;" x="100" y="225">기준점 이동</text>
-        <text>
-          <tspan x="100" y="250" style="text-decoration: underline solid rgba(0, 0, 0, 0.8);">밑줄 테스트</tspan>
-          <tspan x="100" y="275" style="text-decoration: line-through solid rgba(255, 0, 0, 0);">취소선 테스트</tspan>
-          <tspan x="100" y="300" style="text-decoration: overline solid rgba(0, 0, 0, 0.8);">윗줄 테스트</tspan>
-        </text>
-        <text style="stroke: red;" x="100" y="325">문자열에 테두리(stroke)를 설정 했을 때</text>
-        <text style="fill: green" x="100" y="350">문자열에 칠하기(fill)을 설정 했을 때</text>
-        <text style="fill-opacity:0.5" x="100" y="375">투명도 0.5</text>
+        <g style="fill: rgb(51, 51, 51);font-family: Arial, sans-serif; font-size: 16px;">
+          <text x="10" y="25">기본 문자열</text>
+          <text style="font-family: 'Nanum Brush Script';" x="10" y="45">나눔 브러쉬 폰트</text>
+          <text style="font-size: 7px;" x="10" y="63">글자 크기: 16 -&gt; 7</text>
+          <text style="font-weight: 900;" x="10" y="85">굵은 글씨</text>
+          <text style="font-style: italic;" x="10" y="105">이텔릭체</text>
+        </g>
+      </svg>
+      <svg viewBox="0 0 210 100" xmlns="http://www.w3.org/2000/svg">
+        <text x="10" y="10">기본 문자열 간격</text>
+        <text style="letter-spacing: 4px;" x="10" y="40">문자 간격 변경(0→4)</text>
+        <text style="word-spacing: 20px;" x="10" y="70">단어 간격 변경(0→20)</text>
+        <text x="10" y="100">capitalize →</text>
+        <text style="text-transform: capitalize;" x="105" y="100">capitalize</text>
+        <text style="font-size:0.5em" x="15" y="113">첫 글자를 대문자로 변경</text>
+        <g style="fill:none; stroke:skyblue">
+          <path d="M23 42v3h7v-3" />
+          <path d="M44 42v3h7v-3" />
+          <path d="M70 42v3h7v-3" />
+          <path d="M90 42v3h7v-3" />
+          <path d="M117 42v3h7v-3" />
+          <path d="M40 72v3h24v-3" />
+          <path d="M95 72v3h24v-3" />
+        </g>
+      </svg>
+      <svg viewBox="0 0 210 100" xmlns="http://www.w3.org/2000/svg">
+        <path d="M100 0v100" fill="none" stroke="skyblue" />
+        <text x="100" y="25">기본 위치</text>
+        <text style="text-anchor: middle;" x="100" y="55">중앙 정렬</text>
+        <text style="text-anchor: end;" x="100" y="85">끝점 정렬</text>
+      </svg>
+      <svg viewBox="0 0 210 100" xmlns="http://www.w3.org/2000/svg">
+        <text x="10" y="25" style="text-decoration: underline;">밑줄 테스트</text>
+        <text x="10" y="55" style="text-decoration: line-through ">취소선 테스트</text>
+        <text x="10" y="85" style="text-decoration: overline">윗줄 테스트</text>
+      </svg>
+      <svg viewBox="0 0 500 100" xmlns="http://www.w3.org/2000/svg" style="width:90%">
+        <path d="M0 50h500" fill="none" stroke="skyblue" />
+        <text x="0" y="50">가origin</text>
+        <text style="dominant-baseline: middle;" x="60" y="50">가middle</text>
+        <text style="dominant-baseline: central;" x="126" y="50">가central</text>
+        <text style="dominant-baseline: hanging;" x="192" y="50">가hanging</text>
+        <text style="dominant-baseline: ideographic;" x="295" y="50">가ideographic</text>
+        <text style="dominant-baseline: mathematical;" x="397" y="50">가mathematical</text>
+        <text style="dominant-baseline: text-after-edge;" x="200" y="50">가after-edge</text>
+        <text style="dominant-baseline: text-before-edge;" x="280" y="50">가before-edge</text>
+      </svg>
+      <svg viewBox="0 0 210 100" xmlns="http://www.w3.org/2000/svg">
+        <rect x="50" y="0" width="100" height="100" fill="skyblue" />
+        <text style="stroke: red;" x="10" y="25">테두리(stroke) 설정</text>
+        <text style="fill: green" x="10" y="50">칠하기(fill) 설정</text>
+        <text style="fill: green; fill-opacity:0.5" x="10" y="75">투명도 0.5</text>
         <!-- <text fill-opacity=".5" x="100" y="375">투명도 0.5</text> -->
-      </g>
-    </svg>
+      </svg>
+
+    </div>
     <span class="tutorial">D_Properties >> font-style.svg</span>
     <table class="last-td-left">
       <caption>폰트 특성 적용 결과 설명</caption>
@@ -247,7 +287,6 @@
           <td>fill-opacity</td>
           <td></td>
         </tr>
-
     </table>
 
     <h2>흐르는 글자</h2>
@@ -286,8 +325,11 @@
   &lt;/svg></code></pre>
 
     <h1>변형</h1>
-    <p>&nbsp;이미 생성한 그림(객체)을 밀거나 회전 할 수 있습니다.<br>
-      &nbsp;<u>rotate함수는 (0,0)을 기준으로 회전</u>합니다(도형의 중심X). [도형을 (0,0)으로 가져오기 → 회전하기 → 원래자리로 가져가기]
+    <p>
+      이미 생성한 그림(객체)을 밀거나 회전 할 수 있습니다.
+    </p>
+    <p>
+      <u>rotate함수는 (0,0)을 기준으로 회전</u>합니다(도형의 중심X). [도형을 (0,0)으로 가져오기 → 회전하기 → 원래자리로 가져가기]
     </p>
 
     <pre>
@@ -297,7 +339,9 @@
 &lt;rect x="0" y="0" width="10" height="10" transform="matrix(1.5, 0, 0, 2.5, 30, 20)" fill="blue" />
       </code>
     </pre>
-    <p>코드의 결과는 다음과 같습니다.</p>
+    <p>
+      코드의 결과는 다음과 같습니다.
+    </p>
     <table class="last-td-left">
       <caption>적용내용</caption>
       <thead>
@@ -364,7 +408,9 @@
       <text style="font-size:3px;" x="10" y="40">matrix: 비틀기</text>
     </svg>
 
-    <p>&nbsp;메트릭스 변환식은 다음과 같다.</p>
+    <p>
+      메트릭스 변환식은 다음과 같다.
+    </p>
     $$ transform(a, b, c, d, e, f) = \begin{bmatrix} a & c & e \\ b & d & f \\ 0 & 0 & 1 \end{bmatrix} $$
     <blockquote>
       <b>a</b> : x 확대/축소<br>

@@ -24,20 +24,16 @@
   </script>
 
   <!-- 소스코드 스타일 -->
-  <link rel="stylesheet" href="/highlight/styles/base16/classic-light.min.css" />
+  <link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css" />
   <script src="/highlight/highlight.min.js"></script>
   <script src="/highlight/highlightjs-line-numbers.js"></script>
-  <script>
-    hljs.highlightAll();
-    hljs.initLineNumbersOnLoad();
-  </script>
 
   <!-- 수식 -->
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
   <!-- 목차 생성 -->
-  <script src="/modules/hd_list.js" defer></script>
+  <script src="/modules/script.js" defer></script>
 
   <!-- 공통스킨 -->
   <style type="text/css">
@@ -298,7 +294,9 @@
       <span class="description">"Vapor_pressure_chart.svg", cmglee, mbeychok, wikipedia.org, CC BY-SA 3.0
         <br>/2차 수정: 한글화, 2024, @iseohyun.com</span>
     </div>
-    <p>녹는점과 끓는점은 기압에 따라서도 변할 수 있습니다. 이 값은 두 측정값을 구한 후, 클라우지우스-클라페이론 방정식으로 예측가능합니다.</p>
+    <p>
+      녹는점과 끓는점은 기압에 따라서도 변할 수 있습니다. 이 값은 두 측정값을 구한 후, 클라우지우스-클라페이론 방정식으로 예측가능합니다.
+    </p>
     \[\ln{P_2 \over P_1} = {ΔH_{vap} \over {R( {1 \over T_2} - {1 \over T_1})}}\]
     <ul>
       <li>P<sub>1, 2</sub>: 초기, 최종 압력(Pa)</li>
@@ -340,7 +338,6 @@
     <p>
       증발이 일어나면 기체가 됩니다. 따라서, 100℃이하의 수증기 기체가 존재할 수 있습니다. 앞서 과냉각의 예시와 같이 0℃ 이하의 액체가 존재할 수 있습니다.
     </p>
-
 
     <h1>단어</h1>
     <style>

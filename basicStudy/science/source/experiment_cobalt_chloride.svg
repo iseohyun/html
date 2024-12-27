@@ -46,8 +46,6 @@
   <use width="20" height="20" transform="matrix(1, 0, 0, 1, 210, 100)" xlink:href="#symbol02" />
   <use width="20" height="20" transform="matrix(1, 0, 0, 1, 225, 100)" xlink:href="#symbol02" />
   <use width="20" height="20" transform="matrix(1, 0, 0, 1, 240, 100)" xlink:href="#symbol02" />
-
-
   <use width="80" height="80" transform="matrix(1, 0, 0, 1, 178, -10)" xlink:href="#symbol01" />
   <path d="M199 102a25 4 0 0 1 50 0" style="stroke:#bbb; fill:none" />
   <path d="M216 48a2 2 0 0 0 0 4v10l-17 40a25 8 0 0 0 50 0l-17-40v-10a2 2 0 0 0 0-4z" style="stroke:#000; fill:none" />
