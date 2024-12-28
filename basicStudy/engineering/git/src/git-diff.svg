@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 500 160" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <marker id="arrow-end" markerWidth="7" markerHeight="6" viewBox="0 -3 6 6" orient="auto">
+      <path d="M0 -2L5 0 0 2 5 0 0 0 5 0 0-2" stroke="#000" />
+    </marker>
+    <marker id="arrow-start" markerWidth="7" markerHeight="6" viewBox="-5 -3 6 6" orient="auto">
+      <path d="M0 -2L-5 0 0 2 -5 0 0 0 -5 0 0-2" stroke="#000" />
+    </marker>
+  </defs>
+  <g style="stroke:#444; stroke-width:3">
+    <path d="M240 27 V140" />
+    <ellipse cx="240" cy="20" rx="7" ry="7" fill="transparent" style="stroke-width:1" />
+    <ellipse cx="240" cy="60" rx="7" ry="7" fill="#F00" />
+    <ellipse cx="240" cy="100" rx="7" ry="7" fill="#0F0" />
+    <ellipse cx="240" cy="140" rx="7" ry="7" fill="#00F" />
+  </g>
+  <g style="stroke:#888;fill:none">
+    <path d="M260 30q10 10 0 20" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)" />
+    <path d="M260 70q10 10 0 20" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)" />
+    <path d="M350 30q100 30 0 60" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)" />
+  </g>
+  <g style="stroke:none; fill:#5EE">
+    <rect x="4" y="53" width="23" height="12" />
+    <rect x="4" y="93" width="23" height="12" />
+    <rect x="4" y="133" width="23" height="12" />
+  </g>
+  <g style="font-size:10; font-family:monospace; fill:#880">
+    <g style="text-anchor:end">
+      <text x="210" y="23">작업 디렉토리</text>
+      <text x="210" y="63">b722d1a2336b6adbaee4ddd2947c59ef3091a0c9</text>
+      <text x="210" y="103">1ea2064ebd484c0d57a98b938cebc1407d228aaf</text>
+      <text x="210" y="143">04b12d775a7a89be68b8a9d2f45ec231205314f2</text>
+      <g style="fill:#088">
+        <text x="210" y="53">HEAD<tspan style="fill:gray">(last committed)</tspan></text>
+        <text x="210" y="93">HEAD^</text>
+        <text x="210" y="133">1ea2^</text>
+      </g>
+    </g>
+    <g style="fill:#666">
+      <text x="270" y="44">git diff</text>
+      <text x="270" y="84">git diff HEAD HEAD^</text>
+      <text x="390" y="40">git diff HEAD^</text>
+    </g>
+  </g>
+</svg>
