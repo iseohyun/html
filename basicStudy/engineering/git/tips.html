@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <!-- 모바일 스케일 고정 -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta description="git">
+  <meta keywords="tips, git, gitignore">
+  <meta author="iseohyun">
+  <!-- 페이지 타이틀 -->
+  <title>git: 기초공학 - iseohyun</title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>window.dataLayer = window.dataLayer || []; function gtag() { dataLayer.push(arguments); } gtag('js', new Date()); gtag('config', 'G-453XSP5W9M');</script>
+  <!-- 소스코드 스타일 -->
+  <link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css" />
+  <script src="/highlight/highlight.min.js"></script>
+  <script src="/highlight/highlightjs-line-numbers.js"></script>
+  <!-- 수식 -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <!-- 차트 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- 목차 생성 -->
+  <script src="/modules/script.js" defer></script>
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("/style.css");
+  </style>
+</head>
+
+<body>
+  <article>
+    <div id="title">유용한 기능</div>
+
+    <h1>폴더, 파일 무시</h1>
+    <p>
+      Git 작업폴더에 다음과 같은 이유로 Trace가 원하지 않는 파일들이 생성 될 수 있습니다.
+    </p>
+    <ul>
+      <li>임시 파일 또는 폴더</li>
+      <li>프로그램 부산물(자동생성)</li>
+    </ul>
+    <p>
+      작업폴더 최상단에 <var>.gitignore</var>파일을 생성한 뒤, 문서편집기로 다음과 같이 작성할 수 있습니다.
+    </p>
+    <span class="blockquote-title">.gitignore 예제</span>
+    <blockquote>
+      test/*<br>
+      commit.log<br>
+    </blockquote>
+    <ul>
+      <li>test폴더 이하 모든 파일을 무시합니다.</li>
+      <li>commit.log파일을 무시합니다.</li>
+    </ul>
+    <p>
+      또는 다음과 같이 패턴을 지정할 수 있습니다.
+      패턴에 관련된 내용은 git-scm.com의
+      <a href="https://git-scm.com/docs/gitignore#_pattern_format" target="_blank">패턴 형식</a>를 따릅니다.
+    </p>
+    <table class="last-td-left">
+      <caption>패턴 해석</caption>
+      <thead>
+        <tr>
+          <th>패턴</th>
+          <th>해석</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>빈칸</td>
+          <td>가독성용 띄어쓰기 허용</td>
+        </tr>
+        <tr>
+          <td>\(</td>
+          <td>ackslash) 특수문자(\#, \ , #! ...)</td>
+        </tr>
+        <tr>
+          <td>#</td>
+          <td>코멘트</td>
+        </tr>
+        <tr>
+          <td>"</td>
+          <td>"(space) 무시</td>
+        </tr>
+        <tr>
+          <td>!</td>
+          <td>패턴 무시</td>
+        </tr>
+        <tr>
+          <td>/</td>
+          <td>디렉토리</td>
+        </tr>
+        <tr>
+          <td>*</td>
+          <td>/를 제외한 모든 문자</td>
+        </tr>
+        <tr>
+          <td>?</td>
+          <td>/를 제외한 한 문자</td>
+        </tr>
+        <tr>
+          <td>[]</td>
+          <td>range notation,[a-z]: a ~ z</td>
+        </tr>
+        <tr>
+          <td>**</td>
+          <td>모든 문자</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h1>로그 분석</h1>
+    <span class="blockquote-title">git log 예제</span>
+    <blockquote>
+      git log --since="2023-01-01" <span class="comment">2023년 1월 1일 이후의 commit 검색</span><br>
+      git log abc1234..HEAD <span class="comment">abc1234 해쉬 이후의 commit 검색(abc1234제외)</span><br>
+      git log abc1234^..HEAD <span class="comment">abc1234 해쉬 이후의 commit 검색(abc1234포함)</span><br>
+      git log -5<span class="comment">최근 5개 검색</span><br>
+      git log --grep="bug fix"<span class="comment">commit log에 "bug fix"가 있는 commit검색</span>
+    </blockquote>
+
+    <p>
+      아래 시나리오에서:
+    </p>
+    <ul>
+      <li><b>HEAD</b> = <u>b722</u>d1a2336b6adbaee4ddd2947c59ef3091a0c9 = <b>b722</b>(최소 4개 이상)</li>
+      <li><u>1ea2</u>064ebd484c0d57a98b938cebc1407d228aaf = <b>1ea2</b> = <b>HEAD^</b> = <b>b722^</b></li>
+      <li><u>04b1</u>2d775a7a89be68b8a9d2f45ec231205314f2 = <b>04b1</b> = <b>1ea2^</b></li>
+    </ul>
+    <span class="blockquote-title">log, commit hash의 의미</span>
+    <blockquote class="shell">
+      <pre>C:\myProject> <span style="color:yellow">git</span> log 04b1^..HEAD
+<span style="color:goldenrod">commit b722d1a2336b6adbaee4ddd2947c59ef3091a0c9 (<span style="color:cyan">HEAD -></span> <span style="color:#0F0">master</span>)</span>
+Author: iseohyun &lt;iseohyun@hanmail.net>
+Date:   Sat Dec 28 05:23:21 2024 +0900
+
+    rm 03_Shebang.py
+
+<span style="color:goldenrod">commit 1ea2064ebd484c0d57a98b938cebc1407d228aaf</span>
+Author: iseohyun &lt;iseohyun@hanmail.net>
+Date:   Sat Dec 28 05:22:34 2024 +0900
+
+    update filelist
+
+<span style="color:goldenrod">commit 04b12d775a7a89be68b8a9d2f45ec231205314f2</span>
+Author: iseohyun &lt;iseohyun@hanmail.net>
+Date:   Sat Dec 28 05:22:02 2024 +0900
+
+    add filelist.txt</pre>
+    </blockquote>
+
+    <h1>변경 내용 확인</h1>
+    <p>
+      diff 명령을 통해 두 버전<sub>commit</sub>간의 차이를 알 수 있습니다.
+    </p>
+    <span class="blockquote-title">git diff 예제</span>
+    <blockquote>
+      git diff<span class="comment">작업디렉터리와 HEAD와의 차이점을 출력합니다.</span><br>
+      git diff HEAD^<span class="comment">작업디렉터리와 HEAD 바로 이전 commit과의 차이점을 출력</span><br>
+      git diff HEAD HEAD^<span class="comment">HEAD와 HEAD 바로 이전의 차이점 출력</span><br>
+      git diff --file-only<span class="comment">변경된 파일명만 나열</span><br>
+    </blockquote>
+
+    <div class="img-box">
+      <img src="src/git-diff.svg"/>
+      <span class="caption">git-diff</span>
+      <span class="description">"git-diff.svg", iseohyun.com, CC-BY-SA</span>
+    </div>
+
+    <span class="blockquote-title">파일 1개(03_Shebang.py)를 삭제한 뒤, diff를 실행</span>
+    <blockquote class="shell">
+      <pre>C:\myProject> <span style="color:yellow">rm</span> .\03_Shebang.py
+C:\myProject> <span style="color:yellow">dir</span> > .\filelist.txt
+C:\myProject> <span style="color:yellow">git</span> status
+On branch master
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        <span style="color:red">deleted:    03_Shebang.py
+        modified:   filelist.txt</span>
+
+no changes added to commit (use "git add" and/or "git commit -a")
+C:\myProject> <span style="color:yellow">git</span> add .
+C:\myProject> <span style="color:yellow">git</span> commit -m "rm 03_Shebang.py"
+[master b722d1a] rm 03_Shebang.py
+ 2 files changed, 4 deletions(-)
+ delete mode 100644 03_Shebang.py
+
+C:\myProject> <span style="color:yellow">git</span> diff HEAD^
+<span style="color:#eee;">diff --git a/03_Shebang.py b/03_Shebang.py
+deleted file mode 100644
+index 0ca3c66..0000000
+--- a/03_Shebang.py
++++ /dev/null
+<span style="color:skyblue">@@ -1,4 +0,0 @@</span>
+<span style="color:red">-#!/usr/bin/env python3
+-# Shebang (#!, 셔뱅): 유닉스 계열 운영체제에서 실행되는 스크립트
+-
+-print("Shebang(#!)은 첫 줄에 들어갑니다.")</span>
+diff --git a/filelist.txt b/filelist.txt
+index c172c63..59b5a81 100644</span>
+Binary files a/filelist.txt and b/filelist.txt differ
+</pre>
+    </blockquote>
+
+    <h1>임시저장</h1>
+    <p>
+      stash명령을 통해서 임시 저장, 불러오기를 할 수 있습니다.
+    </p>
+    <blockquote>
+      git stash <span class="comment">작업폴더와 HEAD와의 diff를 임시저장</span><br>
+      git stash save "임시저장 요약" <span class="comment">작업폴더와 HEAD와의 diff를 임시저장(저장 요약 기록)</span><br>
+      git stash push -m "푸쉬 요약" 파일명.. <span class="comment">일부 파일만 임시저장</span><br><br>
+      git stash list <span class="comment">현재 임시저장된 목록 출력</span><br><br>
+      git stash pop <span class="comment">임시 저장 목록의 역순으로 복원</span><br>
+      git stash pop 1 <span class="comment">특정 임시 저장 복원</span><br><br>
+      git stash drop <span class="comment">임시 저장 삭제(저장 역순)</span><br>
+      git stash drop 0 <span class="comment">특정 임시 저장 삭제</span><br>
+      git stash clear <span class="comment">모든 임시 저장 삭제</span>
+    </blockquote>
+    <div class="img-box">
+      <img src="src/git-stash.svg" />
+      <span class="caption">git stash</span>
+      <span class="description">"git-stash.svg", iseohyun.com, CC-BY-SA</span>
+    </div>
+
+    <div class="page-move">
+      <span><a href="branch.html">병렬 처리</a></span>
+      <span> &DoubleLongLeftArrow; </span>
+      <span> 유용한 기능 </span>
+      <span> &DoubleLongRightArrow; </span>
+      <span><a href="">다음</a></span>
+    </div>
+  </article>
+</body>
+
+</html>

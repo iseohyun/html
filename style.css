@@ -401,11 +401,20 @@ blockquote {
 
 blockquote.shell {
   background: #000;
-  color: #FFF;
+  color: #bbb;
   font-style: normal;
   padding: 1px 1em;
   border: 0;
   margin: 1em;
+}
+
+blockquote span.comment {
+  color: #080;
+  padding: 1em;
+}
+
+blockquote span.comment:before {
+  content: "// ";
 }
 
 .blockquote-title,
