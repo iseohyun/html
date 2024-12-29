@@ -43,6 +43,9 @@ request.onload = function () {
   toggleHierarchyList();
   const thisDoc = document.querySelector("#board li.this-doc");
   thisDoc.classList.remove("collapsed");
+
+  // 타이틀 삽입
+  insertTitle();
 }
 
 function renderHierarchy(data, parentElement, parentDirectories, directory) {
@@ -320,8 +323,7 @@ function createHeader() {
 
   const docTitle = document.createElement('div');
   docTitle.setAttribute('id', 'doc-title');
-  const titleElement = document.getElementById("title");
-  docTitle.innerHTML = titleElement.textContent;
+  docTitle.innerHTML = cur_doc.title;
 
   const nextDoc = document.createElement('div');
   nextDoc.setAttribute('id', 'next-doc');
@@ -691,4 +693,20 @@ function toggleHierarchyList() {
   // 상태 토글
   hierarchyList = !hierarchyList;
   console.log("Hierarchy list visibility toggled:", hierarchyList);
+}
+
+function insertTitle() {
+  const article = document.querySelector('body > article');
+
+  if (article) {
+    // div#title 요소 생성
+    const titleDiv = document.createElement('div');
+    titleDiv.id = 'title';
+    titleDiv.innerText = cur_doc.title;
+
+    // article의 첫 번째 자식으로 삽입
+    article.insertBefore(titleDiv, article.firstChild);
+  } else {
+    console.error('body > article 요소를 찾을 수 없습니다.');
+  }
 }
