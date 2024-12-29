@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 20 160 360" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <marker id="arrow-start" markerWidth="7" markerHeight="6" viewBox="0 -3 6 6" orient="auto">
+      <path d="M0-2L5 0 0 2 5 0 0 0 5 0 0-2" stroke="#000" />
+    </marker>
+    <marker id="marker02" markerWidth="7" markerHeight="6" viewBox="-5 -3 6 6" orient="auto">
+      <path d="M0-2L-5 0 0 2-5 0 0 0-5 0 0-2" stroke="#000" />
+    </marker>
+  </defs>
+  <g style="stroke:#000; fill:none">
+    <rect x="10" y="30" width="80" height="40" />
+    <rect x="10" y="90" width="80" height="40" />
+    <rect x="10" y="150" width="80" height="40" stroke-dasharray="2"/>
+    <rect x="10" y="210" width="80" height="40" />
+    <rect x="10" y="270" width="80" height="40" />
+    <rect x="10" y="330" width="80" height="40" />
+    <path d="M50 70v13" marker-end="url(#arrow-start)" />
+    <path d="M50 130v13" marker-end="url(#arrow-start)" />
+    <path d="M50 190v13" marker-end="url(#arrow-start)" />
+    <path d="M50 250v13" marker-end="url(#arrow-start)" />
+    <path d="M50 310v13" marker-end="url(#arrow-start)" />
+    <path d="M90 350h50v-240h-43" marker-end="url(#arrow-start)"/>
+  </g>
+  <g style="font-size:8; text-anchor:middle; dominant-baseline: middle;">
+    <text x="50" y="47">작업 폴더 초기화<tspan x="50" dy="10">init</tspan></text>
+    <text x="50" y="111">(작업)</text>
+    <text x="50" y="167">변경 내역 확인<tspan x="50" dy="10">status</tspan></text>
+    <text x="50" y="227">반영 파일 지정<tspan x="50" dy="10">status</tspan></text>
+    <text x="50" y="287">변경 내역 반영<tspan x="50" dy="10">status</tspan></text>
+    <text x="50" y="347">변경 내용 확인<tspan x="50" dy="10">status</tspan></text>
+  </g>
+</svg>

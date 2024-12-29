@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 240 220" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <marker id="arrow-start-red" markerWidth="7" markerHeight="6" viewBox="0 -3 6 6" orient="auto">
+      <path d="M0-2L5 0 0 2 5 0 0 0 5 0 0-2" stroke="#844" />
+    </marker>
+    <marker id="arrow-start" markerWidth="7" markerHeight="6" viewBox="0 -3 6 6" orient="auto">
+      <path d="M0-2L5 0 0 2 5 0 0 0 5 0 0-2" stroke="#444" />
+    </marker>
+  </defs>
+  <g style="stroke:#000; fill:none">
+    <rect x="10" y="10" rx="7" width="20" height="20" />
+    <path d="M20 30v5a4 4 1 0 0 4 4h10" />
+    <rect x="34" y="29" rx="7" width="20" height="20" />
+    <path d="M44 49v5a4 4 1 0 0 4 4h10" />
+    <rect x="58" y="48" rx="7" width="20" height="20" />
+    <path d="M68 68v5a4 4 1 0 0 4 4h10" />
+    <rect x="82" y="67" rx="7" width="20" height="20" />
+    <path d="M92 87v5a4 4 1 0 0 4 4h10" />
+    <path d="M44 49v65a4 4 1 0 0 4 4h10" />
+    <rect x="58" y="108" rx="7" width="20" height="20" />
+    <rect x="60" y="110" rx="7" width="20" height="20" fill="#FFF" />
+    <rect x="62" y="112" rx="7" width="20" height="20" fill="#FFF" />
+    <path d="M20 30v106a4 4 1 0 0 4 4h10" />
+    <path d="M20 136v15a4 4 1 0 0 4 4h10" />
+    <path d="M20 151v17a4 4 1 0 0 4 4h10" />
+    <rect x="34" y="162" rx="7" width="20" height="20" />
+    <path d="M45 182v4a4 4 1 0 0 4 4h10" />
+    <path d="M45 187v12a4 4 1 0 0 4 4h10" />
+
+    <ellipse cx="180" cy="20" rx="4" ry="4" fill="#F44" />
+    <ellipse cx="180" cy="60" rx="4" ry="4" fill="#F44" />
+    <ellipse cx="180" cy="100" rx="4" ry="4" fill="#F44" />
+    <path d="M180 104a4 4 1 0 0 4 4" marker-end="url(#arrow-start)" stroke="#444"/>
+    <ellipse cx="194" cy="108" rx="4" ry="4" fill="#484" />
+    <path d="M194 112a4 4 1 0 0 4 4" marker-end="url(#arrow-start)" stroke="#444"/>
+    <path d="M194 112v12a4 4 1 0 0 4 4" marker-end="url(#arrow-start)" stroke="#444"/>
+    <path d="M194 124v12a4 4 1 0 0 4 4" marker-end="url(#arrow-start)" stroke="#444"/>
+    <ellipse cx="208" cy="116" rx="4" ry="4" fill="#88F" />
+    <ellipse cx="208" cy="128" rx="4" ry="4" fill="#88F" />
+    <ellipse cx="208" cy="140" rx="4" ry="4" fill="#484" />
+    <path d="M208 144a4 4 1 0 0 4 4" marker-end="url(#arrow-start)" stroke="#444"/>
+    <path d="M208 144v12a4 4 1 0 0 4 4" marker-end="url(#arrow-start)" stroke="#444"/>
+    <ellipse cx="222" cy="148" rx="4" ry="4" fill="#88F" />
+    <ellipse cx="222" cy="160" rx="4" ry="4" fill="#88F" />
+    <path d="M180 24v26" marker-end="url(#arrow-start)" stroke="#444"/>
+    <path d="M180 64v26" marker-end="url(#arrow-start)" stroke="#444"/>
+    <g style="stroke:#844">
+      <path d="M130 95h10a4 4 1 0 0 4-4v-67a4 4 1 0 1 4-4h20" marker-end="url(#arrow-start-red)" />
+    </g>
+    <g style="stroke-dasharray: 2;">
+      <path d="M175 104q-10 14-50 14" marker-end="url(#arrow-start)" stroke="#444"/>
+      <path d="M180 114q-10 7-45 7" marker-end="url(#arrow-start)" stroke="#444"/>
+      <path d="M185 130q-10-6-45-6" marker-end="url(#arrow-start)" stroke="#444"/>
+    </g>
+  </g>
+  <g style="font-size:8; dominant-baseline: middle;">
+    <text x="32" y="15" fill="#060">작업폴더 (tree)</text>
+    <text x="56" y="35">.git</text>
+    <text x="80" y="55">refs</text>
+    <text x="104" y="75">heads</text>
+    <text x="108" y="95">main</text>
+    <text x="86" y="120">objects</text>
+    <text x="37" y="140" fill="#22C">hello_world.py (blob = file)</text>
+    <text x="37" y="155" fill="#22C">data1.bin</text>
+    <text x="56" y="172" fill="#060">src (tree)</text>
+    <text x="61" y="190" fill="#22C">filelist.txt</text>
+    <text x="61" y="203" fill="#22C">source.data</text>
+    <text x="185" y="93" fill="#F44">commit</text>
+    <text x="201" y="104" fill="#060">tree</text>
+    <text x="215" y="115" fill="#22C">blob</text>
+    <text x="185" y="13" fill="#0C0">HEAD</text>
+    <text x="182" y="37" fill="#444">parent</text>
+  </g>
+</svg>

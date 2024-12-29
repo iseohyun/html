@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <!-- 모바일 스케일 고정 -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta description="Git 구조를 상세하게 추적합니다.">
+  <meta keywords="git-struct, git - iseohyun">
+  <meta author="iseohyun">
+  <!-- 페이지 타이틀 -->
+  <title>git-struct: git - iseohyun</title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>window.dataLayer = window.dataLayer || []; function gtag() { dataLayer.push(arguments); } gtag('js', new Date()); gtag('config', 'G-453XSP5W9M');</script>
+  <!-- 소스코드 스타일 -->
+  <link rel="stylesheet" href="/highlight/styles/base16/base16/cupertino.min.css" />
+  <script src="/highlight/highlight.min.js"></script>
+  <script src="/highlight/highlightjs-line-numbers.js"></script>
+  <!-- 수식 -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <!-- 차트 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- 목차 생성 -->
+  <script src="/modules/script.js" defer></script>
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("/style.css");
+  </style>
+</head>
+
+<body>
+  <article>
+    <h1>파일구조</h1>
+    <p>
+      아래 그림과 같이 .git 디렉토리에는 저장소의 모든 정보가 저장되어 있습니다.
+    </p>
+    <ul>
+      <li>object의 종류는 blob, tree, commit, tag가 있습니다.</li>
+      <li>refs/heads/ 로부터 가장 최근의 commit을 가리키는 HEAD 파일이 있습니다.</li>
+      <li>commit은 parent commit의 해시값과 tree object의 해시값을 가지고 있습니다.</li>
+      <li>tree object는 blob object와 tree object를 가리키는 정보를 가지고 있습니다.</li>
+    </ul>
+    <div class="img-box">
+      <img src="src/git-tree.svg" style="width:90%" />
+      <span class="caption">파일구조</span>
+      <span class="description">"git-tree.svg", iseohyun.com, CC-BY-SA </span>
+    </div>
+
+    <p>
+    <pre style="display:inline"><var>https://github.com/iseohyun/git-tutorial.git</var></pre>
+    의 structure를 살펴보면 다음과 같습니다.
+    </p>
+    <div class="blockquote-title">.git 분석 예시</div>
+    <blockquote class="shell">
+      <pre>.git/refs/<span style="color:#88F">heads</span>/<span style="color:#F0F">master</span> -> "<span style="color:#0F0">d608c5...</span>"
+  .git/objects/<span style="color:#0F0">d6</span>/<span style="color:#0F0">08c5...</span> -> commit : "tree <span style="color:red">b5c012... </span>
+                             parent <span style="color:yellow">5cc5bd...</span> ...(commit info)"
+    .git/objects/<span style="color:red">b5</span>/<span style="color:red">c012...</span> -> tree : .
+      100644 blob f6fcee...    all_files.txt
+      100644 blob 937ee7...    all_object.txt
+      100644 blob 6a5d71...    data1.bin
+      100644 blob 2484e3...    hello_world.py
+      040000 tree d3a9e2...    src  ++++++++++++ 재사용 ++++++++++++
+      100644 blob 861ef2...    struct.txt
+  
+  <span style="color:yellow">5cc5bd...</span>
+    .git/objects/<span style="color:yellow">5c</span>/<span style="color:yellow">c5bd...</span> -> commit : "tree f330a3... ...(commit info)"
+      .git/objects/f3/30a3... -> tree : .
+        100644 blob 6a5d71... -> blob : data1.bin
+        100644 blob 00950d... -> blob : print('hello_world.py')
+        040000 tree d3a9e2... 
+        .git/objects/d3/a9e2... -> tree : ./src
+          100644 blob 6e39da... -> blob : filelist.txt
+          100644 blob 8bb656... -> blob : source.data</pre>
+    </blockquote>
+
+    <div class="blockquote-title">git log</div>
+    <blockquote class="shell">
+      <pre>C:\git-tutorial\structure> <span style="color:white">git log</span>
+commit <span style="color:#0F0">d608c5b1c6cbbf3dc4e97df5d38b94cd480aac28</span> (<span style="color:#88F">HEAD</span> -> <span style="color:#F0F">master</span>)
+Author: iseohyun &lt;iseohyun@hanmail.net>
+Date:   Sun Dec 29 20:32:15 2024 +0900
+
+    new commit
+
+commit <span style="color:yellow">5cc5bd48ee208c668e5ef57de965641ddbcdfa65</span>
+Author: iseohyun &lt;iseohyun@hanmail.net>
+Date:   Sun Dec 29 20:09:37 2024 +0900
+
+    first commit</pre>
+    </blockquote>
+
+    <h1>조회 방법</h1>
+    <p>
+      아래 명령어를 통해 모든 object를 조회할 수 있습니다.
+    </p>
+    <blockquote>
+      git rev-list --all --objects
+    </blockquote>
+    <p>
+      조회된 object의 해시값을 통해 object의 내용을 확인할 수 있습니다.
+    </p>
+    <blockquote>
+      git cat-file -p <var>object_hash</var>
+    </blockquote>
+    <p>
+      동봉된 py 또는 powershell script를 통해 object의 내용을 확인할 수 있습니다.<br>
+      <var>print-obj.ps1</var>, <var>print-obj.py</var>
+    </p>
+    <div class="blockquote-title">스크립트 수행 예시</div>
+    <blockquote class="shell"><pre>Hash                            Type    File Name
+-----------------------------------------------------------
+d608c5b1c6cbbf3dc4e97df5d38b94cd480aac28 commit   (no file)
+5cc5bd48ee208c668e5ef57de965641ddbcdfa65 commit   (no file)
+b5c012807e706ba20aebb4e48b029ae10d2817f9 tree
+f6fcee0ba4034a631b8c074af61053449dd7197c blob     all_files.txt
+937ee706ca07804619ae9ec79dfbe3bc4b626e9b blob     all_object.txt
+6a5d7143202d163bd88466e1d1582dfc796409eb blob     data1.bin
+2484e3aafa7c1e0e033082265a24674404096a04 blob     hello_world.py
+d3a9e29f4aa2d93cf19c9cbb506dcf18fb3f7b15 tree     src
+6e39dad2f1d91e49bada65481fb6acfb30735222 blob     src/filelist.txt
+8bb6564fba2e5db883bbaefa432d24978ddcd830 blob     src/source.data
+861ef265d8155a73d52c7731cfa7d8574790771f blob     struct.txt
+f330a32d3cb1e6e5453dbc829a9ae41f0175fe71 tree
+00950d9ac57ceeabf45f9120c2615199746d35fb blob     hello_world.py</pre></blockquote>
+
+  </article>
+</body>
+
+</html>

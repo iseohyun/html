@@ -34,7 +34,224 @@
 
 <body>
   <article>
-    <div id="title">유용한 기능</div>
+    <h1>도움말</h1>
+    <table class="all-td-left">
+      <caption>git 명령어 해설</caption>
+      <thead>
+        <tr>
+          <th>명령어</th>
+          <th>내용</th>
+          <th>설명, ($ 사용 예시), (> 출력 예시)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>git</td>
+          <td rowspan="3">도움말</td>
+          <td rowspan="2">현재 표(영문ver)</td>
+        </tr>
+        <tr>
+          <td>git -h, git --help</td>
+        </tr>
+        <tr>
+          <td>
+            git help tutorial,<br>
+            git help everyday,<br>
+            git help revisions
+          </td>
+          <td>컨셉에 맞는 안내문 출력</td>
+        </tr>
+        <tr>
+          <td>git -v, git --version</td>
+          <td>버전확인</td>
+          <td>> git version 2.38.1.windows.1</td>
+        </tr>
+        <tr>
+          <td>git -C &lt;path></td>
+          <td>작업 디렉토리 변경</td>
+          <td>특정 디렉토리 상태 조회<br>$ git -C /path/to/repo status</td>
+        </tr>
+        <tr>
+          <td>git -c &lt;name>=&lt;value><br>
+            git --config-env=&lt;name>=&lt;envvar>
+          </td>
+          <td>설정값 변경</td>
+          <td>작성자 변경<br>$ git -c-env GIT_AUTHOR_NAME="Temporary Author"
+          </td>
+        </tr>
+        <tr>
+          <td>git --exec-path[=&lt;path>]</td>
+          <td>Git 실행(설치) 경로 출력</td>
+          <td>> C:/Program Files/Git/mingw64/libexec/git-core</td>
+        </tr>
+        <tr>
+          <td>git --html-path</td>
+          <td rowspan="3">각각의 설명서 경로</td>
+          <td>> C:/Program Files/Git/mingw64/share/doc/git-doc</td>
+        </tr>
+        <tr>
+          <td>git --man-path</td>
+          <td>> C:/Program Files/Git/mingw64/share/man</td>
+        </tr>
+        <tr>
+          <td>git --info-path</td>
+          <td>> C:/Program Files/Git/mingw64/share/info</td>
+        </tr>
+        <tr>
+          <td>git -p, --paginate<br>
+            git -P, --no-pager</td>
+          <td>페이저(vi 편집기) 사용 여부</td>
+          <td>
+            편집기 없이 모두 출력<br>
+            $ git --no-pager log</td>
+        </tr>
+        <tr>
+          <td>git --no-replace-objects</td>
+          <td>대체객체 사용 안함</td>
+          <td>$ git --no-replace-objects checkout HEAD -- &lt;file></td>
+        </tr>
+        <tr>
+          <td>git --bare</td>
+          <td>작업디렉토리 없이 작업</td>
+          <td>(주로 서버repo에 설정)</td>
+        </tr>
+        <tr>
+          <td>git --work-tree=&lt;path></td>
+          <td>작업트리 변경</td>
+          <td>$ git --work-tree=/path/to/working-directory status</td>
+        </tr>
+        <tr>
+          <td>git --namespace=&lt;name></td>
+          <td>네임스페이스 변경</td>
+          <td>$ git --namespace=my-namespace rev-parse HEAD</td>
+        </tr>
+        <tr>
+          <td>git --super-prefix=&lt;path></td>
+          <td>슈퍼접두사 변경</td>
+          <td>$ git --namespace=my-namespace rev-parse HEAD</td>
+        </tr>
+        <tr>
+          <td>git --upload-pack=&lt;path></td>
+          <td>업로드팩 변경</td>
+          <td>$ git fetch --upload-pack=/custom/path/git-upload-pack origin</td>
+        </tr>
+        <tr>
+          <td>git --git-dir=&lt;path></td>
+          <td>git디렉토리 변경</td>
+          <td>$ git --git-dir=/path/to/repo/.git log</td>
+        </tr>
+        <tr>
+          <td>git &lt;command> [&lt;args>]</td>
+          <td colspan="2">[표. git command] 참조</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table class="all-td-left">
+      <caption>git command</caption>
+      <thead>
+        <tr>
+          <th>group</th>
+          <th>command</th>
+          <th>contents</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td rowspan="2">초기화</td>
+          <td>clone</td>
+          <td>아무것도 없는 공간에 작업영역<sub>working area</sub> 복사</td>
+        </tr>
+        <tr>
+          <td>init</td>
+          <td>작업중인 공간을 git영역으로 초기화</td>
+        </tr>
+        <tr>
+          <td rowspan="4">편집</td>
+          <td>add</td>
+          <td>stage에 추가</td>
+        </tr>
+        <tr>
+          <td>mv</td>
+          <td>파일 이동 또는 이름 변경</td>
+        </tr>
+        <tr>
+          <td>restore</td>
+          <td>작업영역 파일 복원</td>
+        </tr>
+        <tr>
+          <td>rm</td>
+          <td>작업영역 파일 삭제</td>
+        </tr>
+        <tr>
+          <td rowspan="6">검색</td>
+          <td>bisect</td>
+          <td>버그가 발생한 commit을 찾기 위한 이진탐색</td>
+        </tr>
+        <tr>
+          <td>diff</td>
+          <td>commit간의 차이점(작업 변경 내역) 출력</td>
+        </tr>
+        <tr>
+          <td>grep</td>
+          <td>패턴에 맞는 라인 출력(패턴 검색)</td>
+        </tr>
+        <tr>
+          <td>log</td>
+          <td>commit log 출력</td>
+        </tr>
+        <tr>
+          <td>show</td>
+          <td>오브젝트<sub>object</sub>의 성격을 출력(commit, tree, blob)</td>
+        </tr>
+        <tr>
+          <td>status</td>
+          <td>HEAD(last commit)으로부터 작업영역 상태 출력</td>
+        </tr>
+        <tr>
+          <td rowspan="7">작업</td>
+          <td>branch</td>
+          <td>commit log 가지치기</td>
+        </tr>
+        <tr>
+          <td>commit</td>
+          <td>변경내용을 저장(확정)</td>
+        </tr>
+        <tr>
+          <td>merge</td>
+          <td>두 개 이상의 branch를 병합</td>
+        </tr>
+        <tr>
+          <td>rebase</td>
+          <td>commit을 다른 branch로 이동</td>
+        </tr>
+        <tr>
+          <td>reset</td>
+          <td>HEAD를 다른 commit으로 이동</td>
+        </tr>
+        <tr>
+          <td>switch</td>
+          <td>branch 변경</td>
+        </tr>
+        <tr>
+          <td>tag</td>
+          <td>commit에 태그 부착</td>
+        </tr>
+        <tr>
+          <td rowspan="3">협업</td>
+          <td>fetch</td>
+          <td>다른 저장소에서 객체와 참조를 가져옴</td>
+        </tr>
+        <tr>
+          <td>pull</td>
+          <td>다른 저장소에서 가져오고 병합</td>
+        </tr>
+        <tr>
+          <td>push</td>
+          <td>업데이트된 객체와 참조를 다른 저장소로 보냄</td>
+        </tr>
+      </tbody>
+    </table>
 
     <h1>폴더, 파일 무시</h1>
     <p>
@@ -59,7 +276,8 @@
     <p>
       또는 다음과 같이 패턴을 지정할 수 있습니다.
       패턴에 관련된 내용은 git-scm.com의
-      <a href="https://git-scm.com/docs/gitignore#_pattern_format" target="_blank">패턴 형식</a>를 따릅니다.
+      <a href="https://git-scm.com/docs/gitignore#_pattern_format" target="_blank">패턴
+        형식</a>를 따릅니다.
     </p>
     <table class="last-td-left">
       <caption>패턴 해석</caption>
@@ -116,20 +334,28 @@
     <h1>로그 분석</h1>
     <span class="blockquote-title">git log 예제</span>
     <blockquote>
-      git log --since="2023-01-01" <span class="comment">2023년 1월 1일 이후의 commit 검색</span><br>
-      git log abc1234..HEAD <span class="comment">abc1234 해쉬 이후의 commit 검색(abc1234제외)</span><br>
-      git log abc1234^..HEAD <span class="comment">abc1234 해쉬 이후의 commit 검색(abc1234포함)</span><br>
+      git log --since="2023-01-01" <span class="comment">2023년 1월 1일 이후의 commit
+        검색</span><br>
+      git log abc1234..HEAD <span class="comment">abc1234 해쉬 이후의 commit
+        검색(abc1234제외)</span><br>
+      git log abc1234^..HEAD <span class="comment">abc1234 해쉬 이후의 commit
+        검색(abc1234포함)</span><br>
       git log -5<span class="comment">최근 5개 검색</span><br>
-      git log --grep="bug fix"<span class="comment">commit log에 "bug fix"가 있는 commit검색</span>
+      git log --grep="bug fix"<span class="comment">commit log에 "bug fix"가 있는
+        commit검색</span>
     </blockquote>
 
     <p>
       아래 시나리오에서:
     </p>
     <ul>
-      <li><b>HEAD</b> = <u>b722</u>d1a2336b6adbaee4ddd2947c59ef3091a0c9 = <b>b722</b>(최소 4개 이상)</li>
-      <li><u>1ea2</u>064ebd484c0d57a98b938cebc1407d228aaf = <b>1ea2</b> = <b>HEAD^</b> = <b>b722^</b></li>
-      <li><u>04b1</u>2d775a7a89be68b8a9d2f45ec231205314f2 = <b>04b1</b> = <b>1ea2^</b></li>
+      <li><b>HEAD</b> = <u>b722</u>d1a2336b6adbaee4ddd2947c59ef3091a0c9 = <b>b722</b>(최소
+        4개 이상)</li>
+      <li><u>1ea2</u>064ebd484c0d57a98b938cebc1407d228aaf = <b>1ea2</b> = <b>HEAD^</b> =
+        <b>b722^</b>
+      </li>
+      <li><u>04b1</u>2d775a7a89be68b8a9d2f45ec231205314f2 = <b>04b1</b> = <b>1ea2^</b>
+      </li>
     </ul>
     <span class="blockquote-title">log, commit hash의 의미</span>
     <blockquote class="shell">
@@ -166,7 +392,7 @@ Date:   Sat Dec 28 05:22:02 2024 +0900
     </blockquote>
 
     <div class="img-box">
-      <img src="src/git-diff.svg"/>
+      <img src="src/git-diff.svg" />
       <span class="caption">git-diff</span>
       <span class="description">"git-diff.svg", iseohyun.com, CC-BY-SA</span>
     </div>
@@ -213,7 +439,8 @@ Binary files a/filelist.txt and b/filelist.txt differ
     </p>
     <blockquote>
       git stash <span class="comment">작업폴더와 HEAD와의 diff를 임시저장</span><br>
-      git stash save "임시저장 요약" <span class="comment">작업폴더와 HEAD와의 diff를 임시저장(저장 요약 기록)</span><br>
+      git stash save "임시저장 요약" <span class="comment">작업폴더와 HEAD와의 diff를 임시저장(저장 요약
+        기록)</span><br>
       git stash push -m "푸쉬 요약" 파일명.. <span class="comment">일부 파일만 임시저장</span><br><br>
       git stash list <span class="comment">현재 임시저장된 목록 출력</span><br><br>
       git stash pop <span class="comment">임시 저장 목록의 역순으로 복원</span><br>
@@ -226,14 +453,6 @@ Binary files a/filelist.txt and b/filelist.txt differ
       <img src="src/git-stash.svg" />
       <span class="caption">git stash</span>
       <span class="description">"git-stash.svg", iseohyun.com, CC-BY-SA</span>
-    </div>
-
-    <div class="page-move">
-      <span><a href="branch.html">병렬 처리</a></span>
-      <span> &DoubleLongLeftArrow; </span>
-      <span> 유용한 기능 </span>
-      <span> &DoubleLongRightArrow; </span>
-      <span><a href="">다음</a></span>
     </div>
   </article>
 </body>
