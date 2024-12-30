@@ -46,6 +46,9 @@ request.onload = function () {
 
   // 타이틀 삽입
   insertTitle();
+
+  // article 영역에 클릭 이벤트 추가
+  article.addEventListener('dblclick', setDblClickListner);
 }
 
 function renderHierarchy(data, parentElement, parentDirectories, directory) {
@@ -78,7 +81,7 @@ function renderHierarchy(data, parentElement, parentDirectories, directory) {
             next_doc.file = nextItem.파일명;
           }
 
-          listItem.innerHTML = "<span onclick='toggleHierarchyList()' style='width:100%'>" + item.주제 + "</span>";
+          listItem.innerHTML = "<span onclick='toggleHierarchyList()' style='width:100%'>" + item.주제 + " &circlearrowright;</span>";
           const sublist = document.createElement('ul');
           listItem.classList.toggle('this-doc');
           listItem.appendChild(sublist);
@@ -184,13 +187,33 @@ function addContentsList(object) {
 }
 
 // 보드를 보이기/숨기기 토글합니다.
-function trigBoard() {
+function trigBoard(mode = "trigger") {
   var board = document.getElementById("board");
-  if (board.style.visibility === "visible") {
-    board.style.visibility = "hidden";
+  if (mode === "trigger") {
+    if (board.style.visibility === "visible") {
+      board.style.visibility = "hidden";
+    } else {
+      board.style.visibility = "visible";
+    }
   } else {
-    board.style.visibility = "visible";
+    board.style.visibility = mode;
   }
+}
+
+function setDblClickListner(e) {
+  article = document.querySelector("article");
+  article.removeEventListener('dblclick', (e) => { });
+  article.addEventListener('click', setClickListner);
+  trigBoard("visible");
+}
+
+function setClickListner(e) {
+  article = document.querySelector("article");
+  article.removeEventListener('click', (e) => { });
+  setTimeout(() => {
+    article.addEventListener('dblclick', setDblClickListner);
+  }, 2000);
+  trigBoard("hidden");
 }
 
 // 튜토리얼 목록을 보이거나 숨깁니다.
@@ -315,6 +338,10 @@ function createHeader() {
   docCategory.innerHTML = category;
   headline.appendChild(docCategory);
 
+  const categoryParts = category.split(">>").slice(-1).reverse().join(".");
+  
+  document.title = cur_doc.title + ':' + categoryParts + ' - iseohyun.com';
+
   const docTitlePanel = document.createElement('div');
   docTitlePanel.setAttribute('id', 'doc-title-panel');
 
@@ -323,7 +350,7 @@ function createHeader() {
 
   const docTitle = document.createElement('div');
   docTitle.setAttribute('id', 'doc-title');
-  docTitle.innerHTML = cur_doc.title;
+  docTitle.innerHTML = '<a onclick="sitemapInBoard()">' + cur_doc.title + '</a>';
 
   const nextDoc = document.createElement('div');
   nextDoc.setAttribute('id', 'next-doc');
@@ -656,15 +683,18 @@ window.addEventListener("hashchange", (event) => {
   }
 });
 
-document.addEventListener("dblclick", () => {
-  trigBoard();
-});
-
-
 // #board 중 class='this-doc'이 아닌 모든 li의 display hidden으로 toggle
 let hierarchyList = false; // 초기 상태 변수
 
-function toggleHierarchyList() {
+function toggleHierarchyList(mode = "trigger") {
+  if (mode === "sitemap") {
+    hierarchyList = true;
+    const thisDoc = document.querySelector("#board li.this-doc");
+    if (thisDoc) {
+      thisDoc.classList.add("collapsed");
+    }
+  }
+
   // #board 내의 모든 li 요소를 선택
   // const listItems = document.querySelectorAll("#board li:not(.this-doc)");
   const listItems = document.querySelectorAll("#board li:not(.this-doc):not(.this-path):not(li.this-doc li)");
@@ -677,10 +707,7 @@ function toggleHierarchyList() {
     // 모두 hierarchyList == false 일 때 <li class="this-doc" collapsed>
     const thisDoc = document.querySelector("#board li.this-doc");
     if (thisDoc) {
-      if (hierarchyList) {
-        thisDoc.classList.remove("collapsed");
-      } else {
-        thisDoc.classList.add("collapsed");
+      if (!hierarchyList) {
         // <li class="this-doc"> 이하 ul> li는 항상 display:block
         const childListItems = thisDoc.querySelectorAll("ul > li");
         childListItems.forEach(child => {
@@ -709,4 +736,9 @@ function insertTitle() {
   } else {
     console.error('body > article 요소를 찾을 수 없습니다.');
   }
+}
+
+function sitemapInBoard() {
+  trigBoard();
+  toggleHierarchyList("sitemap");
 }
