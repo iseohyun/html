@@ -133,6 +133,15 @@ header {
 
 #doc-title {
   text-align: center;
+  user-select: none;
+}
+
+#doc-title a {
+  color: inherit;
+}
+
+#doc-title a:hover {
+  color: inherit;
 }
 
 header img {

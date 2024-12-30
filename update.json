@@ -1,5 +1,15 @@
 [
   {
+    "date":"2024-12-30",
+    "content":[
+      "[bugfix] 문서 제목과 목차의 문서의 제목을 일치",
+      "[bugfix] board를 닫을 때, site 아무곳이나 클릭하면 닫히도록 설정",
+      "[기능개선] header에서 title을 누르면 site-map이 열리도록 설정",
+      "[bugfix] board에서 site-map과 content를 toggle하는 아이콘 부여(↻)",
+      "[bugfix] document.title을 수동으로 작성해야 했던 문제(일부 불일치)"
+    ]
+  },
+  {
     "date": "2024-12-28",
     "content": [
       "[기능개선] 업데이트 소식 노출",
