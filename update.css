@@ -33,6 +33,6 @@ ul#update-list a:visited {
   color: #44c;
 }
 
-ul#update-list a:visited {
-  color: #44c;
+ul#update-list a:hover {
+  color: red;
 }

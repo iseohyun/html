@@ -452,9 +452,13 @@ blockquote span.comment:before {
 
 a {
   text-decoration: none;
-  color: rgb(0, 38, 255);
+  color: blue;
   font-style: normal;
   /* font-weight: 650; */
+}
+
+a:visited {
+  color: blue;
 }
 
 a:hover {
@@ -1110,6 +1114,13 @@ em {
   text-decoration: none;
   color: inherit;
   font-weight: normal;
+}
+
+header #home-group {
+  display: flex;
+  width: 80px;
+  align-content: center;
+  justify-content: space-between;
 }
 
 header #headerIcons {

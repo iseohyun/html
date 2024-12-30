@@ -1,0 +1,95 @@
+<style>
+  @import url("style.css");
+
+  .icon {
+    height: 1.5em;
+    border: 1px solid #bbb;
+    border-radius: 5px;
+    padding: 3px;
+  }
+
+  body {
+    margin: 0 auto;
+    padding: 0 1em;
+    width: 100%;
+  }
+
+  body>ul,
+  body>ol {
+    padding: 0 2em;
+  }
+
+  h3 {
+    margin: 1em 0 0 0;
+  }
+
+  .fake-link {
+    color: blue;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .fake-link:hover {
+    color: red;
+  }
+
+  .copy-button {
+    width: 50px;
+    height: 1.4em;
+    color: white;
+    background-color: black;
+    border: 1px solid #FFF;
+    border-radius: 15px;
+    padding: 3px;
+  }
+
+  .small {
+    font-size: 0.8em;
+  }
+</style>
+
+<body>
+  <h3>헤더<sub>Header</sub> : 상단 문서정보</h3>
+  <ul>
+    <li>헤더 감추기: 스크롤 내림<span class="small">(또는 헤더의 "▲UP"버튼)</span></li>
+    <li>헤더 보이기: 스크롤 올림</li>
+    <li>문서 이동: <span class="small">하나의 챕터에 여러개의 문서가 있을 수 있습니다.</span>
+      <ul>
+        <li><span class="fake-link">이전 문서</span> &lt;&lt; 타이틀: <span class="small">이전 문서가 없으면 나타나지 않습니다.</span></li>
+        <li>타이틀 >> <span class="fake-link">이후 문서</span></li>
+        <li>타이틀 : 보더에 site-map을 띄웁니다.</li>
+      </ul>
+    </li>
+    <li> 아이콘<sub>icon</sub>
+      <ul>
+        <li style="align-items: center; display: flex;"><img src="source/icon_home.svg" class="icon"> &nbsp; : home화면으로
+          이동
+        </li>
+        <li style="align-items: center; display: flex;"><img src="source/icon_list.svg" class="icon"> &nbsp; : 목차
+          보이기/감추기
+        </li>
+        <li>"▲UP" : 헤더 감추기</li>
+        <li>show tutorial : (튜토리얼 코드가 있는 경우에만) 코드명 보이기/감추기</li>
+      </ul>
+    </li>
+  </ul>
+
+  <h3>보더<sub>Board</sub> : 좌측 네비게이터</h3>
+  <ul>
+    <li>목차 보이기/감추기 :
+      <ul>
+        <li>열기: 보더가 안보이는 상태에서, 아무 곳이나 double click</li>
+        <li>닫기: 보더가 열린 상태에서, 아무 곳이나 click</li>
+      </ul>
+    </li>
+    <li>site-map ↔ 목차 전환 : '<b style="font-size:1.1em" class="fake-link">문서 제목↻</b>' 클릭</li>
+  </ul>
+
+  <h3>빠른 복사<sub>copy to clipboard</sub></h3>
+  <ol>
+    <li>코드블럭<sub>code</sub>, 인용블럭<sub>blockquote</sub>위에 마우스를 올립니다.</li>
+    <li>우상단에 "<span class="copy-button">copy</span>" 버튼이 나타납니다.</li>
+    <li>버튼을 클릭하면 클립보드에 복사되고, "클립보드에 복사되었습니다."는 메시지가 페이지 우하단에 표시됩니다.</li>
+    <li>복사하려는 곳에서 'ctrl + v'를 통해 붙여넣기 할 수 있습니다.</li>
+  </ol>
+</body>
