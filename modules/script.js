@@ -399,7 +399,7 @@ function createHeader() {
 
   const boardIcon = document.createElement('div');
   boardIcon.innerHTML = '<img src="/source/icon_list.svg">';
-  boardIcon.addEventListener('click', trigBoard, true);
+  boardIcon.addEventListener('click', () => trigBoard("trigger"), true);
   icons.appendChild(boardIcon);
   header.appendChild(icons);
 }
