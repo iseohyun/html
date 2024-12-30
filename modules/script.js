@@ -325,9 +325,15 @@ body.appendChild(header);
 // header > homeIcon, headline, board(menu)
 function createHeader() {
   // header > homeIcon
+  const homegroup = document.createElement('div');
+  homegroup.setAttribute('id', 'home-group');
   const homeIcon = document.createElement('div');
   homeIcon.innerHTML = '<a href="/index.html"><img src="/source/icon_home.svg"></a>';
-  header.appendChild(homeIcon);
+  const InterfaceIcon = document.createElement('div');
+  InterfaceIcon.innerHTML = '<a href="/interface.html" target="_blank"><img src="/source/icon_search.svg"></a>';
+  homegroup.appendChild(homeIcon);
+  homegroup.appendChild(InterfaceIcon);
+  header.appendChild(homegroup);
 
   // header > headline > doc-category, doc-title
   const headline = document.createElement('div');

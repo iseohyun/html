@@ -4,7 +4,7 @@
   <meta charset="UTF-8" lang="ko">
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta keywords="iseohyun, 튜토리얼">
+  <meta keywords="iseohyun, update, about us, info, 소개, 저작권, license">
   <meta author="iseohyun">
   <meta http-equiv="Cache-Control" content="no-cache">
 
@@ -51,20 +51,17 @@
     }
 
     article a {
-      text-underline-offset: 0px;
-      text-decoration-color: transparent;
+      color: #44c;
+      text-decoration: none;
+    }
+
+    article a:visted {
+      color: #44c;
     }
 
     article a:hover {
-      transition: 1s text-decoration, 0.5s text-underline-offset;
-      text-decoration: underline;
-      text-decoration-color: red;
-      text-underline-offset: 5px;
-    }
-
-    article li li {
-      position: relative;
-      left: -27px;
+      color: red;
+      text-decoration: none;
     }
 
     #update {
@@ -129,12 +126,6 @@
       font-size: 1rem
     }
 
-    article a {
-      text-decoration: underline;
-      text-decoration-color: red;
-      text-underline-offset: 3px
-    }
-
     article {
       margin: 0 auto;
       padding: 0;
@@ -183,10 +174,17 @@
 
 <body>
   <header>
-    <div class="home-icon">
-      <a href="/index.html">
-        <img src="source/icon_home.svg">
-      </a>
+    <div style="display: flex; width: 80px; align-content: center; justify-content: space-between;">
+      <div class="home-icon">
+        <a href="/index.html">
+          <img src="source/icon_home.svg">
+        </a>
+      </div>
+      <div class="interface-icon">
+        <a href="/interface.html" target="_blank">
+          <img src="source/icon_search.svg">
+        </a>
+      </div>
     </div>
     <div id="header-title">소개, 소식, 저작권</div>
     <div id="icons-container">
@@ -220,7 +218,7 @@
   </header>
   <article>
     <a href="/index.html">
-      
+
     </a>
     <div id="소개"></div>
 
@@ -253,6 +251,8 @@
 
     <h2>인터페이스(사용 방법)</h2>
     <div id="Update정보"></div>
+    <iframe src="interface.html" style="width:100%; height:auto; border:none;"
+      onload="this.style.height=this.contentDocument.body.scrollHeight + 'px';"></iframe>
 
     <h1>Update / news</h1>
     <p>
