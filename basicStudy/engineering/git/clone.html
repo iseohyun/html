@@ -34,6 +34,9 @@
 
 <body>
   <article>
+    <iframe src="src/contents.html" style="width:100%; height:auto; border:none;"
+      onload="this.style.height=this.contentDocument.body.scrollHeight + 'px';"></iframe>
+
     <h1>내 기본 설정</h1>
     <p>
       저장공간을 공유하기 위해서 나를 정의해야합니다. 나를 정의하는 방법은 아래와 같습니다.
@@ -59,29 +62,35 @@ C:\myProject> </pre>
     </p>
 
     <h1>복제</h1>
+    <span class="tutorial">scnario2.clone</span>
     <div class="img-box" style="float:right; min-width: 40vw">
       <img src="./src/git-clone.svg" />
       <span class="caption">Repository clone 시나리오</span>
       <span class="description">"git-clone.svg", iseohyun.com, public</span>
     </div>
     <p>
-      git repository(이하 repo)의 복사는 <u>①단순 파일 복사</u> 외에 <u>②config, log, history 복사</u> 및 <u>③원본 repository와의 연결을
-        기억</u>하여 sync를 쉽게
-      맞출 수 있게 합니다.
+      git repository(이하 repo)의 복사는
+      <u>①단순 파일 복사</u> 외에
+      <u>②config, log, history 복사</u> 및
+      <u>③원본 repo와의 연결을 기억</u>하여 sync를 쉽게 맞출 수 있게 합니다.
+    </p>
+    <p>
+      「그림. Repository clone 시나리오」는 원본<sub>original</sub>으로부터 2개의 복사본<sub>clone</sub>를 갖습니다.
+      복사본은 작업이 끝난 후 push를 통해서 original repo가 항상 최신 상태를 유지하도록 합니다.
+      이후에 pull을 통해 다운로드하면 'local 1', 'local 2'의 동기<sub>sync</sub>를 맞출 수 있습니다.
     </p>
 
-    <p>
-      「그림. Repository clone 시나리오」는 원본<sub>original</sub>으로부터 2개의 복사본<sub>clone</sub>를 갖습니다. 복사본은 작업이 끝난 후 push를 통해서
-      original repo가 항상 최신 상태를 유지하도록 합니다. 이후에 pull을 통해 다운로드하면 'clone 1', 'clone 2'의 동기<sub>sync</sub>를 맞출 수 있습니다.
-    </p>
     <h3>bare repository</h3>
     <p>
-      원본 repo에 작업 디렉토리<sub>directory</sub>를 갖게 되면, 작업 중에 업로드로 인해 인덱스 불일치가 발생될 수 있으므로, 권장되지 않습니다. 따라서 server역할을 수행하는
-      repo는 bare repo로 유지하는 편입니다. bare repo로 전환 방법은:
+      원본 repo<sub>original</sub>에 작업 디렉토리<sub>work directory</sub>를 갖게 되면,
+      업로드<sub>push</sub>로 인해 인덱스 불일치가 발생될 수 있으므로, 권장되지 않습니다.
+      따라서 server역할을 수행하는 repo는 bare repo로 유지하는 편입니다.
+      bare repo로 전환 방법은:
     <blockquote>
       <pre>git config --bool core.bare true</pre>
     </blockquote>
     </p>
+
     <h2>Clone</h2>
     <p>
       repo의 복제가 원격으로 이루어진다면, 두 시스템간의 프로토콜을 공유해야 합니다. 아래 표는 자주사용되는 프로토콜을 정리한 것입니다.
@@ -141,13 +150,10 @@ C:\myProject> </pre>
       <pre>C:\> <span style="color:yellow">git</span> clone .\myProject\ clonePrj
 Cloning into 'clonePrj'...
 done.
-C:\> <span style="color:yellow">cd</span> .\clonePrj\
-C:\clonePrj> <span style="color:yellow">git</span> log
-<span style="color:goldenrod">commit e8d0165528478436ec15f6562fece49d2f18da06 (<span style="color:cyan">HEAD -></span> <span style="color:#0F0">master</span>, <span style="color:red">origin/master</span>, <span style="color:red">origin/HEAD</span>)</span>
-Author: Seohyun Jung &lt;iseohyun@hanmail.net>
-Date:   Sun Dec 22 20:56:19 2024 +0900
 
-    last
+C:\> <span style="color:yellow">cd</span> .\clonePrj\
+C:\clonePrj> <span style="color:yellow">git</span> log --oneline
+<span style="color:goldenrod">commit e8d0165528478436ec15f6562fece49d2f18da06 (<span style="color:cyan">HEAD -></span> <span style="color:#0F0">master</span>, <span style="color:red">origin/master</span>, <span style="color:red">origin/HEAD</span>)</span> last
 
 C:\clonePrj> </pre>
     </blockquote>
@@ -159,18 +165,11 @@ C:\clonePrj> <span style="color:yellow">git</span> add .
 C:\clonePrj> <span style="color:yellow">git</span> commit <span style="color:gray">-m</span> <span style="color:darkcyan">"add message"</span>
 [master 6c5ab8d] add message
   1 file changed, 2 insertions(+), 1 deletion(-)
-C:\clonePrj> <span style="color:yellow">git</span> log
-<span style="color:goldenrod">commit 6c5ab8dd168778e3fc24d63430c4edf40973b0e4 (<span style="color:skyblue">HEAD -></span> <span style="color:#0f0">master</span>)</span>
-Author: iseohyun &lt;iseohyun@hanmail.net>
-Date:   Tue Dec 24 18:17:08 2024 +0900
 
-    add message
+C:\clonePrj> <span style="color:yellow">git</span> log --oneline
+<span style="color:goldenrod">commit 6c5ab8dd168778e3fc24d63430c4edf40973b0e4 (<span style="color:skyblue">HEAD -></span> <span style="color:#0f0">master</span>)</span> add message
+<span style="color:goldenrod">commit e8d0165528478436ec15f6562fece49d2f18da06 (<span style="color:red">origin/master, origin/HEAD</span>)</span> last
 
-<span style="color:goldenrod">commit e8d0165528478436ec15f6562fece49d2f18da06 (<span style="color:red">origin/master, origin/HEAD</span>)</span>
-Author: Seohyun Jung &lt;iseohyun@hanmail.net>
-Date:   Sun Dec 22 20:56:19 2024 +0900
-
-    last
 C:\clonePrj> <span style="color:yellow">git</span> push
 Enumerating objects: 5, done.
 Counting objects: 100% (5/5), done.
@@ -183,6 +182,31 @@ To C:\Users\iseoh\Downloads\myProject
 
 C:\clonePrj> </pre>
     </blockquote>
+
+    <h2>fetch</h2>
+    <p>
+      만약 local repo에 변경사항이 존재한다면, fetch를 통해 안전하게 원격 repo의 변경사항을 가져올 수 있습니다.
+      변경사항을 가져오기만 하고, local repo 작업 디렉터리에 반영하지 않습니다.
+    </p>
+    <table class="last-td-left">
+      <caption>git fetch 용법</caption>
+      <thead>
+        <tr>
+          <th>명령어</th>
+          <th>해석</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>git fetch</td>
+          <td>원격 repo를 가져옵니다. 작업 디렉터리에 반영하지 않습니다.</td>
+        </tr>
+        <tr>
+          <td>git fetch --prune</td>
+          <td>원격 repo에서 삭제된 branch를, 내 repo에서 삭제합니다.</td>
+        </tr>
+      </tbody>
+    </table>
 
     <h1>github</h1>
     <p>
@@ -333,6 +357,12 @@ git push -u origin main   <span style="color:green; font-size:0.8em">업로드, 
       push의 --force옵션을 사용하면, 강제로 push할 수 있습니다.
     </p>
     <blockquote>git push --force</blockquote>
+
+    <h2>default upstream</h2>
+    <p>
+      git push를 할 때, upstream을 자동으로 설정하려면 아래 명령어를 사용합니다.
+    </p>
+    <blockquote>git push --set-upstream origin main</blockquote>
   </article>
 </body>
 

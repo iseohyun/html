@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <marker id="arrow-end" markerWidth="7" markerHeight="6" viewBox="0 -3 6 6" orient="auto">
+      <path d="M0 -2L5 0 0 2 5 0 0 0 5 0 0-2" stroke="#000" />
+    </marker>
+  </defs>
+  <g style="stroke:#888; stroke-width:3; fill:#cfc">
+    <path d="M160 27 V220" />
+    <ellipse cx="160" cy="20" rx="7" ry="7" fill="#Fcc" />
+    <ellipse cx="160" cy="40" rx="7" ry="7" fill="#Fcc"/>
+    <ellipse cx="160" cy="100" rx="7" ry="7" />
+    <ellipse cx="160" cy="120" rx="7" ry="7" />
+    <ellipse cx="160" cy="140" rx="7" ry="7" />
+    <ellipse cx="160" cy="160" rx="7" ry="7" />
+    <ellipse cx="160" cy="180" rx="7" ry="7" />
+    <ellipse cx="160" cy="200" rx="7" ry="7" />
+    <ellipse cx="160" cy="220" rx="7" ry="7" />
+  </g>
+  <g style="stroke:#444; stroke-width:3; fill:white">
+    <path d="M10 27 V220" />
+    <ellipse cx="10" cy="20" rx="7" ry="7" fill="#F00" />
+    <ellipse cx="10" cy="40" rx="7" ry="7" />
+    <ellipse cx="10" cy="60" rx="7" ry="7" />
+    <ellipse cx="10" cy="80" rx="7" ry="7" />
+    <ellipse cx="10" cy="100" rx="7" ry="7" />
+    <ellipse cx="10" cy="120" rx="7" ry="7" />
+    <ellipse cx="10" cy="140" rx="7" ry="7" />
+    <ellipse cx="10" cy="160" rx="7" ry="7" />
+    <ellipse cx="10" cy="180" rx="7" ry="7" fill="#0F0" />
+    <ellipse cx="10" cy="200" rx="7" ry="7" />
+    <ellipse cx="10" cy="220" rx="7" ry="7" />
+
+    <path d="M60 27 V100" />
+    <ellipse cx="60" cy="20" rx="7" ry="7" fill="#F00" />
+    <ellipse cx="60" cy="40" rx="7" ry="7" />
+    <ellipse cx="60" cy="60" rx="7" ry="7" />
+    <ellipse cx="60" cy="80" rx="7" ry="7" />
+    <ellipse cx="60" cy="100" rx="7" ry="7" fill="#0F0" />
+
+    <path d="M110 67 V100" />
+    <ellipse cx="110" cy="60" rx="7" ry="7" fill="#F00" />
+    <ellipse cx="110" cy="80" rx="7" ry="7" />
+    <ellipse cx="110" cy="100" rx="7" ry="7" fill="#0F0" />
+
+    <path d="M160 67 V80" />
+    <ellipse cx="160" cy="60" rx="7" ry="7" fill="#F00" />
+    <ellipse cx="160" cy="80" rx="7" ry="7" fill="#0F0" />
+  </g>
+  <g style="stroke:#000;fill:none">
+    <path d="M30 100h-5" marker-end="url(#arrow-end)" />
+    <path d="M80 60h-5" marker-end="url(#arrow-end)" />
+    <path d="M130 80h-5" marker-end="url(#arrow-end)" />
+    <path d="M180 60h-5" marker-end="url(#arrow-end)" />
+  </g>
+  <g style="font-size:10; font-family:monospace; fill:#660">
+    <text x="20" y="23">bad</text>
+    <text x="20" y="183">good - release v1.1</text>
+    <g style="fill:#666">
+      <text transform="translate(185,50) rotate(90)">got you!</text>
+      <text transform="translate(35, 90) rotate(90)">test!</text>
+      <text transform="translate(85, 50) rotate(90)">test!</text>
+      <text transform="translate(135, 70) rotate(90)">test!</text>
+    </g>
+  </g>
+</svg>

@@ -9,25 +9,25 @@
     </marker>
   </defs>
   <g style="stroke:#000; fill:none">
-    <rect x="10" y="30" width="80" height="40" />
-    <rect x="10" y="90" width="80" height="40" stroke-dasharray="2" />
-    <rect x="10" y="150" width="80" height="40" />
-    <rect x="10" y="210" width="80" height="40" />
-    <rect x="10" y="270" width="80" height="40" stroke-dasharray="2" />
-    <rect x="122" y="90" width="255" height="150" />
+    <rect x="10" y="30" width="80" height="40" rx="5"/>
+    <rect x="10" y="90" width="80" height="40" rx="5" stroke-dasharray="2" />
+    <rect x="10" y="150" width="80" height="40" rx="5"/>
+    <rect x="10" y="210" width="80" height="40" rx="5"/>
+    <rect x="10" y="270" width="80" height="40" rx="5" stroke-dasharray="2" />
+    <rect x="122" y="90" width="255" height="150" rx="5"/>
     <path d="M50 70v13" marker-end="url(#arrow-start)" />
     <path d="M50 130v13" marker-end="url(#arrow-start)" />
     <path d="M50 190v13" marker-end="url(#arrow-start)" />
     <path d="M50 250v13" marker-end="url(#arrow-start)" />
-    <path d="M90 290h150v-43" marker-end="url(#arrow-start)" />
-    <path d="M240 90v-40h-143" marker-end="url(#arrow-start)" />
+    <path d="M90 290h150a5 5 0 0 0 5-5v-38" marker-end="url(#arrow-start)" />
+    <path d="M245 90v-35a5 5 0 0 0-5-5h-143" marker-end="url(#arrow-start)" />
     <path d="M122 131h255M212 131v109M288 131v109" />
   </g>
-  <g style="font-size:8; text-anchor:middle; dominant-baseline: middle;">
-    <text x="50" y="51">commit 1</text>
+  <g style="font-size:10; text-anchor:middle; dominant-baseline: middle;">
+    <text x="50" y="51" style="font-size:18">commit 1</text>
     <text x="50" y="111">file1, file2 수정</text>
-    <text x="50" y="171">add .</text>
-    <text x="50" y="231">commit 2</text>
+    <text x="50" y="171" style="font-size:20">add .</text>
+    <text x="50" y="231" style="font-size:18">commit 2</text>
     <text x="50" y="287">file1 수정작업<tspan x="50" dy="10">file2: commit 2</tspan></text>
     <text x="250" y="115" style="font-size:20">reset &lt;commit 1></text>
     <g style="font-size:18">

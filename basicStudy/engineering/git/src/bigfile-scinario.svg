@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 325 360" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <marker id="arrow-start" markerWidth="7" markerHeight="6" viewBox="0 -3 6 6" orient="auto">
+      <path d="M0-2L5 0 0 2 5 0 0 0 5 0 0-2" stroke="#000" />
+    </marker>
+    <marker id="arrow-start-red" markerWidth="7" markerHeight="6" viewBox="0 -3 6 6" orient="auto">
+      <path d="M0-2L5 0 0 2 5 0 0 0 5 0 0-2" stroke="red" />
+    </marker>    
+  </defs>
+  <rect x="210" y="0" width="120" height="360" fill="#eee" stroke="none" />
+  <g style="stroke:#000; fill:none">
+    <rect x="1" y="61" width="80" height="40" rx="5" />
+    <rect x="1" y="121" width="80" height="40" rx="5" />
+    <rect x="1" y="181" width="80" height="40" rx="5" />
+    <rect x="1" y="241" width="80" height="40" rx="5" />
+    <rect x="111" y="61" width="80" height="40" rx="5" />
+    <rect x="111" y="121" width="80" height="40" rx="5" />
+    <rect x="111" y="181" width="80" height="40" rx="5" />
+    <rect x="111" y="241" width="80" height="40" rx="5" />
+    <rect x="1" y="313" width="80" height="40" rx="5" />
+
+    <path d="M40 101v13" marker-end="url(#arrow-start)" />
+    <path d="M40 161v13" marker-end="url(#arrow-start)" />
+    <path d="M40 221v13" marker-end="url(#arrow-start)" />
+    <path d="M81 260h10a5 5 0 0 0 5-5v-170a5 5 0 0 1 5-5h5" marker-end="url(#arrow-start)" />
+    <path d="M151 101v13" marker-end="url(#arrow-start)" />
+    <path d="M151 161v13" marker-end="url(#arrow-start)" />
+    <path d="M151 221v13" marker-end="url(#arrow-start)" />
+    <path d="M151 281v11a5 5 0 0 1-5 5h-100a5 5 0 0 0-5 5v5" marker-end="url(#arrow-start)" />
+    <path d="M111 201h-23" marker-end="url(#arrow-start-red)" stroke="red"/>
+
+    <rect x="230" y="61" width="80" height="40" rx="5" />
+    <path d="M270 101v73" marker-end="url(#arrow-start)" />
+    <rect x="230" y="181" width="80" height="40" rx="5" />
+    <path d="M270 220v85" marker-end="url(#arrow-start)" />
+    <rect x="230" y="313" width="80" height="40" rx="5" />
+
+    <path d="M210 0V360" style="stroke:#aaa; stroke-dasharray:2" />
+  </g>
+  <g style="font-size:16; text-anchor:middle; dominant-baseline: middle;">
+    <text x="40" y="22" fill="green">master</text>
+    <text x="270" y="22" fill="green">master</text>
+    <text x="40" y="82">commit 1</text>
+    <text x="40" y="137">add<tspan x="40" dy="1.2em" style="font-size:.7em">big file</tspan></text>
+    <text x="40" y="202">commit 2</text>
+    <text x="40" y="257">rebase<tspan x="40" dy="1.2em" style="font-size:.7em">commit 1</tspan></text>
+    <text x="150" y="82">commit 1</text>
+    <text x="150" y="137">rm<tspan x="150" dy="1.2em" style="font-size:.7em">big file</tspan></text>
+    <text x="150" y="197">commit<tspan x="150" dy="1.2em" style="font-size:.7em">-amend</tspan></text>
+    <text x="150" y="257">rebase<tspan x="150" dy="1.2em" style="font-size:.7em">--continue</tspan></text>
+    <text x="40" y="333">commit 3</text>
+
+    <text x="270" y="82">commit 1</text>
+    <text x="270" y="202">commit 2'</text>
+    <text x="270" y="333">commit 3</text>
+  </g>
+  <g style="font-size:10; dominant-baseline: middle; fill:red;">
+    <text x="60" y="307">HEAD</text>
+    <text x="280" y="307">HEAD</text>
+  </g>
+</svg>

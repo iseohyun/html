@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <svg viewBox="0 0 40 20" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-  <rect width="38" height="18" x="1" y="1" stroke="#000" fill="none" stroke-dasharray="3"/>
+  <rect width="38" height="18" x="1" y="1" stroke="#000" fill="none" stroke-dasharray="3" rx="7"/>
 </svg>

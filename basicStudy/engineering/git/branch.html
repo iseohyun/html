@@ -34,6 +34,245 @@
 
 <body>
   <article>
+    <iframe src="src/contents.html" style="width:100%; height:auto; border:none;"
+      onload="this.style.height=this.contentDocument.body.scrollHeight + 'px';"></iframe>
+
+    <h1>branch 생성 시나리오</h1>
+    <span class="tutorial">scnario4.branch</span>
+    <div class="img-box" style="float:right; width:40%; min-width: 300px;">
+      <img src="src/branch-scinario.svg" />
+      <span class="caption">브렌치 생성 시나리오</span>
+      <span class="description">"branch-scinario.svg", iseohyun.com, CC-BY-SA</span>
+    </div>
+    <ol>
+      <li>git repo를 생성하고 작업을 저장합니다.</li>
+      <li>master branch에서 새로운 branch(develop)를 생성합니다.</li>
+      <li>develop branch로 이동합니다.</li>
+      <li>develop branch에서 작업을 수행합니다.</li>
+      <li>master branch에로 이동합니다.</li>
+      <li>develop branch를 병합합니다.</li>
+      <li>(option)develop branch를 삭제합니다.</li>
+    </ol>
+    <pre><code class="PowerShell">git init
+git add .
+git commit -m "first commit"
+git branch develop
+git switch develop
+git add .
+git commit -m "develop branch"
+git switch master
+git merge develop
+git branch -d develop
+</code></pre>
+    <p>
+      작업수행 후 [그림]의 회색음영과 같은 결과가 도출됩니다.
+    </p>
+
+    <h2>구조</h2>
+    <div class="img-box" style="float:right; width:40%; min-width: 300px;">
+      <img src="src/branch-scinario2.svg" />
+      <span class="caption">master에 commit이 있는 경우 marge</span>
+      <span class="description">"branch-scinario2.svg", iseohyun.com, CC-BY-SA</span>
+    </div>
+    <p>
+      .git/refers/heads에 생성한 branch이름의 파일이 생성됩니다.
+      이 파일은 해당 branch의 commit id를 가지고 있습니다.
+    </p>
+    <p>
+      만약 master에 새로운 commit이 없었다면, merge branch의 commit을 가져와 쓰겠지만,
+      새로운 merge가 진행되면 새로운 commit이 생성되고, 가장 최근의 commit으로부터 이어붙입니다.
+    </p>
+    <blockquote class="shell">
+      <pre>C:\git-tutorial\branch> git log --oneline     
+<span style="color:yellow">8ce4086 (<span style="color:skyblue">HEAD</span> -> <span style="color:green">master</span>)</span> Merge branch 'new-scinario'
+<span style="color:yellow">90bdd1f (<span style="color:green">new-scinario</span>)</span> change cammands.txt in new-scinario
+<span style="color:yellow">e60ddeb</span> delete init from commands
+<span style="color:yellow">83c10e0</span> add command list</pre>
+    </blockquote>
+
+    <h2>checkout</h2>
+    <p>
+      git 2.23버전부터는 checkout명령어를 switch와 restore로 대체하였습니다.
+    </p>
+    <table class="last-td-left last-second-td-left">
+      <caption>주요 차이점</caption>
+      <thead>
+        <tr>
+          <th>특징</th>
+          <th>checkout</th>
+          <th>switch</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>브랜치 전환</td>
+          <td>전환 후 해당 브랜치로 restore</td>
+          <td>전환만 진행</td>
+        </tr>
+        <tr>
+          <td>파일 복구</td>
+          <td>git checkout &lt;브랜치> -- &lt;파일></td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td>브랜치 생성과 이동</td>
+          <td>git checkout -b &lt;브랜치 이름></td>
+          <td>git switch -c &lt;브랜치 이름></td>
+        </tr>
+        <tr>
+          <td>특정 커밋 이동</td>
+          <td>(Detached HEAD 상태:임시이름)</td>
+          <td>-</td>
+        </tr>
+        <tr>
+          <td>가독성 및 명확성</td>
+          <td>혼란 가능성</td>
+          <td>명확</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h1>branch전략</h1>
+    <p>
+      branch전략이란, 여러명이 협업하는 경우, branch를 어떻게 사용할지에 대한 규칙입니다.
+      고정된 branch이름이 있다면, branch이름만으로도 어떤 작업을 수행해야 할지 힌트를 얻을 수 있습니다.
+    </p>
+    <p>
+      git-flow<a class="detail" href="#references"></a>
+      <span>
+        <tspan class="description">nvie.com/posts/a-successful-git-branching-model/</tspan>
+        <tspan class="reference">https://nvie.com/posts/a-successful-git-branching-model/</tspan>
+      </span>
+      는 Vincent Driessen이 제안한 branch전략입니다.
+      가장 먼저 제안되었습니다.
+      github-flow와, gitlab-flow는 각각 github과 gitlab이라는 대형 사이트에서 제안한 branch전략입니다.
+    </p>
+    <table class="all-td-center git-flow">
+      <style>
+        .git-flow td:first-child {
+          background-color: #f0f0f0;
+        }
+
+        .git-flow td:nth-child(2) {
+          text-align: left;
+          background-color: #f0f0f0;
+        }
+      </style>
+      <caption>branch flow비교</caption>
+      <thead>
+        <tr>
+          <th>branch</th>
+          <th>설명</th>
+          <th>git flow</th>
+          <th>github flow</th>
+          <th>gitlab flow</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>master</td>
+          <td>배포용 브랜치</td>
+          <td>○</td>
+          <td>○</td>
+          <td>○</td>
+        </tr>
+        <tr>
+          <td>develop</td>
+          <td>개발용 브랜치</td>
+          <td>○</td>
+          <td>○</td>
+          <td>○</td>
+        </tr>
+        <tr>
+          <td>feature</td>
+          <td>기능 개발 브랜치</td>
+          <td>○</td>
+          <td></td>
+          <td>○</td>
+        </tr>
+        <tr>
+          <td>release</td>
+          <td>배포 전 테스트 브랜치</td>
+          <td>○</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>hotfix</td>
+          <td>긴급 수정 브랜치</td>
+          <td>○</td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>**-request</td>
+          <td>코드리뷰 브랜치</td>
+          <td></td>
+          <td>○(pull)</td>
+          <td>○(merge)</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      git-flow의 전략은 완벽하지만 매우 복잡합니다.
+      간략한 전략에서도 master와 develop을 분리하는 것에 동의했습니다.
+      다만 다른 복잡한 branch를 유지하기보다 코드리뷰 branch(다목적 브랜치)를 사용하기를 권장합니다.
+      (현업에서 PR(pull request)또는 MR(merge request)을 보냈다면,
+      코드리뷰 branch에 push후 peer review를 기다린다는 뜻입니다.)
+    </p>
+
+    <h1>Tag</h1>
+    <p>
+      만약 특정 commit에 자주 도달해야 하는 상황이라면, 매번 commit id를 입력하는 것은 번거로울 것입니다.
+      이럴 때 tag를 사용하면 편리합니다.
+      만약 branch전략을 사용중이라면, master에 tag를 붙이는 것이 일반적입니다.
+      tag를 생성하면 <u>.git/refs/tags</u>에 tag이름의 파일이 생성됩니다.
+    </p>
+    <div class="blockquote-title">tag생성 예</div>
+    <blockquote class="shell">
+      <pre>C:\git-tutorial\branch> <span style="color:yellow">git</span> tag v1.0
+C:\git-tutorial\branch> <span style="color:yellow">git</span> tag v1.0 83c1
+C:\git-tutorial\branch> <span style="color:yellow">git</span> tag <span style="color:cyan">-a</span> v1.1 <span style="color:cyan">-m</span> "version 1.1"
+C:\git-tutorial\branch> <span style="color:yellow">git</span> tag <span style="color:cyan">-a</span> v1.1 e60d <span style="color:cyan">-m</span> "version 1.1"
+
+<span style="color:yellow">e60ddeb (<span style="color:skyblue">HEAD</span> -> <span style="color:green">master</span>)(tag: v1.1)</span> delete init from commands
+<span style="color:yellow">83c10e0 (tag: v1.0)</span> add command list
+<span style="color:yellow">388f382</span> update powershell script to get data from file folder
+<span style="color:yellow">6d66441</span> first commit
+
+C:\git-tutorial\branch> <span style="color:yellow">git</span> tag -d v1.1</pre>
+    </blockquote>
+    <table class="all-td-center">
+      <caption>Annotation Tag vs. Lightweight Tag</caption>
+      <thead>
+        <tr>
+          <th></th>
+          <th>Annotation Tag</th>
+          <th>Lightweight Tag</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>형식</td>
+          <td>git tag -a &lt;테그명> [해쉬] -m "&lt;메시지>"</td>
+          <td>git tag &lt;테그명> [해쉬]</td>
+        </tr>
+        <tr>
+          <td>메시지 입력</td>
+          <td>가능</td>
+          <td>불가능</td>
+        </tr>
+        <tr>
+          <td>object 생성</td>
+          <td>○</td>
+          <td>Ⅹ</td>
+        </tr>
+        <tr>
+          <td>삭제</td>
+          <td colspan="2">-d &lt;테그명></td>
+        </tr>
+      </tbody>
+    </table>
   </article>
 </body>
 
