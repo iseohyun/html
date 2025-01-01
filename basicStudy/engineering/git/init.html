@@ -34,32 +34,31 @@
 
 <body>
   <article>
+    <iframe src="src/contents.html" style="width:100%; height:auto; border:none;"
+      onload="this.style.height=this.contentDocument.body.scrollHeight + 'px';"></iframe>
+
     <h1>컨셉</h1>
-    <div style="display: flex;flex-direction: row; align-items: flex-start;">
-      <div>
-        <p>
-          다음과 같은 프로젝트가 있다고 가정해봅시다.
-        </p>
-        <ol style="margin:0 1em 0 3em">
-          <li>공모단계: (교수(강사), 지자체, 발주자, 기업 등) 모집 주제와 범위, 전체 프로세스 일정(발표 장소와 시기), 채점 방식, 제출 양식 등을 공유(배포)합니다.</li>
-          <li>중간/최종 발표: ppt형태로 제출되며, 보완/요구사항이 있을 수 있습니다.</li>
-          <li>발표자료에는 사진과 데이터, 참조 문헌(사이트, 출처..)에 대한 정보를 수록해야 합니다.</li>
-          <li>발표자는 각 <u>단계의 변경사항을 하나의 파일로(zip) 저장</u>하고자 합니다.<br>
-            <u>backup 폴더를 만들고, 이 폴더 안에 저장</u>합니다.
-          </li>
-          <li><u>변경 사항</u>의 주요 내용은 "<u>파일 이름</u>.zip" 입니다.</li>
-        </ol>
-        <p>
-          위 내용으로 산출된 작업물은 "[그림 2] 프로젝트 예시"와 같이 작성 될 수 있습니다.
-        </p>
-      </div>
-      <div class="img-box">
-        <img src="src/project_schedule.svg" style="min-width:300px"/>
-        <span class="caption">일반 프로젝트(스케줄 예시)</span>
-        <span class="description">"project_schedule.svg", iseohyun.com, public</span>
-      </div>
+    <div class="img-box" style="float:right; min-width:300px; width: 30%">
+      <img src="src/project_schedule.svg" />
+      <span class="caption">일반 프로젝트(스케줄 예시)</span>
+      <span class="description">"project_schedule.svg", iseohyun.com, public</span>
     </div>
-    <div class="img-box">
+    <p>
+      다음과 같은 프로젝트가 있다고 가정해봅시다.
+    </p>
+    <ol style="margin:0 1em 0 3em">
+      <li>공모단계: (교수(강사), 지자체, 발주자, 기업 등) 모집 주제와 범위, 전체 프로세스 일정(발표 시기와 장소), 채점 방식, 제출 양식 등을 공유(배포)합니다.</li>
+      <li>중간/최종 발표: ppt형태로 제출되며, 보완/요구사항이 있을 수 있습니다.</li>
+      <li>발표자료에는 사진과 데이터, 참조 문헌(사이트, 출처..)에 대한 정보를 수록해야 합니다.</li>
+      <li>발표자는 각 <u>단계의 변경사항을 하나의 파일로(zip) 저장</u>하고자 합니다.<br>
+        <u>backup 폴더를 만들고, 이 폴더 안에 저장</u>합니다.
+      </li>
+      <li><u>변경 사항</u>의 주요 내용은 "<u>파일 이름</u>.zip" 입니다.</li>
+    </ol>
+    <p>
+      위 내용으로 산출된 작업물은 "[그림 2] 프로젝트 예시"와 같이 작성 될 수 있습니다.
+    </p>
+    <div class="img-box" style="clear:both;">
       <img src="src/project_example.png" />
       <span class="caption">일반 프로젝트(폴더 예시)</span>
       <span class="description">"project_example.png", iseohyun.com, public
@@ -155,39 +154,40 @@
       </tbody>
     </table>
 
-    <h1>기본 기능 익히기</h1>
-
-    <div style="display: flex;">
-      <div style="width:70%">
-        <ul style="margin:0 2em">
-          <li>
-            앞으로 등장하는 명령어는 git bash(또는 git.exe가 수행 가능한 모든 환경)에서 CLI(Command Line Interface) 입력예제 입니다.
-          </li>
-          <li>
-            '작업 폴더 초기화(init)'는 1회만 수행됩니다.
-          </li>
-          <li>
-            '(작업)'은 사용자가 '산출물을 만들어내는 행위'를 의미합니다.
-          </li>
-          <li>
-            점선 박스(<img src="src/dash-box.svg" style="width:40px; margin:0 3px" />)는 optional(선택 사항)입니다.
-          </li>
-          <li>
-            "산출물 작성 → 업데이트"를 반복합니다.
-          </li>
-          <li>
-            작업 내용 하단에 작성된 영문은 사용될 '명령어'입니다.
-          </li>
-        </ul>
-      </div>
-      <div class="img-box">
-        <img src="src/git-basic.svg" style="min-width:300px"/>
-        <span class="caption">git 기본 시나리오</span>
-        <span class="description">"git_basic.svg", iseohyun.com, public</span>
-      </div>
+    <h1>기본 기능 시나리오</h1>
+    <span class="tutorial">scnario1.init</span>
+    <div class="img-box" style="display: flex; float:right; width: 30%; min-width:300px">
+      <img src="src/git-basic.svg" style="min-width:300px" />
+      <span class="caption">git 기본 시나리오</span>
+      <span class="description">"git_basic.svg", iseohyun.com, public</span>
     </div>
 
-    <h2>프로젝트 생성</h2>
+    <ul style="margin:0 2em">
+      <li>
+        앞으로 등장하는 명령어는 git bash(또는 git.exe가 수행 가능한 모든 환경)에서 CLI(Command Line Interface) 입력예제 입니다.
+      </li>
+      <li>
+        '작업 폴더 초기화(init)'는 1회만 수행됩니다.
+      </li>
+      <li>
+        '(작업)'은 사용자가 '산출물을 만들어내는 행위'를 의미합니다.
+      </li>
+      <li>
+        점선 박스(<img src="src/dash-box.svg" style="width:40px; margin:0 3px" />)는
+        작업 편의를 위한 optional(선택 사항)입니다.
+      </li>
+      <li>
+        "산출물 작성 → 업데이트"를 반복합니다.
+      </li>
+      <li>
+        작업 내용 하단에 작성된 영문은 사용될 '명령어'입니다.
+      </li>
+      <li>
+        작업 반영이 쌓이면 git log에 comment(주석)과 함께 기록됩니다.
+      </li>
+    </ul>
+
+    <h2>프로젝트 생성(init)</h2>
     <p>
       이 명령어는 작업폴더 안에서 수행되어야 합니다(작업폴더가 생성되었고,).
     </p>
@@ -195,7 +195,8 @@
       <pre>git init</pre>
     </blockquote>
     <p>
-      이 명령어는 <var>.git</var>폴더를 생성하고, <var>.git</var> 이하에 폴더/파일을 생성합니다. 생성된 폴더/파일의 목적은 다음과 같습니다:
+      이 명령어는 <var>.git</var>폴더를 생성하고, <var>.git</var> 이하에 폴더/파일을 생성합니다.
+      생성된 폴더/파일의 목적은 다음과 같습니다:
     </p>
     <table class="last-td-left second-td-left">
       <caption>git directory</caption>
@@ -271,20 +272,20 @@
       </tbody>
     </table>
 
-    <h3>실행 예:</h3>
+    <div class="blockquote-title">새로운 git repo를 생성</div>
     <blockquote class="shell">
       <pre>C:\myProject> <span style="color:yellow">git</span> init
 Initialized empty Git repository in C:/myProject/.git/</pre>
     </blockquote>
 
-    <h2>변경된 파일 확인</h2>
+    <h2>변경된 파일 확인(status)</h2>
     <p>
       이 명령어는 작업폴더 내 변경된 파일이 있는지 검색합니다.
     </p>
     <blockquote>
       <pre>git status</pre>
     </blockquote>
-    <h3>실행 예:</h3>
+    <div class="blockquote-title">변경된 파일 조회</div>
     <blockquote class="shell">
       <pre>C:\myProject> <span style="color:yellow">git</span> status
 On branch master
@@ -303,7 +304,7 @@ nothing added to commit but untracked files present (use "git add" to track)</pr
       ※ 2개의 파일(file1.txt, file2.txt)과 1개의 폴더(source/)가 변경(생성)되어 있습니다.
     </p>
 
-    <h2>업데이트 파일 지정</h2>
+    <h2>업데이트 파일 지정(add)</h2>
     <p>
       이 명령어는 업데이트를 진행하기 전에, 어떤 파일을 업데이트에 적용할 것인지 지정하는 단계입니다. 이 단계에서 지정된 파일은 <span
         style="font-weight:bold; color:green">stage</span>에 올립니다. 폴더 이름 기재시 폴더 이하 모든 파일이 staging 됩니다. 만약 <u>폴더가 자기자신(.)인
@@ -312,7 +313,7 @@ nothing added to commit but untracked files present (use "git add" to track)</pr
     <blockquote>
       <pre>git add ['파일 이름' 또는 '폴더 이름']</pre>
     </blockquote>
-    <h3>실행 예:</h3>
+    <div class="blockquote-title">trace할 파일 지정</div>
     <blockquote class="shell">
       <pre>C:\myProject> <span style="color:yellow">git</span> add file1.txt source
 C:\myProject> <span style="color:yellow">git</span> status
@@ -334,14 +335,14 @@ Untracked files:
       add 명령을 수행하라고 안내하고 있습니다.
     </p>
 
-    <h2>반영하기</h2>
+    <h2>반영하기(commit)</h2>
     <p>
       stage된 파일들의 업데이트를 반영하는 명령어입니다.
     </p>
     <blockquote>
       <pre>git commit -m "로그 내용"</pre>
     </blockquote>
-    <h3>실행 예:</h3>
+    <div class="blockquote-title">업데이트 반영</div>
     <blockquote class="shell">
       <pre>C:\myProject> <span style="color:yellow">git</span> commit -m <span style="color:skyblue">"version 1.0"</span>
 [master (root-commit) 505c895] version 1.0
@@ -374,14 +375,14 @@ C:\myProject> <span style="color:yellow">git</span> commit <span style="color:gr
   - 점프 버그가 수정되었습니다.
   - 리그 보상을 수정하였습니다(20G -> 30G)</code></pre>
 
-    <h2>결과 확인하기</h2>
+    <h2>결과 확인하기(log)</h2>
     <p>
       이 명령어로 지금까지 commit활동을 추적 할 수 있습니다.
     </p>
     <blockquote>
       <pre>git log</pre>
     </blockquote>
-    <h3>실행 예:</h3>
+    <div class="blockquote-title">업데이트 history 조회</div>
     <blockquote class="shell">
       <pre>C:\myProject> <span style="color:yellow">git</span> log
 <span style="color:darkgoldenrod">commit 60ddf2fa989e5882cf774c356b65693d6b7f25cb (<span style="color: cyan;">HEAD -></span> <span style="color:#0F0">master</span>)</span>
@@ -399,10 +400,129 @@ Date:   Sun Dec 22 18:03:27 2024 +0900
     version 1.0</pre>
     </blockquote>
 
-    <h1>문제 해결</h1>
+    <blockquote>
+      <pre>git log --oneline</pre>
+    </blockquote>
+    <div class="blockquote-title">업데이트 history 조회(한줄로 출력)</div>
+    <blockquote class="shell">
+      <pre>C:\myProject> <span style="color:yellow">git</span> log --oneline
+<span style="color:darkgoldenrod">commit 60ddf2fa989e5882cf774c356b65693d6b7f25cb (<span style="color: cyan;">HEAD -></span> <span style="color:#0F0">master</span>)</span> 업데이트 2.3.1
+<span style="color:darkgoldenrod">commit 505c895b58423b61a8a9c5319f79e81557a7012f</span> version 1.0</pre>
+    </blockquote>
 
-    <h2>add 번복</h2>
-    <h3>commit이 없는 경우</h3>
+    <h1>기본 편집 기능</h1>
+    <h2>mv</h2>
+    <p>
+      trace중인 (적어도 on-stage) 파일의 이름을 변경합니다.
+      object가 새로 생성되지 않고, tree의 내용 중, 파일 이름이 변경됩니다.
+    </p>
+    <blockquote>
+      <pre>git mv [기존 파일명] [변경 파일명]</pre>
+    </blockquote>
+    <p>
+      <span style="color:blueviolet; background-color: black; padding:5px">변경 전</span> file1.txt와 <span
+        style="color:cyan; background-color: black; padding:5px">변경 후</span> file1_new.txt를 같은 object를 사용하고 있습니다.
+    </p>
+    <div class="blockquote-title">move의 실제 동작</div>
+    <blockquote class="shell">
+      <pre>C:\myProject> <span style="color:yellow">git</span> mv file1.txt file1_new.txt
+C:\myProject> <span style="color:yellow">git</span> add File1_new.txt
+C:\myProject> <span style="color:yellow">git</span> commit -m "filename change"
+C:\myProject> <span style="color:yellow">git</span> log --oneline
+<span style="color:yellow">a9091c2 (<span style="color:skyblue">HEAD</span> -> <span style="color:green">master</span>)</span> <span style="color:cyan">filename change</span>
+<span style="color:yellow">78845b9</span> <span style="color:blueviolet">second commit</span>
+<span style="color:yellow">f39d6ff</span> first commit
+C:\myProject> <span style="color:yellow">git</span> cat-file -p 78845b9
+tree <span style="color:red">222f4e1</span>9eaa3bcaa87c6c54b0d97eff8290c9b52
+parent f39d6ffa8f9324f4e5a19425935aa3359a8ba7c5
+author iseohyun &lt;iseohyun@hanmail.net> 1735465083 +0900
+committer iseohyun &lt;iseohyun@hanmail.net> 1735465083 +0900
+
+<span style="color:blueviolet">second commit</span>
+
+C:\myProject> <span style="color:yellow">git</span> cat-file -p <span style="color:red">222f4e1</span>
+100644 blob <span style="color:blueviolet">10189fe9e039b47c352d9b0936d24f0f6fcffdbf    file1.txt</span>
+100644 blob 233789ce69d7450712c42402e4a4e2ae35bbad5c    hello.txt
+040000 tree c52260cfb14342e8b1f92b891e008930702875f7    src
+
+C:\myProject> <span style="color:yellow">git</span> cat-file -p a9091c2  
+tree <span style="color:cyan">978bd10</span>a0abed1e4b035f5f3e0bd10cfa70c99b4
+parent 78845b9138519b6fa4d71a6b915789b666cf7665
+author iseohyun &lt;iseohyun@hanmail.net> 1735580478 +0900
+committer iseohyun &lt;iseohyun@hanmail.net> 1735580478 +0900
+
+<span style="color:cyan">filename change</span>
+
+C:\myProject> <span style="color:yellow">git</span> cat-file -p <span style="color:cyan">978bd10</span>
+100644 blob <span style="color:blueviolet">10189fe9e039b47c352d9b0936d24f0f6fcffdbf    file1_new.txt</span>
+100644 blob 233789ce69d7450712c42402e4a4e2ae35bbad5c    hello.txt
+040000 tree c52260cfb14342e8b1f92b891e008930702875f7    src</pre>
+    </blockquote>
+
+    <h2>restore</h2>
+    <table class="all-td-left">
+      <caption>restore 용법</caption>
+      <thead>
+        <tr>
+          <th>명령어</th>
+          <th>상태변화</th>
+          <th>해설</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>git restore --staged file1</td>
+          <td>on-stage -> off-stage</td>
+          <td>편집된 파일의 add를 취소<br>
+            [문제해결: add 번복 참조]</td>
+        </tr>
+        <tr>
+          <td>git restore file1</td>
+          <td>off-stage -> last-commit</td>
+          <td>편집 후(add 이전)을 편집 전(commit)으로 되돌림</td>
+        </tr>
+        <tr>
+          <td>git restore --source=&lt;commit hash> file1</td>
+          <td> -> commit hash</td>
+          <td>특정 상태로 되돌림</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>rm</h2>
+    <p>
+      파일을 삭제합니다.
+      이미 commit에 포함된 파일의 object는 삭제되지 않습니다.
+    </p>
+    <table class="last-td-left">
+      <caption>rm 용법</caption>
+      <thead>
+        <tr>
+          <th>명령어</th>
+          <th>상태변화</th>
+          <th>해설</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>git rm --cached file1</td>
+          <td>on-stage -> off-stage</td>
+          <td>편집된 파일의 add를 취소 [문제해결: add 번복 참조]
+          </td>
+        </tr>
+        <tr>
+          <td>git rm file1</td>
+          <td>off-stage -> delete</td>
+          <td>이전 commit의 object는 남아있음
+            [<a href="trouble.html">문제해결: 큰 파일 업로드 실수</a> 참조]
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h1>문제 해결</h1>
+    <h2>add 번복(rm, restore)</h2>
+    <h3>해당 파일의 이전 commit이 없는 경우</h3>
     <blockquote>
       <pre>git rm --cached [파일명]
 git rm --cached [폴더명] -r</pre>
@@ -458,35 +578,24 @@ Untracked files:
       ※ git add .(ALL) 모든 파일을 staging하였습니다. git restore 명령을 통해서 log.txt파일을 unstage하였습니다.
     </p>
 
-    <h2>commit 번복</h2>
+    <h2>commit 번복(reset)</h2>
     <blockquote>
-      <pre>git reset [log hash(최소 첫 4자리)]</pre>
+      <pre>git reset [hash(최소 첫 4자리)]</pre>
     </blockquote>
-    <h3>실행 예:</h3>
+    <div class="blockquote-title">변경된 파일이 없는 경우</div>
     <blockquote class="shell">
-      <pre>C:\myProject> <span style="color:yellow">git</span> log
-<span style="color: goldenrod">commit 60ddf2fa989e5882cf774c356b65693d6b7f25cb (<span style="color:cyan">HEAD -></span> <span style="color:#0F0">master</span>)</span>
-Author: Seohyun Jung &lt;iseohyun@hanmail.net>
-Date:   Sun Dec 22 18:24:37 2024 +0900
+      <pre>C:\myProject> <span style="color:yellow">git</span> log --oneline
+<span style="color: goldenrod">commit 60ddf2fa989e5882cf774c356b65693d6b7f25cb (<span style="color:cyan">HEAD -></span> <span style="color:#0F0">master</span>)</span> 업데이트 2.3.1
+<span style="color:goldenrod">commit 505c895b58423b61a8a9c5319f79e81557a7012f</span> version 1.0
 
-    업데이트 2.3.1
-            - 점프 버그가 수정되었습니다.
-            - 리그 보상을 수정하였습니다(20G -> 30G)
-
-<span style="color:goldenrod">commit 505c895b58423b61a8a9c5319f79e81557a7012f</span>
-Author: Seohyun Jung &lt;iseohyun@hanmail.net>
-Date:   Sun Dec 22 18:03:27 2024 +0900
-
-    version 1.0
 C:\myProject> <span style="color:yellow">git</span> reset 505c
 Unstaged changes after reset:
 M       file1.txt
-C:\myProject> <span style="color:yellow">git</span> log
-<span style="color:goldenrod">commit 505c895b58423b61a8a9c5319f79e81557a7012f (<span style="color:cyan">HEAD -></span> <span style="color:#0F0">master</span>)</span>
-Author: Seohyun Jung &lt;iseohyun@hanmail.net>
-Date:   Sun Dec 22 18:03:27 2024 +0900</pre>
+
+C:\myProject> <span style="color:yellow">git</span> log --oneline
+<span style="color:goldenrod">commit 505c895b58423b61a8a9c5319f79e81557a7012f (<span style="color:cyan">HEAD -></span> <span style="color:#0F0">master</span>)</span></pre>
     </blockquote>
-    <div class="img-box">
+    <div class="img-box" style="float:right; width: 50%; min-width:500px">
       <img src="src/git-reset.svg" />
       <span class="caption">git reset의 종류</span>
       <span class="description">"git-reset.svg", iseohyun.com, public</span>
@@ -496,7 +605,7 @@ Date:   Sun Dec 22 18:03:27 2024 +0900</pre>
       <u>default option은 mixed</u>입니다. 수정 내용이 유효한지 여부는 <u>수정 사항이 있으면 보존</u>하는 방식입니다.
     </p>
 
-    <h2>log 번복</h2>
+    <h2>log 번복(commit --amend)</h2>
     <blockquote>
       <pre>git commit --amend</pre>
     </blockquote>
@@ -507,12 +616,9 @@ Date:   Sun Dec 22 18:03:27 2024 +0900</pre>
   Date: Sun Dec 22 18:03:27 2024 +0900
   1 file changed, 0 insertions(+), 0 deletions(-)
   create mode 100644 file1.txt
-C:\myProject> <span style="color:yellow">git</span> log
-<span style="color:goldenrod">commit aa715074b07eed99a532d7274bb48bad8ff565ce (<span style="color:cyan">HEAD -></span> <span style="color:#0F0">master</span>)</span>
-Author: Seohyun Jung &lt;iseohyun@hanmail.net>
-Date:   Sun Dec 22 18:03:27 2024 +0900
 
-    version 1.0 <span style="color:red">(modified)</span></pre>
+C:\myProject> <span style="color:yellow">git</span> log --oneline
+<span style="color:goldenrod">commit aa715074b07eed99a532d7274bb48bad8ff565ce (<span style="color:cyan">HEAD -></span> <span style="color:#0F0">master</span>)</span> version 1.0 <span style="color:red">(modified)</span></pre>
     </blockquote>
     <p>
       ※ 이 예제는 vi편집기에 대한 실습이 생략되어 있습니다. 기존 로그에 "(modified)"문구를 추가하였습니다. 만약 기존 파일(예:log.txt)를 이용하여 업데이트 하고자 하면:
@@ -522,7 +628,7 @@ Date:   Sun Dec 22 18:03:27 2024 +0900
     </blockquote>
 
     <h1>총정리</h1>
-    <table class="all-td-center">
+    <table class="last-td-left last-second-td-left">
       <caption>기본 명령어</caption>
       <thead>
         <tr>
@@ -544,31 +650,45 @@ Date:   Sun Dec 22 18:03:27 2024 +0900
         </tr>
         <tr>
           <td>반영 파일 선택</td>
-          <td>add [filename..]</td>
-          <td>rm --cached [filename..]<br>
-            restore --staged [filename..]
+          <td style="vertical-align: top;">add [파일명]</td>
+          <td>rm --cached [파일명]<br>
+            restore --staged [파일명]
           </td>
         </tr>
         <tr>
           <td>변경 사항 반영</td>
-          <td>commit [-m "message" | --file filename] </td>
+          <td style="vertical-align: top;">commit [-m "message" | --file 파일명] </td>
           <td>reset [--hard | --mixed | --soft]<br>
-            reset취소: reflog</td>
+            commit --amend
+          </td>
         </tr>
         <tr>
-          <td>반영 history 확인</td>
-          <td>log [filename..]</td>
-          <td>commit --amend</td>
+          <td style="border-bottom: 2px solid #888;">반영 history 확인</td>
+          <td style="border-bottom: 2px solid #888;">log [파일명]</td>
+          <td style="border-bottom: 2px solid #888;"></td>
         </tr>
         <tr>
-          <td>사용자 정보 입력</td>
-          <td>config --global [user.name | user.email]</td>
+          <td>관리중인 파일 이동</td>
+          <td>git mv [파일명] [새파일명]</td>
           <td></td>
         </tr>
+        <tr>
+          <td>파일 복구</td>
+          <td>git restore [파일명]<br>
+            git restore --staged [파일명]<br>
+            git restore --source=&lt;commit hash> [파일명]
+          </td>
+          <td></td>
+        <tr>
+          <td>파일 삭제</td>
+          <td>git rm [파일명]<br>
+            rm --cached [파일명]
+          </td>
+          <td></td>
       </tbody>
     </table>
 
-    <table class="last-td-left">
+    <table class="all-td-left">
       <caption>용어</caption>
       <thead>
         <tr>

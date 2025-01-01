@@ -34,7 +34,290 @@
 
 <body>
   <article>
+    <iframe src="src/contents.html" style="width:100%; height:auto; border:none;"
+      onload="this.style.height=this.contentDocument.body.scrollHeight + 'px';"></iframe>
+
+    <h1>정보 조회</h1>
+
+    <h2>help</h2>
+    <table class="all-td-left">
+      <caption>git 명령어 해설</caption>
+      <thead>
+        <tr>
+          <th>명령어</th>
+          <th>내용</th>
+          <th>설명, ($ 사용 예시), (> 출력 예시)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>git</td>
+          <td rowspan="3">도움말</td>
+          <td rowspan="2">현재 표(영문ver)</td>
+        </tr>
+        <tr>
+          <td>git -h, git --help</td>
+        </tr>
+        <tr>
+          <td>
+            git help tutorial,<br>
+            git help everyday,<br>
+            git help revisions
+          </td>
+          <td>컨셉에 맞는 안내문 출력</td>
+        </tr>
+        <tr>
+          <td>git -v, git --version</td>
+          <td>버전확인</td>
+          <td>> git version 2.38.1.windows.1</td>
+        </tr>
+        <tr>
+          <td>git -C &lt;path></td>
+          <td>작업 디렉토리 변경</td>
+          <td>특정 디렉토리 상태 조회<br>$ git -C /path/to/repo status</td>
+        </tr>
+        <tr>
+          <td>git -c &lt;name>=&lt;value><br>
+            git --config-env=&lt;name>=&lt;envvar>
+          </td>
+          <td>설정값 변경</td>
+          <td>작성자 변경<br>$ git -c-env GIT_AUTHOR_NAME="Temporary Author"
+          </td>
+        </tr>
+        <tr>
+          <td>git --exec-path[=&lt;path>]</td>
+          <td>Git 실행(설치) 경로 출력</td>
+          <td>> C:/Program Files/Git/mingw64/libexec/git-core</td>
+        </tr>
+        <tr>
+          <td>git --html-path</td>
+          <td rowspan="3">각각의 설명서 경로</td>
+          <td>> C:/Program Files/Git/mingw64/share/doc/git-doc</td>
+        </tr>
+        <tr>
+          <td>git --man-path</td>
+          <td>> C:/Program Files/Git/mingw64/share/man</td>
+        </tr>
+        <tr>
+          <td>git --info-path</td>
+          <td>> C:/Program Files/Git/mingw64/share/info</td>
+        </tr>
+        <tr>
+          <td>git -p, --paginate<br>
+            git -P, --no-pager</td>
+          <td>페이저(vi 편집기) 사용 여부</td>
+          <td>
+            편집기 없이 모두 출력<br>
+            $ git --no-pager log</td>
+        </tr>
+        <tr>
+          <td>git --no-replace-objects</td>
+          <td>대체객체 사용 안함</td>
+          <td>$ git --no-replace-objects checkout HEAD -- &lt;file></td>
+        </tr>
+        <tr>
+          <td>git --bare</td>
+          <td>작업디렉토리 없이 작업</td>
+          <td>(주로 서버repo에 설정)</td>
+        </tr>
+        <tr>
+          <td>git --work-tree=&lt;path></td>
+          <td>작업트리 변경</td>
+          <td>$ git --work-tree=/path/to/working-directory status</td>
+        </tr>
+        <tr>
+          <td>git --namespace=&lt;name></td>
+          <td>네임스페이스 변경</td>
+          <td>$ git --namespace=my-namespace rev-parse HEAD</td>
+        </tr>
+        <tr>
+          <td>git --super-prefix=&lt;path></td>
+          <td>슈퍼접두사 변경</td>
+          <td>$ git --namespace=my-namespace rev-parse HEAD</td>
+        </tr>
+        <tr>
+          <td>git --upload-pack=&lt;path></td>
+          <td>업로드팩 변경</td>
+          <td>$ git fetch --upload-pack=/custom/path/git-upload-pack origin</td>
+        </tr>
+        <tr>
+          <td>git --git-dir=&lt;path></td>
+          <td>git디렉토리 변경</td>
+          <td>$ git --git-dir=/path/to/repo/.git log</td>
+        </tr>
+        <tr>
+          <td>git &lt;command> [&lt;args>]</td>
+          <td colspan="2">[표. git command] 참조</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>log</h2>
+    <span class="blockquote-title">git log 예제</span>
+    <blockquote>
+      git log --since="2023-01-01" <span class="comment">2023년 1월 1일 이후의 commit
+        검색</span><br>
+      git log abc1234..HEAD <span class="comment">abc1234 해쉬 이후의 commit
+        검색(abc1234제외)</span><br>
+      git log abc1234^..HEAD <span class="comment">abc1234 해쉬 이후의 commit
+        검색(abc1234포함)</span><br>
+      git log -5<span class="comment">최근 5개 검색</span><br>
+      git log --grep="bug fix"<span class="comment">commit log에 "bug fix"가 있는
+        commit검색</span>
+    </blockquote>
+
+    <p>
+      아래 시나리오에서:
+    </p>
+    <ul>
+      <li><b>HEAD</b> = <u>b722</u>d1a2336b6adbaee4ddd2947c59ef3091a0c9 = <b>b722</b>(최소
+        4개 이상)</li>
+      <li><u>1ea2</u>064ebd484c0d57a98b938cebc1407d228aaf = <b>1ea2</b> = <b>HEAD^</b> =
+        <b>b722^</b>
+      </li>
+      <li><u>04b1</u>2d775a7a89be68b8a9d2f45ec231205314f2 = <b>04b1</b> = <b>1ea2^</b>
+      </li>
+    </ul>
+    <span class="blockquote-title">log, commit hash의 의미</span>
+    <blockquote class="shell">
+      <pre>C:\myProject> <span style="color:yellow">git</span> log 04b1^..HEAD
+<span style="color:goldenrod">commit b722d1a2336b6adbaee4ddd2947c59ef3091a0c9 (<span style="color:cyan">HEAD -></span> <span style="color:#0F0">master</span>)</span>
+Author: iseohyun &lt;iseohyun@hanmail.net>
+Date:   Sat Dec 28 05:23:21 2024 +0900
+
+    rm 03_Shebang.py
+
+<span style="color:goldenrod">commit 1ea2064ebd484c0d57a98b938cebc1407d228aaf</span>
+Author: iseohyun &lt;iseohyun@hanmail.net>
+Date:   Sat Dec 28 05:22:34 2024 +0900
+
+    update filelist
+
+<span style="color:goldenrod">commit 04b12d775a7a89be68b8a9d2f45ec231205314f2</span>
+Author: iseohyun &lt;iseohyun@hanmail.net>
+Date:   Sat Dec 28 05:22:02 2024 +0900
+
+    add filelist.txt</pre>
+    </blockquote>
+
+    <h2>diff</h2>
+    <p>
+      diff 명령을 통해 두 버전<sub>commit</sub>간의 차이를 알 수 있습니다.
+    </p>
+    <span class="blockquote-title">git diff 예제</span>
+    <blockquote>
+      git diff<span class="comment">작업디렉터리와 HEAD와의 차이점을 출력합니다.</span><br>
+      git diff HEAD^<span class="comment">작업디렉터리와 HEAD 바로 이전 commit과의 차이점을 출력</span><br>
+      git diff HEAD HEAD^<span class="comment">HEAD와 HEAD 바로 이전의 차이점 출력</span><br>
+      git diff --file-only<span class="comment">변경된 파일명만 나열</span><br>
+    </blockquote>
+
+    <div class="img-box">
+      <img src="src/git-diff.svg" />
+      <span class="caption">git-diff</span>
+      <span class="description">"git-diff.svg", iseohyun.com, CC-BY-SA</span>
+    </div>
+
+    <span class="blockquote-title">파일 1개(03_Shebang.py)를 삭제한 뒤, diff를 실행</span>
+    <blockquote class="shell">
+      <pre>C:\myProject> <span style="color:yellow">rm</span> .\03_Shebang.py
+C:\myProject> <span style="color:yellow">dir</span> > .\filelist.txt
+C:\myProject> <span style="color:yellow">git</span> status
+On branch master
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        <span style="color:red">deleted:    03_Shebang.py
+        modified:   filelist.txt</span>
+
+no changes added to commit (use "git add" and/or "git commit -a")
+C:\myProject> <span style="color:yellow">git</span> add .
+C:\myProject> <span style="color:yellow">git</span> commit -m "rm 03_Shebang.py"
+[master b722d1a] rm 03_Shebang.py
+ 2 files changed, 4 deletions(-)
+ delete mode 100644 03_Shebang.py
+
+C:\myProject> <span style="color:yellow">git</span> diff HEAD^
+<span style="color:#eee;">diff --git a/03_Shebang.py b/03_Shebang.py
+deleted file mode 100644
+index 0ca3c66..0000000
+--- a/03_Shebang.py
++++ /dev/null
+<span style="color:skyblue">@@ -1,4 +0,0 @@</span>
+<span style="color:red">-#!/usr/bin/env python3
+-# Shebang (#!, 셔뱅): 유닉스 계열 운영체제에서 실행되는 스크립트
+-
+-print("Shebang(#!)은 첫 줄에 들어갑니다.")</span>
+diff --git a/filelist.txt b/filelist.txt
+index c172c63..59b5a81 100644</span>
+Binary files a/filelist.txt and b/filelist.txt differ
+</pre>
+    </blockquote>
+
+    <h2>grep</h2>
+    <p>
+      grep 명령을 통해 모든 파일중에서 특정 문자열을 검색할 수 있습니다.
+    </p>
+    <table class="all-td-left">
+      <caption>grep 용법</caption>
+      <thead>
+        <tr>
+          <th>명령어 예시</th>
+          <th>해설</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>git grep "TODO"</td>
+          <td>모든 파일에서 "TODO"를 검색</td>
+        </tr>
+        <tr>
+          <td>git grep "TODO" src/</td>
+          <td>src/ 에서 "TODO"를 검색</td>
+        </tr>
+        <tr>
+          <td>git grep "TODO" main</td>
+          <td>main branch에서 "TODO"를 검색</td>
+        </tr>
+        <tr>
+          <td>git grep "TODO" 78845b9</td>
+          <td>78845b9 commit에서 "TODO"를 검색</td>
+        </tr>
+        <tr>
+          <td>git grep -e "TODO" -e "FIXME"</td>
+          <td>"TODO" 또는 "FIXME"를 검색</td>
+        </tr>
+        <tr>
+          <td>git grep -l "TODO"</td>
+          <td>파일명만 출력</td>
+        </tr>
+        <tr>
+          <td>git grep -n "TODO"</td>
+          <td>라인번호 출력</td>
+        </tr>
+        <tr>
+          <td>git grep --exclude-standard "TODO"</td>
+          <td>.gitignore을 제외하고 "TODO"를 검색[문제해결: 파일 제외하기 참조]</td>
+        </tr>
+        <tr>
+          <td>git grep -C 2 "TODO"</td>
+          <td>앞뒤로 2줄까지 출력(Context:문맥)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>show</h2>
+    <p>
+      show 명령을 통해 object의 정보(commit, file)를 출력 할 수 있습니다.
+    </p>
+    <blockquote>
+      git show HEAD <span class="comment">최근 commit 정보 출력</span><br>
+      git show tag <span class="comment">tag 정보 출력</span><br>
+      git show hash <span class="comment">object 정보 출력</span><br>
+    </blockquote>
+
     <h1>파일구조</h1>
+    <span class="tutorial">scnario3.structure</span>
     <p>
       아래 그림과 같이 .git 디렉토리에는 저장소의 모든 정보가 저장되어 있습니다.
     </p>
@@ -112,7 +395,8 @@ Date:   Sun Dec 29 20:09:37 2024 +0900
       <var>print-obj.ps1</var>, <var>print-obj.py</var>
     </p>
     <div class="blockquote-title">스크립트 수행 예시</div>
-    <blockquote class="shell"><pre>Hash                            Type    File Name
+    <blockquote class="shell">
+      <pre>Hash                            Type    File Name
 -----------------------------------------------------------
 d608c5b1c6cbbf3dc4e97df5d38b94cd480aac28 commit   (no file)
 5cc5bd48ee208c668e5ef57de965641ddbcdfa65 commit   (no file)
@@ -126,7 +410,8 @@ d3a9e29f4aa2d93cf19c9cbb506dcf18fb3f7b15 tree     src
 8bb6564fba2e5db883bbaefa432d24978ddcd830 blob     src/source.data
 861ef265d8155a73d52c7731cfa7d8574790771f blob     struct.txt
 f330a32d3cb1e6e5453dbc829a9ae41f0175fe71 tree
-00950d9ac57ceeabf45f9120c2615199746d35fb blob     hello_world.py</pre></blockquote>
+00950d9ac57ceeabf45f9120c2615199746d35fb blob     hello_world.py</pre>
+    </blockquote>
 
   </article>
 </body>
