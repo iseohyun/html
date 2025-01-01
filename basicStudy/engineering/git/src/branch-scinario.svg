@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 320 420" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <marker id="arrow-start" markerWidth="7" markerHeight="6" viewBox="0 -3 6 6" orient="auto">
+      <path d="M0-2L5 0 0 2 5 0 0 0 5 0 0-2" stroke="#000" />
+    </marker>
+    <marker id="marker02" markerWidth="7" markerHeight="6" viewBox="-5 -3 6 6" orient="auto">
+      <path d="M0-2L-5 0 0 2-5 0 0 0-5 0 0-2" stroke="#000" />
+    </marker>
+  </defs>
+  <rect x="215" y="0" width="110" height="420" fill="#eee" stroke="none" />
+  <g style="stroke:#000; fill:none">
+    <rect x="1" y="1" width="80" height="40" rx="5" />
+    <rect x="1" y="61" width="80" height="40" rx="5" />
+    <rect x="1" y="121" width="80" height="40" rx="5" />
+    <rect x="1" y="181" width="80" height="40" rx="5" />
+    <rect x="111" y="217" width="80" height="40" rx="5" />
+    <rect x="111" y="277" width="80" height="40" rx="5" />
+    <rect x="1" y="313" width="80" height="40" rx="5" />
+    <rect x="1" y="373" width="80" height="40" rx="5" stroke-dasharray="2" />
+
+    <path d="M40 41v13" marker-end="url(#arrow-start)" />
+    <path d="M40 101v13" marker-end="url(#arrow-start)" />
+    <path d="M40 161v13" marker-end="url(#arrow-start)" />
+    <path d="M81 200h65a5 5 0 0 1 5 5v5" marker-end="url(#arrow-start)" />
+    <path d="M151 257v13" marker-end="url(#arrow-start)" />
+    <path d="M111 296h-65a5 5 0 0 0-5 5v5" marker-end="url(#arrow-start)" />
+    <path d="M40 353v13" marker-end="url(#arrow-start)" />
+
+    <rect x="230" y="1" width="80" height="40" rx="5" />
+    <rect x="230" y="61" width="80" height="40" rx="5" />
+    <rect x="230" y="217" width="80" height="40" rx="5" />
+    <path d="M270 41v13" marker-end="url(#arrow-start)" />
+    <path d="M270 101v109" marker-end="url(#arrow-start)" />
+
+    <path d="M215 0V420" style="stroke:#aaa; stroke-dasharray:2"/>
+  </g>
+  <g style="font-size:16; text-anchor:middle; dominant-baseline: middle;">
+    <text x="40" y="22">init</text>
+    <text x="40" y="82">commit</text>
+    <text x="40" y="137">branch<tspan x="40" dy="1.2em" style="font-size:.7em">develop</tspan></text>
+    <text x="40" y="197">switch<tspan x="40" dy="1.2em" style="font-size:.7em">develop</tspan></text>
+    <text x="150" y="237">commit</text>
+    <text x="150" y="293">switch<tspan x="150" dy="1.2em" style="font-size:.7em">master</tspan></text>
+    <text x="40" y="328">marge<tspan x="40" dy="1.2em" style="font-size:.7em">develop</tspan></text>
+    <text x="40" y="388">branch -d<tspan x="40" dy="1.2em" style="font-size:.7em">develop</tspan></text>
+
+    <text x="270" y="22">init</text>
+    <text x="270" y="82">commit</text>
+    <text x="270" y="237">commit</text>
+  </g>
+  <g style="font-size:10; text-anchor:left; dominant-baseline: middle; fill:green;">
+    <text x="60" y="115">* master</text>
+    <text x="165" y="210">* devalop</text>
+    <text x="275" y="200">* master</text>
+    <text x="275" y="210" style="text-decoration:line-through">* devalop</text>
+  </g>
+</svg>

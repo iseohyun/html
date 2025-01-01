@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 235 412" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <marker id="arrow-start" markerWidth="7" markerHeight="6" viewBox="0 -3 6 6" orient="auto">
+      <path d="M0-2L5 0 0 2 5 0 0 0 5 0 0-2" stroke="#000" />
+    </marker>
+  </defs>
+  <g style="stroke:#000; fill:none">
+    <rect x="1" y="1" width="80" height="40" rx="5" />
+    <rect x="1" y="61" width="80" height="40" rx="5" />
+    <rect x="1" y="121" width="80" height="40" rx="5" />
+    <rect x="1" y="181" width="80" height="40" rx="5" stroke-dasharray="2" />
+    <rect x="1" y="241" width="80" height="40" rx="5" stroke-dasharray="2" />
+    <rect x="111" y="211" width="80" height="40" rx="5" />
+    <rect x="111" y="271" width="80" height="40" rx="5" />
+    <rect x="1" y="313" width="80" height="40" rx="5" stroke-dasharray="2" />
+    <rect x="1" y="371" width="80" height="40" rx="5" />
+
+    <path d="M40 41v13" marker-end="url(#arrow-start)" />
+    <path d="M40 101v13" marker-end="url(#arrow-start)" />
+    <path d="M40 161v13" marker-end="url(#arrow-start)" />
+    <path d="M40 221v13" marker-end="url(#arrow-start)" />
+    <path d="M81 260h10a5 5 0 0 0 5-5v-20a5 5 0 0 1 5-5h5" marker-end="url(#arrow-start)" />
+    <path d="M91 260a5 5 0 0 1 5 5v20a5 5 0 0 0 5 5h5" marker-end="url(#arrow-start)" />
+    <path d="M191 291h10a5 5 0 0 0 5-5v-50a5 5 0 0 0-5-5h-10" />
+    <path d="M206 261h20v-65a5 5 0 0 0-5-5h-133" marker-end="url(#arrow-start)" />
+    <path d="M226 261v67a5 5 0 0 1-5 5h-133" marker-end="url(#arrow-start)" />
+    <path d="M40 353v11" marker-end="url(#arrow-start)" />
+  </g>
+  <g style="font-size:15; text-anchor:middle; dominant-baseline: middle;">
+    <text x="40" y="17">bisect<tspan x="40" dy="1.2em" style="font-size:.7em">start</tspan></text>
+    <text x="40" y="82">bisect bad</text>
+    <text x="40" y="137">bisect good<tspan x="40" dy="1.2em" style="font-size:.7em">commit 1</tspan></text>
+    <text x="40" y="197">checkout<tspan x="40" dy="1.2em" style="font-size:.7em">mid(auto)</tspan></text>
+    <text x="40" y="257">test code<tspan x="40" dy="1.2em" style="font-size:.7em">(manual)</tspan></text>
+    <text x="150" y="231">bisect bad</text>
+    <text x="150" y="291">bisect good</text>
+    <text x="40" y="327">Alart<tspan x="40" dy="1.2em" style="font-size:.7em">bad commit</tspan></text>
+    <text x="40" y="387">bisect<tspan x="40" dy="1.2em" style="font-size:.7em">reset</tspan></text>
+  </g>
+  <g style="font-size:10; dominant-baseline: middle; fill:red;">
+    <text x="110" y="207">bad code</text>
+    <text x="110" y="267">good code</text>
+    <g style="text-anchor:end">
+      <text x="220" y="185">has mid commit → loop</text>
+      <text x="220" y="341">first bad commit → break</text>
+    </g>
+  </g>
+</svg>
