@@ -738,6 +738,11 @@
         "파일명": "lotto.html"
       },
       {
+        "주제": "카카오톡 시뮬레이터",
+        "디렉토리": "KakaoTalk/",
+        "파일명": "viewer.html"
+      },
+      {
         "주제": "수기로 제곱근 구하기",
         "디렉토리": "manualSqrt/",
         "파일명": "manualSqrt.html"
