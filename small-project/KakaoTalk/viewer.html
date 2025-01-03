@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <!-- 모바일 스케일 고정 -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta keywords="카카오톡, KakoTalk, Simulator, 시뮬레이터, javascript, svg, 자바스크립트, iseohyun">
+  <meta author="iseohyun">
+  <!-- 페이지 타이틀 -->
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>window.dataLayer = window.dataLayer || []; function gtag() { dataLayer.push(arguments); } gtag('js', new Date()); gtag('config', 'G-453XSP5W9M');</script>
+  <!-- 목차 생성 -->
+  <!-- <script src="/modules/script.js" defer></script> -->
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("/style.css");
+  </style>
+</head>
+
+<body>
+  <article style="padding-top:10px">
+    <img it="svg-target" src="src/example.svg" alt="example" width="50%" style="float:left" />
+    <textarea rows="10" cols="50" oninput="updateSVG(this.value)" style="height: 80vh;">
+-capture-time: 3:18 PM
+-battery: 83%
+-your-name: 그룹채팅 8
+-background-color: rgb(186, 206, 224)
+-me:정
+-_최:red
+-_구:#00F
+-_구f:cyan
+최: 얘들아 새해 복 많이 받아 ㅎㅎ 건강 꼭 챙기고~~
+
+=2023-12-26
+정: 다들 연말 잘 보내고 있나? 아이고 외롭다..
+구: 헐...ㅠㅠ \ 저런..
+구: 신년 핑계로 모일까? \ 달려!!!
+구: ㄱㄱㄱㄱ
+K:낼 보자. 어디서 봄??
+최:우리집 ㄱㄱ
+
+=2023-12-27
+정:짐 출발
+K: 늦음ㅠㅠ
+    </textarea>
+    <div style="display: flex; flex-direction: row; align-items: center;">
+      <button onclick="downloadSVG()" style="margin:10px">다운로드</button>
+      <a href="/index.html">
+        <img src="/source/icon_seohyun.svg" alt="icon" width="50px"/>
+      </a>
+    </div>
+
+    <svg style="visibility:hidden">
+      <text id="tmp-text" style="font-size: 40px;">안녕</text>
+    </svg>
+  </article>
+</body>
+
+</html>
+<script>
+  const szMargin = 160;
+  var updatedSVG = '';
+  function updateSVG(text) {
+    fetch('src/frame.xml')
+      .then(response => response.text())
+      .then(frame => {
+        const svg = frame;
+        const lines = text.split('\n');
+        const config = {};
+        const dialogs = [];
+        const draw = {};
+        const persons = [];
+        config['me'] = '나';
+
+        // 각종 설정 값, 대화 내용 발췌
+        lines.forEach(line => {
+          if (line.startsWith('-')) {
+            const [key, ...valueParts] = line.slice(1).split(':');
+            const value = valueParts.join(':').trim();
+            config[key] = value;
+          } else {
+            const [person, ...text] = line.slice(0).split(':');
+            const message = text.join(':').trim();
+            dialogs.push({ person, message });
+          }
+        });
+
+        // 템플릿 정의
+        const picture_template = '<path d="M15 ${posY:298}q0 58 58 58q58 0 58-58q0-58-58-58q-58 0-58 58" fill="${picture-color:#DE8}" />\n';
+        const name_tag_template = '<text x="75" y="${posY:310}" font-size="70" fill="${picture-font-color:#ddd}">${name:너}</text>\n';
+        const chat_bubble_you_template = '<path d="M189 ${posY:300}q-13 0-27 11q-8-9-20-9q5 6 5 12v${height:104}a45 45 0 0 0 45 45h${width:600}a45 45 0 0 0 45-45v-${height2:73}a45 45 0 0 0-45-45z" fill="#FFF" />\n';
+        const chat_bubble_me_template = '<path d="M1020 ${posY:500}q13 0 27 11q8-9 20-9q-5 6-5 12v${height:104}a45 45 0 0 1-45 45h-${width:600}a45 45 0 0 1-45-45v-${height2:73}a45 45 0 0 1 45-45z" fill="rgb(255,235,52)" />\n';
+        const chat_bubble_cont_template = '<rect x="${posX:145}" y="${posY:828}" width="${width:570}" height="${height:112}" rx="40" fill="${bubble-color:#FFF}" />\n';
+        const dialog_template = '<text x="${posX:180}" y="${posY:368}">${content:...}${extends:""}</text>\n';
+        const extends_template = '<tspan x="${posX:180}" dy="1.5em">${content:...}</tspan>\n';
+        const date_template = '<text x="540" y="${posY:1080}" font-size="40" fill="#444" style="text-anchor:middle">${content:2021.01.01}</text>\n';
+
+        // 대화 내용을 SVG로 변환
+        var lastSpeaker = "";
+        config['lastPosY'] = 310;
+        config['color'] = '#aaa';
+        draw['dialog-background'] = "";
+        draw['name-tag'] = "";
+        draw['dialog'] = "";
+        config['posX'] = 180;
+        dialogs.forEach((dialog) => {
+          // 대화 내용이 없으면 무시
+          if (dialog.person.trim() == '') return;
+
+          // 날짜 출력
+          if (dialog.person.startsWith('=')) {
+            config['posY'] = config['lastPosY'] + 50;
+            date = dialog.person.slice(1);
+            // 2024-1-3 -> 2024년 1월 3일 금요일
+            const dateObj = new Date(date);
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            date = dateObj.toLocaleDateString('ko-KR', options);
+            config['content'] = date;
+            const date_text = date_template.replace(/\${(.*?):(.*?)}/g, (match, key, defaultValue) => {
+              return config[key] || defaultValue;
+            });
+            draw['dialog'] += date_text;
+
+            // 다이얼로그 백그라운드 작성
+            const tmpTxt = document.getElementById("tmp-text");
+            tmpTxt.textContent = date;
+            config['width'] = tmpTxt.getBBox().width + 100;
+            config['height'] = 60;
+            config['bubble-color'] = 'rgb(177,195,213)';
+            config['posX'] = 540 - config['width'] / 2;
+            config['posY'] -= 50;
+            const date_bubble = chat_bubble_cont_template.replace(/\${(.*?):(.*?)}/g, (match, key, defaultValue) => {
+              return config[key] || defaultValue;
+            });
+            draw['dialog-background'] += date_bubble;
+
+            // 다음 대화를 위한 줄 간격
+            config['lastPosY'] += szMargin;
+            return;
+          }
+
+          // 대화 출력
+          const words = dialog.message.split(' ');
+          var line = "";
+          var lines = [];
+          var lineCount = 0;
+          config['posY'] = config['lastPosY'] + 58;
+
+          // word를 더해가며 max-width 넘어가면 줄바꿈
+          words.forEach((word) => {
+            if (word == '\\') {
+              lineCount++;
+              lines.push(line);
+              line = "";
+            } else if (line.length + word.length > 19) {
+              if (word.startsWith('\\')) {
+                word = word.slice(1);
+              }
+              lineCount++;
+              lines.push(line);
+              line = word;
+            } else {
+              if (word.startsWith('\\')) {
+                word = word.slice(1);
+              }
+              line += " " + word;
+            }
+          });
+          lines.push(line);
+
+          // 각 라인의 길이를 구하고 최대 길이를 width에 저장
+          var maxWidth = 0;
+          lines.forEach((line) => {
+            const tmpTxt = document.getElementById("tmp-text");
+            tmpTxt.textContent = line;
+            const lineWidth = tmpTxt.getBBox().width;
+            if (lineWidth > maxWidth) {
+              maxWidth = lineWidth;
+            }
+          });
+          config['width'] = maxWidth + 5;
+          config['height'] = 40 + 60 * lineCount;
+          config['height2'] = config['height'] - 31;
+          if (dialog.person == config['me']) {
+            config['posX'] = 1080 - config['width'] - 80;
+          } else {
+            config['posX'] = 180;
+          }
+
+          // 2번째 라인부터 출력
+          config['extends'] = " ";
+          lines.forEach((line, index) => {
+            if (index === 0) return;
+            config['content'] = line;
+            config['extends'] += extends_template.replace(/\${(.*?):(.*?)}/g, (match, key, defaultValue) => {
+              return config[key] || defaultValue;
+            });
+          });
+
+          // 이전과 같은 사람이면 말풍선 끌어올리기
+          if (dialog.person == lastSpeaker) {
+            config['lastPosY'] = config['posY'] = config['posY'] - 48;
+          }
+          config['content'] = lines[0];
+          const dialog_text = dialog_template.replace(/\${(.*?):(.*?)}/g, (match, key, defaultValue) => {
+            return config[key] || defaultValue;
+          });
+          draw['dialog'] += dialog_text;
+
+          if (dialog.person == lastSpeaker) {
+            // 이전과 같은 사람이면 연속속말풍선 출력
+            config['height'] = 90 + 60 * lineCount;
+            config['width'] += 90;
+            config['posY'] -= 55;
+            if (dialog.person == config['me']) {
+              config['bubble-color'] = 'rgb(255,235,52)';
+              config['posX'] = 1080 - config['width'] - 25;
+              const chat_bubble = chat_bubble_cont_template.replace(/\${(.*?):(.*?)}/g, (match, key, defaultValue) => {
+                return config[key] || defaultValue;
+              });
+              draw['dialog-background'] += chat_bubble;
+            } else {
+              config['bubble-color'] = '#FFF';
+              config['posX'] = 145;
+              const chat_bubble = chat_bubble_cont_template.replace(/\${(.*?):(.*?)}/g, (match, key, defaultValue) => {
+                return config[key] || defaultValue;
+              });
+              draw['dialog-background'] += chat_bubble;
+            }
+
+            // 다음 대화를 위한 줄 간격
+            config['lastPosY'] += lineCount * 60 + szMargin - 50;
+          } else {
+            if (!config['_' + dialog.person]) {
+              const red = Math.floor(Math.random() * 256);
+              const green = Math.floor(Math.random() * 256);
+              const blue = Math.floor(Math.random() * 256);
+              config['_' + dialog.person] = '#' + red.toString(16) + green.toString(16) + blue.toString(16);
+
+              if (red + green + blue > 128 * 3) {
+                config['_' + dialog.person + 'f'] = 'black';
+              } else {
+                config['_' + dialog.person + 'f'] = 'white';
+              }
+            }
+            config['picture-color'] = config['_' + dialog.person];
+            if (config['_' + dialog.person + 'f']) {
+              config['picture-font-color'] = config['_' + dialog.person + 'f'];
+            } else {
+
+              const color = config['_' + dialog.person];
+              const r = 255 - parseInt(color.slice(1, 3), 16);
+              const g = 255 - parseInt(color.slice(3, 5), 16);
+              const b = 255 - parseInt(color.slice(5, 7), 16);
+              config['picture-font-color'] = `rgb(${r},${g},${b})`;
+            }
+            lastSpeaker = dialog.person;
+            // 사진 출력
+            if (dialog.person != config['me']) {
+              config['posY'] = config['lastPosY'] - 12;
+              const picture = picture_template.replace(/\${(.*?):(.*?)}/g, (match, key, defaultValue) => {
+                return config[key] || defaultValue;
+              });
+              draw['dialog-background'] += picture;
+            }
+
+            // 이름 출력
+            config['posY'] = config['lastPosY'];
+            if (dialog.person != config['me']) {
+              config['name'] = dialog.person.charAt(0);
+              const name_tag = name_tag_template.replace(/\${(.*?):(.*?)}/g, (match, key, defaultValue) => {
+                return config[key] || defaultValue;
+              });
+              draw['name-tag'] += name_tag;
+            }
+
+            // 말풍선 출력
+            config['posY'] = config['lastPosY'] - 10;
+            if (dialog.person == config['me']) {
+              config['posX'] = 1080 - config['width'] - 80;
+              const chat_bubble = chat_bubble_me_template.replace(/\${(.*?):(.*?)}/g, (match, key, defaultValue) => {
+                return config[key] || defaultValue;
+              });
+              draw['dialog-background'] += chat_bubble;
+            } else {
+              const chat_bubble = chat_bubble_you_template.replace(/\${(.*?):(.*?)}/g, (match, key, defaultValue) => {
+                return config[key] || defaultValue;
+              });
+              draw['dialog-background'] += chat_bubble;
+            }
+
+            // 다음 대화를 위한 줄 간격
+            config['lastPosY'] += lineCount * 60 + szMargin;
+          }
+
+        });
+
+        // SVG 적용
+        updatedSVG = svg.replace(/\${(.*?):(.*?)}/g, (match, key, defaultValue) => {
+          return config[key] || draw[key] || defaultValue;
+        });
+
+        const svgBlob = new Blob([updatedSVG], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
+        document.querySelector('img[it="svg-target"]').src = url;
+      });
+  }
+
+  function downloadSVG() {
+    if (updatedSVG == '') {
+      //src/example.svg의 내용을 다운로드
+      fetch('src/example.svg')
+        .then(response => response.blob())
+        .then(blob => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'example.svg';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        });
+    } else {
+      // updateSVG의 현재 내용의 svg파일을 다운로드
+      const svgBlob = new Blob([updatedSVG], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'capture.svg';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  }
+</script>

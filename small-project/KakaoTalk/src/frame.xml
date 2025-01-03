@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 1080 2340" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <rect width="100%" height="100%" fill="${background-color:#acc0d1}" />
+  <g style="stroke:#000; fill:none; stroke-width:6; stroke-linecap:round; stroke-miterlimit:0">
+    <path d="M85 140l-25 20h50h-50l25 20" stroke-width="7" />
+    <ellipse cx="870" cy="160" rx="20" ry="20" />
+    <path d="M885 175l20 20" />
+    <path d="M965 142h60m0 26h-60m0 26h60" />
+    <path d="M870 50v-1m-5-5q5-5 10 0m-15-4q10-10 20 0m-25-4q15-15 30 0" stroke-width="3" />
+    <path d="M900 50v-5m7 5v-10m7 10v-15m7 15v-20m7 20v-25" stroke-width="5" />
+  </g>
+  <g style="font-size:35; fill=rgb(25, 25, 25); font-weight:normal">
+    <text x="100" y="50">${capture-time:3:18}</text>
+    <text x="950" y="50">${battery:83%}</text>
+    <text x="170" y="185" font-size="65" font-weight="bold">${your-name:그룹채팅 8}</text>
+  </g>
+  <!-- dialog background -->
+  ${dialog-background:}
+  <!-- name-tag -->
+  <g style="text-anchor:middle; dominant-baseline:middle; fill:#840; font-wight:bold;">
+    ${name-tag:}
+  </g>
+  <!-- dialog -->
+  <g style="font-size:40px; fill='#000'; font-weight:bold;">
+    ${dialog:}
+  </g>
+</svg>

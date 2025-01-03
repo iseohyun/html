@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 1080 2340" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <rect width="100%" height="100%" fill='rgb(186, 206, 224)' />
+  <g style="stroke:#000; fill:none; stroke-width:6; stroke-linecap:round; stroke-miterlimit:0">
+    <path d="M85 140l-25 20h50h-50l25 20" stroke-width="7" />
+    <ellipse cx="870" cy="160" rx="20" ry="20" />
+    <path d="M885 175l20 20" />
+    <path d="M965 142h60m0 26h-60m0 26h60" />
+    <path d="M870 50v-1m-5-5q5-5 10 0m-15-4q10-10 20 0m-25-4q15-15 30 0" stroke-width="3" />
+    <path d="M900 50v-5m7 5v-10m7 10v-15m7 15v-20m7 20v-25" stroke-width="5" />
+  </g>
+  <g style="font-size:35; fill=rgb(25, 25, 25); font-weight:normal">
+    <text x="100" y="50">3:18 PM</text>
+    <text x="950" y="50">83%</text>
+    <text x="170" y="185" font-size="65" font-weight="bold">그룹채팅 8</text>
+  </g>
+  <!-- dialog background -->
+  <path d="M15 298q0 58 58 58q58 0 58-58q0-58-58-58q-58 0-58 58" fill="red" />
+  <path
+    d="M189 300q-13 0-27 11q-8-9-20-9q5 6 5 12v100a45 45 0 0 0 45 45h512.203125a45 45 0 0 0 45-45v-69a45 45 0 0 0-45-45z"
+    fill="#FFF" />
+  <rect x="263.4375" y="530" width="553.125" height="60" rx="40" fill="rgb(177,195,213)" />
+  <path
+    d="M1020 680q13 0 27 11q8-9 20-9q-5 6-5 12v100a45 45 0 0 1-45 45h-571.609375a45 45 0 0 1-45-45v-69a45 45 0 0 1 45-45z"
+    fill="rgb(255,235,52)" />
+  <path d="M15 898q0 58 58 58q58 0 58-58q0-58-58-58q-58 0-58 58" fill="blue" />
+  <path
+    d="M189 900q-13 0-27 11q-8-9-20-9q5 6 5 12v100a45 45 0 0 0 45 45h154.171875a45 45 0 0 0 45-45v-69a45 45 0 0 0-45-45z"
+    fill="#FFF" />
+  <rect x="145" y="1085" width="440" height="150" rx="40" fill="#FFF" />
+  <rect x="145" y="1265" width="245.40625" height="90" rx="40" fill="#FFF" />
+  <path d="M15 1418q0 58 58 58q58 0 58-58q0-58-58-58q-58 0-58 58" fill="#c7ad59" />
+  <path
+    d="M189 1420q-13 0-27 11q-8-9-20-9q5 6 5 12v40a45 45 0 0 0 45 45h357.53125a45 45 0 0 0 45-45v-9a45 45 0 0 0-45-45z"
+    fill="#FFF" />
+  <path d="M15 1578q0 58 58 58q58 0 58-58q0-58-58-58q-58 0-58 58" fill="red" />
+  <path
+    d="M189 1580q-13 0-27 11q-8-9-20-9q5 6 5 12v40a45 45 0 0 0 45 45h204.203125a45 45 0 0 0 45-45v-9a45 45 0 0 0-45-45z"
+    fill="#FFF" />
+  <rect x="263.4375" y="1750" width="553.125" height="60" rx="40" fill="rgb(177,195,213)" />
+  <path
+    d="M1020 1900q13 0 27 11q8-9 20-9q-5 6-5 12v40a45 45 0 0 1-45 45h-129.3999786376953a45 45 0 0 1-45-45v-9a45 45 0 0 1 45-45z"
+    fill="rgb(255,235,52)" />
+  <path d="M15 2058q0 58 58 58q58 0 58-58q0-58-58-58q-58 0-58 58" fill="#c7ad59" />
+  <path
+    d="M189 2060q-13 0-27 11q-8-9-20-9q5 6 5 12v40a45 45 0 0 0 45 45h155.40625a45 45 0 0 0 45-45v-9a45 45 0 0 0-45-45z"
+    fill="#FFF" />
+
+  <!-- name-tag -->
+  <g style="text-anchor:middle; dominant-baseline:middle; fill:#840; font-wight:bold;">
+    <text x="75" y="310" font-size="70" fill="rgb(18,NaN,NaN)">최</text>
+    <text x="75" y="910" font-size="70" fill="cyan">구</text>
+    <text x="75" y="1430" font-size="70" fill="rgb(56,82,166)">K</text>
+    <text x="75" y="1590" font-size="70" fill="rgb(18,NaN,NaN)">최</text>
+    <text x="75" y="2070" font-size="70" fill="rgb(56,82,166)">K</text>
+
+  </g>
+  <!-- dialog -->
+  <g style="font-size:40px; fill='#000'; font-weight:bold;">
+    <text x="180" y="368"> 얘들아 새해 복 많이 받아 ㅎㅎ <tspan x="180" dy="1.5em">건강 꼭 챙기고~~</tspan>
+    </text>
+    <text x="540" y="580" font-size="40" fill="#444" style="text-anchor:middle">2023년 12월 26일 화요일</text>
+    <text x="428.390625" y="748"> 다들 연말 잘 보내고 있나? 아이고 <tspan x="428.390625" dy="1.5em">외롭다..</tspan>
+    </text>
+    <text x="180" y="968"> 헐...ㅠㅠ <tspan x="180" dy="1.5em"> 저런..</tspan>
+    </text>
+    <text x="180" y="1140"> 신년 핑계로 모일까? <tspan x="180" dy="1.5em"> 달려!!!</tspan>
+    </text>
+    <text x="180" y="1320"> ㄱㄱㄱㄱ </text>
+    <text x="180" y="1488"> 낼 보자. 어디서 봄?? </text>
+    <text x="180" y="1648"> 우리집 ㄱㄱ </text>
+    <text x="540" y="1800" font-size="40" fill="#444" style="text-anchor:middle">2023년 12월 27일 수요일</text>
+    <text x="870.6000213623047" y="1968"> 짐 출발 </text>
+    <text x="180" y="2128"> 늦음ㅠㅠ </text>
+
+  </g>
+</svg>
