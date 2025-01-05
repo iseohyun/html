@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <!-- 모바일 스케일 고정 -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta keywords="카카오톡, KakoTalk, Simulator, 시뮬레이터, javascript, svg, 자바스크립트, iseohyun">
+  <meta author="iseohyun">
+  <!-- 페이지 타이틀 -->
+  <title>새해 목표 - iseohyun.com</title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>window.dataLayer = window.dataLayer || []; function gtag() { dataLayer.push(arguments); } gtag('js', new Date()); gtag('config', 'G-453XSP5W9M');</script>
+
+</head>
+
+<body onload="processInputText()">
+  <article style="padding-top:10px">
+    <div>
+      <a href="/"><img src="/source/icon_home.svg" style="width:2em"></a>
+      <span style="margin-left:10px">신년계획</span>
+    </div>
+    <canvas id="target-canvas" width="800" height="600" style="border:1px solid #000000;"></canvas>
+    <div>
+      <button onclick="download()" style="margin:10px">차트 다운로드</button>
+      <button onclick="processInputText()" style="margin:10px">아래 내용대로 그리기</button>
+    </div>
+    <textarea id="input-text" rows="20" cols="111" placeholder="여기에 텍스트를 입력하세요">
+# 태그 작성 방법 #
+# ID. 계열명 시작(정수) ~ 목표(정수)[단위] 색
+-1. 목표1: 15000 ~ 20000[개] rgb(255, 0, 0)
+-2. 목표2: 10 ~ 250[회] #602
+-3. 목표3: 10000 ~ 1500000[걸음] #260
+-4. 목표4: 0 ~ 100[개] #065
+
+# 데이터 기록 방법 #
+# = 날짜
+# ID. 달성 갯수
+= 2025-2-5
+1. 18508
+2. 66
+4. 21
+=2025-2-2
+1. 18800
+= 2025-1-23
+1. 17500
+= 2025-1-20
+2. 29
+3. 310000
+4. 15
+= 2025-1-18
+3. 280000
+= 2025-1-16
+1. 16700
+3. 200000
+= 2025-1-13
+2. 22
+3. 120000
+= 2025-1-11
+1. 16000
+= 2025-1-10
+4. 8
+= 2025-1-8
+2. 17
+3. 25000
+= 2025-1-5
+1. 15500
+2. 12
+4. 5
+    </textarea>
+    <script>
+      function processInputText() {
+        // input-text를 getGoalData로 전달합니다. 만약 비어있으면 getFromFile()를 수행합니다.
+        const inputText = document.getElementById('input-text').value;
+        if (inputText.trim() === '') {
+          getFromFile();
+        } else {
+          getGoalData(inputText);
+        }
+      }
+    </script>
+  </article>
+</body>
+
+</html>
+<script>
+  function getFromFile() {
+    fetch('y2025/goal.txt')
+      .then(response => response.text())
+      .then(frame => {
+        getGoalData(frame)
+      });
+  }
+
+  function getGoalData(text) {
+    var delay = 10;
+    const startDate = new Date(new Date().getFullYear(), 0, 1); // 올해 초
+    var endDate = new Date();
+    var lateDate = startDate;
+    endDate.setDate(endDate.getDate() + delay);
+
+    const records = [];
+    const config = {};
+
+    const lines = text.split('\n');
+    let date = '';
+
+    // 데이터 저장
+    lines.forEach(line => {
+      line = line.trim();
+      if (line.startsWith('#') || line == '') { // 주석 처리 됨
+      } else if (line.startsWith('--')) {
+        const [itemR, value] = line.slice(2).split(':');
+        item = itemR.trim();
+        if (item == 'stepX') {
+          config['stepX'] = parseInt(value, 10);
+        } else if (item == 'stepY') {
+          config['stepY'] = parseInt(value, 10);
+        } else if (item == 'delay') {
+          delay = parseInt(value, 10);
+        }
+      } else if (line.startsWith('-')) {
+        // 목표 값 저장
+        // ID(정수). 목표이름(문자열): 초기값(정수) ~ 목표값(정수)[단위](문자열)
+        const [ID, names] = line.slice(1).split('.');
+        // 만약 ID가 숫자가 아니라면 return
+        if (isNaN(ID)) {
+          return;
+        }
+        const [name, starts] = names.slice(1).split(':');
+        const [start, ends] = starts.slice(1).split('~');
+        const [end, units] = ends.slice(1).split('[');
+        const [unit, color] = ends.slice(1).split(']');
+        const trimmedColor = color.trim();
+
+        config[ID] = { "name": name, "start": start, "end": end, "unit": unit, "color": trimmedColor };
+      } else if (line.startsWith('=')) {
+        // =을 제외한 텍스트로 날짜를 추출(예: 2025-01-05)
+        date = new Date(line.slice(1).trim());
+        if (lateDate < date)
+          lateDate = date;
+      } else {
+        // 데이터 수집(ID. 달성갯수(정수))
+        const [strID, data] = line.slice(0).split('.');
+        const ID = parseInt(strID, 10);
+        // x좌표: 연초를 0, endDate를 100이라 할 때, lastDate의 위치
+        // y좌표: config[ID]의 start를 0, end를 100이라 할 때, data의 위치
+        const x = date.toString();
+        const y = (data - config[ID].start) / (config[ID].end - config[ID].start);
+        records.push({ ID, x, y });
+      }
+    });
+
+    // 마지막 일자 갱신
+    if (lateDate > endDate) {
+      lateDate.setDate(lateDate.getDate() + delay);
+      endDate = new Date(lateDate);
+    }
+
+    // x좌표 갱신
+    records.forEach(record => {
+      record.x = (new Date(record.x) - startDate) / (endDate - startDate);
+    })
+
+    const stepX = config['stepX'] || 7;
+    const stepY = config['stepY'] || 10;
+    // config에서 ID가 숫자가 아닌 것들을 삭제
+    Object.keys(config).forEach(key => {
+      if (isNaN(key)) {
+        delete config[key];
+      }
+    });
+    draw(endDate, config, records, stepX, stepY);
+  }
+
+  // 좌표를 그림
+  // endDate : x축 마지막 날짜
+  // config: 설정(계열) 정보
+  // records: 데이터(ID, x, y)
+  // stepX: 7 days
+  // stepY: 10 %
+  function draw(endDate, config, records, stepX = 7, stepY = 10) {
+    const canvas = document.getElementById('target-canvas');
+    const ctx = canvas.getContext('2d');
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // x축과 y축 그리기
+    ctx.beginPath();
+    ctx.moveTo(50, 550);
+    ctx.lineTo(750, 550); // x축
+    ctx.moveTo(50, 550);
+    ctx.lineTo(50, 50); // y축
+    ctx.stroke();
+
+    ctx.font = '12px Arial';
+    ctx.fillStyle = '#666';
+
+    // x축 레이블 (날짜)
+    const startDate = new Date(new Date().getFullYear(), 0, 1); // 올해 초
+    const dateDiff = (endDate - startDate) / (1000 * 60 * 60 * 24); // 날짜 차이 (일수)
+    const xStep = 700 / dateDiff; // x축 간격
+
+    for (let i = 0; i <= dateDiff; i += Math.ceil(dateDiff / 10)) {
+      const date = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000);
+      const x = 50 + i * xStep;
+      ctx.fillText((date.getMonth() + 1) + '/' + date.getDate(), x, 570);
+      ctx.moveTo(x, 550);
+      ctx.lineTo(x, 545);
+    }
+
+    // x축 보조선
+    for (let i = stepX; i < dateDiff; i += stepX) {
+      const x = 50 + i * xStep;
+      ctx.moveTo(x, 550);
+      ctx.lineTo(x, 50);
+      ctx.strokeStyle = '#e0e0e0';
+    }
+
+    // y축 보조선
+    for (let i = stepY; i < 100; i += stepY) {
+      const y = 550 - (i * 5);
+      ctx.moveTo(50, y);
+      ctx.lineTo(750, y);
+      ctx.strokeStyle = '#e0e0e0';
+      ctx.stroke();
+    }
+
+    ctx.stroke();
+
+    // y축 레이블 (달성률)
+    for (let i = 0; i <= 100; i += 10) {
+      const y = 550 - (i * 5);
+      ctx.fillText(i + '%', 20, y);
+      ctx.moveTo(50, y);
+      ctx.lineTo(55, y);
+    }
+
+    ctx.stroke();
+
+    // record를 sort한다. 기준(id: 오름차순, x:오름차순)
+    records.sort((a, b) => {
+      if (a.ID === b.ID) {
+        return a.x - b.x;
+      }
+      return a.ID - b.ID;
+    });
+
+    // record
+    var prevRecord = { x: 0, y: 0, ID: 0 };
+    records.forEach(record => {
+      const x = 50 + record.x * 700;
+      const y = 550 - record.y * 500;
+      ctx.beginPath();
+      if (prevRecord.ID !== record.ID) {
+        // 이전 위치에, 이전name txt를 출력합니다.
+        if (prevRecord.ID != 0)
+          ctx.fillText(config[prevRecord.ID].name, prevRecord.x, prevRecord.y - 10);
+        // 0,0부터 선분을 긋습니다.
+        ctx.moveTo(50, 550);
+      } else {
+        // 이전 x,y부터 선분을 긋습니다.
+        ctx.moveTo(prevRecord.x, prevRecord.y);
+      }
+      ctx.strokeStyle = config[record.ID].color;
+      ctx.lineTo(x, y);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.arc(x, y, 3, 0, 2 * Math.PI);
+      ctx.fillStyle = config[record.ID].color;
+      ctx.fill();
+      ctx.stroke();
+      prevRecord = { x, y, ID: record.ID };
+    });
+    ctx.fillText(config[prevRecord.ID].name, prevRecord.x, prevRecord.y - 10);
+
+    // 목차: 우상단에 name과 최종 달성률(%)을 text로 보여줍니다.
+    const contentsLeft = 800 * 0.1; // 10%
+    const contentsTop = 600 * 0.05; // 5%
+    const contentsFontSize = 15;
+    const contentsBackgroundColor = '#f8f8f8'; // background-color
+    const contentsBorderColor = '#444'; // border-color
+    var legendYOffset = contentsFontSize * 1.5;
+
+    ctx.fillStyle = contentsBackgroundColor;
+    ctx.fillRect(contentsLeft, contentsTop, 200, Object.keys(config).length * contentsFontSize * 1.5);
+    ctx.strokeStyle = contentsBorderColor;
+    ctx.strokeRect(contentsLeft, contentsTop, 200, Object.keys(config).length * contentsFontSize * 1.5);
+    // 목차 내용 출력
+    Object.keys(config).forEach(ID => {
+      const record = records.filter(r => r.ID == ID).pop();
+      const achievement = records.filter(r => r.ID == ID).length > 0 ? Math.max(...records.filter(r => r.ID == ID).map(r => r.y)) * 100 : 0;
+      ctx.font = `${contentsFontSize}px Arial`;
+      ctx.fillStyle = config[ID].color;
+      ctx.fillText(`${config[ID].name}: ${achievement.toFixed(2)}%`, contentsLeft + contentsFontSize, contentsTop + legendYOffset);
+      legendYOffset += 20;
+    });
+  }
+
+  // canvas를 그림파일로 다운로드 한다.
+  function download() {
+    const canvas = document.getElementById('target-canvas');
+    const link = document.createElement('a');
+    link.href = canvas.toDataURL('image/png');
+    link.download = 'chart.png';
+    link.click();
+  }
+</script>
