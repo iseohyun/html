@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <marker id="arrow-end-black" markerWidth="14" markerHeight="14" viewBox="0 -3 6 6" orient="auto">
+      <path d="M0 -2L5 0 0 2 5 0 0 0 5 0 0-2" stroke="#000" />
+    </marker>
+    <marker id="arrow-end" markerWidth="14" markerHeight="14" viewBox="0 -3 6 6" orient="auto">
+      <path d="M0 -2L5 0 0 2 5 0 0 0 5 0 0-2" stroke="#F00" />
+    </marker>
+    <marker id="arrow-start" markerWidth="14" markerHeight="14" viewBox="-5 -3 6 6" orient="auto">
+      <path d="M0 -2L-5 0 0 2 -5 0 0 0 -5 0 0-2" stroke="#F00" />
+    </marker>
+  </defs>
+  <path d="M100 0V500M200 0V500M300 0V500M400 0V500M0 100H500M0 200H500M0 300H500M0 400H500" stroke="#888"
+    fill="none" />
+  <path d="M100 100V500M100 100H500" stroke="#000" fill="none" />
+  <path d="M214 250H386" marker-start='url(#arrow-start)' marker-end='url(#arrow-end)' stroke="red" />
+  <path d="M450 214V486" marker-start='url(#arrow-start)' marker-end='url(#arrow-end)' stroke="red" />
+  <path d="M150 180v40" marker-end='url(#arrow-end-black)' stroke='black'/>
+  <rect x="110" y="120" width="80" height="60" rx="30" fill="white" stroke="black" />
+  <g text-anchor="middle" dominant-baseline="middle" style="font-size:20">
+    <text x="150" y="50">x=0</text>
+    <text x="250" y="50">x=1</text>
+    <text x="350" y="50">x=2</text>
+    <text x="450" y="50">x=3</text>
+    <text x="50" y="150">y=0</text>
+    <text x="50" y="250">y=1</text>
+    <text x="50" y="350">y=2</text>
+    <text x="50" y="450">y=3</text>
+    <text x="150" y="150">start</text>
+    <text x="300" y="265" fill="red">width = 2</text>
+    <text x="400" y="350" fill="red">height = 3</text>
+  </g>
+
+</svg>
