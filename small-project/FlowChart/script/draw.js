@@ -3,14 +3,24 @@ const blockWidth = 100;
 const blockHeight = 50;
 const paddingLeft = 30;
 const paddingTop = 10;
+let maxHeight = maxWidth = 0;
 
 // 차트 전체를 그리는 함수
-function drawChart() {
-  const canvas = document.getElementById('flowchartCanvas');
+function drawChart(code = '', target = '', minSz = {x:600, y:800}) {
+  if(target === '')
+    target = 'flowchartCanvas';
+  const canvas = document.getElementById(target);
   const ctx = canvas.getContext('2d');
 
   // 코드를 가져온다.
-  let code = document.getElementById('code-input').value;
+  if (code === '')
+    code = document.getElementById('code-input').value;
+  else {
+    const target = document.getElementById(code);
+    if(target !== null)
+      code = target.value;
+  }
+
 
   // 코드를 표준 형식으로 재작성 한다.
   code = formatC(code);
@@ -27,10 +37,10 @@ function drawChart() {
   // 최대 y값을 근거로 최대 height를 계산
   const maxY = Math.max(...nodes.map(node => node.y));
   const maxX = Math.max(...nodes.map(node => node.x));
-  const maxHeight = (maxY + 1) * (blockHeight + margin) + paddingTop;
-  const maxWidth = (maxX + 1) * (blockWidth + margin) + paddingLeft;
-  canvas.height = Math.max(maxHeight, 800);
-  canvas.width = Math.max(maxWidth, 600);
+  maxHeight = (maxY + 1) * (blockHeight + margin) + paddingTop;
+  maxWidth = (maxX + 1) * (blockWidth + margin) + paddingLeft;
+  canvas.height = Math.max(maxHeight, minSz.x);
+  canvas.width = Math.max(maxWidth, minSz.y);
 
   // 도화지 청소
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -133,8 +143,15 @@ function drawChart() {
     }
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.font = '20px Arial';
-    ctx.fillText(node.content, x + width / 2, y + height / 2);
+    if (node.content.includes('/')) {
+      ctx.font = '18px Arial';
+      const lines = node.content.split('/');
+      ctx.fillText(lines[0], x + width / 2, y + height / 3);
+      ctx.fillText(lines[1], x + width / 2, y + 2 * height / 3);
+    } else {
+      ctx.font = '20px Arial';
+      ctx.fillText(node.content, x + width / 2, y + height / 2);
+    }
   }
 
   function drawArrow(node) {
@@ -287,8 +304,16 @@ function codeFormat(target) {
 
 function downloadChart() {
   const canvas = document.getElementById('flowchartCanvas');
+  const ctx = canvas.getContext('2d');
+  const imageData = ctx.getImageData(0, 0, maxWidth, maxHeight);
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = maxWidth;
+  tempCanvas.height = maxHeight;
+  const tempCtx = tempCanvas.getContext('2d');
+  tempCtx.putImageData(imageData, 0, 0);
+
   const link = document.createElement('a');
-  link.href = canvas.toDataURL('image/png');
+  link.href = tempCanvas.toDataURL('image/png');
   link.download = 'flowchart.png';
   link.click();
 }
