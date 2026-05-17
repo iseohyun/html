@@ -9,6 +9,7 @@ const ENGINE = {
   activePool: [], // 현재 학습 중인 유니코드 번호들
   MIN_POOL_SIZE: 3,
   MAX_POOL_SIZE: 100, // 모든 히라가나와 탁음을 수용할 수 있도록 상향
+  MAX_SPEED_CRITERIA: 5000, // 5000ms 이상은 극단적 지연으로 간주하여 패널티 적용
   NEW_CHAR_COUNT: 1,
   HISTORY_LIMIT: 100, // 시스템에서 관리하는 최대 기록 추적 수
   MASTERY_THRESHOLD: 0.85, // 85% 숙련도 기준
@@ -16,9 +17,8 @@ const ENGINE = {
     BASE_PROBABILITY: 1.0,
     MIN_SPEED_CRITERIA: 500, // 500ms보다 느리면 문제로 판단
     MAX_PROBABILITY: 10.0,    // 확률 천장
-    ACC_SENSITIVITY: 2.0,   // 오답 시 가중치 점프 폭
-    SPEED_SENSITIVITY: 1.5, // 지연 응답 시 가중치 반영 비율
-    DECAY_FACTOR: 0.96      // 지수 감쇠 계수 (최근 데이터 강조)
+    DECAY_FACTOR: 0.96,     // 지수 감쇠 계수 (최근 데이터 강조)
+    RETENTION_SENSITIVITY: 0.01 // 망각 민감도 (시간당 가중치 증가분: 100시간당 1.0 증가)
   },
   currentTarget: null,
   recentResults: [], // 최근 20개의 정답 여부 (T/F)
@@ -62,7 +62,7 @@ const ENGINE = {
   },
 
   /**
-   * 가중치 계산 (Accuracy + Speed + Exponential Decay)
+   * 가중치 계산 (Speed + Exponential Decay)
    * 링 버퍼에서 최신 데이터일수록 높은 가중치를 부여하여 개인화된 숙련도를 측정합니다.
    * 임베디드의 지수 이동 평균(EMA) 필터와 유사한 원리를 사용하여 최근 실수를 강조합니다.
    */
@@ -70,37 +70,50 @@ const ENGINE = {
     const n = data.total_attempts < ENGINE.HISTORY_LIMIT ? data.total_attempts : ENGINE.HISTORY_LIMIT;
     if (n === 0) return ENGINE.CONFIG.MAX_PROBABILITY; // 한 번도 안 푼 건 최우선 노출
 
-    let weightedErrorSum = 0;
     let weightedSpeedSum = 0;
     let weightTotal = 0;
 
-    // 링 버퍼의 최신 데이터(head)부터 역순으로 가중치(Decay) 적용
+    // 1. 망각 및 최근 성능 분석 (lastTime 및 avgSpeed 참고)
+    const lastMillis = data.lastTime ? (data.lastTime.toMillis ? data.lastTime.toMillis() : data.lastTime) : 0;
+    const hoursSinceLast = lastMillis ? (Date.now() - lastMillis) / (1000 * 60 * 60) : 0;
+
+    // 개별 글자의 단순 최근 평균 속도 계산 (최근 n개)
+    let totalSpeed = 0;
+    for (let j = 0; j < n; j++) totalSpeed += data.speeds[(data.head - j + 100) % 100] || 0;
+    const rawAvgSpeed = totalSpeed / n;
+
+    // 2. 동적 가중치 의존도(Decay Factor) 결정
+    let localDecay = ENGINE.CONFIG.DECAY_FACTOR;
+    // 오래된 글자의 풀이가 기준보다 느려질수록 과거 기록 의존도를 높임 (부족한 점을 더 오래 기억)
+    if (hoursSinceLast > 12 && rawAvgSpeed > ENGINE.CONFIG.MIN_SPEED_CRITERIA) {
+      const stalenessBonus = Math.min(0.03, (hoursSinceLast / 168)); // 최대 일주일 기준 상향폭
+      const struggleFactor = Math.min(1.0, (rawAvgSpeed / 2000));
+      localDecay = Math.min(0.99, localDecay + (stalenessBonus * struggleFactor));
+    }
+
     for (let i = 0; i < n; i++) {
-      // 최근 데이터일수록 i가 작으므로 recencyWeight가 1에 가까움 (decay^0 = 1)
-      const recencyWeight = Math.pow(ENGINE.CONFIG.DECAY_FACTOR, i);
-      // head가 최근 기록 인덱스이므로 head - i 로 역추적 (링 버퍼 순환 고려)
+      const recencyWeight = Math.pow(localDecay, i);
       const index = (data.head - i + 100) % 100;
-      
+
       const result = (data.results && data.results[index] !== undefined) ? data.results[index] : 0;
       const speed = (data.speeds && data.speeds[index] !== undefined) ? data.speeds[index] : 0;
 
-      // 오답 페널티 (1 - 정답여부)
-      weightedErrorSum += (1 - result) * recencyWeight;
-      
       // 속도 페널티 (기준 속도 대비 가중치)
       const speedRatio = speed / ENGINE.CONFIG.MIN_SPEED_CRITERIA;
       weightedSpeedSum += speedRatio * recencyWeight;
-      
+
       weightTotal += recencyWeight;
     }
 
     // 정규화된 가중 평균 계산
-    const avgError = weightedErrorSum / weightTotal;
     const avgSpeed = weightedSpeedSum / weightTotal;
 
-    let finalScore = ENGINE.CONFIG.BASE_PROBABILITY 
-                   + (ENGINE.CONFIG.ACC_SENSITIVITY * avgError) 
-                   + (ENGINE.CONFIG.SPEED_SENSITIVITY * avgSpeed);
+    // 망각 보너스 합산 (오래될수록 가중치 증가, 최대 5.0)
+    const forgetBoost = Math.min(5.0, hoursSinceLast * ENGINE.CONFIG.RETENTION_SENSITIVITY);
+
+    let finalScore = ENGINE.CONFIG.BASE_PROBABILITY
+      + avgSpeed
+      + forgetBoost;
 
     // 상한선 제한 및 반환
     return Math.min(finalScore, ENGINE.CONFIG.MAX_PROBABILITY);
@@ -110,12 +123,12 @@ const ENGINE = {
    * 마스터리 점수 계산 (반응 속도 기준)
    */
   calculateMasteryScore: (avgSpeed, targetSpeed = 800) => {
-    // 5000ms 이상은 0점
+    // ENGINE.MAX_SPEED_CRITERIA(5000ms) 이상은 0점
     // 모든 학습 문자의 최근 5개 정답 중앙값(targetSpeed)이 100점
-    if (avgSpeed >= 5000) return 0;
+    if (avgSpeed >= ENGINE.MAX_SPEED_CRITERIA) return 0;
     if (avgSpeed <= targetSpeed) return 100;
-    const denominator = Math.max(1, 5000 - targetSpeed);
-    return Math.max(0, 100 * (5000 - avgSpeed) / denominator);
+    const denominator = Math.max(1, ENGINE.MAX_SPEED_CRITERIA - targetSpeed);
+    return Math.max(0, 100 * (ENGINE.MAX_SPEED_CRITERIA - avgSpeed) / denominator);
   },
 
   /**
@@ -160,7 +173,7 @@ const ENGINE = {
     });
 
     // 2. 글로벌 중앙값(recent5MedianSec 역할을 하는 targetSpeed) 계산
-    let targetSpeed = 800; 
+    let targetSpeed = 800;
     if (allRecentAverages.length > 0) {
       const sorted = [...allRecentAverages].sort((a, b) => a - b);
       const mid = Math.floor(sorted.length / 2);
@@ -168,8 +181,8 @@ const ENGINE = {
     }
 
     // 3. 현재 학습 풀(activePool)의 글자들에 대해 합격 여부 판단
-    const PASS_SCORE = 85;       
-    const PROGRESS_RATIO = 0.85; 
+    const PASS_SCORE = 85;
+    const PROGRESS_RATIO = 0.85;
     let passedCount = 0;
 
     activeChars.forEach(code => {
@@ -180,7 +193,10 @@ const ENGINE = {
       const limit = Math.min(data.total_attempts, 100);
       for (let i = 0; i < limit; i++) {
         const idx = (data.head - i + 100) % 100;
-        if (data.results[idx] === 1) recentSpeeds.push(data.speeds[idx]);
+        if (data.results[idx] === 1 && data.speeds[idx] < ENGINE.MAX_SPEED_CRITERIA)
+          recentSpeeds.push(data.speeds[idx]);
+        else
+          recentSpeeds.push(ENGINE.MAX_SPEED_CRITERIA); // 오답이나 극단적 지연은 최대치로 간주
         if (recentSpeeds.length === 5) break;
       }
 
@@ -204,29 +220,6 @@ const ENGINE = {
   },
 
   /**
-   * 메타 가중치 튜닝: 예측과 실제 결과의 차이를 바탕으로 모델의 민감도를 조절합니다.
-   */
-  tuneMetaWeights: (isCorrect) => {
-    // 정답 시 기준치(1.0), 오답 시 최대치(10.0)를 실제 결과값으로 상정
-    const actualResult = isCorrect ? ENGINE.CONFIG.BASE_PROBABILITY : ENGINE.CONFIG.MAX_PROBABILITY;
-    const error = actualResult - ENGINE.expectedWeight;
-
-    if (error > 0) { 
-      // 모델이 취약점을 과소평가함 -> 민감도 상향
-      ENGINE.CONFIG.ACC_SENSITIVITY += error * 0.01;
-    } else if (error < -2) { 
-      // 모델이 너무 겁을 먹음 (과잉 보호) -> 민감도 하향
-      ENGINE.CONFIG.ACC_SENSITIVITY -= Math.abs(error) * 0.005;
-    }
-
-    // 민감도 범위 제한 (안전장치: 1.0 ~ 5.0)
-    ENGINE.CONFIG.ACC_SENSITIVITY = Math.max(1.0, Math.min(5.0, ENGINE.CONFIG.ACC_SENSITIVITY));
-    
-    // 변경된 설정을 DB에 저장
-    saveUserConfig(ENGINE.CONFIG);
-  },
-
-  /**
    * 문제 생성 (가중치 기반 정답 선택 + 오답 2)
    */
   generateQuestion: async () => {
@@ -239,7 +232,7 @@ const ENGINE = {
     // DB 데이터를 기반으로 각 문자의 가중치 계산
     const dbData = await getAllProgress();
     const weights = ENGINE.activePool.map(code => {
-      const data = dbData[code] || { total_attempts: 0, head: 0, results: [], speeds: [] };
+      const data = dbData[code.toString()] || { total_attempts: 0, head: 0, results: [], speeds: [] };
       return { code, score: ENGINE.calculateWeight(data) };
     });
 

@@ -302,10 +302,6 @@ function toggleSettings() {
     const listContainer = document.getElementById('personalized-settings-list');
     if (listContainer) {
       listContainer.innerHTML = `
-        <div><b>• 오답 민감도 (ACC_SENSITIVITY):</b> <span style="color:#e62224; font-weight:bold;">${config.ACC_SENSITIVITY.toFixed(2)}</span><br>
-        &nbsp;&nbsp;<small>틀린 문제의 출제 확률을 얼마나 급격히 올릴지 결정합니다.</small></div>
-        <div style="margin-top:8px;"><b>• 속도 민감도 (SPEED_SENSITIVITY):</b> <span style="color:#673ab7; font-weight:bold;">${config.SPEED_SENSITIVITY.toFixed(2)}</span><br>
-        &nbsp;&nbsp;<small>정답을 맞혔더라도 고민하는 시간이 길면 가중치를 부여합니다.</small></div>
         <div style="margin-top:8px;"><b>• 기억 감쇠 (DECAY_FACTOR):</b> <span style="color:#4CAF50; font-weight:bold;">${config.DECAY_FACTOR.toFixed(2)}</span><br>
         &nbsp;&nbsp;<small>최근 학습 데이터를 과거 데이터보다 얼마나 더 중요하게 여길지 결정합니다.</small></div>
         <p style="margin-top:10px; font-size:11px; color:#999; border-top:1px dashed #ddd; padding-top:5px;">* 이 수치들은 학습 패턴에 따라 시스템이 실시간으로 자동 최적화합니다.</p>
@@ -857,9 +853,6 @@ async function checkAnswer(selected, correct) {
   ENGINE.recentResults.push(isCorrect);
   sessionHistory.push({ char: ENGINE.toChar(correct), isCorrect, speed: responseTime });
   updateHistoryUI();
-
-  // 모델 엔진 메타 튜닝 실행
-  ENGINE.tuneMetaWeights(isCorrect);
 
   // DB 업데이트 (정답여부와 속도 전달)
   updateProgress(correct.toString(), isCorrect, responseTime, ENGINE.expectedWeight);

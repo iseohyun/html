@@ -174,8 +174,6 @@ const getStudyStats = async () => {
 const saveUserConfig = async (config) => {
   if (!currentUserUid) return;
   await db.collection('users').doc(currentUserUid).set({
-    ACC_SENSITIVITY: config.ACC_SENSITIVITY,
-    SPEED_SENSITIVITY: config.SPEED_SENSITIVITY,
     DECAY_FACTOR: config.DECAY_FACTOR
   }, { merge: true });
 };
@@ -188,7 +186,7 @@ const getUserConfig = async () => {
   const doc = await db.collection('users').doc(currentUserUid).get();
   if (doc.exists) {
     const data = doc.data();
-    return data.ACC_SENSITIVITY ? data : null;
+    return data.DECAY_FACTOR ? data : null;
   }
   return null;
 };
