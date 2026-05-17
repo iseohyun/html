@@ -81,6 +81,19 @@
             font-size: 11px;
             color: #999;
         }
+
+        .login-btn {
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            transition: background 0.2s;
+        }
+        .login-btn:hover { background-color: #357ae8; }
     </style>
 </head>
 
@@ -91,7 +104,9 @@
 
     <div id="app-container">
         <div class="status-bar">
-            <span id="user-info">Guest Mode</span>
+            <div id="user-info">
+                <button class="login-btn" onclick="login()">Google Login</button>
+            </div>
         </div>
 
         <button id="audio-trigger" title="소리 듣기 (Space)">🔊</button>
