@@ -14,6 +14,7 @@ const login = async () => {
     console.error("Login Error:", error.message);
   }
 };
+window.login = login;
 
 // 로그아웃
 const logout = () => auth.signOut();
@@ -50,7 +51,7 @@ auth.onAuthStateChanged((user) => {
     // engine.start(user.uid);
   } else {
     // 로그아웃 상태
-    statusText.innerText = "Guest Mode";
-    authStatus.innerHTML = `<button onclick="login()">Google Login</button>`;
+    statusText.innerHTML = `<button class="login-btn" onclick="login()">Google Login</button>`;
+    authStatus.innerText = "Guest Mode (Sync disabled)";
   }
 });

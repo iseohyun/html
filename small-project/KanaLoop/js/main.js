@@ -24,24 +24,19 @@ window.addEventListener('load', () => {
     window.speechSynthesis.getVoices();
   }
 
-  // 1. Firebase 인증 상태 감시 (가장 확실한 진입점)
+  // 1. Firebase 인증 상태 감시
   auth.onAuthStateChanged(async (user) => {
     if (user) {
       console.log("인증 확인됨:", user.displayName);
-      
+
       // 로그인 상태일 때 실행할 로직
       initUser(user.uid);      // db-handler.js: 사용자 UID 설정
       await ENGINE.initPool(); // engine.js: 학습 풀 초기화
       showStartButton();       // main.js: 시작 UI 표시
     } else {
       console.log("로그인이 필요합니다.");
-      // 현재 auth-handler.js에서 "Guest Mode" UI를 처리하고 있습니다.
-      // 만약 별도의 팝업을 띄우고 싶다면 여기에 showLoginModal() 등을 구현하세요.
     }
   });
-
-  // 2. 수동 login() 호출이 필요한 경우 (팝업 차단 등으로 인해 보통 이벤트 핸들러 내부에서 호출 권장)
-  // login(); 
 });
 
 /**
@@ -261,7 +256,7 @@ function toggleSettings() {
   const modal = document.getElementById('settings-modal');
   const overlay = document.getElementById('settings-overlay');
   const isOpening = modal.style.display === 'none';
-  
+
   modal.style.display = isOpening ? 'block' : 'none';
   overlay.style.display = isOpening ? 'block' : 'none';
 
