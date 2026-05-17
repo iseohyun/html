@@ -116,11 +116,28 @@
         <div id="auth-status">Login to sync with Firebase</div>
     </div>
 
-    <script src="js/firebase-config.js"></script>
-    <script src="js/auth-handler.js"></script>
-    <script src="js/db-handler.js"></script>
-    <script src="js/engine.js"></script>
-    <script src="js/main.js"></script>
+    <script>
+        (function() {
+            // 1. 버전 관리: 수동으로 한 번만 바꾸려면 "1.0.1", 
+            // 매번 자동으로 갱신하려면 new Date().getTime()을 사용하세요.
+            const v = "20260517_v1"; 
+            
+            const scripts = [
+                "js/firebase-config.js",
+                "js/auth-handler.js",
+                "js/db-handler.js",
+                "js/engine.js",
+                "js/main.js"
+            ];
+
+            scripts.forEach(src => {
+                const s = document.createElement('script');
+                s.src = `${src}?v=${v}`;
+                s.async = false; // 실행 순서 보장을 위해 필수
+                document.body.appendChild(s);
+            });
+        })();
+    </script>
 
 </body>
 
