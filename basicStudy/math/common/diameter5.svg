@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <g style="stroke: #000;fill:none">
+    <ellipse cx="50" cy="50" rx="40" ry="40" />
+    <path d="M10 50L90 50" />
+    <path d="M84.6 70L15.4 30" />
+    <path d="M70 84.6L30 15.4" />
+    <path d="M50 90L50 10" />
+    <path d="M30 84.6L70 15.4" />
+    <path d="M15.4 70L84.6 30" />
+
+    <path d="M88.28 60.35L11.72 39.65" stroke="red" />
+    <path d="M78.28 78.28L21.72 21.72" stroke="red" />
+    <path d="M60.35 88.28L39.65 11.72" stroke="red" />
+    <path d="M39.65 88.28L60.35 11.72" stroke="red" />
+    <path d="M21.72 78.28L78.28 21.72" stroke="red" />
+    <path d="M11.72 60.35L88.28 39.65" stroke="red" />
+  </g>
+  <g style="stroke: none;fill:red">
+    <ellipse cx="50" cy="50" rx="2" ry="2" />
+  </g>
+</svg>

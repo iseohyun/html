@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="20 120 480 330" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
+  <marker id="ah1" markerWidth="20" markerHeight="20" viewBox="0 0 20 10" orient="auto">
+    <path d="M9 0L0 4 0 -4 9 0z" />
+  </marker>
+  <marker id="at1" markerWidth="20" markerHeight="20" viewBox="-20 0 20 10" orient="auto">
+    <path d="M-9 0L0 4 0 -4 -9 0z" />
+  </marker>
+  <marker id="ah3" markerWidth="20" markerHeight="20" viewBox="0 0 20 10" orient="auto">
+    <path d="M9 0L0 4 0 -4 9 0z" fill="green" />
+  </marker>
+
+  <path
+    d="M0 240 q10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0V500H0Z"
+    fill="#AAF" />
+  <g style="stroke:#888; fill:#ffca69">
+    <ellipse rx="130" ry="27" cx="490" cy="267" />
+    <path d="M80 0c0-25-160-15-160 0c0 15 160 25 160 0" transform="translate(230, 325) rotate(-20)" />
+    <path d="M50 0c0-10-50-10-50 0c0 5 50 35 50 0" transform="translate(145, 370) rotate(-55)" />
+    <path d="M80 0c0-50-160-20-160 0c0 20 160 50 160 0" transform="translate(350, 280) rotate(-20)" fill="black" />
+    <path d="M80 0c0-25-160-15-160 0c0 15 160 25 160 0" transform="translate(230, 265) rotate(15)" />
+    <path d="M50 0c0-10-50-10-50 0c0 5 50 35 50 0" transform="translate(126, 234) rotate(5)" />
+    <path d="M80 0c0-50-160-20-160 0c0 20 160 50 160 0" transform="translate(350, 272) rotate(-10)" fill="black" />
+  </g>
+  <g style="stroke:red;fill:none;stroke-width:2px;">
+    <ellipse rx="30" ry="30" cx="280" cy="280" />
+    <ellipse rx="30" ry="30" cx="180" cy="340" />
+  </g>
+  <g style="stroke:#000; fill:none">
+    <path d="M130 275a70 70 0 0 0 0 60" marker-start="url(#at1)" marker-end="url(#ah1)" />
+    <path d="M180 370v30" marker-end="url(#ah3)" stroke="green" />
+    <path d="M160 380v30" marker-end="url(#ah3)" stroke="green" />
+    <path d="M140 390v30" marker-end="url(#ah3)" stroke="green" />
+    <path d="M180 160l-5 60" marker-end="url(#ah1)" />
+    <path d="M310 335l-10-10" marker-end="url(#ah1)" />
+    <path d="M440 195l-20 40" marker-end="url(#ah1)" />
+  </g>
+  <g style="font-family:'times new roman';font-size: 16.4px;font-style:italic">
+    <text x="40" y="310" fill="black">30 ~ 40 cm
+      <tspan x="40" dy="1.1em">(수면 근처)</tspan>
+    </text>
+    <text x="140" y="150" fill="black">발목을 편다</text>
+    <text x="310" y="340" fill="black">무릎을 편다</text>
+    <text x="390" y="170" fill="black">엉덩이가 뜬다
+      <tspan x="390" dy="1.1em">(스트림라인)</tspan>
+    </text>
+    <text x="250" y="200" fill="red">업킥에서
+      <tspan x="250" dy="1.1em">무릎이 살짝 굽는다</tspan>
+    </text>
+    <text x="210" y="370" fill="red">발목에 힘을 빼고 있어서
+      <tspan x="210" dy="1.1em">다운킥에서 앞으로 살짝 휜다.</tspan>
+    </text>
+    <text x="30" y="200" fill="green">발목이 살짝
+      <tspan x="30" dy="1.1em">수면위로 나온다</tspan>
+    </text>
+    <text x="200" y="420" fill="green">물을 눌러주어
+      <tspan x="200" dy="1.1em">하체를 띄운다</tspan>
+    </text>
+  </g>
+</svg>
