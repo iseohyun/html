@@ -41,8 +41,9 @@ const getProgress = async (charCode) => {
  * @param {string} charCode - 유니코드
  * @param {boolean} isCorrect - 정답 여부
  * @param {number} speed - 응답 속도 (ms)
+ * @param {number} weight - 현재 계산된 가중치 (1.0~10.0)
  */
-const updateProgress = async (charCode, isCorrect, speed) => {
+const updateProgress = async (charCode, isCorrect, speed, weight) => {
   if (!currentUserUid) return;
 
   const docRef = db.collection('users').doc(currentUserUid).collection('progress').doc(charCode);
@@ -67,6 +68,8 @@ const updateProgress = async (charCode, isCorrect, speed) => {
 
   data.results[data.head] = isCorrect ? 1 : 0;
   data.speeds[data.head] = speed;
+  data.lastTime = firebase.firestore.FieldValue.serverTimestamp();
+  data.weight = Math.round(Math.min(Math.max(weight * 10, 1), 100)); // 1.0~10.0 -> 1~100 정수화
 
   await docRef.set(data);
 };
@@ -133,6 +136,23 @@ const updateDailyStudyTime = async (seconds) => {
 };
 
 /**
+ * 일일 학습 통계(평균 반응 속도) 업데이트
+ */
+const updateDailyStats = async (avg, r10, r5) => {
+  if (!currentUserUid) return;
+  const today = new Date().toISOString().split('T')[0];
+  const docRef = db.collection('users').doc(currentUserUid).collection('sessions').doc(today);
+
+  await docRef.set({
+    avgResponseTime: Math.round(avg),
+    recent10Avg: Math.round(r10),
+    recent5Avg: Math.round(r5)
+  }, { merge: true });
+  
+  console.log(`Daily stats saved: Avg ${avg}ms, R10 ${r10}ms, R5 ${r5}ms`);
+};
+
+/**
  * 학습 통계 데이터 가져오기 (최근 7일 및 총합)
  */
 const getStudyStats = async () => {
@@ -146,4 +166,29 @@ const getStudyStats = async () => {
     total += sec;
   });
   return { history, total };
+};
+
+/**
+ * 사용자 개인화 설정 저장
+ */
+const saveUserConfig = async (config) => {
+  if (!currentUserUid) return;
+  await db.collection('users').doc(currentUserUid).set({
+    ACC_SENSITIVITY: config.ACC_SENSITIVITY,
+    SPEED_SENSITIVITY: config.SPEED_SENSITIVITY,
+    DECAY_FACTOR: config.DECAY_FACTOR
+  }, { merge: true });
+};
+
+/**
+ * 사용자 개인화 설정 로드
+ */
+const getUserConfig = async () => {
+  if (!currentUserUid) return null;
+  const doc = await db.collection('users').doc(currentUserUid).get();
+  if (doc.exists) {
+    const data = doc.data();
+    return data.ACC_SENSITIVITY ? data : null;
+  }
+  return null;
 };

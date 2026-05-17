@@ -107,36 +107,100 @@ const ENGINE = {
   },
 
   /**
-   * 난이도 조절: 세션 정답률이 MASTERY_THRESHOLD를 넘으면 신규 문제 추가
+   * 마스터리 점수 계산 (반응 속도 기준)
    */
-  adjustDifficulty: () => {
-    if (ENGINE.recentResults.length < 10) return;
+  calculateMasteryScore: (avgSpeed, targetSpeed = 800) => {
+    // 5000ms 이상은 0점
+    // 모든 학습 문자의 최근 5개 정답 중앙값(targetSpeed)이 100점
+    if (avgSpeed >= 5000) return 0;
+    if (avgSpeed <= targetSpeed) return 100;
+    const denominator = Math.max(1, 5000 - targetSpeed);
+    return Math.max(0, 100 * (5000 - avgSpeed) / denominator);
+  },
 
-    const correctCount = ENGINE.recentResults.filter(r => r === true).length;
-    const accuracy = correctCount / ENGINE.recentResults.length;
-
-    // 정답률이 MASTERY_THRESHOLD(85%)를 넘으면 새로운 글자 추가
-    if (accuracy >= ENGINE.MASTERY_THRESHOLD && ENGINE.activePool.length < ENGINE.MAX_POOL_SIZE) {
-      ENGINE.lastAddedChar = ""; // 이번 차례에 추가된 문자열 초기화
-      for (let i = 0; i < ENGINE.NEW_CHAR_COUNT; i++) {
-        let nextCode = Math.max(...ENGINE.activePool) + 1;
-        
-        // 작은 글자이거나 이미 풀에 있는 글자라면 건너뛰기
-        while (nextCode <= ENGINE.range.end && (ENGINE.smallChars.includes(nextCode) || ENGINE.activePool.includes(nextCode))) {
-          nextCode++;
-        }
-
-        if (nextCode <= ENGINE.range.end && ENGINE.activePool.length < ENGINE.MAX_POOL_SIZE) {
-          ENGINE.activePool.push(nextCode);
-          const addedChar = ENGINE.toChar(nextCode);
-          ENGINE.lastAddedChar += (ENGINE.lastAddedChar ? ", " : "") + addedChar;
-          console.log("학습 마스터! 새 표준 글자 추가:", addedChar);
-          ENGINE.recentResults = []; // 새 글자 추가 후 세션 성적 초기화
-        }
-      }
+  /**
+   * 신규 문자 추가 처리
+   */
+  addNewCharacter: () => {
+    let nextCode = Math.max(...ENGINE.activePool) + 1;
+    while (nextCode <= ENGINE.range.end && (ENGINE.smallChars.includes(nextCode) || ENGINE.activePool.includes(nextCode))) {
+      nextCode++;
     }
-    
-    if (ENGINE.recentResults.length >= 20) ENGINE.recentResults = [];
+
+    if (nextCode <= ENGINE.range.end && ENGINE.activePool.length < ENGINE.MAX_POOL_SIZE) {
+      ENGINE.activePool.push(nextCode);
+      ENGINE.lastAddedChar = ENGINE.toChar(nextCode);
+      console.log("학습 마스터! 새 표준 글자 추가:", ENGINE.lastAddedChar);
+      return true;
+    }
+    return false;
+  },
+
+  /**
+   * 신규 학습 문자 추가 여부를 판단하는 핵심 로직
+   */
+  checkAndInhaleNewCharacter: async () => {
+    const allData = await getAllProgress();
+    const activeChars = ENGINE.activePool;
+
+    // 1. 모든 학습 데이터에서 글자별 최근 5개 평균 속도 수집 (글로벌 기준점 계산용)
+    const allRecentAverages = [];
+    Object.values(allData).forEach(data => {
+      if (!data || data.total_attempts < 5) return;
+      const recentSpeeds = [];
+      const limit = Math.min(data.total_attempts, 100);
+      for (let i = 0; i < limit; i++) {
+        const idx = (data.head - i + 100) % 100;
+        if (data.results[idx] === 1) recentSpeeds.push(data.speeds[idx]);
+        if (recentSpeeds.length === 5) break;
+      }
+      if (recentSpeeds.length === 5) {
+        allRecentAverages.push(recentSpeeds.reduce((a, b) => a + b, 0) / 5);
+      }
+    });
+
+    // 2. 글로벌 중앙값(recent5MedianSec 역할을 하는 targetSpeed) 계산
+    let targetSpeed = 800; 
+    if (allRecentAverages.length > 0) {
+      const sorted = [...allRecentAverages].sort((a, b) => a - b);
+      const mid = Math.floor(sorted.length / 2);
+      targetSpeed = sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+    }
+
+    // 3. 현재 학습 풀(activePool)의 글자들에 대해 합격 여부 판단
+    const PASS_SCORE = 85;       
+    const PROGRESS_RATIO = 0.85; 
+    let passedCount = 0;
+
+    activeChars.forEach(code => {
+      const data = allData[code.toString()];
+      if (!data || data.total_attempts < 5) return;
+
+      const recentSpeeds = [];
+      const limit = Math.min(data.total_attempts, 100);
+      for (let i = 0; i < limit; i++) {
+        const idx = (data.head - i + 100) % 100;
+        if (data.results[idx] === 1) recentSpeeds.push(data.speeds[idx]);
+        if (recentSpeeds.length === 5) break;
+      }
+
+      if (recentSpeeds.length === 5) {
+        const charAvg = recentSpeeds.reduce((a, b) => a + b, 0) / 5;
+        const score = ENGINE.calculateMasteryScore(charAvg, targetSpeed);
+        if (score >= PASS_SCORE) passedCount++;
+        else
+          // 합격하지 못한 글자와 점수를 콘솔로 출력
+          console.log(`글자: ${ENGINE.toChar(code)} | 최근5평균: ${charAvg.toFixed(0)}ms | 점수: ${score.toFixed(1)} (불합격)`);
+      }
+    });
+
+    const poolSize = activeChars.length;
+    const currentMasteryRatio = passedCount / poolSize;
+    console.log(`[진도 체크] 기준속도: ${targetSpeed.toFixed(0)}ms | 합격 수: ${passedCount}/${poolSize} (${(currentMasteryRatio * 100).toFixed(1)}%)`);
+
+    if (currentMasteryRatio >= PROGRESS_RATIO) {
+      ENGINE.addNewCharacter();
+    }
   },
 
   /**
@@ -157,13 +221,20 @@ const ENGINE = {
 
     // 민감도 범위 제한 (안전장치: 1.0 ~ 5.0)
     ENGINE.CONFIG.ACC_SENSITIVITY = Math.max(1.0, Math.min(5.0, ENGINE.CONFIG.ACC_SENSITIVITY));
+    
+    // 변경된 설정을 DB에 저장
+    saveUserConfig(ENGINE.CONFIG);
   },
 
   /**
    * 문제 생성 (가중치 기반 정답 선택 + 오답 2)
    */
   generateQuestion: async () => {
-    ENGINE.adjustDifficulty();
+    // 기존의 세션 기반 난이도 조절 대신 누적 데이터 기반 진도 체크 실행
+    if (ENGINE.recentResults.length >= 10) {
+      await ENGINE.checkAndInhaleNewCharacter();
+      ENGINE.recentResults = [];
+    }
 
     // DB 데이터를 기반으로 각 문자의 가중치 계산
     const dbData = await getAllProgress();

@@ -31,6 +31,14 @@ window.addEventListener('load', () => {
 
       // 로그인 상태일 때 실행할 로직
       initUser(user.uid);      // db-handler.js: 사용자 UID 설정
+
+      // 사용자 설정값 로드 및 적용
+      const userConfig = await getUserConfig();
+      if (userConfig) {
+        Object.assign(ENGINE.CONFIG, userConfig);
+        console.log("개인화 설정 로드 완료:", userConfig);
+      }
+
       await ENGINE.initPool(); // engine.js: 학습 풀 초기화
       showStartButton();       // main.js: 시작 UI 표시
     } else {
@@ -146,6 +154,20 @@ function initSettingsUI() {
       gap: 15px;
       margin-bottom: 10px;
     }
+    .chart-tag {
+      position: absolute;
+      bottom: 100%;
+      left: 0;
+      font-size: 7px;
+      background: rgba(255,255,255,0.9);
+      padding: 1px;
+      white-space: nowrap;
+      z-index: 10;
+      color: #e62224;
+      pointer-events: none;
+      transform: rotate(-90deg);
+      transform-origin: 0 100%;
+    }
   `;
   document.head.appendChild(style);
 
@@ -240,6 +262,14 @@ function initSettingsUI() {
       <div id="personalized-settings-list" style="line-height: 1.6;">
         <!-- 시스템 가중치 정보가 여기에 표시됩니다 -->
       </div>
+      <div style="margin-top: 20px; border-top: 1px dashed #ddd; padding-top: 15px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <h4 style="margin:0; color:#333; font-size:13px;">응답 속도 분포 <span style="font-weight:normal; font-size:11px;">(<span style="color:#4CAF50;">■</span>전체 <span style="color:#FF0000;">━</span>최근10 <span style="color:#0000FF;">━</span>최근5)</span></h4>
+          <span id="avg-response-time" style="font-size:11px; color:#666; font-weight:bold;">평균반응속도: 0.0초 → 0.0초 → 0.0초</span>
+        </div>
+        <div id="response-time-chart" style="display:flex; align-items:flex-end; gap:1px; height:60px; background:#f0f0f0; border-radius:4px; overflow:visible; position:relative;"></div>
+        <div style="display:flex; justify-content:space-between; font-size:9px; color:#aaa; margin-top:3px;"><span>0s</span><span>1s</span><span>2s</span><span>3s</span><span>4s</span><span>5s+</span></div>
+      </div>
     </div>
   `;
   document.body.appendChild(modal);
@@ -281,6 +311,120 @@ function toggleSettings() {
         <p style="margin-top:10px; font-size:11px; color:#999; border-top:1px dashed #ddd; padding-top:5px;">* 이 수치들은 학습 패턴에 따라 시스템이 실시간으로 자동 최적화합니다.</p>
       `;
     }
+
+    renderResponseTimeChart();
+  }
+}
+
+/**
+ * 정답 응답 속도에 대한 누적 빈도 그래프를 렌더링합니다.
+ */
+async function renderResponseTimeChart() {
+  const container = document.getElementById('response-time-chart');
+  const avgDisplay = document.getElementById('avg-response-time');
+  if (!container) return;
+
+  const allData = await getAllProgress();
+  const correctBins = new Array(51).fill(0);
+  const recent5Bins = new Array(51).fill(0);
+  const recent10Bins = new Array(51).fill(0);
+  let totalCorrectCount = 0;
+  let recent5Count = 0;
+  let recent10Count = 0;
+
+  Object.values(allData).forEach(data => {
+    const attempts = data.total_attempts || 0;
+    const limit = Math.min(attempts, 100);
+    let foundInThisChar = 0;
+
+    // 각 글자별 링 버퍼 역순(최신순) 탐색
+    for (let i = 0; i < limit; i++) {
+      const idx = (data.head - i + 100) % 100;
+      const isCorrect = data.results && data.results[idx] === 1;
+      const ms = data.speeds ? data.speeds[idx] : 0;
+      const binIndex = Math.min(Math.floor(ms / 100), 50);
+
+      if (isCorrect) {
+        correctBins[binIndex]++;
+        totalCorrectCount++;
+
+        // 글자별 최근 5개/10개 수집
+        if (foundInThisChar < 5) {
+          recent5Bins[binIndex]++;
+          recent5Count++;
+        }
+        if (foundInThisChar < 10) {
+          recent10Bins[binIndex]++;
+          recent10Count++;
+        }
+        foundInThisChar++;
+      }
+    }
+  });
+
+  // 데이터 유무 로그 출력
+  if (totalCorrectCount > 0 && recent5Count === 0) {
+    console.log("Recent 5/10 data: 각 글자별 정답 데이터가 부족하여 그래프가 0으로 표기될 수 있습니다.");
+  } else {
+    console.log(`통계 확인 - 전체정답: ${totalCorrectCount}, 최근5합계: ${recent5Count}, 최근10합계: ${recent10Count}`);
+  }
+
+  if (avgDisplay) {
+    const calculateMedianSec = (bins, total) => {
+      if (total === 0) return "0.0";
+      let sum = 0;
+      const idx = bins.findIndex(count => {
+        sum += count;
+        return sum >= total * 0.5;
+      });
+      return (idx * 0.1).toFixed(1);
+    };
+
+    const medianSec = calculateMedianSec(correctBins, totalCorrectCount);
+    const recent10MedianSec = calculateMedianSec(recent10Bins, recent10Count);
+    const recent5MedianSec = calculateMedianSec(recent5Bins, recent5Count);
+
+    avgDisplay.innerText = `평균반응속도: ${medianSec}초 → ${recent10MedianSec}초 → ${recent5MedianSec}초`;
+
+    const maxCorrectFreq = Math.max(...correctBins, 1);
+    const maxRecent5Freq = Math.max(...recent5Bins, 1);
+    const maxRecent10Freq = Math.max(...recent10Bins, 1);
+
+    // 전체 데이터 50% 지점 인덱스 (막대 색상 강조용)
+    let curSum = 0;
+    const fiftyPercentIdx = correctBins.findIndex(c => (curSum += c) >= totalCorrectCount * 0.5);
+
+    // 꺾은선 그래프 좌표 생성: 각 bin의 가로 중앙에 점을 배치
+    const getLinePoints = (bins, max) => bins.map((v, i) => ({
+      x: ((i + 0.5) / 51) * 100,
+      y: 100 - (v / max) * 100
+    }));
+
+    const r10Data = getLinePoints(recent10Bins, maxRecent10Freq);
+    const r5Data = getLinePoints(recent5Bins, maxRecent5Freq);
+
+    const barHtml = correctBins.map((cVal, idx) => {
+      const cHeight = (cVal / maxCorrectFreq) * 100;
+      const isFiftyPercent = idx === fiftyPercentIdx && totalCorrectCount > 0;
+      const bgColor = isFiftyPercent ? '#2196F3' : '#4CAF50';
+      const timeLabel = idx === 50 ? "5.0s 이상" : (idx * 0.1).toFixed(1) + "s";
+      return `<div title="${timeLabel} (전체: ${cVal}, 최근10: ${recent10Bins[idx]}, 최근5: ${recent5Bins[idx]})" 
+                   style="flex:1; height:${cHeight}%; background:${bgColor}; min-width:1px;"></div>`;
+    }).join('');
+
+    const svgHtml = `
+  <svg viewBox="0 0 100 100" preserveAspectRatio="none" 
+       style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; overflow:visible;">
+    
+    <polyline points="${r10Data.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ")}" 
+              fill="none" stroke="#ff0000" stroke-width="1" stroke-linejoin="round" opacity="1" vector-effect="non-scaling-stroke" />
+
+    <polyline points="${r5Data.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ")}" 
+              fill="none" stroke="#0000ff" stroke-width="1" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+  </svg>
+`;
+
+    container.innerHTML = barHtml + svgHtml;
   }
 }
 
@@ -375,8 +519,25 @@ function tick() {
   if (timeLeft <= 0) {
     clearInterval(timerInterval);
     isTimeUp = true;
+
+    if (isTimeUp) {
+      // 1. 학습 시간 기록
+      updateDailyStudyTime(learningTime);
+
+      // 2. 평균 반응 속도 통계 계산 및 기록
+      const correctAttempts = sessionHistory.filter(h => h.isCorrect);
+      if (correctAttempts.length > 0) {
+        const calcAvg = (arr) => arr.reduce((a, b) => a + b.speed, 0) / arr.length;
+
+        const avgAll = calcAvg(correctAttempts);
+        const avgR10 = calcAvg(correctAttempts.slice(-10));
+        const avgR5 = calcAvg(correctAttempts.slice(-5));
+
+        updateDailyStats(avgAll, avgR10, avgR5);
+      }
+    }
+
     const timerText = document.getElementById('timer-text');
-    if (isTimeUp) updateDailyStudyTime(learningTime); // 학습 완료 시간 기록
     if (timerText) timerText.innerText = "마지막 문제!";
     const timerBar = document.getElementById('timer-bar');
     if (timerBar) timerBar.style.width = '100%';
@@ -679,13 +840,13 @@ async function renderQuestion() {
 
 async function checkAnswer(selected, correct) {
   // [테스트 코드 시작]
-  console.group("--- Answer Check ---");
-  console.log("선택된 값(selected):", selected, typeof selected);
-  console.log("실제 정답(correct):", correct, typeof correct);
-  console.log("문자 변환 - 선택:", ENGINE.toChar(selected));
-  console.log("문자 변환 - 정답:", ENGINE.toChar(correct));
-  console.log("비교 결과:", Number(selected) === Number(correct));
-  console.groupEnd();
+  // console.group("--- Answer Check ---");
+  // console.log("선택된 값(selected):", selected, typeof selected);
+  // console.log("실제 정답(correct):", correct, typeof correct);
+  // console.log("문자 변환 - 선택:", ENGINE.toChar(selected));
+  // console.log("문자 변환 - 정답:", ENGINE.toChar(correct));
+  // console.log("비교 결과:", Number(selected) === Number(correct));
+  // console.groupEnd();
   // [테스트 코드 끝]
   // 숫자 대 숫자로 정확히 비교
   const isCorrect = Number(selected) === Number(correct);
@@ -694,14 +855,14 @@ async function checkAnswer(selected, correct) {
   const responseTime = Date.now() - questionStartTime;
 
   ENGINE.recentResults.push(isCorrect);
-  sessionHistory.push({ char: ENGINE.toChar(correct), isCorrect });
+  sessionHistory.push({ char: ENGINE.toChar(correct), isCorrect, speed: responseTime });
   updateHistoryUI();
 
   // 모델 엔진 메타 튜닝 실행
   ENGINE.tuneMetaWeights(isCorrect);
 
   // DB 업데이트 (정답여부와 속도 전달)
-  updateProgress(correct.toString(), isCorrect, responseTime);
+  updateProgress(correct.toString(), isCorrect, responseTime, ENGINE.expectedWeight);
 
   if (isCorrect) {
     if (isTimeUp) {
