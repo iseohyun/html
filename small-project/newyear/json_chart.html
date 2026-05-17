@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+</head>
+<body>
+
+<textarea id="jsonInput" rows="15" cols="100">
+{
+  "tags":[
+    {"id":1,"name":"목표1","range":{"start":15000,"end":20000,"unit":"개"},"color":"rgb(255,0,0)"},
+    {"id":2,"name":"목표2","range":{"start":10,"end":250,"unit":"회"},"color":"#602"},
+    {"id":3,"name":"목표3","range":{"start":10000,"end":1500000,"unit":"걸음"},"color":"#260"},
+    {"id":4,"name":"목표4","range":{"start":0,"end":100,"unit":"개"},"color":"#065"}
+  ],
+  "records":[
+    {"date":"2025-02-05","values":{"1":18508,"2":66,"4":21}},
+    {"date":"2025-02-02","values":{"1":18800}},
+    {"date":"2025-01-23","values":{"1":17500}},
+    {"date":"2025-01-20","values":{"2":29,"3":310000,"4":15}},
+    {"date":"2025-01-18","values":{"3":280000}},
+    {"date":"2025-01-16","values":{"1":16700,"3":200000}}
+  ]
+}
+</textarea>
+<br>
+<button onclick="draw()">그리기</button>
+
+<br><br>
+<canvas id="chart" width="900" height="450"></canvas>
+
+<script>
+function draw() {
+  const raw = document.getElementById("jsonInput").value;
+  const data = JSON.parse(raw);
+
+  const canvas = document.getElementById("chart");
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  const padding = 50;
+  const w = canvas.width - padding*2;
+  const h = canvas.height - padding*2;
+
+  const records = data.records
+    .map(r => ({...r, date:new Date(r.date)}))
+    .sort((a,b)=>a.date-b.date);
+
+  const minDate = records[0].date;
+  const maxDate = records[records.length-1].date;
+  const range = maxDate - minDate;
+
+  const getX = d => padding + ((d - minDate)/range)*w;
+  const getY = (v,t) => {
+    const r = (v - t.range.start)/(t.range.end - t.range.start);
+    return padding + h - r*h;
+  };
+
+  // Y 보조선
+  ctx.strokeStyle="#ddd";
+  for(let i=0;i<=5;i++){
+    const y = padding + (h/5)*i;
+    ctx.beginPath();
+    ctx.moveTo(padding,y);
+    ctx.lineTo(padding+w,y);
+    ctx.stroke();
+  }
+
+  // X (1일,16일)
+  let d = new Date(minDate.getFullYear(),minDate.getMonth(),1);
+  while(d<=maxDate){
+    [1,16].forEach(day=>{
+      const t=new Date(d.getFullYear(),d.getMonth(),day);
+      if(t<minDate||t>maxDate) return;
+      const x=getX(t);
+
+      ctx.beginPath();
+      ctx.moveTo(x,padding);
+      ctx.lineTo(x,padding+h);
+      ctx.stroke();
+
+      ctx.fillText(`${t.getMonth()+1}/${t.getDate()}`,x-10,padding+h+15);
+    });
+    d.setMonth(d.getMonth()+1);
+  }
+
+  // 축
+  ctx.strokeStyle="#000";
+  ctx.beginPath();
+  ctx.moveTo(padding,padding);
+  ctx.lineTo(padding,padding+h);
+  ctx.lineTo(padding+w,padding+h);
+  ctx.stroke();
+
+  // 데이터
+  data.tags.forEach(tag=>{
+    ctx.beginPath();
+    ctx.strokeStyle=tag.color;
+    let start=false;
+
+    records.forEach(r=>{
+      const v=r.values[tag.id];
+      if(v==null) return;
+
+      const x=getX(r.date);
+      const y=getY(v,tag);
+
+      if(!start){ctx.moveTo(x,y);start=true;}
+      else ctx.lineTo(x,y);
+    });
+
+    ctx.stroke();
+  });
+}
+</script>
+
+</body>
+</html>

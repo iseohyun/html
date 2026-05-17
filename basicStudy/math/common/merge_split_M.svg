@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 170 170" xmlns="http://www.w3.org/2000/svg">
+  <g style="stroke: #000;fill: none">
+    <rect x="55" y="100" width="60" height="60" />
+    <rect x="5" y="5" width="60" height="60" />
+    <rect x="105" y="5" width="60" height="60" />
+    <path d="M35 65L85 100 135 65" />
+    <rect x="0" y="0" width="170" height="170" />
+  </g>
+  <g style="font-size:40pt;text-anchor:middle;dominant-baseline:center">
+    <text x="35" y="55">4</text>
+    <text x="135" y="55">3</text>
+    <text x="85" y="150">7</text>
+  </g>
+</svg>

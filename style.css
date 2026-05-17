@@ -41,7 +41,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  text-align: justify;
+  text-align: left;
   font-family: var(--font-main);
   color: #444;
   line-height: 1.8em;
@@ -517,6 +517,11 @@ h1::before {
   color: #888;
 }
 
+h1+h2 {
+  padding: 4px;
+  margin: 6px 12px;
+}
+
 h2 {
   width: 90%;
   font-size: 1.3rem;
@@ -702,7 +707,7 @@ button:disabled {
 .double_column {
   column-count: 2;
   column-width: 10rem;
-  text-align: justify;
+  text-align: left;
   margin: 50px;
 }
 
@@ -747,6 +752,9 @@ button:disabled {
 }
 
 .simple-box {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #aaa;
   border: 1px solid #aaa;
   border-radius: 5px;
   margin: 25px 10px;

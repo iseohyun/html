@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="80 80 420 340" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
+  <marker id="ah1" markerWidth="20" markerHeight="20" viewBox="0 0 20 10" orient="auto">
+    <path d="M9 0L0 4 0 -4 9 0z" />
+  </marker>
+  <marker id="ah2" markerWidth="20" markerHeight="20" viewBox="0 0 20 10" orient="auto">
+    <path d="M9 0L0 4 0 -4 9 0z" fill="red" />
+  </marker>
+  <marker id="ah3" markerWidth="20" markerHeight="20" viewBox="0 0 20 10" orient="auto">
+    <path d="M9 0L0 4 0 -4 9 0z" fill="green" />
+  </marker>
+
+  <path
+    d="M0 240 q10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0V500H0Z"
+    fill="#AAF" />
+  <g style="stroke:#888; fill:#ddd">
+    <ellipse rx="80" ry="13" transform="translate(230, 260) rotate(-25)" />
+    <ellipse cx="300" cy="230" rx="25" ry="25" />
+  </g>
+  <g style="stroke:#000;">
+    <path d="M250 250L450 200" marker-end="url(#ah1)" />
+    <path d="M458 245V210" marker-end="url(#ah2)" stroke="red" />
+    <path d="M250 250V150" marker-end="url(#ah1)" />
+    <path d="M250 140V100" marker-end="url(#ah2)" stroke="red" />
+    <path d="M250 250V400" marker-end="url(#ah1)" />
+    <path d="M250 250H150" marker-end="url(#ah1)" />
+    <path d="M310 265h-30" marker-end="url(#ah3)" stroke="green" />
+    <path d="M290 275h-30" marker-end="url(#ah3)" stroke="green" />
+    <path d="M270 285h-30" marker-end="url(#ah3)" stroke="green" />
+    <path d="M140 250h-40" marker-end="url(#ah3)" stroke="green" />
+  </g>
+  <g style="font-family:'times new roman';font-size: 16.4px;font-style:italic">
+    <text x="270" y="170">물이 무서워서
+      <tspan x="270" dy="1.1em">머리를 제대로 담그지 않음</tspan>
+    </text>
+    <text x="375" y="260" fill="red">추진력의 일부가
+      <tspan x="320" dy="1.1em">중력을 이기기 위해 사용</tspan>
+    </text>
+    <text x="120" y="320">발이 가라앉음
+      <tspan x="120" dy="1.1em">저항이 증가</tspan>
+    </text>
+    <text x="90" y="210" fill="green">추진력의 일부가
+      <tspan x="90" dy="1.1em">저항으로 상쇄</tspan>
+    </text>
+    <text x="258" y="120">부력</text>
+    <text x="258" y="380">중력(언제나 일정)</text>
+  </g>
+</svg>

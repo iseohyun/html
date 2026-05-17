@@ -1,88 +1,88 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg xmlns="http://www.w3.org/2000/svg"
- style="font-family:MalgunGothicRegular;"
- width="1000"
- height="440"
- viewBox="0 0 1000 440">
+<svg xmlns="http://www.w3.org/2000/svg" style="font-family:MalgunGothicRegular;" width="1000" height="440"
+  viewBox="0 0 1000 440">
   <style>
-.title{
-  font-size:27px;
-}
-.title .emphasis{
-  font-weight:bold;
-  font-size:36px;
-  font-family:MalgunGothicBold;
-  -inkscape-font-specification:MalgunGothicBold;
-  fill:#548235;
-}
+    .title {
+      font-size: 27px;
+    }
 
-.subtitle{
-  font-size:18px;
-  fill:#7f7f7f;
-}
+    .title .emphasis {
+      font-weight: bold;
+      font-size: 36px;
+      font-family: MalgunGothicBold;
+      -inkscape-font-specification: MalgunGothicBold;
+      fill: #548235;
+    }
 
-.bracket{
-  fill:none;
-  stroke:#000000;
-  stroke-linecap:butt;
-  stroke-linejoin:miter;
-  stroke-miterlimit:10;
-  stroke-dasharray:none;
-  stroke-opacity:1;
-}
+    .subtitle {
+      font-size: 18px;
+      fill: #7f7f7f;
+    }
 
-.comment{
-  font-size:16px;
-  fill:#ed7d31;
-}
+    .bracket {
+      fill: none;
+      stroke: #000000;
+      stroke-linecap: butt;
+      stroke-linejoin: miter;
+      stroke-miterlimit: 10;
+      stroke-dasharray: none;
+      stroke-opacity: 1;
+    }
 
-.letter{
-  font-weight:bold;
-  font-size:18px;
-  font-family:MalgunGothicBold;
-  -inkscape-font-specification:MalgunGothicBold;
-  fill:#548235;
-}
-.lt{
-  font-size:24px;
-  fill:#000;
-}
+    .comment {
+      font-size: 16px;
+      fill: #ed7d31;
+    }
 
+    .letter {
+      font-weight: bold;
+      font-size: 18px;
+      font-family: MalgunGothicBold;
+      -inkscape-font-specification: MalgunGothicBold;
+      fill: #548235;
+    }
+
+    .lt {
+      font-size: 24px;
+      fill: #000;
+    }
   </style>
   <rect width="1000" height="440" style="fill:white;">
   </rect>
-  <text class="title" x="54" y="260">복소수(    <tspan class="emphasis">C</tspan> )
+  <text class="title" x="54" y="260">복소수( <tspan class="emphasis">C</tspan> )
   </text>
   <text class="subtitle" x="54" y="285">Complex number
   </text>
   <text class="comment" x="54" y="305">a + bi
   </text>
-  <path class="bracket" d="m 249,190 c -11,0 -20,10 -20,23 v 48 c 0,12 -9,23 -20,23 11,0 20,10 20,23 v 48 c 0,12 9,23 20,23" />
-  <text class="title" x="256" y="195">실수(    <tspan class="emphasis">R</tspan> )  
+  <path class="bracket"
+    d="m 249,190 c -11,0 -20,10 -20,23 v 48 c 0,12 -9,23 -20,23 11,0 20,10 20,23 v 48 c 0,12 9,23 20,23" />
+  <text class="title" x="256" y="195">실수( <tspan class="emphasis">R</tspan> )
   </text>
   <text class="subtitle" x="256" y="220">Real number
   </text>
-  <text class="title" x="256" y="380">허수(    <tspan class="emphasis">I</tspan> )
+  <text class="title" x="256" y="380">허수( <tspan class="emphasis">I</tspan> )
   </text>
   <text class="subtitle" x="256" y="405">Imaginary number
   </text>
-  <path class="bracket" d="m 421,135 c -11,0 -20,7 -20,17 v 30 c 0,9 -9,17 -20,17 11,0 20,7 20,17 v 30 c 0,9 9,17 20,17" />
-  <text class="title" x="441" y="140">유리수(    <tspan class="emphasis">Q</tspan> )
+  <path class="bracket"
+    d="m 421,135 c -11,0 -20,7 -20,17 v 30 c 0,9 -9,17 -20,17 11,0 20,7 20,17 v 30 c 0,9 9,17 20,17" />
+  <text class="title" x="441" y="140">유리수( <tspan class="emphasis">Q</tspan> )
   </text>
-  <text class="subtitle" x="441" y="170">Quotient; 몫    
+  <text class="subtitle" x="441" y="170">Quotient; 몫
   </text>
   <text class="comment" x="441" y="190">Rational number
   </text>
   <text class="comment" x="441" y="210">분수로 표현 가능
   </text>
-  <text class="title" x="438" y="280">무리수 (    <tspan class="emphasis">i</tspan>)
+  <text class="title" x="438" y="280">무리수 ( <tspan class="emphasis">i</tspan>)
   </text>
   <text class="subtitle" x="438" y="304">irrational number
   </text>
   <text class="comment" x="441" y="325">√2, √3, 3, π, e …
   </text>
   <path class="bracket" d="m 624,90 c -7,0 -13,5 -13,11 v 21 c 0,6 -6,11 -13,11 7,0 13,5 13,11 v 21 c 0,6 6,11 13,11" />
-  <text class="title" x="641" y="90">정수(    <tspan class="emphasis">Z</tspan> )
+  <text class="title" x="641" y="90">정수( <tspan class="emphasis">Z</tspan> )
   </text>
   <text class="subtitle" x="641" y="115">ganze ZahI(<tspan style="fill:red">독일</tspan>)
   </text>
@@ -93,7 +93,7 @@
   <text class="comment" x="641" y="200">분수, 소수
   </text>
   <path class="bracket" d="m 811,40 c -7,0 -13,5 -13,11 v 31 c 0,6 -6,11 -13,11 7,0 13,5 13,11 v 31 c 0,6 6,11 13,11" />
-  <text class="title" x="821" y="50">자연수 (    <tspan class="emphasis">N</tspan> )
+  <text class="title" x="821" y="50">자연수 ( <tspan class="emphasis">N</tspan> )
   </text>
   <text class="subtitle" x="821" y="75">Natural number
   </text>
