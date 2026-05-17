@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="100 80 400 340" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
+  <marker id="ah1" markerWidth="20" markerHeight="20" viewBox="0 0 20 10" orient="auto">
+    <path d="M9 0L0 4 0 -4 9 0z" />
+  </marker>
+
+  <path
+    d="M0 240 q10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0V500H0Z" fill="#AAF"/>
+  <g style=" stroke: #000;">
+    <path d="M250 250H450" marker-end="url(#ah1)" />
+    <path d="M250 250H150" marker-end="url(#ah1)" />
+    <path d="M250 250V100" marker-end="url(#ah1)" />
+    <path d="M250 250V400" marker-end="url(#ah1)" />
+  </g>
+  <g style="font-family:'times new roman';font-size: 16.4px;font-style:italic">
+    <text x="410" y="280">추진력</text>
+    <text x="150" y="280">저항</text>
+    <text x="252" y="264">O</text>
+    <text x="258" y="120">부력</text>
+    <text x="258" y="380">중력</text>
+  </g>
+</svg>

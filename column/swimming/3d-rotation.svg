@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="80 80 420 340" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
+  <defs>
+    <marker id="blackAr" markerWidth="20" markerHeight="20" viewBox="0 0 20 10" orient="auto">
+      <path d="M9 0L0 4 0 -4 9 0z" />
+    </marker>
+    <marker id="redAr" markerWidth="20" markerHeight="20" viewBox="0 0 20 10" orient="auto">
+      <path d="M9 0L0 4 0 -4 9 0z" fill="red" />
+    </marker>
+    <marker id="greenAr" markerWidth="20" markerHeight="20" viewBox="0 0 20 10" orient="auto">
+      <path d="M9 0L0 4 0 -4 9 0z" fill="green" />
+    </marker>
+    <marker id="blueAr" markerWidth="20" markerHeight="20" viewBox="0 0 20 10" orient="auto">
+      <path d="M9 0L0 4 0 -4 9 0z" fill="blue" />
+    </marker>
+  </defs>
+  <path
+    d="M0 240 q10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0 10 10 20 0V500H0Z"
+    fill="#AAF" />
+  <g style="stroke:#888; fill:#ddd">
+    <ellipse cx="240" cy="250" rx="80" ry="13" />
+    <ellipse cx="310" cy="250" rx="25" ry="25" />
+  </g>
+  <g style="stroke:#FFF; fill:none">
+    <ellipse cx="80" cy="280" rx="4" ry="4" />
+    <ellipse cx="90" cy="280" rx="4" ry="4" />
+    <ellipse cx="150" cy="280" rx="4" ry="4" />
+    <ellipse cx="160" cy="280" rx="4" ry="4" />
+    <ellipse cx="170" cy="280" rx="4" ry="4" />
+    <ellipse cx="180" cy="280" rx="4" ry="4" />
+    <ellipse cx="190" cy="280" rx="4" ry="4" />
+    <ellipse cx="250" cy="280" rx="4" ry="4" />
+    <ellipse cx="260" cy="280" rx="4" ry="4" />
+    <ellipse cx="270" cy="280" rx="4" ry="4" />
+    <ellipse cx="280" cy="280" rx="4" ry="4" />
+    <ellipse cx="290" cy="280" rx="4" ry="4" />
+    <ellipse cx="350" cy="280" rx="4" ry="4" />
+    <ellipse cx="360" cy="280" rx="4" ry="4" />
+    <ellipse cx="370" cy="280" rx="4" ry="4" />
+    <ellipse cx="380" cy="280" rx="4" ry="4" />
+    <ellipse cx="390" cy="280" rx="4" ry="4" />
+    <ellipse cx="450" cy="280" rx="4" ry="4" />
+    <ellipse cx="460" cy="280" rx="4" ry="4" />
+    <ellipse cx="470" cy="280" rx="4" ry="4" />
+    <ellipse cx="480" cy="280" rx="4" ry="4" />
+    <ellipse cx="490" cy="280" rx="4" ry="4" />
+  </g>
+  <g style="stroke:red; fill:none">
+    <ellipse cx="100" cy="280" rx="4" ry="4" />
+    <ellipse cx="110" cy="280" rx="4" ry="4" />
+    <ellipse cx="120" cy="280" rx="4" ry="4" />
+    <ellipse cx="130" cy="280" rx="4" ry="4" />
+    <ellipse cx="140" cy="280" rx="4" ry="4" />
+    <ellipse cx="100" cy="280" rx="4" ry="4" />
+    <ellipse cx="110" cy="280" rx="4" ry="4" />
+    <ellipse cx="120" cy="280" rx="4" ry="4" />
+    <ellipse cx="130" cy="280" rx="4" ry="4" />
+    <ellipse cx="140" cy="280" rx="4" ry="4" />
+    <ellipse cx="200" cy="280" rx="4" ry="4" />
+    <ellipse cx="210" cy="280" rx="4" ry="4" />
+    <ellipse cx="220" cy="280" rx="4" ry="4" />
+    <ellipse cx="230" cy="280" rx="4" ry="4" />
+    <ellipse cx="240" cy="280" rx="4" ry="4" />
+    <ellipse cx="300" cy="280" rx="4" ry="4" />
+    <ellipse cx="310" cy="280" rx="4" ry="4" />
+    <ellipse cx="320" cy="280" rx="4" ry="4" />
+    <ellipse cx="330" cy="280" rx="4" ry="4" />
+    <ellipse cx="340" cy="280" rx="4" ry="4" />
+    <ellipse cx="400" cy="280" rx="4" ry="4" />
+    <ellipse cx="410" cy="280" rx="4" ry="4" />
+    <ellipse cx="420" cy="280" rx="4" ry="4" />
+    <ellipse cx="430" cy="280" rx="4" ry="4" />
+    <ellipse cx="440" cy="280" rx="4" ry="4" />
+  </g>
+  <g style="stroke:#000;stroke-width:1.5">
+    <path d="M150 250H450" marker-end="url(#blackAr)" />
+    <path d="M250 350V100" marker-end="url(#blackAr)" />
+    <path d="M300 200L150 350" marker-end="url(#blackAr)" />
+  </g>
+  <path d="M330 200l60-60 0 150-60 60z" style="stroke:green; fill:#8F88" />
+  <path d="M140 195l60-60 150 0-60 60z" style="stroke:blue; fill:#88F8" />
+  <path d="M220 220h60v60h-60z" style="stroke:red; fill:#F888" />
+  <g style="fill:none; stroke-width:1.5">
+    <path d="M380 260a20 60 1 1 1 0 -40" style="stroke:green;" marker-end="url(#greenAr)" />
+    <path d="M260 150a60 20 1 1 1 -40 0" style="stroke:blue;" marker-end="url(#blueAr)" />
+    <path d="M270 255a20 20 1 1 1 0 -15" style="stroke:red;" marker-end="url(#redAr)" />
+  </g>
+  <g style="font-family:'times new roman';font-size: 16.4px;font-style:italic">
+    <text x="400" y="270">X(진행방향)</text>
+    <text x="120" y="380">Y(좌우)</text>
+    <text x="258" y="120">Z(부력)</text>
+    <text x="400" y="200" fill="green">rolling</text>
+    <text x="160" y="120" fill="blue">yawing</text>
+    <text x="255" y="305" fill="red">pitching</text>
+  </g>
+</svg>
