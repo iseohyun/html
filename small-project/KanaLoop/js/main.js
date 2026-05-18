@@ -32,6 +32,9 @@ window.addEventListener('load', () => {
       // 로그인 상태일 때 실행할 로직
       initUser(user.uid);      // db-handler.js: 사용자 UID 설정
 
+      // 사용자 프로필 정보 저장 (이름, 이메일)
+      saveUserProfile(user.displayName, user.email);
+
       // 사용자 설정값 로드 및 적용
       const userConfig = await getUserConfig();
       if (userConfig) {
@@ -184,7 +187,7 @@ function initSettingsUI() {
 
   // 2. 상단: 사용자 정보 (이미 index.html에 있음, 위치만 조정)
   const statusBar = document.querySelector('.status-bar');
-  statusBar.style.cssText = 'margin: 15px 0; border: none; font-size: 1.1rem;';
+  statusBar.style.cssText = 'margin: 15px auto; border: none; font-size: 1.1rem; width: 80%; padding: 0 20px;';
 
   // 3. 중앙 요소들 (가중치 + 히스토리 로우)
   const infoRow = document.createElement('div');

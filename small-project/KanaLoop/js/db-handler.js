@@ -190,3 +190,15 @@ const getUserConfig = async () => {
   }
   return null;
 };
+
+/**
+ * 사용자 프로필 정보(이름, 이메일) 저장
+ */
+const saveUserProfile = async (name, email) => {
+  if (!currentUserUid) return;
+  await db.collection('users').doc(currentUserUid).set({
+    displayName: name,
+    email: email,
+    lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+  }, { merge: true });
+};
