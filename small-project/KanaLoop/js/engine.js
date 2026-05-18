@@ -4,8 +4,8 @@
  */
 
 const ENGINE = {
-  // 히라가나 유니코드 범위: 0x3041(あ) ~ 0x3096(ん)
-  range: { start: 12353, end: 12438 },
+  // 가나 전체 범위 (히라가나 ~ 가타카나)
+  range: { start: 12353, end: 12540 }, // 12541~12543(합자 등) 제외
   activePool: [], // 현재 학습 중인 유니코드 번호들
   MIN_POOL_SIZE: 3,
   MAX_POOL_SIZE: 100, // 모든 히라가나와 탁음을 수용할 수 있도록 상향
@@ -14,6 +14,8 @@ const ENGINE = {
   HISTORY_LIMIT: 100, // 시스템에서 관리하는 최대 기록 추적 수
   MASTERY_THRESHOLD: 0.85, // 85% 숙련도 기준
   CONFIG: {
+    AUTO_PROGRESS: 'hira',  // 'hira', 'kata', 'off'
+    PROGRESS_RATIO: 0.85,   // 진도 추가 임계값 (0.6, 0.85, 0.9)
     BASE_PROBABILITY: 1.0,
     MIN_SPEED_CRITERIA: 500, // 500ms보다 느리면 문제로 판단
     MAX_PROBABILITY: 10.0,    // 확률 천장
@@ -23,10 +25,15 @@ const ENGINE = {
   currentTarget: null,
   recentResults: [], // 최근 20개의 정답 여부 (T/F)
   lastAddedChar: null, // 가장 최근에 추가된 문자 저장
+  targetHistory: [],   // 최근 출제된 정답(Target) 기록 (중복 출제 방지용)
+  TARGET_HISTORY_LIMIT: 2, // 최근 N개 내에 나왔던 문자는 정답으로 선정 제외
   expectedWeight: 0,   // 현재 문제의 예측 가중치 저장
 
-  // 필터링할 작은 글자 유니코드 목록 (ぁ, ぃ, ぅ, ぇ, ぉ, っ, ゃ, ゅ, ょ, ゎ, ゕ, ゖ)
-  smallChars: [12353, 12355, 12357, 12359, 12361, 12387, 12419, 12421, 12423, 12436, 12437, 12438],
+  // 필터링할 작은 글자 유니코드 목록 (히라가나 + 가타카나)
+  smallChars: [
+    12353, 12355, 12357, 12359, 12361, 12387, 12419, 12421, 12423, 12436, 12437, 12438, // Hira small chars
+    12449, 12451, 12453, 12455, 12457, 12483, 12515, 12517, 12519, 12533, 12534, 12541, 12542, 12543 // Kata small & special
+  ],
 
   /**
    * 유니코드를 문자로 변환
@@ -75,7 +82,9 @@ const ENGINE = {
 
     // 1. 망각 및 최근 성능 분석 (lastTime 및 avgSpeed 참고)
     const lastMillis = data.lastTime ? (data.lastTime.toMillis ? data.lastTime.toMillis() : data.lastTime) : 0;
-    const hoursSinceLast = lastMillis ? (Date.now() - lastMillis) / (1000 * 60 * 60) : 0;
+    const safeLastMillis = typeof lastMillis === 'number' ? lastMillis : 0; // Ensure lastMillis is a number
+    const hoursSinceLast = safeLastMillis ? (Date.now() - safeLastMillis) / (1000 * 60 * 60) : 0;
+    const safeHoursSinceLast = isNaN(hoursSinceLast) ? 0 : hoursSinceLast; // Ensure hoursSinceLast is not NaN
 
     // 개별 글자의 단순 최근 평균 속도 계산 (최근 n개)
     let totalSpeed = 0;
@@ -98,8 +107,12 @@ const ENGINE = {
       const result = (data.results && data.results[index] !== undefined) ? data.results[index] : 0;
       const speed = (data.speeds && data.speeds[index] !== undefined) ? data.speeds[index] : 0;
 
+      // Ensure values are numbers, converting NaN to 0 defensively
+      const safeResult = isNaN(result) ? 0 : result;
+      const safeSpeed = isNaN(speed) ? 0 : speed;
+
       // 속도 페널티 (기준 속도 대비 가중치)
-      const speedRatio = speed / ENGINE.CONFIG.MIN_SPEED_CRITERIA;
+      const speedRatio = safeSpeed / ENGINE.CONFIG.MIN_SPEED_CRITERIA;
       weightedSpeedSum += speedRatio * recencyWeight;
 
       weightTotal += recencyWeight;
@@ -109,7 +122,7 @@ const ENGINE = {
     const avgSpeed = weightedSpeedSum / weightTotal;
 
     // 망각 보너스 합산 (오래될수록 가중치 증가, 최대 5.0)
-    const forgetBoost = Math.min(5.0, hoursSinceLast * ENGINE.CONFIG.RETENTION_SENSITIVITY);
+    const forgetBoost = Math.min(5.0, safeHoursSinceLast * ENGINE.CONFIG.RETENTION_SENSITIVITY);
 
     let finalScore = ENGINE.CONFIG.BASE_PROBABILITY
       + avgSpeed
@@ -135,15 +148,33 @@ const ENGINE = {
    * 신규 문자 추가 처리
    */
   addNewCharacter: () => {
-    let nextCode = Math.max(...ENGINE.activePool) + 1;
-    while (nextCode <= ENGINE.range.end && (ENGINE.smallChars.includes(nextCode) || ENGINE.activePool.includes(nextCode))) {
-      nextCode++;
+    // 진도표 순서 정의 (청음, 탁음 순서)
+    const hiraRows = ["あいうえお", "かきくけこ", "さしすせそ", "たちつてと", "なにぬねの", "はひふへほ", "まみむめも", "やゆよ", "らりるれろ", "わを", "ん", "がぎぐげご", "ざじずぜぞ", "だぢづでど", "ばびぶべぼ", "ぱぴぷぺぽ"];
+    const kataRows = ["アイウエオ", "カキクケコ", "サシスセソ", "タチツテト", "ナニヌネノ", "ハヒフヘホ", "マミムメモ", "ヤユヨ", "ラリルレロ", "ワヲ", "ン", "ガギグゲゴ", "ザジズゼゾ", "ダヂヅデド", "バビブベボ", "パピプペポ"];
+
+    let primary = hiraRows, secondary = kataRows;
+    if (ENGINE.CONFIG.AUTO_PROGRESS === 'kata') {
+      primary = kataRows; secondary = hiraRows;
     }
 
-    if (nextCode <= ENGINE.range.end && ENGINE.activePool.length < ENGINE.MAX_POOL_SIZE) {
+    const findNext = (table) => {
+      for (const row of table) {
+        for (const char of row) {
+          const code = char.charCodeAt(0);
+          // 유효한 가나 문자이고 현재 풀에 없는 첫 번째 문자 선택
+          if (code >= 12353 && code <= 12543 && !ENGINE.smallChars.includes(code) && !ENGINE.activePool.includes(code)) {
+            return code;
+          }
+        }
+      }
+      return null;
+    };
+
+    let nextCode = findNext(primary) || findNext(secondary);
+
+    if (nextCode && ENGINE.activePool.length < ENGINE.MAX_POOL_SIZE) {
       ENGINE.activePool.push(nextCode);
       ENGINE.lastAddedChar = ENGINE.toChar(nextCode);
-      console.log("학습 마스터! 새 표준 글자 추가:", ENGINE.lastAddedChar);
       return true;
     }
     return false;
@@ -153,6 +184,9 @@ const ENGINE = {
    * 신규 학습 문자 추가 여부를 판단하는 핵심 로직
    */
   checkAndInhaleNewCharacter: async () => {
+    // 자동 진도 설정이 꺼져있으면 중단
+    if (ENGINE.CONFIG.AUTO_PROGRESS === 'off') return;
+
     const allData = await getAllProgress();
     const activeChars = ENGINE.activePool;
 
@@ -182,7 +216,7 @@ const ENGINE = {
 
     // 3. 현재 학습 풀(activePool)의 글자들에 대해 합격 여부 판단
     const PASS_SCORE = 85;
-    const PROGRESS_RATIO = 0.85;
+    const PROGRESS_RATIO = ENGINE.CONFIG.PROGRESS_RATIO;
     let passedCount = 0;
 
     activeChars.forEach(code => {
@@ -229,14 +263,21 @@ const ENGINE = {
       ENGINE.recentResults = [];
     }
 
+    // 최근 출제된 문자를 제외한 후보군 생성 (중복 방지)
+    // 단, 전체 풀이 너무 작을 경우를 대비해 예외 처리
+    let candidates = ENGINE.activePool.filter(code => !ENGINE.targetHistory.includes(code));
+    if (candidates.length === 0) {
+      candidates = ENGINE.activePool;
+    }
+
     // DB 데이터를 기반으로 각 문자의 가중치 계산
     const dbData = await getAllProgress();
-    const weights = ENGINE.activePool.map(code => {
+    const weights = candidates.map(code => {
       const data = dbData[code.toString()] || { total_attempts: 0, head: 0, results: [], speeds: [] };
       return { code, score: ENGINE.calculateWeight(data) };
     });
 
-    // 가중치 합계 계산 및 무작위 선택
+    // 가중치 합계 계산 및 룰렛 휠 선택
     const totalWeight = weights.reduce((sum, item) => sum + item.score, 0);
     let random = Math.random() * totalWeight;
     let targetCode = weights[weights.length - 1].code;
@@ -250,12 +291,23 @@ const ENGINE = {
     }
 
     ENGINE.currentTarget = targetCode;
+    
+    // 최근 출제 기록 업데이트
+    ENGINE.targetHistory.push(targetCode);
+    if (ENGINE.targetHistory.length > ENGINE.TARGET_HISTORY_LIMIT) {
+      ENGINE.targetHistory.shift();
+    }
+
     // 예측 가중치 저장 (튜닝 시 사용)
     ENGINE.expectedWeight = weights.find(w => w.code === targetCode).score;
 
-    // 오답 후보 선정: 정답을 제외한 activePool 내에서 무작위 2개 추출
+    // 오답 후보 선정: 정답과 그 짝꿍(히라가나/가타카나)을 제외한 activePool 내에서 무작위 2개 추출
+    // 히라가나와 가타카나의 유니코드 차이는 96(0x60)입니다.
+    const isHira = targetCode < 12448;
+    const counterpartCode = isHira ? targetCode + 96 : targetCode - 96;
+
     let distractors = ENGINE.activePool
-      .filter(c => c !== targetCode)
+      .filter(c => c !== targetCode && c !== counterpartCode)
       .sort(() => Math.random() - 0.5)
       .slice(0, 2);
 

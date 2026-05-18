@@ -3,15 +3,16 @@
  * 모든 모듈을 유기적으로 연결
  */
 
-let learningTime = 60; // 기본 학습 시간 (초)
-let timeLeft = 60;
+let learningTime = 30; // 기본 학습 시간 (초)
+let timeLeft = 30;
 let timerInterval = null;
 let questionStartTime = 0; // 응답 시간 측정을 위한 변수
 let sessionHistory = []; // 최근 5문제 기록 저장
 let isTimeUp = false; // 시간이 종료되었는지 여부
+let progressViewMode = 'hira'; // 'hira' 또는 'kata'
 
 const totalStandardHiraganaCount = (ENGINE.range.end - ENGINE.range.start + 1) - ENGINE.smallChars.length;
-const timeOptions = [10, 20, 30, 60];
+const timeOptions = [10, 20, 30, 40, 50, 60];
 let isPaused = false;
 
 window.addEventListener('load', () => {
@@ -30,7 +31,7 @@ window.addEventListener('load', () => {
       console.log("인증 확인됨:", user.displayName);
 
       // 로그인 상태일 때 실행할 로직
-      initUser(user.uid);      // db-handler.js: 사용자 UID 설정
+      await initUser(user.uid); // db-handler.js: 사용자 UID 설정 및 캐시 로드
 
       // 사용자 프로필 정보 저장 (이름, 이메일)
       saveUserProfile(user.displayName, user.email);
@@ -39,6 +40,12 @@ window.addEventListener('load', () => {
       const userConfig = await getUserConfig();
       if (userConfig) {
         Object.assign(ENGINE.CONFIG, userConfig);
+        if (userConfig.learningTime) {
+          learningTime = userConfig.learningTime;
+          timeLeft = userConfig.learningTime;
+          const timerText = document.getElementById('timer-text');
+          if (timerText) timerText.innerText = learningTime + 's';
+        }
         console.log("개인화 설정 로드 완료:", userConfig);
       }
 
@@ -202,7 +209,16 @@ function initSettingsUI() {
 
   infoRow.appendChild(weightDiv);
   infoRow.appendChild(historyDiv);
-  document.getElementById('audio-trigger').before(infoRow);
+  const audioTrigger = document.getElementById('audio-trigger');
+  audioTrigger.before(infoRow);
+
+  // 음성 아이콘 아래에 '음성 다시 재생' 문구 추가
+  const audioLabel = document.createElement('div');
+  audioLabel.id = 'audio-replay-label';
+  audioLabel.innerText = '음성 다시 재생';
+  audioLabel.style.cssText = 'font-size: 11px; color: #666; margin-top: 5px; cursor: pointer; display: none;';
+  audioLabel.onclick = () => audioTrigger.click();
+  audioTrigger.after(audioLabel);
 
   // 하단: Firebase Status + Report
   const footer = document.createElement('div');
@@ -222,7 +238,7 @@ function initSettingsUI() {
   modal.id = 'settings-modal';
   modal.style.cssText = 'display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:25px; border:1px solid #ddd; border-radius:15px; z-index:2000; box-shadow:0 4px 15px rgba(0,0,0,0.2); width:80%; max-width:800px; max-height:90vh; overflow-y:auto;';
 
-  const initialIdx = timeOptions.indexOf(learningTime) !== -1 ? timeOptions.indexOf(learningTime) : 3;
+  const initialIdx = timeOptions.indexOf(learningTime) !== -1 ? timeOptions.indexOf(learningTime) : 2;
 
   const hr = '<hr style="border:0; border-top:1px solid #eee; margin:20px 0;">';
 
@@ -235,7 +251,7 @@ function initSettingsUI() {
     <div style="margin-bottom:15px">
       <label style="display:block; margin-bottom:10px; font-weight:bold;">목표 학습 시간:</label>
       <div style="display:flex; align-items:center; gap:15px;">
-        <input type="range" id="time-slider" min="0" max="3" step="1" value="${initialIdx}" 
+        <input type="range" id="time-slider" min="0" max="5" step="1" value="${initialIdx}" 
                style="flex:1; cursor:pointer;" oninput="updateTimeFromSlider(this.value)">
         <span id="time-val-display" style="font-weight:bold; min-width:30px; text-align:right;">${learningTime}</span>s
       </div>
@@ -255,7 +271,13 @@ function initSettingsUI() {
       <div style="font-size:14px; color:#444;">
         <p>진행률: <span id="settings-active-count">0 / ${totalStandardHiraganaCount} (0.0%)</span></p>
       </div>
-      <div style="text-align:right;">
+      <div style="text-align:right; display:flex; gap:5px; flex-wrap:wrap; justify-content:flex-end;">
+        <button id="btn-toggle-auto" onclick="toggleAutoProgress()" style="background:#607d8b; color:white; border:none; padding:8px 12px; border-radius:5px; cursor:pointer;">
+          자동 진도: 히라가나 우선
+        </button>
+        <button id="btn-toggle-diff" onclick="toggleProgressDifficulty()" style="display:${ENGINE.CONFIG.AUTO_PROGRESS ? 'inline-block' : 'none'}; background:#ff9800; color:white; border:none; padding:8px 12px; border-radius:5px; cursor:pointer;">
+          난이도: 보통
+        </button>
         <button onclick="renderProgressPage()" style="background:#4a90e2; color:white; border:none; padding:8px 15px; border-radius:5px; cursor:pointer;">개별 진도 확인</button>
       </div>
     </div>
@@ -278,11 +300,56 @@ function initSettingsUI() {
   document.body.appendChild(modal);
 }
 
+/**
+ * 자동 진도 끄기/켜기 토글
+ */
+window.toggleAutoProgress = () => {
+  const modes = ['hira', 'kata', 'off'];
+  let nextIdx = (modes.indexOf(ENGINE.CONFIG.AUTO_PROGRESS) + 1) % modes.length;
+  ENGINE.CONFIG.AUTO_PROGRESS = modes[nextIdx];
+
+  const btnAuto = document.getElementById('btn-toggle-auto');
+  const btnDiff = document.getElementById('btn-toggle-diff');
+  
+  if (btnAuto) {
+    const labels = { 'hira': '자동진도 켜짐(히라가나 우선)', 'kata': '자동진도 켜짐(가타카나 우선)', 'off': '자동진도 꺼짐' };
+    btnAuto.innerText = labels[ENGINE.CONFIG.AUTO_PROGRESS];
+    btnAuto.style.background = ENGINE.CONFIG.AUTO_PROGRESS === 'off' ? '#9e9e9e' : '#607d8b';
+  }
+
+  if (btnDiff) {
+    btnDiff.style.display = ENGINE.CONFIG.AUTO_PROGRESS === 'off' ? 'none' : 'inline-block';
+  }
+  
+  saveUserConfig(ENGINE.CONFIG, learningTime);
+};
+
+/**
+ * 자동 진도 난이도 토글 (빠른진도 60, 보통 85, 느리게 90)
+ */
+window.toggleProgressDifficulty = () => {
+  const diffs = [
+    { label: "빠른 진도", val: 0.60 },
+    { label: "보통 진도", val: 0.85 },
+    { label: "느린 진도", val: 0.90 }
+  ];
+  
+  let currentIndex = diffs.findIndex(d => Math.abs(d.val - ENGINE.CONFIG.PROGRESS_RATIO) < 0.01);
+  let nextIndex = (currentIndex + 1) % diffs.length;
+  
+  ENGINE.CONFIG.PROGRESS_RATIO = diffs[nextIndex].val;
+  const btnDiff = document.getElementById('btn-toggle-diff');
+  if (btnDiff) btnDiff.innerText = `${diffs[nextIndex].label}`;
+  
+  saveUserConfig(ENGINE.CONFIG, learningTime);
+};
+
 window.updateTimeFromSlider = (idx) => {
   learningTime = timeOptions[idx];
   document.getElementById('time-val-display').innerText = learningTime;
   const timerText = document.getElementById('timer-text');
   if (timerText && !timerInterval) timerText.innerText = learningTime + 's';
+  saveUserConfig(ENGINE.CONFIG, learningTime);
 };
 
 function toggleSettings() {
@@ -299,6 +366,20 @@ function toggleSettings() {
     document.getElementById('settings-active-count').innerText = `${learnedCount} / ${totalStandardHiraganaCount} (${percentage}%)`;
 
     renderStudyStats();
+
+    // 자동 진도 버튼 상태 업데이트
+    const btnAuto = document.getElementById('btn-toggle-auto');
+    const btnDiff = document.getElementById('btn-toggle-diff');
+    if (btnAuto) {
+      const labels = { 'hira': '자동진도 켜짐(히라가나 우선)', 'kata': '자동진도 켜짐(가타카나 우선)', 'off': '자동진도 꺼짐' };
+      btnAuto.innerText = labels[ENGINE.CONFIG.AUTO_PROGRESS] || '자동진도 꺼짐';
+      btnAuto.style.background = ENGINE.CONFIG.AUTO_PROGRESS === 'off' ? '#9e9e9e' : '#607d8b';
+    }
+    if (btnDiff) {
+      const diffLabels = { "0.6": "빠른진도", "0.85": "보통진도", "0.9": "느린진도" };
+      btnDiff.innerText = `${diffLabels[ENGINE.CONFIG.PROGRESS_RATIO.toString()] || "보통"}`;
+      btnDiff.style.display = ENGINE.CONFIG.AUTO_PROGRESS === 'off' ? 'none' : 'inline-block';
+    }
 
     // 개인화 설정값 표시 업데이트
     const config = ENGINE.CONFIG;
@@ -491,15 +572,53 @@ async function openProgressFromHistory(char) {
  * 전체 학습 데이터를 초기화하고 첫 상태로 되돌립니다.
  */
 window.resetAllProgressData = async () => {
-  if (confirm("모든 학습 데이터와 통계가 삭제됩니다. 정말 초기화하시겠습니까?")) {
-    await resetAllProgress(); // DB 데이터 삭제
+  const isHira = progressViewMode === 'hira';
+  const modeName = isHira ? '히라가나' : '가타카나';
+  const startRange = isHira ? 12353 : 12449;
+  const endRange = isHira ? 12447 : 12543;
 
-    // 엔진 상태 리셋
-    ENGINE.activePool = [];
-    ENGINE.recentResults = [];
-    await ENGINE.initPool(); // 기본 풀 재구성
+  if (confirm(`현재 표시된 ${modeName}의 모든 학습 데이터가 삭제됩니다. 정말 초기화하시겠습니까?`)) {
+    // 1. 현재 모드에 해당하는 코드들만 추출
+    const codesToReset = ENGINE.activePool.filter(code => code >= startRange && code <= endRange);
 
-    showStartButton(); // 메인 화면으로 복귀 (오버레이 자동 제거)
+    if (codesToReset.length > 0) {
+      // 2. DB 및 로컬 캐시 삭제
+      await resetSelectedProgress(codesToReset);
+
+      // 3. 엔진 activePool에서 해당 코드 제거
+      ENGINE.activePool = ENGINE.activePool.filter(code => !codesToReset.includes(code));
+      ENGINE.recentResults = [];
+      
+      // 4. 최소 학습 풀 보장을 위해 재초기화
+      await ENGINE.initPool();
+      
+      // 5. 화면 갱신
+      await renderProgressPage();
+    } else {
+      alert("초기화할 학습 데이터가 없습니다.");
+    }
+  }
+};
+
+/**
+ * 특정 문자의 학습 데이터를 초기화합니다.
+ */
+window.resetSingleCharacterProgress = async (code) => {
+  const char = ENGINE.toChar(code);
+  if (confirm(`문자 '${char}'의 학습 데이터를 초기화하시겠습니까?`)) {
+    // 1. DB 및 로컬 캐시 삭제
+    await resetSelectedProgress([code]);
+
+    // 2. 엔진 activePool에서 해당 코드 제거
+    ENGINE.activePool = ENGINE.activePool.filter(c => c !== code);
+    ENGINE.recentResults = []; // Reset recent results as the pool changed
+
+    // 3. 최소 학습 풀 보장을 위해 재초기화
+    await ENGINE.initPool();
+
+    // 4. 화면 갱신
+    await renderProgressPage();
+    alert(`문자 '${char}'의 학습 데이터가 초기화되었습니다.`);
   }
 };
 
@@ -568,6 +687,8 @@ function showStartButton() {
 
   // 1. 초기 UI 정리 (오디오 버튼 숨김 등)
   if (audioBtn) audioBtn.style.display = 'none';
+  const audioLabel = document.getElementById('audio-replay-label');
+  if (audioLabel) audioLabel.style.display = 'none';
 
   // 타이머 관련 초기화
   if (timerInterval) clearInterval(timerInterval);
@@ -579,6 +700,7 @@ function showStartButton() {
   if (document.getElementById('weight-display')) document.getElementById('weight-display').innerText = '';
   ENGINE.lastAddedChar = null; // 추가 문자 기록 초기화
   ENGINE.recentResults = []; // 새 학습 세션 시작 시 난이도 조절용 정답 기록 초기화
+  ENGINE.targetHistory = []; // 출제 이력 초기화
 
   // 히스토리 초기화
   sessionHistory = [];
@@ -600,6 +722,8 @@ function showStartButton() {
   startBtn.onclick = () => {
     warmUpAudio(); // 음성 엔진 예열
     if (audioBtn) audioBtn.style.display = 'inline-block'; // 오디오 버튼 다시 표시
+    const audioLabel = document.getElementById('audio-replay-label');
+    if (audioLabel) audioLabel.style.display = 'block';
     startTimer(); // 타이머 시작
     renderQuestion(); // 실제 문제 시작 (내부에서 비동기 처리)
   };
@@ -643,9 +767,21 @@ function warmUpAudio() {
 }
 
 /**
+ * 히라가나/가타카나 표시 모드를 전환합니다.
+ */
+window.toggleProgressViewMode = () => {
+  progressViewMode = (progressViewMode === 'hira') ? 'kata' : 'hira';
+  renderProgressPage();
+};
+
+/**
  * 학습 진도표 페이지 렌더링
  */
 async function renderProgressPage() {
+  // 기존 오버레이가 있다면 제거하여 중복 생성을 방지합니다.
+  const existingOverlay = document.getElementById('progress-overlay');
+  if (existingOverlay) existingOverlay.remove();
+
   // 설정 모달이 열려있다면 닫기
   const settingsModal = document.getElementById('settings-modal');
   const settingsOverlay = document.getElementById('settings-overlay'); // 설정 오버레이도 함께 닫기
@@ -657,24 +793,27 @@ async function renderProgressPage() {
 
   const allData = await getAllProgress();
 
-  const rows = [
-    ['あ', 'か', 'さ', 'た', 'な', 'は', 'ま', 'や', 'ら', 'わ', 'ん'], // 행 시작점
-    ['が', 'ざ', 'だ', 'ば', 'ぱ'] // 탁음/반탁음 시작점
-  ];
-
-  const cols = ['あ', 'い', 'う', 'え', 'お']; // 단(段)
-
   // 차트 생성을 위한 맵핑 (청음 46 + 탁음 20 + 반탁음 5)
   const hiraganaTable = [
     "あいうえお", "かきくけこ", "さしすせそ", "たちつてと", "なにぬねの", "はひふへほ", "まみむめも", "やゆよ", "らりるれろ", "わを", "ん",
     "がぎぐげご", "ざじずぜぞ", "だぢづでど", "ばびぶべぼ", "ぱぴぷぺぽ"
   ].map(s => s.split(''));
 
+  const katakanaTable = [
+    "アイウエオ", "カキクケコ", "サシスセソ", "タチツテト", "ナニヌネノ", "ハヒフヘホ", "マミムメモ", "ヤユヨ", "ラリルレロ", "ワヲ", "ン",
+    "ガギグゲゴ", "ザジズゼゾ", "ダヂヅデド", "バビブベボ", "パピプペポ"
+  ].map(s => s.split(''));
+
+  const currentTable = progressViewMode === 'hira' ? hiraganaTable : katakanaTable;
+
+
   let html = `
-    <div style="display:flex; justify-content:space-between; align-items:center; position: sticky; top: -20px; background: white; padding: 20px 0 15px 0; z-index: 10; margin: -20px 0 15px 0; border-bottom: 1px solid #eee;">
-      <h2 style="margin:0">학습 통계</h2>
-      <div>
+    <div style="display:flex; justify-content:space-between; align-items:center; position: sticky; top: -20px; background: white; padding: 20px 0 15px 0; z-index: 10; margin: -20px 0 15px 0; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 10px;">
+      <h2 style="margin:0">${progressViewMode === 'hira' ? '히라가나' : '가타카나'} 학습 현황</h2>
+      <div style="display:flex; gap:5px;">
+        <button onclick="toggleProgressViewMode()" style="padding:5px 10px; background:#2196F3; color:white; border:none; border-radius:3px; cursor:pointer;">${progressViewMode === 'hira' ? '가타카나' : '히라가나'} 보기</button>
         <button id="btn-analysis" style="padding:5px 15px; background:#673ab7; color:white; border:none; border-radius:3px; cursor:pointer; margin-right:5px;">분석</button>
+        <button onclick="unlockAllCharacters()" style="padding:5px 15px; background:#4CAF50; color:white; border:none; border-radius:3px; cursor:pointer; margin-right:5px;">모두 해금</button>
         <button onclick="resetAllProgressData()" style="padding:5px 15px; background:#f44336; color:white; border:none; border-radius:3px; cursor:pointer; margin-right:5px;">초기화</button>
         <button onclick="showStartButton()" style="padding:5px 15px;">닫기</button>
       </div>
@@ -683,7 +822,7 @@ async function renderProgressPage() {
       <table id="progress-table" style="width:100%; border-collapse:collapse; font-size:12px; text-align:center; background:white; table-layout: fixed;">
   `;
 
-  hiraganaTable.forEach(rowChars => {
+  currentTable.forEach(rowChars => {
     html += '<tr>';
     rowChars.forEach(char => {
       if (char === '_' || char === ' ') {
@@ -691,9 +830,10 @@ async function renderProgressPage() {
         return;
       }
       const code = char.charCodeAt(0).toString();
-      const data = allData[code] || { total_attempts: 0, results: [], speeds: [] };
-      const results = data.results || [];
-      const speeds = data.speeds || [];
+      const isUnlocked = ENGINE.activePool.includes(parseInt(code)); // Check if character is in active pool
+      const data = allData[code] || { total_attempts: 0, head: 0, results: new Array(100).fill(0), speeds: new Array(100).fill(0) }; // Ensure 'head' and arrays are initialized
+      const results = data.results; // Now guaranteed to be an array
+      const speeds = data.speeds;   // Now guaranteed to be an array
 
       // 최근 100회 기준 정답률 및 평균 속도 계산
       const attempts = Math.min(data.total_attempts, 100);
@@ -709,19 +849,30 @@ async function renderProgressPage() {
       const hue = Math.max(0, 120 - (weight - 1) * (120 / 9));
       const weightColor = `hsl(${hue}, 80%, 90%)`;
 
-      html += `
-        <td class="progress-cell" data-weight-color="${weightColor}" style="border:1px solid #ddd; padding:5px; width:18%; transition: background 0.3s;">
-          <div style="font-size:1.4rem; font-weight:bold;">${char}</div>
-          <div class="stat-normal" style="color:#666; font-size:10px;">
-            ${data.total_attempts}회<br>
-            ${accuracy}%<br>
-            ${avgSpeed}ms
-          </div>
-          <div class="stat-analysis" style="display:none; color:#d32f2f; font-weight:bold; font-size:11px;">
-            가중치:<br>${weight.toFixed(2)}
-          </div>
-        </td>
-      `;
+      if (isUnlocked) {
+        html += `
+          <td class="progress-cell" data-char-code="${code}" data-weight-color="${weightColor}" onclick="resetSingleCharacterProgress(${code})" style="border:1px solid #ddd; padding:5px; width:18%; transition: background 0.3s; cursor:pointer;">
+            <div style="font-size:1.4rem; font-weight:bold;">${char}</div>
+            <div class="stat-normal" style="color:#666; font-size:10px;">
+              ${data.total_attempts}회<br>
+              ${accuracy}%<br>
+              ${avgSpeed}ms
+            </div>
+            <div class="stat-analysis" style="display:none; color:#d32f2f; font-weight:bold; font-size:11px;">
+              가중치:<br>${weight.toFixed(2)}
+            </div>
+          </td>
+        `;
+      } else {
+        html += `
+          <td class="progress-cell-locked" style="border:1px solid #ddd; padding:5px; width:18%; background:#f0f0f0; color:#aaa;">
+            <div style="font-size:1.4rem; font-weight:bold;">${char}</div>
+            <div style="margin-top:5px;">
+              <button onclick="unlockCharacter(${code})" style="padding:2px 8px; font-size:10px; cursor:pointer; background:#eee; border:1px solid #ccc; border-radius:3px;">해금</button>
+            </div>
+          </td>
+        `;
+      }
     });
     html += '</tr>';
   });
@@ -764,6 +915,37 @@ async function renderProgressPage() {
     }
   };
 }
+
+/**
+ * 특정 문자를 학습 풀에 수동으로 해금합니다.
+ */
+window.unlockCharacter = async (code) => {
+  if (!ENGINE.activePool.includes(code)) {
+    ENGINE.activePool.push(code);
+    ENGINE.activePool.sort((a, b) => a - b);
+    await renderProgressPage();
+  }
+};
+
+/**
+ * 모든 유효한 가나 문자를 학습 풀에 한 번에 해금합니다.
+ */
+window.unlockAllCharacters = async () => {
+  const isHira = progressViewMode === 'hira';
+  const modeName = isHira ? '히라가나' : '가타카나';
+  const startRange = isHira ? 12353 : 12449;
+  const endRange = isHira ? 12447 : 12543;
+
+  if (confirm(`모든 ${modeName} 문자를 해금하시겠습니까?`)) {
+    for (let code = startRange; code <= endRange; code++) {
+      if (!ENGINE.smallChars.includes(code) && !ENGINE.activePool.includes(code)) {
+        ENGINE.activePool.push(code);
+      }
+    }
+    ENGINE.activePool.sort((a, b) => a - b);
+    await renderProgressPage();
+  }
+};
 
 async function renderQuestion() {
   // 엔진으로부터 정답과 보기를 한 번에 가져와서 동기화 문제를 방지
@@ -839,13 +1021,13 @@ async function renderQuestion() {
 
 async function checkAnswer(selected, correct) {
   // [테스트 코드 시작]
-  // console.group("--- Answer Check ---");
-  // console.log("선택된 값(selected):", selected, typeof selected);
-  // console.log("실제 정답(correct):", correct, typeof correct);
-  // console.log("문자 변환 - 선택:", ENGINE.toChar(selected));
-  // console.log("문자 변환 - 정답:", ENGINE.toChar(correct));
-  // console.log("비교 결과:", Number(selected) === Number(correct));
-  // console.groupEnd();
+  console.group("--- Answer Check ---");
+  console.log("선택된 값(selected):", selected, typeof selected);
+  console.log("실제 정답(correct):", correct, typeof correct);
+  console.log("문자 변환 - 선택:", ENGINE.toChar(selected));
+  console.log("문자 변환 - 정답:", ENGINE.toChar(correct));
+  console.log("비교 결과:", Number(selected) === Number(correct));
+  console.groupEnd();
   // [테스트 코드 끝]
   // 숫자 대 숫자로 정확히 비교
   const isCorrect = Number(selected) === Number(correct);
