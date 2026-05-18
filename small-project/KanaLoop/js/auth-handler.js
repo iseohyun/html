@@ -106,7 +106,7 @@ auth.onAuthStateChanged((user) => {
     
     statusText.innerHTML = `
       <div>
-        <span onclick="toggleSettings()" style="cursor:pointer; text-decoration:underline; font-weight:bold;">${cleanName}님</span>
+        <span onclick="toggleSettings()" style="cursor:pointer; font-weight:bold;">≡ ${cleanName}님</span>
         <span onclick="switchUser()" style="cursor:pointer; margin-left:5px; font-size:0.9rem;" title="사용자 전환">🔄</span>
       </div>
       <div style="display: flex; gap: 15px; align-items: center;">
