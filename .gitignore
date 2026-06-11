@@ -1,2 +1,5 @@
 test/*
 commit.log
+**/KanaLoop/node_modules/**
+**/KanaLoop/dist/**
+**/PixelRun/**
