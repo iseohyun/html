@@ -1,0 +1,32 @@
+<div
+  style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom: 2px solid #f4f4f4; padding-bottom:10px;">
+  <h3 style="margin:0">학습 설정: {{currentDomain}}</h3>
+</div>
+
+<div style="margin-bottom:15px">
+  <label style="display:block; margin-bottom:10px; font-weight:bold;">목표 학습 시간:</label>
+  <div style="display:flex; align-items:center; gap:15px;">
+    <input type="range" id="time-slider" min="0" max="5" step="1" value="{{timeIdx}}" style="flex:1; cursor:pointer;"
+      oninput="updateTimeFromSlider(this.value)">
+    <span id="time-val-display" style="font-weight:bold; min-width:30px; text-align:right;">{{learningTime}}</span>초
+  </div>
+</div>
+
+<div style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; margin-top:20px;">
+  <span style="font-weight: bold;">단어장 크기</span>
+  <input type="number" id="pool-size" min="1" max="100" value="{{MAX_POOL_SIZE}}"
+    style="width: 60px; text-align: right;">
+</div>
+
+<div style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; margin-top:20px;">
+  <span style="font-weight: bold;">자동진도</span>
+  <input type="checkbox" id="auto-progress" {{#if autoProgress}}checked{{/if}}>
+</div>
+
+<div
+  style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; margin-top:20px; gap:15px;">
+  <span style="font-weight: bold; min-width:65px;">음성속도</span>
+  <input type="range" id="speech-slider" min="0" max="5" step="1" value="{{speechIdx}}" style="flex:1; cursor:pointer;"
+    oninput="updateSpeechFromSlider(this.value)">
+  <span id="speech-val-display" style="font-weight:bold; min-width:30px; text-align:right;">{{speechRate}}</span>
+</div>
