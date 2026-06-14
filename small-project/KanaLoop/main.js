@@ -230,13 +230,14 @@ async function renderNextQuestion() {
   window.audioTriggerClick();
   questionStartTime = Date.now();
 
-  // 4지선다 보기 버튼 DOM 렌더 가공
-  currentQuestion.options.forEach(charId => {
+  const keybinds = ['1 / A', '2 / S', '3 / Z', '4 / X'];
+  currentQuestion.options.forEach((charId, idx) => {
     const btn = document.createElement('button');
     btn.className = 'option-btn';
 
     const matchingItem = currentPool.find(p => p.charId === charId);
-    btn.innerText = matchingItem ? matchingItem.char : '';
+    const charText = matchingItem ? matchingItem.char : '';
+    btn.innerHTML = `<span class="keybind-hint">${keybinds[idx]}</span><span>${charText}</span>`;
     btn.dataset.charId = charId; // 정답 버튼 추적용 데이터 속성 추가
 
     // [조작 실수 방지 필터링 탑재]
@@ -477,11 +478,13 @@ async function renderNextSpeedrunQuestion() {
   window.audioTriggerClick();
   questionStartTime = Date.now();
 
-  currentQuestion.options.forEach(charId => {
+  const keybinds = ['1 / A', '2 / S', '3 / Z', '4 / X'];
+  currentQuestion.options.forEach((charId, idx) => {
     const btn = document.createElement('button');
     btn.className = 'option-btn';
     const matchingItem = currentPool.find(p => p.charId === charId);
-    btn.innerText = matchingItem ? matchingItem.char : '';
+    const charText = matchingItem ? matchingItem.char : '';
+    btn.innerHTML = `<span class="keybind-hint">${keybinds[idx]}</span><span>${charText}</span>`;
     btn.dataset.charId = charId;
 
     btn.onclick = () => {
@@ -1119,3 +1122,38 @@ window.resetAllProgressData = async function () {
     console.error("전체 초기화 처리 중 오류:", error);
   }
 };
+
+/**
+ * 키보드 단축키 바인딩 (4지선다 옵션 선택)
+ */
+window.addEventListener('keydown', (e) => {
+  // 세팅 창 등의 입력(Input, Select) 필드에서 타이핑 중일 때는 단축키 동작 무시
+  if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+
+  const optionsContainer = document.getElementById('options');
+  // 퀴즈 화면이 아니거나, 오답 확인 대기 중(pointerEvents === 'none')일 때는 무시
+  // 퀴즈 화면이 아니거나, 오답 확인 대기 중(pointerEvents === 'none')일 때는 무시
+  if (!optionsContainer || optionsContainer.style.pointerEvents === 'none') return;
+
+  if (e.code === 'Space') {
+    e.preventDefault(); // 스페이스바 화면 스크롤 방지
+    if (window.audioTriggerClick) window.audioTriggerClick();
+    return;
+  }
+
+  const key = e.key.toLowerCase();
+  let optionIndex = -1;
+
+
+  if (key === '1' || key === 'a') optionIndex = 0;      // 왼쪽 위
+  else if (key === '2' || key === 's') optionIndex = 1; // 오른쪽 위
+  else if (key === '3' || key === 'z') optionIndex = 2; // 왼쪽 아래
+  else if (key === '4' || key === 'x') optionIndex = 3; // 오른쪽 아래
+
+  if (optionIndex !== -1) {
+    const buttons = optionsContainer.querySelectorAll('.option-btn');
+    if (buttons && buttons.length > optionIndex) {
+      buttons[optionIndex].click(); // 해당 위치의 버튼 클릭 이벤트 강제 발생
+    }
+  }
+});
