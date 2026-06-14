@@ -12,6 +12,10 @@
       font-size: 1.2rem;
       min-width: 0;
     }
+
+    .keybind-hint {
+      display: none !important;
+    }
   }
 
   #history-bar {
@@ -148,6 +152,18 @@
   .option-btn {
     font-size: min(40vw, 12vh) !important;
     font-weight: bold;
+    position: relative;
+  }
+
+  .keybind-hint {
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    font-size: 14px;
+    color: #aaa;
+    font-weight: normal;
+    pointer-events: none;
+    letter-spacing: -0.5px;
   }
 
   .option-btn:hover {
