@@ -49,12 +49,12 @@ import {
   requestNotificationPermission,
   scheduleReviewNotification
 } from './components/notification-handler.js';
-import { 
-  initAuthObserver, 
-  googleLogin, 
-  kakaoLogin, 
-  naverLogin, 
-  logoutUser 
+import {
+  initAuthObserver,
+  googleLogin,
+  kakaoLogin,
+  naverLogin,
+  logoutUser
 } from './components/auth-handler.js';
 
 window.playSoundTest = playSoundTest;
@@ -276,19 +276,26 @@ async function handleUserAnswer(selectedCharId, latency) {
   updateHistoryBarUI();
 
   if (!isCorrect) {
-    // 오답일 경우: 정답 음성 재출력
-    if (window.audioTriggerClick) window.audioTriggerClick();
+    const feedbackMode = userConfig.errorFeedbackMode || 'both';
 
-    // 정답 선택지를 찾아 1초간 녹색으로 서서히 변화시킴
-    const correctBtn = document.querySelector(`.option-btn[data-char-id="${target.charId}"]`);
-    if (correctBtn) {
-      correctBtn.style.transition = 'background-color 1s ease, color 1s ease';
-      correctBtn.style.backgroundColor = '#4CAF50'; // 녹색
-      correctBtn.style.color = 'white';
+    if (feedbackMode !== 'none') {
+      // 오답일 경우: 정답 음성 재출력 (both 일 때만)
+      if (feedbackMode === 'both' && window.audioTriggerClick) window.audioTriggerClick();
+
+      // 정답 선택지를 찾아 1초간 녹색으로 서서히 변화시킴
+      const correctBtn = document.querySelector(`.option-btn[data-char-id="${target.charId}"]`);
+      if (correctBtn) {
+        correctBtn.style.transition = 'background-color 1s ease, color 1s ease';
+        correctBtn.style.backgroundColor = '#4CAF50'; // 녹색
+        correctBtn.style.color = 'white';
+      }
+
+      // 변화 과정을 충분히 인지할 수 있도록 1초(1000ms) 대기
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } else {
+      // '표시 안하기'인 경우 딜레이를 최소화하여 빠른 진행 유도
+      await new Promise(resolve => setTimeout(resolve, 300));
     }
-
-    // 변화 과정을 충분히 인지할 수 있도록 1초(1000ms) 대기
-    await new Promise(resolve => setTimeout(resolve, 1000));
   }
 
   // 2. 문제를 다 풀고 난 뒤에 타임업 여부를 검사
@@ -505,14 +512,20 @@ async function handleSpeedrunAnswer(selectedCharId, latency) {
   updateHistoryBarUI();
 
   if (!isCorrect) {
-    if (window.audioTriggerClick) window.audioTriggerClick();
-    const correctBtn = document.querySelector(`.option-btn[data-char-id="${target.charId}"]`);
-    if (correctBtn) {
-      correctBtn.style.transition = 'background-color 1s ease, color 1s ease';
-      correctBtn.style.backgroundColor = '#4CAF50';
-      correctBtn.style.color = 'white';
+    const feedbackMode = userConfig.errorFeedbackMode || 'both';
+
+    if (feedbackMode !== 'none') {
+      if (feedbackMode === 'both' && window.audioTriggerClick) window.audioTriggerClick();
+      const correctBtn = document.querySelector(`.option-btn[data-char-id="${target.charId}"]`);
+      if (correctBtn) {
+        correctBtn.style.transition = 'background-color 1s ease, color 1s ease';
+        correctBtn.style.backgroundColor = '#4CAF50';
+        correctBtn.style.color = 'white';
+      }
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } else {
+      await new Promise(resolve => setTimeout(resolve, 300));
     }
-    await new Promise(resolve => setTimeout(resolve, 1000));
   }
 
   srCurrentIndex++;
@@ -844,9 +857,51 @@ async function openRemoteModalPopup(viewName) {
       // 연령/성별 셀렉트 박스 초기 설정값 지정
       const ageSelect = document.getElementById('user-age');
       if (ageSelect) ageSelect.value = userConfig.age || '미상';
-      
+
       const genderSelect = document.getElementById('user-gender');
       if (genderSelect) genderSelect.value = userConfig.gender || '미상';
+
+      const btnErrorShow = document.getElementById('btn-error-show');
+      const btnErrorAudio = document.getElementById('btn-error-audio');
+
+      const updateErrorFeedbackUI = () => {
+        if (!btnErrorShow || !btnErrorAudio) return;
+        if (userConfig.errorFeedbackMode === 'none') {
+          btnErrorShow.innerText = "무시";
+          btnErrorShow.style.background = "#9E9E9E";
+          btnErrorAudio.style.background = "#9E9E9E";
+          btnErrorAudio.disabled = true;
+        } else {
+          btnErrorShow.innerText = "표시";
+          btnErrorShow.style.background = "#4CAF50";
+          btnErrorAudio.disabled = false;
+
+          if (userConfig.errorFeedbackMode === 'both') {
+            btnErrorAudio.innerText = "+ 음성";
+            btnErrorAudio.style.background = "#2196F3";
+          } else {
+            btnErrorAudio.innerText = "정답만";
+            btnErrorAudio.style.background = "#FF9800";
+          }
+        }
+      };
+
+      if (btnErrorShow && btnErrorAudio) {
+        if (!userConfig.errorFeedbackMode) userConfig.errorFeedbackMode = 'both';
+        updateErrorFeedbackUI();
+
+        btnErrorShow.addEventListener('click', () => {
+          userConfig.errorFeedbackMode = userConfig.errorFeedbackMode === 'none' ? 'both' : 'none';
+          saveUserConfig(userConfig);
+          updateErrorFeedbackUI();
+        });
+
+        btnErrorAudio.addEventListener('click', () => {
+          userConfig.errorFeedbackMode = userConfig.errorFeedbackMode === 'both' ? 'visual_only' : 'both';
+          saveUserConfig(userConfig);
+          updateErrorFeedbackUI();
+        });
+      }
 
       document.getElementById('pool-size')?.addEventListener('input', (e) => {
         userConfig.MAX_POOL_SIZE = parseInt(e.target.value, 10) || 10;
@@ -881,7 +936,7 @@ window.popupLogin = () => openRemoteModalPopup('login');
 /**
  * 리더보드 도메인 필터 변경 시 호출
  */
-window.changeLeaderboardDomain = async function(targetDomain) {
+window.changeLeaderboardDomain = async function (targetDomain) {
   const listContainer = document.getElementById('leaderboard-list');
   if (listContainer) listContainer.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 30px; color:#777;">데이터를 불러오는 중입니다...</td></tr>';
   try {

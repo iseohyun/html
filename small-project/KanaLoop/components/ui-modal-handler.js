@@ -293,6 +293,18 @@ export function renderLeaderboardUI(rankings) {
     return;
   }
 
+  // 도메인 치환용 맵
+  const domainMap = {
+    'hira': 'あ',
+    'kata': 'ア',
+    'hangle': '가',
+    'english(a)': 'a',
+    'english(A)': 'A',
+    'english': 'a',
+    'ENGLISH': 'A',
+    'alphabet': 'a'
+  };
+
   // DB에서 불러온 실제 데이터로 1위부터 순차적으로 DOM 요소 생성
   let html = '';
   rankings.forEach((entry, index) => {
@@ -300,11 +312,18 @@ export function renderLeaderboardUI(rankings) {
     const isTop3 = rank <= 3;
     const rankStyle = isTop3 ? 'font-weight:bold; color:#FF9800;' : 'color:#555;';
 
+    let displayName = entry.name || '게스트';
+    if (displayName.startsWith('GUEST_')) {
+      displayName = 'G_' + displayName.substring(6, 10) + '...';
+    }
+
+    let domainDisplay = domainMap[entry.domain] || entry.domain || '';
+
     html += `
       <tr>
         <td style="text-align:center; ${rankStyle} font-size:16px;">${rank}</td>
-        <td style="font-weight:bold; color:#333; text-align:center;">${entry.name || '게스트'}</td>
-        <td style="text-align:center;">${entry.domain || ''} <span style="font-size:11px; color:#999;">(${entry.charCount || 0})</span></td>
+        <td style="font-weight:bold; color:#333; text-align:center;">${displayName}</td>
+        <td style="text-align:center;">${domainDisplay} <span style="font-size:11px; color:#999;">(${entry.charCount || 0})</span></td>
         <td style="text-align:center; font-weight:bold; color:#2196F3;">${entry.elapsedStr || '-'}</td>
         <td style="text-align:center;">${entry.accuracy || 0}%</td>
         <td style="text-align:center; font-size:11px; color:#aaa;">${entry.updatedAt}</td>

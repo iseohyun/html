@@ -224,11 +224,10 @@ export const getGlobalRankings = async (limitCount = 10, targetDomain = 'all') =
     return snapshot.docs.map(doc => {
       const data = doc.data();
 
-      // 소요시간 hh:mm:ss
-      const h = Math.floor(data.elapsedTime / 3600).toString().padStart(2, '0');
-      const m = Math.floor((data.elapsedTime % 3600) / 60).toString().padStart(2, '0');
+      // 소요시간 mm:ss
+      const totalM = Math.floor(data.elapsedTime / 60).toString().padStart(2, '0');
       const s = (data.elapsedTime % 60).toString().padStart(2, '0');
-      const elapsedStr = `${h}:${m}:${s}`;
+      const elapsedStr = `${totalM}:${s}`;
 
       // 완료시각 YYYY-MM-DD hh:mm:ss
       const d = new Date(data.updatedAt);
