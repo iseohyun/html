@@ -58,7 +58,7 @@ export function initSessionPool(domain, dbData = {}, autoProgress = true, MAX_PO
     return item.recentLatencies.reduce((a, b) => a + b, 0) / item.recentLatencies.length;
   };
 
-  // [1단계] 복습 주기를 '완벽히 채운' 정식 단어 수급
+  // [1단계] '복습 주기를 채운' 정식 단어 수급
   const reviewCandidates = processedData.filter(item => {
     if (!item.hasHistory) return false;
     const timeDiffMin = (now - item.lastSessionTime) / (60 * 1000);
@@ -76,7 +76,7 @@ export function initSessionPool(domain, dbData = {}, autoProgress = true, MAX_PO
   });
   pool = reviewCandidates.slice(0, MAX_POOL_SIZE);
 
-  // [2단계] 빈자리 수급 (조기 소환이므로 flag = false 유지 -> 승급 불가)
+  // [2단계] 빈자리 수급 (조기 소환이므로 승급 불가(flag = false))
   if (pool.length < MAX_POOL_SIZE) {
     const insufficientCandidates = processedData.filter(item => {
       if (!item.hasHistory || pool.some(p => p.charId === item.charId)) return false;

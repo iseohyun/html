@@ -2,8 +2,6 @@
  * main.js
  * 모든 모듈을 유기적으로 결합하고 세션 흐름을 제어하는 핵심 컨트롤러
 */
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
-import { GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
 import {
   userConfig,
   TIME_STEPS,
@@ -25,7 +23,10 @@ import {
   updateDailyStudyTime,
   updateDailyStats,
   getUserConfig,
-  saveUserConfig
+  saveUserConfig,
+  getWeeklyStats,
+  submitSpeedrunRanking,
+  getGlobalRankings
 } from './components/db-handler.js';
 import {
   initSessionPool,
@@ -41,43 +42,52 @@ import {
   renderResponseTimeChart,
   renderProgressTable,
   getStageColor,
-  toggleAnalysisMode
+  toggleAnalysisMode,
+  renderLeaderboardUI
 } from './components/ui-modal-handler.js';
 import {
   requestNotificationPermission,
   scheduleReviewNotification
 } from './components/notification-handler.js';
+import { 
+  initAuthObserver, 
+  googleLogin, 
+  kakaoLogin, 
+  naverLogin, 
+  logoutUser 
+} from './components/auth-handler.js';
 
-import settingTemplate from './view/setting.html?raw';
-import progressTemplate from './view/progress.html?raw';
-import sessionBoardTemplate from './view/leaderboard.html?raw';
-import loginTemplate from './view/login.html?raw';
-
-let isLoginProcessing = false;
+window.playSoundTest = playSoundTest;
+window.toggleAnalysisMode = toggleAnalysisMode;
 
 const MAIN_SELECTION_HTML = `
   <div class="mode-selection">
     <button class="mode-btn" onclick="startSessionWorkflow('study')">학습 모드</button>
-    <button class="mode-btn" onclick="startSessionWorkflow('speedrun')">스피드런</button>
+    <button class="mode-btn" onclick="startSessionWorkflow('record')">기록 모드</button>
   </div>
 `;
 
-let currentPool = [];             // 현재 세션에 바인딩된 MAX_POOL_SIZE(10개) 단어 객체 배열
-let currentQuestion = null;       // 현재 출제된 정답 및 보기 구조 { target, options }
-let sessionHistory = [];          // 이번 세션 내의 정답/오답 및 속도 히스토리 로그 누적
+let currentMode = 'study'; // 'study' 또는 'record'
+
+let currentPool = [];
+let currentQuestion = null;
+let sessionHistory = [];
 
 let timeLeft = 30;
-let timerInterval = null;         // 1초마다 세션 타이머를 갱신(상단 초시계바)
-let questionStartTime = 0;        // 실시간 반응속도 측정용 마일스톤
+let timerInterval = null; // 1초마다 세션 타이머를 갱신(상단 초시계바)
+let questionStartTime = 0; // 실시간 반응속도 측정용 마일스톤
 
 let isPaused = false;
 let isTimeUp = false;
 
+// 스피드런(기록 모드) 전용 상태 변수
+let srElapsedTime = 0;
+let srTotalCount = 0;
+let srCurrentIndex = 0;
+let srCorrectCount = 0;
+
 window.addEventListener('load', initApp);
 
-/**
- * 어플리케이션 통합 초기화 진입점
- */
 async function initApp() {
   // 웹 푸시 알림 기본 권한 획득 처리
   requestNotificationPermission();
@@ -86,8 +96,8 @@ async function initApp() {
   const audioReady = await initAudioEngine();
   console.log(audioReady ? "[Init] TTS 오디오 가동 스탠바이 완결" : "[Init] TTS 오디오 초기화 실패");
 
-  // 파이어베이스 인증 상태 변화 관찰(Observer) 가동
-  onAuthStateChanged(auth, async (user) => {
+  // 인증 모듈을 통한 상태 변화 관찰(Observer) 가동
+  initAuthObserver(async (user) => {
     const userNameDisplay = document.getElementById('profile-name');
 
     if (user) {
@@ -112,7 +122,7 @@ async function initApp() {
       console.log("게스트 임시 세션으로 구동을 시작합니다.");
       await initUser(null);
       if (userNameDisplay) {
-        userNameDisplay.innerText = "게스트님";
+        userNameDisplay.innerText = "게스트";
       }
     }
 
@@ -125,15 +135,27 @@ async function initApp() {
  * 모드 선택 버튼 클릭 시 초기 화면을 가리고 게임창을 기동하는 진입점
  */
 window.startSessionWorkflow = async function (mode) {
-  const modeLayer = document.getElementById('mode-selection-layer');
-  const gameLayer = document.getElementById('quiz-game-layer');
-  const title = document.getElementById('current-mode-title');
+  currentMode = mode;
+  try {
+    const versionQuery = window.APP_VERSION ? `?v=${window.APP_VERSION}` : '';
+    const response = await fetch(`./view/studyMode.html${versionQuery}`);
+    if (!response.ok) throw new Error("studyMode.html 수급 실패");
 
-  if (modeLayer) modeLayer.style.display = 'none';
-  if (gameLayer) gameLayer.style.display = 'block';
-  if (title) title.innerText = mode === 'study' ? '학습 모드' : '기록 모드';
+    const htmlContent = await response.text();
+    const mainBox = document.getElementById('main-box');
+    if (mainBox) mainBox.innerHTML = htmlContent;
 
-  await startQuizSession();
+    const title = document.getElementById('current-mode-title');
+    if (title) title.innerText = mode === 'study' ? '학습 모드' : '스피드런 모드';
+
+    if (mode === 'study') {
+      await startQuizSession();
+    } else {
+      await startSpeedrunSession();
+    }
+  } catch (error) {
+    console.error("세션 진입 중 에러 발생:", error);
+  }
 };
 
 /**
@@ -182,6 +204,7 @@ async function renderNextQuestion() {
   const optionsContainer = document.getElementById('options');
   if (!optionsContainer) return;
   optionsContainer.innerHTML = '';
+  optionsContainer.style.pointerEvents = 'auto'; // 새 문제 출제 시 클릭 비활성화 해제
 
   // 풀 내부에서 한 단어를 랜덤 추출하여 4지선다 문항 생성
   const targetItem = currentPool[Math.floor(Math.random() * currentPool.length)];
@@ -214,6 +237,7 @@ async function renderNextQuestion() {
 
     const matchingItem = currentPool.find(p => p.charId === charId);
     btn.innerText = matchingItem ? matchingItem.char : '';
+    btn.dataset.charId = charId; // 정답 버튼 추적용 데이터 속성 추가
 
     // [조작 실수 방지 필터링 탑재]
     btn.onclick = () => {
@@ -229,6 +253,12 @@ async function renderNextQuestion() {
  * 유저 응답 결과 정산 및 가중치 업데이트 스케줄링 처리
  */
 async function handleUserAnswer(selectedCharId, latency) {
+  // 애니메이션 효과 진행 중 중복 클릭 방지
+  const optionsContainer = document.getElementById('options');
+  if (optionsContainer) {
+    optionsContainer.style.pointerEvents = 'none';
+  }
+
   const target = currentQuestion.target;
   const isCorrect = selectedCharId === target.charId;
 
@@ -244,6 +274,22 @@ async function handleUserAnswer(selectedCharId, latency) {
     speed: latency
   });
   updateHistoryBarUI();
+
+  if (!isCorrect) {
+    // 오답일 경우: 정답 음성 재출력
+    if (window.audioTriggerClick) window.audioTriggerClick();
+
+    // 정답 선택지를 찾아 1초간 녹색으로 서서히 변화시킴
+    const correctBtn = document.querySelector(`.option-btn[data-char-id="${target.charId}"]`);
+    if (correctBtn) {
+      correctBtn.style.transition = 'background-color 1s ease, color 1s ease';
+      correctBtn.style.backgroundColor = '#4CAF50'; // 녹색
+      correctBtn.style.color = 'white';
+    }
+
+    // 변화 과정을 충분히 인지할 수 있도록 1초(1000ms) 대기
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
 
   // 2. 문제를 다 풀고 난 뒤에 타임업 여부를 검사
   if (isTimeUp) {
@@ -307,7 +353,9 @@ async function terminateQuizSession() {
     await saveSessionPoolState(userConfig.currentDomain, currentPool);
     console.log("세션 풀 스트릭 데이터 일괄 동기화 완료.");
 
-    await updateDailyStudyTime(userConfig.learningTime);
+    // 실제 플레이한 시간(목표 설정 시간 - 남은 시간)만큼만 정산하여 저장
+    const playedTime = Math.max(0, userConfig.learningTime - timeLeft);
+    await updateDailyStudyTime(playedTime, userConfig.currentDomain);
 
     const correctLogs = sessionHistory.filter(h => h.isCorrect);
     if (correctLogs.length > 0) {
@@ -329,6 +377,211 @@ async function terminateQuizSession() {
 }
 
 /**
+ * ==================================================
+ * 스피드런(기록 모드) 전용 핵심 로직
+ * ==================================================
+ */
+function buildFullDomainPool(domain) {
+  const rawDataset = ALPHABETS[domain] || [];
+  const pool = [];
+  let globalIdx = 0;
+  rawDataset.forEach((rowStr) => {
+    for (let i = 0; i < rowStr.length; i++) {
+      const char = rowStr[i];
+      if (char !== '_') {
+        pool.push({ domain, charId: globalIdx, char, stage: 0 });
+      }
+      globalIdx++;
+    }
+  });
+  return pool;
+}
+
+async function startSpeedrunSession() {
+  isTimeUp = false;
+  isPaused = false;
+  sessionHistory = [];
+
+  const historyBar = document.getElementById('history-bar');
+  if (historyBar) historyBar.innerHTML = '';
+
+  const dbData = await getAllProgress(userConfig.currentDomain);
+  const fullPool = buildFullDomainPool(userConfig.currentDomain);
+
+  // 전체 문자에 대해, 기존 해금 기록이 있으면 연결하고 없으면 isUnlocked: false 처리
+  currentPool = fullPool.map(item => {
+    const dbItem = dbData[item.charId.toString()];
+    return dbItem ? { ...dbItem, char: item.char, isUnlocked: (dbItem.stage > 0) } : { ...item, isUnlocked: false };
+  });
+
+  // 스피드런용 무작위 셔플 (랜덤 출제)
+  currentPool.sort(() => Math.random() - 0.5);
+
+  if (!currentPool || currentPool.length === 0) {
+    alert("선택된 도메인에 출제 가능한 문자가 없습니다.");
+    return;
+  }
+
+  srTotalCount = currentPool.length;
+  srCurrentIndex = 0;
+  srCorrectCount = 0;
+  srElapsedTime = 0;
+
+  const userInfoRight = document.querySelector('.user-info-right');
+  if (userInfoRight) userInfoRight.classList.add('hidden');
+
+  await preloadSessionVoices(currentPool);
+
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(tickSpeedrunTimer, 1000);
+
+  await renderNextSpeedrunQuestion();
+}
+
+async function renderNextSpeedrunQuestion() {
+  const optionsContainer = document.getElementById('options');
+  if (!optionsContainer) return;
+  optionsContainer.innerHTML = '';
+  optionsContainer.style.pointerEvents = 'auto';
+
+  // 모든 문항을 1번씩 순회했으면 종료 (A안)
+  if (srCurrentIndex >= srTotalCount) {
+    await terminateSpeedrunSession();
+    return;
+  }
+
+  const targetItem = currentPool[srCurrentIndex];
+  // 전체 도메인 Pool 안에서 랜덤 오답 4지선다 생성
+  currentQuestion = generateFourOptions(targetItem, currentPool);
+
+  const weightDisplay = document.getElementById('weight-display');
+  if (weightDisplay) {
+    weightDisplay.innerText = `진행률: ${srCurrentIndex + 1} / ${srTotalCount} | ⏱️ ${formatTime(srElapsedTime)}`;
+  }
+
+  // 진행률 바 (진행한 만큼 게이지가 꽉 차오름)
+  updateTimerProgressBar(srTotalCount - (srCurrentIndex + 1), srTotalCount);
+
+  window.audioTriggerClick = () => { playTargetVoice(currentQuestion.target.char); };
+  const audioBtn = document.getElementById('audio-trigger');
+  if (audioBtn) audioBtn.onclick = window.audioTriggerClick;
+
+  window.audioTriggerClick();
+  questionStartTime = Date.now();
+
+  currentQuestion.options.forEach(charId => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    const matchingItem = currentPool.find(p => p.charId === charId);
+    btn.innerText = matchingItem ? matchingItem.char : '';
+    btn.dataset.charId = charId;
+
+    btn.onclick = () => {
+      const latency = Date.now() - questionStartTime;
+      if (latency < 150) return;
+      handleSpeedrunAnswer(charId, latency);
+    };
+    optionsContainer.appendChild(btn);
+  });
+}
+
+async function handleSpeedrunAnswer(selectedCharId, latency) {
+  const optionsContainer = document.getElementById('options');
+  if (optionsContainer) optionsContainer.style.pointerEvents = 'none';
+
+  const target = currentQuestion.target;
+  const isCorrect = selectedCharId === target.charId;
+
+  if (isCorrect) srCorrectCount++;
+
+  // 해금된(학습한) 문자인 경우에만 진도를 갱신합니다. (미해금 문자 건너뜀)
+  if (target.isUnlocked) {
+    const updatedItem = calculateReviewState({ ...target }, isCorrect, latency);
+    currentPool[srCurrentIndex] = { ...updatedItem, isUnlocked: true };
+  }
+
+  sessionHistory.push({ char: target.char, isCorrect, speed: latency });
+  updateHistoryBarUI();
+
+  if (!isCorrect) {
+    if (window.audioTriggerClick) window.audioTriggerClick();
+    const correctBtn = document.querySelector(`.option-btn[data-char-id="${target.charId}"]`);
+    if (correctBtn) {
+      correctBtn.style.transition = 'background-color 1s ease, color 1s ease';
+      correctBtn.style.backgroundColor = '#4CAF50';
+      correctBtn.style.color = 'white';
+    }
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+
+  srCurrentIndex++;
+  await renderNextSpeedrunQuestion();
+}
+
+function tickSpeedrunTimer() {
+  srElapsedTime++;
+  const weightDisplay = document.getElementById('weight-display');
+  if (weightDisplay && currentMode !== 'study') {
+    weightDisplay.innerText = `진행률: ${srCurrentIndex + 1 > srTotalCount ? srTotalCount : srCurrentIndex + 1} / ${srTotalCount} | ⏱️ ${formatTime(srElapsedTime)}`;
+  }
+}
+
+function formatTime(seconds) {
+  const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+  const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+  const s = (seconds % 60).toString().padStart(2, '0');
+  return `${h}:${m}:${s}`;
+}
+
+async function terminateSpeedrunSession() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  isPaused = false;
+  isTimeUp = false;
+
+  const userInfoRight = document.querySelector('.user-info-right');
+  if (userInfoRight) userInfoRight.classList.remove('hidden');
+
+  resetToMainModeSelection();
+
+  try {
+    // 스피드런에서 푼 데이터 중 이미 해금되어 학습 중인 문자들만 추려서 동기화 진행
+    const itemsToSave = currentPool.filter(item => item.isUnlocked);
+    if (itemsToSave.length > 0) {
+      await saveSessionPoolState(userConfig.currentDomain, itemsToSave);
+      console.log(`스피드런 세션 해금 문자 진도 동기화 완료 (${itemsToSave.length}개)`);
+    }
+
+    await updateDailyStudyTime(srElapsedTime, userConfig.currentDomain);
+
+    const accuracy = Math.round((srCorrectCount / srTotalCount) * 100);
+
+    // 게스트이거나 닉네임이 없는 경우 랭킹 등록용 이름 입력받기
+    let playerName = document.getElementById('profile-name')?.innerText || "게스트";
+    if (!auth.currentUser || playerName === "게스트") {
+      const defaultGuestName = localStorage.getItem('GUEST_ID') || "게스트";
+      playerName = prompt("스피드런 랭킹에 등록할 닉네임을 입력해 주세요.", defaultGuestName) || defaultGuestName;
+    }
+
+    // 도메인 기록 명칭 분리 (영문 대소문자 구별)
+    let recordDomain = userConfig.currentDomain;
+    if (recordDomain.toLowerCase() === 'english' || recordDomain.toLowerCase() === 'alphabet') {
+      const sampleItem = currentPool.find(p => /[a-zA-Z]/.test(p.char));
+      const sampleChar = sampleItem ? sampleItem.char : 'A';
+      recordDomain = (sampleChar === sampleChar.toUpperCase()) ? 'english(A)' : 'english(a)';
+    }
+
+    await submitSpeedrunRanking(recordDomain, srTotalCount, srElapsedTime, accuracy, playerName);
+
+    alert(`스피드런 모드 완료!\n⏱️ 소요 시간: ${formatTime(srElapsedTime)}\n🎯 정답률: ${accuracy}%`);
+  } catch (dbError) {
+    console.error("스피드런 데이터 처리 중 예외 발생:", dbError);
+  }
+}
+
+/**
  * 세션 타임아웃 또는 강제 이탈 시 메인 선택 화면으로 리셋 복귀
  */
 function resetToMainModeSelection() {
@@ -345,7 +598,11 @@ window.pauseGameTrigger = function () {
   clearInterval(timerInterval);
   isPaused = true;
 
-  terminateQuizSession();
+  if (currentMode === 'study') {
+    terminateQuizSession();
+  } else {
+    terminateSpeedrunSession();
+  }
 };
 
 function updateHistoryBarUI() {
@@ -406,8 +663,15 @@ window.addEventListener('beforeunload', (event) => {
   if (timerInterval && !isTimeUp && currentPool.length > 0) {
 
     // 강제 종료 시점까지 플레이어가 쌓은 중간 결과를 DB에 배치 동기화 전송 시도
-    saveSessionPoolState(userConfig.currentDomain, currentPool);
-    updateDailyStudyTime(learningTime - timeLeft); // 플레이한 시간만큼만 정산
+    if (currentMode === 'study') {
+      saveSessionPoolState(userConfig.currentDomain, currentPool);
+      const playedTime = Math.max(0, userConfig.learningTime - timeLeft);
+      updateDailyStudyTime(playedTime, userConfig.currentDomain);
+    } else {
+      const itemsToSave = currentPool.filter(item => item.isUnlocked);
+      if (itemsToSave.length > 0) saveSessionPoolState(userConfig.currentDomain, itemsToSave);
+      updateDailyStudyTime(srElapsedTime, userConfig.currentDomain);
+    }
 
     // 구형 브라우저 호환용 경고창 유도 (탭 닫기 전 확인 안내 문구)
     event.preventDefault();
@@ -416,26 +680,6 @@ window.addEventListener('beforeunload', (event) => {
 });
 
 /**
- * 선택된 모드(study / speedrun) 무대를 동적 빌드하고 엔진 가동
- */
-window.startSessionWorkflow = async function (mode) {
-  const mainBox = document.getElementById('main-box');
-  if (!mainBox) return;
-
-  // 1. 외부 에셋 템플릿 주입으로 무대 교체
-  mainBox.innerHTML = sessionBoardTemplate;
-
-  // 2. 네이밍 충돌이 해결된 타이틀 바인딩
-  const title = document.getElementById('current-mode-title');
-  if (title) {
-    title.innerText = mode === 'study' ? '학습 모드' : '스피드런';
-  }
-
-  await startQuizSession();
-};
-
-/**
- * ALPHABETS 구조(배열/객체)에 유연하게 대응하고 userConfig를 바라보는 도메인 토글러
  */
 window.toggleDomain = function () {
   if (typeof ALPHABETS === 'undefined' || !ALPHABETS) {
@@ -493,10 +737,6 @@ window.toggleDomain = function () {
   resetToMainModeSelection();
 };
 
-window.playSoundTest = function () {
-  playSoundTest(currentDomain);
-};
-
 /**
  * view/ 디렉터리의 조각 HTML을 원격 수급하여 모달 창에 주입하는 핵심 엔진
  */
@@ -504,37 +744,46 @@ async function openRemoteModalPopup(viewName) {
   if (timerInterval && !isTimeUp) return;
 
   try {
-    // 1. 원격 혹은 로컬 템플릿 소스 수급
-    let htmlContent = "";
-    if (viewName === 'progress') htmlContent = progressTemplate;
-    else if (viewName === 'setting') htmlContent = settingTemplate;
-    else if (viewName === 'leaderboard') htmlContent = sessionBoardTemplate;
-    else if (viewName === 'login') htmlContent = loginTemplate;
-    else {
-      const response = await fetch(`./view/${viewName}.html`);
-      if (!response.ok) throw new Error(`HTML 수급 실패`);
-      htmlContent = await response.text();
-    }
+    const versionQuery = window.APP_VERSION ? `?v=${window.APP_VERSION}` : '';
+    const response = await fetch(`./view/${viewName}.html${versionQuery}`);
+    if (!response.ok) throw new Error("HTML 조각 수급 실패");
+
+    let htmlContent = await response.text();
 
     // 2. [순서 보정] DOM 주입 전에 문자열 치환부터 완결
     if (viewName === 'setting') {
       const timeIdx = TIME_STEPS.indexOf(userConfig.learningTime) ?? 4;
       const speechIdx = SPEECH_STEPS.indexOf(userConfig.speechRate) ?? 2;
 
+      let userName = auth.currentUser ? (auth.currentUser.displayName || "이름 없음") : "게스트";
+      if (userName.includes('(')) userName = userName.split('(')[0].trim();
+
+      let rawEmail = auth.currentUser ? auth.currentUser.email : "";
+      let maskedEmail = "";
+      if (rawEmail) {
+        const parts = rawEmail.split('@');
+        if (parts.length === 2) {
+          const idPart = parts[0];
+          const keepLen = Math.ceil(idPart.length / 2);
+          maskedEmail = idPart.substring(0, keepLen) + '*'.repeat(idPart.length - keepLen) + '@' + parts[1];
+        }
+      }
+
       htmlContent = htmlContent
+        .replace('{{userName}}', userName)
+        .replace('{{userEmail}}', maskedEmail)
         .replace('{{timeIdx}}', timeIdx)
         .replace('{{learningTime}}', userConfig.learningTime)
         .replace('{{MAX_POOL_SIZE}}', userConfig.MAX_POOL_SIZE)
         .replace('{{speechIdx}}', speechIdx)
         .replace('{{speechRate}}', userConfig.speechRate)
         .replace('{{#if autoProgress}}checked{{/if}}', userConfig.autoProgress ? 'checked' : '')
-        .replace('{{currentDomain}}', userConfig.currentDomain);
     }
 
     // 3. 정제된 컴포넌트를 기반으로 단일 객체 생성 및 돔 트리 등록
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
-    overlay.innerHTML = `<div class="modal-content"><span class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</span>${htmlContent}</div>`;
+    overlay.innerHTML = `<div class="modal-content"><span class="modal-close" onclick="this.closest('.modal-overlay').remove()" style="transform: scale(2); transform-origin: top right; display: inline-block; cursor: pointer;">&times;</span>${htmlContent}</div>`;
     document.body.appendChild(overlay);
 
     // 4. 진도 모달인 경우에만 정밀 고착 완료 플래그 감시 (무한 동결 원천 차단)
@@ -552,7 +801,6 @@ async function openRemoteModalPopup(viewName) {
         observer.observe(document.body, { childList: true, subtree: true });
       });
 
-      console.log("[Trigger] 진도 모달 렌더링 파이프라인 가동 (DOM 안착 확인)");
       const currentDomainData = await getAllProgress(userConfig.currentDomain);
 
       window.userConfig = userConfig;
@@ -562,21 +810,59 @@ async function openRemoteModalPopup(viewName) {
       await renderResponseTimeChart(userConfig.currentDomain);
       renderProgressTable(userConfig.currentDomain, currentDomainData);
 
-      if (typeof currentWeeklyStats !== 'undefined') {
+      const currentWeeklyStats = await getWeeklyStats(userConfig.currentDomain);
+      if (currentWeeklyStats) {
         renderStudyStatsChart(currentWeeklyStats);
       } else {
         renderStudyStatsChart({ total: 0, history: {} });
       }
     }
 
+    // 리더보드 모달인 경우 DB 데이터 동기화 및 렌더링 (더미 데이터 교체)
+    if (viewName === 'leaderboard') {
+      await new Promise((resolve) => {
+        if (document.getElementById('leaderboard-list')) return resolve();
+        const observer = new MutationObserver((mutations, obs) => {
+          if (document.getElementById('leaderboard-list')) {
+            obs.disconnect();
+            resolve();
+          }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+      });
+      try {
+        const rankings = await getGlobalRankings(10);
+        renderLeaderboardUI(rankings);
+      } catch (err) {
+        console.error("[Leaderboard] 랭킹 데이터 조회 및 렌더링 실패:", err);
+      }
+    }
+
     // 5. 컴포넌트 마운트 직후 이벤트 리스너 바인딩
     if (viewName === 'setting') {
+      // 연령/성별 셀렉트 박스 초기 설정값 지정
+      const ageSelect = document.getElementById('user-age');
+      if (ageSelect) ageSelect.value = userConfig.age || '미상';
+      
+      const genderSelect = document.getElementById('user-gender');
+      if (genderSelect) genderSelect.value = userConfig.gender || '미상';
+
       document.getElementById('pool-size')?.addEventListener('input', (e) => {
         userConfig.MAX_POOL_SIZE = parseInt(e.target.value, 10) || 10;
       });
 
       document.getElementById('auto-progress')?.addEventListener('change', (e) => {
         userConfig.autoProgress = e.target.checked;
+      });
+
+      document.getElementById('user-age')?.addEventListener('change', (e) => {
+        userConfig.age = e.target.value || '미상';
+        saveUserConfig(userConfig);
+      });
+
+      document.getElementById('user-gender')?.addEventListener('change', (e) => {
+        userConfig.gender = e.target.value || '미상';
+        saveUserConfig(userConfig);
       });
     }
 
@@ -592,38 +878,26 @@ window.popupProgress = () => openRemoteModalPopup('progress');
 window.popupLogin = () => openRemoteModalPopup('login');
 
 /**
- * 구글 계정을 이용한 팝업 로그인 처리 및 유저 세션 가동
+ * 리더보드 도메인 필터 변경 시 호출
  */
-window.googleLogin = async function () {
-  if (isLoginProcessing) return;
-  isLoginProcessing = true;
-
+window.changeLeaderboardDomain = async function(targetDomain) {
+  const listContainer = document.getElementById('leaderboard-list');
+  if (listContainer) listContainer.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 30px; color:#777;">데이터를 불러오는 중입니다...</td></tr>';
   try {
-    // 팝업 격발 직전 데이터 누락 상태 최종 심문
-    if (!auth || !auth.app || !auth.app.options || !auth.app.options.apiKey) {
-      console.error("오류: 파이어베이스 auth 인스턴스 초기화 데이터 유실됨:", auth);
-      alert("로그인 모듈 초기화 실패. 콘솔 창을 확인하세요.");
-      return;
-    }
-
-    const provider = new GoogleAuthProvider();
-    provider.addScope('https://www.googleapis.com/auth/userinfo.profile');
-    provider.addScope('https://www.googleapis.com/auth/userinfo.email');
-
-    // 정상 데이터가 확인된 상태에서 안전하게 팝업 요청 격발
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
-
-    if (typeof resetToMainModeSelection === 'function') {
-      resetToMainModeSelection();
-    }
-
-  } catch (error) {
-    console.error(`[Login Error]`, error.code, error.message);
-  } finally {
-    isLoginProcessing = false;
+    const rankings = await getGlobalRankings(10, targetDomain);
+    renderLeaderboardUI(rankings);
+  } catch (err) {
+    console.error("[Leaderboard] 랭킹 데이터 필터링 실패:", err);
   }
 };
+
+/**
+ * 로그인/로그아웃 액션을 전역 스코프로 노출 (auth-handler.js 모듈로 위임)
+ */
+window.googleLogin = () => googleLogin(resetToMainModeSelection);
+window.kakaoLogin = kakaoLogin;
+window.naverLogin = naverLogin;
+window.logout = () => logoutUser(resetToMainModeSelection);
 
 import { doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 import { writeBatch, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";

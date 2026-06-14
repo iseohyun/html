@@ -5,11 +5,12 @@ import {
   getDoc,
   getDocs,
   setDoc,
-  writeBatch,
   increment,
-  query,
+  limit,
   orderBy,
-  limit
+  query,
+  where,
+  writeBatch
 } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
 // 내부 상주 변수 및 도메인별 다차원 메모리 캐시 구조화
@@ -85,16 +86,16 @@ export const getProgress = async (domain, charId) => {
   }
 
   return {
-    domain,
     charId: parseInt(charId),
-    stage: 0,
-    recentLatencies: [],
+    domain,
+    lastSessionTime: 0,
     latenciesIdx: 0,
     outCnt: 0,
+    recentLatencies: [],
     resetOutCnt: 0,
-    totalSolved: 0,
-    lastSessionTime: 0,
-    sessionStreak: 0
+    stage: 0,
+    sessionStreak: 0,
+    totalSolved: 0
   };
 };
 
@@ -108,7 +109,7 @@ export const updateProgress = async (domain, charId, updatedItem) => {
   if (!progressCache[domain]) progressCache[domain] = {};
   progressCache[domain][key] = updatedItem;
 
-  // 최신 v10 setDoc 구조 모델 적용
+  // v10 setDoc 구조 모델 적용
   const docRef = doc(db, 'users', currentUserUid, 'progress', domain, 'chars', key);
   await setDoc(docRef, updatedItem);
 };
@@ -138,17 +139,18 @@ export const saveSessionPoolState = async (domain, sessionPool) => {
 /**
  * 세션 타임오버 시 일일 학습 시간 누계 업데이트 기록
  */
-export const updateDailyStudyTime = async (seconds) => {
-  if (!currentUserUid) return;
+export const updateDailyStudyTime = async (seconds, domain) => {
+  if (!currentUserUid || !domain) return;
 
   const today = new Date().toISOString().split('T')[0];
   const docRef = doc(db, 'users', currentUserUid, 'study_stats', today);
 
+  const updates = {};
+  updates[domain] = increment(seconds);
+  updates.lastUpdated = Date.now();
+
   // firebase.firestore 글로벌 네임스페이스 제거 후 최신 독립형 increment 수급 적용
-  await setDoc(docRef, {
-    totalSeconds: increment(seconds),
-    lastUpdated: Date.now()
-  }, { merge: true });
+  await setDoc(docRef, updates, { merge: true });
 };
 
 /**
@@ -184,15 +186,71 @@ export const submitRanking = async (displayName, score) => {
 };
 
 /**
+ * 스피드런 랭킹 기록 등록
+ */
+export const submitSpeedrunRanking = async (domain, charCount, elapsedTime, accuracy, customName = null) => {
+  if (!currentUserUid) return;
+
+  let displayName = customName;
+  if (!displayName) {
+    const userNameDisplay = document.getElementById('profile-name');
+    displayName = userNameDisplay ? userNameDisplay.innerText : "게스트";
+  }
+
+  // 동일 사용자가 여러 번 노출될 수 있도록 타임스탬프를 포함한 고유 문서 ID 생성
+  const docRef = doc(db, 'speedrun_rankings', `${currentUserUid}_${domain}_${Date.now()}`);
+
+  await setDoc(docRef, {
+    uid: currentUserUid,
+    name: displayName,
+    domain: domain,
+    charCount: charCount,
+    elapsedTime: elapsedTime,
+    accuracy: accuracy,
+    updatedAt: Date.now()
+  });
+};
+
+/**
  * 글로벌 랭킹 리스트 탑다운 조회
  */
-export const getGlobalRankings = async (limitCount = 10) => {
-  // 최신 v10 복합 쿼리 체계(query, orderBy, limit) 적용
-  const rankingsRef = collection(db, 'global_rankings');
-  const q = query(rankingsRef, orderBy('score', 'desc'), limit(limitCount));
+export const getGlobalRankings = async (limitCount = 10, targetDomain = 'all') => {
+  const rankingsRef = collection(db, 'speedrun_rankings');
 
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => doc.data());
+  let q = query(rankingsRef, orderBy('accuracy', 'desc'), orderBy('elapsedTime', 'asc'), limit(limitCount));
+  if (targetDomain !== 'all') {
+    q = query(rankingsRef, where('domain', '==', targetDomain), orderBy('accuracy', 'desc'), orderBy('elapsedTime', 'asc'), limit(limitCount));
+  }
+
+  try {
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => {
+      const data = doc.data();
+
+      // 소요시간 hh:mm:ss
+      const h = Math.floor(data.elapsedTime / 3600).toString().padStart(2, '0');
+      const m = Math.floor((data.elapsedTime % 3600) / 60).toString().padStart(2, '0');
+      const s = (data.elapsedTime % 60).toString().padStart(2, '0');
+      const elapsedStr = `${h}:${m}:${s}`;
+
+      // 완료시각 YYYY-MM-DD hh:mm:ss
+      const d = new Date(data.updatedAt);
+      const dateStr = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+      const timeStr = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}`;
+
+      return {
+        ...data,
+        score: `${data.accuracy}% (${elapsedStr})`,
+        elapsedStr: elapsedStr, // 분리된 테이블 셀용 시간 포맷 별도 제공
+        updatedAt: `${dateStr} ${timeStr}`
+      };
+    });
+  } catch (error) {
+    if (error.message && error.message.includes('index')) {
+      console.error("🔥 [DB Error] Firebase 복합 인덱스가 누락되었습니다! 다음 링크를 클릭하여 생성하세요:\n", error.message);
+    }
+    throw error;
+  }
 };
 
 /**
@@ -207,9 +265,41 @@ export const saveUserConfig = async (config) => {
 export const getUserConfig = async () => {
   if (!currentUserUid) return null;
 
-  // 최신 v10 단일 문서 조회를 위한 getDoc 함수 처리
+  // v10 단일 문서 조회를 위한 getDoc 함수 처리
   const docRef = doc(db, 'users', currentUserUid);
   const docSnap = await getDoc(docRef);
 
   return docSnap.exists() ? docSnap.data().config : null;
+};
+
+/**
+ * 최근 7일간의 학습 통계 가져오기
+ */
+export const getWeeklyStats = async (domain) => {
+  if (!currentUserUid || !domain) return { total: 0, history: {} };
+
+  const stats = { total: 0, history: {} };
+  const promises = [];
+  const days = [];
+
+  // 최근 7일(오늘 포함)의 날짜 문자열(YYYY-MM-DD) 생성
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dayStr = d.toISOString().split('T')[0];
+    days.push(dayStr);
+
+    const docRef = doc(db, 'users', currentUserUid, 'study_stats', dayStr);
+    promises.push(getDoc(docRef));
+  }
+
+  // 7일 치 문서를 병렬로 한 번에 조회
+  const snapshots = await Promise.all(promises);
+  snapshots.forEach((snap, idx) => {
+    const seconds = snap.exists() ? (snap.data()[domain] || 0) : 0;
+    stats.history[days[idx]] = seconds;
+    stats.total += seconds;
+  });
+
+  return stats;
 };
