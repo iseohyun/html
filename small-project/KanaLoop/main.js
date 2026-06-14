@@ -240,7 +240,7 @@ async function renderNextQuestion() {
     btn.innerHTML = `<span class="keybind-hint">${keybinds[idx]}</span><span>${charText}</span>`;
     btn.dataset.charId = charId; // 정답 버튼 추적용 데이터 속성 추가
 
-    // [조작 실수 방지 필터링 탑재]
+    // 조작 실수 방지 필터링 탑재
     btn.onclick = () => {
       const latency = Date.now() - questionStartTime;
       if (latency < 150) return; // 150ms 이하 초고속 연타 조작은 단순 물리적 실수 처리 무시
@@ -384,11 +384,6 @@ async function terminateQuizSession() {
   }
 }
 
-/**
- * ==================================================
- * 스피드런(기록 모드) 전용 핵심 로직
- * ==================================================
- */
 function buildFullDomainPool(domain) {
   let rawDataset = ALPHABETS[domain] || [];
   if (typeof rawDataset === 'string') rawDataset = [rawDataset];
@@ -453,7 +448,7 @@ async function renderNextSpeedrunQuestion() {
   optionsContainer.innerHTML = '';
   optionsContainer.style.pointerEvents = 'auto';
 
-  // 모든 문항을 1번씩 순회했으면 종료 (A안)
+  // 모든 문항을 1번씩 순회했으면 종료
   if (srCurrentIndex >= srTotalCount) {
     await terminateSpeedrunSession();
     return;
@@ -590,9 +585,13 @@ async function terminateSpeedrunSession() {
       recordDomain = (sampleChar === sampleChar.toUpperCase()) ? 'english(A)' : 'english(a)';
     }
 
-    await submitSpeedrunRanking(recordDomain, srTotalCount, srElapsedTime, accuracy, playerName);
+    const recordId = await submitSpeedrunRanking(recordDomain, srTotalCount, srElapsedTime, accuracy, playerName);
 
     alert(`스피드런 모드 완료!\n⏱️ 소요 시간: ${formatTime(srElapsedTime)}\n🎯 정답률: ${accuracy}%`);
+
+    window.highlightRecordId = recordId;
+    window.highlightRemaining = 2; // 이번 자동 팝업(1) + 다음번 직접 팝업(1) 총 2회 유지
+    window.popupLeaderboard(recordDomain);
   } catch (dbError) {
     console.error("스피드런 데이터 처리 중 예외 발생:", dbError);
   }
@@ -696,8 +695,6 @@ window.addEventListener('beforeunload', (event) => {
   }
 });
 
-/**
- */
 window.toggleDomain = function () {
   if (typeof ALPHABETS === 'undefined' || !ALPHABETS) {
     alert("DB가 없습니다.");
@@ -738,7 +735,7 @@ window.toggleDomain = function () {
     const targetDataset = ALPHABETS[currentDomain];
 
     if (targetDataset && targetDataset.length > 0) {
-      // 셋의 첫 번째 데이터 유닛(예: {char: "あ"} 또는 {char: "ア"} 등)에서 글자를 추출
+      // 첫 번째 데이터 유닛(예:"あ", "ア", "가" 등)추출
       const firstItem = targetDataset[0];
       const representChar = (typeof firstItem === 'object' && firstItem.char) ? firstItem.char : firstItem;
 
@@ -767,7 +764,7 @@ async function openRemoteModalPopup(viewName) {
 
     let htmlContent = await response.text();
 
-    // 2. [순서 보정] DOM 주입 전에 문자열 치환부터 완결
+    // DOM 주입 전에 문자열 치환부터 완결
     if (viewName === 'setting') {
       const timeIdx = TIME_STEPS.indexOf(userConfig.learningTime) ?? 4;
       const speechIdx = SPEECH_STEPS.indexOf(userConfig.speechRate) ?? 2;
@@ -797,16 +794,36 @@ async function openRemoteModalPopup(viewName) {
         .replace('{{#if autoProgress}}checked{{/if}}', userConfig.autoProgress ? 'checked' : '')
     }
 
-    // 3. 정제된 컴포넌트를 기반으로 단일 객체 생성 및 돔 트리 등록
+    // 정제된 컴포넌트를 기반으로 단일 객체 생성 및 돔 트리 등록
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
-    overlay.innerHTML = `<div class="modal-content"><span class="modal-close" onclick="this.closest('.modal-overlay').remove()" style="transform: scale(2); transform-origin: top right; display: inline-block; cursor: pointer;">&times;</span>${htmlContent}</div>`;
+    overlay.innerHTML = `<div class="modal-content"><span class="modal-close" style="transform: scale(2); transform-origin: top right; display: inline-block; cursor: pointer;">&times;</span>${htmlContent}</div>`;
+
+    // 오버레이 및 닫기 버튼 클릭 시 모달 닫기 및 설정 일괄 저장 처리
+    const closeHandler = (e) => {
+      if (e.target.classList.contains('modal-close') || e.target === overlay) {
+        overlay.remove();
+        if (viewName === 'setting') {
+          saveUserConfig(userConfig);
+          console.log("[Settings] 설정 모달 종료 - 일괄 저장 완료");
+        }
+        if (viewName === 'leaderboard') {
+          if (window.highlightRemaining > 0) {
+            window.highlightRemaining--;
+          }
+          if (!window.highlightRemaining || window.highlightRemaining <= 0) {
+            window.highlightRecordId = null; // 유효 횟수 소진 시 하이라이트 해제
+          }
+        }
+      }
+    };
+    overlay.addEventListener('click', closeHandler);
+
     document.body.appendChild(overlay);
 
-    // 4. 진도 모달인 경우에만 정밀 고착 완료 플래그 감시 (무한 동결 원천 차단)
+    // 진도 모달인 경우에만 정밀 고착 완료 플래그 감시
     if (viewName === 'progress') {
       await new Promise((resolve) => {
-        // 이미 즉시 동착되어 존재한다면 즉시 통과 처리 (방어 코드)
         if (document.getElementById('response-time-chart')) return resolve();
 
         const observer = new MutationObserver((mutations, obs) => {
@@ -848,8 +865,15 @@ async function openRemoteModalPopup(viewName) {
         observer.observe(document.body, { childList: true, subtree: true });
       });
       try {
-        const rankings = await getGlobalRankings(10);
+        const targetDomain = window.targetLeaderboardDomain || 'all';
+        const rankings = await getGlobalRankings(10, targetDomain);
         renderLeaderboardUI(rankings);
+
+        // 리더보드의 도메인 필터 셀렉트 박스 UI 값 동기화
+        setTimeout(() => {
+          const domainSelect = document.querySelector('select[onchange*="changeLeaderboardDomain"]');
+          if (domainSelect) domainSelect.value = targetDomain;
+        }, 10);
       } catch (err) {
         console.error("[Leaderboard] 랭킹 데이터 조회 및 렌더링 실패:", err);
       }
@@ -857,7 +881,6 @@ async function openRemoteModalPopup(viewName) {
 
     // 5. 컴포넌트 마운트 직후 이벤트 리스너 바인딩
     if (viewName === 'setting') {
-      // 연령/성별 셀렉트 박스 초기 설정값 지정
       const ageSelect = document.getElementById('user-age');
       if (ageSelect) ageSelect.value = userConfig.age || '미상';
 
@@ -895,13 +918,11 @@ async function openRemoteModalPopup(viewName) {
 
         btnErrorShow.addEventListener('click', () => {
           userConfig.errorFeedbackMode = userConfig.errorFeedbackMode === 'none' ? 'both' : 'none';
-          saveUserConfig(userConfig);
           updateErrorFeedbackUI();
         });
 
         btnErrorAudio.addEventListener('click', () => {
           userConfig.errorFeedbackMode = userConfig.errorFeedbackMode === 'both' ? 'visual_only' : 'both';
-          saveUserConfig(userConfig);
           updateErrorFeedbackUI();
         });
       }
@@ -916,12 +937,10 @@ async function openRemoteModalPopup(viewName) {
 
       document.getElementById('user-age')?.addEventListener('change', (e) => {
         userConfig.age = e.target.value || '미상';
-        saveUserConfig(userConfig);
       });
 
       document.getElementById('user-gender')?.addEventListener('change', (e) => {
         userConfig.gender = e.target.value || '미상';
-        saveUserConfig(userConfig);
       });
     }
 
@@ -931,7 +950,10 @@ async function openRemoteModalPopup(viewName) {
 }
 
 window.popupHelp = () => openRemoteModalPopup('help');
-window.popupLeaderboard = () => openRemoteModalPopup('leaderboard');
+window.popupLeaderboard = (domain = 'all') => {
+  window.targetLeaderboardDomain = domain;
+  openRemoteModalPopup('leaderboard');
+};
 window.popupSetting = () => openRemoteModalPopup('setting');
 window.popupProgress = () => openRemoteModalPopup('progress');
 window.popupLogin = () => openRemoteModalPopup('login');
@@ -940,6 +962,7 @@ window.popupLogin = () => openRemoteModalPopup('login');
  * 리더보드 도메인 필터 변경 시 호출
  */
 window.changeLeaderboardDomain = async function (targetDomain) {
+  window.targetLeaderboardDomain = targetDomain;
   const listContainer = document.getElementById('leaderboard-list');
   if (listContainer) listContainer.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 30px; color:#777;">데이터를 불러오는 중입니다...</td></tr>';
   try {
@@ -1030,7 +1053,7 @@ window.resetSingleCharProgress = async function (domain, charId) {
 };
 
 /**
- * 3. [모두 해금] 현재 도메인의 모든 문자를 Stage 1로 강제 동기화 정산
+ * 현재 도메인의 모든 문자를 Stage 1로 강제 동기화 정산
  */
 window.unlockAllCharacters = async function () {
   if (!auth.currentUser) return;
@@ -1090,7 +1113,7 @@ window.unlockAllCharacters = async function () {
 };
 
 /**
- * 3. [초기화] 현재 도메인의 DB 및 캐시 내역을 전면 초기화하여 무대 음영 처리
+ * 현재 도메인의 DB 및 캐시 내역을 전면 초기화하여 무대 음영 처리
  */
 window.resetAllProgressData = async function () {
   if (!auth.currentUser) return;
@@ -1124,14 +1147,13 @@ window.resetAllProgressData = async function () {
 };
 
 /**
- * 키보드 단축키 바인딩 (4지선다 옵션 선택)
+ * 키보드 단축키 바인딩
  */
 window.addEventListener('keydown', (e) => {
   // 세팅 창 등의 입력(Input, Select) 필드에서 타이핑 중일 때는 단축키 동작 무시
   if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
 
   const optionsContainer = document.getElementById('options');
-  // 퀴즈 화면이 아니거나, 오답 확인 대기 중(pointerEvents === 'none')일 때는 무시
   // 퀴즈 화면이 아니거나, 오답 확인 대기 중(pointerEvents === 'none')일 때는 무시
   if (!optionsContainer || optionsContainer.style.pointerEvents === 'none') return;
 

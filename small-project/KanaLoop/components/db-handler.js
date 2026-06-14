@@ -195,7 +195,8 @@ export const submitSpeedrunRanking = async (domain, charCount, elapsedTime, accu
   }
 
   // 동일 사용자가 여러 번 노출될 수 있도록 타임스탬프를 포함한 고유 문서 ID 생성
-  const docRef = doc(db, 'speedrun_rankings', `${currentUserUid}_${domain}_${Date.now()}`);
+  const docId = `${currentUserUid}_${domain}_${Date.now()}`;
+  const docRef = doc(db, 'speedrun_rankings', docId);
 
   await setDoc(docRef, {
     uid: currentUserUid,
@@ -206,6 +207,8 @@ export const submitSpeedrunRanking = async (domain, charCount, elapsedTime, accu
     accuracy: accuracy,
     updatedAt: Date.now()
   });
+
+  return docId;
 };
 
 /**
@@ -235,6 +238,7 @@ export const getGlobalRankings = async (limitCount = 10, targetDomain = 'all') =
       const timeStr = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}`;
 
       return {
+        id: doc.id,
         ...data,
         score: `${data.accuracy}% (${elapsedStr})`,
         elapsedStr: elapsedStr, // 분리된 테이블 셀용 시간 포맷 별도 제공

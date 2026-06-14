@@ -319,8 +319,11 @@ export function renderLeaderboardUI(rankings) {
 
     let domainDisplay = domainMap[entry.domain] || entry.domain || '';
 
+    const isHighlighted = window.highlightRecordId && window.highlightRecordId === entry.id;
+    const trStyle = isHighlighted ? 'background-color: #fff9c4;' : '';
+
     html += `
-      <tr>
+      <tr style="${trStyle}">
         <td style="text-align:center; ${rankStyle} font-size:16px;">${rank}</td>
         <td style="font-weight:bold; color:#333; text-align:center;">${displayName}</td>
         <td style="text-align:center;">${domainDisplay} <span style="font-size:11px; color:#999;">(${entry.charCount || 0})</span></td>
