@@ -8,7 +8,8 @@ export const userConfig = {
   MAX_POOL_SIZE: 10,
   autoProgress: true,
   speechRate: 0.85,
-  currentDomain: 'hira'
+  currentDomain: 'hira',
+  errorFeedbackMode: 'both'
 };
 
 export const TIME_STEPS = [20, 30, 40, 50, 60, 90];

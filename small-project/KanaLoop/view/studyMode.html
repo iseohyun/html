@@ -3,7 +3,9 @@
     #options {
       flex-direction: row;
       flex-wrap: nowrap;
+      height: 100%;
     }
+
     #options .option-btn {
       flex: 1;
       padding: 15px 5px !important;
@@ -11,12 +13,14 @@
       min-width: 0;
     }
   }
+
   #history-bar {
     display: flex;
     gap: 8px;
     min-height: 36px;
     align-items: center;
   }
+
   .result-icon {
     width: 32px;
     height: 32px;
@@ -29,31 +33,37 @@
     font-size: 1.1rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
+
   .result-correct {
     background-color: #4CAF50;
     border: 2px solid #388E3C;
   }
+
   .result-incorrect {
     background-color: #F44336;
     border: 2px solid #D32F2F;
   }
+
   #weight-display {
     font-size: 0.8rem;
     color: #673ab7;
     font-weight: bold;
   }
+
   #weight-history-row {
     display: flex;
     align-items: center;
     gap: 15px;
     margin-bottom: 10px;
   }
+
   #quiz-game-layer {
     display: flex;
     flex-direction: column;
     height: 100%;
     box-sizing: border-box;
   }
+
   .quiz-panel {
     display: flex;
     flex-direction: row;
@@ -62,12 +72,14 @@
     min-height: 40%;
     height: fit-content;
   }
+
   .quiz-panel-main {
     display: flex;
     flex-direction: column;
     flex: 1;
     height: fit-content;
   }
+
   .mode-info {
     font-size: 0.9rem;
     font-weight: bold;
@@ -75,6 +87,7 @@
     margin-bottom: 10px;
     align-self: flex-start;
   }
+
   .quiz-box {
     display: flex;
     flex-direction: column;
@@ -83,6 +96,7 @@
     flex: 1;
     height: fit-content;
   }
+
   .quiz-main {
     display: flex;
     justify-content: center;
@@ -91,15 +105,18 @@
     flex: 1;
     height: fit-content;
   }
+
   .quiz-main .material-symbols-outlined {
     font-size: min(20vw, 150px);
     color: #333;
   }
+
   .quiz-sub {
     font-size: 0.85rem;
     color: #888;
     margin-top: 5px;
   }
+
   .quiz-panel-sub {
     display: flex;
     flex-direction: column;
@@ -107,6 +124,7 @@
     width: max-content;
     justify-content: center;
   }
+
   #quiz-history1,
   #quiz-history2,
   #quiz-history3,
@@ -120,18 +138,22 @@
     background-color: #4CAF50;
     border-color: #388E3C;
   }
+
   #quiz-history3,
   #quiz-history4 {
     background-color: pink;
     border-color: #d32f2f;
   }
+
   .option-btn {
     font-size: min(40vw, 12vh) !important;
     font-weight: bold;
   }
+
   .option-btn:hover {
     background-color: #f1f3f5;
   }
+
   .timer-progress-container {
     width: 100%;
     height: 4px;
@@ -140,12 +162,14 @@
     margin-bottom: 8px;
     overflow: hidden;
   }
+
   #timer-progress-bar {
     width: 100%;
     height: 100%;
     background-color: #228be6;
     transition: width 0.1s linear;
   }
+
   .options-panel {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -171,11 +195,13 @@
     <div id="weight-display" style="font-size: 14px; font-weight: bold; color: #555;"></div>
     <div id="history-bar" style="display: flex; gap: 5px; flex: 1; justify-content: flex-end;"></div>
   </div>
-  <div class="play-area" style="text-align: center; height:100%">
+  <div class="play-area"
+    style="text-align: center; height:100%; display: flex; text-align: center; flex-direction: column; align-items: center;">
     <button id="audio-trigger"
       style="margin-bottom: 30px; background: #f0f0f0; border: none; border-radius: 50%; width: 80px; height: 80px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
       <span class="material-symbols-outlined" style="font-size: 40px; color: #333;">volume_up</span>
     </button>
-    <div id="options" class="options-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;"></div>
+    <div id="options" class="options-grid"
+      style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; flex: 1; width: 100%;"></div>
   </div>
 </div>
