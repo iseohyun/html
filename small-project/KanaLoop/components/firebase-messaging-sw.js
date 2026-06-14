@@ -6,7 +6,7 @@
 importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js');
 
-// [공학적 필수] 격리 스레드 구동을 위한 독자 초기화 설정
+// 격리 스레드 구동을 위한 독자 초기화 설정
 firebase.initializeApp({
   apiKey: "AIzaSyAm1BiqPabnh0X-FLxctRUAoRWbd9OrdlI",
   authDomain: "kana-loop.firebaseapp.com",

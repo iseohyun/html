@@ -15,10 +15,6 @@ const AUDIO_CONFIG_MAP = {
 
 let audioCache = {};
 
-// ===========================================================================
-// [최상단 진입점 보장 관문] 앱 구동 초기화 시 딱 한 번 대기 유도
-// ===========================================================================
-
 /**
  * 어플리케이션 초기 로드 시점 전용: TTS 엔진 가동 및 목소리 완전 안착 보장 함수
  * @returns {Promise<boolean>} API 가용 및 로드 성공 여부 플래그
@@ -30,8 +26,10 @@ export function initAudioEngine() {
       return resolve(false);
     }
 
+    // 최초로 TTS엔진이 호출 될 때, 초기화 시간이 걸림.
+    // 따라서 빈 음절을 볼륨 0으로 재생하여 강제로 엔진을 호출함
+    // 사용자가 첫 문제를 풀 때는 이미 1회 로딩을 한 상태로, 세션 진입과 동시에 빠른 반응이 가능함
     const triggerWarmUp = () => {
-      // 빈 음절을 볼륨 0으로 재생하여 오디오 컨텍스트 동적 활성화(웜업 완결)
       const silentUtterance = new SpeechSynthesisUtterance("");
       silentUtterance.volume = 0;
       window.speechSynthesis.speak(silentUtterance);
@@ -50,10 +48,6 @@ export function initAudioEngine() {
     }
   });
 }
-
-// ===========================================================================
-// 코어 비즈니스 로직 함수 레이어 (해당 조건 체크 생략)
-// ===========================================================================
 
 /**
  * 현재 활성화된 도메인에 매치되는 최적의 다국어 목소리 객체 도출 내부 헬퍼
@@ -94,7 +88,7 @@ export function preloadSessionVoices(sessionPool) {
  * 프리로드된 오디오 객체를 추적하여 딜레이 없이 큐에 주입
  */
 export function playTargetVoice(charStr) {
-  window.speechSynthesis.cancel(); // 적체 큐 즉시 클리어
+  window.speechSynthesis.cancel(); // 적체 큐 클리어
 
   const utterance = audioCache[charStr] || new SpeechSynthesisUtterance(charStr);
 
@@ -114,10 +108,10 @@ export function playTargetVoice(charStr) {
 /**
  * 사운드 환경 설정 테스트 전용 구동 인터페이스
  */
-export function playSoundTest(currentDomain) {
+export function playSoundTest() {
   window.speechSynthesis.cancel();
 
-  const domainKey = currentDomain || 'hira';
+  const domainKey = userConfig.currentDomain || 'hira';
   const currentConf = AUDIO_CONFIG_MAP[domainKey] || AUDIO_CONFIG_MAP['hira'];
   const matchedVoice = _getBestVoice();
 

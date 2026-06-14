@@ -1,11 +1,14 @@
 /**
  * components/notification-handler.js
- * PWA 백그라운드 푸시 알림 권한 획득 및 발송 예약 모듈
+ * PWA 백그라운드 푸시 알림 권한 획득 및 백엔드(Cloud Run) 연동 예약 발송 모듈
  */
 
 import { messaging } from './firebase-config.js';
 
 let fcmToken = null;
+
+// 백엔드 Cloud Run 엔드포인트 베이스 URL
+const CLOUD_RUN_BASE_URL = "https://schedulenotification-kw55rtsoba-uc.a.run.app";
 
 /**
  * 브라우저 푸시 알림 권한 요청 및 FCM 토큰 수급
@@ -19,11 +22,10 @@ export async function requestNotificationPermission() {
 
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') {
-      console.log(' 사용자가 알림 권한을 거부했습니다.');
+      console.log('사용자가 알림 권한을 거부했습니다.');
       return null;
     }
 
-    // 서비스 워커 등록 확인 후 FCM 토큰 추출 (VAPID 웹푸시 공개키 필요)
     if ('serviceWorker' in navigator) {
       const registration = await navigator.serviceWorker.ready;
       fcmToken = await messaging.getToken({
@@ -40,37 +42,60 @@ export async function requestNotificationPermission() {
 }
 
 /**
- * [공학적 큐 적용] 특정 분(minute) 뒤에 유저 스마트폰/PC로 복습 알림 예약 발송 요청
+ * 특정 분(minute) 뒤에 유저 스마트폰/PC로 복습 알림 예약 발송 요청
  * @param {string} domain - 'hira', 'kata' 등 현재 복습 카테고리
  * @param {number} delayMinutes - 몇 분 뒤에 알림을 보낼지 (예: 10, 30, 120)
  */
 export async function scheduleReviewNotification(domain, delayMinutes) {
   if (!fcmToken) {
-    // 토큰이 없다면 재확보 시도
     await requestNotificationPermission();
     if (!fcmToken) return;
   }
 
   const categoryName = domain === 'hira' ? '히라가나' : domain === 'kata' ? '가타카나' : '가나';
-  const targetTime = new Date(Date.now() + delayMinutes * 60 * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  // 백엔드 Cloud Tasks에서 인식 가능한 ISO 표준 타임스탬프 문자열 생성
+  const delayMs = delayMinutes * 60 * 1000;
+  const targetDate = new Date(Date.now() + delayMs);
+  const targetTimeIso = targetDate.toISOString();
+
+  const displayTime = targetDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   try {
-    /**
-     * 클라이언트 과부하를 막기 위해 파이어베이스 Cloud Functions 혹은 
-     * 백엔드 서버 예약 발송 API 엔드포인트에 큐(Queue) 등록 요청을 전송합니다.
-     */
-    await fetch('https://your-cloud-functions-url/scheduleNotification', {
+    const response = await fetch(CLOUD_RUN_BASE_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         token: fcmToken,
         title: '🧠 뇌과학 복습 타이머 가동!',
         body: `지금이 '${categoryName}'을 망각하기 직전 최고의 타이밍입니다. 들어와서 고정하세요.`,
-        delayMinutes: delayMinutes
+        scheduleTime: targetTimeIso // ISOString 포맷으로 백엔드 전달
       })
     });
-    console.log(`[알림 예약] ${delayMinutes}분 뒤 복습 푸시 큐 등록 완료 (예정 시각: ${targetTime})`);
+
+    if (response.ok) {
+      console.log(`[알림 예약] ${delayMinutes}분 뒤 복습 푸시 큐 등록 완료 (예정 시각: ${displayTime})`);
+    } else {
+      console.error('서버 에러 응답:', await response.text());
+    }
   } catch (error) {
     console.error('푸시 알림 예약 서버 통신 실패:', error);
+  }
+}
+
+/**
+ * [옵션] 필요한 경우 화면 어디서나 즉시 알림을 찌를 때 사용하는 인터페이스
+ */
+export async function triggerInstantNotification(userToken, title, body) {
+  const instantUrl = "https://sendinstantnotification-kw55rtsoba-uc.a.run.app";
+  try {
+    const response = await fetch(instantUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: userToken, title, body })
+    });
+    return await response.json();
+  } catch (error) {
+    console.error("즉시 푸시 알림 요청 실패:", error);
   }
 }

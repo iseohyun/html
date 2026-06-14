@@ -1,5 +1,10 @@
+/*
+ * ui-modal-handler.js
+ * 앱 메뉴 출력용. view/ 이하 .html의 반영과 제어
+ */
+
 import { getAllProgress } from './db-handler.js';
-import { ALPHABETS } from './engine.js';
+import { ALPHABETS, INTERVALS } from './engine.js';
 
 let analysisMode = 'default';
 
@@ -28,7 +33,6 @@ export function refreshPersonalizedSettings(config) {
 }
 
 export function renderStudyStatsChart(stats) {
-  console.log("[DEBUG 1] renderStudyStatsChart 진입. 주입 데이터:", stats);
   const container = document.getElementById('study-chart-container');
   const totalDisplay = document.getElementById('total-study-time');
 
@@ -63,7 +67,6 @@ export function renderStudyStatsChart(stats) {
 }
 
 export async function renderResponseTimeChart(domain) {
-  console.log(`[DEBUG 2] renderResponseTimeChart 기동. 타겟 도메인: ${domain}`);
   const container = document.getElementById('response-time-chart');
   if (!container) {
     console.error("[CRITICAL] '#response-time-chart' 엘리먼트가 고착되지 않았습니다.");
@@ -71,7 +74,6 @@ export async function renderResponseTimeChart(domain) {
   }
 
   const allData = await getAllProgress(domain);
-  console.log(`[DEBUG 2-1] DB 수급 데이터 크기: ${Object.keys(allData || {}).length}개 단어`);
 
   const correctBins = new Array(26).fill(0);
   let totalCount = 0;
@@ -85,8 +87,6 @@ export async function renderResponseTimeChart(domain) {
       totalCount++;
     });
   });
-
-  console.log(`[DEBUG 2-2] 정산 완료된 총 레이턴시 로그 카운트: ${totalCount}회`);
 
   if (totalCount === 0) {
     container.innerHTML = `<div style="color:#aaa; text-align:center; padding-top:15px; font-size:11px; width:100%;">분포 데이터 부족</div>`;
@@ -125,12 +125,21 @@ function getLatencyColor(avgSec) {
 
 export function getStageColor(stage) {
   if (stage === 0) return '#f0f0f0';
-  const colors = ['#f9f9f9', '#e8f5e9', '#c8e6c9', '#a5d6a7', '#81c784', '#fff9c4', '#ffe082', '#ffb74d', '#ff8a65'];
+  const colors = [
+    '#ffdddd', // lv.0
+    '#ffe0cc', // lv.1
+    '#ffe6ba', // lv.2
+    '#fff0b3', // lv.3
+    '#edf2b2', // lv.4
+    '#d9efb0', // lv.5
+    '#c3e9ad', // lv.6
+    '#aedfaa', // lv.7
+    '#99d5a6'  // lv.8
+  ];
   return colors[Math.min(stage, 8)];
 }
 
 export function renderProgressTable(domain, domainProgress) {
-  console.log(`[DEBUG 3] renderProgressTable 가동. 도메인: ${domain}`);
   const table = document.getElementById('progress-table');
   const countLabel = document.getElementById('settings-active-count');
 
@@ -190,6 +199,14 @@ export function renderProgressTable(domain, domainProgress) {
 
       td.style.cursor = "pointer";
 
+      let isOverdue = false;
+      if (hasProgress) {
+        const lastTime = progress.lastSessionTime || Date.now();
+        const timeDiffMin = (Date.now() - lastTime) / (60 * 1000);
+        const requiredMin = INTERVALS[progress.stage] || INTERVALS[INTERVALS.length - 1];
+        isOverdue = timeDiffMin >= requiredMin;
+      }
+
       if (!hasProgress) {
         td.style.background = "#e9e9e9";
         td.style.color = "#bbbbbb";
@@ -202,12 +219,22 @@ export function renderProgressTable(domain, domainProgress) {
           ? (progress.recentLatencies.reduce((a, b) => a + b, 0) / progress.recentLatencies.length / 1000)
           : 0;
 
+        const infoText = analysisMode === 'stage'
+          ? `Lv.${progress.stage} | ${progress.outCnt} Out`
+          : `${avgLat ? avgLat.toFixed(1) + 's' : '-'}`;
+
         td.style.background = (analysisMode === 'stage') ? getStageColor(progress.stage) : getLatencyColor(avgLat);
         td.style.color = "#222222";
+
+        if (analysisMode === 'stage' && isOverdue) {
+          td.style.border = "2px solid #F44336";
+          td.style.padding = "6px 1px"; // 2px 테두리로 인한 레이아웃 밀림(Jitter) 방지
+        }
+
         td.innerHTML = `
           <div style="font-size:16px; font-weight:bold;">${charName}</div>
           <div style="font-size:9px; color:#555555; margin-top:2px; font-family:monospace; line-height:1.1;">
-            Lv.${progress.stage} | ${avgLat ? avgLat.toFixed(1) + 's' : '-'} | ${progress.outCnt} Out
+            ${infoText}
           </div>
         `;
       }
@@ -240,9 +267,50 @@ export function renderProgressTable(domain, domainProgress) {
 export function toggleAnalysisMode() {
   analysisMode = (analysisMode === 'default') ? 'stage' : 'default';
   const btn = document.getElementById('btn-analysis');
-  if (btn) btn.innerText = analysisMode === 'stage' ? "기본보기" : "분석";
+  if (btn) btn.innerText = analysisMode === 'stage' ? "장기기억" : "응답속도";
 
   if (window.userConfig && window.globalProgressCache) {
     renderProgressTable(window.userConfig.currentDomain, window.globalProgressCache[window.userConfig.currentDomain]);
   }
+}
+
+/**
+ * 스피드런 랭킹 리더보드 렌더링 함수
+ */
+export function renderLeaderboardUI(rankings) {
+  // leaderboard.html 내부에 id="leaderboard-list" 인 빈 컨테이너가 있다고 가정합니다.
+  const listContainer = document.getElementById('leaderboard-list');
+  if (!listContainer) {
+    console.warn("[Leaderboard] 랭킹을 표시할 '#leaderboard-list' 엘리먼트를 찾을 수 없습니다.");
+    return;
+  }
+
+  // 하드코딩된 기존 더미 데이터(1, 2, 3, 10, 32위 등)를 모두 초기화하여 비움
+  listContainer.innerHTML = '';
+
+  if (!rankings || rankings.length === 0) {
+    listContainer.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 30px; color:#777;">등록된 스피드런 기록이 없습니다.</td></tr>';
+    return;
+  }
+
+  // DB에서 불러온 실제 데이터로 1위부터 순차적으로 DOM 요소 생성
+  let html = '';
+  rankings.forEach((entry, index) => {
+    const rank = index + 1; // 1위부터 순차적으로 계산
+    const isTop3 = rank <= 3;
+    const rankStyle = isTop3 ? 'font-weight:bold; color:#FF9800;' : 'color:#555;';
+
+    html += `
+      <tr>
+        <td style="text-align:center; ${rankStyle} font-size:16px;">${rank}</td>
+        <td style="font-weight:bold; color:#333; text-align:center;">${entry.name || '게스트'}</td>
+        <td style="text-align:center;">${entry.domain || ''} <span style="font-size:11px; color:#999;">(${entry.charCount || 0})</span></td>
+        <td style="text-align:center; font-weight:bold; color:#2196F3;">${entry.elapsedStr || '-'}</td>
+        <td style="text-align:center;">${entry.accuracy || 0}%</td>
+        <td style="text-align:center; font-size:11px; color:#aaa;">${entry.updatedAt}</td>
+      </tr>
+    `;
+  });
+
+  listContainer.innerHTML = html;
 }
