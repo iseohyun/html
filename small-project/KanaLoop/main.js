@@ -546,7 +546,40 @@ function formatTime(seconds) {
 }
 
 async function terminateSpeedrunSession() {
-  if (timerInterval) {
+  if (timerInterval) {  // 퀴즈 화면이 아니거나, 오답 확인 대기 중(pointerEvents === 'none')일 때는 무시
+  if (!optionsContainer || optionsContainer.style.pointerEvents === 'none') return;
+
+  if (e.code === 'Space') {
+    e.preventDefault(); // 스페이스바 화면 스크롤 방지
+    if (window.audioTriggerClick) window.audioTriggerClick();
+    return;
+  }
+
+  const key = e.key.toLowerCase();
+  let optionIndex = -1;
+  // 퀴즈 화면이 아니거나, 오답 확인 대기 중(pointerEvents === 'none')일 때는 무시
+  if (!optionsContainer || optionsContainer.style.pointerEvents === 'none') return;
+
+  if (e.code === 'Space') {
+    e.preventDefault(); // 스페이스바 화면 스크롤 방지
+    if (window.audioTriggerClick) window.audioTriggerClick();
+    return;
+  }
+
+  const key = e.key.toLowerCase();
+  let optionIndex = -1;
+  // 퀴즈 화면이 아니거나, 오답 확인 대기 중(pointerEvents === 'none')일 때는 무시
+  if (!optionsContainer || optionsContainer.style.pointerEvents === 'none') return;
+
+  if (e.code === 'Space') {
+    e.preventDefault(); // 스페이스바 화면 스크롤 방지
+    if (window.audioTriggerClick) window.audioTriggerClick();
+    return;
+  }
+
+  const key = e.key.toLowerCase();
+  let optionIndex = -1;
+
     clearInterval(timerInterval);
     timerInterval = null;
   }
