@@ -382,7 +382,8 @@ async function terminateQuizSession() {
  * ==================================================
  */
 function buildFullDomainPool(domain) {
-  const rawDataset = ALPHABETS[domain] || [];
+  let rawDataset = ALPHABETS[domain] || [];
+  if (typeof rawDataset === 'string') rawDataset = [rawDataset];
   const pool = [];
   let globalIdx = 0;
   rawDataset.forEach((rowStr) => {
@@ -932,6 +933,9 @@ window.activateSingleCharProgress = async function (domain, charId) {
       window.globalProgressCache[domain][charId.toString()] = initialSchema;
     }
 
+    const actualCache = await getAllProgress(domain);
+    actualCache[charId.toString()] = initialSchema;
+
     // 3. 표 구성 렌더러 재기동으로 실시간 음영 해제 및 진한 글씨 투사
     renderProgressTable(domain, window.globalProgressCache[domain]);
     console.log(`[UI Sync] 문자 ID ${charId} 진도 활성화 완료`);
@@ -956,6 +960,9 @@ window.resetSingleCharProgress = async function (domain, charId) {
       delete window.globalProgressCache[domain][charId.toString()];
     }
 
+    const actualCache = await getAllProgress(domain);
+    delete actualCache[charId.toString()];
+
     // 3. 표 구성 렌더러 재기동으로 실시간 음영 및 회색 배경 복원
     renderProgressTable(domain, window.globalProgressCache[domain]);
     console.log(`[UI Sync] 문자 ID ${charId} 기록 초기화 및 음영 복구 완료`);
@@ -970,19 +977,29 @@ window.resetSingleCharProgress = async function (domain, charId) {
 window.unlockAllCharacters = async function () {
   if (!auth.currentUser) return;
   const domain = userConfig.currentDomain;
-  const rawDataset = ALPHABETS[domain] || [];
+  let rawDataset = ALPHABETS[domain] || [];
+  if (typeof rawDataset === 'string') rawDataset = [rawDataset];
 
-  if (!confirm(`현재 도메인(${domain})의 모든 문자를 Stage 1 단계로 일괄 해금하시겠습니까?`)) return;
+  if (!confirm(`현재 도메인(${domain})의 미해금 문자를 모두 Stage 1 단계로 일괄 해금하시겠습니까?`)) return;
 
   const batch = writeBatch(db);
   const updatedCache = { ...window.globalProgressCache[domain] };
+  const actualCache = await getAllProgress(domain);
   let globalIdx = 0;
+  let unlockedCount = 0;
 
   rawDataset.forEach((rowStr) => {
     for (let i = 0; i < rowStr.length; i++) {
       if (rowStr[i] === '_') continue; // 언더바 인덱스 연산 제외
 
       const cId = globalIdx.toString();
+
+      // 이미 학습 중인 데이터(해금된 데이터)는 무시하고 스킵
+      if (updatedCache[cId] && updatedCache[cId].stage > 0) {
+        globalIdx++;
+        continue;
+      }
+
       const schema = {
         domain,
         charId: globalIdx,
@@ -1037,6 +1054,8 @@ window.resetAllProgressData = async function () {
 
     // 로컬 런타임 캐시 완전 비우기
     window.globalProgressCache[domain] = {};
+    const actualCache = await getAllProgress(domain);
+    Object.keys(actualCache).forEach(k => delete actualCache[k]);
 
     // 테이블 새로고침 렌더링 호출
     renderProgressTable(domain, {});

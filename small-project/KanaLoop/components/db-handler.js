@@ -12,15 +12,11 @@ import {
   where,
   writeBatch
 } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+import { ALPHABETS } from './engine.js';
 
 // 내부 상주 변수 및 도메인별 다차원 메모리 캐시 구조화
 let currentUserUid = null;
-let progressCache = {
-  hira: {},
-  kata: {},
-  hangle: {},
-  alphabet: {}
-};
+let progressCache = {};
 
 /**
  * 게스트용 고유 기기 ID 생성 및 반환
@@ -53,8 +49,9 @@ export const refreshProgressCache = async () => {
   if (!currentUserUid) return;
 
   // 캐시 메모리 구조 초기화
-  progressCache = { hira: {}, kata: {}, hangle: {}, alphabet: {} };
-  const domains = ['hira', 'kata', 'hangle', 'alphabet'];
+  progressCache = {};
+  const domains = Object.keys(ALPHABETS);
+  domains.forEach(d => progressCache[d] = {});
 
   // 최신 v10 getDocs 및 구조화 경로 매핑 적용
   await Promise.all(domains.map(async (domain) => {
