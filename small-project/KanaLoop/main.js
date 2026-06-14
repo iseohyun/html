@@ -116,6 +116,10 @@ async function initApp() {
         Object.assign(userConfig, savedConfig);
       }
 
+      // 불러온 도메인 상태를 전역 변수 및 UI 버튼에 즉시 동기화
+      window.currentDomain = userConfig.currentDomain;
+      updateDomainUI();
+
       // 화면 전면 리셋 및 메인 모드 선택기 복원
       resetToMainModeSelection();
     } else {
@@ -394,8 +398,8 @@ function buildFullDomainPool(domain) {
       const char = rowStr[i];
       if (char !== '_') {
         pool.push({ domain, charId: globalIdx, char, stage: 0 });
+        globalIdx++; // 언더바가 아닐 때만 고유 ID 인덱스 증가
       }
-      globalIdx++;
     }
   });
   return pool;
@@ -547,38 +551,24 @@ function formatTime(seconds) {
 
 async function terminateSpeedrunSession() {
   if (timerInterval) {  // 퀴즈 화면이 아니거나, 오답 확인 대기 중(pointerEvents === 'none')일 때는 무시
-  if (!optionsContainer || optionsContainer.style.pointerEvents === 'none') return;
+    if (!optionsContainer || optionsContainer.style.pointerEvents === 'none') return;
 
-  if (e.code === 'Space') {
-    e.preventDefault(); // 스페이스바 화면 스크롤 방지
-    if (window.audioTriggerClick) window.audioTriggerClick();
-    return;
-  }
+    if (e.code === 'Space') {
+      e.preventDefault(); // 스페이스바 화면 스크롤 방지
+      if (window.audioTriggerClick) window.audioTriggerClick();
+      return;
+    }
 
-  const key = e.key.toLowerCase();
-  let optionIndex = -1;
-  // 퀴즈 화면이 아니거나, 오답 확인 대기 중(pointerEvents === 'none')일 때는 무시
-  if (!optionsContainer || optionsContainer.style.pointerEvents === 'none') return;
+    const key = e.key.toLowerCase();
+    let optionIndex = -1;
+    // 퀴즈 화면이 아니거나, 오답 확인 대기 중(pointerEvents === 'none')일 때는 무시
+    if (!optionsContainer || optionsContainer.style.pointerEvents === 'none') return;
 
-  if (e.code === 'Space') {
-    e.preventDefault(); // 스페이스바 화면 스크롤 방지
-    if (window.audioTriggerClick) window.audioTriggerClick();
-    return;
-  }
-
-  const key = e.key.toLowerCase();
-  let optionIndex = -1;
-  // 퀴즈 화면이 아니거나, 오답 확인 대기 중(pointerEvents === 'none')일 때는 무시
-  if (!optionsContainer || optionsContainer.style.pointerEvents === 'none') return;
-
-  if (e.code === 'Space') {
-    e.preventDefault(); // 스페이스바 화면 스크롤 방지
-    if (window.audioTriggerClick) window.audioTriggerClick();
-    return;
-  }
-
-  const key = e.key.toLowerCase();
-  let optionIndex = -1;
+    if (e.code === 'Space') {
+      e.preventDefault(); // 스페이스바 화면 스크롤 방지
+      if (window.audioTriggerClick) window.audioTriggerClick();
+      return;
+    }
 
     clearInterval(timerInterval);
     timerInterval = null;
@@ -638,6 +628,23 @@ function resetToMainModeSelection() {
 
   const mainBox = document.getElementById('main-box');
   if (mainBox) mainBox.innerHTML = MAIN_SELECTION_HTML; // 완벽히 원본 상태 복원
+}
+
+/**
+ * 활성화된 도메인에 맞춰 상단 UI 버튼의 텍스트(아이콘)를 동기화하는 함수
+ */
+function updateDomainUI() {
+  const domainBtn = document.querySelector("span[onclick='toggleDomain()']");
+  if (domainBtn) {
+    const targetDataset = ALPHABETS[userConfig.currentDomain];
+    if (targetDataset && targetDataset.length > 0) {
+      const firstItem = targetDataset[0];
+      const representChar = (typeof firstItem === 'object' && firstItem.char) ? firstItem.char : firstItem;
+      domainBtn.innerText = representChar.charAt(0);
+    } else {
+      domainBtn.innerText = "?";
+    }
+  }
 }
 
 // 세션 도중 일시정지 버튼 클릭 시 타이머 정지 및 세션 종료 처리
@@ -763,23 +770,9 @@ window.toggleDomain = function () {
   window.currentDomain = userConfig.currentDomain;
 
   // 3. 데이터셋 객체 내부에서 실제 출력할 진짜 글자를 동적 추출
-  const domainBtn = document.querySelector("span[onclick='toggleDomain()']");
-  if (domainBtn) {
-    const targetDataset = ALPHABETS[currentDomain];
+  updateDomainUI();
 
-    if (targetDataset && targetDataset.length > 0) {
-      // 첫 번째 데이터 유닛(예:"あ", "ア", "가" 등)추출
-      const firstItem = targetDataset[0];
-      const representChar = (typeof firstItem === 'object' && firstItem.char) ? firstItem.char : firstItem;
-
-      domainBtn.innerText = representChar.charAt(0);
-    } else {
-      console.warn(`도메인 ${currentDomain}의 데이터셋이 비어있거나 형식이 올바르지 않습니다.`);
-      domainBtn.innerText = "?";
-    }
-  }
-
-  console.log(`[Domain Swap] 현재 활성 도메인: ${currentDomain}`);
+  console.log(`[Domain Swap] 현재 활성 도메인: ${userConfig.currentDomain}`);
 
   resetToMainModeSelection();
 };
