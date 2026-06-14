@@ -19,7 +19,9 @@ function getFlattenedDataset(domain) {
   let idCounter = 0;
   for (const row of rows) {
     for (const char of row) {
-      flattened.push({ charId: idCounter++, char });
+      if (char !== '_') {
+        flattened.push({ charId: idCounter++, char });
+      }
     }
   }
   return flattened;
