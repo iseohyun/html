@@ -26,8 +26,17 @@ import {
   saveUserConfig,
   getWeeklyStats,
   submitSpeedrunRanking,
-  getGlobalRankings
+  getGlobalRankings,
+  getStudyRankings,
+  submitStudyRanking
 } from './components/db-handler.js';
+import {
+  generateKeybindingsHtml,
+  bindKeybindingSettingsEvents,
+  updateVisualBadges,
+  registerGlobalKeybindings
+} from './components/keybind-manager.js';
+import { bindSuggestionEvents } from './components/suggestion-handler.js';
 import {
   initSessionPool,
   generateFourOptions,
@@ -152,7 +161,7 @@ async function initApp() {
       resetToMainModeSelection();
     }
 
-    updateVisualBadges();
+    updateVisualBadges(userConfig);
     updateReviewCountBadge();
 
     // 공통 타임라인 인터페이스 가시화 정산
@@ -420,6 +429,35 @@ async function terminateQuizSession() {
 
     await scheduleReviewNotification(userConfig.currentDomain, delayMin);
     updateReviewCountBadge(); // 세션 종료 후 복습 필요 문항 수 배지 갱신
+
+    // 학습모드 랭킹 등록 처리
+    const correctCount = correctLogs.length;
+    const accuracy = sessionHistory.length > 0 ? Math.round((correctCount / sessionHistory.length) * 100) : 0;
+
+    let recordDomain = userConfig.currentDomain;
+    if (recordDomain.toLowerCase() === 'english' || recordDomain.toLowerCase() === 'alphabet') {
+      const sampleItem = currentPool.find(p => /[a-zA-Z]/.test(p.char));
+      const sampleChar = sampleItem ? sampleItem.char : 'A';
+      recordDomain = (sampleChar === sampleChar.toUpperCase()) ? 'english(A)' : 'english(a)';
+    }
+
+    let playerName = document.getElementById('profile-name')?.innerText || "게스트";
+    if (!auth.currentUser || playerName === "게스트") {
+      const defaultGuestName = localStorage.getItem('GUEST_ID') || "게스트";
+      playerName = prompt("학습모드 랭킹에 등록할 닉네임을 입력해 주세요.", defaultGuestName) || defaultGuestName;
+    }
+
+    const isNewRecord = await submitStudyRanking(recordDomain, correctCount, playedTime, accuracy, playerName);
+
+    if (isNewRecord) {
+      alert(`🎉 학습모드 새로운 기록 달성!\n🎯 정답수: ${correctCount}개\n⏱️ 소요 시간: ${formatTime(playedTime)}\n🎯 정답률: ${accuracy}%`);
+      const currentUid = auth.currentUser ? auth.currentUser.uid : (localStorage.getItem('GUEST_ID') || 'GUEST');
+      window.highlightRecordId = `${currentUid}_${recordDomain}`;
+      window.highlightRemaining = 2;
+      window.popupLeaderboard(recordDomain, 'study');
+    } else {
+      alert(`학습모드 완료!\n🎯 정답수: ${correctCount}개\n⏱️ 소요 시간: ${formatTime(playedTime)}\n🎯 정답률: ${accuracy}%`);
+    }
   } catch (dbError) {
     console.error("백엔드 데이터 처리 중 예외 발생 (화면 복귀는 유지됨):", dbError);
   }
@@ -657,8 +695,6 @@ async function terminateSpeedrunSession() {
   }
 }
 
-}
-
 /**
  * 관전 모드 기동 및 설정
  */
@@ -737,6 +773,25 @@ async function startSpectatorSession() {
   
   if (spectatorIntervalId) clearInterval(spectatorIntervalId);
   spectatorIntervalId = setInterval(tickSpectator, intervalMs);
+
+  // 9. 관전 모드 세션 타이머 구동
+  timeLeft = userConfig.learningTime;
+  updateTimerProgressBar(timeLeft, userConfig.learningTime);
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(tickSpectatorSessionTimer, 1000);
+}
+
+function tickSpectatorSessionTimer() {
+  timeLeft--;
+  if (timeLeft <= 0) {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+    terminateSpectatorSession();
+  } else {
+    updateTimerProgressBar(timeLeft, userConfig.learningTime);
+  }
 }
 
 /**
@@ -816,14 +871,19 @@ window.exitSpectatorTrigger = function () {
  * 세션 타임아웃 또는 강제 이탈 시 메인 선택 화면으로 리셋 복귀
  */
 function resetToMainModeSelection() {
-  if (timerInterval) clearInterval(timerInterval);
-  if (spectatorIntervalId) clearInterval(spectatorIntervalId);
-  spectatorIntervalId = null;
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  if (spectatorIntervalId) {
+    clearInterval(spectatorIntervalId);
+    spectatorIntervalId = null;
+  }
 
   const mainBox = document.getElementById('main-box');
   if (mainBox) {
     mainBox.innerHTML = MAIN_SELECTION_HTML;
-    updateVisualBadges(); // 모드 버튼이 동적 교체되었으므로 Q/W 단축키 배지 재생성 반영
+    updateVisualBadges(userConfig); // 모드 버튼이 동적 교체되었으므로 Q/W 단축키 배지 재생성 반영
   }
 }
 
@@ -1072,77 +1132,8 @@ async function openRemoteModalPopup(viewName) {
         }
       }
 
-      // 단축키 설정 UI 동적 빌드
-      let kbHtml = `
-        <div style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 15px;">
-          <h3 style="font-size: 14px; margin-bottom: 10px;">⌨️ 메인화면 단축키 설정</h3>
-          <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
-            <thead>
-              <tr style="border-bottom: 1px solid #eee;">
-                <th style="text-align: left; padding: 4px;">기능</th>
-                <th style="text-align: center; padding: 4px; width: 85px;">정 (Primary)</th>
-                <th style="text-align: center; padding: 4px; width: 85px;">부 (Secondary)</th>
-              </tr>
-            </thead>
-            <tbody>
-      `;
-
-      const mainKeys = ['toggleDomain', 'playSoundTest', 'popupProgress', 'popupSetting', 'popupLeaderboard', 'popupHelp', 'popupLogin', 'startStudy', 'startRecord', 'startSpectator'];
-      const ingameKeys = ['option0', 'option1', 'option2', 'option3'];
-
-      mainKeys.forEach(k => {
-        const bind = userConfig.keybindings[k] || { label: k, primary: "", secondary: "" };
-        kbHtml += `
-          <tr style="border-bottom: 1px solid #f9f9f9;">
-            <td style="padding: 6px 4px;">${bind.label}</td>
-            <td style="text-align: center; padding: 4px;">
-              <button class="kb-bind-btn" data-action="${k}" data-type="primary" style="width: 75px; padding: 3px; font-size: 11px; border: 1px solid #ccc; border-radius: 3px; cursor: pointer; background: #fff;">${bind.primary || '-'}</button>
-            </td>
-            <td style="text-align: center; padding: 4px;">
-              <button class="kb-bind-btn" data-action="${k}" data-type="secondary" style="width: 75px; padding: 3px; font-size: 11px; border: 1px solid #ccc; border-radius: 3px; cursor: pointer; background: #fff;">${bind.secondary || '-'}</button>
-            </td>
-          </tr>
-        `;
-      });
-
-      kbHtml += `
-            </tbody>
-          </table>
-          
-          <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ddd;" />
-          
-          <h3 style="font-size: 14px; margin-bottom: 10px;">🎮 인게임 단축키 설정</h3>
-          <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
-            <thead>
-              <tr style="border-bottom: 1px solid #eee;">
-                <th style="text-align: left; padding: 4px;">기능</th>
-                <th style="text-align: center; padding: 4px; width: 85px;">정 (Primary)</th>
-                <th style="text-align: center; padding: 4px; width: 85px;">부 (Secondary)</th>
-              </tr>
-            </thead>
-            <tbody>
-      `;
-
-      ingameKeys.forEach(k => {
-        const bind = userConfig.keybindings[k] || { label: k, primary: "", secondary: "" };
-        kbHtml += `
-          <tr style="border-bottom: 1px solid #f9f9f9;">
-            <td style="padding: 6px 4px;">${bind.label}</td>
-            <td style="text-align: center; padding: 4px;">
-              <button class="kb-bind-btn" data-action="${k}" data-type="primary" style="width: 75px; padding: 3px; font-size: 11px; border: 1px solid #ccc; border-radius: 3px; cursor: pointer; background: #fff;">${bind.primary || '-'}</button>
-            </td>
-            <td style="text-align: center; padding: 4px;">
-              <button class="kb-bind-btn" data-action="${k}" data-type="secondary" style="width: 75px; padding: 3px; font-size: 11px; border: 1px solid #ccc; border-radius: 3px; cursor: pointer; background: #fff;">${bind.secondary || '-'}</button>
-            </td>
-          </tr>
-        `;
-      });
-
-      kbHtml += `
-            </tbody>
-          </table>
-        </div>
-      `;
+      // 단축키 설정 UI 동적 빌드 (컴포넌트로 위임)
+      const kbHtml = generateKeybindingsHtml(userConfig);
 
       htmlContent = htmlContent
         .replace('{{userName}}', userName)
@@ -1228,8 +1219,15 @@ async function openRemoteModalPopup(viewName) {
       });
       try {
         const targetDomain = window.targetLeaderboardDomain || 'all';
-        const rankings = await getGlobalRankings(10, targetDomain);
-        renderLeaderboardUI(rankings);
+        const mode = window.currentLeaderboardMode || 'speedrun';
+
+        let rankings;
+        if (mode === 'study') {
+          rankings = await getStudyRankings(10, targetDomain);
+        } else {
+          rankings = await getGlobalRankings(10, targetDomain);
+        }
+        renderLeaderboardUI(rankings, mode);
 
         // 리더보드의 도메인 필터 셀렉트 박스 UI 값 동기화
         setTimeout(() => {
@@ -1239,6 +1237,11 @@ async function openRemoteModalPopup(viewName) {
       } catch (err) {
         console.error("[Leaderboard] 랭킹 데이터 조회 및 렌더링 실패:", err);
       }
+    }
+
+    // 도움말 모달인 경우 건의사항 데이터 조회 및 이벤트 핸들링 (컴포넌트로 위임)
+    if (viewName === 'help') {
+      await bindSuggestionEvents(overlay);
     }
 
     // 5. 컴포넌트 마운트 직후 이벤트 리스너 바인딩
@@ -1312,80 +1315,8 @@ async function openRemoteModalPopup(viewName) {
         userConfig.spectatorInterval = parseFloat(e.target.value) || 1;
       });
 
-      // --- 키 바인딩 버튼 이벤트 리스너 바인딩 ---
-      const bindButtons = overlay.querySelectorAll('.kb-bind-btn');
-      bindButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-
-          if (window.activeKeybindBtn) return;
-
-          window.activeKeybindBtn = btn;
-          btn.innerText = "입력 대기...";
-          btn.style.background = "#fff3cd";
-          btn.style.borderColor = "#ffc107";
-
-          const keydownHandler = (keyEvent) => {
-            keyEvent.preventDefault();
-            keyEvent.stopPropagation();
-
-            const newKey = keyEvent.key;
-            const action = btn.dataset.action;
-            const type = btn.dataset.type;
-
-            let formattedKey = newKey;
-
-            // 중복 검사
-            const mainKeys = ['toggleDomain', 'playSoundTest', 'popupProgress', 'popupSetting', 'popupLeaderboard', 'popupHelp', 'popupLogin', 'startStudy', 'startRecord', 'startSpectator'];
-            const ingameKeys = ['option0', 'option1', 'option2', 'option3'];
-            const isMain = mainKeys.includes(action);
-            const targetGroup = isMain ? mainKeys : ingameKeys;
-
-            let isDuplicate = false;
-            let duplicateLabel = "";
-
-            for (const otherAction of targetGroup) {
-              const otherBind = userConfig.keybindings[otherAction];
-              if (!otherBind) continue;
-              if (otherAction === action) {
-                const otherType = type === 'primary' ? 'secondary' : 'primary';
-                if ((otherBind[otherType] || '').toLowerCase() === formattedKey.toLowerCase()) {
-                  isDuplicate = true;
-                  duplicateLabel = `${otherBind.label} (${otherType === 'primary' ? '정' : '부'})`;
-                  break;
-                }
-              } else {
-                if ((otherBind.primary || '').toLowerCase() === formattedKey.toLowerCase()) {
-                  isDuplicate = true;
-                  duplicateLabel = `${otherBind.label} (정)`;
-                  break;
-                }
-                if ((otherBind.secondary || '').toLowerCase() === formattedKey.toLowerCase()) {
-                  isDuplicate = true;
-                  duplicateLabel = `${otherBind.label} (부)`;
-                  break;
-                }
-              }
-            }
-
-            if (isDuplicate) {
-              alert(`이미 '${formattedKey}' 키는 ${duplicateLabel}에 할당되어 있습니다.`);
-              btn.innerText = userConfig.keybindings[action][type] || '-';
-            } else {
-              userConfig.keybindings[action][type] = formattedKey;
-              btn.innerText = formattedKey;
-              updateVisualBadges();
-            }
-
-            btn.style.background = "#fff";
-            btn.style.borderColor = "#ccc";
-            window.activeKeybindBtn = null;
-            window.removeEventListener('keydown', keydownHandler, true);
-          };
-
-          window.addEventListener('keydown', keydownHandler, true);
-        });
-      });
+      // --- 키 바인딩 버튼 이벤트 리스너 바인딩 (컴포넌트로 위임)
+      bindKeybindingSettingsEvents(overlay, userConfig);
     }
 
   } catch (error) {
@@ -1394,8 +1325,9 @@ async function openRemoteModalPopup(viewName) {
 }
 
 window.popupHelp = () => openRemoteModalPopup('help');
-window.popupLeaderboard = (domain = 'all') => {
+window.popupLeaderboard = (domain = 'all', mode = 'speedrun') => {
   window.targetLeaderboardDomain = domain;
+  window.currentLeaderboardMode = mode;
   openRemoteModalPopup('leaderboard');
 };
 window.popupSetting = () => openRemoteModalPopup('setting');
@@ -1408,12 +1340,45 @@ window.popupLogin = () => openRemoteModalPopup('login');
 window.changeLeaderboardDomain = async function (targetDomain) {
   window.targetLeaderboardDomain = targetDomain;
   const listContainer = document.getElementById('leaderboard-list');
-  if (listContainer) listContainer.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 30px; color:#777;">데이터를 불러오는 중입니다...</td></tr>';
+  const mode = window.currentLeaderboardMode || 'speedrun';
+  if (listContainer) {
+    const colCount = mode === 'study' ? 7 : 6;
+    listContainer.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center; padding: 30px; color:#777;">데이터를 불러오는 중입니다...</td></tr>`;
+  }
   try {
-    const rankings = await getGlobalRankings(10, targetDomain);
-    renderLeaderboardUI(rankings);
+    let rankings;
+    if (mode === 'study') {
+      rankings = await getStudyRankings(10, targetDomain);
+    } else {
+      rankings = await getGlobalRankings(10, targetDomain);
+    }
+    renderLeaderboardUI(rankings, mode);
   } catch (err) {
     console.error("[Leaderboard] 랭킹 데이터 필터링 실패:", err);
+  }
+};
+
+/**
+ * 리더보드 랭킹 모드(탭) 변경 시 호출
+ */
+window.switchLeaderboardMode = async function (mode) {
+  window.currentLeaderboardMode = mode;
+  const targetDomain = window.targetLeaderboardDomain || 'all';
+  const listContainer = document.getElementById('leaderboard-list');
+  if (listContainer) {
+    const colCount = mode === 'study' ? 7 : 6;
+    listContainer.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center; padding: 30px; color:#777;">데이터를 불러오는 중입니다...</td></tr>`;
+  }
+  try {
+    let rankings;
+    if (mode === 'study') {
+      rankings = await getStudyRankings(10, targetDomain);
+    } else {
+      rankings = await getGlobalRankings(10, targetDomain);
+    }
+    renderLeaderboardUI(rankings, mode);
+  } catch (err) {
+    console.error("[Leaderboard] 랭킹 모드 전환 실패:", err);
   }
 };
 
@@ -1591,55 +1556,6 @@ window.resetAllProgressData = async function () {
 };
 
 /**
- * 키바인딩 매칭 헬퍼 함수
- */
-function matchKey(e, bind) {
-  if (!bind) return false;
-  const key = e.key.toLowerCase();
-  const primary = (bind.primary || '').toLowerCase();
-  const secondary = (bind.secondary || '').toLowerCase();
-  
-  if (key === ' ' || key === 'space') {
-    return primary === ' ' || primary === 'space' || secondary === ' ' || secondary === 'space';
-  }
-  
-  return key === primary || key === secondary;
-}
-
-/**
- * 키바인딩 UI 가시 배지 텍스트 갱신 함수
- */
-function updateVisualBadges() {
-  if (!userConfig.keybindings) return;
-  
-  const ids = {
-    popupLogin: 'kb-badge-popupLogin',
-    toggleDomain: 'kb-badge-toggleDomain',
-    playSoundTest: 'kb-badge-playSoundTest',
-    popupProgress: 'kb-badge-popupProgress',
-    popupSetting: 'kb-badge-popupSetting',
-    popupLeaderboard: 'kb-badge-popupLeaderboard',
-    popupHelp: 'kb-badge-popupHelp',
-    startStudy: 'kb-badge-startStudy',
-    startRecord: 'kb-badge-startRecord',
-    startSpectator: 'kb-badge-startSpectator'
-  };
-  
-  Object.keys(ids).forEach(action => {
-    const el = document.getElementById(ids[action]);
-    if (el) {
-      const bind = userConfig.keybindings[action];
-      if (bind) {
-        let displayKey = bind.primary || bind.secondary || '-';
-        if (displayKey.toLowerCase() === 'escape') displayKey = 'ESC';
-        if (displayKey === ' ') displayKey = 'Space';
-        el.innerText = displayKey;
-      }
-    }
-  });
-}
-
-/**
  * 복습 대기 상태 글자 수 실시간 배지 업데이트 함수
  */
 async function updateReviewCountBadge() {
@@ -1684,45 +1600,15 @@ async function updateReviewCountBadge() {
   }
 }
 
-/**
- * 키보드 단축키 바인딩
- */
-window.addEventListener('keydown', (e) => {
-  // 세팅 창 등의 입력(Input, Select) 필드에서 타이핑 중일 때는 단축키 동작 무시
-  if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
-
-  // Alt 키 배지 토글 (기본 브라우저 포커스 동작 차단)
-  if (e.key === 'Alt') {
-    e.preventDefault();
-    document.body.classList.add('show-keybinds');
-    return;
-  }
-
-  const bindings = userConfig.keybindings || {};
-
-  // ESC 키로 모달 닫기
-  if (e.key === 'Escape') {
-    const activeOverlay = document.querySelector('.modal-overlay');
-    if (activeOverlay) {
-      e.preventDefault();
-      activeOverlay.click(); // 오버레이 클릭 이벤트를 트리거하여 모달 닫기 및 설정 자동 저장
-      return;
-    }
-  }
-
-  // 관전 화면 탈출 처리 (ESC 누를 시 즉시 메인 화면 복귀)
-  const spectatorLayer = document.getElementById('spectator-game-layer');
-  if (spectatorLayer && e.key === 'Escape') {
-    e.preventDefault();
+// 전역 단축키 등록 (컴포넌트로 위임)
+registerGlobalKeybindings(userConfig, {
+  onEscapeModal: (activeOverlay) => {
+    activeOverlay.click(); // 오버레이 클릭 이벤트를 트리거하여 모달 닫기 및 설정 자동 저장
+  },
+  onEscapeSpectator: () => {
     terminateSpectatorSession();
-    return;
-  }
-
-  const optionsContainer = document.getElementById('options');
-
-  // 퀴즈 화면 탈출 처리 (ESC 누를 시 컨펌창 띄우고 취소 시 타이머 재개)
-  if (optionsContainer && e.key === 'Escape') {
-    e.preventDefault();
+  },
+  onEscapeQuiz: () => {
     const wasInterval = timerInterval;
     if (timerInterval) {
       clearInterval(timerInterval);
@@ -1747,78 +1633,47 @@ window.addEventListener('keydown', (e) => {
         }
       }
     }
-    return;
-  }
-  
-  // 퀴즈 화면이 아닐 때 (메인화면인 경우) 단축키 설정
-  if (!optionsContainer) {
-    if (document.querySelector('.modal-overlay')) return;
-
-    if (matchKey(e, bindings.toggleDomain)) {
-      e.preventDefault();
-      if (typeof window.toggleDomain === 'function') window.toggleDomain();
-    } else if (matchKey(e, bindings.playSoundTest)) {
-      e.preventDefault();
-      if (typeof window.playSoundTest === 'function') window.playSoundTest();
-    } else if (matchKey(e, bindings.popupProgress)) {
-      e.preventDefault();
-      if (typeof window.popupProgress === 'function') window.popupProgress();
-    } else if (matchKey(e, bindings.popupSetting)) {
-      e.preventDefault();
-      if (typeof window.popupSetting === 'function') window.popupSetting();
-    } else if (matchKey(e, bindings.popupLeaderboard)) {
-      e.preventDefault();
-      if (typeof window.popupLeaderboard === 'function') window.popupLeaderboard();
-    } else if (matchKey(e, bindings.popupHelp)) {
-      e.preventDefault();
-      if (typeof window.popupHelp === 'function') window.popupHelp();
-    } else if (matchKey(e, bindings.popupLogin)) {
-      e.preventDefault();
-      if (typeof window.popupLogin === 'function') window.popupLogin();
-    } else if (matchKey(e, bindings.startStudy)) {
-      e.preventDefault();
-      if (typeof startSessionWorkflow === 'function') startSessionWorkflow('study');
-    } else if (matchKey(e, bindings.startRecord)) {
-      e.preventDefault();
-      if (typeof startSessionWorkflow === 'function') startSessionWorkflow('record');
-    } else if (matchKey(e, bindings.startSpectator)) {
-      e.preventDefault();
-      if (typeof startSessionWorkflow === 'function') startSessionWorkflow('spectator');
-    }
-    return;
-  }
-
-  // 퀴즈 화면이지만 오답 확인 대기 중(pointerEvents === 'none')일 때는 무시
-  if (optionsContainer.style.pointerEvents === 'none') return;
-
-  // 스페이스바 음성 재생 단축키
-  if (e.code === 'Space') {
-    e.preventDefault();
+  },
+  onToggleDomain: () => {
+    if (typeof window.toggleDomain === 'function') window.toggleDomain();
+  },
+  onPlaySoundTest: () => {
+    if (typeof window.playSoundTest === 'function') window.playSoundTest();
+  },
+  onPopupProgress: () => {
+    if (typeof window.popupProgress === 'function') window.popupProgress();
+  },
+  onPopupSetting: () => {
+    if (typeof window.popupSetting === 'function') window.popupSetting();
+  },
+  onPopupLeaderboard: () => {
+    if (typeof window.popupLeaderboard === 'function') window.popupLeaderboard();
+  },
+  onPopupHelp: () => {
+    if (typeof window.popupHelp === 'function') window.popupHelp();
+  },
+  onPopupLogin: () => {
+    if (typeof window.popupLogin === 'function') window.popupLogin();
+  },
+  onStartStudy: () => {
+    if (typeof startSessionWorkflow === 'function') startSessionWorkflow('study');
+  },
+  onStartRecord: () => {
+    if (typeof startSessionWorkflow === 'function') startSessionWorkflow('record');
+  },
+  onStartSpectator: () => {
+    if (typeof startSessionWorkflow === 'function') startSessionWorkflow('spectator');
+  },
+  onReplayVoice: () => {
     if (window.audioTriggerClick) window.audioTriggerClick();
-    return;
-  }
-
-  let optionIndex = -1;
-  if (matchKey(e, bindings.option0)) optionIndex = 0;      // 왼쪽 위
-  else if (matchKey(e, bindings.option1)) optionIndex = 1; // 오른쪽 위
-  else if (matchKey(e, bindings.option2)) optionIndex = 2; // 왼쪽 아래
-  else if (matchKey(e, bindings.option3)) optionIndex = 3; // 오른쪽 아래
-
-  if (optionIndex !== -1) {
-    const buttons = optionsContainer.querySelectorAll('.option-btn');
-    if (buttons && buttons.length > optionIndex) {
-      buttons[optionIndex].click();
+  },
+  onOptionSelect: (optionIndex) => {
+    const optionsContainer = document.getElementById('options');
+    if (optionsContainer) {
+      const buttons = optionsContainer.querySelectorAll('.option-btn');
+      if (buttons && buttons.length > optionIndex) {
+        buttons[optionIndex].click();
+      }
     }
   }
 });
-
-window.addEventListener('keyup', (e) => {
-  if (e.key === 'Alt') {
-    e.preventDefault();
-    document.body.classList.remove('show-keybinds');
-  }
-});
-
-window.addEventListener('blur', () => {
-  document.body.classList.remove('show-keybinds');
-});

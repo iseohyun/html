@@ -1,4 +1,4 @@
-import { db } from './firebase-config.js';
+import { db, auth } from './firebase-config.js';
 import {
   collection,
   doc,
@@ -302,4 +302,151 @@ export const getWeeklyStats = async (domain) => {
   });
 
   return stats;
+};
+
+/**
+ * 학습 모드 랭킹 기록 등록
+ * @returns {Promise<boolean>} 새로운 기록으로 갱신되었는지 여부
+ */
+export const submitStudyRanking = async (domain, correctCount, elapsedTime, accuracy, customName = null) => {
+  if (!currentUserUid) return false;
+
+  let displayName = customName;
+  if (!displayName) {
+    const userNameDisplay = document.getElementById('profile-name');
+    displayName = userNameDisplay ? userNameDisplay.innerText : "게스트";
+  }
+
+  const docId = `${currentUserUid}_${domain}`;
+  const docRef = doc(db, 'study_rankings', docId);
+
+  try {
+    const docSnap = await getDoc(docRef);
+    let shouldUpdate = false;
+
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      const existingCorrect = data.correctCount || 0;
+      const existingTime = data.elapsedTime || Infinity;
+
+      if (correctCount > existingCorrect) {
+        shouldUpdate = true;
+      } else if (correctCount === existingCorrect && elapsedTime < existingTime) {
+        shouldUpdate = true;
+      }
+    } else {
+      shouldUpdate = true;
+    }
+
+    if (shouldUpdate) {
+      await setDoc(docRef, {
+        uid: currentUserUid,
+        name: displayName,
+        domain: domain,
+        correctCount: correctCount,
+        elapsedTime: elapsedTime,
+        accuracy: accuracy,
+        updatedAt: Date.now()
+      });
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error("[DB Error] 학습모드 랭킹 저장 실패:", error);
+    return false;
+  }
+};
+
+/**
+ * 학습 모드 글로벌 랭킹 리스트 조회
+ */
+export const getStudyRankings = async (limitCount = 10, targetDomain = 'all') => {
+  const rankingsRef = collection(db, 'study_rankings');
+
+  // 정답수 내림차순, 소요시간 오름차순
+  let q = query(rankingsRef, orderBy('correctCount', 'desc'), orderBy('elapsedTime', 'asc'), limit(limitCount));
+  if (targetDomain !== 'all') {
+    q = query(rankingsRef, where('domain', '==', targetDomain), orderBy('correctCount', 'desc'), orderBy('elapsedTime', 'asc'), limit(limitCount));
+  }
+
+  try {
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => {
+      const data = doc.data();
+
+      // 소요시간 mm:ss
+      const totalM = Math.floor(data.elapsedTime / 60).toString().padStart(2, '0');
+      const s = (data.elapsedTime % 60).toString().padStart(2, '0');
+      const elapsedStr = `${totalM}:${s}`;
+
+      // 완료시각 YYYY-MM-DD hh:mm:ss
+      const d = new Date(data.updatedAt);
+      const dateStr = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+      const timeStr = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}`;
+
+      return {
+        id: doc.id,
+        ...data,
+        elapsedStr: elapsedStr,
+        updatedAt: `${dateStr} ${timeStr}`
+      };
+    });
+  } catch (error) {
+    if (error.message && error.message.includes('index')) {
+      console.error("🔥 [DB Error] Firebase 복합 인덱스가 누락되었습니다! 다음 링크를 클릭하여 생성하세요:\n", error.message);
+    }
+    throw error;
+  }
+};
+
+/**
+ * 현재 로그인된 사용자 UID 또는 게스트 ID 조회 헬퍼
+ */
+export const getCurrentUserUid = () => currentUserUid;
+
+/**
+ * 사용자 건의사항 등록/수정
+ */
+export const submitSuggestion = async (text) => {
+  if (!currentUserUid) return;
+
+  const docRef = doc(db, 'suggestions', currentUserUid);
+  const docSnap = await getDoc(docRef);
+  const existingData = docSnap.exists() ? docSnap.data() : {};
+
+  const suggestionHistory = existingData.suggestionHistory || [];
+  suggestionHistory.push({
+    text: text,
+    timestamp: Date.now()
+  });
+
+  let displayName = "게스트";
+  let email = "";
+  if (auth && auth.currentUser) {
+    displayName = auth.currentUser.displayName || "이름 없음";
+    email = auth.currentUser.email || "";
+  } else {
+    displayName = localStorage.getItem('GUEST_ID') || "게스트";
+  }
+
+  await setDoc(docRef, {
+    uid: currentUserUid,
+    name: displayName,
+    email: email,
+    suggestion: text,
+    suggestionHistory: suggestionHistory,
+    reply: existingData.reply || "",
+    updatedAt: Date.now()
+  }, { merge: true });
+};
+
+/**
+ * 사용자 자신의 건의사항 및 답변 가져오기
+ */
+export const getUserSuggestion = async () => {
+  if (!currentUserUid) return null;
+
+  const docRef = doc(db, 'suggestions', currentUserUid);
+  const docSnap = await getDoc(docRef);
+  return docSnap.exists() ? docSnap.data() : null;
 };

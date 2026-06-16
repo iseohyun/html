@@ -275,9 +275,9 @@ export function toggleAnalysisMode() {
 }
 
 /**
- * 스피드런 랭킹 리더보드 렌더링 함수
+ * 스피드런 및 학습 모드 랭킹 리더보드 렌더링 함수
  */
-export function renderLeaderboardUI(rankings) {
+export function renderLeaderboardUI(rankings, mode = 'speedrun') {
   // leaderboard.html 내부에 id="leaderboard-list" 인 빈 컨테이너가 있다고 가정합니다.
   const listContainer = document.getElementById('leaderboard-list');
   if (!listContainer) {
@@ -285,11 +285,55 @@ export function renderLeaderboardUI(rankings) {
     return;
   }
 
-  // 하드코딩된 기존 더미 데이터(1, 2, 3, 10, 32위 등)를 모두 초기화하여 비움
+  // 탭 활성화 상태 변경
+  const btnSpeedrun = document.getElementById('tab-speedrun');
+  const btnStudy = document.getElementById('tab-study');
+  if (btnSpeedrun && btnStudy) {
+    if (mode === 'study') {
+      btnSpeedrun.classList.remove('active');
+      btnStudy.classList.add('active');
+    } else {
+      btnSpeedrun.classList.add('active');
+      btnStudy.classList.remove('active');
+    }
+  }
+
+  // 테이블 헤더 동적 변경
+  const headerContainer = document.getElementById('leaderboard-header');
+  if (headerContainer) {
+    if (mode === 'study') {
+      headerContainer.innerHTML = `
+        <tr>
+          <th>순위</th>
+          <th>아이디</th>
+          <th>도메인</th>
+          <th>정답수</th>
+          <th>소요시간</th>
+          <th>정답률</th>
+          <th>완료시각</th>
+        </tr>
+      `;
+    } else {
+      headerContainer.innerHTML = `
+        <tr>
+          <th>순위</th>
+          <th>아이디</th>
+          <th>도메인 (문항수)</th>
+          <th>소요시간</th>
+          <th>정답률</th>
+          <th>완료 시각</th>
+        </tr>
+      `;
+    }
+  }
+
+  // 하드코딩된 기존 더미 데이터를 모두 초기화하여 비움
   listContainer.innerHTML = '';
 
+  const colCount = mode === 'study' ? 7 : 6;
+
   if (!rankings || rankings.length === 0) {
-    listContainer.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 30px; color:#777;">등록된 스피드런 기록이 없습니다.</td></tr>';
+    listContainer.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center; padding: 30px; color:#777;">등록된 기록이 없습니다.</td></tr>`;
     return;
   }
 
@@ -322,16 +366,30 @@ export function renderLeaderboardUI(rankings) {
     const isHighlighted = window.highlightRecordId && window.highlightRecordId === entry.id;
     const trStyle = isHighlighted ? 'background-color: #fff9c4;' : '';
 
-    html += `
-      <tr style="${trStyle}">
-        <td style="text-align:center; ${rankStyle} font-size:16px;">${rank}</td>
-        <td style="font-weight:bold; color:#333; text-align:center;">${displayName}</td>
-        <td style="text-align:center;">${domainDisplay} <span style="font-size:11px; color:#999;">(${entry.charCount || 0})</span></td>
-        <td style="text-align:center; font-weight:bold; color:#2196F3;">${entry.elapsedStr || '-'}</td>
-        <td style="text-align:center;">${entry.accuracy || 0}%</td>
-        <td style="text-align:center; font-size:11px; color:#aaa;">${entry.updatedAt}</td>
-      </tr>
-    `;
+    if (mode === 'study') {
+      html += `
+        <tr style="${trStyle}">
+          <td style="text-align:center; ${rankStyle} font-size:16px;">${rank}</td>
+          <td style="font-weight:bold; color:#333; text-align:center;">${displayName}</td>
+          <td style="text-align:center;">${domainDisplay}</td>
+          <td style="text-align:center; font-weight:bold; color:#4CAF50;">${entry.correctCount || 0}</td>
+          <td style="text-align:center; font-weight:bold; color:#2196F3;">${entry.elapsedStr || '-'}</td>
+          <td style="text-align:center;">${entry.accuracy || 0}%</td>
+          <td style="text-align:center; font-size:11px; color:#aaa;">${entry.updatedAt}</td>
+        </tr>
+      `;
+    } else {
+      html += `
+        <tr style="${trStyle}">
+          <td style="text-align:center; ${rankStyle} font-size:16px;">${rank}</td>
+          <td style="font-weight:bold; color:#333; text-align:center;">${displayName}</td>
+          <td style="text-align:center;">${domainDisplay} <span style="font-size:11px; color:#999;">(${entry.charCount || 0})</span></td>
+          <td style="text-align:center; font-weight:bold; color:#2196F3;">${entry.elapsedStr || '-'}</td>
+          <td style="text-align:center;">${entry.accuracy || 0}%</td>
+          <td style="text-align:center; font-size:11px; color:#aaa;">${entry.updatedAt}</td>
+        </tr>
+      `;
+    }
   });
 
   listContainer.innerHTML = html;
