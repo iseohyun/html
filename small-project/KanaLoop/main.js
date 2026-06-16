@@ -70,6 +70,11 @@ const MAIN_SELECTION_HTML = `
       기록 모드
       <span class="keybind-badge" id="kb-badge-startRecord" style="top: 10px; right: 10px;">W</span>
     </button>
+    <button class="mode-btn" onclick="startSessionWorkflow('spectator')" style="position: relative;">
+      관전 모드
+      <span class="keybind-badge" id="kb-badge-startSpectator" style="top: 10px; right: 10px;">E</span>
+    </button>
+    <div class="mode-btn-empty" style="aspect-ratio: 1 / 1;"></div>
   </div>
 `;
 
@@ -79,6 +84,8 @@ let currentPool = [];
 let currentQuestion = null;
 let sessionHistory = [];
 let initialStages = {}; // 세션 진입 당시 글자별 stage 상태 보관함
+let spectatorIntervalId = null; // 관전모드 타이머
+let lastSpectatorCharId = null; // 관전모드 직전 출력 글자 ID
 
 let timeLeft = 30;
 let timerInterval = null; // 1초마다 세션 타이머를 갱신(상단 초시계바)
@@ -160,20 +167,27 @@ window.startSessionWorkflow = async function (mode) {
   currentMode = mode;
   try {
     const versionQuery = window.APP_VERSION ? `?v=${window.APP_VERSION}` : '';
-    const response = await fetch(`./view/studyMode.html${versionQuery}`);
-    if (!response.ok) throw new Error("studyMode.html 수급 실패");
+    const viewFile = mode === 'spectator' ? 'spectatorMode' : 'studyMode';
+    const response = await fetch(`./view/${viewFile}.html${versionQuery}`);
+    if (!response.ok) throw new Error(`${viewFile}.html 수급 실패`);
 
     const htmlContent = await response.text();
     const mainBox = document.getElementById('main-box');
     if (mainBox) mainBox.innerHTML = htmlContent;
 
     const title = document.getElementById('current-mode-title');
-    if (title) title.innerText = mode === 'study' ? '학습 모드' : '스피드런 모드';
+    if (title) {
+      if (mode === 'study') title.innerText = '학습 모드';
+      else if (mode === 'record') title.innerText = '스피드런 모드';
+      else if (mode === 'spectator') title.innerText = '관전 모드';
+    }
 
     if (mode === 'study') {
       await startQuizSession();
-    } else {
+    } else if (mode === 'record') {
       await startSpeedrunSession();
+    } else if (mode === 'spectator') {
+      await startSpectatorSession();
     }
   } catch (error) {
     console.error("세션 진입 중 에러 발생:", error);
@@ -643,11 +657,168 @@ async function terminateSpeedrunSession() {
   }
 }
 
+}
+
+/**
+ * 관전 모드 기동 및 설정
+ */
+async function startSpectatorSession() {
+  lastSpectatorCharId = null;
+
+  // 1. 도메인 진도 전체 데이터 가져오기
+  const dbData = await getAllProgress(userConfig.currentDomain);
+  
+  // 2. 해금된 글자만 필터링
+  const allCharacters = [];
+  const rows = ALPHABETS[userConfig.currentDomain] || [];
+  let idCounter = 0;
+  for (const row of rows) {
+    for (const char of row) {
+      if (char !== '_') {
+        const saved = dbData[idCounter] || {};
+        allCharacters.push({
+          domain: userConfig.currentDomain,
+          charId: idCounter,
+          char,
+          stage: saved.stage !== undefined ? saved.stage : 0,
+          recentLatencies: saved.recentLatencies || [],
+          latenciesIdx: saved.latenciesIdx || 0,
+          outCnt: saved.outCnt || 0,
+          resetOutCnt: saved.resetOutCnt || 0,
+          totalSolved: saved.totalSolved || 0,
+          lastSessionTime: saved.lastSessionTime || 0,
+          sessionStreak: saved.sessionStreak || 0,
+          hasHistory: (saved.totalSolved || 0) > 0,
+          isEligibleForPromotion: false
+        });
+        idCounter++;
+      }
+    }
+  }
+
+  // 해금된 글자 (solved 기록 존재)
+  let unlocked = allCharacters.filter(item => item.hasHistory);
+
+  // 3. 만약 해금된 글자가 전혀 없으면, 기본 10개 글자로 풀 방어 구축
+  if (unlocked.length === 0) {
+    unlocked = allCharacters.slice(0, 10);
+  }
+
+  // 4. 평균 반응속도 기준 계산 및 내림차순 정렬 (느린 순)
+  const getAvg = (item) => {
+    if (!item.recentLatencies || item.recentLatencies.length === 0) return 0;
+    return item.recentLatencies.reduce((a, b) => a + b, 0) / item.recentLatencies.length;
+  };
+
+  unlocked.sort((a, b) => getAvg(b) - getAvg(a));
+
+  // 느린 기준 10개 문자 추출
+  currentPool = unlocked.slice(0, 10);
+
+  // 5. 우측 사용자 정보 영역 숨기기
+  const userInfoRight = document.querySelector('.user-info-right');
+  if (userInfoRight) userInfoRight.classList.add('hidden');
+
+  // 6. 음원 사전 로딩
+  await preloadSessionVoices(currentPool);
+
+  // 7. 상단 인디케이터 배지들 출력
+  initialStages = {};
+  currentPool.forEach(item => {
+    initialStages[item.charId] = item.stage;
+  });
+  updatePoolIndicatorUI();
+
+  // 8. 1초당 1개씩 동작하는 루프 기동
+  const intervalMs = (userConfig.spectatorInterval || 1) * 1000;
+  
+  // 첫 문자 즉시 출력
+  tickSpectator();
+  
+  if (spectatorIntervalId) clearInterval(spectatorIntervalId);
+  spectatorIntervalId = setInterval(tickSpectator, intervalMs);
+}
+
+/**
+ * 1주기마다 글자를 무작위 선택하여 음성 및 글자 출력 (단, 2번 연속 선택 불가)
+ */
+function tickSpectator() {
+  if (currentPool.length === 0) return;
+
+  // 2번 연속 선택 방지를 위해 직전 ID 배제 필터링
+  const candidates = currentPool.filter(item => item.charId !== lastSpectatorCharId);
+  const nextItem = candidates.length > 0
+    ? candidates[Math.floor(Math.random() * candidates.length)]
+    : currentPool[0];
+
+  lastSpectatorCharId = nextItem.charId;
+
+  // 글자 UI 갱신 및 스케일 애니메이션 트리거
+  const charEl = document.getElementById('spectator-char');
+  if (charEl) {
+    charEl.innerText = nextItem.char;
+    charEl.classList.remove('pulse-scale');
+    void charEl.offsetWidth; // 리플로우 트리거
+    charEl.classList.add('pulse-scale');
+  }
+
+  // 음성 재생
+  playTargetVoice(nextItem.char);
+
+  // 상단 배지 강조 (해당 문자 배지는 크게 키우고 테두리 검정, 다른 배지들은 원래 스타일 복구)
+  const badges = document.querySelectorAll('.pool-badge');
+  badges.forEach(badge => {
+    const bCharId = parseInt(badge.dataset.charId);
+    if (bCharId === nextItem.charId) {
+      badge.style.transform = 'scale(1.25)';
+      badge.style.boxShadow = '0 0 10px rgba(0,0,0,0.3)';
+      badge.style.border = '2.5px solid #2b2b2b';
+      badge.style.zIndex = '10';
+    } else {
+      badge.style.transform = 'none';
+      badge.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+      badge.style.zIndex = '1';
+      
+      const item = currentPool.find(p => p.charId === bCharId);
+      if (item) {
+        if (item.isEligibleForPromotion) {
+          badge.style.border = '1.5px solid #2b8a3e';
+        } else if (!item.hasHistory) {
+          badge.style.border = '1.5px dashed #868e96';
+        } else {
+          badge.style.border = 'none';
+        }
+      }
+    }
+  });
+}
+
+/**
+ * 관전 모드 종료 시 리셋 프로세스
+ */
+function terminateSpectatorSession() {
+  if (spectatorIntervalId) {
+    clearInterval(spectatorIntervalId);
+    spectatorIntervalId = null;
+  }
+  
+  const userInfoRight = document.querySelector('.user-info-right');
+  if (userInfoRight) userInfoRight.classList.remove('hidden');
+
+  resetToMainModeSelection();
+}
+
+window.exitSpectatorTrigger = function () {
+  terminateSpectatorSession();
+};
+
 /**
  * 세션 타임아웃 또는 강제 이탈 시 메인 선택 화면으로 리셋 복귀
  */
 function resetToMainModeSelection() {
   if (timerInterval) clearInterval(timerInterval);
+  if (spectatorIntervalId) clearInterval(spectatorIntervalId);
+  spectatorIntervalId = null;
 
   const mainBox = document.getElementById('main-box');
   if (mainBox) {
@@ -724,6 +895,7 @@ function updatePoolIndicatorUI() {
     const badge = document.createElement('div');
     badge.className = 'pool-badge';
     badge.innerText = item.char;
+    badge.dataset.charId = item.charId;
     
     // 배경색은 현재의 stage 색상
     let bg = getStageColor(item.stage);
@@ -915,7 +1087,7 @@ async function openRemoteModalPopup(viewName) {
             <tbody>
       `;
 
-      const mainKeys = ['toggleDomain', 'playSoundTest', 'popupProgress', 'popupSetting', 'popupLeaderboard', 'popupHelp', 'popupLogin', 'startStudy', 'startRecord'];
+      const mainKeys = ['toggleDomain', 'playSoundTest', 'popupProgress', 'popupSetting', 'popupLeaderboard', 'popupHelp', 'popupLogin', 'startStudy', 'startRecord', 'startSpectator'];
       const ingameKeys = ['option0', 'option1', 'option2', 'option3'];
 
       mainKeys.forEach(k => {
@@ -1077,6 +1249,9 @@ async function openRemoteModalPopup(viewName) {
       const genderSelect = document.getElementById('user-gender');
       if (genderSelect) genderSelect.value = userConfig.gender || '미상';
 
+      const spectatorIntervalSelect = document.getElementById('spectator-interval');
+      if (spectatorIntervalSelect) spectatorIntervalSelect.value = (userConfig.spectatorInterval || 1).toString();
+
       const btnErrorShow = document.getElementById('btn-error-show');
       const btnErrorAudio = document.getElementById('btn-error-audio');
 
@@ -1133,6 +1308,10 @@ async function openRemoteModalPopup(viewName) {
         userConfig.gender = e.target.value || '미상';
       });
 
+      document.getElementById('spectator-interval')?.addEventListener('change', (e) => {
+        userConfig.spectatorInterval = parseFloat(e.target.value) || 1;
+      });
+
       // --- 키 바인딩 버튼 이벤트 리스너 바인딩 ---
       const bindButtons = overlay.querySelectorAll('.kb-bind-btn');
       bindButtons.forEach(btn => {
@@ -1157,7 +1336,7 @@ async function openRemoteModalPopup(viewName) {
             let formattedKey = newKey;
 
             // 중복 검사
-            const mainKeys = ['toggleDomain', 'playSoundTest', 'popupProgress', 'popupSetting', 'popupLeaderboard', 'popupHelp', 'popupLogin', 'startStudy', 'startRecord'];
+            const mainKeys = ['toggleDomain', 'playSoundTest', 'popupProgress', 'popupSetting', 'popupLeaderboard', 'popupHelp', 'popupLogin', 'startStudy', 'startRecord', 'startSpectator'];
             const ingameKeys = ['option0', 'option1', 'option2', 'option3'];
             const isMain = mainKeys.includes(action);
             const targetGroup = isMain ? mainKeys : ingameKeys;
@@ -1442,7 +1621,8 @@ function updateVisualBadges() {
     popupLeaderboard: 'kb-badge-popupLeaderboard',
     popupHelp: 'kb-badge-popupHelp',
     startStudy: 'kb-badge-startStudy',
-    startRecord: 'kb-badge-startRecord'
+    startRecord: 'kb-badge-startRecord',
+    startSpectator: 'kb-badge-startSpectator'
   };
   
   Object.keys(ids).forEach(action => {
@@ -1530,6 +1710,14 @@ window.addEventListener('keydown', (e) => {
     }
   }
 
+  // 관전 화면 탈출 처리 (ESC 누를 시 즉시 메인 화면 복귀)
+  const spectatorLayer = document.getElementById('spectator-game-layer');
+  if (spectatorLayer && e.key === 'Escape') {
+    e.preventDefault();
+    terminateSpectatorSession();
+    return;
+  }
+
   const optionsContainer = document.getElementById('options');
 
   // 퀴즈 화면 탈출 처리 (ESC 누를 시 컨펌창 띄우고 취소 시 타이머 재개)
@@ -1593,6 +1781,9 @@ window.addEventListener('keydown', (e) => {
     } else if (matchKey(e, bindings.startRecord)) {
       e.preventDefault();
       if (typeof startSessionWorkflow === 'function') startSessionWorkflow('record');
+    } else if (matchKey(e, bindings.startSpectator)) {
+      e.preventDefault();
+      if (typeof startSessionWorkflow === 'function') startSessionWorkflow('spectator');
     }
     return;
   }
