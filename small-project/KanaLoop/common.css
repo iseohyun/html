@@ -69,13 +69,13 @@ body {
 }
 
 .mode-selection {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
   padding: 1em;
-  flex-direction: row;
-  justify-content: space-around;
-  align-items: center;
   gap: 20px;
   height: 100%;
+  box-sizing: border-box;
 }
 
 .mode-btn {

@@ -10,6 +10,7 @@ export const userConfig = {
   speechRate: 0.85,
   currentDomain: 'hira',
   errorFeedbackMode: 'both',
+  spectatorInterval: 1, // 관전모드 출력 주기 (초)
   keybindings: {
     toggleDomain: { label: "도메인 변경", primary: "1", secondary: "d" },
     playSoundTest: { label: "음성 테스트", primary: "2", secondary: "t" },
@@ -20,6 +21,7 @@ export const userConfig = {
     popupLogin: { label: "로그인 팝업", primary: "Escape", secondary: "l" },
     startStudy: { label: "학습 모드 시작", primary: "q", secondary: "7" },
     startRecord: { label: "기록 모드 시작", primary: "w", secondary: "8" },
+    startSpectator: { label: "관전 모드 시작", primary: "e", secondary: "6" },
     option0: { label: "1번 답안 (좌상)", primary: "4", secondary: "a" },
     option1: { label: "2번 답안 (우상)", primary: "5", secondary: "s" },
     option2: { label: "3번 답안 (좌하)", primary: "1", secondary: "z" },

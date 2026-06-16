@@ -10,7 +10,7 @@
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <script>
-    window.APP_VERSION = "260614v3";
+    window.APP_VERSION = "260616v2";
 
     const cssLink = document.createElement("link");
     cssLink.rel = "stylesheet";
@@ -75,6 +75,11 @@
           기록 모드
           <span class="keybind-badge" id="kb-badge-startRecord" style="top: 10px; right: 10px;">W</span>
         </button>
+        <button class="mode-btn" onclick="startSessionWorkflow('spectator')" style="position: relative;">
+          관전 모드
+          <span class="keybind-badge" id="kb-badge-startSpectator" style="top: 10px; right: 10px;">E</span>
+        </button>
+        <div class="mode-btn-empty" style="aspect-ratio: 1 / 1;"></div>
       </div>
     </div>
   </div>
