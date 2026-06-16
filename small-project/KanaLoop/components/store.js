@@ -22,6 +22,7 @@ export const userConfig = {
     startStudy: { label: "학습 모드 시작", primary: "q", secondary: "7" },
     startRecord: { label: "기록 모드 시작", primary: "w", secondary: "8" },
     startSpectator: { label: "관전 모드 시작", primary: "e", secondary: "6" },
+    replayVoice: { label: "음성 다시듣기", primary: "Space", secondary: "0" },
     option0: { label: "1번 답안 (좌상)", primary: "4", secondary: "a" },
     option1: { label: "2번 답안 (우상)", primary: "5", secondary: "s" },
     option2: { label: "3번 답안 (좌하)", primary: "1", secondary: "z" },

@@ -4,6 +4,33 @@
     word-break: keep-all;
     white-space: pre-wrap;
   }
+  .leaderboard-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #eaeaea;
+    padding-bottom: 10px;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    background-color: #f1f3f5;
+    color: #495057;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    outline: none;
+  }
+  .tab-btn:hover {
+    background-color: #e9ecef;
+  }
+  .tab-btn.active {
+    background-color: #228be6;
+    color: white;
+  }
 </style>
 <div class="leaderboard-container">
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
@@ -19,8 +46,13 @@
     </select>
   </div>
 
+  <div class="leaderboard-tabs">
+    <button id="tab-speedrun" class="tab-btn active" onclick="switchLeaderboardMode('speedrun')">기록 모드</button>
+    <button id="tab-study" class="tab-btn" onclick="switchLeaderboardMode('study')">학습 모드</button>
+  </div>
+
   <table class="leaderboard-table">
-    <thead>
+    <thead id="leaderboard-header">
       <tr>
         <th>순위</th>
         <th>아이디</th>
