@@ -177,19 +177,73 @@ body {
   display: none !important;
 }
 
-.user-info-right span {
+.menu-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   user-select: none;
   transition: transform 0.1s ease, opacity 0.1s ease;
+  margin: 0 0.2em;
 }
 
-.user-info-right span:hover {
+.menu-item:hover {
   opacity: 0.8;
 }
 
-.user-info-right span:active {
+.menu-item:active {
   transform: scale(0.92);
   opacity: 0.6;
+}
+
+.keybind-badge {
+  position: absolute;
+  top: -8px;
+  right: -4px;
+  font-size: 1em;
+  background-color: #343a40;
+  color: #f8f9fa;
+  border-radius: 3px;
+  padding: 1px 4px;
+  /* font-weight: bold; */
+  line-height: 1;
+  pointer-events: none;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  z-index: 10;
+  font-family: monospace;
+  display: none !important; /* 기본적으로 단축키 배지 숨김 */
+}
+
+/* Alt 키 활성화 및 데스크톱 모드(601px 이상)인 경우에만 단축키 노출 */
+@media (min-width: 601px) {
+  body.show-keybinds .keybind-badge {
+    display: inline-block !important;
+  }
+  body.show-keybinds .keybind-hint {
+    display: block !important;
+  }
+}
+
+/* 복습 필요 문항 수 실시간 배지 */
+.review-count-badge {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  background-color: #e62224;
+  color: white;
+  border-radius: 50%;
+  min-width: 15px;
+  height: 15px;
+  font-size: 9px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  box-sizing: border-box;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  z-index: 9;
 }
 
 .domain-btn {

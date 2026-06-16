@@ -49,7 +49,8 @@ export function initSessionPool(domain, dbData = {}, autoProgress = true, MAX_PO
       lastSessionTime: saved.lastSessionTime || 0,
       sessionStreak: saved.sessionStreak || 0,
       hasHistory: saved.totalSolved > 0,
-      isEligibleForPromotion: false
+      isEligibleForPromotion: false,
+      hasBeenPromotedThisSession: false
     };
   });
 
@@ -145,6 +146,7 @@ export function generateFourOptions(targetItem, currentPool) {
 export function calculateReviewState(item, isCorrect, latency) {
   item.totalSolved++;
   item.lastSessionTime = Date.now();
+  item.hasHistory = true;
 
   // 5초 이상 응답 지연 예외 처리
   if (latency >= 5000) {
@@ -173,6 +175,7 @@ export function calculateReviewState(item, isCorrect, latency) {
       item.resetOutCnt = 0;
       item.recentLatencies = [];
       item.latenciesIdx = 0;
+      item.isEligibleForPromotion = false; // 3out 시 승급 기회 박탈
     }
     return item;
   }
@@ -187,15 +190,18 @@ export function calculateReviewState(item, isCorrect, latency) {
   item.latenciesIdx = (item.latenciesIdx + 1) % 10;
 
   item.resetOutCnt++;
-  if (item.resetOutCnt >= 10) {
-    item.outCnt = 0;
+  if (item.resetOutCnt >= 3) {
+    item.outCnt = Math.max(0, item.outCnt - 1);
     item.resetOutCnt = 0;
   }
 
   // 복습 주기를 채우지 못한 조기 소환 문항은 승급 금지
   if (!item.isEligibleForPromotion) {
     // 최초 신규 진입 문항(stage=0)인 경우에만 1단계 활성화 허용
-    if (item.stage === 0) item.stage = 1;
+    if (item.stage === 0 && !item.hasBeenPromotedThisSession) {
+      item.stage = 1;
+      item.hasBeenPromotedThisSession = true;
+    }
     return item;
   }
 
@@ -212,7 +218,11 @@ export function calculateReviewState(item, isCorrect, latency) {
     item.stage = Math.max(0, item.stage - 1);
   } else {
     // 복습 주기를 채웠고 속도도 양호함 -> 정석 승급
-    item.stage = Math.min(8, item.stage + 1);
+    if (!item.hasBeenPromotedThisSession) {
+      item.stage = Math.min(8, item.stage + 1);
+      item.isEligibleForPromotion = false; // 한 세션 내 추가 승급 방지를 위해 자격 해제
+      item.hasBeenPromotedThisSession = true;
+    }
   }
 
   return item;

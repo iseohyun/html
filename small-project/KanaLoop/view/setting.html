@@ -49,7 +49,6 @@
     oninput="updateSpeechFromSlider(this.value)">
   <span id="speech-val-display" style="font-weight:bold; min-width:30px; text-align:right;">{{speechRate}}</span>
 </div>
-
 <div style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; margin-top:20px;">
   <span style="font-weight: bold;">오답 표시</span>
   <div style="display:flex; gap:8px;">
@@ -57,3 +56,5 @@
     <button id="btn-error-audio" style="padding:4px 10px; color:white; border:none; border-radius:4px; font-size:12px; cursor:pointer;">+ 음성</button>
   </div>
 </div>
+
+{{keybindingsConfig}}

@@ -28,30 +28,57 @@
   <div id="app-container">
     <div class="user-profile-box">
       <div class="user-info-left">
-        <span class="user-name-trigger" onclick="popupLogin()">
-          <span class="material-symbols-outlined">account_box</span>
-          <span id="profile-name">게스트</span>님
-        </span>
+        <div class="menu-item" onclick="popupLogin()">
+          <span class="user-name-trigger">
+            <span class="material-symbols-outlined">account_box</span>
+            <span id="profile-name">게스트</span>님
+          </span>
+          <span class="keybind-badge" id="kb-badge-popupLogin">ESC</span>
+        </div>
       </div>
       <div class="user-info-right">
-        <span class="material-symbols-outlined" onclick="popupHelp()">question_mark</span>
-        <span class="material-symbols-outlined" onclick="popupLeaderboard()">leaderboard</span>
-        <span class="material-symbols-outlined" onclick="popupSetting()">settings</span>
-        <span class="material-symbols-outlined" onclick="popupProgress()">menu_book</span>
-        <span class="material-symbols-outlined" onclick="playSoundTest()">sound_detection_loud_sound</span>
-        <span class="domain-btn" onclick="toggleDomain()">あ</span>
+        <div class="menu-item" onclick="popupHelp()">
+          <span class="material-symbols-outlined">question_mark</span>
+          <span class="keybind-badge" id="kb-badge-popupHelp">9</span>
+        </div>
+        <div class="menu-item" onclick="popupLeaderboard()">
+          <span class="material-symbols-outlined">leaderboard</span>
+          <span class="keybind-badge" id="kb-badge-popupLeaderboard">5</span>
+        </div>
+        <div class="menu-item" onclick="popupSetting()">
+          <span class="material-symbols-outlined">settings</span>
+          <span class="keybind-badge" id="kb-badge-popupSetting">4</span>
+        </div>
+        <div class="menu-item" onclick="popupProgress()">
+          <span class="material-symbols-outlined">menu_book</span>
+          <span class="keybind-badge" id="kb-badge-popupProgress">3</span>
+          <span id="review-count-badge" class="review-count-badge" style="display: none;"></span>
+        </div>
+        <div class="menu-item" onclick="playSoundTest()">
+          <span class="material-symbols-outlined">sound_detection_loud_sound</span>
+          <span class="keybind-badge" id="kb-badge-playSoundTest">2</span>
+        </div>
+        <div class="menu-item" onclick="toggleDomain()">
+          <span class="domain-btn">あ</span>
+          <span class="keybind-badge" id="kb-badge-toggleDomain">1</span>
+        </div>
       </div>
     </div>
 
     <div id="main-box">
       <div id="mode-selection-layer" class="mode-selection">
-        <button class="mode-btn" onclick="startSessionWorkflow('study')">학습 모드</button>
-        <button class="mode-btn" onclick="startSessionWorkflow('record')">기록 모드</button>
+        <button class="mode-btn" onclick="startSessionWorkflow('study')" style="position: relative;">
+          학습 모드
+          <span class="keybind-badge" id="kb-badge-startStudy" style="top: 10px; right: 10px;">Q</span>
+        </button>
+        <button class="mode-btn" onclick="startSessionWorkflow('record')" style="position: relative;">
+          기록 모드
+          <span class="keybind-badge" id="kb-badge-startRecord" style="top: 10px; right: 10px;">W</span>
+        </button>
       </div>
     </div>
   </div>
 
-  <script type="module" src="./main.js"></script>
   <script>
     const mainScript = document.createElement("script");
     mainScript.type = "module";

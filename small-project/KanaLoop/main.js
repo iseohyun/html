@@ -62,8 +62,14 @@ window.toggleAnalysisMode = toggleAnalysisMode;
 
 const MAIN_SELECTION_HTML = `
   <div class="mode-selection">
-    <button class="mode-btn" onclick="startSessionWorkflow('study')">학습 모드</button>
-    <button class="mode-btn" onclick="startSessionWorkflow('record')">기록 모드</button>
+    <button class="mode-btn" onclick="startSessionWorkflow('study')" style="position: relative;">
+      학습 모드
+      <span class="keybind-badge" id="kb-badge-startStudy" style="top: 10px; right: 10px;">Q</span>
+    </button>
+    <button class="mode-btn" onclick="startSessionWorkflow('record')" style="position: relative;">
+      기록 모드
+      <span class="keybind-badge" id="kb-badge-startRecord" style="top: 10px; right: 10px;">W</span>
+    </button>
   </div>
 `;
 
@@ -72,6 +78,7 @@ let currentMode = 'study'; // 'study' 또는 'record'
 let currentPool = [];
 let currentQuestion = null;
 let sessionHistory = [];
+let initialStages = {}; // 세션 진입 당시 글자별 stage 상태 보관함
 
 let timeLeft = 30;
 let timerInterval = null; // 1초마다 세션 타이머를 갱신(상단 초시계바)
@@ -112,7 +119,11 @@ async function initApp() {
       // 사용자 최신 환경설정 수급 및 덮어쓰기
       const savedConfig = await getUserConfig();
       if (savedConfig) {
-        // 복사본 배정이 아닌 중앙 저장소 상태 객체 필드 동기화
+        if (!savedConfig.keybindings) {
+          savedConfig.keybindings = JSON.parse(JSON.stringify(userConfig.keybindings));
+        } else {
+          savedConfig.keybindings = Object.assign({}, userConfig.keybindings, savedConfig.keybindings);
+        }
         Object.assign(userConfig, savedConfig);
       }
 
@@ -128,7 +139,14 @@ async function initApp() {
       if (userNameDisplay) {
         userNameDisplay.innerText = "게스트";
       }
+      
+      window.currentDomain = userConfig.currentDomain;
+      updateDomainUI();
+      resetToMainModeSelection();
     }
+
+    updateVisualBadges();
+    updateReviewCountBadge();
 
     // 공통 타임라인 인터페이스 가시화 정산
     updateTimerProgressBar(userConfig.learningTime, userConfig.learningTime);
@@ -183,6 +201,12 @@ async function startQuizSession() {
     return;
   }
 
+  // 최초 진입 시 stage 상태 기록
+  initialStages = {};
+  currentPool.forEach(item => {
+    initialStages[item.charId] = item.stage;
+  });
+
   const userInfoRight = document.querySelector('.user-info-right');
   if (userInfoRight) {
     userInfoRight.classList.add('hidden');
@@ -214,11 +238,8 @@ async function renderNextQuestion() {
   const targetItem = currentPool[Math.floor(Math.random() * currentPool.length)];
   currentQuestion = generateFourOptions(targetItem, currentPool);
 
-  // 상단 대시보드 지면 갱신 (현재 문제의 복습 단계 인덱스 정보 가시화)
-  const weightDisplay = document.getElementById('weight-display');
-  if (weightDisplay) {
-    weightDisplay.innerText = `Stage ${currentQuestion.target.stage} | 아웃: ${currentQuestion.target.outCnt}/3`;
-  }
+  // 상단 대시보드 지면 갱신 (실시간 가나 상태 인디케이터 배지 그리드 출력)
+  updatePoolIndicatorUI();
 
   // 프리로드된 메모리를 직접 타격하므로 레이턴시 차단
   window.audioTriggerClick = () => {
@@ -234,7 +255,7 @@ async function renderNextQuestion() {
   window.audioTriggerClick();
   questionStartTime = Date.now();
 
-  const keybinds = ['1 / A', '2 / S', '3 / Z', '4 / X'];
+  const keybinds = ['4 / A', '5 / S', '1 / Z', '2 / X'];
   currentQuestion.options.forEach((charId, idx) => {
     const btn = document.createElement('button');
     btn.className = 'option-btn';
@@ -271,6 +292,7 @@ async function handleUserAnswer(selectedCharId, latency) {
   const updatedItem = calculateReviewState({ ...target }, isCorrect, latency);
   const poolIdx = currentPool.findIndex(p => p.charId === target.charId);
   if (poolIdx !== -1) currentPool[poolIdx] = updatedItem;
+  updatePoolIndicatorUI();
 
   // 히스토리 로컬 배열 저장 및 우측 서브바 UI 갱신
   sessionHistory.push({
@@ -383,6 +405,7 @@ async function terminateQuizSession() {
     const delayMin = INTERVALS[nextTargetStage] || 10;
 
     await scheduleReviewNotification(userConfig.currentDomain, delayMin);
+    updateReviewCountBadge(); // 세션 종료 후 복습 필요 문항 수 배지 갱신
   } catch (dbError) {
     console.error("백엔드 데이터 처리 중 예외 발생 (화면 복귀는 유지됨):", dbError);
   }
@@ -477,7 +500,7 @@ async function renderNextSpeedrunQuestion() {
   window.audioTriggerClick();
   questionStartTime = Date.now();
 
-  const keybinds = ['1 / A', '2 / S', '3 / Z', '4 / X'];
+  const keybinds = ['4 / A', '5 / S', '1 / Z', '2 / X'];
   currentQuestion.options.forEach((charId, idx) => {
     const btn = document.createElement('button');
     btn.className = 'option-btn';
@@ -627,14 +650,17 @@ function resetToMainModeSelection() {
   if (timerInterval) clearInterval(timerInterval);
 
   const mainBox = document.getElementById('main-box');
-  if (mainBox) mainBox.innerHTML = MAIN_SELECTION_HTML; // 완벽히 원본 상태 복원
+  if (mainBox) {
+    mainBox.innerHTML = MAIN_SELECTION_HTML;
+    updateVisualBadges(); // 모드 버튼이 동적 교체되었으므로 Q/W 단축키 배지 재생성 반영
+  }
 }
 
 /**
  * 활성화된 도메인에 맞춰 상단 UI 버튼의 텍스트(아이콘)를 동기화하는 함수
  */
 function updateDomainUI() {
-  const domainBtn = document.querySelector("span[onclick='toggleDomain()']");
+  const domainBtn = document.querySelector(".domain-btn");
   if (domainBtn) {
     const targetDataset = ALPHABETS[userConfig.currentDomain];
     if (targetDataset && targetDataset.length > 0) {
@@ -677,6 +703,70 @@ function updateHistoryBarUI() {
       ? "background:#4CAF50; color:white; padding:5px; text-align:center; border-radius:4px; font-size:12px; font-weight:bold; width:100%;"
       : "background:#FFCDD2; color:#C62828; padding:5px; text-align:center; border-radius:4px; font-size:12px; font-weight:bold; width:100%;";
     container.appendChild(div);
+  });
+}
+
+/**
+ * 실시간 가나 상태 인디케이터 배지 목록 갱신
+ */
+function updatePoolIndicatorUI() {
+  const weightDisplay = document.getElementById('weight-display');
+  if (!weightDisplay) return;
+  if (isTimeUp) return; // 시간 만료 경고 문구 유지
+
+  weightDisplay.innerHTML = '';
+  weightDisplay.style.display = 'flex';
+  weightDisplay.style.gap = '6px';
+  weightDisplay.style.flexWrap = 'wrap';
+  weightDisplay.style.alignItems = 'center';
+
+  currentPool.forEach(item => {
+    const badge = document.createElement('div');
+    badge.className = 'pool-badge';
+    badge.innerText = item.char;
+    
+    // 배경색은 현재의 stage 색상
+    let bg = getStageColor(item.stage);
+    
+    // out count는 오직 글자의 색(font-color)을 변경함
+    let color = '#333';
+    if (item.outCnt === 1) {
+      color = '#e67e22'; // 주황색
+    } else if (item.outCnt === 2) {
+      color = '#e74c3c'; // 빨간색
+    }
+    
+    badge.style.backgroundColor = bg;
+    badge.style.color = color;
+    badge.style.fontWeight = 'bold'; // 가독성을 위해 굵은 글씨 유지
+    
+    // 테두리는 승급을 나타냄
+    // 굵은선: 이번세션에서 승급성공 (hasBeenPromotedThisSession)
+    // 실선: 승급가능 (isEligibleForPromotion)
+    // 점선: 신규단어 (!hasHistory)
+    // 없음: 승급기회 없음
+    badge.style.boxSizing = 'border-box';
+    if (item.hasBeenPromotedThisSession) {
+      badge.style.border = '3px solid #2b8a3e'; // 굵은선
+    } else if (item.isEligibleForPromotion) {
+      badge.style.border = '1.5px solid #2b8a3e'; // 실선
+    } else if (!item.hasHistory) {
+      badge.style.border = '1.5px dashed #868e96'; // 점선
+    } else {
+      badge.style.border = 'none'; // 없음
+    }
+    
+    badge.style.width = '30px';
+    badge.style.height = '30px';
+    badge.style.display = 'inline-flex';
+    badge.style.alignItems = 'center';
+    badge.style.justifyContent = 'center';
+    badge.style.borderRadius = '6px';
+    badge.style.fontSize = '14px';
+    badge.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+    badge.style.transition = 'all 0.2s ease';
+    
+    weightDisplay.appendChild(badge);
   });
 }
 
@@ -775,6 +865,7 @@ window.toggleDomain = function () {
   console.log(`[Domain Swap] 현재 활성 도메인: ${userConfig.currentDomain}`);
 
   resetToMainModeSelection();
+  updateReviewCountBadge();
 };
 
 /**
@@ -809,6 +900,78 @@ async function openRemoteModalPopup(viewName) {
         }
       }
 
+      // 단축키 설정 UI 동적 빌드
+      let kbHtml = `
+        <div style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 15px;">
+          <h3 style="font-size: 14px; margin-bottom: 10px;">⌨️ 메인화면 단축키 설정</h3>
+          <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
+            <thead>
+              <tr style="border-bottom: 1px solid #eee;">
+                <th style="text-align: left; padding: 4px;">기능</th>
+                <th style="text-align: center; padding: 4px; width: 85px;">정 (Primary)</th>
+                <th style="text-align: center; padding: 4px; width: 85px;">부 (Secondary)</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      const mainKeys = ['toggleDomain', 'playSoundTest', 'popupProgress', 'popupSetting', 'popupLeaderboard', 'popupHelp', 'popupLogin', 'startStudy', 'startRecord'];
+      const ingameKeys = ['option0', 'option1', 'option2', 'option3'];
+
+      mainKeys.forEach(k => {
+        const bind = userConfig.keybindings[k] || { label: k, primary: "", secondary: "" };
+        kbHtml += `
+          <tr style="border-bottom: 1px solid #f9f9f9;">
+            <td style="padding: 6px 4px;">${bind.label}</td>
+            <td style="text-align: center; padding: 4px;">
+              <button class="kb-bind-btn" data-action="${k}" data-type="primary" style="width: 75px; padding: 3px; font-size: 11px; border: 1px solid #ccc; border-radius: 3px; cursor: pointer; background: #fff;">${bind.primary || '-'}</button>
+            </td>
+            <td style="text-align: center; padding: 4px;">
+              <button class="kb-bind-btn" data-action="${k}" data-type="secondary" style="width: 75px; padding: 3px; font-size: 11px; border: 1px solid #ccc; border-radius: 3px; cursor: pointer; background: #fff;">${bind.secondary || '-'}</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      kbHtml += `
+            </tbody>
+          </table>
+          
+          <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ddd;" />
+          
+          <h3 style="font-size: 14px; margin-bottom: 10px;">🎮 인게임 단축키 설정</h3>
+          <table style="width: 100%; font-size: 12px; border-collapse: collapse;">
+            <thead>
+              <tr style="border-bottom: 1px solid #eee;">
+                <th style="text-align: left; padding: 4px;">기능</th>
+                <th style="text-align: center; padding: 4px; width: 85px;">정 (Primary)</th>
+                <th style="text-align: center; padding: 4px; width: 85px;">부 (Secondary)</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      ingameKeys.forEach(k => {
+        const bind = userConfig.keybindings[k] || { label: k, primary: "", secondary: "" };
+        kbHtml += `
+          <tr style="border-bottom: 1px solid #f9f9f9;">
+            <td style="padding: 6px 4px;">${bind.label}</td>
+            <td style="text-align: center; padding: 4px;">
+              <button class="kb-bind-btn" data-action="${k}" data-type="primary" style="width: 75px; padding: 3px; font-size: 11px; border: 1px solid #ccc; border-radius: 3px; cursor: pointer; background: #fff;">${bind.primary || '-'}</button>
+            </td>
+            <td style="text-align: center; padding: 4px;">
+              <button class="kb-bind-btn" data-action="${k}" data-type="secondary" style="width: 75px; padding: 3px; font-size: 11px; border: 1px solid #ccc; border-radius: 3px; cursor: pointer; background: #fff;">${bind.secondary || '-'}</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      kbHtml += `
+            </tbody>
+          </table>
+        </div>
+      `;
+
       htmlContent = htmlContent
         .replace('{{userName}}', userName)
         .replace('{{userEmail}}', maskedEmail)
@@ -818,6 +981,7 @@ async function openRemoteModalPopup(viewName) {
         .replace('{{speechIdx}}', speechIdx)
         .replace('{{speechRate}}', userConfig.speechRate)
         .replace('{{#if autoProgress}}checked{{/if}}', userConfig.autoProgress ? 'checked' : '')
+        .replace('{{keybindingsConfig}}', kbHtml);
     }
 
     // 정제된 컴포넌트를 기반으로 단일 객체 생성 및 돔 트리 등록
@@ -967,6 +1131,81 @@ async function openRemoteModalPopup(viewName) {
 
       document.getElementById('user-gender')?.addEventListener('change', (e) => {
         userConfig.gender = e.target.value || '미상';
+      });
+
+      // --- 키 바인딩 버튼 이벤트 리스너 바인딩 ---
+      const bindButtons = overlay.querySelectorAll('.kb-bind-btn');
+      bindButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+
+          if (window.activeKeybindBtn) return;
+
+          window.activeKeybindBtn = btn;
+          btn.innerText = "입력 대기...";
+          btn.style.background = "#fff3cd";
+          btn.style.borderColor = "#ffc107";
+
+          const keydownHandler = (keyEvent) => {
+            keyEvent.preventDefault();
+            keyEvent.stopPropagation();
+
+            const newKey = keyEvent.key;
+            const action = btn.dataset.action;
+            const type = btn.dataset.type;
+
+            let formattedKey = newKey;
+
+            // 중복 검사
+            const mainKeys = ['toggleDomain', 'playSoundTest', 'popupProgress', 'popupSetting', 'popupLeaderboard', 'popupHelp', 'popupLogin', 'startStudy', 'startRecord'];
+            const ingameKeys = ['option0', 'option1', 'option2', 'option3'];
+            const isMain = mainKeys.includes(action);
+            const targetGroup = isMain ? mainKeys : ingameKeys;
+
+            let isDuplicate = false;
+            let duplicateLabel = "";
+
+            for (const otherAction of targetGroup) {
+              const otherBind = userConfig.keybindings[otherAction];
+              if (!otherBind) continue;
+              if (otherAction === action) {
+                const otherType = type === 'primary' ? 'secondary' : 'primary';
+                if ((otherBind[otherType] || '').toLowerCase() === formattedKey.toLowerCase()) {
+                  isDuplicate = true;
+                  duplicateLabel = `${otherBind.label} (${otherType === 'primary' ? '정' : '부'})`;
+                  break;
+                }
+              } else {
+                if ((otherBind.primary || '').toLowerCase() === formattedKey.toLowerCase()) {
+                  isDuplicate = true;
+                  duplicateLabel = `${otherBind.label} (정)`;
+                  break;
+                }
+                if ((otherBind.secondary || '').toLowerCase() === formattedKey.toLowerCase()) {
+                  isDuplicate = true;
+                  duplicateLabel = `${otherBind.label} (부)`;
+                  break;
+                }
+              }
+            }
+
+            if (isDuplicate) {
+              alert(`이미 '${formattedKey}' 키는 ${duplicateLabel}에 할당되어 있습니다.`);
+              btn.innerText = userConfig.keybindings[action][type] || '-';
+            } else {
+              userConfig.keybindings[action][type] = formattedKey;
+              btn.innerText = formattedKey;
+              updateVisualBadges();
+            }
+
+            btn.style.background = "#fff";
+            btn.style.borderColor = "#ccc";
+            window.activeKeybindBtn = null;
+            window.removeEventListener('keydown', keydownHandler, true);
+          };
+
+          window.addEventListener('keydown', keydownHandler, true);
+        });
       });
     }
 
@@ -1173,35 +1412,222 @@ window.resetAllProgressData = async function () {
 };
 
 /**
+ * 키바인딩 매칭 헬퍼 함수
+ */
+function matchKey(e, bind) {
+  if (!bind) return false;
+  const key = e.key.toLowerCase();
+  const primary = (bind.primary || '').toLowerCase();
+  const secondary = (bind.secondary || '').toLowerCase();
+  
+  if (key === ' ' || key === 'space') {
+    return primary === ' ' || primary === 'space' || secondary === ' ' || secondary === 'space';
+  }
+  
+  return key === primary || key === secondary;
+}
+
+/**
+ * 키바인딩 UI 가시 배지 텍스트 갱신 함수
+ */
+function updateVisualBadges() {
+  if (!userConfig.keybindings) return;
+  
+  const ids = {
+    popupLogin: 'kb-badge-popupLogin',
+    toggleDomain: 'kb-badge-toggleDomain',
+    playSoundTest: 'kb-badge-playSoundTest',
+    popupProgress: 'kb-badge-popupProgress',
+    popupSetting: 'kb-badge-popupSetting',
+    popupLeaderboard: 'kb-badge-popupLeaderboard',
+    popupHelp: 'kb-badge-popupHelp',
+    startStudy: 'kb-badge-startStudy',
+    startRecord: 'kb-badge-startRecord'
+  };
+  
+  Object.keys(ids).forEach(action => {
+    const el = document.getElementById(ids[action]);
+    if (el) {
+      const bind = userConfig.keybindings[action];
+      if (bind) {
+        let displayKey = bind.primary || bind.secondary || '-';
+        if (displayKey.toLowerCase() === 'escape') displayKey = 'ESC';
+        if (displayKey === ' ') displayKey = 'Space';
+        el.innerText = displayKey;
+      }
+    }
+  });
+}
+
+/**
+ * 복습 대기 상태 글자 수 실시간 배지 업데이트 함수
+ */
+async function updateReviewCountBadge() {
+  const badge = document.getElementById('review-count-badge');
+  if (!badge) return;
+
+  try {
+    const domain = userConfig.currentDomain;
+    const dbData = await getAllProgress(domain) || {};
+    const now = Date.now();
+    const rows = ALPHABETS[domain] || [];
+    
+    let count = 0;
+    let idCounter = 0;
+    
+    for (const row of rows) {
+      for (const char of row) {
+        if (char !== '_') {
+          const charId = idCounter++;
+          const saved = dbData[charId];
+          if (saved && saved.totalSolved > 0) {
+            const stage = saved.stage !== undefined ? saved.stage : 0;
+            const lastSessionTime = saved.lastSessionTime || 0;
+            const timeDiffMin = (now - lastSessionTime) / (60 * 1000);
+            if (timeDiffMin >= INTERVALS[stage]) {
+              count++;
+            }
+          }
+        }
+      }
+    }
+
+    if (count > 0) {
+      badge.innerText = count;
+      badge.style.display = 'flex';
+    } else {
+      badge.style.display = 'none';
+    }
+  } catch (err) {
+    console.error("복습 개수 배지 업데이트 실패:", err);
+    badge.style.display = 'none';
+  }
+}
+
+/**
  * 키보드 단축키 바인딩
  */
 window.addEventListener('keydown', (e) => {
   // 세팅 창 등의 입력(Input, Select) 필드에서 타이핑 중일 때는 단축키 동작 무시
   if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
 
-  const optionsContainer = document.getElementById('options');
-  // 퀴즈 화면이 아니거나, 오답 확인 대기 중(pointerEvents === 'none')일 때는 무시
-  if (!optionsContainer || optionsContainer.style.pointerEvents === 'none') return;
+  // Alt 키 배지 토글 (기본 브라우저 포커스 동작 차단)
+  if (e.key === 'Alt') {
+    e.preventDefault();
+    document.body.classList.add('show-keybinds');
+    return;
+  }
 
+  const bindings = userConfig.keybindings || {};
+
+  // ESC 키로 모달 닫기
+  if (e.key === 'Escape') {
+    const activeOverlay = document.querySelector('.modal-overlay');
+    if (activeOverlay) {
+      e.preventDefault();
+      activeOverlay.click(); // 오버레이 클릭 이벤트를 트리거하여 모달 닫기 및 설정 자동 저장
+      return;
+    }
+  }
+
+  const optionsContainer = document.getElementById('options');
+
+  // 퀴즈 화면 탈출 처리 (ESC 누를 시 컨펌창 띄우고 취소 시 타이머 재개)
+  if (optionsContainer && e.key === 'Escape') {
+    e.preventDefault();
+    const wasInterval = timerInterval;
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+    isPaused = true;
+
+    const confirmExit = confirm("현재 학습 세션을 종료하고 메인 화면으로 돌아가시겠습니까?");
+    if (confirmExit) {
+      if (currentMode === 'study') {
+        terminateQuizSession();
+      } else {
+        terminateSpeedrunSession();
+      }
+    } else {
+      isPaused = false;
+      if (wasInterval) {
+        if (currentMode === 'study') {
+          timerInterval = setInterval(tickSessionTimer, 1000);
+        } else {
+          timerInterval = setInterval(tickSpeedrunTimer, 1000);
+        }
+      }
+    }
+    return;
+  }
+  
+  // 퀴즈 화면이 아닐 때 (메인화면인 경우) 단축키 설정
+  if (!optionsContainer) {
+    if (document.querySelector('.modal-overlay')) return;
+
+    if (matchKey(e, bindings.toggleDomain)) {
+      e.preventDefault();
+      if (typeof window.toggleDomain === 'function') window.toggleDomain();
+    } else if (matchKey(e, bindings.playSoundTest)) {
+      e.preventDefault();
+      if (typeof window.playSoundTest === 'function') window.playSoundTest();
+    } else if (matchKey(e, bindings.popupProgress)) {
+      e.preventDefault();
+      if (typeof window.popupProgress === 'function') window.popupProgress();
+    } else if (matchKey(e, bindings.popupSetting)) {
+      e.preventDefault();
+      if (typeof window.popupSetting === 'function') window.popupSetting();
+    } else if (matchKey(e, bindings.popupLeaderboard)) {
+      e.preventDefault();
+      if (typeof window.popupLeaderboard === 'function') window.popupLeaderboard();
+    } else if (matchKey(e, bindings.popupHelp)) {
+      e.preventDefault();
+      if (typeof window.popupHelp === 'function') window.popupHelp();
+    } else if (matchKey(e, bindings.popupLogin)) {
+      e.preventDefault();
+      if (typeof window.popupLogin === 'function') window.popupLogin();
+    } else if (matchKey(e, bindings.startStudy)) {
+      e.preventDefault();
+      if (typeof startSessionWorkflow === 'function') startSessionWorkflow('study');
+    } else if (matchKey(e, bindings.startRecord)) {
+      e.preventDefault();
+      if (typeof startSessionWorkflow === 'function') startSessionWorkflow('record');
+    }
+    return;
+  }
+
+  // 퀴즈 화면이지만 오답 확인 대기 중(pointerEvents === 'none')일 때는 무시
+  if (optionsContainer.style.pointerEvents === 'none') return;
+
+  // 스페이스바 음성 재생 단축키
   if (e.code === 'Space') {
-    e.preventDefault(); // 스페이스바 화면 스크롤 방지
+    e.preventDefault();
     if (window.audioTriggerClick) window.audioTriggerClick();
     return;
   }
 
-  const key = e.key.toLowerCase();
   let optionIndex = -1;
-
-
-  if (key === '1' || key === 'a') optionIndex = 0;      // 왼쪽 위
-  else if (key === '2' || key === 's') optionIndex = 1; // 오른쪽 위
-  else if (key === '3' || key === 'z') optionIndex = 2; // 왼쪽 아래
-  else if (key === '4' || key === 'x') optionIndex = 3; // 오른쪽 아래
+  if (matchKey(e, bindings.option0)) optionIndex = 0;      // 왼쪽 위
+  else if (matchKey(e, bindings.option1)) optionIndex = 1; // 오른쪽 위
+  else if (matchKey(e, bindings.option2)) optionIndex = 2; // 왼쪽 아래
+  else if (matchKey(e, bindings.option3)) optionIndex = 3; // 오른쪽 아래
 
   if (optionIndex !== -1) {
     const buttons = optionsContainer.querySelectorAll('.option-btn');
     if (buttons && buttons.length > optionIndex) {
-      buttons[optionIndex].click(); // 해당 위치의 버튼 클릭 이벤트 강제 발생
+      buttons[optionIndex].click();
     }
   }
 });
+
+window.addEventListener('keyup', (e) => {
+  if (e.key === 'Alt') {
+    e.preventDefault();
+    document.body.classList.remove('show-keybinds');
+  }
+});
+
+window.addEventListener('blur', () => {
+  document.body.classList.remove('show-keybinds');
+});
