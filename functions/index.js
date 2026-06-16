@@ -8,7 +8,9 @@ admin.initializeApp();
 const tasksClient = new CloudTasksClient();
 
 // [A] 즉시 발송 API
-exports.sendInstantNotification = onRequest(async (req, res) => {
+exports.sendInstantNotification = onRequest(
+  { cors: true, invoker: "public" },
+  async (req, res) => {
   try {
     const { token, title, body } = req.body;
 
@@ -25,7 +27,9 @@ exports.sendInstantNotification = onRequest(async (req, res) => {
 });
 
 // [B] 예약 발송 스케줄러 등록 API (Cloud Tasks 연동)
-exports.scheduleNotification = onRequest(async (req, res) => {
+exports.scheduleNotification = onRequest(
+  { cors: true, invoker: "public" },
+  async (req, res) => {
   try {
     const { token, title, body, scheduleTime } = req.body; // scheduleTime은 ISOString 형태
 

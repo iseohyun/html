@@ -4,6 +4,7 @@
  */
 
 import { messaging } from './firebase-config.js';
+import { getToken } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-messaging.js";
 
 let fcmToken = null;
 
@@ -27,10 +28,11 @@ export async function requestNotificationPermission() {
     }
 
     if ('serviceWorker' in navigator) {
-      const registration = await navigator.serviceWorker.ready;
-      fcmToken = await messaging.getToken({
+      const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js', { scope: './' });
+      console.log('서비스 워커 등록 성공:', registration);
+      fcmToken = await getToken(messaging, {
         serviceWorkerRegistration: registration,
-        vapidKey: 'YOUR_PUBLIC_VAPID_KEY_HERE' // 파이어베이스 콘솔에서 발급받은 키 입력
+        vapidKey: 'BCsz-FURaLXuyEgWJ5opmzZ2bk8oBACk7pGXouwVF71PlrK-XA-z95QuGNBPqHCi9ppaUD66UGQ79bf2ozcqjpg'
       });
       console.log('FCM Token 갱신 완료:', fcmToken);
       return fcmToken;
