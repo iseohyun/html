@@ -1,325 +1,74 @@
-<!DOCTYPE html>
+<article>
+  <h1>About Us</h1>
+  <ul>
+    <li style="line-height: 1.7em;">
+      목표:<br>
+      <ul style="padding-left: revert;">
+        <li><u>챕터별 약 20분</u>, <u>단원별 약 2시간</u>의 튜토리얼을 제공<br>
+          &nbsp; [ 카테고리 -> 단원 -> 챕터 (예: 문서화 -> CSS -> 폰트) ]</li>
+        <li>공식 사이트의 영문 자료 한글화 및 Old data 업데이트</li>
+      </ul>
+    </li>
+    <li>
+      대상:
+      <ul style="padding-left: revert;">
+        <li>누군가의 도움을 받기 어렵고(스스로 해야 함)</li>
+        <li>어디서부터 시작해야 할지 모를 때(기초지식이 없을 때)</li>
+      </ul>
+    </li>
+  </ul>
 
-<head>
-  <meta charset="UTF-8" lang="ko">
-  <meta name="viewport"
-    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta keywords="iseohyun, update, about us, info, 소개, 저작권, license">
-  <meta author="iseohyun">
-  <meta http-equiv="Cache-Control" content="no-cache">
+  <h1>구조</h1>
+  <ul>
+    <li><b>기초학문</b>(수학, 과학): 중, 고등학교 <u>교과서 기반</u>의 지식을 정리</li>
+    <li><b>코딩</b>: C, Java, Python의 <u>예제코드(다운로드) 및 실습</u>을 바탕으로한 튜토리얼</li>
+    <li><b>문서화</b> 프로젝트: <u>웹 게시와 관련된 스킬</u>(문서작성, 그림, 수식 등)을 정리 및 튜토리얼 제공</li>
+    <li><b>기타</b>: <u>흥미 위주</u>의 소규모 <u>프로젝트</u> 및 제작자 <u>칼럼</u> 등</li>
+  </ul>
 
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
-    gtag('js', new Date());
+  <h1>인터페이스(사용 방법)</h1>
+  <h2>빠른 복사<sub>copy to clipboard</sub></h2>
+  <ol>
+    <li>코드블럭<sub>code</sub>, 인용블럭<sub>blockquote</sub>위에 마우스를 올립니다.</li>
+    <li>우상단에 "<span class="copy-button">copy</span>" 버튼이 나타납니다.</li>
+    <li>버튼을 클릭하면 클립보드에 복사되고, "클립보드에 복사되었습니다."는 메시지가 페이지 우하단에 표시됩니다.</li>
+  </ol>
+  <h2>키 바인딩<sub>key binding</sub></h2>
+  <ol>
+    <li>alt를 누르면 각 메뉴에 바인딩 된 키가 출력됩니다.</li>
+  </ol>
 
-    gtag('config', 'G-453XSP5W9M');
-  </script>
-
-  <!-- 페이지 타이틀 -->
-  <title>정보 - iseohyun </title>
-  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
-
-  <!-- 공통스킨 -->
-  <style type="text/css">
-    @import url("style.css");
-
-    #main {
-      column-count: 2;
-      column-width: 10rem;
-      text-align: justify;
-      width: 95%;
-      margin: 0 auto;
-    }
-
-    @media screen and (max-width: 500px) {
-      #main {
-        column-count: 1;
-      }
-    }
-
-    #main>div {
-      border: 1px solid #AAA;
-      padding: 15px;
-      margin-bottom: 10px;
-      border-radius: 15px;
-      break-inside: avoid;
-      box-shadow: #AAA8 5px 5px 5px;
-      font-size: 1.3rem;
-    }
-
-    article a {
-      color: #44c;
-      text-decoration: none;
-    }
-
-    article a:visted {
-      color: #44c;
-    }
-
-    article a:hover {
-      color: red;
-      text-decoration: none;
-    }
-
-    #update {
-      width: 85%;
-      overflow-y: scroll;
-      max-height: 300px;
-      margin: 10px auto;
-      box-shadow: 0 10px 6px -6px #777;
-      border: 1px solid #ccc;
-      padding: 25px;
-    }
-
-    table#home-update-list {
-      border: 5px;
-    }
-
-    table#home-update-list tr+tr {
-      counter-increment: update-cnt 0;
-    }
-
-    table#home-update-list tr+tr td:first-child:before {
-      position: static;
-      counter-increment: update-cnt;
-      content: counter(update-cnt) " - ";
-    }
-
-    table#home-update-list tr+tr td:first-child {
-      text-align: left;
-      padding-left: 2em;
-    }
-
-    table#home-update-list tr+tr td:last-child {
-      text-align: center;
-    }
-
-    table#home-update-list tr+tr:nth-child(n+20) td {
-      visibility: hidden;
-    }
-  </style>
-
+  <div id="저작권"></div>
+  <h1>저작권 방침</h1>
+  <p>
+    (C) 2023. iseohyun, All rights reserved. CC BY-SA
+  </p>
   <style>
-    article>p {
-      width: 95%;
-      margin: 2em auto;
-    }
-
-    article>p::before {
-      content: none;
-    }
-
-    .update-date {
-      font-size: 0.8em;
-      color: #999;
-    }
-
-    .update-details {
-      margin-top: 0;
-      font-size: 0.9em;
-    }
-
-    header {
-      font-size: 1rem
-    }
-
-    article {
-      margin: 0 auto;
-      padding: 0;
-    }
-
-    #icons-container {
-      display: flex;
-      flex-direction: row;
-      flex-wrap: nowrap;
-      align-content: center;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    #icons-container>div {
-      height: 45px;
-      border: 1px solid #aaa;
-      padding: 3px;
-      margin: 5px;
-      display: flex;
-      flex-direction: column;
-      flex-wrap: nowrap;
-      align-items: center;
-      font-size: 10px;
-      border-radius: 7px;
-      min-width: 45px;
-      justify-content: flex-start;
-      justify-content: space-around;
-    }
-
-    #icons-container a {
-      font-size: inherit;
-      color: inherit;
-      font-style: inherit;
-      font-weight: inherit;
-      text-decoration: none;
-      display: contents;
-    }
-
-    #icons-container a span:last-child {
-      line-height: 1.1em;
+    .whatis {
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      margin: 10px auto;
+      padding: 13px;
+      width: max(400px, 70%);
     }
   </style>
+  <div class="whatis">
+    저작자 : iseohyun.com<br>
+    범위 : 소유자 표시(권고)-동일조건변경허락<br>
+    2차 창작 허용, 변환 허용, 상업적 사용 가능
+  </div>
+  <p>
+    &nbsp;사이트 내에는 직접 작성한 그림, 시뮬레이션, 칼럼, 코드 등이 다수 포함되어 있습니다. 모든 저작물은 <u>상업적 인용/변경을 허용</u>합니다. 또한 저작물의 출처를 표기해 주시면
+    감사하겠습니다. 하지 않아도 문제 삼을 생각은 없습니다. 다만, 저작물이 2차, 3차 인용되는 과정에서 저작권을 의식해서 인용되지 못하는 경우가 없으려면, 출처를 표기해 주셔야
+    합니다.<br><br>
 
-</head>
+  <div class="whatis">
+    참조시:<br>
+    @iseohyun.com
+  </div>
+  <p>
+    &nbsp;타 사이트를 참고한 사례도 많습니다. 저작권이 표시된 정보에 대해서는 재사용을 주의하셔야 합니다.<br><br>
 
-<body>
-  <header>
-    <div style="display: flex; width: 80px; align-content: center; justify-content: space-between;">
-      <div class="home-icon">
-        <a href="/index.html">
-          <img src="source/icon_home.svg">
-        </a>
-      </div>
-      <div class="interface-icon">
-        <a href="/interface.html" target="_blank">
-          <img src="source/icon_search.svg">
-        </a>
-      </div>
-    </div>
-    <div id="header-title">소개, 소식, 저작권</div>
-    <div id="icons-container">
-      <div>
-        <a href="info.html#소개">
-          <link rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-          <span class="material-symbols-outlined">person_raised_hand</span>
-          <span>who?</span>
-        </a>
-      </div>
-
-      <div>
-        <a href="info.html#Update정보">
-          <link rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-          <span class="material-symbols-outlined">upgrade</span>
-          <span>update</span>
-        </a>
-      </div>
-
-      <div>
-        <a href="info.html#저작권">
-          <link rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-          <span class="material-symbols-outlined">attribution</span>
-          <span>copyright</span>
-        </a>
-      </div>
-    </div>
-  </header>
-  <article>
-    <a href="/index.html">
-
-    </a>
-    <div id="소개"></div>
-
-    <h1>About Us</h1>
-    <ul>
-      <li style="line-height: 1.7em;">
-        목표:<br>
-        <ul style="padding-left: revert;">
-          <li><u>챕터별 약 20분</u>, <u>단원별 약 2시간</u>의 튜토리얼을 제공<br>
-            &nbsp; [ 카테고리 -> 단원 -> 챕터 (예: 문서화 -> CSS -> 폰트) ]</li>
-          <li>공식 사이트의 영문 자료 한글화 및 Old data 업데이트</li>
-        </ul>
-      </li>
-      <li>
-        대상:
-        <ul style="padding-left: revert;">
-          <li>누군가의 도움을 받기 어렵고(스스로 해야 함)</li>
-          <li>어디서부터 시작해야 할지 모를 때(기초지식이 없을 때)</li>
-        </ul>
-      </li>
-    </ul>
-
-    <h2>구조</h2>
-    <ul>
-      <li><b>기초학문</b>(수학, 과학): 중, 고등학교 <u>교과서 기반</u>의 지식을 정리</li>
-      <li><b>코딩</b>: C, Java, Python의 <u>예제코드(다운로드) 및 실습</u>을 바탕으로한 튜토리얼</li>
-      <li><b>문서화</b> 프로젝트: <u>웹 게시와 관련된 스킬</u>(문서작성, 그림, 수식 등)을 정리 및 튜토리얼 제공</li>
-      <li><b>기타</b>: <u>흥미 위주</u>의 소규모 <u>프로젝트</u> 및 제작자 <u>칼럼</u> 등</li>
-    </ul>
-
-    <h2>인터페이스(사용 방법)</h2>
-    <div id="Update정보"></div>
-    <iframe src="interface.html" style="width:100%; height:auto; border:none;"
-      onload="this.style.height=this.contentDocument.body.scrollHeight + 'px';"></iframe>
-
-    <h1>Update / news</h1>
-    <p>
-      조건:
-      <var onclick="clearUpdateList(); getUpdateList();">#모든 기간</var>
-      <var onclick="clearUpdateList(); getUpdateList(cnt = 'all', date = '2023-01-01', edate='2023-12-31');">#2023</var>
-      <var onclick="clearUpdateList(); getUpdateList(cnt = 'all', date = '2024-01-01', edate='2024-12-31');">#2024</var>
-      <var onclick="clearUpdateList(); getUpdateList(cnt = 'all', date = '2025-01-01', edate='2025-12-31');">#2025</var>
-      검색 : <input type="text" onchange="clearUpdateList(); getUpdateList('all', '2023-01-01', '', this.value)"><br>
-
-      필터:
-      <var onclick="toggle('all')">#모두</var>
-      <var onclick="toggle('new')">#신규</var>
-      <var onclick="toggle('youtube')">#영상</var>
-      <var onclick="toggle('update')">#기능개선</var>
-      <var onclick="toggle('bugfix')">#버그</var>
-      <var onclick="toggle('modify')">#수정</var>
-    </p>
-    <ul id="update-list"></ul>
-
-    <div id="저작권"></div>
-    <h1>저작권 방침</h1>
-    <p>
-      (C) 2023. iseohyun, All rights reserved. CC BY-SA
-    </p>
-    <style>
-      .whatis {
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        margin: 10px auto;
-        padding: 13px;
-        width: max(400px, 70%);
-      }
-    </style>
-    <div class="whatis">
-      저작자 : iseohyun.com<br>
-      범위 : 소유자 표시(권고)-동일조건변경허락<br>
-      2차 창작 허용, 변환 허용, 상업적 사용 가능
-    </div>
-    <p>
-      &nbsp;사이트 내에는 직접 작성한 그림, 시뮬레이션, 칼럼, 코드 등이 다수 포함되어 있습니다. 모든 저작물은 <u>상업적 인용/변경을 허용</u>합니다. 또한 저작물의 출처를 표기해 주시면
-      감사하겠습니다. 하지 않아도 문제 삼을 생각은 없습니다. 다만, 저작물이 2차, 3차 인용되는 과정에서 저작권을 의식해서 인용되지 못하는 경우가 없으려면, 출처를 표기해 주셔야
-      합니다.<br><br>
-
-    <div class="whatis">
-      참조시:<br>
-      @iseohyun.com
-    </div>
-    <p>
-      &nbsp;타 사이트를 참고한 사례도 많습니다. 저작권이 표시된 정보에 대해서는 재사용을 주의하셔야 합니다.<br><br>
-
-      &nbsp;혹시라도 저작권 침해의 소지가 있는 내용이 있다면 정정 할 수 있도록 하겠습니다.
-    </p>
-  </article>
-</body>
-
-</html>
-
-<!-- 업데이트 관련 -->
-<script src="update.js"></script>
-<script>
-  getUpdateList(cnt = 'all', date = '2023-01-01');
-</script>
-<style>
-  @import url("update.css");
-
-  ul#update-list {
-    border: none;
-  }
-</style>
+    &nbsp;혹시라도 저작권 침해의 소지가 있는 내용이 있다면 정정 할 수 있도록 하겠습니다.
+  </p>
+</article>
