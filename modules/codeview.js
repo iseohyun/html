@@ -1,80 +1,83 @@
-/**
- * 
- * @param {string} url 출력하고자하는 사이트 주소
- * @param {string} element 출력할 대상의 id(이름)
- * @param {string} deleteType 출력시 삭제하고자하는 문자열 타입(예:comment)
- */
+// modules/codeview.js
 
-function readSrcCode(url, element, deleteType = "emptyline") {
-  var rawFile = new XMLHttpRequest();
-  var target = document.getElementById(element);
-  rawFile.open("GET", url, false);
-  rawFile.onreadystatechange = function () {
-    if (rawFile.readyState === 4) {
-      if (rawFile.status === 200 || rawFile.status == 0) {
-        let text = rawFile.responseText;
-        target.innerHTML = editText(text.replace(/</g, "&lt;"), deleteType); // html 출력용
+window.SiteModules = window.SiteModules || {};
+
+window.SiteModules.CodeCleaner = (function() {
+  
+  async function readSrcCode(url, element, deleteType = "emptyline") {
+    const target = document.getElementById(element);
+    if (!target) return;
+
+    try {
+      // 기존 동기식 XMLHttpRequest를 비동기 Fetch API로 개선
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+      const text = await response.text();
+      // HTML 출력을 위해 < 기호를 &lt;로 변경하고 정제 수행
+      target.innerHTML = editText(text.replace(/</g, "&lt;"), deleteType);
+    } catch (error) {
+      console.error("Error reading source code:", error);
+      target.innerHTML = `<span style="color:red;">Failed to load code from ${url}</span>`;
     }
   }
-  rawFile.send(null);
-}
 
-/**
- * 
- * @param {string} text 원문
- * @param {string} deleteType {
- *    comment : 주석제거
- *    emptyline : 공백라인 제거
- * 
- * @returns 변경된 텍스트
- */
-function editText(text, deleteType) {
-  if (deleteType.match("comment") != null) {
-    text = text.replace(/\/\*(.|[\r\n])*\*\//g, "\n"); // 주석 제거
-    text = text.replace(/\/\/(.)*/g, ""); // 주석 제거
+  function editText(text, deleteType) {
+    if (deleteType.match("comment") != null) {
+      text = text.replace(/\/\*(.|[\r\n])*\*\//g, "\n"); // 주석 제거
+      text = text.replace(/\/\/(.)*/g, ""); // 주석 제거
+    }
 
-    console.log(1);
-  }
+    if (deleteType.match("package") != null) {
+      text = text.replace(/package(.)*/g, "");
+    }
 
-  if (deleteType.match("package") != null) {
-    console.log(1);
-    text = text.replace(/package(.)*/g, "");
-  }
+    if (deleteType.match("import") != null) {
+      text = text.replace(/import(.)*/g, "");
+    }
 
-  if (deleteType.match("import") != null) {
-    console.log(1);
-    text = text.replace(/import(.)*/g, "");
-  }
+    // 연속된 줄바꿈을 하나의 줄바꿈으로 바꾼다. 반복한다.
+    if (deleteType.match("emptyline") != null) {
+      let new_text = "";
+      while (true) {
+        new_text = text.replace(/\n[ \r\t]*\n/g, "\n"); // 공백 라인제거
+        if (new_text === text) {
+          break;
+        } else {
+          text = new_text;
+        }
+      }
+    }
 
-  // 연속된 줄바꿈을 하나의 줄바꿈으로 바꾼다. 반복한다.
-  if (deleteType.match("emptyline") != null) {
-    var new_text = "";
-    while (true) {
-      new_text = text.replace(/\n[ \r\t]*\n/g, "\n"); // 공백 라인제거
-      if (new_text == text) {
-        break;
+    // trim
+    // 앞 빈줄 삭제
+    const match = text.match(/[a-zA-Z0-9\/]/);
+    if (match) {
+      text = text.substring(match.index);
+    }
+
+    // 뒷 줄 제거
+    let i = text.length - 1;
+    while (i > 0) {
+      if ((text[i] === '\n') ||
+        (text[i] === '\r') ||
+        (text[i] === '\t') ||
+        (text[i] === ' ')) {
+        i--;
       } else {
-        text = new_text;
+        break;
       }
     }
+    text = text.substring(0, i + 1);
+    return text;
   }
 
-  // trim
-  // 앞 빈줄 삭제
-  text = text.substring(text.match(/[a-zA-Z0-9\/]/).index);
-  // 뒷 줄 제거
-  var i = text.length - 1;
-  while (i > 0) {
-    if ((text[i] == '\n') ||
-      (text[i] == '\r') ||
-      (text[i] == '\t') ||
-      (text[i] == ' ')) {
-      i--;
-    } else {
-      break;
-    }
-  }
-  text = text.substring(0, i + 1);
-  return text;
-}
+  // 하위 호환성을 위해 window 전역 공간에 노출
+  window.readSrcCode = readSrcCode;
+
+  return {
+    readSrcCode: readSrcCode,
+    editText: editText
+  };
+})();
