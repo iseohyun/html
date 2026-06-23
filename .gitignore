@@ -1,5 +1,6 @@
-test/*
+.agents
+.obsidian
+.vscode
+functions
 commit.log
-**/KanaLoop/node_modules/**
-**/KanaLoop/dist/**
 **/PixelRun/**
