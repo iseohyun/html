@@ -1,0 +1,58 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 1. 관리자 권한 확인 헬퍼 함수
+    // 로그인된 사용자의 UID가 '/databases/{database}/documents/admins/{uid}'에 존재하는지 검사합니다.
+    function isAdmin() {
+      return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // 2. 관리자 명부 컬렉션 규칙
+    // 누구나 로그인하면 읽을 수는 있으나, 쓰기/수정은 오직 파이어베이스 콘솔에서 수동으로만 가능하도록 제한합니다.
+    match /admins/{adminId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    // 3. 건의사항 컬렉션 규칙 (메인 사이트 피드백 및 카날루프 공유)
+    match /suggestions/{userId} {
+      // 일반 사용자는 오직 본인의 UID와 일치하는 문서만 읽고 쓸 수 있습니다.
+      // 비로그인 사용자(게스트)를 지원하기 위해 request.auth == null 상황에서 문서 ID(userId)와 일치하는 데이터 처리를 허용합니다.
+      allow read, write: if (request.auth != null && request.auth.uid == userId) 
+                          || (request.auth == null && userId.matches('^GUEST_.*'));
+      
+      // 관리자는 모든 사용자의 건의사항을 읽고 쓸(답변 저장) 수 있습니다.
+      allow read, write: if isAdmin();
+    }
+
+    // 4. 기존 스피드런 및 학습모드 랭킹 규칙 (기존 앱 동작 유지)
+    match /speedrun_rankings/{rankingId} {
+      allow read: if true;
+      allow write: if true; // 게스트 등록 지원
+    }
+
+    match /study_rankings/{rankingId} {
+      allow read: if true;
+      allow write: if true; // 게스트 등록 지원
+    }
+
+    // 5. 사용자 환경설정 문서 규칙
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read, write: if request.auth == null && uid.matches('^GUEST_.*');
+      
+      // 사용자 진행 상태 서브컬렉션 (하위 경로 모두 허용)
+      match /progress/{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+        allow read, write: if request.auth == null && uid.matches('^GUEST_.*');
+      }
+
+      // 사용자 복습통계 서브컬렉션 (하위 경로 모두 허용)
+      match /study_stats/{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+        allow read, write: if request.auth == null && uid.matches('^GUEST_.*');
+      }
+    }
+  }
+}
