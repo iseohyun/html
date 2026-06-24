@@ -269,6 +269,10 @@ window.SiteModules.Navigation = (function () {
       }
     });
 
+    // 초기 상태 라우팅 수행
+    handleRouteChange();
+  }
+
   function checkAdminAndLoadRoute(urlPath) {
     loadFirebaseSDK().then(() => {
       const auth = window.firebase.auth();
