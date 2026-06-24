@@ -8,6 +8,7 @@ window.SiteModules.state = window.SiteModules.state || {
   next_doc: { title: "", dir: "", file: "" },
   currentPath: ""
 };
+window.SiteModules.authInitialized = false;
 
 window.SiteModules.Navigation = (function () {
   let baseUl;
@@ -24,6 +25,7 @@ window.SiteModules.Navigation = (function () {
     // 파이어베이스 인증 관찰자 및 로그인 처리기 초기화
     loadFirebaseSDK().then(() => {
       window.firebase.auth().onAuthStateChanged((user) => {
+        window.SiteModules.authInitialized = true;
         const loginBtn = document.getElementById("nav-login");
         const modalUserInfo = document.getElementById("login-modal-title");
         if (loginBtn) {
@@ -39,15 +41,32 @@ window.SiteModules.Navigation = (function () {
             if (modalUserInfo) {
               modalUserInfo.innerHTML = `게스트<br><span style="font-size: 0.85em; color: #5f6368; font-weight: normal;">로그인되어 있지 않습니다.</span>`;
             }
-            if (modalTitle) {
-              modalTitle.innerText = "로그인";
-            }
           }
         }
 
         // Q&A 질답 폼 리렌더링 트리거 (로그인 상태 변화에 반응)
         if (state && state.currentPath && state.currentPath !== "/index.html" && state.currentPath !== "/") {
           renderPageFeedbackArea(state.currentPath);
+        }
+
+        // 관리자 권한 상태에 따른 페이지 해시 리다이렉트
+        const db = window.firebase.firestore();
+        if (user) {
+          db.collection('admins').doc(user.uid).get().then(docSnap => {
+            if (docSnap.exists) {
+              if (window.location.hash === "#/help.html") {
+                window.location.hash = "#/admin.html";
+              }
+            } else {
+              if (window.location.hash === "#/admin.html") {
+                window.location.hash = "#/help.html";
+              }
+            }
+          }).catch(err => console.error("Admin check on auth change failed:", err));
+        } else {
+          if (window.location.hash === "#/admin.html") {
+            window.location.hash = "#/help.html";
+          }
         }
       });
     }).catch(err => console.error("Firebase initialization failed:", err));
@@ -250,8 +269,58 @@ window.SiteModules.Navigation = (function () {
       }
     });
 
-    // 초기 상태 라우팅 수행
-    handleRouteChange();
+  function checkAdminAndLoadRoute(urlPath) {
+    loadFirebaseSDK().then(() => {
+      const auth = window.firebase.auth();
+      const db = window.firebase.firestore();
+      
+      const checkAndLoad = () => {
+        const user = auth.currentUser;
+        if (urlPath === "/admin.html") {
+          if (user) {
+            db.collection('admins').doc(user.uid).get().then(docSnap => {
+              if (docSnap.exists) {
+                loadPageRoute(urlPath);
+              } else {
+                window.location.hash = "#/help.html";
+              }
+            }).catch(err => {
+              console.error("Admin verification failed:", err);
+              window.location.hash = "#/help.html";
+            });
+          } else {
+            window.location.hash = "#/help.html";
+          }
+        } else if (urlPath === "/help.html") {
+          if (user) {
+            db.collection('admins').doc(user.uid).get().then(docSnap => {
+              if (docSnap.exists) {
+                window.location.hash = "#/admin.html";
+              } else {
+                loadPageRoute(urlPath);
+              }
+            }).catch(err => {
+              console.error("Admin check failed for help page:", err);
+              loadPageRoute(urlPath);
+            });
+          } else {
+            loadPageRoute(urlPath);
+          }
+        }
+      };
+
+      if (window.SiteModules.authInitialized) {
+        checkAndLoad();
+      } else {
+        const unsubscribe = auth.onAuthStateChanged(() => {
+          unsubscribe();
+          checkAndLoad();
+        });
+      }
+    }).catch(err => {
+      console.error("Firebase SDK load failed:", err);
+      loadPageRoute(urlPath);
+    });
   }
 
   function handleRouteChange() {
@@ -317,7 +386,11 @@ window.SiteModules.Navigation = (function () {
         return;
       }
 
-      loadPageRoute(targetFullPath);
+      if (targetFullPath === "/admin.html" || targetFullPath === "/help.html") {
+        checkAdminAndLoadRoute(targetFullPath);
+      } else {
+        loadPageRoute(targetFullPath);
+      }
     }
   }
 
