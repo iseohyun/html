@@ -522,6 +522,22 @@ window.SiteModules.Navigation = (function () {
     });
   }
 
+  function executePageStylesheets(tempDoc) {
+    const links = tempDoc.querySelectorAll("link[rel='stylesheet']");
+    links.forEach(oldLink => {
+      const href = oldLink.getAttribute("href");
+      if (href) {
+        if (document.querySelector(`link[rel="stylesheet"][href="${href}"]`)) {
+          return; // 이미 로드된 스타일시트 생략
+        }
+        const newLink = document.createElement("link");
+        newLink.rel = "stylesheet";
+        newLink.href = href;
+        document.head.appendChild(newLink);
+      }
+    });
+  }
+
   async function loadPageRoute(urlPath) {
     const article = document.querySelector("article");
     if (!article) return;
@@ -545,6 +561,9 @@ window.SiteModules.Navigation = (function () {
 
       if (fetchedArticle) {
         article.innerHTML = fetchedArticle.innerHTML;
+
+        // 페이지 종속 스타일시트 추출 및 로드
+        executePageStylesheets(tempDoc);
 
         // 페이지 종속 스크립트 추출 및 실행
         executePageScripts(tempDoc);
@@ -608,12 +627,21 @@ window.SiteModules.Navigation = (function () {
       state.prv_doc = { title: "", dir: "", file: "" };
       state.next_doc = { title: "", dir: "", file: "" };
       document.title = "iseohyun.com";
+      document.body.classList.remove("admin-mode");
     } else {
       state.currentPath = urlPath;
 
       const list = window.SiteModules.hierarchyListCached;
       if (list) {
         findAndPopulateState(list, state.currentPath);
+      }
+
+      // admin 페이지 여부에 따라 body.admin-mode 클래스 토글
+      const isAdminPage = urlPath.endsWith("/admin.html") || urlPath.endsWith("/admin.htm");
+      if (isAdminPage) {
+        document.body.classList.add("admin-mode");
+      } else {
+        document.body.classList.remove("admin-mode");
       }
     }
 
@@ -683,7 +711,8 @@ window.SiteModules.Navigation = (function () {
     }
 
     // I-4. 모든 서브페이지 최하단 Q&A 피드백 영역 렌더링
-    if (!isHome && urlPath !== "/admin.html") {
+    const isAdminPage = urlPath && (urlPath.endsWith("/admin.html") || urlPath.endsWith("/admin.htm"));
+    if (!isHome && !isAdminPage) {
       renderPageFeedbackArea(urlPath);
       if (urlPath === "/help.html") {
         bindHelpSuggestionEvents(document.querySelector("article"));
@@ -1485,6 +1514,13 @@ window.SiteModules.Navigation = (function () {
 
   function renderPageFeedbackArea(urlPath) {
     if (urlPath === "/index.html" || urlPath === "/" || !urlPath) return;
+
+    // admin 페이지인 경우 질답 폼을 생성하지 않음
+    if (urlPath.endsWith("/admin.html") || urlPath.endsWith("/admin.htm")) {
+      const oldArea = document.getElementById("page-feedback-area");
+      if (oldArea) oldArea.remove();
+      return;
+    }
 
     if (urlPath === "/help.html") {
       // 관리자가 아닐때, 하단에 개별 페이지마다 동작하는 개별페이지 질의 폼이 생성되지 않도록 함
