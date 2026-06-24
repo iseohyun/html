@@ -279,16 +279,15 @@
 
 <body>
 
-  <header>
-    <h1>iseohyun.com 관리자 대시보드</h1>
-    <div class="user-profile" id="user-profile-section" style="display: none;">
-      <span id="admin-name-display" style="font-size: 13px; font-weight: 600;"></span>
-      <button class="btn btn-outline" id="btn-logout">로그아웃</button>
-    </div>
-  </header>
-
   <main>
     <article>
+      <header>
+        <h1>iseohyun.com 관리자 대시보드</h1>
+        <div class="user-profile" id="user-profile-section" style="display: none;">
+          <span id="admin-name-display" style="font-size: 13px; font-weight: 600;"></span>
+          <button class="btn btn-outline" id="btn-logout">로그아웃</button>
+        </div>
+      </header>
       <!-- 권한 오류 경고 -->
       <div id="error-alert" class="error-msg" style="display: none;">
         <span>🔒 <b>접근 차단:</b> 관리자 권한이 발견되지 않았습니다. 파이어베이스 Console에서 '/admins/{uid}' 문서를 등록해 주십시오.</span>
@@ -494,7 +493,7 @@
             try {
               const docRef = db.collection('suggestions').doc(uid);
               const snap = await docRef.get();
-              if (snap.exists()) {
+              if (snap.exists) {
                 const currentData = snap.data();
                 const currentSuggestion = currentData.suggestion || "";
                 const existingReply = currentData.reply || "";
