@@ -685,6 +685,9 @@ window.SiteModules.Navigation = (function () {
     // I-4. 모든 서브페이지 최하단 Q&A 피드백 영역 렌더링
     if (!isHome) {
       renderPageFeedbackArea(urlPath);
+      if (urlPath === "/help.html") {
+        bindHelpSuggestionEvents(document.querySelector("article"));
+      }
     } else {
       const oldArea = document.getElementById("page-feedback-area");
       if (oldArea) oldArea.remove();
