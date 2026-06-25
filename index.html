@@ -88,7 +88,42 @@
       margin: 20px auto 10px;
       display: flex;
       flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .filter-group-wrapper {
+      display: flex;
+      align-items: center;
       gap: 8px;
+    }
+
+    .filter-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #495057;
+    }
+
+    .year-btn-group,
+    .tag-btn-group {
+      display: inline-flex;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid #dee2e6;
+    }
+
+    .year-btn-group .filter-btn,
+    .tag-btn-group .filter-btn {
+      border: none;
+      border-radius: 0;
+      margin: 0;
+      border-right: 1px solid #dee2e6;
+      padding: 6px 14px;
+    }
+
+    .year-btn-group .filter-btn:last-child,
+    .tag-btn-group .filter-btn:last-child {
+      border-right: none;
     }
 
     .filter-btn {
@@ -111,6 +146,19 @@
       background-color: #228be6;
       color: white;
       border-color: #228be6;
+    }
+
+    .year-btn-group .filter-btn.active,
+    .tag-btn-group .filter-btn.active {
+      background-color: #228be6;
+      color: white;
+      border: none;
+      border-right: 1px solid #228be6;
+    }
+
+    .year-btn-group .filter-btn.active:last-child,
+    .tag-btn-group .filter-btn.active:last-child {
+      border-right: none;
     }
   </style>
   <script src="/modules/script.js" defer></script>
