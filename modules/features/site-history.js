@@ -1,9 +1,12 @@
-// modules/features/update-log.js
+// modules/features/site-history.js
 
 window.SiteModules = window.SiteModules || {};
 
 window.SiteModules.UpdateLog = (function() {
-  
+  let activeYears = [2024, 2025, 2026];
+  let firstSelectedYear = null;
+  let activeTag = 'all';
+
   function parseDateString(dateStr) {
     if (!dateStr) return new Date();
     if (dateStr instanceof Date) return dateStr;
@@ -17,21 +20,91 @@ window.SiteModules.UpdateLog = (function() {
     return new Date(dateStr);
   }
 
-  function filterHistory(filter, listElement) {
-    const items = listElement.querySelectorAll("li");
+  function selectYear(Y) {
+    if (Y === 'all') {
+      activeYears = [2024, 2025, 2026];
+      firstSelectedYear = null;
+    } else {
+      const yearNum = parseInt(Y, 10);
+      if (activeYears.length === 3) {
+        activeYears = [yearNum];
+        firstSelectedYear = yearNum;
+      } else {
+        const anchor = firstSelectedYear !== null ? firstSelectedYear : yearNum;
+        const min = Math.min(anchor, yearNum);
+        const max = Math.max(anchor, yearNum);
+        activeYears = [];
+        for (let y = min; y <= max; y++) {
+          activeYears.push(y);
+        }
+      }
+    }
+  }
+
+  function updateHistoryDisplay() {
+    const items = document.querySelectorAll("#site-history li");
     items.forEach(item => {
-      if (filter === "all") {
+      const itemYear = parseInt(item.getAttribute("data-year"), 10);
+      const matchesYear = activeYears.includes(itemYear);
+
+      const contentSpans = item.querySelectorAll("div > span.content");
+      let hasVisibleContent = false;
+
+      contentSpans.forEach(span => {
+        let matchesTag = false;
+        if (activeTag === 'all') {
+          matchesTag = true;
+        } else {
+          if (activeTag === 'new' && span.classList.contains('new')) matchesTag = true;
+          if (activeTag === 'update' && (span.classList.contains('update') || span.classList.contains('modify'))) matchesTag = true;
+          if (activeTag === 'bugfix' && span.classList.contains('bugfix')) matchesTag = true;
+        }
+
+        if (matchesTag) {
+          span.style.display = span.classList.contains("sub-item") ? "block" : "";
+          hasVisibleContent = true;
+        } else {
+          span.style.display = "none";
+        }
+      });
+
+      if (matchesYear && hasVisibleContent) {
         item.style.display = "";
-      } else if (filter.startsWith("year-")) {
-        const targetYear = filter.substring(5);
-        const itemYear = item.getAttribute("data-year");
-        item.style.display = (itemYear === targetYear) ? "" : "none";
-      } else if (filter.startsWith("tag-")) {
-        const targetTag = filter.substring(4);
-        const itemTags = item.getAttribute("data-tags") || "";
-        item.style.display = itemTags.split(" ").includes(targetTag) ? "" : "none";
+      } else {
+        item.style.display = "none";
       }
     });
+
+    const filterContainer = document.getElementById("history-filters");
+    if (!filterContainer) return;
+
+    // Update Year UI active classes
+    const yearGroup = filterContainer.querySelector(".year-btn-group");
+    if (yearGroup) {
+      const isAllYearsActive = activeYears.length === 3;
+      yearGroup.querySelectorAll(".filter-btn").forEach(btn => {
+        const filter = btn.dataset.filter;
+        if (filter === "year-all") {
+          if (isAllYearsActive) btn.classList.add("active");
+          else btn.classList.remove("active");
+        } else {
+          const yearVal = parseInt(filter.substring(5), 10);
+          if (activeYears.includes(yearVal)) btn.classList.add("active");
+          else btn.classList.remove("active");
+        }
+      });
+    }
+
+    // Update Tag UI active classes
+    const tagGroup = filterContainer.querySelector(".tag-btn-group");
+    if (tagGroup) {
+      tagGroup.querySelectorAll(".filter-btn").forEach(btn => {
+        const filter = btn.dataset.filter;
+        const tagVal = filter.substring(4);
+        if (tagVal === activeTag) btn.classList.add("active");
+        else btn.classList.remove("active");
+      });
+    }
   }
 
   async function getUpdateList(cnt = 'all', date = '2023-01-01', edate = '', keywords = "", targetId = "site-history") {
@@ -46,22 +119,43 @@ window.SiteModules.UpdateLog = (function() {
       filterContainer.id = "history-filters";
       filterContainer.className = "history-filters";
       filterContainer.innerHTML = `
-        <button class="filter-btn active" data-filter="all">전체</button>
-        <button class="filter-btn" data-filter="year-2026">2026년</button>
-        <button class="filter-btn" data-filter="year-2025">2025년</button>
-        <button class="filter-btn" data-filter="year-2024">2024년</button>
-        <button class="filter-btn" data-filter="tag-new">신규</button>
-        <button class="filter-btn" data-filter="tag-update">갱신/개선</button>
-        <button class="filter-btn" data-filter="tag-bugfix">Bugfix</button>
+        <div class="filter-group-wrapper">
+          <span class="filter-label">연도 선택</span>
+          <div class="year-btn-group">
+            <button class="filter-btn active" data-filter="year-all">전체</button>
+            <button class="filter-btn active" data-filter="year-2026">2026년</button>
+            <button class="filter-btn active" data-filter="year-2025">2025년</button>
+            <button class="filter-btn active" data-filter="year-2024">2024년</button>
+          </div>
+        </div>
+        <div class="filter-group-wrapper">
+          <span class="filter-label">분류 선택</span>
+          <div class="tag-btn-group">
+            <button class="filter-btn active" data-filter="tag-all">전체</button>
+            <button class="filter-btn" data-filter="tag-new">신규</button>
+            <button class="filter-btn" data-filter="tag-update">갱신/개선</button>
+            <button class="filter-btn" data-filter="tag-bugfix">Bugfix</button>
+          </div>
+        </div>
       `;
       updateList.parentNode.insertBefore(filterContainer, updateList);
 
-      filterContainer.querySelectorAll(".filter-btn").forEach(btn => {
+      // 연도 버튼 이벤트
+      filterContainer.querySelector(".year-btn-group").querySelectorAll(".filter-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
-          filterContainer.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
-          e.target.classList.add("active");
           const filter = e.target.dataset.filter;
-          filterHistory(filter, updateList);
+          const filterVal = filter.substring(5);
+          selectYear(filterVal);
+          updateHistoryDisplay();
+        });
+      });
+
+      // 분류 버튼 이벤트
+      filterContainer.querySelector(".tag-btn-group").querySelectorAll(".filter-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const filter = e.target.dataset.filter;
+          activeTag = filter.substring(4);
+          updateHistoryDisplay();
         });
       });
     }
@@ -123,7 +217,17 @@ window.SiteModules.UpdateLog = (function() {
           contentSpan.className = "recent-content";
 
           let processedLines = [];
-          update.content.forEach(content => {
+          let lastTag = "";
+
+          update.content.forEach(origContent => {
+            let isSubItem = /^\s*\[[^\]]+\]\s*:/.test(origContent);
+            let content = origContent;
+
+            const match = content.match(/^(\[[^\]]+\])/);
+            if (match) {
+              lastTag = match[1];
+            }
+
             let processed = content;
             if (content.startsWith("[신규]")) {
               let endIndex = content.indexOf(":");
@@ -150,7 +254,7 @@ window.SiteModules.UpdateLog = (function() {
                 processed = text;
               }
             }
-            if (processed.startsWith(":")) {
+            if (isSubItem) {
               processed = `<span style="padding-left: 1em; display: inline-block;">${processed}</span>`;
             }
             processedLines.push(processed);
@@ -166,13 +270,21 @@ window.SiteModules.UpdateLog = (function() {
 
           const updateDiv = document.createElement("div");
 
-          let privious_class = "";
-          update.content.forEach(content => {
+          let lastTag = "";
+          update.content.forEach(origContent => {
+            let isSubItem = /^\s*\[[^\]]+\]\s*:/.test(origContent);
+            let content = origContent;
+
+            const match = content.match(/^(\[[^\]]+\])/);
+            if (match) {
+              lastTag = match[1];
+            }
+
             const contentSpan = document.createElement("span");
 
-            if (content.startsWith(":")) {
-              contentSpan.style.paddingLeft = "1em";
-              contentSpan.className = privious_class;
+            if (isSubItem) {
+              contentSpan.style.paddingLeft = "2em";
+              contentSpan.style.display = "block";
             }
 
             if (content.startsWith("[신규]")) {
@@ -191,16 +303,12 @@ window.SiteModules.UpdateLog = (function() {
                 content = text;
               }
               contentSpan.className = "new";
-              privious_class = "new";
             } else if (content.startsWith("[기능개선]")) {
               contentSpan.className = "update";
-              privious_class = "update";
             } else if (content.startsWith("[동영상]")) {
               contentSpan.className = "youtube";
-              privious_class = "youtube";
             } else if (content.startsWith("[bugfix]")) {
               contentSpan.className = "bugfix";
-              privious_class = "bugfix";
             } else if (content.startsWith("[갱신]")) {
               let endIndex = content.indexOf(":");
               if (endIndex === -1) {
@@ -218,10 +326,12 @@ window.SiteModules.UpdateLog = (function() {
               }
 
               contentSpan.className = "modify";
-              privious_class = "modify";
             }
 
             contentSpan.className += " content";
+            if (isSubItem) {
+              contentSpan.classList.add("sub-item");
+            }
             contentSpan.innerHTML = content;
             updateDiv.appendChild(contentSpan);
           });
@@ -231,6 +341,11 @@ window.SiteModules.UpdateLog = (function() {
         }
         updateList.appendChild(listItem);
       });
+
+      // 초기 활성 필터링 상태 적용
+      if (targetId === "site-history") {
+        updateHistoryDisplay();
+      }
 
     } catch (error) {
       console.error("Error fetching or processing data:", error);
