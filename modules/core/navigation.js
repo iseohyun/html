@@ -26,6 +26,12 @@ window.SiteModules.Navigation = (function () {
     loadFirebaseSDK().then(() => {
       window.firebase.auth().onAuthStateChanged((user) => {
         window.SiteModules.authInitialized = true;
+
+        // 방문 기록 서버 동기화 시작 (1일 1회 제약)
+        if (window.SiteModules.Auth && typeof window.SiteModules.Auth.syncHistory === 'function') {
+          window.SiteModules.Auth.syncHistory(user);
+        }
+
         const loginBtn = document.getElementById("nav-login");
         const modalUserInfo = document.getElementById("login-modal-title");
         if (loginBtn) {
@@ -93,14 +99,22 @@ window.SiteModules.Navigation = (function () {
       sidebarNav.setAttribute("id", "sidebar-nav");
       sidebarNav.innerHTML = `
         <div class="nav-group">
+          <div class="nav-item" id="nav-home" data-tooltip="홈으로 이동">
+            <svg viewBox="0 0 500 500" style="width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-linecap: round; stroke-width: 46px;">
+              <path d="M 84 440 C -1 341 38 223 68 161 S 151 23 234 34 S 363 164 327 217 S 245 273 198 229 S 187 105 245 77 S 432 108 432 212 S 354 371 393 420 C 431 460 468 436 468 407"/>
+              <path d="M 99 289 C 183 296 239 392 188 468"/>
+              <path d="M 246 311 C 335 320 324 390 291 462" style="stroke-miterlimit: 17;"/>
+              <path d="M 341 267 C 339 260 360 313 400 309" style="stroke-miterlimit: 17;"/>
+            </svg>
+          </div>
           <div class="nav-item" id="nav-toggle" data-tooltip="메뉴 접기/펴기">
             <span class="material-symbols-outlined">menu</span>
           </div>
-          <div class="nav-item" id="nav-sitemap" data-tab="tab-sitemap" data-tooltip="모든 폴더 보기">
+          <div class="nav-item" id="nav-sitemap" data-tab="tab-sitemap" data-tooltip="Site Map">
             <span class="material-symbols-outlined">account_tree</span>
             <span class="keybind-badge">1</span>
           </div>
-          <div class="nav-item" id="nav-toc" data-tab="tab-toc" data-tooltip="문서 정보">
+          <div class="nav-item" id="nav-toc" data-tab="tab-toc" data-tooltip="목차">
             <span class="material-symbols-outlined">toc</span>
             <span class="keybind-badge">2</span>
           </div>
@@ -145,7 +159,7 @@ window.SiteModules.Navigation = (function () {
             <div class="sitemap-actions" style="margin-bottom: 10px; display: flex; gap: 8px;">
               <button id="home-btn" class="site-action-btn">홈</button>
               <button id="sitemap-toggle-all-btn" class="site-action-btn">전체 닫기</button>
-              <button id="sitemap-open-current-btn" class="site-action-btn">현재 경로 열기</button>
+              <button id="sitemap-open-current-btn" class="site-action-btn">현재 문서</button>
             </div>
             <ul class="sitemap-panel-list" id="sitemap-tree"></ul>
           </div>
@@ -159,6 +173,20 @@ window.SiteModules.Navigation = (function () {
           <div class="tab-pane" id="tab-search">
             <div class="panel-header">
               <span class="panel-header-title">문서 검색</span>
+            </div>
+            <div class="search-type-wrapper">
+              <label class="search-type-option active">
+                <input type="radio" name="search-type" value="title" checked style="display: none;">
+                제목
+              </label>
+              <label class="search-type-option">
+                <input type="radio" name="search-type" value="tag" style="display: none;">
+                Tag
+              </label>
+              <label class="search-type-option">
+                <input type="radio" name="search-type" value="all" style="display: none;">
+                모든 문서
+              </label>
             </div>
             <div class="search-input-wrapper" style="margin-bottom: 15px;">
               <input type="text" id="sidebar-search-input" placeholder="문서 제목 검색...">
@@ -204,6 +232,9 @@ window.SiteModules.Navigation = (function () {
       .then(list => {
         window.SiteModules.hierarchyListCached = list;
 
+        // 백그라운드 검색 인덱서 탑재
+        buildSearchCache(list);
+
         let directory = state.currentPath.split('/').join('/');
         if (directory.startsWith('/')) {
           directory = directory.substring(1);
@@ -240,6 +271,40 @@ window.SiteModules.Navigation = (function () {
     return baseParts.join("/");
   }
 
+  function isKnownArticlePage(absolutePath) {
+    const knownRootArticles = ["/index.html", "/admin.html", "/help.html", "/info.html", "/"];
+    if (knownRootArticles.includes(absolutePath)) {
+      return true;
+    }
+
+    const list = window.SiteModules.hierarchyListCached;
+    if (!list) {
+      return true;
+    }
+
+    const cleanTargetPath = absolutePath.startsWith('/') ? absolutePath.substring(1) : absolutePath;
+
+    function search(items, currentDir) {
+      for (const item of items) {
+        const itemDir = currentDir + (item.디렉토리 || "");
+        if (item.파일명) {
+          const fullPath = itemDir + item.파일명;
+          if (fullPath === cleanTargetPath) {
+            return true;
+          }
+        }
+        if (item.목록) {
+          if (search(item.목록, itemDir)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    return search(list, "");
+  }
+
   // SPA 해시 라우터 구성
   function initRouter() {
     window.addEventListener("hashchange", handleRouteChange);
@@ -260,11 +325,87 @@ window.SiteModules.Navigation = (function () {
             }
           } else if (!href.startsWith("http")) {
             const isHtmlLink = href.includes(".html");
-            if (isHtmlLink) {
-              e.preventDefault();
+            const isTargetBlank = anchor.getAttribute("target") === "_blank";
+            if (isHtmlLink && !isTargetBlank) {
+              let cleanHref = href;
+              const hashIdx = href.indexOf('#');
+              if (hashIdx !== -1) {
+                cleanHref = href.substring(0, hashIdx);
+              }
+              const queryIdx = cleanHref.indexOf('?');
+              if (queryIdx !== -1) {
+                cleanHref = cleanHref.substring(0, queryIdx);
+              }
+
               const state = window.SiteModules.state;
-              const absolutePath = resolveRelativePath(state.currentPath, href);
-              window.location.hash = "#" + absolutePath;
+              const absolutePath = resolveRelativePath(state.currentPath || "/index.html", cleanHref);
+
+              // 최근 업데이트 항목 판별
+              const isRecentUpdateLink = anchor.closest("#sidebar-update-list, #site-history") || anchor.classList.contains("recent-visit-link");
+              if (isRecentUpdateLink) {
+                let hashOrQuery = "";
+                const firstHashOrQueryIdx = href.search(/[#?]/);
+                if (firstHashOrQueryIdx !== -1) {
+                  hashOrQuery = href.substring(firstHashOrQueryIdx);
+                }
+
+                const cacheEntry = window.SiteModules.searchCache && window.SiteModules.searchCache.find(p => p.url === absolutePath);
+                if (cacheEntry) {
+                  if (cacheEntry.hasArticle) {
+                    e.preventDefault();
+                    window.location.hash = "#" + absolutePath + hashOrQuery;
+                  } else {
+                    anchor.setAttribute("target", "_blank");
+                  }
+                } else {
+                  // 비동기 팝업 차단 우회를 위한 빈 탭 사전 생성 후 페치
+                  e.preventDefault();
+                  const newTab = window.open("", "_blank");
+                  fetch(absolutePath)
+                    .then(res => {
+                      if (!res.ok) throw new Error("Fetch failed");
+                      return res.text();
+                    })
+                    .then(htmlText => {
+                      const parser = new DOMParser();
+                      const doc = parser.parseFromString(htmlText, "text/html");
+                      const articleEl = doc.querySelector("article");
+                      const hasArticle = !!articleEl;
+
+                      if (window.SiteModules.searchCache) {
+                        window.SiteModules.searchCache.push({
+                          url: absolutePath,
+                          hasArticle: hasArticle
+                        });
+                      }
+
+                      if (hasArticle) {
+                        newTab.close();
+                        window.location.hash = "#" + absolutePath + hashOrQuery;
+                      } else {
+                        newTab.location.href = href;
+                      }
+                    })
+                    .catch(err => {
+                      console.error("Failed to dynamically check article for recent update link:", err);
+                      newTab.location.href = href;
+                    });
+                }
+                return;
+              }
+
+              if (!isKnownArticlePage(absolutePath)) {
+                anchor.setAttribute("target", "_blank");
+                return;
+              }
+
+              e.preventDefault();
+              let hashOrQuery = "";
+              const firstHashOrQueryIdx = href.search(/[#?]/);
+              if (firstHashOrQueryIdx !== -1) {
+                hashOrQuery = href.substring(firstHashOrQueryIdx);
+              }
+              window.location.hash = "#" + absolutePath + hashOrQuery;
             }
           }
         }
@@ -405,6 +546,10 @@ window.SiteModules.Navigation = (function () {
     const article = document.querySelector("article");
     if (!article) return;
 
+    if (window.SiteModules && window.SiteModules.state) {
+      window.SiteModules.state.lastModifiedDate = null;
+    }
+
     // 구조 빌드
     article.innerHTML = `
       <div id="site-intro">
@@ -476,6 +621,9 @@ window.SiteModules.Navigation = (function () {
     links.forEach(oldLink => {
       const href = oldLink.getAttribute("href");
       if (href) {
+        if (href.includes("highlight/")) {
+          return; // CDN 버전이 index.html에 로드되므로 로컬 highlight 스타일 무시
+        }
         if (document.querySelector(`link[rel="stylesheet"][href="${href}"]`)) {
           return; // 이미 로드된 스타일시트 생략
         }
@@ -491,8 +639,6 @@ window.SiteModules.Navigation = (function () {
     const article = document.querySelector("article");
     if (!article) return;
 
-    article.innerHTML = "<p style='padding:50px; text-align:center; font-size:1.2em; color:#747775;'>페이지를 불러오는 중입니다...</p>";
-
     try {
       const response = await fetch(urlPath);
       if (!response.ok) {
@@ -503,12 +649,20 @@ window.SiteModules.Navigation = (function () {
       const parser = new DOMParser();
       const tempDoc = parser.parseFromString(htmlText, "text/html");
 
-      // 본문 DOM을 렌더링하기 전 상대 경로를 모두 절대 경로로 변환하여 404 오류 원천 봉쇄
-      resolveAllRelativePaths(tempDoc, urlPath);
-
       const fetchedArticle = tempDoc.querySelector("article");
 
       if (fetchedArticle) {
+        // 본문 로드 전에 로딩 표시
+        article.innerHTML = "<p style='padding:50px; text-align:center; font-size:1.2em; color:#747775;'>페이지를 불러오는 중입니다...</p>";
+
+        // Last-Modified 헤더값 읽기 및 저장
+        const lastModifiedHeader = response.headers.get("Last-Modified");
+        const state = window.SiteModules.state;
+        state.lastModifiedDate = lastModifiedHeader ? new Date(lastModifiedHeader) : null;
+
+        // 본문 DOM을 렌더링하기 전 상대 경로를 모두 절대 경로로 변환하여 404 오류 원천 봉쇄
+        resolveAllRelativePaths(tempDoc, urlPath);
+
         article.innerHTML = fetchedArticle.innerHTML;
 
         // 페이지 종속 스타일시트 추출 및 로드
@@ -520,7 +674,18 @@ window.SiteModules.Navigation = (function () {
         // 후속 모듈 재호출
         postLoadPageActions(false, urlPath, tempDoc.title);
       } else {
-        article.innerHTML = "<h1>본문 없음</h1><p>본문(article) 콘텐츠를 파싱하지 못했습니다.</p>";
+        // article 엘리먼트가 없는 경우 -> 새 창에서 열고 기존 위치 고수
+        window.open(urlPath, "_blank");
+
+        // 브라우저 해시 주소 복구 (기존 위치 고수)
+        const state = window.SiteModules.state;
+        const previousPath = state.currentPath || "/index.html";
+        
+        window.removeEventListener("hashchange", handleRouteChange);
+        window.location.hash = "#" + previousPath;
+        setTimeout(() => {
+          window.addEventListener("hashchange", handleRouteChange);
+        }, 0);
       }
     } catch (err) {
       console.error(err);
@@ -534,7 +699,7 @@ window.SiteModules.Navigation = (function () {
       const src = oldScript.getAttribute("src");
       const id = oldScript.getAttribute("id");
 
-      if (src && (src.includes("modules/script.js") || src.includes("jquery-latest.min.js"))) {
+      if (src && (src.includes("modules/script.js") || src.includes("jquery-latest.min.js") || src.includes("highlight/"))) {
         return;
       }
 
@@ -614,19 +779,16 @@ window.SiteModules.Navigation = (function () {
     // D. 목차 탭 문서 세부사항 및 버튼 갱신
     updateTOCPanelInfo(isHome, docTitle);
 
-    // E. 참조 및 copyright 재계산
-    if (window.SiteModules.Document && typeof window.SiteModules.Document.init === 'function') {
-      window.SiteModules.Document.init();
-    }
+    // E. 참조 및 copyright 재계산 생략 (피드백 이관 이후 맨 아래 배치 위해 연기)
 
-    // F. 코드 카피 버튼 재구축
-    if (window.SiteModules.Clipboard && typeof window.SiteModules.Clipboard.init === 'function') {
-      window.SiteModules.Clipboard.init();
-    }
-
-    // G. 코드 하이라이트 구동
+    // F. 코드 하이라이트 구동
     if (window.SiteModules.CodeLoader && typeof window.SiteModules.CodeLoader.init === 'function') {
       window.SiteModules.CodeLoader.init();
+    }
+
+    // G. 코드 카피 버튼 재구축
+    if (window.SiteModules.Clipboard && typeof window.SiteModules.Clipboard.init === 'function') {
+      window.SiteModules.Clipboard.init();
     }
 
     // H. 최근 방문 기록(localStorage) 추가 및 렌더링
@@ -657,6 +819,11 @@ window.SiteModules.Navigation = (function () {
         window.SiteModules.updateLogQueue = window.SiteModules.updateLogQueue || [];
         window.SiteModules.updateLogQueue.push([10, '2023-01-01', '', '', 'sidebar-update-list']);
       }
+    }
+
+    // E. 참조 및 copyright 재계산
+    if (window.SiteModules.Document && typeof window.SiteModules.Document.init === 'function') {
+      window.SiteModules.Document.init();
     }
 
     // I-4. 모든 서브페이지 최하단 Q&A 피드백 영역 렌더링
@@ -739,18 +906,6 @@ window.SiteModules.Navigation = (function () {
     const detailsDiv = document.createElement("div");
     detailsDiv.className = "toc-doc-details";
 
-    // 5-1. 소속 카테고리 기입
-    const breadcrumb = document.createElement("span");
-    breadcrumb.className = "toc-category-breadcrumb";
-    breadcrumb.textContent = state.category.replace(/^ >> /, "").split(" >> ").join(" > ");
-    detailsDiv.appendChild(breadcrumb);
-
-    // 문서 제목
-    const docTitle = document.createElement("span");
-    docTitle.className = "toc-doc-title";
-    docTitle.textContent = pageTitle || state.cur_doc.title || "문서 제목";
-    detailsDiv.appendChild(docTitle);
-
     // 5-2. 하단 이전글/다음글 단추 배치
     const navBtnDiv = document.createElement("div");
     navBtnDiv.className = "toc-doc-nav-buttons";
@@ -784,7 +939,7 @@ window.SiteModules.Navigation = (function () {
 
     // 액티브 패널 타이틀 지정
     if (panelTitle && document.getElementById("nav-toc").classList.contains("active")) {
-      panelTitle.textContent = pageTitle || state.cur_doc.title || "문서 정보";
+      panelTitle.textContent = pageTitle || state.cur_doc.title || "목차";
     }
   }
 
@@ -994,6 +1149,13 @@ window.SiteModules.Navigation = (function () {
       });
     }
 
+    const navHomeBtn = document.getElementById("nav-home");
+    if (navHomeBtn) {
+      navHomeBtn.addEventListener("click", () => {
+        window.location.hash = "#/";
+      });
+    }
+
     const homeBtn = document.getElementById("home-btn");
     if (homeBtn) {
       homeBtn.addEventListener("click", () => {
@@ -1025,10 +1187,47 @@ window.SiteModules.Navigation = (function () {
     const openCurrentBtn = document.getElementById("sitemap-open-current-btn");
     if (openCurrentBtn) {
       openCurrentBtn.addEventListener("click", () => {
+        // 1. Collapse all folders first
+        const folders = document.querySelectorAll("#sitemap-tree li.folder, #sitemap-tree li");
+        folders.forEach(f => {
+          if (f.classList.contains("folder") || f.querySelector("ul")) {
+            f.classList.add("collapsed");
+          }
+        });
+        // 2. Sync the toggle-all button text
+        const toggleAllBtn = document.getElementById("sitemap-toggle-all-btn");
+        if (toggleAllBtn) {
+          toggleAllBtn.textContent = "전체 열기";
+        }
+        // 3. Highlight/expand current path
         const state = window.SiteModules.state;
         highlightSitemapTree(state.currentPath);
       });
     }
+
+    const searchOptions = document.querySelectorAll(".search-type-option");
+    searchOptions.forEach(opt => {
+      opt.addEventListener("click", () => {
+        searchOptions.forEach(o => o.classList.remove("active"));
+        opt.classList.add("active");
+        
+        const radio = opt.querySelector("input[type='radio']");
+        if (radio) {
+          radio.checked = true;
+          const input = document.getElementById("sidebar-search-input");
+          if (input) {
+            if (radio.value === "title") {
+              input.placeholder = "문서 제목 검색...";
+            } else if (radio.value === "tag") {
+              input.placeholder = "Tag 검색...";
+            } else {
+              input.placeholder = "전체 문서 검색...";
+            }
+            input.dispatchEvent(new Event("input"));
+          }
+        }
+      });
+    });
 
     const tabs = ["nav-sitemap", "nav-toc", "nav-search", "nav-recent", "nav-update"];
     tabs.forEach(tabId => {
@@ -1126,15 +1325,36 @@ window.SiteModules.Navigation = (function () {
     const searchInput = document.getElementById("sidebar-search-input");
     if (searchInput) {
       searchInput.addEventListener("input", (e) => {
-        const query = e.target.value.trim();
+        const query = e.target.value.trim().toLowerCase();
         const resultsContainer = document.getElementById("sidebar-search-results");
         if (!resultsContainer) return;
         resultsContainer.innerHTML = "";
 
         if (query.length < 2) return;
 
-        const list = window.SiteModules.hierarchyListCached;
-        const matches = searchHierarchy(list, query);
+        // Get active search type
+        const activeRadio = document.querySelector("input[name='search-type']:checked");
+        const searchType = activeRadio ? activeRadio.value : "title";
+
+        let matches = [];
+
+        if (searchType === "title") {
+          const list = window.SiteModules.hierarchyListCached;
+          matches = searchHierarchy(list, query);
+        } else if (searchType === "tag") {
+          const cache = window.SiteModules.searchCache || [];
+          matches = cache.filter(item => {
+            return item.tags.some(tag => tag.includes(query));
+          });
+        } else if (searchType === "all") {
+          const cache = window.SiteModules.searchCache || [];
+          matches = cache.filter(item => {
+            const inTitle = item.title.toLowerCase().includes(query);
+            const inTags = item.tags.some(tag => tag.includes(query));
+            const inArticle = item.articleText.includes(query);
+            return inTitle || inTags || inArticle;
+          });
+        }
 
         if (matches.length === 0) {
           const li = document.createElement("li");
@@ -1235,6 +1455,77 @@ window.SiteModules.Navigation = (function () {
     }
   }
 
+  async function buildSearchCache(list) {
+    window.SiteModules.searchCache = [];
+    
+    const pages = [];
+    function traverse(data, currentPath = "", currentBreadcrumb = "") {
+      if (!Array.isArray(data)) return;
+      data.forEach(item => {
+        const title = item.주제 || "";
+        const dir = item.디렉토리 || "";
+        const pathDesc = currentBreadcrumb ? `${currentBreadcrumb} > ${title}` : title;
+        if (item.hasOwnProperty('파일명')) {
+          const fullUrl = `/${currentPath}${dir}${item.파일명}`;
+          pages.push({
+            title: title,
+            url: fullUrl,
+            breadcrumb: pathDesc
+          });
+        }
+        if (item.목록 && item.목록.length > 0) {
+          traverse(item.목록, currentPath + dir, pathDesc);
+        }
+      });
+    }
+    traverse(list);
+
+    const concurrency = 5;
+    let index = 0;
+
+    async function worker() {
+      while (index < pages.length) {
+        const pageIndex = index++;
+        if (pageIndex >= pages.length) break;
+        const page = pages[pageIndex];
+
+        try {
+          const res = await fetch(page.url);
+          if (!res.ok) continue;
+          const htmlText = await res.text();
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(htmlText, "text/html");
+          
+          const tagsEl = doc.querySelector("tags");
+          const tagsText = tagsEl ? tagsEl.textContent : "";
+          const tags = tagsText.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+
+          const articleEl = doc.querySelector("article");
+          let articleText = "";
+          if (articleEl) {
+            const clone = articleEl.cloneNode(true);
+            clone.querySelectorAll("script, style, tags, #site-intro, #site-toc-panel").forEach(el => el.remove());
+            articleText = (clone.textContent || "").toLowerCase().replace(/\s+/g, ' ').trim();
+          }
+
+          window.SiteModules.searchCache.push({
+            title: page.title,
+            url: page.url,
+            breadcrumb: page.breadcrumb,
+            tags: tags,
+            articleText: articleText,
+            hasArticle: !!articleEl
+          });
+        } catch (err) {
+          console.warn(`Failed to index page ${page.url}:`, err);
+        }
+      }
+    }
+
+    const workers = Array.from({ length: concurrency }, () => worker());
+    await Promise.all(workers);
+  }
+
   function searchHierarchy(data, query, results = [], currentPath = "", currentBreadcrumb = "") {
     if (!Array.isArray(data)) return results;
     data.forEach(item => {
@@ -1260,8 +1551,40 @@ window.SiteModules.Navigation = (function () {
     return results;
   }
 
+  function deletePageVisit(url, timestamp) {
+    let visits = [];
+    try {
+      visits = JSON.parse(localStorage.getItem("site_recent_visits") || "[]");
+    } catch (e) {
+      visits = [];
+    }
+    visits = visits.filter(v => !(v.url === url && v.timestamp === timestamp));
+    localStorage.setItem("site_recent_visits", JSON.stringify(visits));
+
+    // Log deletion key: url_YYYY-MM-DD
+    const d = new Date(timestamp);
+    const dayKey = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    const deleteKey = `${url}_${dayKey}`;
+
+    let deletedKeys = [];
+    try {
+      deletedKeys = JSON.parse(localStorage.getItem("site_recent_visits_deleted") || "[]");
+    } catch (e) {
+      deletedKeys = [];
+    }
+    if (!deletedKeys.includes(deleteKey)) {
+      deletedKeys.push(deleteKey);
+      localStorage.setItem("site_recent_visits_deleted", JSON.stringify(deletedKeys));
+    }
+
+    renderRecentVisits();
+  }
+
   function addPageVisit(title, url, category) {
-    if (url === "/index.html" || url === "/" || url.includes("index.html")) return;
+    const pageName = url.split('/').pop().toLowerCase();
+    if (pageName === "index.html" || pageName === "help.html" || pageName === "admin.html" || pageName === "info.html" || url === "/" || url === "") {
+      return;
+    }
 
     let cleanTitle = title;
     if (typeof cleanTitle === 'string') {
@@ -1277,16 +1600,32 @@ window.SiteModules.Navigation = (function () {
       visits = [];
     }
 
-    visits = visits.filter(v => v.url !== url);
+    // 2-6. 하루에 같은 페이지를 여러번 방문했더라도 가장 나중에 방문한 1회만 기록된다.
+    const now = Date.now();
+    visits = visits.filter(v => {
+      if (v.url !== url) return true;
+      const d1 = new Date(v.timestamp || 0);
+      const d2 = new Date(now);
+      const sameDay = d1.getFullYear() === d2.getFullYear() &&
+                      d1.getMonth() === d2.getMonth() &&
+                      d1.getDate() === d2.getDate();
+      return !sameDay;
+    });
+
     visits.unshift({
       title: cleanTitle,
       url: url,
-      category: category || ""
+      category: category || "",
+      timestamp: now
     });
 
-    visits = visits.slice(0, 10);
     localStorage.setItem("site_recent_visits", JSON.stringify(visits));
     renderRecentVisits();
+
+    // Trigger sync check (it will skip if already synced today)
+    if (window.SiteModules.Auth && typeof window.SiteModules.Auth.syncHistory === 'function') {
+      window.SiteModules.Auth.syncHistory();
+    }
   }
 
   function renderRecentVisits() {
@@ -1305,16 +1644,82 @@ window.SiteModules.Navigation = (function () {
       return;
     }
 
-    listContainer.innerHTML = "";
+    const days = ["일", "월", "화", "수", "목", "금", "토"];
+    function formatDateWithDay(timestamp) {
+      const d = new Date(timestamp);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const date = String(d.getDate()).padStart(2, '0');
+      const dayName = days[d.getDay()];
+      return `${year}-${month}-${date}(${dayName})`;
+    }
+
+    // Group visits by day
+    const groups = {};
     visits.forEach(visit => {
-      const li = document.createElement("li");
-      const cleanCategory = visit.category.replace(/^ >> /, "").split(" >> ").join(" > ");
-      li.innerHTML = `
-        <a href="${visit.url}" style="font-weight: bold; color: #1f1f1f;">${visit.title}</a>
-        <span class="search-path-desc" style="font-size: 0.75em; color: #747775; margin-top: 2px; padding-left: 6px;">${cleanCategory}</span>
-      `;
-      listContainer.appendChild(li);
+      const dayKey = formatDateWithDay(visit.timestamp || Date.now());
+      if (!groups[dayKey]) {
+        groups[dayKey] = [];
+      }
+      groups[dayKey].push(visit);
     });
+
+    listContainer.innerHTML = "";
+    
+    // UI displays all groups and items
+    for (const dayKey in groups) {
+      const details = document.createElement("details");
+      details.className = "recent-visit-day";
+      details.setAttribute("open", ""); // Open by default
+
+      const summary = document.createElement("summary");
+      summary.className = "recent-visit-summary";
+      summary.textContent = dayKey;
+      details.appendChild(summary);
+
+      const ul = document.createElement("ul");
+      ul.className = "recent-visit-list";
+
+      groups[dayKey].forEach(visit => {
+        const li = document.createElement("li");
+        li.className = "recent-visit-item";
+
+        const linkWrapper = document.createElement("div");
+        linkWrapper.className = "recent-visit-link-wrapper";
+
+        const a = document.createElement("a");
+        a.className = "recent-visit-link";
+        a.href = visit.url;
+        a.textContent = visit.title;
+
+        const span = document.createElement("span");
+        span.className = "recent-visit-path";
+        span.textContent = visit.category.replace(/^ >> /, "").split(" >> ").join(" > ");
+
+        linkWrapper.appendChild(a);
+        linkWrapper.appendChild(span);
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "recent-visit-delete-btn";
+        deleteBtn.innerHTML = "&times;";
+        deleteBtn.title = "삭제";
+
+        deleteBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (confirm(`'${visit.title}' 방문 기록을 삭제하시겠습니까?`)) {
+            deletePageVisit(visit.url, visit.timestamp);
+          }
+        });
+
+        li.appendChild(linkWrapper);
+        li.appendChild(deleteBtn);
+        ul.appendChild(li);
+      });
+
+      details.appendChild(ul);
+      listContainer.appendChild(details);
+    }
   }
 
   function updatePageFeatures() {
@@ -1525,7 +1930,12 @@ window.SiteModules.Navigation = (function () {
       </div>
     `;
 
-    article.appendChild(feedbackArea);
+    const lastMod = document.getElementById("last-modified");
+    if (lastMod) {
+      article.insertBefore(feedbackArea, lastMod);
+    } else {
+      article.appendChild(feedbackArea);
+    }
 
     const textarea = document.getElementById("page-suggestion-textarea");
     textarea.value = "";
@@ -1589,6 +1999,7 @@ window.SiteModules.Navigation = (function () {
   return {
     init: init,
     trigBoard: trigBoard,
-    findHierarchyPath: findHierarchyPath
+    findHierarchyPath: findHierarchyPath,
+    renderRecentVisits: renderRecentVisits
   };
 })();

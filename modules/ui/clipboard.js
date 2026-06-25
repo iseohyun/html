@@ -17,7 +17,7 @@ window.SiteModules.Clipboard = (function() {
       if (qTag) {
         const textToCopy = qTag.textContent || qTag.innerText;
         navigator.clipboard.writeText(textToCopy).then(function () {
-          showTemporaryMessage("\"" + textToCopy + "\"가 클립보드에 복사되었습니다.");
+          showTemporaryMessage("클립보드에 복사되었습니다.");
         }).catch(function (err) {
           console.error('클립보드 복사 실패: ', err);
         });
@@ -37,10 +37,22 @@ window.SiteModules.Clipboard = (function() {
           btnInClone.remove();
         }
 
-        const textToCopy = clone.textContent || clone.innerText;
+        let textToCopy = "";
+        const lnCodes = clone.querySelectorAll(".hljs-ln-code");
+        if (lnCodes.length > 0) {
+          const lines = Array.from(lnCodes).map(el => el.textContent || el.innerText);
+          textToCopy = lines.join("\n");
+        } else {
+          const codeEl = clone.querySelector("code");
+          if (codeEl) {
+            textToCopy = codeEl.textContent || codeEl.innerText;
+          } else {
+            textToCopy = clone.textContent || clone.innerText;
+          }
+        }
 
         navigator.clipboard.writeText(textToCopy).then(function () {
-          showTemporaryMessage("코드가 클립보드에 복사되었습니다.");
+          showTemporaryMessage("클립보드에 복사되었습니다.");
           const board = document.getElementById("board");
           if (board) {
             board.style.visibility = "hidden";
@@ -75,35 +87,49 @@ window.SiteModules.Clipboard = (function() {
 
       let copyBtn = document.createElement("div");
       copyBtn.setAttribute("class", "copy-button");
-      copyBtn.innerHTML = "COPY";
+      copyBtn.innerHTML = "Copy to Clipboard";
 
       element.appendChild(copyBtn);
     });
   }
 
-  function showTemporaryMessage(message, duration = 2000) {
-    const messageElement = document.createElement("div");
-    messageElement.textContent = message;
-    messageElement.style.position = "fixed";
-    messageElement.style.bottom = "20px";
-    messageElement.style.right = "20px";
-    messageElement.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
-    messageElement.style.color = "white";
-    messageElement.style.padding = "10px 20px";
-    messageElement.style.borderRadius = "5px";
-    messageElement.style.fontSize = "14px";
-    messageElement.style.boxShadow = "0 2px 5px rgba(0, 0, 0, 0.3)";
-    messageElement.style.zIndex = "1000";
-    messageElement.style.opacity = "1";
-    messageElement.style.transition = "opacity 0.5s";
+  function showTemporaryMessage(message, duration = 1000) {
+    let msgEl = document.getElementById("clipboard-toast");
+    if (msgEl) msgEl.remove();
 
-    document.body.appendChild(messageElement);
+    msgEl = document.createElement("div");
+    msgEl.id = "clipboard-toast";
+    msgEl.textContent = message;
+    msgEl.style.cssText = `
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(33, 37, 41, 0.9);
+      color: #fff;
+      padding: 10px 24px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      font-family: inherit;
+    `;
+
+    document.body.appendChild(msgEl);
+
+    // Force reflow
+    msgEl.offsetHeight;
+    msgEl.style.opacity = "1";
 
     setTimeout(() => {
-      messageElement.style.opacity = "0";
+      msgEl.style.opacity = "0";
       setTimeout(() => {
-        messageElement.remove();
-      }, 500);
+        msgEl.remove();
+      }, 300);
     }, duration);
   }
 

@@ -5,6 +5,7 @@ window.SiteModules = window.SiteModules || {};
 window.SiteModules.Document = (function() {
   
   function init() {
+    initTitle();
     initLastModified();
     initReferences();
   }
@@ -14,6 +15,10 @@ window.SiteModules.Document = (function() {
     const article = document.querySelector('body > article');
 
     if (article) {
+      let existingTitleContainer = document.getElementById('title-container');
+      if (existingTitleContainer) {
+        existingTitleContainer.remove();
+      }
       let existingTitle = document.getElementById('title');
       if (existingTitle) {
         existingTitle.remove();
@@ -24,12 +29,23 @@ window.SiteModules.Document = (function() {
         return;
       }
 
-      const titleDiv = document.createElement('div');
-      titleDiv.id = 'title';
-      titleDiv.innerText = state.cur_doc.title;
+      const container = document.createElement('div');
+      container.id = 'title-container';
+
+      const titleText = document.createElement('span');
+      titleText.className = 'doc-title-text';
+      const docTitle = (state.cur_doc && state.cur_doc.title) || document.title || '';
+      titleText.innerText = docTitle;
+
+      const pathText = document.createElement('span');
+      pathText.className = 'doc-path-text';
+      pathText.innerText = state.category ? state.category.replace(/^ >> /, "").split(" >> ").join(" > ") : "";
+
+      container.appendChild(titleText);
+      container.appendChild(pathText);
 
       // article의 첫 번째 자식으로 삽입
-      article.insertBefore(titleDiv, article.firstChild);
+      article.insertBefore(container, article.firstChild);
     } else {
       console.error('body > article 요소를 찾을 수 없습니다.');
     }
@@ -46,7 +62,26 @@ window.SiteModules.Document = (function() {
 
     lastModifiedEl = document.createElement("p");
     lastModifiedEl.setAttribute("id", "last-modified");
-    lastModifiedEl.innerHTML = "<a href=\"#/info.html#저작권\">@iseohyun.com CC-BY-SA</a>";
+    
+    const state = window.SiteModules.state;
+    const path = state.currentPath || "";
+    const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+    const isRootFile = !cleanPath || !cleanPath.includes('/') || path === "/";
+
+    if (isRootFile) {
+      lastModifiedEl.innerHTML = "<a href=\"#/info.html#저작권\">@iseohyun.com CC-BY-SA</a>";
+    } else {
+      let dateText = "";
+      if (state.lastModifiedDate) {
+        const d = state.lastModifiedDate;
+        const pad = (num) => String(num).padStart(2, '0');
+        dateText = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+      } else {
+        dateText = document.lastModified;
+      }
+      lastModifiedEl.innerHTML = "최근 수정: " + dateText + "<br><a href=\"#/info.html#저작권\">@iseohyun.com CC-BY-SA</a>";
+    }
+    
     article.appendChild(lastModifiedEl);
   }
 

@@ -13,12 +13,14 @@ body.admin-mode {
 body.admin-mode {
   margin: 0;
   padding: 0;
+  padding-left: var(--sidebar-width, 60px) !important;
   background-color: var(--bg-color) !important;
   color: var(--text) !important;
   font-family: 'Outfit', 'Noto Sans KR', sans-serif;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  transition: padding-left 0.3s ease;
 }
 
 body.admin-mode header {
