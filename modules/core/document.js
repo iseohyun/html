@@ -46,7 +46,7 @@ window.SiteModules.Document = (function() {
 
     lastModifiedEl = document.createElement("p");
     lastModifiedEl.setAttribute("id", "last-modified");
-    lastModifiedEl.innerHTML = "최근 수정: " + document.lastModified + "<br><a href=\"#/info.html#저작권\">@iseohyun.com CC-BY-SA</a>";
+    lastModifiedEl.innerHTML = "<a href=\"#/info.html#저작권\">@iseohyun.com CC-BY-SA</a>";
     article.appendChild(lastModifiedEl);
   }
 

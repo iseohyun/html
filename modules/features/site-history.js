@@ -17,10 +17,54 @@ window.SiteModules.UpdateLog = (function() {
     return new Date(dateStr);
   }
 
-  async function getUpdateList(cnt = 'all', date = '2023-01-01', edate = '', keywords = "", targetId = "update-list") {
+  function filterHistory(filter, listElement) {
+    const items = listElement.querySelectorAll("li");
+    items.forEach(item => {
+      if (filter === "all") {
+        item.style.display = "";
+      } else if (filter.startsWith("year-")) {
+        const targetYear = filter.substring(5);
+        const itemYear = item.getAttribute("data-year");
+        item.style.display = (itemYear === targetYear) ? "" : "none";
+      } else if (filter.startsWith("tag-")) {
+        const targetTag = filter.substring(4);
+        const itemTags = item.getAttribute("data-tags") || "";
+        item.style.display = itemTags.split(" ").includes(targetTag) ? "" : "none";
+      }
+    });
+  }
+
+  async function getUpdateList(cnt = 'all', date = '2023-01-01', edate = '', keywords = "", targetId = "site-history") {
     const updateList = document.getElementById(targetId);
     if (!updateList) return;
     updateList.innerHTML = ""; // 기존 리스트 초기화
+
+    // 필터 버튼 컨테이너 생성 및 이벤트 바인딩
+    let filterContainer = document.getElementById("history-filters");
+    if (!filterContainer && targetId === "site-history") {
+      filterContainer = document.createElement("div");
+      filterContainer.id = "history-filters";
+      filterContainer.className = "history-filters";
+      filterContainer.innerHTML = `
+        <button class="filter-btn active" data-filter="all">전체</button>
+        <button class="filter-btn" data-filter="year-2026">2026년</button>
+        <button class="filter-btn" data-filter="year-2025">2025년</button>
+        <button class="filter-btn" data-filter="year-2024">2024년</button>
+        <button class="filter-btn" data-filter="tag-new">신규</button>
+        <button class="filter-btn" data-filter="tag-update">갱신/개선</button>
+        <button class="filter-btn" data-filter="tag-bugfix">Bugfix</button>
+      `;
+      updateList.parentNode.insertBefore(filterContainer, updateList);
+
+      filterContainer.querySelectorAll(".filter-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          filterContainer.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+          e.target.classList.add("active");
+          const filter = e.target.dataset.filter;
+          filterHistory(filter, updateList);
+        });
+      });
+    }
 
     try {
       // JSON 데이터 가져오기 (async/await 사용)
@@ -54,6 +98,20 @@ window.SiteModules.UpdateLog = (function() {
       // 리스트 생성
       limitedUpdates.forEach(update => {
         const listItem = document.createElement("li");
+
+        // data-year 설정
+        const year = update.date.split('-')[0];
+        listItem.setAttribute("data-year", year);
+
+        // data-tags 설정
+        let tags = [];
+        update.content.forEach(content => {
+          if (content.includes("[신규]")) tags.push("new");
+          if (content.includes("[갱신]") || content.includes("[기능개선]")) tags.push("update");
+          if (content.includes("[bugfix]")) tags.push("bugfix");
+          if (content.includes("[동영상]")) tags.push("youtube");
+        });
+        listItem.setAttribute("data-tags", tags.join(" "));
 
         if (targetId === "sidebar-update-list") {
           const dateSpan = document.createElement("span");
@@ -210,7 +268,7 @@ window.SiteModules.UpdateLog = (function() {
   }
 
   function clearUpdateList() {
-    const updateList = document.querySelector('ul#update-list');
+    const updateList = document.querySelector('ul#site-history');
     if (updateList) {
       while (updateList.firstChild) {
         updateList.removeChild(updateList.firstChild);
@@ -219,7 +277,7 @@ window.SiteModules.UpdateLog = (function() {
   }
 
   function toggle(tag) {
-    const elements = document.querySelectorAll('ul#update-list span');
+    const elements = document.querySelectorAll('ul#site-history span');
     elements.forEach(element => {
       if (tag === 'all' || element.classList.contains('date')) {
         element.style.display = 'block';
@@ -232,7 +290,7 @@ window.SiteModules.UpdateLog = (function() {
       }
     });
 
-    const listItems = document.querySelectorAll('ul#update-list > li');
+    const listItems = document.querySelectorAll('ul#site-history > li');
     listItems.forEach(item => {
       const spans = item.querySelectorAll('span');
       let allHidden = true;

@@ -1811,3 +1811,28 @@ footer {
 body.show-keybinds .keybind-badge {
   display: block;
 }
+
+/* Migrated from index.html internal styles */
+article a {
+  color: #44c;
+  text-decoration: none;
+}
+
+article a:visited {
+  color: #44c;
+}
+
+article a:hover {
+  color: red;
+}
+
+article li li {
+  position: relative;
+  left: -27px;
+}
+
+@media screen and (min-width: 1150px) {
+  article {
+    padding: 0;
+  }
+}

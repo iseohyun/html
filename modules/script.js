@@ -23,7 +23,7 @@ window.SiteVersion = "20260623v1";
     '/modules/ui/clipboard.js',
     '/modules/ui/quiz.js',
     '/modules/ui/code-loader.js',
-    '/modules/features/update-log.js'
+    '/modules/features/site-history.js'
   ];
 
   let loadedCount = 0;
