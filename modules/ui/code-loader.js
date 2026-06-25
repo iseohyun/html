@@ -6,6 +6,22 @@ window.SiteModules.CodeLoader = (function() {
   
   function init(container) {
     const parentNode = container || document;
+    
+    // Automatically wrap pre elements that do not contain code elements (excluding shells)
+    const pres = Array.from(parentNode.getElementsByTagName("pre"));
+    pres.forEach(pre => {
+      if (!pre.querySelector("code") && !pre.closest(".shell")) {
+        const codeElement = document.createElement("code");
+        if (pre.className) {
+          codeElement.className = pre.className;
+        }
+        while (pre.firstChild) {
+          codeElement.appendChild(pre.firstChild);
+        }
+        pre.appendChild(codeElement);
+      }
+    });
+
     const codes = Array.from(parentNode.getElementsByTagName("code"));
     const filesToLoad = codes.filter(code => code.getAttribute('href') !== null);
     
@@ -13,7 +29,7 @@ window.SiteModules.CodeLoader = (function() {
     let loadedCount = 0;
 
     if (fileCount === 0) {
-      runHighlight();
+      runHighlight(parentNode);
       return;
     }
 
@@ -36,23 +52,36 @@ window.SiteModules.CodeLoader = (function() {
         .finally(() => {
           loadedCount++;
           if (loadedCount === fileCount) {
-            runHighlight();
+            runHighlight(parentNode);
           }
         });
     });
   }
 
-  function runHighlight() {
-    if (typeof hljs !== 'undefined' && hljs.highlightAll) {
-      hljs.highlightAll();
-      if (hljs.initLineNumbersOnLoad) {
-        // initLineNumbersOnLoad는 최초 1회만 동작하거나, 재생성이 필요할 수 있습니다.
-        try {
-          hljs.initLineNumbersOnLoad();
-        } catch (e) {
-          // 이미 초기화된 경우 예외 발생 방지
+  function runHighlight(parentNode) {
+    if (typeof hljs !== 'undefined') {
+      const codes = parentNode.querySelectorAll('pre code');
+      codes.forEach(code => {
+        if (code.closest('.shell')) return;
+
+        // Apply syntax highlighting
+        if (typeof hljs.highlightElement === 'function') {
+          hljs.highlightElement(code);
+        } else if (typeof hljs.highlightBlock === 'function') {
+          hljs.highlightBlock(code);
         }
-      }
+
+        // Apply line numbers (including single line)
+        if (typeof hljs.lineNumbersBlock === 'function') {
+          if (!code.querySelector('.hljs-ln')) {
+            try {
+              hljs.lineNumbersBlock(code, { singleLine: true });
+            } catch (e) {
+              // Ignore
+            }
+          }
+        }
+      });
     }
   }
 

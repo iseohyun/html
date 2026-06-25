@@ -54,5 +54,11 @@ service cloud.firestore {
         allow read, write: if request.auth == null && uid.matches('^GUEST_.*');
       }
     }
+
+    // 6. 방문 기록 컬렉션 규칙
+    match /visits/{userId} {
+      allow read, write: if (request.auth != null && request.auth.uid == userId)
+                          || (request.auth == null && userId.matches('^GUEST_.*'));
+    }
   }
 }
