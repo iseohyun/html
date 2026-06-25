@@ -1,68 +1,50 @@
-<!DOCTYPE html>
-<html lang="ko">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>iseohyun.com 관리자 대시보드</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Noto+Sans+KR:wght@400;700&display=swap"
-    rel="stylesheet">
+<article class="admin-page">
   <link rel="stylesheet" href="/admin.css">
-</head>
+  <header>
+    <div class="user-profile" id="user-profile-section" style="display: none;">
+      <span id="admin-name-display" style="font-size: 13px; font-weight: 600;"></span>
+      <button class="btn btn-outline" id="btn-logout">로그아웃</button>
+    </div>
+  </header>
+  <!-- 권한 오류 경고 -->
+  <div id="error-alert" class="error-msg" style="display: none;">
+    <span>🔒 <b>접근 차단:</b> 관리자 권한이 발견되지 않았습니다. 파이어베이스 Console에서 '/admins/{uid}' 문서를 등록해 주십시오.</span>
+  </div>
 
-<body class="admin-mode">
+  <!-- 로그인 전 화면 -->
+  <div id="auth-view" class="auth-container" style="display: none;">
+    <h2>관리자 로그인</h2>
+    <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 25px; line-height: 1.5;">
+      안전한 데이터 처리를 위해 구글 계정으로 로그인합니다.<br>
+      인증 후 관리자로 승인된 계정만 조회가 가능합니다.
+    </p>
+    <button class="btn btn-primary" id="btn-login" style="width: 100%; padding: 12px;">Google 계정으로 관리자 로그인</button>
+  </div>
 
-  <main>
-    <article class="admin-page">
-      <link rel="stylesheet" href="/admin.css">
-      <header>
-        <h1>iseohyun.com 관리자 대시보드</h1>
-        <div class="user-profile" id="user-profile-section" style="display: none;">
-          <span id="admin-name-display" style="font-size: 13px; font-weight: 600;"></span>
-          <button class="btn btn-outline" id="btn-logout">로그아웃</button>
-        </div>
-      </header>
-      <!-- 권한 오류 경고 -->
-      <div id="error-alert" class="error-msg" style="display: none;">
-        <span>🔒 <b>접근 차단:</b> 관리자 권한이 발견되지 않았습니다. 파이어베이스 Console에서 '/admins/{uid}' 문서를 등록해 주십시오.</span>
-      </div>
+  <!-- 건의사항 리스트 대시보드 화면 -->
+  <div id="dashboard-view" style="display: none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+      <h3 style="margin: 0; font-size: 18px;">건의사항 및 피드백 현황</h3>
+      <span id="total-count-badge"
+        style="background-color: var(--border); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;">건의
+        총 0건</span>
+    </div>
 
-      <!-- 로그인 전 화면 -->
-      <div id="auth-view" class="auth-container" style="display: none;">
-        <h2>관리자 로그인</h2>
-        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 25px; line-height: 1.5;">
-          안전한 데이터 처리를 위해 구글 계정으로 로그인합니다.<br>
-          인증 후 관리자로 승인된 계정만 조회가 가능합니다.
-        </p>
-        <button class="btn btn-primary" id="btn-login" style="width: 100%; padding: 12px;">Google 계정으로 관리자 로그인</button>
-      </div>
+    <div class="suggestions-list" id="suggestions-container">
+      <!-- 동적으로 바인딩 -->
+    </div>
+  </div>
+</article>
 
-      <!-- 건의사항 리스트 대시보드 화면 -->
-      <div id="dashboard-view" style="display: none;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-          <h2 style="margin: 0; font-size: 18px;">건의사항 및 피드백 현황</h2>
-          <span id="total-count-badge"
-            style="background-color: var(--border); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;">건의
-            총 0건</span>
-        </div>
+<!-- Firebase Compat SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore-compat.js"></script>
 
-        <div class="suggestions-list" id="suggestions-container">
-          <!-- 동적으로 바인딩 -->
-        </div>
-      </div>
-    </article>
-  </main>
-
-  <!-- Firebase Compat SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore-compat.js"></script>
-
-  <script>
-    (function() {
-      // Firebase Config (modules/core/firebase-config.js 구성 정보와 동일하게 매핑)
-      const firebaseConfig = {
+<script>
+  (function () {
+    // Firebase Config (modules/core/firebase-config.js 구성 정보와 동일하게 매핑)
+    const firebaseConfig = {
       apiKey: "AIzaSyBu8rZQ_E_LKiGXu9jeIWn5FCPU7cWu734",
       authDomain: "iseohyun.firebaseapp.com",
       projectId: "iseohyun",
@@ -270,8 +252,5 @@
         }[s];
       });
     }
-    })();
-  </script>
-</body>
-
-</html>
+  })();
+</script>

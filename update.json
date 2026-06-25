@@ -1,8 +1,27 @@
 [
   {
+    "date": "2026-06-25",
+    "content": [
+      "[bugfix] 관리자 페이지(admin.html) CSS 미적용 현상 해결 및 상단 헤더 겹침 오작동 개선",
+      "[bugfix] 관리자 페이지 하단에 Q&A 질문창 노출 현상 해결"
+    ]
+  },
+  {
     "date": "2026-06-24",
     "content": [
-      "[신규] 작은 프로젝트 > 유튜브 광고 자동 건너뛰기 : MutationObserver 및 PlaybackRate 가속을 이용한 크롬 확장 프로그램"
+      "[신규] 작은 프로젝트 > 유튜브 광고 자동 건너뛰기 : MutationObserver 및 PlaybackRate 가속을 이용한 크롬 확장 프로그램",
+      "[기능개선] 도움말(help.html) 및 관리자 페이지(admin.html) 자동 로그인 권한 감지 및 리다이렉트 연동",
+      "[기능개선] Firebase Firestore 보안 규칙 설계 및 적용 (firestore.rules)",
+      "[bugfix] 도움말(help.html) 건의사항 전송/수정 이벤트 오작동 및 스크립트 중복 선언 오류 해결"
+    ]
+  },
+  {
+    "date": "2026-06-23",
+    "content": [
+      "[기능개선] Firebase Auth 인증 모듈 독립화 및 소셜 OAuth 연동 구조 개선",
+      "[기능개선] 단축키 힌트 배지 시스템 및 Alt 키 바인딩 기능 도입",
+      "[기능개선] 모든 서브페이지 하단 개별 카테고리 질답(Q&A) 피드백 폼 및 답변 이력 필터링 추가",
+      "[bugfix] 튜토리얼 토글 버튼 및 최근 방문기록(Recent Visits) 제목 브랜딩 접미사 제거"
     ]
   },
   {

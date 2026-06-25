@@ -96,7 +96,7 @@ window.SiteModules.Navigation = (function () {
           <div class="nav-item" id="nav-toggle" data-tooltip="메뉴 접기/펴기">
             <span class="material-symbols-outlined">menu</span>
           </div>
-          <div class="nav-item active" id="nav-sitemap" data-tab="tab-sitemap" data-tooltip="모든 폴더 보기">
+          <div class="nav-item" id="nav-sitemap" data-tab="tab-sitemap" data-tooltip="모든 폴더 보기">
             <span class="material-symbols-outlined">account_tree</span>
             <span class="keybind-badge">1</span>
           </div>
@@ -141,7 +141,7 @@ window.SiteModules.Navigation = (function () {
       sidebarPanel.innerHTML = `
         <div class="panel-body">
           <!-- 1. Sitemap Pane -->
-          <div class="tab-pane active" id="tab-sitemap">
+          <div class="tab-pane" id="tab-sitemap">
             <div class="sitemap-actions" style="margin-bottom: 10px; display: flex; gap: 8px;">
               <button id="home-btn" class="site-action-btn">홈</button>
               <button id="sitemap-toggle-all-btn" class="site-action-btn">전체 닫기</button>
@@ -186,7 +186,9 @@ window.SiteModules.Navigation = (function () {
       sidebarContainer.appendChild(sidebarPanel);
 
       if (window.innerWidth > 768) {
-        document.documentElement.style.setProperty('--sidebar-width', '300px');
+        setPanelCollapsed(true);
+      } else {
+        document.documentElement.style.setProperty('--sidebar-width', '60px');
       }
 
       createModals();
@@ -409,71 +411,18 @@ window.SiteModules.Navigation = (function () {
         <img id="site-icon" src="/source/icon_seohyun.svg">
         <div id="site-name">iseohyun.com</div>
       </div>
-      <div id="main"></div>
-      <ul id="update-list"></ul>
+      <ul id="site-history"></ul>
     `;
 
-    // 모든 폴더 보기 그리드 빌드
-    const mainDiv = document.getElementById("main");
-    const list = window.SiteModules.hierarchyListCached;
-    if (mainDiv && list) {
-      list.forEach(item => {
-        mainDiv.appendChild(createSitemapBlock(item));
-      });
-    }
-
-    // 최근 변경 사항 로그 빌드 (10개)
+    // 최근 변경 사항 로그 빌드 (전체 로드하여 필터링 지원)
     if (window.SiteModules.UpdateLog && typeof window.SiteModules.UpdateLog.getUpdateList === 'function') {
-      window.SiteModules.UpdateLog.getUpdateList(10);
+      window.SiteModules.UpdateLog.getUpdateList('all', '2023-01-01', '', '', 'site-history');
     } else {
       window.SiteModules.updateLogQueue = window.SiteModules.updateLogQueue || [];
-      window.SiteModules.updateLogQueue.push([10]);
+      window.SiteModules.updateLogQueue.push(['all', '2023-01-01', '', '', 'site-history']);
     }
 
     postLoadPageActions(true);
-  }
-
-  // 홈 화면용 Sitemap 상세 그리드 블록 동적 렌더링 함수
-  function createSitemapBlock(list) {
-    const div = document.createElement('div');
-    const details = document.createElement('details');
-    const summary = document.createElement('summary');
-    const ol = document.createElement('ol');
-    summary.innerHTML = list.주제;
-
-    for (let i = 0; i < list.목록.length; i++) {
-      if (list.목록[i].display === "hidden") continue;
-
-      const li = document.createElement('li');
-      const ul = document.createElement('ul');
-
-      if (typeof list.목록[i].파일명 === "undefined") {
-        li.innerHTML = list.목록[i].주제;
-        for (let j = 0; j < list.목록[i].목록.length; j++) {
-          if (list.목록[i].목록[j].display === "hidden") continue;
-          const li_sub = document.createElement('li');
-
-          let hrefPath = "";
-          if (typeof list.목록[i].목록[j].파일명 === "undefined") {
-            hrefPath = list.디렉토리 + list.목록[i].디렉토리 + list.목록[i].목록[j].디렉토리 + list.목록[i].목록[j].목록[0].파일명 + "#title";
-          } else {
-            hrefPath = list.디렉토리 + list.목록[i].디렉토리 + list.목록[i].목록[j].디렉토리 + list.목록[i].목록[j].파일명 + "#title";
-          }
-          li_sub.innerHTML = `<a href="/${hrefPath}">${list.목록[i].목록[j].주제}</a>`;
-          ul.appendChild(li_sub);
-        }
-      } else {
-        const hrefPath = list.디렉토리 + list.목록[i].디렉토리 + list.목록[i].파일명 + "#title";
-        li.innerHTML = `<a href="/${hrefPath}">${list.목록[i].주제}</a>`;
-      }
-
-      li.appendChild(ul);
-      ol.appendChild(li);
-    }
-    details.appendChild(summary);
-    details.appendChild(ol);
-    div.appendChild(details);
-    return div;
   }
 
   // 모든 상대 경로(img src, object data, iframe src, a href 등)를 loaded page의 절대 경로로 재조정하는 헬퍼 함수
@@ -585,7 +534,7 @@ window.SiteModules.Navigation = (function () {
       const src = oldScript.getAttribute("src");
       const id = oldScript.getAttribute("id");
 
-      if (src && (src.includes("modules/script.js") || src.includes("update.js") || src.includes("jquery-latest.min.js"))) {
+      if (src && (src.includes("modules/script.js") || src.includes("jquery-latest.min.js"))) {
         return;
       }
 
