@@ -20,177 +20,11 @@
   </script>
 
   <!-- 페이지 타이틀 -->
-  <title>iseohyun.com </title>
+  <title>iseohyun.com</title>
   <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
 
-  <!-- 공통스킨 -->
   <style type="text/css">
     @import url("/style.css");
-
-    #main {
-      column-count: 2;
-      column-width: 10rem;
-      text-align: justify;
-      width: 95%;
-      margin: 0 auto 10vh;
-    }
-
-    #search {
-      margin: 0 auto;
-      padding: 20vh 0;
-      width: 60%;
-      display: flex;
-      position: relative;
-      flex-direction: row;
-      align-items: center;
-    }
-
-    #search>div:first-child {
-      display: flex;
-      background-color: #eee;
-      height: 1.5rem;
-      max-height: 1.6rem;
-      padding: 0.6rem 1.5rem;
-      border-bottom-left-radius: 1.6rem;
-      border-top-left-radius: 1.6rem;
-    }
-
-    #search>div:nth-child(2) {
-      display: flex;
-      border: 1px solid #ddd;
-      height: 2.5rem;
-      border-bottom-right-radius: 1.6rem;
-      border-top-right-radius: 1.6rem;
-      flex-grow: 1;
-    }
-
-    #search input {
-      margin: auto;
-      font-size: 1.1rem;
-      border: none;
-      border-radius: 1.6rem;
-      outline: none;
-      width: 100%;
-      padding-left: 15px;
-    }
-
-    #search>div:last-child {
-      position: absolute;
-      visibility: hidden;
-      width: 120%;
-      height: 50vw;
-      overflow-y: scroll;
-      font-size: 0.8em;
-      padding: 0.5em 0.7em;
-      border: 2px solid black;
-      border-radius: 0.6em;
-      background-color: #fff;
-      top: 14.5em;
-      left: -4em;
-      z-index: 1;
-    }
-
-    #main>div {
-      border: 1px solid #AAA;
-      padding: 15px;
-      margin-bottom: 10px;
-      border-radius: 15px;
-      break-inside: avoid;
-      box-shadow: #eee 5px 5px 5px;
-      font-size: 0.8rem;
-    }
-
-    article a {
-      color: #44c;
-      text-decoration: none;
-    }
-
-    article a:visited {
-      color: #44c;
-    }
-
-    article a:hover {
-      color: red;
-    }
-
-    article li li {
-      position: relative;
-      left: -27px;
-    }
-
-    footer {
-      position: fixed;
-      left: 0;
-      bottom: 0;
-      width: 100%;
-      height: fit-content;
-      color: #eee;
-      background-color: #aaa;
-      font-size: .7em;
-      padding: 10px;
-      display: flex;
-      align-items: flex-start;
-      flex-direction: row;
-      justify-content: space-evenly;
-      flex-wrap: wrap;
-    }
-
-    footer>div {
-      min-width: 100px;
-      margin: 0 20px 20px;
-    }
-
-    header {
-      font-size: 1rem
-    }
-
-    footer>div {
-      line-height: 1.5em;
-    }
-
-    footer>div>a {
-      color: #fff;
-    }
-
-    footer>div>a:hover {
-      text-decoration: underline;
-      text-decoration-color: black;
-    }
-
-    @media screen and (max-width: 500px) {
-      #main {
-        column-count: 1;
-        margin-bottom: 10vh;
-      }
-
-      #search {
-        width: 85%;
-        min-width: 0px;
-        padding: 20px 15px 100px;
-      }
-
-      #search>div:last-child {
-        width: 91%;
-        height: 100vw;
-        top: 45%;
-        left: 1%;
-      }
-
-      footer {
-        display: flex;
-        flex-direction: column;
-      }
-
-      footer div {
-        margin-bottom: 30px;
-      }
-    }
-
-    @media screen and (min-width: 1150px) {
-      article {
-        padding: 0;
-      }
-    }
 
     #site-intro {
       width: 90vw;
@@ -201,7 +35,6 @@
       align-items: flex-end;
       height: 35px;
       padding: 10px;
-      align-items: flex-end;
       border-bottom: 1px solid #eee;
       margin: 20px auto 50px;
     }
@@ -209,7 +42,76 @@
     #site-icon {
       height: 35px;
     }
-    @import url("/update.css");
+
+    #site-history {
+      width: 95%;
+      margin: 0 auto 300px;
+      border: 1px solid #aaa;
+      padding: 1em;
+      border-radius: 22px;
+    }
+
+    #site-history li {
+      margin-bottom: 1em;
+    }
+
+    #site-history li::marker {
+      content: "";
+    }
+
+    #site-history div {
+      margin: 1px 0 5px 2em;
+    }
+
+    #site-history span.date {
+      font-size: 0.8em;
+      color: #999;
+    }
+
+    #site-history span.content {
+      display: block;
+      font-size: 0.9em;
+      color: #444;
+    }
+
+    #site-history a:visited {
+      color: #44c;
+    }
+
+    #site-history a:hover {
+      color: red;
+    }
+
+    /* 필터 스타일 */
+    .history-filters {
+      width: 95%;
+      margin: 20px auto 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .filter-btn {
+      background-color: #f1f3f5;
+      color: #495057;
+      border: 1px solid #dee2e6;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .filter-btn:hover {
+      background-color: #e9ecef;
+    }
+
+    .filter-btn.active {
+      background-color: #228be6;
+      color: white;
+      border-color: #228be6;
+    }
   </style>
   <script src="/modules/script.js" defer></script>
 </head>
@@ -220,15 +122,8 @@
       <img id="site-icon" src="/source/icon_seohyun.svg">
       <div id="site-name">iseohyun.com</div>
     </div>
-    <!-- <div id="search">
-      <div><img src="source/icon_search.svg"></div>
-      <div><input type="search" id="input-text"></div>
-      <div></div>
-    </div> -->
-
-    <div id="main"></div>
-
-    <ul id="update-list"></ul>
+    <ul id="site-history"></ul>
   </article>
 </body>
+
 </html>
