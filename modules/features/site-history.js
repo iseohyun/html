@@ -3,9 +3,52 @@
 window.SiteModules = window.SiteModules || {};
 
 window.SiteModules.UpdateLog = (function() {
-  let activeYears = [2024, 2025, 2026];
-  let firstSelectedYear = null;
+  let activeYears = [2026];
   let activeTag = 'all';
+
+  const daysOfWeek = ["일", "월", "화", "수", "목", "금", "토"];
+
+  function formatDateWithDay(dateStr) {
+    const d = parseDateString(dateStr);
+    const dayName = daysOfWeek[d.getDay()];
+    return `${dateStr}(${dayName})`;
+  }
+
+  function formatSidebarContent(origContent, hierarchy) {
+    let content = origContent;
+    
+    // 1. [신규], [개선], [bugfix], [동영상] 등 대괄호 태그 제거
+    content = content.replace(/^\[(?:신규|개선|bugfix|동영상)\]\s*/i, "");
+
+    let endIndex = content.indexOf(":");
+    if (endIndex === -1) endIndex = content.length;
+    const rawTitle = content.substring(0, endIndex).trim();
+    const description = endIndex !== content.length ? content.substring(endIndex + 1).trim() : "";
+
+    const path = findPath(hierarchy, rawTitle);
+
+    if (path) {
+      const hasPathArrow = rawTitle.includes(">");
+      const displayTitle = hasPathArrow ? rawTitle.split(">").pop().trim() : rawTitle;
+      let text = "<a href='" + path + "' class='recent-visit-link'>" + displayTitle + "</a>";
+      
+      // 경로명 간소화(hasPathArrow)가 이루어진 경우 뒤따라오는 설명(: ...)도 함께 생략합니다.
+      if (description && !hasPathArrow) {
+        text += ": " + description;
+      }
+      return text;
+    } else {
+      const hasPathArrow = rawTitle.includes(">");
+      const displayTitle = hasPathArrow ? rawTitle.split(">").pop().trim() : rawTitle;
+      let text = displayTitle;
+      
+      // 경로명 간소화(hasPathArrow)가 이루어진 경우 뒤따라오는 설명도 함께 생략
+      if (description && !hasPathArrow) {
+        text += ": " + description;
+      }
+      return text;
+    }
+  }
 
   function parseDateString(dateStr) {
     if (!dateStr) return new Date();
@@ -23,19 +66,24 @@ window.SiteModules.UpdateLog = (function() {
   function selectYear(Y) {
     if (Y === 'all') {
       activeYears = [2024, 2025, 2026];
-      firstSelectedYear = null;
     } else {
       const yearNum = parseInt(Y, 10);
-      if (activeYears.length === 3) {
+      if (activeYears.includes(yearNum)) {
+        // 이미 선택된 영역을 선택함 -> 선택 해제 후, 해당 영역만 선택
         activeYears = [yearNum];
-        firstSelectedYear = yearNum;
       } else {
-        const anchor = firstSelectedYear !== null ? firstSelectedYear : yearNum;
-        const min = Math.min(anchor, yearNum);
-        const max = Math.max(anchor, yearNum);
-        activeYears = [];
-        for (let y = min; y <= max; y++) {
-          activeYears.push(y);
+        // 아직 선택되지 않은 영역을 선택함 -> 기존 선택 영역에서 확장
+        if (activeYears.length === 0) {
+          activeYears = [yearNum];
+        } else {
+          const currentMin = Math.min(...activeYears);
+          const currentMax = Math.max(...activeYears);
+          const newMin = Math.min(currentMin, yearNum);
+          const newMax = Math.max(currentMax, yearNum);
+          activeYears = [];
+          for (let y = newMin; y <= newMax; y++) {
+            activeYears.push(y);
+          }
         }
       }
     }
@@ -61,7 +109,7 @@ window.SiteModules.UpdateLog = (function() {
         }
 
         if (matchesTag) {
-          span.style.display = span.classList.contains("sub-item") ? "block" : "";
+          span.style.display = "";
           hasVisibleContent = true;
         } else {
           span.style.display = "none";
@@ -122,18 +170,18 @@ window.SiteModules.UpdateLog = (function() {
         <div class="filter-group-wrapper">
           <span class="filter-label">연도 선택</span>
           <div class="year-btn-group">
-            <button class="filter-btn active" data-filter="year-all">전체</button>
-            <button class="filter-btn active" data-filter="year-2026">2026년</button>
-            <button class="filter-btn active" data-filter="year-2025">2025년</button>
-            <button class="filter-btn active" data-filter="year-2024">2024년</button>
+            <button class="filter-btn" data-filter="year-all">전체</button>
+            <button class="filter-btn" data-filter="year-2026">2026년</button>
+            <button class="filter-btn" data-filter="year-2025">2025년</button>
+            <button class="filter-btn" data-filter="year-2024">2024년</button>
           </div>
         </div>
         <div class="filter-group-wrapper">
           <span class="filter-label">분류 선택</span>
           <div class="tag-btn-group">
-            <button class="filter-btn active" data-filter="tag-all">전체</button>
+            <button class="filter-btn" data-filter="tag-all">전체</button>
             <button class="filter-btn" data-filter="tag-new">신규</button>
-            <button class="filter-btn" data-filter="tag-update">갱신/개선</button>
+            <button class="filter-btn" data-filter="tag-update">개선</button>
             <button class="filter-btn" data-filter="tag-bugfix">Bugfix</button>
           </div>
         </div>
@@ -201,67 +249,48 @@ window.SiteModules.UpdateLog = (function() {
         let tags = [];
         update.content.forEach(content => {
           if (content.includes("[신규]")) tags.push("new");
-          if (content.includes("[갱신]") || content.includes("[기능개선]")) tags.push("update");
+          if (content.includes("[개선]")) tags.push("update");
           if (content.includes("[bugfix]")) tags.push("bugfix");
           if (content.includes("[동영상]")) tags.push("youtube");
         });
         listItem.setAttribute("data-tags", tags.join(" "));
 
         if (targetId === "sidebar-update-list") {
-          const dateSpan = document.createElement("span");
-          dateSpan.className = "recent-date";
-          dateSpan.textContent = update.date;
-          listItem.appendChild(dateSpan);
+          const details = document.createElement("details");
+          details.className = "recent-visit-day";
+          details.setAttribute("open", ""); // Open by default
 
-          const contentSpan = document.createElement("span");
-          contentSpan.className = "recent-content";
+          const summary = document.createElement("summary");
+          summary.className = "recent-visit-summary";
+          summary.textContent = formatDateWithDay(update.date);
+          details.appendChild(summary);
 
-          let processedLines = [];
-          let lastTag = "";
+          const ul = document.createElement("ul");
+          ul.className = "recent-visit-list";
 
           update.content.forEach(origContent => {
-            let isSubItem = /^\s*\[[^\]]+\]\s*:/.test(origContent);
-            let content = origContent;
-
-            const match = content.match(/^(\[[^\]]+\])/);
-            if (match) {
-              lastTag = match[1];
-            }
-
-            let processed = content;
-            if (content.startsWith("[신규]")) {
-              let endIndex = content.indexOf(":");
-              if (endIndex === -1) endIndex = content.length;
-              const title = content.substring(4, endIndex).trim();
-              const path = findPath(hierarchy, title);
-              if (path) {
-                let text = "[신규] <a href='" + path + "'>" + title + "</a>";
-                if (endIndex !== content.length) {
-                  text += ": " + content.substring(endIndex + 1).trim();
-                }
-                processed = text;
-              }
-            } else if (content.startsWith("[갱신]")) {
-              let endIndex = content.indexOf(":");
-              if (endIndex === -1) endIndex = content.length;
-              const title = content.substring(4, endIndex).trim();
-              const path = findPath(hierarchy, title);
-              if (path) {
-                let text = "[갱신] <a href='" + path + "'>" + title + "</a>";
-                if (endIndex !== content.length) {
-                  text += ": " + content.substring(endIndex + 1).trim();
-                }
-                processed = text;
-              }
-            }
-            if (isSubItem) {
-              processed = `<span style="padding-left: 1em; display: inline-block;">${processed}</span>`;
-            }
-            processedLines.push(processed);
+            const li = document.createElement("li");
+            li.className = "recent-visit-item";
+            
+            const formatted = formatSidebarContent(origContent, hierarchy);
+            
+            const linkWrapper = document.createElement("div");
+            linkWrapper.className = "recent-visit-link-wrapper";
+            linkWrapper.innerHTML = formatted;
+            
+            li.appendChild(linkWrapper);
+            ul.appendChild(li);
           });
 
-          contentSpan.innerHTML = processedLines.join("<br>");
-          listItem.appendChild(contentSpan);
+          details.appendChild(ul);
+          
+          listItem.innerHTML = "";
+          listItem.appendChild(details);
+          listItem.style.border = "none";
+          listItem.style.background = "none";
+          listItem.style.padding = "0";
+          listItem.style.margin = "0 0 12px 0";
+          listItem.style.boxShadow = "none";
         } else {
           // 날짜 출력
           const dateSpan = document.createElement("span");
@@ -272,7 +301,6 @@ window.SiteModules.UpdateLog = (function() {
 
           let lastTag = "";
           update.content.forEach(origContent => {
-            let isSubItem = /^\s*\[[^\]]+\]\s*:/.test(origContent);
             let content = origContent;
 
             const match = content.match(/^(\[[^\]]+\])/);
@@ -281,11 +309,6 @@ window.SiteModules.UpdateLog = (function() {
             }
 
             const contentSpan = document.createElement("span");
-
-            if (isSubItem) {
-              contentSpan.style.paddingLeft = "2em";
-              contentSpan.style.display = "block";
-            }
 
             if (content.startsWith("[신규]")) {
               let endIndex = content.indexOf(":");
@@ -303,13 +326,11 @@ window.SiteModules.UpdateLog = (function() {
                 content = text;
               }
               contentSpan.className = "new";
-            } else if (content.startsWith("[기능개선]")) {
-              contentSpan.className = "update";
             } else if (content.startsWith("[동영상]")) {
               contentSpan.className = "youtube";
             } else if (content.startsWith("[bugfix]")) {
               contentSpan.className = "bugfix";
-            } else if (content.startsWith("[갱신]")) {
+            } else if (content.startsWith("[개선]")) {
               let endIndex = content.indexOf(":");
               if (endIndex === -1) {
                 endIndex = content.length;
@@ -318,7 +339,7 @@ window.SiteModules.UpdateLog = (function() {
               const path = findPath(hierarchy, title);
 
               if (path) {
-                let text = "[갱신] <a href='" + path + "'>" + title + "</a>";
+                let text = "[개선] <a href='" + path + "'>" + title + "</a>";
                 if (endIndex !== content.length) {
                   text += ": " + content.substring(endIndex + 1).trim();
                 }
@@ -329,9 +350,6 @@ window.SiteModules.UpdateLog = (function() {
             }
 
             contentSpan.className += " content";
-            if (isSubItem) {
-              contentSpan.classList.add("sub-item");
-            }
             contentSpan.innerHTML = content;
             updateDiv.appendChild(contentSpan);
           });
@@ -345,6 +363,47 @@ window.SiteModules.UpdateLog = (function() {
       // 초기 활성 필터링 상태 적용
       if (targetId === "site-history") {
         updateHistoryDisplay();
+      }
+
+      // Pre-fetch links in the rendered list to populate searchCache for article detection
+      try {
+        const container = document.getElementById(targetId);
+        if (container) {
+          const links = container.querySelectorAll("a[href]");
+          links.forEach(link => {
+            let href = link.getAttribute("href");
+            if (href && !href.startsWith("http") && href.includes(".html")) {
+              let cleanHref = href.split(/[?#]/)[0];
+              let absolutePath = cleanHref.startsWith("/") ? cleanHref : "/" + cleanHref;
+
+              window.SiteModules.searchCache = window.SiteModules.searchCache || [];
+              const exists = window.SiteModules.searchCache.some(p => p.url === absolutePath);
+              if (!exists) {
+                fetch(absolutePath)
+                  .then(res => {
+                    if (res.ok) return res.text();
+                  })
+                  .then(htmlText => {
+                    if (htmlText) {
+                      const parser = new DOMParser();
+                      const doc = parser.parseFromString(htmlText, "text/html");
+                      const articleEl = doc.querySelector("article");
+
+                      if (!window.SiteModules.searchCache.some(p => p.url === absolutePath)) {
+                        window.SiteModules.searchCache.push({
+                          url: absolutePath,
+                          hasArticle: !!articleEl
+                        });
+                      }
+                    }
+                  })
+                  .catch(err => console.warn("Pre-fetch failed for " + absolutePath, err));
+              }
+            }
+          });
+        }
+      } catch (e) {
+        console.warn("Failed to pre-fetch recent update links:", e);
       }
 
     } catch (error) {

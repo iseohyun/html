@@ -49,9 +49,9 @@ window.SiteVersion = "20260623v1";
       if (window.SiteModules.Navigation) window.SiteModules.Navigation.init();
       if (window.SiteModules.TOC) window.SiteModules.TOC.init();
       if (window.SiteModules.Document) window.SiteModules.Document.init();
+      if (window.SiteModules.CodeLoader) window.SiteModules.CodeLoader.init();
       if (window.SiteModules.Clipboard) window.SiteModules.Clipboard.init();
       if (window.SiteModules.Quiz) window.SiteModules.Quiz.init();
-      if (window.SiteModules.CodeLoader) window.SiteModules.CodeLoader.init();
     }
   }
 
