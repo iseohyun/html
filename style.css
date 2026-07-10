@@ -989,7 +989,6 @@ pre .copy-button:hover {
 code {
   font-family: var(--font-monospace);
   background-color: #F0F0F0;
-  font-size: 1.5rem;
 }
 
 var {

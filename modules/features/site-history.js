@@ -329,6 +329,20 @@ window.SiteModules.UpdateLog = (function() {
             } else if (content.startsWith("[동영상]")) {
               contentSpan.className = "youtube";
             } else if (content.startsWith("[bugfix]")) {
+              let endIndex = content.indexOf(":");
+              if (endIndex === -1) {
+                endIndex = content.length;
+              }
+              const title = content.substring(8, endIndex).trim();
+              const path = findPath(hierarchy, title);
+
+              if (path) {
+                let text = "[bugfix] <a href='" + path + "'>" + title + "</a>";
+                if (endIndex !== content.length) {
+                  text += ": " + content.substring(endIndex + 1).trim();
+                }
+                content = text;
+              }
               contentSpan.className = "bugfix";
             } else if (content.startsWith("[개선]")) {
               let endIndex = content.indexOf(":");
