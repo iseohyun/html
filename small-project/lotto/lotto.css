@@ -171,10 +171,6 @@ details>summary::-webkit-details-marker {
   transition: transform 1.25s;
 }
 
-div {
-  display: inline-block;
-}
-
 div .pannel {
   margin: 3px;
   border: 1px solid #eee;
@@ -522,17 +518,20 @@ u {
 }
 
 #winner-number div {
-  border-radius: 20px;
-  padding: 10px;
+  border-radius: 50%;
+  padding: 0;
   background-color: #eee;
-  width: 1em;
-  height: 1em;
+  width: 36px;
+  height: 36px;
+  min-width: 36px !important;
+  min-height: 36px !important;
+  flex-shrink: 0 !important;
   font-weight: bold;
   text-align: center;
-  vertical-align: middle;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
 }
 
 #winning-price,
@@ -561,12 +560,7 @@ u {
 
 #main-pannel {
   display: flex;
-  justify-items: end;
-  flex-direction: row;
   flex-wrap: wrap;
-  align-content: center;
-  align-items: stretch;
-  justify-content: flex-start;
 }
 
 @keyframes spin {
@@ -576,18 +570,26 @@ u {
 
 /* 모달 팝업 스타일 */
 .lotto-modal {
-  display: none;
-  position: fixed;
-  z-index: 2000;
+  display: flex !important;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.25s, visibility 0.25s;
+  position: fixed !important;
+  z-index: 99999 !important;
   left: 0;
   top: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw !important;
+  height: 100vh !important;
   overflow: auto;
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgba(0, 0, 0, 0.5) !important;
   backdrop-filter: blur(5px);
   align-items: center;
   justify-content: center;
+}
+
+.lotto-modal.show {
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .lotto-modal-content {
@@ -735,6 +737,10 @@ u {
   cursor: help;
 }
 
+.heatmap-cell:hover {
+  cursor: none;
+}
+
 /* 📊 side-by-side 레이아웃 및 세로막대 그래프 스타일 */
 .heatmap-row {
   display: flex;
@@ -764,8 +770,37 @@ u {
 
 .bar-chart-svg {
   width: 100%;
-  height: 100%;
+  height: auto !important;
+  min-height: 0;
   display: block;
+  flex: 1;
+}
+
+.chart-mode-switch {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.chart-mode-btn {
+  padding: 4px 8px;
+  font-size: 0.8em;
+  border-radius: 999px;
+  background: #f0f0f5;
+  color: #444;
+  box-shadow: none;
+}
+
+.chart-mode-btn.active {
+  background: #007aff;
+  color: white;
+}
+
+.chart-range-text {
+  margin-top: 6px;
+  font-size: 0.8em;
+  color: #666;
 }
 
 /* ⚙️ 시뮬레이션 제어 헤더 */
@@ -879,6 +914,21 @@ u {
   opacity: 0.8;
 }
 
+.btn-slot-clear {
+  padding: 2px 6px;
+  font-size: 0.9em;
+  background: #ff3b30;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-slot-clear:hover {
+  opacity: 0.8;
+}
+
 .expectation-wrapper {
   flex: 1;
   min-width: 240px;
@@ -892,3 +942,29 @@ u {
   display: flex;
   flex-direction: column;
 }
+
+/* 분석 탭 메뉴 스타일 */
+.analysis-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 15px 0 20px 0;
+  border-bottom: 2px solid #e5e5ea;
+  padding-bottom: 8px;
+}
+.analysis-tab-btn {
+  padding: 8px 16px;
+  border: none;
+  background: #f2f2f7;
+  color: #555;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.analysis-tab-btn:hover {
+  background: #e5e5ea;
+}
+.analysis-tab-btn.active {
+  background: #007aff;
+  color: #fff;
+}

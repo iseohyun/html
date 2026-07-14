@@ -1,5 +1,5 @@
 var auto = false;
-var myNum = new Array(6);
+var myNum = new Array(6).fill(0);
 var winNum = new Array(7);
 var count = 0;
 var nWin = [0, 0, 0, 0, 0, 0];
@@ -26,6 +26,8 @@ var accumDraws = 0;
 var myNumStats = Array(46).fill(0);
 var winNumStats = Array(46).fill(0);
 var currentSlotId = 1;
+var startRound = 1;
+var frequencyModes = { my: 'dramatic', win: 'dramatic' };
 
 var historicalEvent = [
   [1945, "광복절을 맞이하다."],
@@ -39,8 +41,10 @@ function resetHistory() {
   count = 0;
   nWin = [0, 0, 0, 0, 0];
   total_price = 0;
+  lock = false;
   myNumStats.fill(0);
   winNumStats.fill(0);
+  myNum.fill(0);
   
   // 체크박스들 모두 해제
   for (var i = 1; i <= 45; i++) {
@@ -58,6 +62,7 @@ function resetHistory() {
     }
   }
 
+  startRound = realRound;
   updateInputs();
   updateSlotsUI();
 }
@@ -130,6 +135,9 @@ function initLotto() {
   }
   updateStatsHeatmaps();
   updateSlotsUI();
+  
+  // 로컬 이벤트 수동 매핑 바인딩
+  if (typeof bindLocalEvents === 'function') bindLocalEvents();
 }
 
 function chPrice(money, rank, target) {
@@ -277,17 +285,19 @@ function nplay(n, showMyNumVisual) {
   if (n > 1) {
     nplaySilent(n - 1);
   }
+  if (!auto) return;
   playVisual(showMyNumVisual);
 }
 
 function startSim() {
   if (auto) return;
   auto = true;
+  lock = false;
   setSettingsDisabled(true);
 
   var controlBtn = document.getElementById('btn-sim-control');
   if (controlBtn) {
-    controlBtn.innerHTML = '⏸️';
+    controlBtn.innerHTML = '■';
     controlBtn.style.backgroundColor = '#ff3b30';
   }
 
@@ -340,7 +350,7 @@ function stopSim() {
   }
   var controlBtn = document.getElementById('btn-sim-control');
   if (controlBtn) {
-    controlBtn.innerHTML = '▶️';
+    controlBtn.innerHTML = '▶';
     controlBtn.style.backgroundColor = '#007aff';
   }
 }
@@ -377,8 +387,7 @@ function nplaySilent(n) {
     if (winType === 'myNum') {
       var loaded = loadRealRoundNumbers(realRound);
       if (!loaded) {
-        realRound = 1;
-        loaded = loadRealRoundNumbers(realRound);
+        loaded = loadRealRoundNumbers(1);
       }
       
       if (!loaded) {
@@ -399,11 +408,6 @@ function nplaySilent(n) {
             winNum[6] = Math.floor(Math.random() * 45) + 1;
             i = 0;
           }
-        }
-      } else {
-        realRound++;
-        if (typeof RealLotto !== 'undefined' && realRound > RealLotto.calculateLatestRound()) {
-          realRound = 1;
         }
       }
     } else {
@@ -461,6 +465,7 @@ function nplaySilent(n) {
     }
 
     count++;
+    updateRealRound();
     var prizeWon = 0;
     if (rank >= 1 && rank <= 5) {
       nWin[rank - 1]++;
@@ -518,8 +523,7 @@ function playVisual(showMyNumVisual) {
   if (winType === 'myNum') {
     var loaded = loadRealRoundNumbers(realRound);
     if (!loaded) {
-      realRound = 1;
-      loaded = loadRealRoundNumbers(realRound);
+      loaded = loadRealRoundNumbers(1);
     }
     
     if (!loaded) {
@@ -546,11 +550,6 @@ function playVisual(showMyNumVisual) {
       var currentWeekNumber = document.getElementById('current-week-number');
       if (currentWeekInput) currentWeekInput.value = realRound;
       if (currentWeekNumber) currentWeekNumber.value = realRound;
-
-      realRound++;
-      if (typeof RealLotto !== 'undefined' && realRound > RealLotto.calculateLatestRound()) {
-        realRound = 1;
-      }
     }
   } else {
     for (var i = 0; i < 6; i++) {
@@ -627,6 +626,7 @@ function playVisual(showMyNumVisual) {
   }
 
   count++;
+  updateRealRound();
   var prizeWon = 0;
   if (rank >= 1 && rank <= 5) {
     nWin[rank - 1]++;
@@ -730,11 +730,11 @@ function updateInputs() {
   var _from_year = document.getElementById('from-year');
   var _event = document.getElementById('event');
 
-  if (_1st) _1st.value = ": " + numberToText(nWin[0]) + " 번(" + Percent(nWin[0]) + "%)";
-  if (_2nd) _2nd.value = ": " + numberToText(nWin[1]) + " 번(" + Percent(nWin[1]) + "%)";
-  if (_3rd) _3rd.value = ": " + numberToText(nWin[2]) + " 번(" + Percent(nWin[2]) + "%)";
-  if (_4th) _4th.value = ": " + numberToText(nWin[3]) + " 번(" + Percent(nWin[3]) + "%)";
-  if (_5th) _5th.value = ": " + numberToText(nWin[4]) + " 번(" + Percent(nWin[4]) + "%)";
+  if (_1st) _1st.value = ": " + numberToText(nWin[0]) + " 번(" + numberToText(nWin[0] * price[0]) + "원)";
+  if (_2nd) _2nd.value = ": " + numberToText(nWin[1]) + " 번(" + numberToText(nWin[1] * price[1]) + "원)";
+  if (_3rd) _3rd.value = ": " + numberToText(nWin[2]) + " 번(" + numberToText(nWin[2] * price[2]) + "원)";
+  if (_4th) _4th.value = ": " + numberToText(nWin[3]) + " 번(" + numberToText(nWin[3] * price[3]) + "원)";
+  if (_5th) _5th.value = ": " + numberToText(nWin[4]) + " 번(" + numberToText(nWin[4] * price[4]) + "원)";
   if (_count) _count.value = ": " + numberToText(count) + " 회(" + timeToText() + ")";
 
   if (_total_price) _total_price.value = ": " + numberToText(total_price) + "원";
@@ -980,8 +980,19 @@ function selectWinType(type) {
   }
 }
 
+function updateRealRound() {
+  var latestRound = 1227;
+  if (typeof RealLotto !== 'undefined') {
+    latestRound = RealLotto.calculateLatestRound();
+  }
+  var weeksPassed = Math.floor(count / times_a_week);
+  var targetRound = startRound + weeksPassed;
+  realRound = ((targetRound - 1) % latestRound) + 1;
+}
+
 function changeStartWeek(val) {
   realRound = parseInt(val) || 1;
+  startRound = realRound;
   
   var currentWeekInput = document.getElementById('current-week');
   if (currentWeekInput) {
@@ -1035,13 +1046,15 @@ function onSpeedSliderInput(val) {
     seconds = 1;
     text = "1주 = 1초";
   } else if (v > 0) {
-    weeks = 1;
-    seconds = v + 1;
-    text = "1주 = " + seconds + "초";
-  } else {
-    weeks = Math.abs(v) + 1;
+    // 오른쪽(+) = 빠름: N주를 1초에 처리
+    weeks = v + 1;
     seconds = 1;
     text = weeks + "주 = 1초";
+  } else {
+    // 왼쪽(-) = 느렸: 1주를 N초에 처리
+    weeks = 1;
+    seconds = Math.abs(v) + 1;
+    text = "1주 = " + seconds + "초";
   }
   
   var elText = document.getElementById('sim-speed-text');
@@ -1121,48 +1134,111 @@ function showStopPopup(rank, winDate) {
     }
   }
   
-  modal.style.display = 'flex';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  modal.classList.add('show');
 }
 
 function closeStopModal() {
   var modal = document.getElementById('simulation-stop-modal');
-  if (modal) modal.style.display = 'none';
+  if (modal) modal.classList.remove('show');
 }
 
-function updateStatsHeatmaps() {
-  var elSpent = document.getElementById('stat-total-spent');
-  var elWon = document.getElementById('stat-total-won');
-  var spentVal = count * 1000;
-  var wonVal = total_price + spentVal;
-  if (elSpent) elSpent.innerHTML = numberToText(spentVal) + "원";
-  if (elWon) elWon.innerHTML = numberToText(wonVal) + "원";
-  
-  for (var r = 1; r <= 5; r++) {
-    var suffix = r === 1 ? '1st' : r === 2 ? '2nd' : r === 3 ? '3rd' : r === 4 ? '4th' : '5th';
-    var el = document.getElementById('stat-count-' + suffix);
-    if (el) el.innerHTML = numberToText(nWin[r - 1]) + "회";
+function setFrequencyMode(chartKey, mode) {
+  if (!frequencyModes[chartKey]) return;
+  frequencyModes[chartKey] = mode;
+
+  var buttons = document.querySelectorAll('.chart-mode-btn[data-chart="' + chartKey + '"]');
+  for (var i = 0; i < buttons.length; i++) {
+    var btnMode = buttons[i].getAttribute('data-mode') || buttons[i].dataset.mode;
+    if (btnMode === mode) {
+      buttons[i].classList.add('active');
+    } else {
+      buttons[i].classList.remove('active');
+    }
   }
 
-  renderHeatmap('grid-my-stats', myNumStats);
-  renderHeatmap('grid-win-stats', winNumStats);
-  renderFrequencyChart('chart-my-bars', myNumStats);
-  renderFrequencyChart('chart-win-bars', winNumStats);
-  renderExpectationsChart();
+  updateStatsHeatmaps();
+}
+
+function getFrequencyRangeText(statsArray) {
+  var minValue = Infinity;
+  var maxValue = -Infinity;
+  var minNumber = 1;
+  var maxNumber = 1;
+
+  for (var i = 1; i <= 45; i++) {
+    var value = statsArray[i] || 0;
+    if (value <= minValue) {
+      minValue = value;
+      minNumber = i;
+    }
+    if (value >= maxValue) {
+      maxValue = value;
+      maxNumber = i;
+    }
+  }
+
+  if (minValue === Infinity) minValue = 0;
+  if (maxValue === -Infinity) maxValue = 0;
+
+  return minNumber + "번(" + minValue + "회) ~ " + maxNumber + "번(" + maxValue + "회)";
+}
+function updateStatsHeatmaps() {
+  try {
+    var elSpent = document.getElementById('stat-total-spent');
+    var elWon = document.getElementById('stat-total-won');
+    var elProfit = document.getElementById('stat-total-profit');
+    var spentVal = count * 1000;
+    var wonVal = total_price + spentVal;
+    if (elSpent) elSpent.innerHTML = numberToText(spentVal) + "원";
+    if (elWon) elWon.innerHTML = numberToText(wonVal) + "원";
+    
+    if (elProfit) {
+      var sign = total_price >= 0 ? "+" : "";
+      elProfit.innerHTML = sign + numberToText(total_price) + "원";
+      if (total_price >= 0) {
+        elProfit.style.color = '#ff3b30';
+      } else {
+        elProfit.style.color = '#007aff';
+      }
+    }
+  } catch (e) {
+    console.error("[디버그 에러 - 기본요약]", e);
+  }
+  
+  for (var r = 1; r <= 5; r++) {
+    try {
+      var suffix = r === 1 ? '1st' : r === 2 ? '2nd' : r === 3 ? '3rd' : r === 4 ? '4th' : '5th';
+      var el = document.getElementById('stat-count-' + suffix);
+      if (el) el.innerHTML = numberToText(nWin[r - 1]) + "회(" + numberToText(nWin[r - 1] * price[r - 1]) + "원)";
+    } catch (e) {
+      console.error("[디버그 에러 - 등수요약 r=" + r + "]", e);
+    }
+  }
+
+  try { renderHeatmap('grid-my-stats', myNumStats); } catch (e) { console.error("[디버그 에러 - grid-my-stats]", e); }
+  try { renderHeatmap('grid-win-stats', winNumStats); } catch (e) { console.error("[디버그 에러 - grid-win-stats]", e); }
+  try { renderFrequencyChart('chart-my-bars', myNumStats, 'my'); } catch (e) { console.error("[디버그 에러 - chart-my-bars]", e); }
+  try { renderFrequencyChart('chart-win-bars', winNumStats, 'win'); } catch (e) { console.error("[디버그 에러 - chart-win-bars]", e); }
+  try { renderExpectationsChart(); } catch (e) { console.error("[디버그 에러 - expectations]", e); }
 }
 
 function renderHeatmap(gridId, statsArray) {
   var gridEl = document.getElementById(gridId);
   if (!gridEl) return;
+
+  var chartKey = gridId.indexOf('win') !== -1 ? 'win' : 'my';
+  var mode = frequencyModes[chartKey] || 'dramatic';
   
   var min = Infinity;
   var max = -Infinity;
   for (var i = 1; i <= 45; i++) {
-    var val = statsArray[i];
+    var val = statsArray[i] || 0;
     if (val < min) min = val;
     if (val > max) max = val;
   }
   if (min === Infinity) min = 0;
-  if (max === -Infinity) max = 1;
+  if (max === -Infinity || max === 0) max = 1;
   
   var diff = max - min;
   if (diff === 0) diff = 1;
@@ -1177,10 +1253,10 @@ function renderHeatmap(gridId, statsArray) {
       gridEl.appendChild(cell);
     }
     
-    var val = statsArray[i];
+    var val = statsArray[i] || 0;
     cell.title = String(val);
     
-    var ratio = (val - min) / diff;
+    var ratio = mode === 'dramatic' ? ((val - min) / diff) : (val / max);
     var hue = 240 - (ratio * 240);
     var saturation = 2 + (ratio * 98);
     var lightness = 70 - (ratio * 15);
@@ -1194,31 +1270,37 @@ function renderHeatmap(gridId, statsArray) {
   }
 }
 
-function renderFrequencyChart(svgId, statsArray) {
+function renderFrequencyChart(svgId, statsArray, chartKey) {
   var svg = document.getElementById(svgId);
   if (!svg) return;
   svg.innerHTML = "";
 
-  // 히트맵과 동일한 min/max 방식으로 색상 계산
+  var mode = frequencyModes[chartKey] || 'dramatic';
+  var rangeTextId = chartKey === 'my' ? 'chart-my-range' : 'chart-win-range';
+  var rangeTextEl = document.getElementById(rangeTextId);
+  var prefix = chartKey === 'my' ? '최소/최대 선택: ' : '최소/최대 당첨: ';
+  if (rangeTextEl) {
+    rangeTextEl.innerHTML = prefix + getFrequencyRangeText(statsArray);
+  }
+
   var min = Infinity;
   var max = -Infinity;
   for (var i = 1; i <= 45; i++) {
-    if (statsArray[i] < min) min = statsArray[i];
-    if (statsArray[i] > max) max = statsArray[i];
+    var val = statsArray[i] || 0;
+    if (val < min) min = val;
+    if (val > max) max = val;
   }
   if (min === Infinity) min = 0;
   if (max === -Infinity || max === 0) max = 1;
   var diff = max - min;
   if (diff === 0) diff = 1;
 
-  // viewBox: 0 0 450 220 -> 막대영역 y:0~190, x축레이블 y:205
   var maxBarHeight = 185;
   var baseY = 190;
 
   for (var i = 1; i <= 45; i++) {
-    var val = statsArray[i];
-    // 히트맵과 동일한 color ratio
-    var ratio = (val - min) / diff;
+    var val = statsArray[i] || 0;
+    var ratio = mode === 'dramatic' ? ((val - min) / diff) : (val / max);
     var hue = 240 - (ratio * 240);
     var saturation = 2 + (ratio * 98);
     var lightness = 70 - (ratio * 15);
@@ -1243,7 +1325,6 @@ function renderFrequencyChart(svgId, statsArray) {
     svg.appendChild(rect);
   }
 
-  // x축 눈금 (5단위)
   for (var i = 5; i <= 45; i += 5) {
     var x = (i - 1) * 10 + 5;
     var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
@@ -1303,6 +1384,7 @@ function saveSlot(slotId) {
       pickType: pickType,
       winType: winType,
       realRound: realRound,
+      startRound: startRound,
       price: price.slice(),
       sliderVal: sliderEl ? parseInt(sliderEl.value) : 0,
       startDate: startDateEl ? startDateEl.value : ''
@@ -1358,14 +1440,29 @@ function loadSlot(slotId) {
         if (sl) { sl.value = s.sliderVal; onSpeedSliderInput(s.sliderVal); }
       }
       if (s.startDate) { var sd = document.getElementById('simulation-start-date'); if (sd) sd.value = s.startDate; }
+      if (s.startRound !== undefined) { startRound = s.startRound; }
     }
 
+    startRound = realRound - Math.floor(count / times_a_week);
     currentSlotId = slotId;
     updateInputs();
     updateSlotsUI();
   } catch (e) {
     alert('슬롯 불러오기 중 에러: ' + e.message);
   }
+}
+
+// 슬롯 데이터 삭제(슬롯 초기화)
+function clearSlot(slotId) {
+  var confirmed = confirm('[슬롯 ' + slotId + '] 데이터를 삭제하시겠습니까?');
+  if (!confirmed) return;
+  localStorage.removeItem('lotto_slot_' + slotId);
+  // 현재 활성 슬롯이었다면 초기화 후 해당 슬롯으로 전환
+  if (currentSlotId === slotId) {
+    resetSettings();
+    resetHistory();
+  }
+  updateSlotsUI();
 }
 
 function updateSlotsUI() {
@@ -1418,8 +1515,11 @@ function renderExpectationsChart() {
   for (var i = 0; i < 5; i++) {
     if (ratios[i] > maxRatio) maxRatio = ratios[i];
   }
+  if (maxRatio <= 0) maxRatio = 1.2;
   
-  var y100 = 65 - (1.0 / maxRatio * 55);
+  var chartHeight = 150;
+  var chartTop = 20;
+  var y100 = chartTop + chartHeight - (1.0 / maxRatio * chartHeight);
   
   var line = document.createElementNS("http://www.w3.org/2000/svg", "line");
   line.setAttribute("x1", 10);
@@ -1442,8 +1542,8 @@ function renderExpectationsChart() {
 
   for (var i = 0; i < 5; i++) {
     var ratio = ratios[i];
-    var h = (ratio / maxRatio) * 55;
-    var y = 65 - h;
+    var h = (ratio / maxRatio) * chartHeight;
+    var y = chartTop + chartHeight - h;
     var x = i * 46 + 18;
     var w = 18;
     
@@ -1470,7 +1570,7 @@ function renderExpectationsChart() {
     
     var label = document.createElementNS("http://www.w3.org/2000/svg", "text");
     label.setAttribute("x", x + w/2);
-    label.setAttribute("y", 78);
+    label.setAttribute("y", 205);
     label.setAttribute("font-size", "8.5px");
     label.setAttribute("font-weight", "bold");
     label.setAttribute("fill", "#555");
@@ -1492,5 +1592,76 @@ function renderExpectationsChart() {
   }
 }
 
-// 최초 로드 시 실행
-initLotto();
+function switchAnalysisTab(tabKey) {
+  var tabMy = document.getElementById('tab-content-my');
+  var tabWin = document.getElementById('tab-content-win');
+  var btns = document.querySelectorAll('.analysis-tab-btn');
+  
+  if (tabKey === 'my') {
+    if (tabMy) tabMy.style.display = 'block';
+    if (tabWin) tabWin.style.display = 'none';
+    if (btns[0]) btns[0].classList.add('active');
+    if (btns[1]) btns[1].classList.remove('active');
+  } else {
+    if (tabMy) tabMy.style.display = 'none';
+    if (tabWin) tabWin.style.display = 'block';
+    if (btns[0]) btns[0].classList.remove('active');
+    if (btns[1]) btns[1].classList.add('active');
+  }
+  
+  // 탭 변환 시 차트들 강제 재렌더링
+  updateStatsHeatmaps();
+  
+  // 이벤트 재바인딩 (DOM 갱신 대비)
+  bindLocalEvents();
+}
+
+function bindLocalEvents() {
+  var btnMy = document.getElementById('tab-btn-my');
+  var btnWin = document.getElementById('tab-btn-win');
+  if (btnMy) {
+    btnMy.onclick = function() { switchAnalysisTab('my'); };
+  }
+  if (btnWin) {
+    btnWin.onclick = function() { switchAnalysisTab('win'); };
+  }
+  
+  // 차트 모드 스위치 버튼 동적 바인딩
+  var modeBtns = document.querySelectorAll('.chart-mode-btn');
+  modeBtns.forEach(function(btn) {
+    var chartKey = btn.getAttribute('data-chart');
+    var mode = btn.getAttribute('data-mode');
+    btn.onclick = function() {
+      setFrequencyMode(chartKey, mode);
+    };
+  });
+}
+
+function setPriceType(type) {
+  if (type === 'default') {
+    price = [2000000000, 60000000, 1500000, 50000, 5000];
+  } else if (type === 'reallotto') {
+    // 실제 당첨금 모드 연동
+  }
+  updateInputs();
+}
+
+// HTML onclick 이벤트가 전역에서 안전하게 호출할 수 있도록 window 객체에 명시적 등록
+window.switchAnalysisTab = switchAnalysisTab;
+window.setFrequencyMode = setFrequencyMode;
+window.setPriceType = setPriceType;
+if (typeof initLotto === 'function') window.initLotto = initLotto;
+if (typeof saveSlot === 'function') window.saveSlot = saveSlot;
+if (typeof loadSlot === 'function') window.loadSlot = loadSlot;
+if (typeof clearSlot === 'function') window.clearSlot = clearSlot;
+if (typeof chMyNum === 'function') window.chMyNum = chMyNum;
+if (typeof closeStopModal === 'function') window.closeStopModal = closeStopModal;
+
+// 최초 로드 시 실행 (자체 기동 구조)
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof initLotto === 'function') initLotto();
+  });
+} else {
+  if (typeof initLotto === 'function') initLotto();
+}
