@@ -708,6 +708,8 @@ window.SiteModules.Navigation = (function () {
       }
 
       const newScript = document.createElement("script");
+      const scriptType = oldScript.getAttribute("type");
+      if (scriptType) newScript.type = scriptType;
       if (src) {
         newScript.src = src;
         if (id) newScript.id = id;
@@ -726,7 +728,8 @@ window.SiteModules.Navigation = (function () {
       } else {
         newScript.textContent = oldScript.textContent;
         document.body.appendChild(newScript);
-        newScript.remove();
+        // type=module 스크립트는 append 후에도 DOM에 남겨야 실행되므로 remove() 생략
+        if (scriptType !== "module") newScript.remove();
       }
     });
   }
