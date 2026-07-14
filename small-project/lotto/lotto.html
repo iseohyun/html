@@ -1,6 +1,6 @@
 <link rel="stylesheet" href="lotto.css">
-<script src="reallotto.js"></script>
-<script src="lotto.js"></script>
+<script src="reallotto.js?v=20260714"></script>
+<script src="lotto.js?v=20260714"></script>
 
 <article>
   <div id="main-pannel">
@@ -206,9 +206,9 @@
         <span style="font-weight: bold; font-size: 1.1em;">⚙️ 시뮬레이션 제어</span>
         <div class="icon-btn-container">
           <!-- 시작/정지 토글 버튼 (아이콘으로 표현) -->
-          <button id="btn-sim-control" onclick="toggleSim()" title="시작/정지" class="icon-btn-sim">▶️</button>
+          <button id="btn-sim-control" onclick="toggleSim()" title="시작/정지" class="icon-btn-sim">▶</button>
           <!-- 설정 초기화 버튼 (아이콘으로 표현) -->
-          <button id="btn-reset-settings" onclick="resetSettings()" title="설정 초기화" class="icon-btn-reset">🔄</button>
+          <button id="btn-reset-settings" onclick="resetSettings()" title="설정 초기화" class="icon-btn-reset">↻</button>
         </div>
       </div>
       <div id="simulator-settings">
@@ -218,59 +218,94 @@
           <span>회</span>
         </div>
         <span>응모 방법</span>
-        <div>
-          <input type="radio" name="pick-type" value="random" onclick="pickType='random'">고정
-          <input type="radio" name="pick-type" value="myNum" onclick="pickType='myNum'" checked>매번 무작위
+
+        <div style="display: flex; width: 100%;">
+          <label style="flex: 1; display: inline-flex; align-items: center; cursor: pointer;">
+            <input type="radio" name="pick-type" value="random" onclick="pickType='random'"
+              style="margin-right: 6px;">고정
+          </label>
+          <label style="flex: 1; display: inline-flex; align-items: center; cursor: pointer;">
+            <input type="radio" name="pick-type" value="myNum" onclick="pickType='myNum'" checked=""
+              style="margin-right: 6px;">매번 무작위
+          </label>
         </div>
+
         <span>당첨번호 선정</span>
-        <div>
-          <input type="radio" name="win-type" value="random" onclick="selectWinType('random')" checked>무작위
-          <input type="radio" name="win-type" value="myNum" onclick="selectWinType('myNum')">실제 당첨번호
+        <div style="display: flex; width: 100%;">
+          <label style="flex: 1; display: inline-flex; align-items: center; cursor: pointer;">
+            <input type="radio" name="win-type" value="random" onclick="selectWinType('random')" checked
+              style="margin-right: 6px;">무작위
+          </label>
+          <label style="flex: 1; display: inline-flex; align-items: center; cursor: pointer;">
+            <input type="radio" name="win-type" value="myNum" onclick="selectWinType('myNum')"
+              style="margin-right: 6px;">실제 당첨번호
+          </label>
         </div>
-        <span>실제 회차 적용시</span>
-        <div>
-          <input type="range" id="current-week" min="1" value="1" onchange="changeStartWeek(this.value)">
+        <span style="text-align:right">실제 회차</span>
+        <div style="display: flex; align-items: center; width: 100%; gap: 8px;">
+          <input type="range" id="current-week" min="1" value="1" onchange="changeStartWeek(this.value)"
+            style="flex: 1; min-width: 0;">
           <input type="number" id="current-week-number" min="1" max="9999"
             oninput="if(this.value.length > 4) this.value = this.value.slice(0, 4); changeStartWeek(this.value)"
-            style="width: 60px;">
+            style="width: 60px; flex-shrink: 0;">
         </div>
 
         <span>시뮬레이션 시작일</span>
         <div>
-          <input type="date" id="simulation-start-date" style="padding: 4px; border-radius: 4px; border: 1px solid #ccc; font-family: inherit;">
+          <input type="date" id="simulation-start-date"
+            style="padding: 4px; border-radius: 4px; border: 1px solid #ccc; font-family: inherit;">
         </div>
 
         <span>시뮬레이션 속도</span>
         <div style="display: flex; align-items: center; gap: 8px;">
-          <input type="range" id="sim-speed-slider" min="-9" max="9" value="0" oninput="onSpeedSliderInput(this.value)" style="flex: 1; cursor: pointer;">
-          <span id="sim-speed-text" style="font-weight: bold; min-width: 80px; text-align: right; font-size: 0.9em;">1주 = 1초</span>
+          <input type="range" id="sim-speed-slider" min="-9" max="9" value="0" oninput="onSpeedSliderInput(this.value)"
+            style="flex: 1; cursor: pointer;">
+          <span id="sim-speed-text" style="font-weight: bold; min-width: 80px; text-align: right; font-size: 0.9em;">1주
+            = 1초</span>
           <input type="number" id="autospeedWeeks" value="1" style="display: none;">
           <input type="number" id="autoSpeedSeconds" value="1" style="display: none;">
         </div>
         <span>당첨금 설정</span>
-        <div style="position: relative; display: inline-block;">
-          <input type="radio" name="price-type" value="default" onclick="setPriceType('default')" checked>고정
-          <button id="btn-toggle-price" onclick="togglePriceDetails()">상세</button>
-          <div id="winning-price" class="pannel"
-            style="display: none; position: absolute; top: 100%; left: 0; z-index: 10; text-align: left; background: white; border: 1px solid #ccc; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: max-content; margin: 5px 0 0 0;">
-            <div>
-              1등 당첨금: <input type="text" id="price_1st" class="price" size="7" onchange="chPrice(this.value, 1, this)">
+        <div style="display: flex; width: 100%;">
+          <!-- 1. 고정 + 상세 버튼 영역 (50%) -->
+          <label style="flex: 1; display: inline-flex; align-items: center; cursor: pointer; position: relative;">
+            <input type="radio" name="price-type" value="default" onclick="setPriceType('default')" checked
+              style="margin-right: 6px;">
+            <span style="margin-right: 6px;">고정</span>
+            <button id="btn-toggle-price" onclick="togglePriceDetails()"
+              style="padding: 1px 5px; cursor: pointer;">상세</button>
+
+            <!-- 상세 패널 (고정 레이블 기준으로 절대 위치 배치) -->
+            <div id="winning-price" class="pannel"
+              style="display: none; position: absolute; top: 100%; left: 0; z-index: 10; text-align: left; background: white; border: 1px solid #ccc; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: max-content; margin: 5px 0 0 0; cursor: default;"
+              onclick="event.stopPropagation();"> <!-- 패널 클릭 시 라디오 체크 방지 -->
+              <div>
+                1등 당첨금: <input type="text" id="price_1st" class="price" size="7"
+                  onchange="chPrice(this.value, 1, this)">
+              </div>
+              <div>
+                2등 당첨금 : <input type="text" id="price_2nd" class="price" size="7"
+                  onchange="chPrice(this.value, 2, this)">
+              </div>
+              <div>
+                3등 당첨금 : <input type="text" id="price_3rd" class="price" size="7"
+                  onchange="chPrice(this.value, 3, this)">
+              </div>
+              <div>
+                4등 당첨금 : <input type="text" id="price_4th" class="price" value="5만원" size="7" disabled>
+              </div>
+              <div>
+                5등 당첨금 : <input type="text" id="price_5th" class="price" value="5천원" size="7" disabled>
+              </div>
+              <span style="display:block;width: 100%; text-align: right;font-size: 0.7em;">(수령액 기준)</span>
             </div>
-            <div>
-              2등 당첨금 : <input type="text" id="price_2nd" class="price" size="7" onchange="chPrice(this.value, 2, this)">
-            </div>
-            <div>
-              3등 당첨금 : <input type="text" id="price_3rd" class="price" size="7" onchange="chPrice(this.value, 3, this)">
-            </div>
-            <div>
-              4등 당첨금 : <input type="text" id="price_4th" class="price" value="5만원" size="7" disabled>
-            </div>
-            <div>
-              5등 당첨금 : <input type="text" id="price_5th" class="price" value="5천원" size="7" disabled>
-            </div>
-            <span style="display:block;width: 100%; text-align: right;font-size: 0.7em;">(수령액 기준)</span>
-          </div>
-          <input type="radio" name="price-type" value="custom" onclick="setPriceType('reallotto')">실제
+          </label>
+
+          <!-- 2. 실제 영역 (50%) -->
+          <label style="flex: 1; display: inline-flex; align-items: center; cursor: pointer;">
+            <input type="radio" name="price-type" value="custom" onclick="setPriceType('reallotto')"
+              style="margin-right: 6px;">실제
+          </label>
         </div>
         <span>시뮬레이션 정지</span>
         <div>
@@ -280,15 +315,14 @@
           <input type="checkbox" id="stop-4th">4등
           <input type="checkbox" id="stop-5th">5등
         </div>
-        
-        <span>결과 저장/로드</span>
-        <span>결과 저장/로드</span>
-        <div class="slot-list-container">
+
+        <div class="slot-list-container" style="grid-column: span 2;">
           <div id="slot-row-1" class="slot-row">
             <span id="slot-text-1" class="slot-label">[슬롯 1] 비어있음</span>
             <div class="slot-btn-group">
               <button onclick="saveSlot(1)" class="btn-slot-save">저장</button>
               <button id="slot-load-1" onclick="loadSlot(1)" class="btn-slot-load">로드</button>
+              <button onclick="clearSlot(1)" class="btn-slot-clear" title="슬롯 삭제">🗑️</button>
             </div>
           </div>
           <div id="slot-row-2" class="slot-row">
@@ -296,6 +330,7 @@
             <div class="slot-btn-group">
               <button onclick="saveSlot(2)" class="btn-slot-save">저장</button>
               <button id="slot-load-2" onclick="loadSlot(2)" class="btn-slot-load">로드</button>
+              <button onclick="clearSlot(2)" class="btn-slot-clear" title="슬롯 삭제">🗑️</button>
             </div>
           </div>
           <div id="slot-row-3" class="slot-row">
@@ -303,6 +338,7 @@
             <div class="slot-btn-group">
               <button onclick="saveSlot(3)" class="btn-slot-save">저장</button>
               <button id="slot-load-3" onclick="loadSlot(3)" class="btn-slot-load">로드</button>
+              <button onclick="clearSlot(3)" class="btn-slot-clear" title="슬롯 삭제">🗑️</button>
             </div>
           </div>
           <div id="slot-row-4" class="slot-row">
@@ -310,6 +346,7 @@
             <div class="slot-btn-group">
               <button onclick="saveSlot(4)" class="btn-slot-save">저장</button>
               <button id="slot-load-4" onclick="loadSlot(4)" class="btn-slot-load">로드</button>
+              <button onclick="clearSlot(4)" class="btn-slot-clear" title="슬롯 삭제">🗑️</button>
             </div>
           </div>
           <div id="slot-row-5" class="slot-row">
@@ -317,6 +354,7 @@
             <div class="slot-btn-group">
               <button onclick="saveSlot(5)" class="btn-slot-save">저장</button>
               <button id="slot-load-5" onclick="loadSlot(5)" class="btn-slot-load">로드</button>
+              <button onclick="clearSlot(5)" class="btn-slot-clear" title="슬롯 삭제">🗑️</button>
             </div>
           </div>
         </div>
@@ -326,45 +364,57 @@
     <!-- 시뮬레이션 분석결과 패널로 완전 분리 -->
     <div id="simulator-analysis-pannel" class="pannel">
       <div class="stats-title">📊 시뮬레이션 분석 결과</div>
-        
-        <div style="display: flex; gap: 16px; align-items: stretch; margin-bottom: 15px; flex-wrap: wrap;">
-          <!-- 왼쪽: 누적 요약 배너 -->
-          <div class="summary-wrapper">
-            <div class="stats-summary" style="flex: 1; margin-bottom: 0;">
-              <div class="stats-row">
-                <span>누적 지출액:</span>
-                <span id="stat-total-spent" style="font-weight: bold;">0원</span>
-              </div>
-              <div class="stats-row">
-                <span>누적 당첨금액:</span>
-                <span id="stat-total-won" style="font-weight: bold; color: #ff3b30;">0원</span>
-              </div>
-              <div class="stats-row" style="border-top: 1px solid #e5e5ea; padding-top: 6px; margin-top: 2px;">
-                <span>1등: <span id="stat-count-1st" style="font-weight:bold;">0회</span></span>
-                <span>2등: <span id="stat-count-2nd" style="font-weight:bold;">0회</span></span>
-                <span>3등: <span id="stat-count-3rd" style="font-weight:bold;">0회</span></span>
-                <span>4등: <span id="stat-count-4th" style="font-weight:bold;">0회</span></span>
-                <span>5등: <span id="stat-count-5th" style="font-weight:bold;">0회</span></span>
-              </div>
+
+      <div style="display: flex; gap: 16px; align-items: stretch; margin-bottom: 15px; flex-wrap: wrap;">
+        <!-- 왼쪽: 누적 요약 배너 -->
+        <div class="summary-wrapper">
+          <div class="stats-summary" style="flex: 1; margin-bottom: 0;">
+            <div class="stats-row">
+              <span>누적 지출액:</span>
+              <span id="stat-total-spent" style="font-weight: bold;">0원</span>
             </div>
-          </div>
-          
-          <!-- 오른쪽: 당첨 기댓값 비율 차트 -->
-          <div class="expectation-wrapper">
-            <div class="bar-chart-container" style="padding: 10px; height: auto; min-height: 100px; flex: 1;">
-              <div style="font-size: 0.85em; font-weight: bold; color: #555; margin-bottom: 4px; display: flex; justify-content: space-between;">
-                <span>🍀 기댓값 대비 당첨 비율</span>
-                <span style="font-size: 0.8em; color: #ff3b30; font-weight: normal;">(🔴 점선 = 100% 기댓값)</span>
-              </div>
-              <svg id="chart-win-ratios" class="bar-chart-svg" viewBox="0 0 250 85" style="min-height: 80px;">
-                <!-- JS로 1~5등 막대와 보조선 생성 -->
-              </svg>
+            <div class="stats-row">
+              <span>누적 당첨금액:</span>
+              <span id="stat-total-won" style="font-weight: bold; color: #ff3b30;">0원</span>
+            </div>
+            <div class="stats-row">
+              <span>누적 수입:</span>
+              <span id="stat-total-profit" style="font-weight: bold;">0원</span>
+            </div>
+            <div class="stats-row"
+              style="border-top: 1px solid #e5e5ea; padding-top: 6px; margin-top: 2px; flex-direction: column;align-items:flex-start">
+              <span>1등: <span id="stat-count-1st" style="font-weight:bold;">0회</span></span>
+              <span>2등: <span id="stat-count-2nd" style="font-weight:bold;">0회</span></span>
+              <span>3등: <span id="stat-count-3rd" style="font-weight:bold;">0회</span></span>
+              <span>4등: <span id="stat-count-4th" style="font-weight:bold;">0회</span></span>
+              <span>5등: <span id="stat-count-5th" style="font-weight:bold;">0회</span></span>
             </div>
           </div>
         </div>
 
-        <div class="heatmap-container">
-          <!-- 1. 누적 선택 번호 행 -->
+        <!-- 오른쪽: 당첨 기댓값 비율 차트 -->
+        <div class="expectation-wrapper" style="height:100%">
+          <div class="bar-chart-container" style="padding: 10px; min-height: 100px; flex: 1; height:100%">
+            <div style="font-size: 0.85em; font-weight: bold; color: #555; margin-bottom: 4px; display: flex; justify-content: space-between;">
+              <span>🍀 기댓값 대비 당첨 비율</span>
+              <span style="font-size: 0.8em; color: #ff3b30; font-weight: normal;">(🔴 점선 = 100% 기댓값)</span>
+            </div>
+            <svg id="chart-win-ratios" class="bar-chart-svg" viewBox="0 0 250 220" style="min-height: 180px;">
+              <!-- JS로 1~5등 막대와 보조선 생성 -->
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="heatmap-container">
+        <!-- 탭 전환 스위치 메뉴 -->
+        <div class="analysis-tabs">
+          <button type="button" class="analysis-tab-btn active" id="tab-btn-my">🎯 누적 선택 번호 (응모권)</button>
+          <button type="button" class="analysis-tab-btn" id="tab-btn-win">🍀 누적 당첨 번호 (추첨기)</button>
+        </div>
+
+        <!-- 1. 누적 선택 번호 탭 컨텐츠 -->
+        <div id="tab-content-my">
           <div class="heatmap-title">🎯 누적 선택 번호 (응모권 히트맵 및 빈도 그래프)</div>
           <div class="heatmap-row">
             <div class="heatmap-half">
@@ -373,15 +423,24 @@
               </div>
             </div>
             <div class="heatmap-half">
-              <div class="bar-chart-container">
-                <svg id="chart-my-bars" class="bar-chart-svg" viewBox="0 0 450 220">
+              <div class="bar-chart-container" style="height:100%">
+                <svg id="chart-my-bars" class="bar-chart-svg" viewBox="0 0 450 220" style="height:100%">
                   <!-- JS로 1~45 세로 막대 생성 -->
                 </svg>
+                <div class="chart-mode-switch" data-chart="my">
+                  <button type="button" class="chart-mode-btn active" data-chart="my" data-mode="dramatic"
+                    onclick="setFrequencyMode('my', 'dramatic')">드라마틱하게</button>
+                  <button type="button" class="chart-mode-btn" data-chart="my" data-mode="dry"
+                    onclick="setFrequencyMode('my', 'dry')">드라이하게</button>
+                </div>
+                <div class="chart-range-text" id="chart-my-range">최소/최대 선택: 1번(0회) ~ 45번(0회)</div>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- 2. 누적 당첨 번호 행 -->
+        <!-- 2. 누적 당첨 번호 탭 컨텐츠 -->
+        <div id="tab-content-win" style="display: none;">
           <div class="heatmap-title">🍀 누적 당첨 번호 (추첨기 히트맵 및 빈도 그래프)</div>
           <div class="heatmap-row">
             <div class="heatmap-half">
@@ -390,28 +449,26 @@
               </div>
             </div>
             <div class="heatmap-half">
-              <div class="bar-chart-container">
-                <svg id="chart-win-bars" class="bar-chart-svg" viewBox="0 0 450 220">
+              <div class="bar-chart-container" style="height:100%">
+                <svg id="chart-win-bars" class="bar-chart-svg" viewBox="0 0 450 220" style="height:100%">
                   <!-- JS로 1~45 세로 막대 생성 -->
                 </svg>
+                <div class="chart-mode-switch" data-chart="win">
+                  <button type="button" class="chart-mode-btn active" data-chart="win" data-mode="dramatic"
+                    onclick="setFrequencyMode('win', 'dramatic')">드라마틱하게</button>
+                  <button type="button" class="chart-mode-btn" data-chart="win" data-mode="dry"
+                    onclick="setFrequencyMode('win', 'dry')">드라이하게</button>
+                </div>
+                <div class="chart-range-text" id="chart-win-range">최소/최대 선택: 1번(0회) ~ 45번(0회)</div>
               </div>
             </div>
           </div>
         </div>
-
-        <!-- 초기화 버튼 그룹 -->
-        <div style="display: flex; gap: 8px; margin-top: 15px;">
-          <button id="btn-reset-history" onclick="resetHistory()" style="flex: 1; height: 36px; font-weight: bold; background-color: #ff9500; color: white; border: none; border-radius: 6px; cursor: pointer; transition: background 0.2s;">기록 초기화</button>
-          <button id="btn-reset-settings" onclick="resetSettings()" style="flex: 1; height: 36px; font-weight: bold; background-color: #8e8e93; color: white; border: none; border-radius: 6px; cursor: pointer; transition: background 0.2s;">설정 초기화</button>
-        </div>
       </div>
     </div>
   </div>
-  </div>
-
-
   <!-- 시뮬레이션 정지 요약 모달 -->
-  <div id="simulation-stop-modal" class="lotto-modal" style="display: none;">
+  <div id="simulation-stop-modal">
     <div class="lotto-modal-content">
       <div class="lotto-modal-header" id="modal-title">🎉 시뮬레이션 정지 조건 달성!</div>
       <table class="lotto-modal-table">
@@ -443,10 +500,4 @@
       <button class="lotto-modal-btn" onclick="closeStopModal()">확인</button>
     </div>
   </div>
-
-  <script>
-    if (typeof initLotto === 'function') {
-      initLotto();
-    }
-  </script>
 </article>

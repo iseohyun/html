@@ -280,19 +280,14 @@ table table th {
   background-color: #bbb;
 }
 
-ol,
-ul {
+article ol,
+article ul {
   margin-left: 0.1em;
-  padding-left: 0;
+  padding-left: 1em;
 }
 
-li {
-  line-height: 1.8em;
-  margin-bottom: 0;
-}
-
-li>ol,
-li>ul {
+article li>ol,
+article li>ul {
   font-size: 0.95em;
   margin-top: 0.1em;
   margin-bottom: 0.35em;
@@ -309,21 +304,17 @@ article>ol>li {
   margin-bottom: 0.3em;
 }
 
+article li::marker {
+  content: initial;
+}
+
 td>ul,
 td>ol {
   margin-left: 0.8em;
 }
 
-ul>li::marker {
+li::marker:not(article li::marker) {
   content: "";
-}
-
-ul>li>ul>li::marker {
-  content: "";
-}
-
-ul>li>ul>li>ul>li::marker {
-  content: "· ";
 }
 
 .list-title {
@@ -1891,11 +1882,6 @@ body.show-keybinds .keybind-badge {
 /* Migrated from index.html internal styles */
 article a:hover {
   color: red;
-}
-
-article li li {
-  position: relative;
-  left: -27px;
 }
 
 @media screen and (min-width: 1150px) {
