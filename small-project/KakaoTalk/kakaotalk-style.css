@@ -1,0 +1,569 @@
+body {
+  box-sizing: border-box;
+  width: 100%;
+  overflow-x: hidden;
+  padding: 0px;
+  margin: 0px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
+  font-family: var(--font-main);
+  color: #444;
+  line-height: 1.8em;
+  word-break: keep-all;
+}
+
+article {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+#svg-target {
+  width: 100%;
+  max-width: 100%;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+}
+
+#controll-box {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background-color: #ffffff;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  border: 1px solid #e2e8f0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  article {
+    grid-template-columns: 1fr;
+  }
+}
+
+.button-group {
+  display: flex;
+  gap: 12px;
+}
+
+button {
+  flex: 1;
+  padding: 12px;
+  font-size: 0.95em;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+}
+
+#btn-load-example {
+  background-color: #fee500;
+  color: #191919;
+}
+
+#btn-load-example:hover {
+  background-color: #ebd300;
+  box-shadow: 0 4px 12px rgba(254, 229, 0, 0.2);
+}
+
+#btn-download {
+  background-color: #334155;
+  color: #ffffff;
+}
+
+#btn-download:hover {
+  background-color: #1e293b;
+  box-shadow: 0 4px 12px rgba(51, 65, 85, 0.2);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+.category {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  background-color: #f8fafc;
+  transition: all 0.2s ease;
+}
+
+.category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 3px solid #fee500;
+  padding-bottom: 6px;
+}
+
+.category-title {
+  font-weight: 800;
+  font-size: 1.05em;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.accordion-icon {
+  font-size: 0.8em;
+  color: #64748b;
+  transition: transform 0.2s ease;
+}
+
+.category.collapsed .accordion-icon {
+  transform: rotate(180deg);
+}
+
+.category-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: max-height 0.3s ease-out;
+}
+
+.category.collapsed .category-content {
+  display: none;
+}
+
+.animation-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.animation-controls button {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.9em;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #334155;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+  box-shadow: none;
+}
+
+.animation-controls button:hover {
+  background-color: #f1f5f9;
+}
+
+#btn-play.playing {
+  background-color: #fee500;
+  color: #191919;
+}
+
+.control-row input[type="color"] {
+  width: 100%;
+  height: 38px;
+  padding: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  background: none;
+  box-sizing: border-box;
+}
+
+/* 설정 제어용 아이콘 버튼 스타일 */
+.setting-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.setting-controls button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.85em;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #475569;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  box-shadow: none;
+}
+
+.setting-controls button:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+/* 아바타 상세 설정 팝업 모달 스타일 */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(15, 23, 42, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+#svg-box {
+  width: 100%;
+  max-width: 500px;
+  height: 800px;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+}
+
+#chat-canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.modal-content {
+  background-color: #ffffff;
+  width: 90%;
+  max-width: 550px;
+  border-radius: 16px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: modalFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalFadeIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.1em;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.modal-close {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.modal-close:hover {
+  color: #475569;
+}
+
+.modal-body {
+  padding: 24px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+  background-color: #f8fafc;
+}
+
+.modal-btn-primary {
+  background-color: #fee500;
+  color: #191919;
+  border: none;
+  padding: 10px 20px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  box-shadow: none;
+  width: auto;
+  flex: none;
+}
+
+.modal-btn-primary:hover {
+  background-color: #ebd300;
+}
+
+/* 아바타 상세 항목 리스트 스타일 */
+.avatar-item-row {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.avatar-item-row:last-child {
+  border-bottom: none;
+}
+
+.avatar-preview-circle {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: 1.25em;
+  border: 1px solid #e2e8f0;
+  color: #ffffff;
+  background-color: #DE8;
+  user-select: none;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.avatar-inputs-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.avatar-input-subrow {
+  display: grid;
+  grid-template-columns: 85px 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar-input-subrow label {
+  font-size: 0.82em;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.avatar-input-subrow input[type="text"],
+.avatar-input-subrow input[type="color"] {
+  padding: 6px 10px;
+  font-size: 0.85em;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.avatar-input-subrow input[type="color"] {
+  height: 30px;
+  padding: 0;
+  cursor: pointer;
+}
+
+.palette-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.palette-color-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 1px solid rgba(0,0,0,0.1);
+  transition: transform 0.1s;
+}
+
+.palette-color-dot:hover {
+  transform: scale(1.15);
+}
+
+/* 이미지 업로드/삭제 제어 버튼 및 TTS 목소리 선택기 스타일 */
+.avatar-image-controls {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+}
+
+.avatar-image-controls button,
+.avatar-image-controls label {
+  flex: 1;
+  padding: 6px 0;
+  text-align: center;
+  font-size: 0.8em;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.avatar-btn-upload {
+  background-color: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  user-select: none;
+}
+
+.avatar-btn-upload:hover {
+  background-color: #e2e8f0;
+}
+
+.avatar-btn-delete {
+  background-color: #fff1f2;
+  color: #e11d48;
+  border: 1px solid #fecdd3;
+  transition: background-color 0.2s;
+}
+
+.avatar-btn-delete:hover {
+  background-color: #ffe4e6;
+}
+
+.avatar-voice-select {
+  padding: 6px 10px;
+  font-size: 0.85em;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  outline: none;
+  background-color: #ffffff;
+  cursor: pointer;
+  box-sizing: border-box;
+  width: 100%;
+  color: #334155;
+}
+
+#btn-step:hover {
+  background-color: #e2e8f0;
+}
+
+.px-label-container {
+  font-size: 0.8em;
+  font-weight: bold;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+/* 도움말 모달 내부 가이드 문서 스타일 */
+#help-modal-body ol {
+  padding-left: 20px;
+  margin: 0;
+}
+
+#help-modal-body li {
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+#help-modal-body b {
+  color: #0f172a;
+  background-color: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+/* 항목명과 입력 필드를 나란히 반듯하게 정렬하는 그리드 시스템 */
+.control-row {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.control-row label {
+  font-size: 0.88em;
+  font-weight: 700;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.control-row input[type="text"],
+.control-row input[type="number"],
+.control-row input[type="time"] {
+  padding: 8px 12px;
+  font-size: 0.9em;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: #334155;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.control-row input[type="text"]:focus,
+.control-row input[type="number"]:focus,
+.control-row input[type="time"]:focus {
+  border-color: #94a3b8;
+  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.1);
+}
+
+.control-row input[type="range"] {
+  width: 100%;
+  accent-color: #fee500;
+  cursor: pointer;
+}
+
+.radio-group {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: normal;
+  color: #334155;
+  cursor: pointer;
+}
+
+textarea {
+  width: 100%;
+  padding: 16px;
+  font-family: inherit;
+  font-size: 0.9em;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  resize: vertical;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+textarea:focus {
+  border-color: #fee500;
+  box-shadow: 0 0 0 3px rgba(254, 229, 0, 0.15);
+}
