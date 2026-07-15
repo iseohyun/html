@@ -1,4 +1,4 @@
-var auto = false;
+var isSimulationActive = false;
 var myNum = new Array(6).fill(0);
 var winNum = new Array(7);
 var count = 0;
@@ -6,16 +6,21 @@ var nWin = [0, 0, 0, 0, 0, 0];
 var price = [2000000000, 80000000, 1500000, 50000, 5000];
 var winCase = [8145060, 1357510, 35724, 733, 45]; // 등수별 승리 확률(경우의 수: 1/n)
 var total_price = 0;
+var expectedValueTotal = 0;
+var probs = [1 / 8145060, 1 / 1357510, 1 / 35724, 1 / 733, 1 / 45];
 var times_a_week = 1;
-var spd = 1;  // 자동으로 다시 뽑기 속도
+var simulationSpeedWeeks = 1;  // 자동으로 다시 뽑기 속도
 var fUpdateMyNumbers = false;
 var fUpdateSvg = false;
-var lock = false;
+var isSettingsLocked = false;
 var cur_year = new Date().getFullYear();
 var from_year = cur_year;
 var nHistoryEvent = 0;
 var repaintTimerActive = false;
 var pickType = 'myNum';
+var previousPickType = 'myNum';
+var myAlgorithmSettings = [{ n: 5, m: 0, fixed: [], p: 1 }];
+var virtualDrawHistory = [];
 var winType = 'random';
 var realRound = 1;
 var realLottoData = {};
@@ -33,19 +38,21 @@ var historicalEvent = [
   [1945, "광복절을 맞이하다."],
   [1443, "세종대왕이 한글을 창제했다."],
   [612, "을지문덕이 살수대첩에서 승리했다."],
-  [-2333, "단군이 조선을 건국했다."],
-  [-10000, ":오스트랄로 피테쿠스(100만년~)"],
+  [1592, "임진왜란이 발발하다."],
+  [1950, "한국전쟁이 발발하다."]
 ];
 
 function resetHistory() {
   count = 0;
   nWin = [0, 0, 0, 0, 0];
   total_price = 0;
-  lock = false;
+  expectedValueTotal = 0;
+  isSettingsLocked = false;
   myNumStats.fill(0);
   winNumStats.fill(0);
+  virtualDrawHistory = [];
   myNum.fill(0);
-  
+
   // 체크박스들 모두 해제
   for (var i = 1; i <= 45; i++) {
     var cb = document.getElementById('cb' + i);
@@ -68,30 +75,30 @@ function resetHistory() {
 }
 
 function resetSettings() {
-  stopSim();
+  stopSimulation();
   times_a_week = 1;
   pickType = 'myNum';
   winType = 'random';
   realRound = 1;
   price = [2000000000, 80000000, 1500000, 50000, 5000];
-  
+
   var _times_a_week = document.getElementById('times-a-week');
   var _autospeedWeeks = document.getElementById('autospeedWeeks');
   var _autoSpeedSeconds = document.getElementById('autoSpeedSeconds');
   var _currentWeekInput = document.getElementById('current-week');
   var _currentWeekNumber = document.getElementById('current-week-number');
-  
+
   if (_times_a_week) _times_a_week.value = times_a_week;
   if (_autospeedWeeks) _autospeedWeeks.value = 1;
   if (_autoSpeedSeconds) _autoSpeedSeconds.value = 1;
   if (_currentWeekInput) _currentWeekInput.value = 1;
   if (_currentWeekNumber) _currentWeekNumber.value = 1;
-  
+
   var slider = document.getElementById('sim-speed-slider');
   var sliderText = document.getElementById('sim-speed-text');
   if (slider) slider.value = 0;
   if (sliderText) sliderText.innerHTML = "1주 = 1초";
-  
+
   var _startDateInput = document.getElementById('simulation-start-date');
   if (_startDateInput) {
     var today = new Date();
@@ -101,23 +108,28 @@ function resetSettings() {
     _startDateInput.value = yyyy + '-' + mm + '-' + dd;
   }
 
+  var _drawDateInput = document.getElementById('simulation-draw-date');
+  if (_drawDateInput) {
+    _drawDateInput.value = getCalculatedDrawDate();
+  }
+
   var pickMyNumRadio = document.querySelector('input[name="pick-type"][value="myNum"]');
   if (pickMyNumRadio) pickMyNumRadio.checked = true;
   var winRandomRadio = document.querySelector('input[name="win-type"][value="random"]');
   if (winRandomRadio) winRandomRadio.checked = true;
-  
+
   var priceDiv = document.getElementById('winning-price');
   var toggleBtn = document.getElementById('btn-toggle-price');
   if (priceDiv) priceDiv.style.display = 'none';
   if (toggleBtn) toggleBtn.innerHTML = '상세';
-  
+
   var _price_1st = document.getElementById('price_1st');
   var _price_2nd = document.getElementById('price_2nd');
   var _price_3rd = document.getElementById('price_3rd');
   if (_price_1st) _price_1st.value = numberToText(price[0]) + "원";
   if (_price_2nd) _price_2nd.value = numberToText(price[1]) + "원";
   if (_price_3rd) _price_3rd.value = numberToText(price[2]) + "원";
-  
+
   updateInputs();
 }
 
@@ -126,6 +138,8 @@ function initLotto() {
   resetHistory();
 
   // 실제 당첨번호 동기화 구동 (최초 1회 실행)
+  realLottoData = RealLotto.getLocalData() || {};
+  if (typeof updateRecentDrawInfo === 'function') updateRecentDrawInfo();
   syncRealLottoData();
 
   // 타이머 루프 구동
@@ -135,7 +149,7 @@ function initLotto() {
   }
   updateStatsHeatmaps();
   updateSlotsUI();
-  
+
   // 로컬 이벤트 수동 매핑 바인딩
   if (typeof bindLocalEvents === 'function') bindLocalEvents();
 }
@@ -208,8 +222,8 @@ function checkout() {
     }
   }
   if (hit == 6) {
-    auto = false;
-    lock = true;
+    isSimulationActive = false;
+    isSettingsLocked = true;
     alert("1등 당첨!"); // 1등이 당첨되면 자동진행을 멈춥니다.
     return 1;
   }
@@ -281,18 +295,18 @@ function play() {
   playVisual(true);
 }
 
-function nplay(n, showMyNumVisual) {
+function runMultipleSimulations(n, showMyNumVisual) {
   if (n > 1) {
     nplaySilent(n - 1);
   }
-  if (!auto) return;
+  if (!isSimulationActive) return;
   playVisual(showMyNumVisual);
 }
 
-function startSim() {
-  if (auto) return;
-  auto = true;
-  lock = false;
+function startSimulation() {
+  if (isSimulationActive) return;
+  isSimulationActive = true;
+  isSettingsLocked = false;
   setSettingsDisabled(true);
 
   var controlBtn = document.getElementById('btn-sim-control');
@@ -309,14 +323,14 @@ function startSim() {
   if (mSeconds <= 0) mSeconds = 1;
 
   var drawsPerSecond = (nWeeks * times_a_week) / mSeconds;
-  var tickInterval = 50; 
+  var tickInterval = 50;
   var drawsPerTick = drawsPerSecond * (tickInterval / 1000);
-  
+
   accumDraws = 0;
   var lastMyNumRenderTime = 0;
 
   function tick() {
-    if (!auto) {
+    if (!isSimulationActive) {
       clearInterval(simTimerId);
       simTimerId = null;
       return;
@@ -326,13 +340,13 @@ function startSim() {
     if (drawsToRun > 0) {
       var now = Date.now();
       var showMyNumVisual = false;
-      
+
       if (now - lastMyNumRenderTime >= 400) {
         showMyNumVisual = true;
         lastMyNumRenderTime = now;
       }
-      
-      nplay(drawsToRun, showMyNumVisual);
+
+      runMultipleSimulations(drawsToRun, showMyNumVisual);
       accumDraws -= drawsToRun;
     }
   }
@@ -341,8 +355,8 @@ function startSim() {
   simTimerId = setInterval(tick, tickInterval);
 }
 
-function stopSim() {
-  auto = false;
+function stopSimulation() {
+  isSimulationActive = false;
   setSettingsDisabled(false);
   if (simTimerId) {
     clearInterval(simTimerId);
@@ -371,7 +385,7 @@ function setSettingsDisabled(disabled) {
 
 function nplaySilent(n) {
   for (var k = 0; k < n; k++) {
-    if (pickType === 'myNum' && !lock) {
+    if (pickType === 'myNum' && !isSettingsLocked) {
       for (var i = 0; i < 6; i++) {
         myNum[i] = Math.floor(Math.random() * 45) + 1;
         for (var j = 0; j < i; j++) {
@@ -382,6 +396,10 @@ function nplaySilent(n) {
         }
       }
       myNum.sort(function (a, b) { return a - b; });
+    } else if (pickType === 'myAlgorithm' && !isSettingsLocked) {
+      var drawIndex = count % times_a_week;
+      var row = getAlgorithmSettingsForIndex(drawIndex);
+      myNum = generateAlgorithmNumbers(row);
     }
 
     if (winType === 'myNum') {
@@ -389,7 +407,7 @@ function nplaySilent(n) {
       if (!loaded) {
         loaded = loadRealRoundNumbers(1);
       }
-      
+
       if (!loaded) {
         for (var i = 0; i < 6; i++) {
           winNum[i] = Math.floor(Math.random() * 45) + 1;
@@ -431,6 +449,12 @@ function nplaySilent(n) {
       }
     }
 
+    // 가상 추첨 당첨 번호 히스토리 보존 (최근 N회 빈출 연산용)
+    virtualDrawHistory.push(winNum.slice(0, 6));
+    if (virtualDrawHistory.length > 100) {
+      virtualDrawHistory.shift();
+    }
+
     // 숫자 빈도 집계
     for (var i = 0; i < 6; i++) {
       myNumStats[myNum[i]]++;
@@ -448,8 +472,8 @@ function nplaySilent(n) {
 
     var rank = 6;
     if (hit == 6) {
-      auto = false;
-      lock = true;
+      isSimulationActive = false;
+      isSettingsLocked = true;
       alert("1등 당첨!");
       rank = 1;
     } else if (hit == 5) {
@@ -466,6 +490,11 @@ function nplaySilent(n) {
 
     count++;
     updateRealRound();
+    var expectedValue = 0;
+    for (var r = 0; r < 5; r++) {
+      expectedValue += probs[r] * price[r];
+    }
+    expectedValueTotal += expectedValue;
     var prizeWon = 0;
     if (rank >= 1 && rank <= 5) {
       nWin[rank - 1]++;
@@ -491,8 +520,8 @@ function nplaySilent(n) {
         } else {
           winDate = getCalculatedDrawDate();
         }
-        
-        stopSim();
+
+        stopSimulation();
         showStopPopup(rank, winDate);
         break; // 루프 탈출
       }
@@ -503,7 +532,7 @@ function nplaySilent(n) {
 function playVisual(showMyNumVisual) {
   if (showMyNumVisual === undefined) showMyNumVisual = true;
 
-  if (pickType === 'myNum' && !lock) {
+  if (pickType === 'myNum' && !isSettingsLocked) {
     for (var i = 0; i < 6; i++) {
       myNum[i] = Math.floor(Math.random() * 45) + 1;
       for (var j = 0; j < i; j++) {
@@ -514,8 +543,12 @@ function playVisual(showMyNumVisual) {
       }
     }
     myNum.sort(function (a, b) { return a - b; });
+  } else if (pickType === 'myAlgorithm' && !isSettingsLocked) {
+    var drawIndex = count % times_a_week;
+    var row = getAlgorithmSettingsForIndex(drawIndex);
+    myNum = generateAlgorithmNumbers(row);
   }
-  
+
   if (showMyNumVisual) {
     printMyNum();
   }
@@ -525,7 +558,7 @@ function playVisual(showMyNumVisual) {
     if (!loaded) {
       loaded = loadRealRoundNumbers(1);
     }
-    
+
     if (!loaded) {
       for (var i = 0; i < 6; i++) {
         winNum[i] = Math.floor(Math.random() * 45) + 1;
@@ -592,6 +625,12 @@ function playVisual(showMyNumVisual) {
     }
   }
 
+  // 가상 추첨 당첨 번호 히스토리 보존 (최근 N회 빈출 연산용)
+  virtualDrawHistory.push(winNum.slice(0, 6));
+  if (virtualDrawHistory.length > 100) {
+    virtualDrawHistory.shift();
+  }
+
   // 숫자 빈도 집계
   for (var i = 0; i < 6; i++) {
     myNumStats[myNum[i]]++;
@@ -609,8 +648,8 @@ function playVisual(showMyNumVisual) {
 
   var rank = 6;
   if (hit == 6) {
-    auto = false;
-    lock = true;
+    isSimulationActive = false;
+    isSettingsLocked = true;
     alert("1등 당첨!");
     rank = 1;
   } else if (hit == 5) {
@@ -627,6 +666,11 @@ function playVisual(showMyNumVisual) {
 
   count++;
   updateRealRound();
+  var expectedValue = 0;
+  for (var r = 0; r < 5; r++) {
+    expectedValue += probs[r] * price[r];
+  }
+  expectedValueTotal += expectedValue;
   var prizeWon = 0;
   if (rank >= 1 && rank <= 5) {
     nWin[rank - 1]++;
@@ -653,8 +697,8 @@ function playVisual(showMyNumVisual) {
       } else {
         winDate = getCalculatedDrawDate();
       }
-      
-      stopSim();
+
+      stopSimulation();
       showStopPopup(rank, winDate);
       isStopped = true;
     }
@@ -709,13 +753,28 @@ function getCalculatedDrawDate() {
   var startDateInput = document.getElementById('simulation-start-date');
   if (!startDateInput) return "";
   var startVal = startDateInput.value;
-  if (!startVal) return "";
+  if (!startVal) {
+    var today = new Date();
+    var yyyy = today.getFullYear();
+    var mm = String(today.getMonth() + 1).padStart(2, '0');
+    var dd = String(today.getDate()).padStart(2, '0');
+    startVal = yyyy + '-' + mm + '-' + dd;
+    startDateInput.value = startVal;
+  }
+
   var baseDate = new Date(startVal);
+  var day = baseDate.getDay();
+  var daysToNextSaturday = (6 - day + 7) % 7;
+
+  var drawDate = new Date(baseDate);
+  drawDate.setDate(baseDate.getDate() + daysToNextSaturday);
+
   var elapsedWeeks = Math.floor(count / times_a_week);
-  baseDate.setDate(baseDate.getDate() + (elapsedWeeks * 7));
-  var yyyy = baseDate.getFullYear();
-  var mm = String(baseDate.getMonth() + 1).padStart(2, '0');
-  var dd = String(baseDate.getDate()).padStart(2, '0');
+  drawDate.setDate(drawDate.getDate() + (elapsedWeeks * 7));
+
+  var yyyy = drawDate.getFullYear();
+  var mm = String(drawDate.getMonth() + 1).padStart(2, '0');
+  var dd = String(drawDate.getDate()).padStart(2, '0');
   return yyyy + '-' + mm + '-' + dd;
 }
 
@@ -758,6 +817,50 @@ function updateInputs() {
       if (_from_year) _from_year.value = calcYear;
     }
   }
+
+  var calcDate = getCalculatedDrawDate();
+  var drawDateEl = document.getElementById('simulation-draw-date');
+  if (drawDateEl && calcDate) {
+    drawDateEl.value = calcDate;
+  }
+
+  // 1. 시뮬레이션 시작일의 요일 출력
+  var startDateEl = document.getElementById('simulation-start-date');
+  var startDayEl = document.getElementById('start-date-day');
+  if (startDateEl && startDayEl && startDateEl.value) {
+    var d = new Date(startDateEl.value);
+    var dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+    if (!isNaN(d.getTime())) {
+      startDayEl.innerHTML = "(" + dayNames[d.getDay()] + ")";
+    }
+  }
+
+  // 2. 추첨일 요일 출력
+  var drawDayEl = document.getElementById('draw-date-day');
+  if (calcDate && drawDayEl) {
+    var d = new Date(calcDate);
+    var dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+    if (!isNaN(d.getTime())) {
+      drawDayEl.innerHTML = "(" + dayNames[d.getDay()] + ")";
+    }
+  }
+
+  // 3. 경과 세월 (+##/##/##) 출력
+  var drawElapsedEl = document.getElementById('draw-date-elapsed');
+  if (drawElapsedEl) {
+    var totalDays = Math.floor(count / times_a_week) * 7;
+    var elapsedYears = Math.floor(totalDays / 365);
+    var remainingDays = totalDays % 365;
+    var elapsedMonths = Math.floor(remainingDays / 30);
+    var elapsedDays = remainingDays % 30;
+
+    var yy = String(elapsedYears).padStart(2, '0');
+    var mm = String(elapsedMonths).padStart(2, '0');
+    var dd = String(elapsedDays).padStart(2, '0');
+
+    drawElapsedEl.innerHTML = "(+" + yy + "/" + mm + "/" + dd + ")";
+  }
+
   updateStatsHeatmaps();
 }
 
@@ -783,11 +886,11 @@ function numberToText(num) {
   } else if (num < 100000000) {
     text = (Math.round(num / 1000) / 10 + "만");
   } else if (num < 1000000000000) {
-    text = (Math.round(num / 10000000) / 10 + "억");
+    text = (Math.round(num / 1000000) / 100).toFixed(2) + "억";
   } else if (num < 10000000000000000) {
-    text = (Math.round(num / 100000000000) / 10 + "조");
+    text = (Math.round(num / 10000000000) / 100).toFixed(2) + "조";
   } else {
-    text = (Math.round(num / 1000000000000000) / 10 + "경");
+    text = (Math.round(num / 10000000000000) / 100).toFixed(2) + "경";
   }
   if (minus) {
     return "-" + text;
@@ -807,7 +910,7 @@ function timeToText() {
 }
 
 function genRdnNum() {
-  if (lock) return;
+  if (isSettingsLocked) return;
   if (pickType === 'random') return;
   for (var i = 0; i < 6; i++) {
     myNum[i] = Math.floor(Math.random() * 45) + 1;
@@ -828,7 +931,7 @@ function genRdnNum() {
 }
 
 function printMyNum() {
-  if (lock) return;
+  if (isSettingsLocked) return;
   var j = 0;
   for (var i = 1; i <= 45; i++) {
     var cb = document.getElementById('cb' + i);
@@ -858,39 +961,42 @@ function togglePriceDetails() {
 
 function syncRealLottoData() {
   if (isSyncing) return syncPromise;
-  
+
   if (typeof RealLotto !== 'undefined') {
     isSyncing = true;
-    syncPromise = RealLotto.syncData(function(drwNo, currentIdx, totalCount, skippedCount, isDone, statusMsg) {
+    syncPromise = RealLotto.syncData(function (drwNo, currentIdx, totalCount, skippedCount, isDone, statusMsg) {
       var textEl = document.querySelector('#lotto-loading-overlay div:last-child');
       if (textEl) {
         if (isDone) {
           textEl.innerHTML = "동기화 완료! (과거 데이터 " + skippedCount + "회차 패스, 총 " + (skippedCount + totalCount) + "회차 확보)";
         } else {
-          textEl.innerHTML = "로딩 중... (" + (statusMsg || "실시간 동기화") + ")<br>" + 
-                             "<span style='font-size:0.8em;color:#eee;display:block;margin-top:8px;line-height:1.4;'>" + 
-                             "과거 수집 정보: " + skippedCount + "회 확인 완료 (중복 패스)<br>" +
-                             "현재 수집 회차: " + (drwNo ? drwNo + "회차 요청 중..." : "준비 중...") + "<br>" +
-                             "진행 상태: (" + (currentIdx + 1) + " / " + totalCount + " 완료)" + 
-                             "</span>";
+          textEl.innerHTML = "로딩 중... (" + (statusMsg || "실시간 동기화") + ")<br>" +
+            "<span style='font-size:0.8em;color:#eee;display:block;margin-top:8px;line-height:1.4;'>" +
+            "과거 수집 정보: " + skippedCount + "회 확인 완료 (중복 패스)<br>" +
+            "현재 수집 회차: " + (drwNo ? drwNo + "회차 요청 중..." : "준비 중...") + "<br>" +
+            "진행 상태: (" + (currentIdx + 1) + " / " + totalCount + " 완료)" +
+            "</span>";
         }
       }
-    }).then(function(data) {
+    }).then(function (data) {
       realLottoData = data;
       isSyncing = false;
       var latestRound = RealLotto.calculateLatestRound();
-      
+
       var currentWeekInput = document.getElementById('current-week');
       if (currentWeekInput) {
         currentWeekInput.max = latestRound;
       }
-      
+
+      if (typeof updateRecentDrawInfo === 'function') updateRecentDrawInfo();
+
       console.log("로또 데이터 동기화 완료! 총 " + Object.keys(data).length + "개 회차 확보.");
       return data;
-    }).catch(function(err) {
+    }).catch(function (err) {
       console.error("로또 데이터 동기화 실패:", err);
       isSyncing = false;
       realLottoData = RealLotto.getLocalData() || {};
+      if (typeof updateRecentDrawInfo === 'function') updateRecentDrawInfo();
       return realLottoData;
     });
     return syncPromise;
@@ -900,7 +1006,7 @@ function syncRealLottoData() {
 
 function showLoadingOverlay() {
   if (document.getElementById('lotto-loading-overlay')) return;
-  
+
   var overlay = document.createElement('div');
   overlay.id = 'lotto-loading-overlay';
   overlay.style.position = 'fixed';
@@ -918,7 +1024,7 @@ function showLoadingOverlay() {
   overlay.style.zIndex = '9999';
   overlay.style.opacity = '0';
   overlay.style.transition = 'opacity 0.3s ease';
-  
+
   var spinner = document.createElement('div');
   spinner.className = 'spinner';
   spinner.style.width = '50px';
@@ -927,7 +1033,7 @@ function showLoadingOverlay() {
   spinner.style.borderTop = '5px solid #1763D4';
   spinner.style.borderRadius = '50%';
   spinner.style.animation = 'spin 1s linear infinite';
-  
+
   var text = document.createElement('div');
   text.innerHTML = '정보를 불러오는 중입니다...';
   text.style.color = 'white';
@@ -935,11 +1041,11 @@ function showLoadingOverlay() {
   text.style.fontSize = '1.2em';
   text.style.fontWeight = 'bold';
   text.style.textShadow = '0 2px 4px rgba(0,0,0,0.5)';
-  
+
   overlay.appendChild(spinner);
   overlay.appendChild(text);
   document.body.appendChild(overlay);
-  
+
   overlay.offsetWidth; // force reflow
   overlay.style.opacity = '1';
 }
@@ -947,9 +1053,9 @@ function showLoadingOverlay() {
 function hideLoadingOverlay() {
   var overlay = document.getElementById('lotto-loading-overlay');
   if (!overlay) return;
-  
+
   overlay.style.opacity = '0';
-  setTimeout(function() {
+  setTimeout(function () {
     if (overlay.parentNode) {
       overlay.parentNode.removeChild(overlay);
     }
@@ -958,7 +1064,7 @@ function hideLoadingOverlay() {
 
 function selectWinType(type) {
   winType = type;
-  
+
   var radioBtn = document.querySelector('input[name="win-type"][value="' + type + '"]');
   if (radioBtn) radioBtn.checked = true;
 
@@ -968,12 +1074,12 @@ function selectWinType(type) {
       latestRound = RealLotto.calculateLatestRound();
     }
     var existingCount = Object.keys(realLottoData).length;
-    
+
     if (existingCount < latestRound - 5 || isSyncing) {
       showLoadingOverlay();
-      syncRealLottoData().then(function() {
+      syncRealLottoData().then(function () {
         hideLoadingOverlay();
-      }).catch(function() {
+      }).catch(function () {
         hideLoadingOverlay();
       });
     }
@@ -993,12 +1099,12 @@ function updateRealRound() {
 function changeStartWeek(val) {
   realRound = parseInt(val) || 1;
   startRound = realRound;
-  
+
   var currentWeekInput = document.getElementById('current-week');
   if (currentWeekInput) {
     currentWeekInput.value = realRound;
   }
-  
+
   var currentWeekNumber = document.getElementById('current-week-number');
   if (currentWeekNumber) {
     currentWeekNumber.value = realRound;
@@ -1012,7 +1118,7 @@ function loadRealRoundNumbers(round) {
       winNum[i] = data.numbers[i];
     }
     winNum[6] = data.bonus;
-    
+
     if (data.first_win_amount !== undefined) {
       price[0] = data.first_win_amount;
       var _price_1st = document.getElementById('price_1st');
@@ -1025,14 +1131,14 @@ function loadRealRoundNumbers(round) {
   return false;
 }
 
-function toggleSim() {
+function toggleSimulation() {
   var controlBtn = document.getElementById('btn-sim-control');
   if (!controlBtn) return;
-  
-  if (auto) {
-    stopSim();
+
+  if (isSimulationActive) {
+    stopSimulation();
   } else {
-    startSim();
+    startSimulation();
   }
 }
 
@@ -1056,31 +1162,31 @@ function onSpeedSliderInput(val) {
     seconds = Math.abs(v) + 1;
     text = "1주 = " + seconds + "초";
   }
-  
+
   var elText = document.getElementById('sim-speed-text');
   if (elText) elText.innerHTML = text;
-  
+
   var elWeeks = document.getElementById('autospeedWeeks');
   var elSeconds = document.getElementById('autoSpeedSeconds');
   if (elWeeks) elWeeks.value = weeks;
   if (elSeconds) elSeconds.value = seconds;
 
-  if (auto) {
+  if (isSimulationActive) {
     if (simTimerId) {
       clearInterval(simTimerId);
     }
-    
+
     var nWeeks = parseFloat(elWeeks ? elWeeks.value : 1) || 1;
     var mSeconds = parseFloat(elSeconds ? elSeconds.value : 1) || 1;
     var drawsPerSecond = (nWeeks * times_a_week) / mSeconds;
-    var tickInterval = 50; 
+    var tickInterval = 50;
     var drawsPerTick = drawsPerSecond * (tickInterval / 1000);
-    
+
     accumDraws = 0;
     var lastMyNumRenderTime = 0;
 
-    simTimerId = setInterval(function() {
-      if (!auto) {
+    simTimerId = setInterval(function () {
+      if (!isSimulationActive) {
         clearInterval(simTimerId);
         simTimerId = null;
         return;
@@ -1094,7 +1200,7 @@ function onSpeedSliderInput(val) {
           showMyNumVisual = true;
           lastMyNumRenderTime = now;
         }
-        nplay(drawsToRun, showMyNumVisual);
+        runMultipleSimulations(drawsToRun, showMyNumVisual);
         accumDraws -= drawsToRun;
       }
     }, tickInterval);
@@ -1104,26 +1210,26 @@ function onSpeedSliderInput(val) {
 function showStopPopup(rank, winDate) {
   var modal = document.getElementById('simulation-stop-modal');
   if (!modal) return;
-  
+
   var elRank = document.getElementById('modal-rank');
   var elDate = document.getElementById('modal-draw-date');
   var elPrize = document.getElementById('modal-prize');
   var elTotalWon = document.getElementById('modal-total-won');
   var elTotalSpent = document.getElementById('modal-total-spent');
   var elNetProfit = document.getElementById('modal-net-profit');
-  
+
   if (elRank) elRank.innerHTML = rank + "등";
   if (elDate) elDate.innerHTML = winDate || "-";
-  
+
   var prizeWon = price[rank - 1];
   if (elPrize) elPrize.innerHTML = numberToText(prizeWon) + "원";
-  
+
   var totalSpentVal = count * 1000;
   var totalWonVal = total_price + totalSpentVal;
-  
+
   if (elTotalWon) elTotalWon.innerHTML = numberToText(totalWonVal) + "원";
   if (elTotalSpent) elTotalSpent.innerHTML = numberToText(totalSpentVal) + "원";
-  
+
   if (elNetProfit) {
     var sign = total_price >= 0 ? "+" : "";
     elNetProfit.innerHTML = sign + numberToText(total_price) + "원";
@@ -1133,7 +1239,7 @@ function showStopPopup(rank, winDate) {
       elNetProfit.style.color = '#007aff';
     }
   }
-  
+
   window.scrollTo({ top: 0, behavior: 'smooth' });
   modal.classList.add('show');
 }
@@ -1141,6 +1247,7 @@ function showStopPopup(rank, winDate) {
 function closeStopModal() {
   var modal = document.getElementById('simulation-stop-modal');
   if (modal) modal.classList.remove('show');
+  startSimulation();
 }
 
 function setFrequencyMode(chartKey, mode) {
@@ -1184,43 +1291,52 @@ function getFrequencyRangeText(statsArray) {
   return minNumber + "번(" + minValue + "회) ~ " + maxNumber + "번(" + maxValue + "회)";
 }
 function updateStatsHeatmaps() {
-  try {
-    var elSpent = document.getElementById('stat-total-spent');
-    var elWon = document.getElementById('stat-total-won');
-    var elProfit = document.getElementById('stat-total-profit');
-    var spentVal = count * 1000;
-    var wonVal = total_price + spentVal;
-    if (elSpent) elSpent.innerHTML = numberToText(spentVal) + "원";
-    if (elWon) elWon.innerHTML = numberToText(wonVal) + "원";
-    
-    if (elProfit) {
-      var sign = total_price >= 0 ? "+" : "";
-      elProfit.innerHTML = sign + numberToText(total_price) + "원";
-      if (total_price >= 0) {
-        elProfit.style.color = '#ff3b30';
-      } else {
-        elProfit.style.color = '#007aff';
-      }
-    }
-  } catch (e) {
-    console.error("[디버그 에러 - 기본요약]", e);
-  }
-  
-  for (var r = 1; r <= 5; r++) {
-    try {
-      var suffix = r === 1 ? '1st' : r === 2 ? '2nd' : r === 3 ? '3rd' : r === 4 ? '4th' : '5th';
-      var el = document.getElementById('stat-count-' + suffix);
-      if (el) el.innerHTML = numberToText(nWin[r - 1]) + "회(" + numberToText(nWin[r - 1] * price[r - 1]) + "원)";
-    } catch (e) {
-      console.error("[디버그 에러 - 등수요약 r=" + r + "]", e);
+  var elSpent = document.getElementById('stat-total-spent');
+  var elWon = document.getElementById('stat-total-won');
+  var elProfit = document.getElementById('stat-total-profit');
+  var spentVal = count * 1000;
+  var wonVal = total_price + spentVal;
+  if (elSpent) elSpent.innerHTML = numberToText(spentVal) + "원";
+  if (elWon) elWon.innerHTML = numberToText(wonVal) + "원";
+
+  if (elProfit) {
+    var sign = total_price >= 0 ? "+" : "";
+    elProfit.innerHTML = sign + numberToText(total_price) + "원";
+    if (total_price >= 0) {
+      elProfit.style.color = '#ff3b30';
+    } else {
+      elProfit.style.color = '#007aff';
     }
   }
 
-  try { renderHeatmap('grid-my-stats', myNumStats); } catch (e) { console.error("[디버그 에러 - grid-my-stats]", e); }
-  try { renderHeatmap('grid-win-stats', winNumStats); } catch (e) { console.error("[디버그 에러 - grid-win-stats]", e); }
-  try { renderFrequencyChart('chart-my-bars', myNumStats, 'my'); } catch (e) { console.error("[디버그 에러 - chart-my-bars]", e); }
-  try { renderFrequencyChart('chart-win-bars', winNumStats, 'win'); } catch (e) { console.error("[디버그 에러 - chart-win-bars]", e); }
-  try { renderExpectationsChart(); } catch (e) { console.error("[디버그 에러 - expectations]", e); }
+  var elExpected = document.getElementById('stat-total-expected');
+  if (elExpected) elExpected.innerHTML = numberToText(Math.round(expectedValueTotal)) + "원";
+
+  var profitValAbs = Math.abs(total_price);
+  var maxVal = Math.max(spentVal, wonVal, profitValAbs, expectedValueTotal);
+  if (maxVal <= 0) maxVal = 1;
+
+  var barSpent = document.getElementById('bar-total-spent');
+  var barWon = document.getElementById('bar-total-won');
+  var barProfit = document.getElementById('bar-total-profit');
+  var barExpected = document.getElementById('bar-total-expected');
+
+  if (barSpent) barSpent.style.width = (spentVal / maxVal * 100) + "%";
+  if (barWon) barWon.style.width = (wonVal / maxVal * 100) + "%";
+  if (barProfit) barProfit.style.width = (profitValAbs / maxVal * 100) + "%";
+  if (barExpected) barExpected.style.width = (expectedValueTotal / maxVal * 100) + "%";
+
+  for (var r = 1; r <= 5; r++) {
+    var suffix = r === 1 ? '1st' : r === 2 ? '2nd' : r === 3 ? '3rd' : r === 4 ? '4th' : '5th';
+    var el = document.getElementById('stat-count-' + suffix);
+    if (el) el.innerHTML = numberToText(nWin[r - 1]) + "회(" + numberToText(nWin[r - 1] * price[r - 1]) + "원)";
+  }
+
+  renderHeatmap('grid-my-stats', myNumStats);
+  renderHeatmap('grid-win-stats', winNumStats);
+  renderFrequencyChart('chart-my-bars', myNumStats, 'my');
+  renderFrequencyChart('chart-win-bars', winNumStats, 'win');
+  renderExpectationsChart();
 }
 
 function renderHeatmap(gridId, statsArray) {
@@ -1229,7 +1345,7 @@ function renderHeatmap(gridId, statsArray) {
 
   var chartKey = gridId.indexOf('win') !== -1 ? 'win' : 'my';
   var mode = frequencyModes[chartKey] || 'dramatic';
-  
+
   var min = Infinity;
   var max = -Infinity;
   for (var i = 1; i <= 45; i++) {
@@ -1239,10 +1355,10 @@ function renderHeatmap(gridId, statsArray) {
   }
   if (min === Infinity) min = 0;
   if (max === -Infinity || max === 0) max = 1;
-  
+
   var diff = max - min;
   if (diff === 0) diff = 1;
-  
+
   for (var i = 1; i <= 45; i++) {
     var cell = document.getElementById(gridId + '-cell-' + i);
     if (!cell) {
@@ -1252,15 +1368,33 @@ function renderHeatmap(gridId, statsArray) {
       cell.innerHTML = i;
       gridEl.appendChild(cell);
     }
-    
+
     var val = statsArray[i] || 0;
-    cell.title = String(val);
-    
+    cell.removeAttribute('title');
+
+    (function (num, countVal) {
+      cell.onmouseenter = function () {
+        var barId = chartKey === 'win' ? 'heatmap-tooltip-bar-win' : 'heatmap-tooltip-bar-my';
+        var bar = document.getElementById(barId);
+        if (bar) {
+          var typeText = chartKey === 'win' ? '당첨' : '선택';
+          bar.innerText = num + "번 번호 - " + typeText + " 횟수: " + countVal + "회";
+        }
+      };
+      cell.onmouseleave = function () {
+        var barId = chartKey === 'win' ? 'heatmap-tooltip-bar-win' : 'heatmap-tooltip-bar-my';
+        var bar = document.getElementById(barId);
+        if (bar) {
+          bar.innerText = "번호 위에 마우스를 올리면 빈도 상세 정보가 표시됩니다.";
+        }
+      };
+    })(i, val);
+
     var ratio = mode === 'dramatic' ? ((val - min) / diff) : (val / max);
     var hue = 240 - (ratio * 240);
     var saturation = 2 + (ratio * 98);
     var lightness = 70 - (ratio * 15);
-    
+
     cell.style.backgroundColor = "hsl(" + hue + ", " + saturation + "%, " + lightness + "%)";
     if (ratio > 0.5) {
       cell.style.color = "white";
@@ -1330,7 +1464,7 @@ function renderFrequencyChart(svgId, statsArray, chartKey) {
     var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
     text.setAttribute("x", x);
     text.setAttribute("y", 210);
-    text.setAttribute("font-size", "9px");
+    text.setAttribute("font-size", "1em");
     text.setAttribute("font-weight", "bold");
     text.setAttribute("fill", "#666");
     text.setAttribute("text-anchor", "middle");
@@ -1366,11 +1500,21 @@ function isCurrentSlotDirty() {
   try {
     var saved = JSON.parse(raw);
     return saved.count !== count || saved.total_price !== total_price;
-  } catch(e) { return false; }
+  } catch (e) { return false; }
 }
 
 function saveSlot(slotId) {
-  // 설정값도 함께 저장
+  var existingRaw = localStorage.getItem('lotto_slot_' + slotId);
+  var customName = null;
+  if (existingRaw) {
+    try {
+      var existingData = JSON.parse(existingRaw);
+      if (existingData.customName) {
+        customName = existingData.customName;
+      }
+    } catch (e) { }
+  }
+
   var sliderEl = document.getElementById('sim-speed-slider');
   var startDateEl = document.getElementById('simulation-start-date');
   var data = {
@@ -1379,6 +1523,7 @@ function saveSlot(slotId) {
     total_price: total_price,
     myNumStats: myNumStats.slice(),
     winNumStats: winNumStats.slice(),
+    myAlgorithmSettings: JSON.parse(JSON.stringify(myAlgorithmSettings)),
     settings: {
       times_a_week: times_a_week,
       pickType: pickType,
@@ -1387,10 +1532,16 @@ function saveSlot(slotId) {
       startRound: startRound,
       price: price.slice(),
       sliderVal: sliderEl ? parseInt(sliderEl.value) : 0,
-      startDate: startDateEl ? startDateEl.value : ''
+      startDate: startDateEl ? startDateEl.value : '',
+      drawDate: document.getElementById('simulation-draw-date') ? document.getElementById('simulation-draw-date').value : ''
     },
     savedAt: formatSlotDate(new Date())
   };
+
+  if (customName) {
+    data.customName = customName;
+  }
+
   localStorage.setItem('lotto_slot_' + slotId, JSON.stringify(data));
   currentSlotId = slotId;
   updateSlotsUI();
@@ -1422,16 +1573,26 @@ function loadSlot(slotId) {
     var data = JSON.parse(raw);
 
     count = data.count || 0;
-    nWin = data.nWin || [0,0,0,0,0];
+    nWin = data.nWin || [0, 0, 0, 0, 0];
     total_price = data.total_price || 0;
     myNumStats = (data.myNumStats && data.myNumStats.length === 46) ? data.myNumStats.slice() : Array(46).fill(0);
     winNumStats = (data.winNumStats && data.winNumStats.length === 46) ? data.winNumStats.slice() : Array(46).fill(0);
+    myAlgorithmSettings = data.myAlgorithmSettings || [{ n: 5, m: 0, fixed: [], p: 1 }];
 
     // 설정 복원
     if (data.settings) {
       var s = data.settings;
       if (s.times_a_week !== undefined) { times_a_week = s.times_a_week; var el = document.getElementById('times-a-week'); if (el) el.value = times_a_week; }
-      if (s.pickType) { pickType = s.pickType; var r = document.querySelector('input[name="pick-type"][value="' + pickType + '"]'); if (r) r.checked = true; }
+      if (s.pickType) {
+        pickType = s.pickType;
+        previousPickType = pickType;
+        var r = document.getElementById('pick-type-' + pickType);
+        if (r) r.checked = true;
+        else if (pickType === 'myAlgorithm') {
+          var algoRadio = document.getElementById('pick-type-algo');
+          if (algoRadio) algoRadio.checked = true;
+        }
+      }
       if (s.winType) { winType = s.winType; var r = document.querySelector('input[name="win-type"][value="' + winType + '"]'); if (r) r.checked = true; }
       if (s.realRound !== undefined) { realRound = s.realRound; }
       if (s.price && s.price.length) { price = s.price.slice(); }
@@ -1440,6 +1601,7 @@ function loadSlot(slotId) {
         if (sl) { sl.value = s.sliderVal; onSpeedSliderInput(s.sliderVal); }
       }
       if (s.startDate) { var sd = document.getElementById('simulation-start-date'); if (sd) sd.value = s.startDate; }
+      if (s.drawDate) { var dd = document.getElementById('simulation-draw-date'); if (dd) dd.value = s.drawDate; }
       if (s.startRound !== undefined) { startRound = s.startRound; }
     }
 
@@ -1484,9 +1646,9 @@ function updateSlotsUI() {
       if (raw) {
         try {
           var data = JSON.parse(raw);
-          // 저장 이름: "YYYYMMDD hh:mm:ss" 형식만 표기
-          elText.innerHTML = data.savedAt || '[슬롯 ' + i + ']';
-        } catch(e) {
+          var slotName = data.customName || data.savedAt || '[슬롯 ' + i + ']';
+          elText.innerHTML = slotName;
+        } catch (e) {
           elText.innerHTML = '[슬롯 ' + i + '] 데이터 손상됨';
         }
       } else {
@@ -1500,27 +1662,27 @@ function renderExpectationsChart() {
   var svg = document.getElementById('chart-win-ratios');
   if (!svg) return;
   svg.innerHTML = "";
-  
+
   var probs = [1 / 8145060, 1 / 1357510, 1 / 35724, 1 / 733, 1 / 45];
   var ratios = [0, 0, 0, 0, 0];
-  
+
   if (count > 0) {
     for (var i = 0; i < 5; i++) {
       var expected = count * probs[i];
       ratios[i] = expected > 0 ? (nWin[i] / expected) : 0;
     }
   }
-  
+
   var maxRatio = 1.2;
   for (var i = 0; i < 5; i++) {
     if (ratios[i] > maxRatio) maxRatio = ratios[i];
   }
   if (maxRatio <= 0) maxRatio = 1.2;
-  
+
   var chartHeight = 150;
   var chartTop = 20;
   var y100 = chartTop + chartHeight - (1.0 / maxRatio * chartHeight);
-  
+
   var line = document.createElementNS("http://www.w3.org/2000/svg", "line");
   line.setAttribute("x1", 10);
   line.setAttribute("y1", y100);
@@ -1530,11 +1692,11 @@ function renderExpectationsChart() {
   line.setAttribute("stroke-width", "1");
   line.setAttribute("stroke-dasharray", "3,3");
   svg.appendChild(line);
-  
+
   var lineText = document.createElementNS("http://www.w3.org/2000/svg", "text");
   lineText.setAttribute("x", 240);
   lineText.setAttribute("y", y100 - 3);
-  lineText.setAttribute("font-size", "7px");
+  lineText.setAttribute("font-size", "11px");
   lineText.setAttribute("fill", "#ff3b30");
   lineText.setAttribute("text-anchor", "end");
   lineText.textContent = "100%";
@@ -1546,14 +1708,14 @@ function renderExpectationsChart() {
     var y = chartTop + chartHeight - h;
     var x = i * 46 + 18;
     var w = 18;
-    
+
     var fill = "#8e8e93";
     if (ratio >= 1.0) {
       fill = "#34c759";
     } else if (ratio > 0) {
       fill = "#ff9500";
     }
-    
+
     var rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
     rect.setAttribute("x", x);
     rect.setAttribute("y", y);
@@ -1561,26 +1723,26 @@ function renderExpectationsChart() {
     rect.setAttribute("height", h);
     rect.setAttribute("fill", fill);
     rect.setAttribute("rx", 3);
-    
+
     var title = document.createElementNS("http://www.w3.org/2000/svg", "title");
     var percentage = (ratio * 100).toFixed(2);
     title.textContent = (i + 1) + "등 - 당첨 비율: " + percentage + "% (당첨: " + nWin[i] + "회 / 기댓값: " + (count * probs[i]).toFixed(4) + "회)";
     rect.appendChild(title);
     svg.appendChild(rect);
-    
+
     var label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    label.setAttribute("x", x + w/2);
+    label.setAttribute("x", x + w / 2);
     label.setAttribute("y", 205);
-    label.setAttribute("font-size", "8.5px");
+    label.setAttribute("font-size", "1em");
     label.setAttribute("font-weight", "bold");
     label.setAttribute("fill", "#555");
     label.setAttribute("text-anchor", "middle");
     label.textContent = (i + 1) + "등";
     svg.appendChild(label);
-    
+
     if (ratio > 0) {
       var ratioText = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      ratioText.setAttribute("x", x + w/2);
+      ratioText.setAttribute("x", x + w / 2);
       ratioText.setAttribute("y", y - 3);
       ratioText.setAttribute("font-size", "7.5px");
       ratioText.setAttribute("font-weight", "bold");
@@ -1596,7 +1758,7 @@ function switchAnalysisTab(tabKey) {
   var tabMy = document.getElementById('tab-content-my');
   var tabWin = document.getElementById('tab-content-win');
   var btns = document.querySelectorAll('.analysis-tab-btn');
-  
+
   if (tabKey === 'my') {
     if (tabMy) tabMy.style.display = 'block';
     if (tabWin) tabWin.style.display = 'none';
@@ -1608,10 +1770,10 @@ function switchAnalysisTab(tabKey) {
     if (btns[0]) btns[0].classList.remove('active');
     if (btns[1]) btns[1].classList.add('active');
   }
-  
+
   // 탭 변환 시 차트들 강제 재렌더링
   updateStatsHeatmaps();
-  
+
   // 이벤트 재바인딩 (DOM 갱신 대비)
   bindLocalEvents();
 }
@@ -1620,21 +1782,71 @@ function bindLocalEvents() {
   var btnMy = document.getElementById('tab-btn-my');
   var btnWin = document.getElementById('tab-btn-win');
   if (btnMy) {
-    btnMy.onclick = function() { switchAnalysisTab('my'); };
+    btnMy.onclick = function () { switchAnalysisTab('my'); };
   }
   if (btnWin) {
-    btnWin.onclick = function() { switchAnalysisTab('win'); };
+    btnWin.onclick = function () { switchAnalysisTab('win'); };
   }
-  
+
+  var btnCsv = document.getElementById('btn-download-csv');
+  if (btnCsv) {
+    btnCsv.onclick = function () { downloadCSV(); };
+  }
+
   // 차트 모드 스위치 버튼 동적 바인딩
   var modeBtns = document.querySelectorAll('.chart-mode-btn');
-  modeBtns.forEach(function(btn) {
+  modeBtns.forEach(function (btn) {
     var chartKey = btn.getAttribute('data-chart');
     var mode = btn.getAttribute('data-mode');
-    btn.onclick = function() {
+    btn.onclick = function () {
       setFrequencyMode(chartKey, mode);
     };
   });
+}
+
+function downloadCSV() {
+  var csvContent = "\uFEFF"; // 한글 깨짐 방지 UTF-8 BOM
+  csvContent += "회차,추첨일,요일,번호1,번호2,번호3,번호4,번호5,번호6,보너스,1등당첨금액,1등당첨인원수\r\n";
+
+  var rounds = Object.keys(realLottoData).map(Number).sort(function (a, b) { return a - b; });
+
+  for (var i = 0; i < rounds.length; i++) {
+    var round = rounds[i];
+    var data = realLottoData[round];
+    if (data && data.numbers) {
+      var d = new Date(data.date);
+      var dayOfWeek = ['일', '월', '화', '수', '목', '금', '토'][d.getDay()];
+      var firstWinAmount = data.first_win_amount !== undefined ? data.first_win_amount : 0;
+      var firstWinnerCount = data.first_winner_count !== undefined ? data.first_winner_count : 0;
+      var row = [
+        round,
+        data.date,
+        dayOfWeek,
+        data.numbers[0],
+        data.numbers[1],
+        data.numbers[2],
+        data.numbers[3],
+        data.numbers[4],
+        data.numbers[5],
+        data.bonus,
+        firstWinAmount,
+        firstWinnerCount
+      ].join(",");
+      csvContent += row + "\r\n";
+    }
+  }
+
+  var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  var link = document.createElement("a");
+  if (link.download !== undefined) {
+    var url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "lotto_history_db.csv");
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 }
 
 function setPriceType(type) {
@@ -1645,21 +1857,546 @@ function setPriceType(type) {
   }
   updateInputs();
 }
+function getLastSaturdayDate() {
+  var d = new Date();
+  var day = d.getDay();
+  var diff = (day + 1) % 7;
+  d.setDate(d.getDate() - diff);
+
+  var yyyy = d.getFullYear();
+  var mm = d.getMonth() + 1;
+  var dd = d.getDate();
+  return yyyy + "-" + (mm < 10 ? '0' : '') + mm + "-" + (dd < 10 ? '0' : '') + dd;
+}
+
+function updateRecentDrawInfo() {
+  var lastSatStr = getLastSaturdayDate();
+  var targetData = null;
+  var foundRound = null;
+
+  var rounds = Object.keys(realLottoData);
+  for (var i = 0; i < rounds.length; i++) {
+    var r = rounds[i];
+    if (realLottoData[r] && realLottoData[r].date === lastSatStr) {
+      targetData = realLottoData[r];
+      foundRound = r;
+      break;
+    }
+  }
+
+  if (!targetData) {
+    var maxRound = 0;
+    for (var i = 0; i < rounds.length; i++) {
+      var r = parseInt(rounds[i]) || 0;
+      if (r > maxRound) maxRound = r;
+    }
+    if (maxRound > 0) {
+      targetData = realLottoData[maxRound];
+      foundRound = maxRound;
+    }
+  }
+
+  var infoEl = document.getElementById('recent-draw-info');
+  if (infoEl && targetData) {
+    var actualNumbers = targetData.numbers || [0, 0, 0, 0, 0, 0];
+    var numStr = actualNumbers.slice(0, 6).map(function (n) {
+      return (n < 10 ? '0' : '') + n;
+    }).join('-');
+    infoEl.innerHTML = "최근 당첨 [" + targetData.date + "(토)]: " + numStr;
+  }
+}
+
+function editSlotName(slotId) {
+  var raw = localStorage.getItem('lotto_slot_' + slotId);
+  if (!raw) {
+    alert('비어있는 슬롯의 이름은 수정할 수 없습니다. 먼저 저장해 주세요.');
+    return;
+  }
+
+  try {
+    var data = JSON.parse(raw);
+    var currentName = data.customName || data.savedAt || ('슬롯 ' + slotId);
+    var newName = prompt('슬롯 ' + slotId + '의 새 이름을 입력해 주세요:', currentName);
+
+    if (newName === null) return;
+    newName = newName.trim();
+    if (newName === '') {
+      delete data.customName;
+    } else {
+      data.customName = newName;
+    }
+
+    localStorage.setItem('lotto_slot_' + slotId, JSON.stringify(data));
+    updateSlotsUI();
+  } catch (e) {
+    alert('슬롯 이름 수정 중 오류: ' + e.message);
+  }
+}
+function getAlgorithmSettingsForIndex(drawIndex) {
+  var currentSum = 0;
+  for (var i = 0; i < myAlgorithmSettings.length; i++) {
+    var row = myAlgorithmSettings[i];
+    currentSum += row.p;
+    if (drawIndex < currentSum) {
+      return row;
+    }
+  }
+  return myAlgorithmSettings[0];
+}
+
+function getRecentDraws(n) {
+  var list = [];
+  if (winType === 'myNum') {
+    var startR = realRound - 1;
+    var countFound = 0;
+    for (var r = startR; r >= 1 && countFound < n; r--) {
+      if (realLottoData[r] && realLottoData[r].numbers) {
+        list.push(realLottoData[r].numbers.slice(0, 6));
+        countFound++;
+      }
+    }
+  } else {
+    var len = virtualDrawHistory.length;
+    var startIdx = Math.max(0, len - n);
+    for (var i = startIdx; i < len; i++) {
+      list.push(virtualDrawHistory[i]);
+    }
+  }
+  return list;
+}
+
+function getTopFrequentNumbers(recentDraws, m) {
+  if (m <= 0 || recentDraws.length === 0) return [];
+
+  var freq = Array(46).fill(0);
+  recentDraws.forEach(function (draw) {
+    draw.forEach(function (num) {
+      if (num >= 1 && num <= 45) {
+        freq[num]++;
+      }
+    });
+  });
+
+  var items = [];
+  for (var i = 1; i <= 45; i++) {
+    if (freq[i] > 0) {
+      items.push({ num: i, count: freq[i] });
+    }
+  }
+
+  items.sort(function (a, b) {
+    if (b.count !== a.count) return b.count - a.count;
+    return a.num - b.num;
+  });
+
+  var result = [];
+  for (var i = 0; i < Math.min(m, items.length); i++) {
+    result.push(items[i].num);
+  }
+  return result;
+}
+
+function generateAlgorithmNumbers(row) {
+  var combo = [];
+
+  var recentDraws = getRecentDraws(row.n);
+  var topM = getTopFrequentNumbers(recentDraws, row.m);
+  topM.forEach(function (num) {
+    if (combo.indexOf(num) === -1 && combo.length < 6) {
+      combo.push(num);
+    }
+  });
+
+  if (row.fixed && row.fixed.length > 0) {
+    row.fixed.forEach(function (num) {
+      if (combo.indexOf(num) === -1 && combo.length < 6) {
+        combo.push(num);
+      }
+    });
+  }
+
+  while (combo.length < 6) {
+    var rand = Math.floor(Math.random() * 45) + 1;
+    if (combo.indexOf(rand) === -1) {
+      combo.push(rand);
+    }
+  }
+
+  combo.sort(function (a, b) { return a - b; });
+  return combo;
+}
+
+// 나만의 알고리즘 임시 버퍼 데이터
+var tempAlgorithmSettings = [];
+
+function setPickType(type) {
+  pickType = type;
+  previousPickType = type;
+}
+
+function showAlgorithmModal() {
+  tempAlgorithmSettings = JSON.parse(JSON.stringify(myAlgorithmSettings));
+  var modal = document.getElementById('algorithm-setting-modal');
+  if (modal) {
+    modal.classList.add('show');
+    renderAlgoRows();
+  }
+}
+
+function closeAlgorithmModal() {
+  var modal = document.getElementById('algorithm-setting-modal');
+  if (modal)
+    modal.classList.remove('show');
+
+  var radioEl = document.getElementById('pick-type-' + previousPickType);
+  if (radioEl) {
+    radioEl.checked = true;
+  } else if (previousPickType === 'myAlgorithm') {
+    var algoRadio = document.getElementById('pick-type-algo');
+    if (algoRadio) algoRadio.checked = true;
+  }
+}
+
+function renderAlgoRows() {
+  var container = document.getElementById('algo-rows-container');
+  if (!container) return;
+
+  container.innerHTML = '';
+
+  tempAlgorithmSettings.forEach(function (row, index) {
+    var div = document.createElement('div');
+    div.className = 'algo-row';
+    div.id = 'algo-row-' + index;
+
+    var labelN = document.createElement('span');
+    labelN.innerText = '(최근';
+    var inputN = document.createElement('input');
+    inputN.type = 'number';
+    inputN.value = row.n;
+    inputN.min = 1;
+    inputN.className = 'algo-n-input';
+    inputN.oninput = function () {
+      row.n = parseInt(this.value) || 5;
+    };
+
+    var labelM = document.createElement('span');
+    labelM.innerText = '회 빈출 TOP';
+    var inputM = document.createElement('input');
+    inputM.type = 'number';
+    inputM.value = row.m;
+    inputM.min = 0;
+    inputM.max = 6;
+    inputM.className = 'algo-m-input';
+    inputM.oninput = function () {
+      row.m = parseInt(this.value) || 0;
+      validateAlgoLimits(index);
+    };
+
+    var labelFixed = document.createElement('span');
+    labelFixed.innerText = '개 + ';
+
+    var select = document.createElement('select');
+    select.className = 'algo-num-select';
+    select.id = 'algo-select-' + index;
+    select.onchange = function () {
+      addFixedNum(index, this);
+    };
+
+    var defaultOpt = document.createElement('option');
+    defaultOpt.value = '';
+    defaultOpt.innerText = '선택';
+    select.appendChild(defaultOpt);
+
+    for (var i = 1; i <= 45; i++) {
+      var opt = document.createElement('option');
+      opt.value = i;
+      opt.innerText = i;
+      select.appendChild(opt);
+    }
+
+    var ballsContainer = document.createElement('div');
+    ballsContainer.className = 'algo-fixed-balls-container';
+    ballsContainer.id = 'algo-fixed-balls-' + index;
+
+    var labelP = document.createElement('span');
+    labelP.innerText = ') X ';
+    var inputP = document.createElement('input');
+    inputP.type = 'number';
+    inputP.value = row.p;
+    inputP.min = 1;
+    inputP.className = 'algo-p-input';
+    inputP.oninput = function () {
+      var val = parseInt(this.value) || 1;
+      if (val < 1) val = 1;
+      var otherP = 0;
+      tempAlgorithmSettings.forEach(function (r, rIdx) {
+        if (rIdx !== index) {
+          otherP += r.p;
+        }
+      });
+      var maxP = Math.max(1, times_a_week - otherP);
+      if (val > maxP) {
+        val = maxP;
+        this.value = val;
+      }
+      row.p = val;
+    };
+
+    var delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'btn-row-delete';
+    delBtn.innerText = '🗑️';
+    delBtn.onclick = function () {
+      deleteAlgorithmRow(index);
+    };
+
+    div.appendChild(labelN);
+    div.appendChild(inputN);
+    div.appendChild(labelM);
+    div.appendChild(inputM);
+    div.appendChild(labelFixed);
+    div.appendChild(select);
+    div.appendChild(ballsContainer);
+    div.appendChild(labelP);
+    div.appendChild(inputP);
+    div.appendChild(delBtn);
+
+    container.appendChild(div);
+
+    updateFixedBallsUI(index);
+    validateAlgoLimits(index);
+  });
+}
+
+function addAlgorithmRow() {
+  var totalP = 0;
+  tempAlgorithmSettings.forEach(function (r) {
+    totalP += r.p;
+  });
+  var remainP = Math.max(1, times_a_week - totalP);
+  tempAlgorithmSettings.push({ n: 5, m: 0, fixed: [], p: remainP });
+  renderAlgoRows();
+}
+
+function deleteAlgorithmRow(index) {
+  if (tempAlgorithmSettings.length <= 1) {
+    alert('최소 1개 이상의 설정 행이 존재해야 합니다.');
+    return;
+  }
+  tempAlgorithmSettings.splice(index, 1);
+  renderAlgoRows();
+}
+
+function getBallColor(num) {
+  if (num < 10) return "#FDB635";
+  if (num < 20) return "#1763D4";
+  if (num < 30) return "#C53B1E";
+  if (num < 40) return "#60666F";
+  return "#22AE18";
+}
+
+function updateFixedBallsUI(rowIndex) {
+  var row = tempAlgorithmSettings[rowIndex];
+  var container = document.getElementById('algo-fixed-balls-' + rowIndex);
+  if (!container) return;
+
+  container.innerHTML = '';
+  row.fixed.forEach(function (num) {
+    var ball = document.createElement('div');
+    ball.className = 'algo-ball';
+    ball.innerText = num;
+    ball.style.backgroundColor = getBallColor(num);
+
+    var del = document.createElement('span');
+    del.className = 'ball-delete-btn';
+    del.innerText = 'x';
+    del.onclick = function () {
+      removeFixedNum(rowIndex, num);
+    };
+
+    ball.appendChild(del);
+    container.appendChild(ball);
+  });
+}
+
+function addFixedNum(rowIndex, selectEl) {
+  var val = parseInt(selectEl.value);
+  if (isNaN(val)) return;
+
+  var row = tempAlgorithmSettings[rowIndex];
+  if (row.fixed.indexOf(val) !== -1) {
+    alert('이미 고정수로 선택된 번호입니다.');
+    selectEl.value = '';
+    return;
+  }
+
+  row.fixed.push(val);
+  row.fixed.sort(function (a, b) { return a - b; });
+  selectEl.value = '';
+
+  updateFixedBallsUI(rowIndex);
+  validateAlgoLimits(rowIndex);
+}
+
+function removeFixedNum(rowIndex, num) {
+  var row = tempAlgorithmSettings[rowIndex];
+  var idx = row.fixed.indexOf(num);
+  if (idx !== -1) {
+    row.fixed.splice(idx, 1);
+  }
+  updateFixedBallsUI(rowIndex);
+  validateAlgoLimits(rowIndex);
+}
+
+function validateAlgoLimits(rowIndex) {
+  var row = tempAlgorithmSettings[rowIndex];
+  var selectEl = document.getElementById('algo-select-' + rowIndex);
+  if (!row) return;
+
+  var sum = row.m + row.fixed.length;
+
+  while (sum > 6 && row.fixed.length > 0) {
+    row.fixed.pop();
+    sum = row.m + row.fixed.length;
+  }
+
+  updateFixedBallsUI(rowIndex);
+
+  if (selectEl) {
+    if (sum >= 6) {
+      selectEl.disabled = true;
+    } else {
+      selectEl.disabled = false;
+    }
+  }
+}
+
+function applyAlgorithmSettings() {
+  var totalP = 0;
+  for (var i = 0; i < tempAlgorithmSettings.length; i++) {
+    var pVal = parseInt(tempAlgorithmSettings[i].p);
+    if (isNaN(pVal) || pVal < 1) {
+      alert('응모 개수 P는 1 이상의 정수여야 합니다.');
+      return;
+    }
+    totalP += pVal;
+  }
+
+  if (totalP > times_a_week) {
+    alert('설정한 응모 개수(P)의 총합(' + totalP + '회)이 매주 응모 횟수(' + times_a_week + '회)보다 작아야 합니다.');
+    return;
+  }
+
+  myAlgorithmSettings = JSON.parse(JSON.stringify(tempAlgorithmSettings));
+  pickType = 'myAlgorithm';
+  previousPickType = 'myAlgorithm';
+
+  var modal = document.getElementById('algorithm-setting-modal');
+  if (modal) modal.classList.remove('show');
+
+  var algoRadio = document.getElementById('pick-type-algo');
+  if (algoRadio) algoRadio.checked = true;
+}
+
+var HELP_CONTENT_HTML = 
+  '<style>' +
+  '  .help-container { max-width: 100%; margin: 0 auto; }' +
+  '  .help-card { background: #ffffff; border: 1px solid #e5e5ea; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); transition: transform 0.2s, box-shadow 0.2s; }' +
+  '  .help-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08); }' +
+  '  .question { display: flex; align-items: flex-start; gap: 10px; font-size: 1.1em; font-weight: 700; color: #007aff; margin-bottom: 12px; }' +
+  '  .q-badge { background-color: #007aff; color: #ffffff; border-radius: 6px; padding: 2px 8px; font-size: 0.85em; font-weight: 900; flex-shrink: 0; margin-top: 2px; }' +
+  '  .answer { display: flex; align-items: flex-start; gap: 10px; font-size: 0.95em; color: #48484a; background-color: #f2f2f7; padding: 14px 18px; border-radius: 8px; border-left: 4px solid #8e8e93; }' +
+  '  .a-badge { background-color: #8e8e93; color: #ffffff; border-radius: 6px; padding: 2px 8px; font-size: 0.85em; font-weight: 900; flex-shrink: 0; margin-top: 2px; }' +
+  '  del { color: #aeaeb2; text-decoration: line-through; }' +
+  '  .note-box { font-size: 0.9em; color: #8e8e93; margin-top: 8px; padding-left: 48px; line-height: 1.4; }' +
+  '</style>' +
+  '<div class="help-container">' +
+  '  <div class="help-card">' +
+  '    <div class="question">' +
+  '      <span class="q-badge">Q</span>' +
+  '      <span>시뮬레이션 속도가 빠른데, 응모권은 왜 몇 안되어 보이죠?</span>' +
+  '    </div>' +
+  '    <div class="answer">' +
+  '      <span class="a-badge">A</span>' +
+  '      <span>다 보여줄 수 없어서, 진행 중이라는 인상을 보여주려고 몇 개만 대표적으로 보여주는 겁니다. 일단 뭔가 돌아가고 있으면 시각적으로 흥미롭기 때문입니다.</span>' +
+  '    </div>' +
+  '  </div>' +
+  '  <div class="help-card">' +
+  '    <div class="question">' +
+  '      <span class="q-badge">Q</span>' +
+  '      <span>왜 로또 정기권을 발행하지 않죠?</span>' +
+  '    </div>' +
+  '    <div class="answer">' +
+  '      <span class="a-badge">A</span>' +
+  '      <span>영국, 미국(뉴욕, 버지니아, 메릴랜드...), 유럽연합 등에서는 이미 판매하고 있습니다. 주기적으로 재원이 들어오는 안정적인 구조죠. 구매를 깜빡하는 바쁜 <del>호구</del>고객님들을 위한 맞춤형 자동 서비스를 어서 우리나라에서도 시행해야 된다고 생각합니다.</span>' +
+  '    </div>' +
+  '  </div>' +
+  '  <div class="help-card">' +
+  '    <div class="question">' +
+  '      <span class="q-badge">Q</span>' +
+  '      <span>누적 기댓값이란 무엇인가요?</span>' +
+  '    </div>' +
+  '    <div class="answer">' +
+  '      <span class="a-badge">A</span>' +
+  '      <span>수학적/통계적으로 사용자가 투입한 비용 대비 평균적으로 회수해야 하는 정상적인 당첨 기대 수익 지표입니다.</span>' +
+  '    </div>' +
+  '  </div>' +
+  '  <div class="help-card">' +
+  '    <div class="question">' +
+  '      <span class="q-badge">Q</span>' +
+  '      <span>빈도그래프에서 "드라마틱"과 "드라이"의 차이는 무엇인가요?</span>' +
+  '    </div>' +
+  '    <div class="answer">' +
+  '      <span class="a-badge">A</span>' +
+  '      <span>모든 로또 번호 추출 확률은 결국 시행횟수가 늘어남에 따라 동일한 확률(평균)로 완벽히 수렴하게 됩니다. 장기적으로 모든 그래프의 막대 높이가 비슷해지지만, 그 미세한 과정 속에서도 분명히 더 자주 등장하거나 뜸하게 나온 번호들이 존재합니다. 이 미세한 수치 차이를 시각적으로 극대화(왜곡)해서 보여주는 모드가 "드라마틱"하게입니다.</span>' +
+  '    </div>' +
+  '    <div class="note-box">' +
+  '      💡 <strong>예시:</strong> 만약 1번이 1,000번 등장하고 2번이 1,010번 등장했다면 실제 비율 차이는 1%에 불과하여 "드라이" 모드에서는 막대 높이가 거의 같아 보입니다. 하지만 그 사이 구간에 나머지 모든 공이 들어있다면 "드라마틱" 모드에서는 100픽셀 이상의 큰 격차로 과장하여 순위 변동을 뚜렷하게 관찰할 수 있게 돕습니다.' +
+  '    </div>' +
+  '  </div>' +
+  '</div>';
+
+function showHelpModal() {
+  var modal = document.getElementById('help-modal');
+  var body = document.getElementById('help-modal-body');
+  if (!modal) return;
+
+  if (body) {
+    body.innerHTML = HELP_CONTENT_HTML;
+  }
+  modal.classList.add('show');
+}
+
+function closeHelpModal() {
+  var modal = document.getElementById('help-modal');
+  if (modal) modal.classList.remove('show');
+}
 
 // HTML onclick 이벤트가 전역에서 안전하게 호출할 수 있도록 window 객체에 명시적 등록
 window.switchAnalysisTab = switchAnalysisTab;
 window.setFrequencyMode = setFrequencyMode;
 window.setPriceType = setPriceType;
+window.downloadCSV = downloadCSV;
+window.toggleSimulation = toggleSimulation;
 if (typeof initLotto === 'function') window.initLotto = initLotto;
 if (typeof saveSlot === 'function') window.saveSlot = saveSlot;
 if (typeof loadSlot === 'function') window.loadSlot = loadSlot;
 if (typeof clearSlot === 'function') window.clearSlot = clearSlot;
 if (typeof chMyNum === 'function') window.chMyNum = chMyNum;
 if (typeof closeStopModal === 'function') window.closeStopModal = closeStopModal;
+if (typeof editSlotName === 'function') window.editSlotName = editSlotName;
+window.setPickType = setPickType;
+window.showAlgorithmModal = showAlgorithmModal;
+window.closeAlgorithmModal = closeAlgorithmModal;
+window.addAlgorithmRow = addAlgorithmRow;
+window.deleteAlgorithmRow = deleteAlgorithmRow;
+window.applyAlgorithmSettings = applyAlgorithmSettings;
+window.showHelpModal = showHelpModal;
+window.closeHelpModal = closeHelpModal;
 
 // 최초 로드 시 실행 (자체 기동 구조)
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function () {
     if (typeof initLotto === 'function') initLotto();
   });
 } else {

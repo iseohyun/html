@@ -247,18 +247,8 @@ table {
 
 td {
   margin: 0px;
-  border: 1px solid #ddd;
   padding: 5px 15px;
   text-align: center;
-}
-
-tr:first-child {
-  background-color: #999;
-  color: white;
-}
-
-tr:first-child:hover {
-  background-color: #666;
 }
 
 tr:hover {
@@ -573,6 +563,7 @@ u {
   display: flex !important;
   visibility: hidden;
   opacity: 0;
+  pointer-events: none;
   transition: opacity 0.25s, visibility 0.25s;
   position: fixed !important;
   z-index: 99999 !important;
@@ -590,6 +581,7 @@ u {
 .lotto-modal.show {
   visibility: visible !important;
   opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 .lotto-modal-content {
@@ -622,21 +614,15 @@ u {
 }
 
 .lotto-modal-table {
-  width: 100%;
-  border-collapse: collapse;
   margin-bottom: 20px;
-  font-size: 0.95em;
 }
 
 .lotto-modal-table th, .lotto-modal-table td {
   padding: 10px 12px;
-  border-bottom: 1px solid #f0f0f5;
   text-align: left;
 }
 
 .lotto-modal-table th {
-  background-color: #f8f8fa;
-  color: #555;
   width: 40%;
 }
 
@@ -697,6 +683,17 @@ u {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
+  padding: 6px 12px;
+  margin-bottom: 5px;
+  border-radius: 6px;
+  background-color: rgba(242, 242, 247, 0.4);
+  overflow: hidden;
+}
+
+.stats-row span {
+  position: relative;
+  z-index: 2;
 }
 
 .heatmap-container {
@@ -738,7 +735,7 @@ u {
 }
 
 .heatmap-cell:hover {
-  cursor: none;
+  /* cursor none 삭제 */
 }
 
 /* 📊 side-by-side 레이아웃 및 세로막대 그래프 스타일 */
@@ -848,6 +845,26 @@ u {
   transition: background-color 0.2s;
 }
 
+.icon-btn-help {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #5856d6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1.05em;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.icon-btn-help:hover {
+  background: #4745ab;
+}
+
 /* 💾 저장 슬롯 리스트 */
 .slot-list-container {
   display: flex;
@@ -914,6 +931,21 @@ u {
   opacity: 0.8;
 }
 
+.btn-slot-edit {
+  padding: 2px 6px;
+  font-size: 0.9em;
+  background: #ff9500;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-slot-edit:hover {
+  opacity: 0.8;
+}
+
 .btn-slot-clear {
   padding: 2px 6px;
   font-size: 0.9em;
@@ -967,4 +999,196 @@ u {
 .analysis-tab-btn.active {
   background: #007aff;
   color: #fff;
-}
+}
+
+.heatmap-tooltip-bar {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background-color: #f2f2f7;
+  border: 1px solid #e5e5ea;
+  border-radius: 6px;
+  font-size: 0.85em;
+  font-weight: bold;
+  color: #555;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* 🛠️ Utility Polishing Classes for Layout & Typography */
+.d-flex { display: flex; }
+.d-block { display: block; }
+.flex-1 { flex: 1; }
+.w-100 { width: 100%; }
+.align-center { align-items: center; }
+.gap-8 { gap: 8px; }
+.gap-16 { gap: 16px; }
+.cursor-pointer { cursor: pointer; }
+.label-clickable {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+.margin-r-6 { margin-right: 6px; }
+.margin-r-8 { margin-right: 8px; }
+.margin-t-12 { margin-top: 12px; }
+.text-bold { font-weight: bold; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-title { font-weight: bold; font-size: 1.1em; }
+.text-small { font-size: 0.85em; }
+.text-muted { color: #8e8e93; }
+.text-danger { color: #ff3b30; }
+.text-primary { color: #007aff; }
+
+/* 🗑️ Clean up obsolete tooltip styling */
+.tooltip, .tooltip .tt_ctx, .tooltip:hover .tt_ctx {
+  display: none !important;
+}
+
+.recent-draw-panel {
+  text-align: center;
+  padding: 10px;
+  font-size: 0.9em;
+  font-weight: bold;
+  color: #333;
+}
+.download-db-panel {
+  text-align: center;
+  padding: 10px;
+}
+.btn-download {
+  width: 100%;
+  max-width: 400px;
+  font-size: 0.9em;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 6px;
+  border: 1px solid #007aff;
+  background-color: #007aff;
+  color: #fff;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.stat-bar-container {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  background-color: transparent;
+  pointer-events: none;
+}
+.stat-bar {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 0%;
+  opacity: 0.15;
+  transition: width 0.2s ease-out;
+}
+.bar-spent {
+  background-color: #333;
+}
+.bar-won {
+  background-color: #ff3b30;
+}
+.bar-profit {
+  background-color: #34c759;
+}
+.bar-expected {
+  background-color: #8e8e93;
+}
+
+/* 나만의 알고리즘 설정 모달 관련 스타일 */
+.algo-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  font-size: 0.9em;
+  color: #333;
+}
+
+.algo-row input[type="number"] {
+  width: 50px;
+  padding: 4px;
+  border: 0;
+  border-bottom: 1px solid #888;
+  border-radius: 0;
+  text-align: center;
+  font-family: inherit;
+}
+
+.algo-row select {
+  padding: 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.algo-fixed-balls-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  min-width: 60px;
+}
+
+.algo-ball {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #ff9500;
+  color: white;
+  font-size: 0.8em;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 4px;
+}
+
+.ball-delete-btn {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #ff3b30;
+  color: white;
+  font-size: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  line-height: 1;
+}
+
+.btn-row-delete {
+  padding: 4px 6px;
+  background-color: #ff3b30;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85em;
+  margin-left: auto;
+  transition: opacity 0.2s;
+}
+
+.btn-row-delete:hover {
+  opacity: 0.8;
+}

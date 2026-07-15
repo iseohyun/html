@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>로또 시뮬레이터 도움말</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #333;
+      line-height: 1.6;
+      margin: 0;
+      padding: 20px;
+      background-color: #f8f9fa;
+    }
+    .help-container {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+    .help-card {
+      background: #ffffff;
+      border: 1px solid #e5e5ea;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .help-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    }
+    .question {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 1.1em;
+      font-weight: 700;
+      color: #007aff;
+      margin-bottom: 12px;
+    }
+    .q-badge {
+      background-color: #007aff;
+      color: #ffffff;
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 0.85em;
+      font-weight: 900;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .answer {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.95em;
+      color: #48484a;
+      background-color: #f2f2f7;
+      padding: 14px 18px;
+      border-radius: 8px;
+      border-left: 4px solid #8e8e93;
+    }
+    .a-badge {
+      background-color: #8e8e93;
+      color: #ffffff;
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 0.85em;
+      font-weight: 900;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    del {
+      color: #aeaeb2;
+      text-decoration: line-through;
+    }
+    .note-box {
+      font-size: 0.9em;
+      color: #8e8e93;
+      margin-top: 8px;
+      padding-left: 48px;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <div class="help-container">
+    <div class="help-card">
+      <div class="question">
+        <span class="q-badge">Q</span>
+        <span>시뮬레이션 속도가 빠른데, 응모권은 왜 몇 안되어 보이죠?</span>
+      </div>
+      <div class="answer">
+        <span class="a-badge">A</span>
+        <span>다 보여줄 수 없어서, 진행 중이라는 인상을 보여주려고 몇 개만 대표적으로 보여주는 겁니다. 일단 뭔가 돌아가고 있으면 시각적으로 흥미롭기 때문입니다.</span>
+      </div>
+    </div>
+
+    <div class="help-card">
+      <div class="question">
+        <span class="q-badge">Q</span>
+        <span>왜 로또 정기권을 발행하지 않죠?</span>
+      </div>
+      <div class="answer">
+        <span class="a-badge">A</span>
+        <span>영국, 미국(뉴욕, 버지니아, 메릴랜드...), 유럽연합 등에서는 이미 판매하고 있습니다. 주기적으로 재원이 들어오는 안정적인 구조죠. 구매를 깜빡하는 바쁜 <del>호구</del>고객님들을 위한 맞춤형 자동 서비스를 어서 우리나라에서도 시행해야 된다고 생각합니다.</span>
+      </div>
+    </div>
+
+    <div class="help-card">
+      <div class="question">
+        <span class="q-badge">Q</span>
+        <span>누적 기댓값이란 무엇인가요?</span>
+      </div>
+      <div class="answer">
+        <span class="a-badge">A</span>
+        <span>수학적/통계적으로 사용자가 투입한 비용 대비 평균적으로 회수해야 하는 정상적인 당첨 기대 수익 지표입니다.</span>
+      </div>
+    </div>
+
+    <div class="help-card">
+      <div class="question">
+        <span class="q-badge">Q</span>
+        <span>빈도그래프에서 "드라마틱"과 "드라이"의 차이는 무엇인가요?</span>
+      </div>
+      <div class="answer">
+        <span class="a-badge">A</span>
+        <span>모든 로또 번호 추출 확률은 결국 시행횟수가 늘어남에 따라 동일한 확률(평균)로 완벽히 수렴하게 됩니다. 장기적으로 모든 그래프의 막대 높이가 비슷해지지만, 그 미세한 과정 속에서도 분명히 더 자주 등장하거나 뜸하게 나온 번호들이 존재합니다. 이 미세한 수치 차이를 시각적으로 극대화(왜곡)해서 보여주는 모드가 "드라마틱"하게입니다.</span>
+      </div>
+      <div class="note-box">
+        💡 <strong>예시:</strong> 만약 1번이 1,000번 등장하고 2번이 1,010번 등장했다면 실제 비율 차이는 1%에 불과하여 "드라이" 모드에서는 막대 높이가 거의 같아 보입니다. 하지만 그 사이 구간에 나머지 모든 공이 들어있다면 "드라마틱" 모드에서는 100픽셀 이상의 큰 격차로 과장하여 순위 변동을 뚜렷하게 관찰할 수 있게 돕습니다.
+      </div>
+    </div>
+  </div>
+</body>
+</html>
