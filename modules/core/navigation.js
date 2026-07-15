@@ -27,11 +27,6 @@ window.SiteModules.Navigation = (function () {
       window.firebase.auth().onAuthStateChanged((user) => {
         window.SiteModules.authInitialized = true;
 
-        // 방문 기록 서버 동기화 시작 (1일 1회 제약)
-        if (window.SiteModules.Auth && typeof window.SiteModules.Auth.syncHistory === 'function') {
-          window.SiteModules.Auth.syncHistory(user);
-        }
-
         const loginBtn = document.getElementById("nav-login");
         const modalUserInfo = document.getElementById("login-modal-title");
         if (loginBtn) {
@@ -107,9 +102,6 @@ window.SiteModules.Navigation = (function () {
               <path d="M 341 267 C 339 260 360 313 400 309" style="stroke-miterlimit: 17;"/>
             </svg>
           </div>
-          <div class="nav-item" id="nav-toggle" data-tooltip="메뉴 접기/펴기">
-            <span class="material-symbols-outlined">menu</span>
-          </div>
           <div class="nav-item" id="nav-sitemap" data-tab="tab-sitemap" data-tooltip="Site Map">
             <span class="material-symbols-outlined">account_tree</span>
             <span class="keybind-badge">1</span>
@@ -121,14 +113,6 @@ window.SiteModules.Navigation = (function () {
           <div class="nav-item" id="nav-search" data-tab="tab-search" data-tooltip="검색">
             <span class="material-symbols-outlined">search</span>
             <span class="keybind-badge">3</span>
-          </div>
-          <div class="nav-item" id="nav-recent" data-tab="tab-recent" data-tooltip="방문 기록">
-            <span class="material-symbols-outlined">history</span>
-            <span class="keybind-badge">4</span>
-          </div>
-          <div class="nav-item" id="nav-update" data-tab="tab-update" data-tooltip="최근 업데이트">
-            <span class="material-symbols-outlined">fiber_new</span>
-            <span class="keybind-badge">5</span>
           </div>
         </div>
         
@@ -193,22 +177,6 @@ window.SiteModules.Navigation = (function () {
             </div>
             <ul class="search-results-list" id="sidebar-search-results"></ul>
           </div>
-          
-          <!-- 4. Recent Visits Pane -->
-          <div class="tab-pane" id="tab-recent">
-            <div class="panel-header">
-              <span class="panel-header-title">방문 기록</span>
-            </div>
-            <ul class="recent-update-panel-list" id="sidebar-recent-list"></ul>
-          </div>
-
-          <!-- 5. Recent Updates Pane -->
-          <div class="tab-pane" id="tab-update">
-            <div class="panel-header">
-              <span class="panel-header-title">최근 업데이트</span>
-            </div>
-            <ul class="recent-update-panel-list" id="sidebar-update-list"></ul>
-          </div>
         </div>
       `;
       sidebarContainer.appendChild(sidebarPanel);
@@ -246,8 +214,6 @@ window.SiteModules.Navigation = (function () {
         // 라우터 초기화
         initRouter();
 
-        // 최근 방문 목록 렌더링
-        renderRecentVisits();
       })
       .catch(err => console.error("Error loading hierarchy.json:", err));
   }
@@ -794,11 +760,6 @@ window.SiteModules.Navigation = (function () {
       window.SiteModules.Clipboard.init();
     }
 
-    // H. 최근 방문 기록(localStorage) 추가 및 렌더링
-    if (!isHome) {
-      addPageVisit(docTitle || state.cur_doc.title || "문서", urlPath, state.category);
-    }
-
     // I. 튜토리얼 기능 연동
     updatePageFeatures();
 
@@ -809,18 +770,6 @@ window.SiteModules.Navigation = (function () {
         window.MathJax.typesetPromise([article]).catch(err => {
           console.warn("MathJax post-load typeset error:", err);
         });
-      }
-    }
-
-    // I-3. 사이드바 최근 업데이트 리스트 갱신 (10개 노출)
-    const sidebarUpdateList = document.getElementById("sidebar-update-list");
-    if (sidebarUpdateList) {
-      sidebarUpdateList.innerHTML = "";
-      if (window.SiteModules.UpdateLog && typeof window.SiteModules.UpdateLog.getUpdateList === 'function') {
-        window.SiteModules.UpdateLog.getUpdateList(10, '2023-01-01', '', '', 'sidebar-update-list');
-      } else {
-        window.SiteModules.updateLogQueue = window.SiteModules.updateLogQueue || [];
-        window.SiteModules.updateLogQueue.push([10, '2023-01-01', '', '', 'sidebar-update-list']);
       }
     }
 
@@ -1052,7 +1001,7 @@ window.SiteModules.Navigation = (function () {
       panel.classList.add("collapsed");
       document.documentElement.style.setProperty('--sidebar-width', '60px');
       // 패널이 접히면 모든 탭 아이콘에서 active 클래스를 제거하여 비활성 상태로 보이도록 합니다.
-      const tabs = ["nav-sitemap", "nav-toc", "nav-search", "nav-recent", "nav-update"];
+      const tabs = ["nav-sitemap", "nav-toc", "nav-search"];
       tabs.forEach(id => {
         const tabEl = document.getElementById(id);
         if (tabEl) tabEl.classList.remove("active");
@@ -1062,7 +1011,7 @@ window.SiteModules.Navigation = (function () {
       document.documentElement.style.setProperty('--sidebar-width', '300px');
 
       // 패널이 펼쳐질 때, 만약 활성화된 탭이 없다면 기본적으로 nav-sitemap을 활성화합니다.
-      const tabs = ["nav-sitemap", "nav-toc", "nav-search", "nav-recent", "nav-update"];
+      const tabs = ["nav-sitemap", "nav-toc", "nav-search"];
       const activeExists = tabs.some(id => {
         const tabEl = document.getElementById(id);
         return tabEl && tabEl.classList.contains("active");
@@ -1145,13 +1094,6 @@ window.SiteModules.Navigation = (function () {
   }
 
   function bindSidebarEvents() {
-    const toggleBtn = document.getElementById("nav-toggle");
-    if (toggleBtn) {
-      toggleBtn.addEventListener("click", () => {
-        trigBoard("trigger");
-      });
-    }
-
     const navHomeBtn = document.getElementById("nav-home");
     if (navHomeBtn) {
       navHomeBtn.addEventListener("click", () => {
@@ -1232,7 +1174,7 @@ window.SiteModules.Navigation = (function () {
       });
     });
 
-    const tabs = ["nav-sitemap", "nav-toc", "nav-search", "nav-recent", "nav-update"];
+    const tabs = ["nav-sitemap", "nav-toc", "nav-search"];
     tabs.forEach(tabId => {
       const el = document.getElementById(tabId);
       if (el) {
@@ -1554,176 +1496,7 @@ window.SiteModules.Navigation = (function () {
     return results;
   }
 
-  function deletePageVisit(url, timestamp) {
-    let visits = [];
-    try {
-      visits = JSON.parse(localStorage.getItem("site_recent_visits") || "[]");
-    } catch (e) {
-      visits = [];
-    }
-    visits = visits.filter(v => !(v.url === url && v.timestamp === timestamp));
-    localStorage.setItem("site_recent_visits", JSON.stringify(visits));
 
-    // Log deletion key: url_YYYY-MM-DD
-    const d = new Date(timestamp);
-    const dayKey = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-    const deleteKey = `${url}_${dayKey}`;
-
-    let deletedKeys = [];
-    try {
-      deletedKeys = JSON.parse(localStorage.getItem("site_recent_visits_deleted") || "[]");
-    } catch (e) {
-      deletedKeys = [];
-    }
-    if (!deletedKeys.includes(deleteKey)) {
-      deletedKeys.push(deleteKey);
-      localStorage.setItem("site_recent_visits_deleted", JSON.stringify(deletedKeys));
-    }
-
-    renderRecentVisits();
-  }
-
-  function addPageVisit(title, url, category) {
-    const pageName = url.split('/').pop().toLowerCase();
-    if (pageName === "index.html" || pageName === "help.html" || pageName === "admin.html" || pageName === "info.html" || url === "/" || url === "") {
-      return;
-    }
-
-    let cleanTitle = title;
-    if (typeof cleanTitle === 'string') {
-      cleanTitle = cleanTitle.replace(/\s*-\s*iseohyun\.com\s*$/i, "");
-      cleanTitle = cleanTitle.replace(/\s*-\s*iseohyun\s*$/i, "");
-      cleanTitle = cleanTitle.trim();
-    }
-
-    let visits = [];
-    try {
-      visits = JSON.parse(localStorage.getItem("site_recent_visits") || "[]");
-    } catch (e) {
-      visits = [];
-    }
-
-    // 2-6. 하루에 같은 페이지를 여러번 방문했더라도 가장 나중에 방문한 1회만 기록된다.
-    const now = Date.now();
-    visits = visits.filter(v => {
-      if (v.url !== url) return true;
-      const d1 = new Date(v.timestamp || 0);
-      const d2 = new Date(now);
-      const sameDay = d1.getFullYear() === d2.getFullYear() &&
-                      d1.getMonth() === d2.getMonth() &&
-                      d1.getDate() === d2.getDate();
-      return !sameDay;
-    });
-
-    visits.unshift({
-      title: cleanTitle,
-      url: url,
-      category: category || "",
-      timestamp: now
-    });
-
-    localStorage.setItem("site_recent_visits", JSON.stringify(visits));
-    renderRecentVisits();
-
-    // Trigger sync check (it will skip if already synced today)
-    if (window.SiteModules.Auth && typeof window.SiteModules.Auth.syncHistory === 'function') {
-      window.SiteModules.Auth.syncHistory();
-    }
-  }
-
-  function renderRecentVisits() {
-    const listContainer = document.getElementById("sidebar-recent-list");
-    if (!listContainer) return;
-
-    let visits = [];
-    try {
-      visits = JSON.parse(localStorage.getItem("site_recent_visits") || "[]");
-    } catch (e) {
-      visits = [];
-    }
-
-    if (visits.length === 0) {
-      listContainer.innerHTML = "<li style='padding: 10px; color: #747775; font-size: 0.85em;'>방문한 페이지 기록이 없습니다.</li>";
-      return;
-    }
-
-    const days = ["일", "월", "화", "수", "목", "금", "토"];
-    function formatDateWithDay(timestamp) {
-      const d = new Date(timestamp);
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const date = String(d.getDate()).padStart(2, '0');
-      const dayName = days[d.getDay()];
-      return `${year}-${month}-${date}(${dayName})`;
-    }
-
-    // Group visits by day
-    const groups = {};
-    visits.forEach(visit => {
-      const dayKey = formatDateWithDay(visit.timestamp || Date.now());
-      if (!groups[dayKey]) {
-        groups[dayKey] = [];
-      }
-      groups[dayKey].push(visit);
-    });
-
-    listContainer.innerHTML = "";
-    
-    // UI displays all groups and items
-    for (const dayKey in groups) {
-      const details = document.createElement("details");
-      details.className = "recent-visit-day";
-      details.setAttribute("open", ""); // Open by default
-
-      const summary = document.createElement("summary");
-      summary.className = "recent-visit-summary";
-      summary.textContent = dayKey;
-      details.appendChild(summary);
-
-      const ul = document.createElement("ul");
-      ul.className = "recent-visit-list";
-
-      groups[dayKey].forEach(visit => {
-        const li = document.createElement("li");
-        li.className = "recent-visit-item";
-
-        const linkWrapper = document.createElement("div");
-        linkWrapper.className = "recent-visit-link-wrapper";
-
-        const a = document.createElement("a");
-        a.className = "recent-visit-link";
-        a.href = visit.url;
-        a.textContent = visit.title;
-
-        const span = document.createElement("span");
-        span.className = "recent-visit-path";
-        span.textContent = visit.category.replace(/^ >> /, "").split(" >> ").join(" > ");
-
-        linkWrapper.appendChild(a);
-        linkWrapper.appendChild(span);
-
-        const deleteBtn = document.createElement("button");
-        deleteBtn.className = "recent-visit-delete-btn";
-        deleteBtn.innerHTML = "&times;";
-        deleteBtn.title = "삭제";
-
-        deleteBtn.addEventListener("click", (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (confirm(`'${visit.title}' 방문 기록을 삭제하시겠습니까?`)) {
-            deletePageVisit(visit.url, visit.timestamp);
-          }
-        });
-
-        li.appendChild(linkWrapper);
-        li.appendChild(deleteBtn);
-        ul.appendChild(li);
-      });
-
-      details.appendChild(ul);
-      listContainer.appendChild(details);
-    }
-  }
 
   function updatePageFeatures() {
     const featuresContainer = document.getElementById("sidebar-page-features");
@@ -2002,7 +1775,6 @@ window.SiteModules.Navigation = (function () {
   return {
     init: init,
     trigBoard: trigBoard,
-    findHierarchyPath: findHierarchyPath,
-    renderRecentVisits: renderRecentVisits
+    findHierarchyPath: findHierarchyPath
   };
 })();
