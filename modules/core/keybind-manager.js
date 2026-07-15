@@ -27,14 +27,6 @@ window.SiteModules.KeybindManager = (function() {
         e.preventDefault();
         const el = document.getElementById("nav-search");
         if (el) el.click();
-      } else if (e.key === '4') {
-        e.preventDefault();
-        const el = document.getElementById("nav-recent");
-        if (el) el.click();
-      } else if (e.key === '5') {
-        e.preventDefault();
-        const el = document.getElementById("nav-update");
-        if (el) el.click();
       }
     });
 
