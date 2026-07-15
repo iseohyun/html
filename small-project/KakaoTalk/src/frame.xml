@@ -6,22 +6,40 @@
     <ellipse cx="870" cy="160" rx="20" ry="20" />
     <path d="M885 175l20 20" />
     <path d="M965 142h60m0 26h-60m0 26h60" />
-    <path d="M870 50v-1m-5-5q5-5 10 0m-15-4q10-10 20 0m-25-4q15-15 30 0" stroke-width="3" />
-    <path d="M900 50v-5m7 5v-10m7 10v-15m7 15v-20m7 20v-25" stroke-width="5" />
+    <!-- 와이파이 상태 4단계 -->
+    <path d="M870 50v-1" stroke="${wifi-color-1:#000}" stroke-width="3" />
+    <path d="M865 45q5-5 10 0" stroke="${wifi-color-2:#000}" stroke-width="3" />
+    <path d="M860 41q10-10 20 0" stroke="${wifi-color-3:#000}" stroke-width="3" />
+    <path d="M855 37q15-15 30 0" stroke="${wifi-color-4:#000}" stroke-width="3" />
+    <!-- 셀 통신 상태 5단계 -->
+    <path d="M900 50v-5" stroke="${cell-color-1:#000}" stroke-width="5" />
+    <path d="M907 50v-10" stroke="${cell-color-2:#000}" stroke-width="5" />
+    <path d="M914 50v-15" stroke="${cell-color-3:#000}" stroke-width="5" />
+    <path d="M921 50v-20" stroke="${cell-color-4:#000}" stroke-width="5" />
+    <path d="M928 50v-25" stroke="${cell-color-5:#000}" stroke-width="5" />
   </g>
   <g style="font-size:35; fill=rgb(25, 25, 25); font-weight:normal">
     <text x="100" y="50">${capture-time:3:18}</text>
     <text x="950" y="50">${battery:83%}</text>
     <text x="170" y="185" font-size="65" font-weight="bold">${your-name:그룹채팅 8}</text>
   </g>
-  <!-- dialog background -->
-  ${dialog-background:}
-  <!-- name-tag -->
-  <g style="text-anchor:middle; dominant-baseline:middle; fill:#840; font-wight:bold;">
-    ${name-tag:}
-  </g>
-  <!-- dialog -->
-  <g style="font-size:40px; fill='#000'; font-weight:bold;">
-    ${dialog:}
+  <style>
+    #dialog-viewport-group {
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    ${animation-styles:}
+  </style>
+  <!-- dialog viewport group (헤더 고정형 스마트 스크롤 제어용) -->
+  <g id="dialog-viewport-group" transform="${scroll-transform:translate(0, 0)}">
+    <!-- dialog background -->
+    ${dialog-background:}
+    <!-- name-tag -->
+    <g style="text-anchor:middle; dominant-baseline:middle; fill:#840; font-weight:bold;">
+      ${name-tag:}
+    </g>
+    <!-- dialog -->
+    <g style="font-size:40px; fill='#000'; font-weight:bold;">
+      ${dialog:}
+    </g>
   </g>
 </svg>
