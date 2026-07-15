@@ -1,3 +1,22 @@
+## 20260716v1
+### 수행한 작업 (Summary of Actions)
+1. **카카오톡 대화방 생성기 v0.1.1 기능 최적화**:
+   - 모듈 순차 로딩을 위한 Promise 로더 체인 이식 및 SPA 재진입용 init API 분리 완료
+   - 무한 프레임 렌더러를 저전력 휴면 렌더러(Sleep/Wake Loop)로 전면 전환하여 CPU 과점유 및 마우스 대기 커서 스피너 현상 완벽 조치
+   - 캔버스 높이 제한 시 상단바 잘림 버그(구식 물리 스크롤 업데이트 원인) 완전 제거 및 오리지널 레이아웃 Y좌표 복원
+
+### LLM 가이드 (Future Prompting Instructions for LLMs)
+- **카카오톡 스크립트 실행 순서**: `engine.js` -> `interface.js` -> `main.js` 순서대로 명시적으로 로드되어야 합니다. index.html의 하단 인라인 Promise 로더 체인 구조를 유지하십시오.
+
+## 20260715v3
+### 수행한 작업 (Summary of Actions)
+1. **관리자 페이지(`admin.html`) 경로 감지 및 자동 링크 연동**:
+   - 질문이나 답변 역사 내의 `@카테고리>토픽>페이지` 형태(예: `@basicStudy>science>middle>first>taxonomy`)의 문자열을 감지하여, 해당 문서(`/basicStudy/science/middle/first/taxonomy.html`)를 새 탭으로 여는 하이퍼링크로 자동 변환하는 `formatLinks` 기능을 구현 및 적용하였습니다.
+   - 텍스트 뒤에 `.html` 확장자가 포함되어 있거나 누락되어 있는 경우 모두 중복 없이 `.html` 확장자가 정상적으로 붙어 `/#/경로.html` 형식으로 리다이렉트되도록 안정화 조치했습니다.
+
+### LLM 가이드 (Future Prompting Instructions for LLMs)
+- **`admin.html` 이스케이프 후 포맷팅**: 텍스트 내에서 특정 키워드나 경로를 포맷팅할 때는 반드시 `escapeHtml` 처리를 거쳐 특수기호(`>` 등)가 안전하게 이스케이프(`&gt;`)된 이후에 `formatLinks` 등의 정규식 치환을 가동해야 HTML 태그 인젝션을 막으면서도 안전하게 링크 태그를 꽂아 넣을 수 있습니다.
+
 ## 20260715v2
 ### 수행한 작업 (Summary of Actions)
 1. **사이드바(Sidebar) 메뉴 및 기능 제거**:
