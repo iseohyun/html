@@ -1,21 +1,4 @@
-body {
-  box-sizing: border-box;
-  width: 100%;
-  overflow-x: hidden;
-  padding: 0px;
-  margin: 0px;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  text-align: left;
-  font-family: var(--font-main);
-  color: #444;
-  line-height: 1.8em;
-  word-break: keep-all;
-}
-
-article {
+#kakaotalk-article {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
@@ -45,7 +28,7 @@ article {
 }
 
 @media (max-width: 768px) {
-  article {
+  #kakaotalk-article {
     grid-template-columns: 1fr;
   }
 }
@@ -228,7 +211,6 @@ button:active {
 
 #svg-box {
   width: 100%;
-  max-width: 500px;
   height: 800px;
   overflow: hidden;
   border-radius: 12px;
