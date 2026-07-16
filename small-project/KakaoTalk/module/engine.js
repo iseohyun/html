@@ -180,7 +180,7 @@
           text: displayDate
         });
 
-        lastPosY += MARGIN;
+        lastPosY += Math.round(MARGIN / 3);
         return;
       }
 
