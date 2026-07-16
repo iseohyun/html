@@ -1,9 +1,11 @@
-## 20260716v1
+## 20260716v2
 ### 수행한 작업 (Summary of Actions)
-1. **카카오톡 대화방 생성기 v1.0.5 기능 최적화 및 안정화**:
+1. **카카오톡 대화방 생성기 v1.0.6 기능 최적화 및 안정화**:
    - 모듈 순차 로딩을 위한 Promise 로더 체인 이식 및 SPA 재진입용 init API 분리 완료
    - 무한 프레임 렌더러를 저전력 휴면 렌더러(Sleep/Wake Loop)로 전면 전환하여 CPU 과점유 및 마우스 대기 커서 스피너 현상 완벽 조치
    - 캔버스 높이 제한 시 상단바 잘림 버그(구식 물리 스크롤 업데이트 원인) 완전 제거 및 오리지널 레이아웃 Y좌표 복원
+   - 2단 분할 레이아웃 유실 버그 해소용 캡슐화 div 내장 및 ResizeObserver 리사이징 스케일 보정 기동 완료
+   - 타 페이지 클릭 이벤트 간섭 및 여백 찌그러짐 해소를 위한 자가 치유 소멸(Self-Healing Destructors) 및 body 스타일 오버라이드 폐지 적용
 
 ### LLM 가이드 (Future Prompting Instructions for LLMs)
 - **카카오톡 스크립트 실행 순서**: `engine.js` -> `interface.js` -> `main.js` 순서대로 명시적으로 로드되어야 합니다. index.html의 하단 인라인 Promise 로더 체인 구조를 유지하십시오.
