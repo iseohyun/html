@@ -156,7 +156,7 @@
         helpModal.style.display = 'none';
       });
 
-      window.addEventListener('click', (e) => {
+      helpModal.addEventListener('click', (e) => {
         if (e.target === helpModal) {
           helpModal.style.display = 'none';
         }
@@ -311,7 +311,7 @@
       avatarModal.style.display = 'none';
     });
 
-    window.addEventListener('click', (e) => {
+    avatarModal.addEventListener('click', (e) => {
       if (e.target === avatarModal) {
         avatarModal.style.display = 'none';
       }
@@ -492,9 +492,14 @@
   }
 
   function gatherConfigFromUI() {
+    const checkEl = document.getElementById('input-capture-time');
+    if (!checkEl) {
+      return { ...loadedConfig };
+    }
+
     const config = { ...loadedConfig };
 
-    const captureTimeInput = document.getElementById('input-capture-time').value;
+    const captureTimeInput = checkEl.value;
     if (captureTimeInput) {
       const dt = new Date(captureTimeInput);
       if (!isNaN(dt.getTime())) {

@@ -9,10 +9,11 @@
 
 <body>
   <article>
-    <div id="svg-box">
-      <canvas id="chat-canvas" width="1080" height="2340"></canvas>
-    </div>
-    <div id="controll-box">
+    <div id="kakaotalk-article">
+      <div id="svg-box">
+        <canvas id="chat-canvas" width="1080" height="2340"></canvas>
+      </div>
+      <div id="controll-box">
       <div class="button-group">
         <button id="btn-load-example">대화내용 불러오기</button>
         <input type="file" id="file-loader" accept=".txt" style="display: none;">
@@ -268,6 +269,7 @@
           .catch(err => console.error('KakaoTalk scripts load error:', err));
       })();
     </script>
+    </div><!-- #kakaotalk-article -->
   </article>
 </body>
 

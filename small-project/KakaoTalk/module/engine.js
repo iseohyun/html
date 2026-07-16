@@ -104,18 +104,20 @@
   function drawCanvasChat(canvas, ctx, config, dialogs, avatarSettingsMap) {
     if (!canvas || !ctx) return;
 
-    // 가로/세로 수치 폼 값 읽어오기 및 캔버스 비트맵 리사이징 연동
-    const widthVal = parseInt(config['width']) || 1080;
-    const heightVal = parseInt(config['height']) || 2000;
+    // UI에서 설정한 도면 기준의 가상 디자인 해상도
+    const designW = parseInt(config['width']) || 1080;
+    const designH = parseInt(config['height']) || 2000;
 
-    // 캔버스 디바이스 픽셀 해상도 셋업
-    if (canvas.width !== widthVal || canvas.height !== heightVal) {
-      canvas.width = widthVal;
-      canvas.height = heightVal;
-    }
+    // 실제 설정된 캔버스 물리 해상도 (외부 ResizeObserver 세팅 대응)
+    const realW = canvas.width || designW;
+    const realH = canvas.height || designH;
 
-    const width = canvas.width;
-    const height = canvas.height;
+    // 기존 드로잉 연산 코드는 가로/세로를 designW, designH 기준으로 그리므로 고정 상수로 매핑
+    const width = designW;
+    const height = designH;
+
+    ctx.save();
+    ctx.scale(realW / designW, realH / designH);
 
     // 1. 글꼴 상세 속성 적용 (v0.0.10)
     const selectedFont = config['font'] || 'sans-serif';
@@ -527,6 +529,7 @@
     ctx.fill();
 
     ctx.fillRect(width - 63, 36, 6, 15);
+    ctx.restore(); // scale 복원
   }
 
   /**
@@ -542,6 +545,17 @@
    * requestAnimationFrame 루프 핸들러
    */
   function renderLoop(timestamp, getRefreshStateCallback, drawCallback) {
+    // 카카오톡 캔버스가 DOM에서 소멸했다면 즉시 루프 중단 및 해제! (v1.0.5)
+    const activeCanvas = document.getElementById('chat-canvas');
+    if (!activeCanvas) {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+      console.log('[KakaoTalk Debug] chat-canvas is missing. Stopped renderLoop.');
+      return;
+    }
+
     let needsRedraw = false;
 
     // 1. 등장 애니메이션 보간

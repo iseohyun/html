@@ -8,21 +8,21 @@
   2. 애니매이션(애니메이션의 시작과 끝을 기준)
   3. 전체 그림
 
-### Fixed (버그 수정)
-- **SPA 환경 화면 레이아웃 및 렌더링 영역 오류 개선**: 
-  - SPA(단일 페이지 애플리케이션) 구동 중 왼쪽 화면(Canvas)이 메뉴바에 가려지거나, 메뉴를 펼치고 접을 때 남은 영역 크기에 맞춰 캔버스가 동적으로 리사이징되지 않고 먹통이 되던 드로잉 버그 해결
-
 ---
 
-## [v1.0.5] - SPA 환경 구동 최적화 및 렌더러 저전력 패치
+## [v1.0.6] - SPA 환경 구동 최적화 및 레이아웃 리사이징 디버그 패치
 ### Fixed (버그 수정)
-- **SPA 해시 라우팅 환경 리소스 페치 오류 수정**: `getAbsoluteUrl` 유틸리티를 도입해 help.html, default-setting.md, example1.txt 경로 절대화 완료
-- **SPA 재진입 먹통 해결**: DOMContentLoaded 결합 코드를 `window.KakaoTalkMain.init` API로 래핑하고, index.html 하단에 Promise 순차 비동기 로더 체인을 장착하여 재진입 시에도 매번 정상 바인딩 및 기동 보장
-- **마우스 대기 커서(로딩 스피너) 소멸**: 무한 프레임 렌더러를 저전력 휴면 렌더러(Sleep/Wake Loop)로 개편하여 화면 변화가 없을 때는 `requestAnimationFrame`을 즉시 중단(Sleep)시키고 마우스 휠이나 재생 시에만 깨우도록(Wake) 개선
-- **상단 깎임/잘림 버그 근본 해결**: 캔버스 외곽을 통째로 위로 밀어 올리던 구식 물리 스크롤 scrollTop 이동 코드를 제거하고 상단바 Y좌표 오프셋을 오리지널 카카오톡 픽셀 규격으로 깔끔하게 복원
+- **SPA 환경 화면 레이아웃 및 2단 리사이징 영역 오류 근본 개선**:
+  - 포털 라우터의 innerHTML 주입 시 id 유실 문제를 타개하기 위해 `<article>` 내부에 전용 `#kakaotalk-article` div 컨테이너를 새로 씌워 캡슐화 완료. 이에 따라 데스크톱 800px 이상 공간에서 2단 분할 레이아웃이 유실 없이 정상 가동되도록 복원.
+  - `#svg-box` 에 걸려있던 `max-width: 500px` 한계를 해제하여 사이드바 열림/닫힘 시 가용폭이 100% 동적 추적되도록 반응성 보장.
+  - `ResizeObserver` 및 `window.KakaoTalkMain.wakeRenderer()` API를 연동하여, 창 크기나 메뉴바 개폐 시 캔버스 물리 해상도와 CSS 뷰포트 크기가 비율(Aspect Ratio)을 깨지 않고 정비율로 실시간 연동 리렌더링되도록 보정 완료.
+  - 카카오톡 페이지 이탈(타 페이지 이동) 시 `ResizeObserver`와 `requestAnimationFrame` 루프가 스스로 `disconnect()` 및 `cancelAnimationFrame`을 수행하여 사멸하게 만드는 **자가 치유 소멸(Self-Healing Destructors) 기술**을 적용해 다른 서브페이지들의 클릭/여백 오염 장애를 완전 해결.
+  - kakaotalk-style.css 의 body 선택자 오버라이딩을 완전 폐지하여, 타 페이지 전환 시 전역 사이드바 본물 밀기 패딩 여백이 오염되는 에러 완전 차단.
+  - **SPA 해시 라우팅 환경 리소스 페치 오류 수정**: `getAbsoluteUrl` 유틸리티를 도입해 help.html, default-setting.md, example1.txt 경로 절대화 완료.
+  - **SPA 재진입 먹통 해결**: DOMContentLoaded 결합 코드를 `window.KakaoTalkMain.init` API로 래핑하고, index.html 하단에 Promise 순차 비동기 로더 체인을 장착하여 재진입 시에도 매번 정상 바인딩 및 기동 보장.
 
 ### Changed (변경사항)
-- **도움말 지원**: help.html의 내용을 변수로 로드하여 세련된 모달 디자인 팝업으로 표출
+- **도움말 지원**: help.html의 내용을 변수로 로드하여 세련된 모달 디자인 팝업으로 표출.
 
 ---
 
