@@ -57,6 +57,11 @@
     const ctx = canvas.getContext('2d');
 
     const config = window.ChatInterface.gatherConfigFromUI();
+    
+    // 폼 설정에 맞춰 캔버스의 물리 해상도를 직접 동기화 (v1.0.6)
+    canvas.width = parseInt(config['width']) || 750;
+    canvas.height = parseInt(config['height']) || 1334;
+
     const text = window.ChatInterface.getChatInputVal();
     const { dialogs } = window.ChatInterface.parseInputText(text);
     const avatarSettingsMap = window.ChatInterface.getAvatarSettingsMap();
@@ -327,50 +332,6 @@
     const svgBox = document.getElementById('svg-box');
     if (svgBox) {
       svgBox.scrollTop = 0;
-
-      // 실시간 가용 영역 변화 감지 및 캔버스 리사이징 리렌더링 연동 (ResizeObserver) (v1.0.5)
-      if (typeof ResizeObserver !== 'undefined') {
-        const canvas = document.getElementById('chat-canvas');
-        
-        const resizeObserver = new ResizeObserver((entries) => {
-          // 다른 서브페이지 활성화 시 오동작 및 크래시 방지용 가드
-          const canvasCheck = document.getElementById('chat-canvas');
-          if (!canvasCheck) {
-            resizeObserver.disconnect();
-            return;
-          }
-
-          for (let entry of entries) {
-            const { width } = entry.contentRect;
-            
-            if (canvas) {
-              const config = window.ChatInterface ? window.ChatInterface.gatherConfigFromUI() : {};
-              const configW = parseInt(config['width']) || 750;
-              const configH = parseInt(config['height']) || 1334;
-              const ratio = configH / configW;
-              const computedH = Math.round(width * ratio);
-
-              // 1. 힌트 적용: 캔버스 자체 물리 해상도 조절
-              canvas.width = width;
-              canvas.height = computedH;
-
-              // 2. 캔버스 스타일 크기 조절
-              canvas.style.width = width + 'px';
-              canvas.style.height = computedH + 'px';
-            }
-            
-            // 저전력 렌더러가 잠들어 있다면 깨워서 즉시 한 프레임 그리도록 유도
-            if (window.KakaoTalkMain && window.KakaoTalkMain.wakeRenderer) {
-              window.KakaoTalkMain.wakeRenderer();
-            }
-          }
-        });
-        resizeObserver.observe(svgBox);
-      } else {
-        console.warn('[KakaoTalk Debug] ResizeObserver is not supported in this browser environment!');
-      }
-    } else {
-      console.warn('[KakaoTalk Debug] Parent container (#svg-box) is missing on initialization!');
     }
   }
 

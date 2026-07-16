@@ -158,6 +158,7 @@
 
       // 날짜 구분선 위치 계산
       if (dialog.person.startsWith('=')) {
+        lastSpeaker = ''; // 날짜 구분선 출현 시 연속 화자 정보 리셋 (간격 불일치 예방)
         lastPosY += 50;
         const dateVal = dialog.person.slice(1);
         let displayDate = dateVal;
