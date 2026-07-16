@@ -104,9 +104,9 @@
   function drawCanvasChat(canvas, ctx, config, dialogs, avatarSettingsMap) {
     if (!canvas || !ctx) return;
 
-    // UI에서 설정한 도면 기준의 가상 디자인 해상도
-    const designW = parseInt(config['width']) || 1080;
-    const designH = parseInt(config['height']) || 2000;
+    // UI에서 설정한 도면 기준의 가상 디자인 해상도 (750x1334 오리지널 복원)
+    const designW = parseInt(config['width']) || 750;
+    const designH = parseInt(config['height']) || 1334;
 
     // 실제 설정된 캔버스 물리 해상도 (외부 ResizeObserver 세팅 대응)
     const realW = canvas.width || designW;
@@ -552,7 +552,6 @@
         cancelAnimationFrame(animationFrameId);
         animationFrameId = null;
       }
-      console.log('[KakaoTalk Debug] chat-canvas is missing. Stopped renderLoop.');
       return;
     }
 
