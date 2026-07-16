@@ -1,3 +1,9 @@
+## 20260716v3
+### 수행한 작업 (Summary of Actions)
+1. **카카오톡 대화방 생성기 v1.0.6 중복 바인딩 및 깜빡임 버그 픽스**:
+   - `lastInitializedCanvas` 변수를 통한 DOM 인스턴스 검증 가드를 탑재하여, 초기 구동 및 페이지 재진입 시 이벤트 리스너가 중복 등록되어 1스텝가기가 2스텝씩 뛰던 오류 근본 해결
+   - `requestAnimationFrame`을 사용한 비동기 프레임 배칭(Frame Batching) 최적화 렌더러를 장착하여, input 및 change 이벤트의 동시 트리거 시 발생하던 간헐적 번쩍임(Flicker) 완벽 조치
+
 ## 20260716v2
 ### 수행한 작업 (Summary of Actions)
 1. **카카오톡 대화방 생성기 v1.0.6 기능 최적화 및 안정화**:
