@@ -149,9 +149,10 @@
     let lastSpeaker = '';
     const tempPositions = [];
 
+    const startIdx = parseInt(config['start-index']) || 1;
     const progressVal = parseInt(config['progress']) || 0;
     const cleanDialogs = dialogs.filter(d => d.person && d.person.trim() !== '');
-    const visibleDialogs = cleanDialogs.slice(0, progressVal);
+    const visibleDialogs = cleanDialogs.slice(startIdx - 1, progressVal);
 
     visibleDialogs.forEach((dialog) => {
       if (!dialog.person || dialog.person.trim() === '') return;

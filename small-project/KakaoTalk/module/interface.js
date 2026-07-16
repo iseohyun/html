@@ -30,6 +30,8 @@
   let originalSettingsText = '';
   let loadedConfig = {};
   let avatarSettingsMap = {};
+  let startRangeIndex = 1; // v1.1.0 대화 시작 범위
+  let endRangeIndex = 0;   // v1.1.0 대화 끝 범위 (0일 때 totalCount로 대입)
   const defaultColors = ["#E44D1B", "#C27800", "#669900", "#00A879", "#009DD1", "#4182FB", "#A760E2", "#D94594"];
   let globalColorIndex = 0;
   let globalVoiceIndex = 0;
@@ -233,6 +235,9 @@
         }
       });
     });
+
+    // 더블 슬라이더 드래그 이벤트 기동
+    setupDoubleSliderEvents();
 
     // 예시 데이터 로드
     btnLoadExample.addEventListener('click', () => {
@@ -538,8 +543,6 @@
     config['height'] = inputH ? (parseInt(inputH.value) || 2000) : 2000;
 
     const progressEl = document.getElementById('input-progress');
-    const progressVal = progressEl ? parseInt(progressEl.value) : 0;
-    config['progress'] = progressVal;
 
     // v0.0.10: [현재 대화 / 전체 개수] 진행 라벨 세부 매핑
     const chatInputVal = chatInput ? chatInput.value : '';
@@ -547,13 +550,46 @@
     const cleanDialogs = rawDialogs.filter(d => d.person && d.person.trim() !== '');
     const totalCount = cleanDialogs.length;
 
-    if (progressEl && parseInt(progressEl.max) !== totalCount) {
-      progressEl.max = totalCount;
+    // v1.1.0 대화 범위 안전 조정 및 초기화
+    if (totalCount > 0) {
+      if (endRangeIndex === 0 || endRangeIndex > totalCount) {
+        endRangeIndex = totalCount;
+      }
+      startRangeIndex = Math.max(1, Math.min(startRangeIndex, totalCount));
+      endRangeIndex = Math.max(startRangeIndex, Math.min(endRangeIndex, totalCount));
+    } else {
+      startRangeIndex = 1;
+      endRangeIndex = 0;
     }
+
+    config['start-index'] = startRangeIndex;
+    config['end-index'] = endRangeIndex;
+
+    // 더블 슬라이더 인터페이스 및 라벨 갱신
+    updateDoubleSliderUI(totalCount);
+
+    // 대화 진행률 슬라이더 가드 보정 (Clamp) - 트랙 범위는 1 ~ totalCount 고정!
+    let pVal = progressEl ? parseInt(progressEl.value) : 0;
+    if (progressEl) {
+      // 진행률 슬라이더의 물리 트랙 범위는 항상 오리지널 전체 대화수로 유지!
+      progressEl.min = 1;
+      progressEl.max = Math.max(1, totalCount);
+
+      // 입력된 값만 대화 범위 [startRangeIndex, endRangeIndex] 내로 엄격하게 가드 제한!
+      if (pVal < startRangeIndex) {
+        pVal = startRangeIndex;
+        progressEl.value = pVal; // 슬라이더 조작 시 턱 걸려서 더 안 넘어가도록 피드백!
+      } else if (pVal > endRangeIndex) {
+        pVal = endRangeIndex;
+        progressEl.value = pVal; // 슬라이더 조작 시 턱 걸려서 더 안 넘어가도록 피드백!
+      }
+    }
+    
+    config['progress'] = pVal;
 
     const labelProgressEl = document.getElementById('label-progress');
     if (labelProgressEl) {
-      labelProgressEl.textContent = `${progressVal} / ${totalCount}개`;
+      labelProgressEl.textContent = `${pVal} / ${totalCount}개`;
     }
 
     const inputFont = document.getElementById('input-font');
@@ -946,6 +982,119 @@
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+  }
+
+  function updateDoubleSliderUI(totalCount) {
+    const track = document.querySelector('.double-slider-container');
+    const range = document.getElementById('double-slider-range');
+    const handleStart = document.getElementById('slider-handle-start');
+    const handleEnd = document.getElementById('slider-handle-end');
+    const labelRange = document.getElementById('label-double-range');
+
+    if (!track || !range || !handleStart || !handleEnd || !labelRange) return;
+
+    if (totalCount <= 0) {
+      labelRange.textContent = '1 ~ 0';
+      handleStart.style.left = '0%';
+      handleEnd.style.left = '0%';
+      range.style.left = '0%';
+      range.style.right = '100%';
+      return;
+    }
+
+    labelRange.textContent = `${startRangeIndex} ~ ${endRangeIndex}`;
+
+    // 인덱스를 0% ~ 100% 비율로 변환 (1 -> 0%, totalCount -> 100%)
+    const maxDivisor = Math.max(1, totalCount - 1);
+    const startPercent = ((startRangeIndex - 1) / maxDivisor) * 100;
+    const endPercent = ((endRangeIndex - 1) / maxDivisor) * 100;
+
+    handleStart.style.left = `${startPercent}%`;
+    handleEnd.style.left = `${endPercent}%`;
+
+    range.style.left = `${startPercent}%`;
+    range.style.right = `${100 - endPercent}%`;
+  }
+
+  function setupDoubleSliderEvents() {
+    const container = document.querySelector('.double-slider-container');
+    const handleStart = document.getElementById('slider-handle-start');
+    const handleEnd = document.getElementById('slider-handle-end');
+
+    if (!container || !handleStart || !handleEnd) return;
+
+    let activeHandle = null;
+
+    const onStart = (e) => {
+      const target = e.target.closest('.double-slider-handle');
+      if (!target) return;
+
+      activeHandle = target;
+      activeHandle.classList.add('active');
+
+      e.preventDefault();
+      onMove(e);
+    };
+
+    const onMove = (e) => {
+      if (!activeHandle) return;
+
+      const rect = container.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      let ratio = (clientX - rect.left) / rect.width;
+      ratio = Math.max(0, Math.min(1, ratio));
+
+      const chatInputVal = chatInput ? chatInput.value : '';
+      const { dialogs: rawDialogs } = parseInputText(chatInputVal);
+      const cleanDialogs = rawDialogs.filter(d => d.person && d.person.trim() !== '');
+      const totalCount = cleanDialogs.length;
+
+      if (totalCount <= 0) return;
+
+      let index = Math.round(ratio * (totalCount - 1)) + 1;
+
+      if (activeHandle === handleStart) {
+        index = Math.min(index, endRangeIndex);
+        startRangeIndex = index;
+      } else {
+        index = Math.max(index, startRangeIndex);
+        endRangeIndex = index;
+      }
+
+      const tooltip = activeHandle.querySelector('.slider-tooltip');
+      if (tooltip) {
+        const dialog = cleanDialogs[index - 1];
+        let textVal = '';
+        if (dialog) {
+          textVal = dialog.person.startsWith('=') ? dialog.person.slice(1) : dialog.message;
+        }
+        textVal = textVal.trim();
+        const tooltipText = textVal.length > 5 ? textVal.substring(0, 5) + '...' : textVal;
+        tooltip.textContent = tooltipText || '(빈 메시지)';
+      }
+
+      if (triggerUpdateCallback) {
+        triggerUpdateCallback(false);
+      }
+    };
+
+    const onEnd = () => {
+      if (activeHandle) {
+        activeHandle.classList.remove('active');
+        activeHandle = null;
+      }
+    };
+
+    handleStart.addEventListener('mousedown', onStart);
+    handleEnd.addEventListener('mousedown', onStart);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onEnd);
+
+    handleStart.addEventListener('touchstart', onStart, { passive: false });
+    handleEnd.addEventListener('touchstart', onStart, { passive: false });
+    window.addEventListener('touchmove', onMove, { passive: false });
+    window.addEventListener('touchend', onEnd);
+    window.addEventListener('touchcancel', onEnd);
   }
 
   // 글로벌 Interface 네임스페이스 등록
