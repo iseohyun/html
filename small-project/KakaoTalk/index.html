@@ -33,6 +33,24 @@
         </div>
         <div class="category-content">
           <div class="control-row">
+            <label>대화 범위</label>
+            <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
+              <div class="double-slider-container">
+                <div class="double-slider-track"></div>
+                <div id="double-slider-range" class="double-slider-range"></div>
+                
+                <div id="slider-handle-start" class="double-slider-handle">
+                  <div class="slider-tooltip"></div>
+                </div>
+                
+                <div id="slider-handle-end" class="double-slider-handle">
+                  <div class="slider-tooltip"></div>
+                </div>
+              </div>
+              <span id="label-double-range" style="width: 75px; text-align: right; font-size: 0.85em; font-weight: bold; color: #475569;">1 ~ 0</span>
+            </div>
+          </div>
+          <div class="control-row">
             <label for="input-progress">대화 진행률</label>
             <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
               <input type="range" id="input-progress" min="0" max="100" value="100" style="flex: 1;">
