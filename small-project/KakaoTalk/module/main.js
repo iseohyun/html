@@ -11,6 +11,9 @@
   let koreanVoices = [];
   let isAnimating = false; // 자동 재생 진행 활성화 플래그
   let ttsSafetyTimeout = null; // TTS 엔진 락 방지 타임아웃 가드
+  let lastInitializedCanvas = null; // 중복 초기화 및 돔 인스턴스 갱신 감지 가드 (v1.0.6)
+  let renderUpdateRequestId = null; // 동일 프레임 내 중복 렌더링 배칭 ID
+  let pendingResetAnimation = false; // 예약된 애니메이션 리셋 여부
 
   function initKoreanVoices() {
     if (typeof window !== 'undefined' && window.speechSynthesis) {
@@ -30,6 +33,23 @@
    * @param {boolean} resetAnimation 신규 말풍선 등장 애니메이션 시작 처리 여부
    */
   function triggerCanvasUpdate(resetAnimation) {
+    if (resetAnimation) {
+      pendingResetAnimation = true;
+    }
+
+    if (renderUpdateRequestId !== null) {
+      return;
+    }
+
+    renderUpdateRequestId = requestAnimationFrame(() => {
+      renderUpdateRequestId = null;
+      const shouldReset = pendingResetAnimation;
+      pendingResetAnimation = false;
+      performCanvasUpdate(shouldReset);
+    });
+  }
+
+  function performCanvasUpdate(resetAnimation) {
     if (!window.ChatEngine || !window.ChatInterface) return;
 
     const canvas = document.getElementById('chat-canvas');
@@ -211,6 +231,12 @@
 
   // DOM 로드 및 초기화 수행 단독 기동 함수 (v0.1.1 2단계)
   function initKakaoTalkApp() {
+    const currentCanvas = document.getElementById('chat-canvas');
+    if (!currentCanvas || lastInitializedCanvas === currentCanvas) {
+      return;
+    }
+    lastInitializedCanvas = currentCanvas;
+
     if (!window.ChatEngine || !window.ChatInterface) {
       console.error('필수 엔진/인터페이스 모듈이 로드되지 않았습니다.');
       return;
@@ -293,7 +319,6 @@
           progressInput.value = val;
           const event = new Event('input', { bubbles: true });
           progressInput.dispatchEvent(event);
-          triggerCanvasUpdate(true);
         }
       });
     }
