@@ -644,3 +644,71 @@ textarea:focus {
   border-color: #fee500;
   box-shadow: 0 0 0 3px rgba(254, 229, 0, 0.15);
 }
+
+/* 다운로드 옵션 선택 모달 관련 스타일 (v1.2.0) */
+.download-options-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.download-option-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.download-option-card:hover {
+  border-color: #fee500;
+  background-color: #fffbeb;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(254, 229, 0, 0.15);
+}
+
+.download-option-card .card-icon {
+  font-size: 1.8em;
+  background-color: #f8fafc;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.download-option-card:hover .card-icon {
+  background-color: #fee500;
+}
+
+.download-option-card .card-info {
+  flex: 1;
+}
+
+.download-option-card .card-info h4 {
+  margin: 0 0 4px 0;
+  font-size: 1em;
+  font-weight: bold;
+  color: #1e293b;
+}
+
+.download-option-card .card-info p {
+  margin: 0;
+  font-size: 0.8em;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+#mobile-preview-container img {
+  max-width: 100%;
+  border-radius: 6px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e2e8f0;
+  object-fit: contain;
+}
