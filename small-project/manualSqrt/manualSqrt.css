@@ -1,0 +1,307 @@
+body {
+  font-family: 'Outfit', 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f6f9;
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+article {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 30px;
+  max-width: 950px;
+  width: 100%;
+}
+
+#main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+#math-grid {
+  display: grid;
+  /* 12 cols for divisor, 1 col for bracket, 20+ cols for dividend */
+  grid-template-columns: repeat(12, 1.4rem) 1.4rem repeat(20, 1.4rem);
+  gap: 1px;
+  background-color: #cbd5e1;
+  border: 1px solid #94a3b8;
+  padding: 10px;
+  border-radius: 8px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 1.4rem;
+  font-weight: bold;
+}
+
+.grid-cell {
+  background-color: white;
+  width: 1.4rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+/* Division bracket and bar */
+.division-bracket {
+  border-left: 3px solid #1e293b;
+  border-top: 3px solid #1e293b;
+  border-top-left-radius: 8px;
+  background-color: #f8fafc;
+}
+
+.division-bar {
+  border-top: 3px solid #1e293b;
+}
+
+/* Subtraction horizontal lines */
+.subtraction-line {
+  border-bottom: 3px solid #3b82f6;
+}
+
+/* Active cell highlight (Soft yellow background) */
+.grid-cell.active {
+  background-color: #fef08a !important; /* Soft yellow highlight */
+  box-shadow: inset 0 0 0 2px #facc15;
+}
+
+/* Initial Input Cell Style */
+.init-input-cell {
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  width: 1.4rem;
+  height: 2rem;
+  text-align: center;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  outline: none;
+  box-sizing: border-box;
+  background-color: #f8fafc;
+  transition: all 0.2s ease;
+}
+
+.init-input-cell:focus {
+  border-color: #3b82f6;
+  background-color: white;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.init-input-cell.active {
+  background-color: #fef08a !important;
+}
+
+/* LaTeX math variable style */
+.math-var {
+  font-family: 'Times New Roman', Times, serif;
+  font-style: italic;
+  font-weight: 600;
+  color: #38bdf8; /* Vibrant sky blue */
+  padding: 0 1px;
+}
+
+/* Styled blank box placeholder for digit x */
+.math-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px dashed #38bdf8;
+  border-radius: 4px;
+  width: 1.3rem;
+  height: 1.3rem;
+  background-color: rgba(56, 189, 248, 0.1);
+  color: #38bdf8;
+  font-size: 0.8rem;
+  font-weight: 700;
+  vertical-align: middle;
+  margin: 0 3px;
+  line-height: 1;
+}
+
+/* Popover Tooltip Style */
+#guide-tooltip {
+  position: absolute;
+  background-color: #1e293b;
+  color: #f8fafc;
+  padding: 12px 16px;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  max-width: 340px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  pointer-events: auto;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  border: 1px solid #334155;
+  display: flex;
+  flex-direction: column;
+}
+
+#guide-tooltip::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 8px;
+  border-style: solid;
+  border-color: transparent transparent #1e293b transparent;
+}
+
+#guide-tooltip em {
+  color: #fde047;
+  font-style: normal;
+  font-weight: bold;
+}
+
+#guide-tooltip sup {
+  color: #fde047;
+}
+
+/* Tooltip Navigation Bar */
+#tooltip-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid #334155;
+  gap: 15px;
+}
+
+#tooltip-step-indicator {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-family: system-ui, sans-serif;
+  font-style: normal;
+  font-weight: bold;
+}
+
+#tooltip-prev-btn, #tooltip-next-btn {
+  background-color: #334155;
+  border: 1px solid #475569;
+  color: #cbd5e1;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+#tooltip-prev-btn:hover:not(:disabled), #tooltip-next-btn:hover:not(:disabled) {
+  background-color: #475569;
+  color: white;
+}
+
+#tooltip-prev-btn:disabled, #tooltip-next-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Tooltip Challenge Styling */
+#tooltip-challenge {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #0f172a;
+  border-radius: 6px;
+  border: 1px solid #334155;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#tooltip-challenge-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+#tooltip-challenge input[type="text"] {
+  width: 2.5rem;
+  background: #1e293b;
+  border: 1px solid #475569;
+  color: white;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 4px;
+  padding: 2px;
+  outline: none;
+}
+
+#tooltip-challenge input[type="text"]:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+#tooltip-challenge button {
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  border: none;
+  font-weight: bold;
+  color: white;
+  transition: background-color 0.2s ease;
+}
+
+#tooltip-challenge button.check-btn {
+  background-color: #22c55e;
+}
+
+#tooltip-challenge button.check-btn:hover {
+  background-color: #16a34a;
+}
+
+#tooltip-challenge button.skip-btn {
+  background-color: #64748b;
+}
+
+#tooltip-challenge button.skip-btn:hover {
+  background-color: #475569;
+}
+
+#tooltip-challenge .feedback-msg {
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+#tooltip-challenge .feedback-msg.correct {
+  color: #4ade80;
+}
+
+#tooltip-challenge .feedback-msg.incorrect {
+  color: #f87171;
+}
+
+.hidden {
+  display: none !important;
+  opacity: 0;
+  transform: translateY(5px);
+}
+
+/* CSS animations for digit entry */
+@keyframes digitAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+    background-color: #fef08a;
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.grid-cell-animate {
+  animation: digitAppear 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
