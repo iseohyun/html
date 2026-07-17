@@ -340,57 +340,103 @@ article {
   transform: rotate(30deg);
 }
 
-#settings-panel {
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 20px;
-  margin-bottom: 25px;
+/* Modal Overlay Settings */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-  box-sizing: border-box;
+  height: 100%;
+  background-color: rgba(15, 23, 42, 0.6); /* Slate 900 with opacity */
+  backdrop-filter: blur(4px); /* Glassmorphism backdrop blur */
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-  transition: all 0.3s ease;
-}
-
-#settings-panel h3 {
-  margin: 0 0 10px 0;
-  font-size: 1.1rem;
-  color: #1e293b;
-  border-bottom: 2px solid #3b82f6;
-  padding-bottom: 6px;
-  display: inline-block;
-  align-self: flex-start;
-}
-
-.settings-row {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px dashed #e2e8f0;
+  justify-content: center;
+  z-index: 1000;
+  transition: opacity 0.3s ease;
 }
 
-.settings-row label {
+.modal-content {
+  background-color: #ffffff;
+  border-radius: 12px;
+  width: 95%;
+  max-width: 500px;
+  padding: 24px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  position: relative;
+  box-sizing: border-box;
+  animation: modalAppear 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modalAppear {
+  from {
+    transform: scale(0.9) translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+.close-btn {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  color: #0f172a;
+  background-color: #f1f5f9;
+}
+
+/* Table Style in Settings */
+#shortcut-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  text-align: left;
+}
+
+#shortcut-table th, #shortcut-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e2e8f0;
   font-size: 0.9rem;
+}
+
+#shortcut-table th {
+  background-color: #f8fafc;
   color: #475569;
-  font-weight: 500;
+  font-weight: 600;
+}
+
+#shortcut-table td {
+  color: #0f172a;
 }
 
 .key-bind-btn {
-  background-color: white;
+  background-color: #f1f5f9;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   padding: 6px 12px;
   font-family: 'Courier New', Courier, monospace;
   font-weight: 700;
-  font-size: 0.85rem;
-  min-width: 120px;
+  font-size: 0.8rem;
+  min-width: 110px;
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: center;
-  color: #0f172a;
+  color: #334155;
   box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
