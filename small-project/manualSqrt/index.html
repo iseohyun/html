@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title id="title">제곱근 구하기</title>
+  <link rel="stylesheet" href="manualSqrt.css">
+  <script src="main.js" defer></script>
+</head>
+<body>
+  <article>
+    <div id="error-console" style="color: #ef4444; background: #fef2f2; border: 1px solid #fee2e2; padding: 12px; margin-bottom: 20px; border-radius: 8px; font-family: monospace; display: none; font-size: 0.9rem; line-height: 1.4;"></div>
+    <script>
+      window.onerror = function(message, source, lineno, colno, error) {
+        const consoleDiv = document.getElementById("error-console");
+        if (consoleDiv) {
+          consoleDiv.style.display = "block";
+          consoleDiv.innerHTML += `<div><strong>JS Error:</strong> ${message} <br><small>at ${source}:${lineno}:${colno}</small></div>`;
+        }
+        return false;
+      };
+    </script>
+    <div id="main">
+      <div id="math-grid"></div>
+    </div>
+
+    <div id="guide-tooltip" class="hidden">
+      <div id="tooltip-content"></div>
+      <div id="tooltip-challenge" class="hidden">
+        <div id="tooltip-challenge-input-row">
+          <span id="challenge-question"></span>
+          <input type="text" id="challenge-input" maxlength="1">
+          <button class="check-btn" onclick="checkPracticeAnswer()">Check</button>
+          <button class="skip-btn" onclick="skipPractice()">Skip</button>
+        </div>
+        <div id="challenge-feedback" class="feedback-msg hidden"></div>
+      </div>
+      <div id="tooltip-nav">
+        <button id="tooltip-prev-btn" onclick="prevStep()">&lt;</button>
+        <span id="tooltip-step-indicator">Step</span>
+        <button id="tooltip-next-btn" onclick="nextStep()">&gt;</button>
+      </div>
+    </div>
+  </article>
+</body>
+</html>
