@@ -241,6 +241,53 @@ function getUpperNumberLen(line) {
   return remainderLen + groupLen;
 }
 
+function getLineShift(line) {
+  let shift = 0;
+  for (let k = line + 1; k <= cur_line; k++) {
+    if (!inputs[k]) continue;
+    let initLen = 1;
+    if (k === 1) {
+      const qVal = inputs[0][2] ? inputs[0][2].value : "";
+      const divVal = inputs[0][1] ? inputs[0][1].value : "";
+      const prevD = parseInt(divVal) || 0;
+      const prevQ = parseInt(qVal) || 0;
+      initLen = (prevD + prevQ).toString().length;
+    } else {
+      const prevDiv = inputs[k - 1] ? inputs[k - 1][1].value : "";
+      const prevMult = inputs[k - 1] ? inputs[k - 1][2].value : "";
+      const prevD = parseInt(prevDiv) || 0;
+      const prevQ = parseInt(prevMult) || 0;
+      initLen = (prevD + prevQ).toString().length;
+    }
+    const currentDivVal = inputs[k][1] ? inputs[k][1].value : "";
+    const currentLen = currentDivVal.length || initLen;
+    const appended = Math.max(0, currentLen - initLen);
+    shift += appended;
+  }
+  return shift;
+}
+
+function drawDivisorRow(r, type, valStr, animate) {
+  const rowIdx = 2 * r + (type === 1 ? 1 : 2);
+  clearGridRow(rowIdx, 0, 11);
+  if (!valStr) return;
+  
+  const len = valStr.length;
+  const shift = getLineShift(r);
+  const startCol = Math.max(0, 12 - len - shift);
+  
+  for (let k = 0; k < len; k++) {
+    const cell = getCell(rowIdx, startCol + k);
+    if (cell) {
+      const prevText = cell.textContent;
+      cell.textContent = (valStr[k] === " ") ? "" : valStr[k];
+      if (animate && cell.textContent !== "" && prevText === "") {
+        cell.classList.add("grid-cell-animate");
+      }
+    }
+  }
+}
+
 function getCell(r, c) {
   return document.querySelector(`.grid-cell[data-row="${r}"][data-col="${c}"], .init-input-cell[data-row="${r}"][data-col="${c}"]`);
 }
@@ -389,34 +436,13 @@ function updateGridCellDisplay(row, type, value, animate = true) {
     });
     
     drawValWithDot(row, type, valStr, endCol, dotCol, animate);
-  } else if (type === 1) {
-    // divisor: Row 2*row + 1, Columns 0-11 (right-aligned)
-    clearGridRow(2 * row + 1, 0, 11);
-    const len = valStr.length;
-    const startCol = Math.max(0, 12 - len);
-    for (let k = 0; k < len; k++) {
-      const cell = getCell(2 * row + 1, startCol + k);
-      if (cell) {
-        const prevText = cell.textContent;
-        cell.textContent = (valStr[k] === " ") ? "" : valStr[k];
-        if (animate && cell.textContent !== "" && prevText === "") {
-          cell.classList.add("grid-cell-animate");
-        }
-      }
-    }
-  } else if (type === 2) {
-    // divisor_: Row 2*row + 2, Columns 0-11 (right-aligned)
-    clearGridRow(2 * row + 2, 0, 11);
-    const len = valStr.length;
-    const startCol = Math.max(0, 12 - len);
-    for (let k = 0; k < len; k++) {
-      const cell = getCell(2 * row + 2, startCol + k);
-      if (cell) {
-        const prevText = cell.textContent;
-        cell.textContent = (valStr[k] === " ") ? "" : valStr[k];
-        if (animate && cell.textContent !== "" && prevText === "") {
-          cell.classList.add("grid-cell-animate");
-        }
+  } else if (type === 1 || type === 2) {
+    for (let r = 0; r <= cur_line; r++) {
+      if (inputs[r]) {
+        const divVal = inputs[r][1] ? inputs[r][1].value : "";
+        const div_Val = inputs[r][2] ? inputs[r][2].value : "";
+        drawDivisorRow(r, 1, divVal, animate);
+        drawDivisorRow(r, 2, div_Val, animate);
       }
     }
   }
@@ -945,13 +971,14 @@ function highlightActiveStep() {
       // Source 1: Divisor on Row 2*targetLine + 1 (left)
       const prevDiv = inputs[targetLine] ? inputs[targetLine][1] : null;
       const divLen = prevDiv ? prevDiv.value.length : 1;
-      for (let c = 12 - divLen; c <= 11; c++) {
+      const shift = getLineShift(targetLine);
+      for (let c = 12 - divLen - shift; c <= 11 - shift; c++) {
         const cell = getCell(2 * targetLine + 1, c);
         if (cell) cell.classList.add("highlight-red");
       }
       
-      // Source 2: Multiplier below divisor (Row 2*targetLine + 2, Col 11)
-      const qCell = getCell(2 * targetLine + 2, 11);
+      // Source 2: Multiplier below divisor (Row 2*targetLine + 2, Col 11 - shift)
+      const qCell = getCell(2 * targetLine + 2, 11 - shift);
       if (qCell) qCell.classList.add("highlight-blue");
     }
     positionTooltip();
@@ -1019,13 +1046,14 @@ function highlightActiveStep() {
       if (cell) cell.classList.add("active");
     }
     
+    const prevShift = getLineShift(cur_line - 1);
     const divLen = prevDivVal.length;
-    for (let c = 11 - divLen + 1; c <= 11; c++) {
+    for (let c = 12 - divLen - prevShift; c <= 11 - prevShift; c++) {
       const cell = getCell(2 * cur_line - 1, c);
       if (cell) cell.classList.add("highlight-red");
     }
     
-    const s2 = getCell(2 * cur_line, 11);
+    const s2 = getCell(2 * cur_line, 11 - prevShift);
     if (s2) s2.classList.add("highlight-blue");
     
     positionTooltip();
