@@ -526,7 +526,7 @@
   font-weight: 700;
 }
 
-/* Excel-like Grid Header coordinates (v1.0.7) */
+/* Excel-like Grid Header coordinates (v1.1.0) */
 .grid-header-cell {
   display: flex;
   align-items: center;
