@@ -249,6 +249,9 @@
       // Space (Skip / Next) Action
       if (pressed === currentBindings.skip_primary || (currentBindings.skip_secondary && pressed === currentBindings.skip_secondary)) {
         e.preventDefault();
+        if (document.activeElement && document.activeElement.tagName === "BUTTON") {
+          return;
+        }
         if (challengeActive) {
           if (window.skipPractice) window.skipPractice();
         } else {
@@ -263,6 +266,9 @@
       // Prev Action
       if (pressed === currentBindings.prev_primary || pressed === currentBindings.prev_secondary) {
         e.preventDefault();
+        if (document.activeElement && document.activeElement.tagName === "BUTTON") {
+          return;
+        }
         const prevBtn = document.getElementById("tooltip-prev-btn");
         if (prevBtn && !prevBtn.disabled) {
           if (window.prevStep) window.prevStep();
@@ -274,6 +280,10 @@
       if (pressed === currentBindings.next_primary || pressed === currentBindings.next_secondary) {
         // If typing in challenge input, let the local Enter handler submit it
         if (document.activeElement && document.activeElement.id === "challenge-input") {
+          return;
+        }
+        // If active element is a button, let the browser click event handle it to prevent double execution
+        if (document.activeElement && document.activeElement.tagName === "BUTTON") {
           return;
         }
 
