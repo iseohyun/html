@@ -305,3 +305,131 @@ article {
 .grid-cell-animate {
   animation: digitAppear 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
+
+/* Settings & Keybindings Styling */
+#header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
+  border-bottom: 1.5px solid #e2e8f0;
+  padding-bottom: 12px;
+}
+
+#page-title {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+#settings-toggle-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  line-height: 1;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+#settings-toggle-btn:hover {
+  background-color: #f1f5f9;
+  transform: rotate(30deg);
+}
+
+#settings-panel {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 25px;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.3s ease;
+}
+
+#settings-panel h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.1rem;
+  color: #1e293b;
+  border-bottom: 2px solid #3b82f6;
+  padding-bottom: 6px;
+  display: inline-block;
+  align-self: flex-start;
+}
+
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.settings-row label {
+  font-size: 0.9rem;
+  color: #475569;
+  font-weight: 500;
+}
+
+.key-bind-btn {
+  background-color: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 700;
+  font-size: 0.85rem;
+  min-width: 120px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  color: #0f172a;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.key-bind-btn:hover {
+  border-color: #3b82f6;
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+
+.key-bind-btn.listening {
+  background-color: #fef3c7;
+  border-color: #d97706;
+  color: #b45309;
+  animation: pulse 1s infinite alternate;
+}
+
+.settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+#settings-reset-all-btn {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+#settings-reset-all-btn:hover {
+  background-color: #dc2626;
+}
+
+@keyframes pulse {
+  from { opacity: 1; }
+  to { opacity: 0.6; }
+}
