@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="manualSqrt.css">
   <script src="main.js" defer></script>
   <script src="keybinding.js" defer></script>
+  <script src="testRunner.js" defer></script>
 </head>
 <body>
   <article>
@@ -22,6 +23,9 @@
     </script>
     <div id="header-row">
       <h1 id="page-title">제곱근 구하기</h1>
+      <button id="auto-test-btn" style="margin-left: auto; margin-right: 10px; background-color: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background-color 0.2s;" onclick="document.getElementById('test-file-picker').click()">테스트 실행</button>
+      <input type="file" id="test-file-picker" accept=".md" style="display: none;" onchange="handleTestFileSelect(event)">
+      <div id="coordinate-badge">좌표: -</div>
       <button id="settings-toggle-btn" aria-label="Settings">⚙️</button>
     </div>
     

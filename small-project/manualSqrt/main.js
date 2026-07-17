@@ -4,6 +4,7 @@ var lines;
 var cur_step = 1;
 var cur_line = 0;
 var fStep1_1 = false;
+var fStep0_1 = false;
 var pointpos = 0;
 var language = 1; // 0: English, 1: Korean
 var guide_step = 0;
@@ -21,41 +22,49 @@ const titleText = [
 ];
 
 const sentences = [
-  [
-    "1. Please enter the number for which you want to find the square root. If you wish to proceed with <em>$argv1</em>, simply click the [>] button.",
-    "1. 제곱근을 구하고 싶은 숫자를 입력하세요. 만약, <em>$argv1</em>의 제곱근을 구하고 싶다면 [>] 버튼을 누르면 됩니다.",
+  [ // 0
+    "Find the square root of <em>$init_val</em>.",
+    "<em>$init_val</em>의 제곱근을 구합니다.",
   ],
-  [
-    "$guide_step. Click the [>] button.",
-    "$guide_step. [>] 버튼을 누릅니다.",
+  [ // 1
+    "Click the [>] button.",
+    "[>] 버튼을 누릅니다.",
   ],
-  [ // 제수 구하기
-    "$guide_step. The largest number <span class=\"math-var\">x</span> that is less than or equal to <em>$argv1</em> among the squares of <span class=\"math-var\">x</span> is <em>$D <sup>2</sup></em>.",
-    "$guide_step. <span class=\"math-var\">x</span>의 제곱 중, <em>$argv1</em>을 넘지 않는 가장 큰 <span class=\"math-var\">x</span>는 <em>$D<sup>2</sup></em> 입니다."
+  [ // 2 (Quotient decision L=0)
+    "Find <span class=\"math-var\">x</span> where <span class=\"math-var\">x</span><sup>2</sup> &le; <em>$argv1</em>. <span class=\"math-var\">x</span> = <em>$Q</em>.",
+    "<span class=\"math-var\">x</span><sup>2</sup> &le; <em>$argv1</em>을 만족하는 <span class=\"math-var\">x</span> = <em>$Q</em> 입니다."
   ],
-  [
-    "$guide_step. specify <span class=\"math-var\">x</span> = <em>$Q</em>.",
-    "$guide_step. <span class=\"math-var\">x</span> = <em>$Q</em>를 작성합니다."
+  [ // 3 (x=Q를 작성합니다)
+    "Write <em>$Q</em>.",
+    "<em>$Q</em>$eul_leul 작성합니다."
   ],
-  [ // 몫 구하기
-    "$guide_step. Add <em>$Q</em> to the end of the number.",
-    "$guide_step. 가장 뒷 자리에 <em>$Q</em>을 붙여 줍니다."
+  [ // 4 (D × Q를 구합니다)
+    "<em>$D</em> &times; <em>$Q</em> = <em>$argv1_raw</em>",
+    "<em>$D</em> &times; <em>$Q</em> = <em>$argv1_raw</em>"
   ],
-  [
-    "$guide_step. Calculate <em>$D</em> × <em>$Q</em>.",
-    "$guide_step. <em>$D</em> × <em>$Q</em>를 구합니다."
+  [ // 5 (뺄셈 단계)
+    "<em>$argv2</em> - <em>$argv1</em> = <em>$argv3</em>",
+    "<em>$argv2</em> - <em>$argv1</em> = <em>$argv3</em>"
   ],
-  [
-    "$guide_step. Subtract <em>$argv1</em> from <em>$argv2</em> to get <em>$argv3</em>, then append '<em>$argv4</em>' at the end.",
-    "$guide_step. <em>$argv2</em> - <em>$argv1</em> = <em>$argv3</em>, 뒤에 '<em>$argv4</em>'을 붙입니다."
+  [ // 6 (수 내리기 단계)
+    "Append '<em>$argv4</em>'.",
+    "'<em>$argv4</em>'$argv4_eul_leul 붙입니다."
   ],
-  [
-    "$guide_step. <em>$argv1</em> + <em>$argv2</em> = <em>$D</em>",
-    "$guide_step. <em>$argv1</em> + <em>$argv2</em> = <em>$D</em>"
+  [ // 7 (제수 더하기 단계)
+    "<em>$argv1</em> + <em>$argv2</em> = <em>$D</em>",
+    "<em>$argv1</em> + <em>$argv2</em> = <em>$D</em>"
   ],
-  [
-    "$guide_step. Find <span class=\"math-box\">?</span> where <span class=\"math-var\">$argv1</span><span class=\"math-box\">?</span> &times; <span class=\"math-box\">?</span> &le; <em>$N</em>.<br>Since $D &times; $Q &le; $N, <span class=\"math-box\">?</span> is equal to <em>$Q</em>.",
-    "$guide_step. <span class=\"math-var\">$argv1</span><span class=\"math-box\">?</span> &times; <span class=\"math-box\">?</span> &le; <em>$N</em>인 <span class=\"math-box\">?</span>를 찾습니다.<br>$D &times; $Q &le; $N이므로 <span class=\"math-box\">?</span>=<em>$Q</em> 입니다."
+  [ // 8 (다음 몫 구하기 단계)
+    "Find <span class=\"math-box\">?</span> where <span class=\"math-var\">$argv1</span><span class=\"math-box\">?</span> &times; <span class=\"math-box\">?</span> &le; <em>$N</em>.<br>Since $D &times; $Q &le; $N, <span class=\"math-box\">?</span> is equal to <em>$Q</em>.",
+    "<span class=\"math-var\">$argv1</span><span class=\"math-box\">?</span> &times; <span class=\"math-box\">?</span> &le; <em>$N</em>인 <span class=\"math-box\">?</span>를 찾습니다.<br>$D &times; $Q &le; $N이므로 <span class=\"math-box\">?</span>=<em>$Q</em> 입니다."
+  ],
+  [ // 9 (Q를 제수 아래에 작성합니다)
+    "Write <em>$Q</em>.",
+    "<em>$Q</em>$eul_leul 작성합니다."
+  ],
+  [ // 10 (가장 뒷자리에 Q를 붙여줍니다)
+    "Append <em>$Q</em> to the end of the number.",
+    "뒷 자리에 <em>$Q</em>$eul_leul 붙여 줍니다."
   ]
 ];
 
@@ -129,6 +138,7 @@ function getDigitGroups(valStr) {
 }
 
 function getGroupEndCol(groupIndex) {
+  if (groupIndex < 0) return 13;
   const inputCells = document.querySelectorAll(".init-input-cell");
   let dotIdx = -1;
   const digitCols = [];
@@ -191,7 +201,7 @@ function getGroupEndCol(groupIndex) {
 }
 
 function getCell(r, c) {
-  return document.querySelector(`.grid-cell[data-row="${r}"][data-col="${c}"]`);
+  return document.querySelector(`.grid-cell[data-row="${r}"][data-col="${c}"], .init-input-cell[data-row="${r}"][data-col="${c}"]`);
 }
 
 function clearGridRow(r, startCol, endCol) {
@@ -203,9 +213,11 @@ function clearGridRow(r, startCol, endCol) {
       if (r === 1) {
         if (c === 12) {
           cell.classList.add("division-bracket");
-        } else if (c >= 13 && c < 13 + numInputCells) {
+        } else if (c >= 13 && c <= 32) {
           cell.classList.add("division-bar");
         }
+      } else if (r >= 2 && r <= 16 && c === 12) {
+        cell.classList.add("division-bracket-vertical");
       }
     }
   }
@@ -304,7 +316,8 @@ function updateGridCellDisplay(row, type, value, animate = true) {
         input.value = valStr[idx] || "";
       });
     } else {
-      const endCol = getGroupEndCol(row);
+      const usePrevAlign = fStep0_1 && (row === cur_line);
+      const endCol = usePrevAlign ? getGroupEndCol(row - 1) : getGroupEndCol(row);
       
       const inputCells = document.querySelectorAll(".init-input-cell");
       let dotCol = -1;
@@ -383,18 +396,33 @@ function ensureRowCapacity(neededLines) {
     linesArr.push(new GridInput(i, 4));
     inputs.push(linesArr);
 
+    // Append row headers for the new lines
+    for (let r = 2 * i + 1; r <= 2 * i + 2; r++) {
+      const rowHeader = document.createElement("div");
+      rowHeader.className = "grid-header-cell row-header";
+      rowHeader.style.gridRow = (r + 2).toString();
+      rowHeader.style.gridColumn = "1";
+      rowHeader.textContent = (r + 1).toString();
+      grid.appendChild(rowHeader);
+    }
+
     for (let r = 2 * i + 1; r <= 2 * i + 2; r++) {
       for (let c = 0; c < totalCols; c++) {
         const cell = document.createElement("div");
         cell.classList.add("grid-cell");
         cell.dataset.row = r;
         cell.dataset.col = c;
+        cell.style.gridRow = (r + 2).toString();
+        cell.style.gridColumn = (c + 2).toString();
+        if (r >= 2 && r <= 16 && c === 12) {
+          cell.classList.add("division-bracket-vertical");
+        }
         grid.appendChild(cell);
       }
     }
   }
 
-  grid.style.gridTemplateRows = `repeat(${1 + 2 * neededLines}, 2rem)`;
+  grid.style.gridTemplateRows = `2rem repeat(${1 + 2 * neededLines}, 2rem)`;
 }
 
 function rebuildGrid(numCells) {
@@ -408,11 +436,43 @@ function rebuildGrid(numCells) {
   if (!grid) return;
   
   grid.innerHTML = "";
-  grid.style.gridTemplateColumns = `repeat(12, 1.4rem) 1.4rem repeat(${rightCols}, 1.4rem)`;
+  grid.style.gridTemplateColumns = `2rem repeat(12, 1.4rem) 1.4rem repeat(${rightCols}, 1.4rem)`;
   
+  const totalCols = 13 + rightCols;
   const currentLines = inputs.length;
-  for (let r = 0; r < 1 + 2 * currentLines; r++) {
-    for (let c = 0; c < 13 + rightCols; c++) {
+  const totalRows = 1 + 2 * currentLines;
+
+  grid.style.gridTemplateRows = `2rem repeat(${totalRows}, 2rem)`;
+
+  // Render corner cell
+  const corner = document.createElement("div");
+  corner.className = "grid-header-cell corner";
+  corner.style.gridRow = "1";
+  corner.style.gridColumn = "1";
+  grid.appendChild(corner);
+
+  // Render column headers
+  for (let c = 0; c < totalCols; c++) {
+    const colHeader = document.createElement("div");
+    colHeader.className = "grid-header-cell col-header";
+    colHeader.style.gridRow = "1";
+    colHeader.style.gridColumn = (c + 2).toString();
+    colHeader.textContent = getColLetter(c);
+    grid.appendChild(colHeader);
+  }
+
+  // Render row headers
+  for (let r = 0; r < totalRows; r++) {
+    const rowHeader = document.createElement("div");
+    rowHeader.className = "grid-header-cell row-header";
+    rowHeader.style.gridRow = (r + 2).toString();
+    rowHeader.style.gridColumn = "1";
+    rowHeader.textContent = (r + 1).toString();
+    grid.appendChild(rowHeader);
+  }
+
+  for (let r = 0; r < totalRows; r++) {
+    for (let c = 0; c < totalCols; c++) {
       if (r === 1 && c >= 13 && c < 13 + numCells) {
         const idx = c - 13;
         const input = document.createElement("input");
@@ -423,6 +483,8 @@ function rebuildGrid(numCells) {
         input.dataset.col = c;
         input.dataset.index = idx;
         input.value = currentValues[idx] || "";
+        input.style.gridRow = (r + 2).toString();
+        input.style.gridColumn = (c + 2).toString();
         input.addEventListener("input", handleInitInput);
         input.addEventListener("keydown", handleInitKeydown);
         grid.appendChild(input);
@@ -431,12 +493,16 @@ function rebuildGrid(numCells) {
         cell.classList.add("grid-cell");
         cell.dataset.row = r;
         cell.dataset.col = c;
+        cell.style.gridRow = (r + 2).toString();
+        cell.style.gridColumn = (c + 2).toString();
         if (r === 1) {
           if (c === 12) {
             cell.classList.add("division-bracket");
-          } else if (c >= 13 && c < 13 + numCells) {
+          } else if (c >= 13 && c <= 32) {
             cell.classList.add("division-bar");
           }
+        } else if (r >= 2 && r <= 16 && c === 12) {
+          cell.classList.add("division-bracket-vertical");
         }
         grid.appendChild(cell);
       }
@@ -553,56 +619,89 @@ function padOddDecimalPlaces() {
   }
 }
 
+function formatSubtractionNumber(valStr, line) {
+  const orig = getInitValue();
+  const dotIdx = orig.indexOf(".");
+  if (dotIdx === -1) {
+    return valStr;
+  }
+  
+  const intPart = orig.substring(0, dotIdx);
+  const numIntDigits = getDigitGroups(intPart).join("").length;
+  
+  if (valStr.length <= numIntDigits) {
+    return valStr;
+  }
+  return valStr.substring(0, numIntDigits) + "." + valStr.substring(numIntDigits);
+}
+
 function nextGuide() {
   guide_step++;
   console.log(`${guide_step} : N = ${N}, D = ${D}, Q = ${Q}, line = ${cur_line}, step = ${cur_step}`);
-  if (guide_step >= 6) {
+  
+  if (guide_step >= 11) {
+    // Loop guide_step back: 11 -> 4, 12 -> 5, etc.
+    guide_step = 4 + ((guide_step - 4) % 7);
+  }
+
+  // Calculate arguments based on the resolved guide_step
+  if (guide_step === 5) {
+    // Subtraction step (STEP 4)
+    argv1 = D * Q;
+    argv2 = N;
+    argv3 = N - D * Q;
+  }
+  else if (guide_step === 6) {
+    // Bring down step
+    const nextGrpIdx = cur_line;
+    argv4 = (nextGrpIdx < digitGroups.length) ? digitGroups[nextGrpIdx] : "00";
+  }
+  else if (guide_step === 7) {
+    // Divisor addition step
     const prevRow = inputs[cur_line - 1] || inputs[0];
-    const curRow = inputs[cur_line] || inputs[0];
-    
-    switch (guide_step % 6) {
-      case 0:
-        argv1 = prevRow[4] ? prevRow[4].value : "";
-        argv2 = prevRow[0] ? prevRow[0].value : "";
-        argv3 = (curRow[0] && curRow[0].value) ? Math.floor(parseInt(curRow[0].value) / 100) : 0;
-        const nextGrpIdx = cur_line;
-        argv4 = (nextGrpIdx < digitGroups.length) ? digitGroups[nextGrpIdx] : "00";
-        break;
-      case 1:
-        argv1 = prevRow[1] ? prevRow[1].value : "";
-        argv2 = prevRow[2] ? prevRow[2].value : "";
-        break;
-      case 2:
-        argv1 = (prevRow[1] && prevRow[2]) ? (parseInt(prevRow[1].value) + parseInt(prevRow[2].value)) : 0;
-        argv2 = prevRow[2] ? prevRow[2].value : "";
-        break;
-      case 3:
-        break;
-    }
-    if (guide_step > 8) {
-      guide_step -= 6;
-    }
+    argv1 = prevRow[1] ? prevRow[1].value : "";
+    argv2 = prevRow[2] ? prevRow[2].value : "";
   }
-  else if (guide_step == 3) {
-    // Nothing special
+  else if (guide_step === 8) {
+    // Guess next digit comparison
+    const prevRow = inputs[cur_line - 1] || inputs[0];
+    argv1 = (prevRow[1] && prevRow[2]) ? (parseInt(prevRow[1].value) + parseInt(prevRow[2].value)) : 0;
   }
-  else if (guide_step == 2) {
-    argv1 = (Math.round(N * 100) / 100).toString();
+  else if (guide_step === 2) {
+    // For L=0 quotient decision
+    argv1 = parseInt(digitGroups[0]).toString();
   }
 
   guide();
   saveState();
 }
 
+function getPostposition(digit, type) {
+  const d = parseInt(digit);
+  if (isNaN(d)) return "";
+  if (type === "eul_leul") {
+    return [0, 1, 3, 6, 7, 8].includes(d) ? "을" : "를";
+  }
+  return "";
+}
+
 function guide() {
+  const eul_leul = getPostposition(Q, "eul_leul");
+  const argv4_last = argv4.toString().slice(-1);
+  const argv4_eul_leul = getPostposition(argv4_last, "eul_leul");
+
   const sentence = sentences[guide_step][language]
+    .replaceAll("$init_val", getInitValue() || "2")
+    .replaceAll("$argv1_raw", D * Q)
     .replaceAll("$argv1", argv1)
     .replaceAll("$argv2", argv2)
     .replaceAll("$argv3", argv3)
+    .replaceAll("$argv4_eul_leul", argv4_eul_leul)
     .replaceAll("$argv4", argv4)
     .replaceAll("$N", N)
     .replaceAll("$D", D)
     .replaceAll("$Q", Q)
+    .replaceAll("$eul_leul", eul_leul)
     .replace("$guide_step", guide_step);
 
   const tooltip = document.getElementById("guide-tooltip");
@@ -709,69 +808,197 @@ function skipPractice() {
 function highlightActiveStep() {
   // Clear previous active highlights
   document.querySelectorAll(".grid-cell").forEach(cell => {
-    cell.classList.remove("active");
+    cell.classList.remove("active", "highlight-red", "highlight-blue", "highlight-green");
   });
   document.querySelectorAll(".init-input-cell").forEach(cell => {
-    cell.classList.remove("active");
+    cell.classList.remove("active", "highlight-red", "highlight-blue", "highlight-green");
   });
 
-  let targetRow, startCol, endCol;
-
-  if (cur_step === 3) {
-    // Quotient
-    targetRow = 0;
-    startCol = 13;
-    const len = Math.max(1, stateHistory.length);
-    endCol = getGroupEndCol(len - 1);
-  } else if (cur_step === 0) {
-    // num
-    targetRow = 2 * cur_line + 1;
-    if (cur_line === 0) {
-      document.querySelectorAll(".init-input-cell").forEach(cell => {
-        cell.classList.add("active");
-      });
-      positionTooltip();
-      return;
-    } else {
-      const activeInput = inputs[cur_line] ? inputs[cur_line][cur_step] : null;
-      const val = activeInput ? activeInput.value : "";
-      endCol = getGroupEndCol(cur_line);
-      startCol = Math.min(endCol - 2, endCol - val.length + 1);
-    }
-  } else if (cur_step === 1) {
-    // divisor
-    targetRow = 2 * cur_line + 1;
-    const activeInput = inputs[cur_line] ? inputs[cur_line][cur_step] : null;
-    const val = activeInput ? activeInput.value : "";
-    const len = Math.max(3, val.length);
-    startCol = Math.max(0, 12 - len);
-    endCol = 11;
-  } else if (cur_step === 2) {
-    // divisor_
-    targetRow = 2 * cur_line + 2;
-    const activeInput = inputs[cur_line] ? inputs[cur_line][cur_step] : null;
-    const val = activeInput ? activeInput.value : "";
-    const len = Math.max(3, val.length);
-    startCol = Math.max(0, 12 - len);
-    endCol = 11;
-  } else if (cur_step === 4) {
-    // num_
-    targetRow = 2 * cur_line + 2;
-    const activeInput = inputs[cur_line] ? inputs[cur_line][cur_step] : null;
-    const val = activeInput ? activeInput.value : "";
-    endCol = getGroupEndCol(cur_line);
-    startCol = Math.min(endCol - 2, endCol - val.length + 1);
+  // If initial input is empty, do nothing
+  if (getInitValue() === "") {
+    return;
   }
 
-  // Highlight these cells
-  for (let c = startCol; c <= endCol; c++) {
-    const cell = getCell(targetRow, c);
-    if (cell) {
+  // Handle highlights based on guide_step
+  if (guide_step === 0 || guide_step === 1) {
+    document.querySelectorAll(".init-input-cell").forEach(cell => {
       cell.classList.add("active");
-    }
+    });
+    positionTooltip();
+    return;
   }
 
-  positionTooltip();
+  if (guide_step === 2) {
+    // STEP 1: 최초 몫 결정
+    // Target: L2 (Row 1, Col 11)
+    const cell = getCell(1, 11);
+    if (cell) cell.classList.add("active");
+    positionTooltip();
+    return;
+  }
+
+  if (guide_step === 3) {
+    // STEP 2: 최초 몫 쓰기 (L3에 쓰기)
+    // Target: L3 (Row 2, Col 11)
+    const cell = getCell(2, 11);
+    if (cell) cell.classList.add("active");
+    
+    // Reference 1: L2 (Row 1, Col 11)
+    const ref = getCell(1, 11);
+    if (ref) ref.classList.add("highlight-red");
+    
+    positionTooltip();
+    return;
+  }
+
+  if (guide_step === 10) {
+    // STEP 9: 몫에 두 번째 몫 쓰기
+    // Target: Quotient cell (Row 0, Col endCol)
+    const endCol = getGroupEndCol(cur_line);
+    const cell = getCell(0, endCol);
+    if (cell) cell.classList.add("active");
+    
+    // Reference 1: Multiplier below divisor (Row 2*cur_line + 2, Col 11)
+    const ref = getCell(2 * cur_line + 2, 11);
+    if (ref) ref.classList.add("highlight-red");
+    
+    positionTooltip();
+    return;
+  }
+
+  if (guide_step === 4) {
+    if (cur_line === 0) {
+      // STEP 3: 최초 곱연산 결과 쓰기
+      // Target: N1 (Row 0, Col 13)
+      const cell = getCell(0, 13);
+      if (cell) cell.classList.add("active");
+      
+      // Reference 1: L2 (Row 1, Col 11)
+      const r1 = getCell(1, 11);
+      if (r1) r1.classList.add("highlight-red");
+      
+      // Reference 2: L3 (Row 2, Col 11)
+      const r2 = getCell(2, 11);
+      if (r2) r2.classList.add("highlight-blue");
+    } else {
+      // General product steps (e.g. STEP 10)
+      const targetLine = cur_line - 1;
+      const endCol = getGroupEndCol(targetLine);
+      const prod = D * Q;
+      const len = prod.toString().length;
+      const startCol = endCol - len + 1;
+      
+      // Target: Product cell(s)
+      for (let c = startCol; c <= endCol; c++) {
+        const cell = getCell(2 * targetLine + 2, c);
+        if (cell) cell.classList.add("active");
+      }
+      
+      // Source 1: Divisor on Row 2*targetLine + 1 (left)
+      const prevDiv = inputs[targetLine] ? inputs[targetLine][1] : null;
+      const divLen = prevDiv ? prevDiv.value.length : 1;
+      for (let c = 12 - divLen; c <= 11; c++) {
+        const cell = getCell(2 * targetLine + 1, c);
+        if (cell) cell.classList.add("highlight-red");
+      }
+      
+      // Source 2: Multiplier below divisor (Row 2*targetLine + 2, Col 11)
+      const qCell = getCell(2 * targetLine + 2, 11);
+      if (qCell) qCell.classList.add("highlight-blue");
+    }
+    positionTooltip();
+    return;
+  }
+
+  if (guide_step === 5) {
+    // Subtraction step
+    let len = 1;
+    if (cur_line === 1) {
+      const groups = getDigitGroups(getInitValue());
+      len = groups[0] ? groups[0].length : 1;
+    } else {
+      const prevVal = inputs[cur_line - 1] ? inputs[cur_line - 1][0].value : "";
+      len = Math.max(1, prevVal.length);
+    }
+    const endCol = getGroupEndCol(cur_line - 1);
+    
+    for (let c = endCol - len + 1; c <= endCol; c++) {
+      const cell = getCell(2 * cur_line + 1, c);
+      if (cell) cell.classList.add("active");
+      
+      const s1 = getCell(2 * cur_line - 1, c);
+      if (s1) s1.classList.add("highlight-red");
+      
+      const s2 = getCell(2 * cur_line, c);
+      if (s2) s2.classList.add("highlight-blue");
+    }
+    positionTooltip();
+    return;
+  }
+
+  if (guide_step === 6) {
+    // Bring down step
+    const endCol = getGroupEndCol(cur_line);
+    const groupLen = (cur_line === 0) ? getDigitGroups(getInitValue())[0].length : 2;
+    for (let c = endCol - groupLen + 1; c <= endCol; c++) {
+      const cell = getCell(2 * cur_line + 1, c);
+      if (cell) cell.classList.add("active");
+      
+      const sourceCell = getCell(1, c);
+      if (sourceCell) sourceCell.classList.add("highlight-red");
+    }
+    positionTooltip();
+    return;
+  }
+
+  if (guide_step === 7) {
+    // Divisor addition step (L+1 setup)
+    const prevDivVal = inputs[cur_line - 1] ? inputs[cur_line - 1][1].value : "";
+    const prevMultVal = inputs[cur_line - 1] ? inputs[cur_line - 1][2].value : "";
+    
+    const sumVal = (parseInt(prevDivVal) + parseInt(prevMultVal)).toString();
+    const sumLen = sumVal.length;
+    
+    for (let c = 11 - sumLen + 1; c <= 11; c++) {
+      const cell = getCell(2 * cur_line + 1, c);
+      if (cell) cell.classList.add("active");
+    }
+    
+    const divLen = prevDivVal.length;
+    for (let c = 11 - divLen + 1; c <= 11; c++) {
+      const cell = getCell(2 * cur_line - 1, c);
+      if (cell) cell.classList.add("highlight-red");
+    }
+    
+    const s2 = getCell(2 * cur_line, 11);
+    if (s2) s2.classList.add("highlight-blue");
+    
+    positionTooltip();
+    return;
+  }
+
+  if (guide_step === 8) {
+    // STEP 7: 두 번째 몫 비교 및 결정
+    // Target: L4 (Row 2*cur_line + 1, Col 11)
+    const cell = getCell(2 * cur_line + 1, 11);
+    if (cell) cell.classList.add("active");
+    positionTooltip();
+    return;
+  }
+
+  if (guide_step === 9) {
+    // STEP 8: 제수 아래 보조제수 x 쓰기
+    // Target: L5 (Row 2*cur_line + 2, Col 11)
+    const cell = getCell(2 * cur_line + 2, 11);
+    if (cell) cell.classList.add("active");
+    
+    // Reference 1: L4 (Row 2*cur_line + 1, Col 11)
+    const ref = getCell(2 * cur_line + 1, 11);
+    if (ref) ref.classList.add("highlight-red");
+    
+    positionTooltip();
+    return;
+  }
 }
 
 function positionTooltip() {
@@ -793,18 +1020,60 @@ function positionTooltip() {
   let minLeft = Infinity;
   let maxRight = -Infinity;
   let maxBottom = -Infinity;
+  let minTop = Infinity;
 
   activeCells.forEach(cell => {
     const rect = cell.getBoundingClientRect();
     if (rect.left < minLeft) minLeft = rect.left;
     if (rect.right > maxRight) maxRight = rect.right;
     if (rect.bottom > maxBottom) maxBottom = rect.bottom;
+    if (rect.top < minTop) minTop = rect.top;
   });
 
   const width = maxRight - minLeft;
   
-  const top = maxBottom + window.scrollY + 10;
-  const left = minLeft + window.scrollX + (width - tooltip.offsetWidth) / 2;
+  let isQuotientRow = false;
+  if (guide_step === 4 && cur_line === 0) {
+    isQuotientRow = true;
+  } else {
+    activeCells.forEach(cell => {
+      if (cell.dataset.row === "0") {
+        isQuotientRow = true;
+      }
+    });
+  }
+
+  let top;
+  if (isQuotientRow) {
+    let baselineTop = minTop;
+    const grid = document.getElementById("math-grid");
+    if (grid) {
+      baselineTop = grid.getBoundingClientRect().top;
+    }
+    top = baselineTop + window.scrollY - tooltip.offsetHeight - 12;
+    tooltip.classList.add("placed-above");
+  } else {
+    top = maxBottom + window.scrollY + 10;
+    tooltip.classList.remove("placed-above");
+  }
+
+  let rightmostCell = null;
+  let maxCol = -1;
+  activeCells.forEach(cell => {
+    const c = parseInt(cell.dataset.col);
+    if (c > maxCol) {
+      maxCol = c;
+      rightmostCell = cell;
+    }
+  });
+
+  let left;
+  if (rightmostCell) {
+    const rRect = rightmostCell.getBoundingClientRect();
+    left = rRect.left + window.scrollX + (rRect.width - tooltip.offsetWidth) / 2;
+  } else {
+    left = minLeft + window.scrollX + (width - tooltip.offsetWidth) / 2;
+  }
 
   tooltip.style.top = `${top}px`;
   tooltip.style.left = `${Math.max(10, Math.min(left, window.innerWidth - tooltip.offsetWidth - 10))}px`;
@@ -815,6 +1084,7 @@ function saveState() {
     cur_line,
     cur_step,
     fStep1_1,
+    fStep0_1,
     pointpos,
     numIntegerGroups,
     digitGroups: [...digitGroups],
@@ -841,6 +1111,7 @@ function prevStep() {
   cur_line = targetState.cur_line;
   cur_step = targetState.cur_step;
   fStep1_1 = targetState.fStep1_1;
+  fStep0_1 = targetState.fStep0_1 || false;
   pointpos = targetState.pointpos;
   numIntegerGroups = targetState.numIntegerGroups || 1;
   digitGroups = targetState.digitGroups || [];
@@ -966,26 +1237,28 @@ function nextStep() {
 
   switch (cur_step) {
     case 0:
-      const remainder = N - D * Q;
-      const nextGroup = (cur_line < digitGroups.length) ? digitGroups[cur_line] : "00";
-      N = remainder * 100 + parseInt(nextGroup);
-      inputs[cur_line][cur_step].value = N.toString();
-      break;
-    case 1:
-      if (fStep1_1) {
+      if (fStep0_1 && guide_step === 5) {
+        fStep0_1 = false;
+        const remainder = N - D * Q;
+        const nextGroup = (cur_line < digitGroups.length) ? digitGroups[cur_line] : "00";
+        N = remainder * 100 + parseInt(nextGroup);
+        inputs[cur_line][cur_step].value = N.toString();
+        cur_step--;
+      } else if (cur_line > 0 && fStep1_1 && guide_step === 6) {
         fStep1_1 = false;
         D = D + D % 10;
-        inputs[cur_line][cur_step].value = D.toString();
-        cur_step--;
+        inputs[cur_line][1].value = D.toString();
       } else {
-        fStep1_1 = true;
-        for (var i = 9; i >= 0; i--) {
-          if ((D * 10 + i) * i <= N) {
-            D = D * 10 + i;
-            Q = i;
-            inputs[cur_line][cur_step].value = D.toString();
-            break;
-          }
+        cur_step--;
+      }
+      break;
+    case 1:
+      for (var i = 9; i >= 0; i--) {
+        if ((D * 10 + i) * i <= N) {
+          D = D * 10 + i;
+          Q = i;
+          inputs[cur_line][cur_step].value = D.toString();
+          break;
         }
       }
       break;
@@ -1010,6 +1283,12 @@ function nextStep() {
     cur_step = 0;
     cur_line++;
     ensureRowCapacity(cur_line + 1);
+    
+    // Write subtraction remainder immediately so it is present when Subtraction Step displays!
+    fStep0_1 = true;
+    fStep1_1 = true;
+    const remainder = N - D * Q;
+    inputs[cur_line][cur_step].value = remainder.toString();
   } else {
     cur_step++;
   }
@@ -1095,6 +1374,7 @@ function resetToStart() {
   D = 0;
   Q = 0;
   fStep1_1 = false;
+  fStep0_1 = false;
   pointpos = 1;
   
   const rightCols = Math.max(20, numInputCells + 10);
@@ -1136,3 +1416,41 @@ init(2);
 
 window.addEventListener("resize", positionTooltip);
 window.addEventListener("scroll", positionTooltip);
+
+function getColLetter(colIdx) {
+  let temp = colIdx;
+  let letter = "";
+  while (temp >= 0) {
+    letter = String.fromCharCode((temp % 26) + 65) + letter;
+    temp = Math.floor(temp / 26) - 1;
+  }
+  return letter;
+}
+
+function updateCoordinateDisplay(address) {
+  const badge = document.getElementById("coordinate-badge");
+  if (badge) {
+    badge.textContent = (language === 1) ? `좌표: ${address}` : `Coord: ${address}`;
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const grid = document.getElementById("math-grid");
+  if (grid) {
+    grid.addEventListener("mouseover", (event) => {
+      const target = event.target;
+      if (target.classList.contains("grid-cell") || target.classList.contains("init-input-cell")) {
+        const r = parseInt(target.dataset.row);
+        const c = parseInt(target.dataset.col);
+        if (!isNaN(r) && !isNaN(c)) {
+          const colLetter = getColLetter(c);
+          const rowNum = r + 1;
+          updateCoordinateDisplay(`${colLetter}${rowNum}`);
+        }
+      }
+    });
+    grid.addEventListener("mouseout", (event) => {
+      updateCoordinateDisplay("-");
+    });
+  }
+});
