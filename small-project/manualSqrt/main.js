@@ -44,7 +44,7 @@ const sentences = [
   ],
   [
     "$guide_step. Subtract <em>$argv1</em> from <em>$argv2</em> to get <em>$argv3</em>, then append '00' at the end.",
-    "$guide_step. <em>$argv2</em> - <em>$argv1</em> = <em>$argv3</em>, 뒤에 '00'을 붙집니다."
+    "$guide_step. <em>$argv2</em> - <em>$argv1</em> = <em>$argv3</em>, 뒤에 '00'을 붙입니다."
   ],
   [
     "$guide_step. <em>$argv1</em> + <em>$argv2</em> = <em>$D</em>",
@@ -329,7 +329,7 @@ function handleInitKeydown(e) {
       e.preventDefault();
     }
   } else if (e.key === "ArrowRight") {
-    const nextInput = document.querySelector(`.init-input-cell[data-index="${idx - 1}"]`);
+    const nextInput = document.querySelector(`.init-input-cell[data-index="${idx + 1}"]`);
     if (nextInput) {
       nextInput.focus();
       e.preventDefault();
@@ -872,6 +872,43 @@ if (lang === "ko") {
 const title = document.getElementById("title");
 if (title) {
   title.textContent = titleText[language];
+}
+
+function resetToStart() {
+  const inputCells = document.querySelectorAll(".init-input-cell");
+  inputCells.forEach(cell => {
+    cell.value = "";
+  });
+  
+  if (inputs[0] && inputs[0][0]) {
+    inputs[0][0]._value = "";
+  }
+  
+  cur_line = 0;
+  cur_step = 1;
+  guide_step = 0;
+  D = 0;
+  Q = 0;
+  fStep1_1 = false;
+  pointpos = 1;
+  
+  const rightCols = Math.max(20, numInputCells + 10);
+  clearGridRow(0, 13, 12 + rightCols);
+  for (let r = 1; r < inputs.length; r++) {
+    if (r === 1) {
+      clearGridRow(r, 0, 11);
+    } else {
+      clearGridRow(r, 0, 12 + rightCols);
+    }
+  }
+  
+  if (inputCells.length > 0) {
+    inputCells[0].focus();
+  }
+  
+  stateHistory = [];
+  saveState();
+  guide();
 }
 
 init(2);
