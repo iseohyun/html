@@ -218,6 +218,29 @@ function adjustStartForDot(startCol, endCol) {
   return startCol;
 }
 
+function getUpperNumberLen(line) {
+  if (line === 0) {
+    const firstGroup = getDigitGroups(getInitValue())[0] || "";
+    return firstGroup.length;
+  }
+  let prevBringDown = "";
+  let prevProduct = "";
+  if (line === 1) {
+    prevBringDown = getDigitGroups(getInitValue())[0] || "";
+    prevProduct = inputs[0][4] ? inputs[0][4].value : "";
+  } else {
+    prevBringDown = inputs[line - 1] ? inputs[line - 1][0].value : "";
+    prevProduct = inputs[line - 1] ? inputs[line - 1][4].value : "";
+  }
+  const valBD = parseInt(prevBringDown) || 0;
+  const valProd = parseInt(prevProduct) || 0;
+  const remainder = valBD - valProd;
+  const remainderLen = remainder.toString().length;
+  
+  const groupLen = 2;
+  return remainderLen + groupLen;
+}
+
 function getCell(r, c) {
   return document.querySelector(`.grid-cell[data-row="${r}"][data-col="${c}"], .init-input-cell[data-row="${r}"][data-col="${c}"]`);
 }
@@ -226,16 +249,22 @@ function clearGridRow(r, startCol, endCol) {
   for (let c = startCol; c <= endCol; c++) {
     const cell = getCell(r, c);
     if (cell) {
-      cell.textContent = "";
-      cell.className = "grid-cell";
-      if (r === 1) {
-        if (c === 12) {
-          cell.classList.add("division-bracket");
-        } else if (c >= 13 && c <= 32) {
-          cell.classList.add("division-bar");
+      if (cell.tagName === "INPUT") {
+        cell.value = "";
+        cell.className = "init-input-cell division-bar";
+        cell.classList.remove("active", "highlight-red", "highlight-blue", "highlight-green");
+      } else {
+        cell.textContent = "";
+        cell.className = "grid-cell";
+        if (r === 1) {
+          if (c === 12) {
+            cell.classList.add("division-bracket");
+          } else if (c >= 13) {
+            cell.classList.add("division-bar");
+          }
+        } else if (r >= 2 && r <= 16 && c === 12) {
+          cell.classList.add("division-bracket-vertical");
         }
-      } else if (r >= 2 && r <= 16 && c === 12) {
-        cell.classList.add("division-bracket-vertical");
       }
     }
   }
@@ -497,6 +526,7 @@ function rebuildGrid(numCells) {
         input.type = "text";
         input.maxLength = 1;
         input.classList.add("init-input-cell");
+        input.classList.add("division-bar");
         input.dataset.row = r;
         input.dataset.col = c;
         input.dataset.index = idx;
@@ -516,7 +546,7 @@ function rebuildGrid(numCells) {
         if (r === 1) {
           if (c === 12) {
             cell.classList.add("division-bracket");
-          } else if (c >= 13 && c <= 32) {
+          } else if (c >= 13) {
             cell.classList.add("division-bar");
           }
         } else if (r >= 2 && r <= 16 && c === 12) {
@@ -949,7 +979,10 @@ function highlightActiveStep() {
       if (s2) s2.classList.add("highlight-blue");
     }
     
-    for (let c = 13; c <= endCol; c++) {
+    // Source 1 (Red reference): spans the exact length of the upper remainder + bring-down!
+    const upperLen = getUpperNumberLen(cur_line - 1);
+    const startColSource1 = adjustStartForDot(endCol - upperLen + 1, endCol);
+    for (let c = startColSource1; c <= endCol; c++) {
       const s1 = getCell(2 * cur_line - 1, c);
       if (s1) s1.classList.add("highlight-red");
     }
@@ -1384,11 +1417,16 @@ function resetToStart() {
   const inputCells = document.querySelectorAll(".init-input-cell");
   inputCells.forEach(cell => {
     cell.value = "";
+    cell.classList.remove("active", "highlight-red", "highlight-blue", "highlight-green");
   });
   
-  if (inputs[0] && inputs[0][0]) {
-    inputs[0][0]._value = "";
-  }
+  inputs.forEach(row => {
+    row.forEach(input => {
+      input._value = "";
+    });
+  });
+  
+  stateHistory = [];
   
   cur_line = 0;
   cur_step = 1;
@@ -1400,13 +1438,14 @@ function resetToStart() {
   pointpos = 1;
   
   const rightCols = Math.max(20, numInputCells + 10);
-  clearGridRow(0, 13, 12 + rightCols);
-  for (let r = 1; r < inputs.length; r++) {
-    if (r === 1) {
-      clearGridRow(r, 0, 11);
-    } else {
-      clearGridRow(r, 0, 12 + rightCols);
-    }
+  const totalCols = 13 + rightCols;
+  const totalRows = 1 + 2 * inputs.length;
+  
+  const clearRows = Math.max(17, totalRows);
+  const clearCols = Math.max(28, totalCols);
+  
+  for (let r = 0; r < clearRows; r++) {
+    clearGridRow(r, 0, clearCols - 1);
   }
 
   // Hide the guide tooltip and clear content
@@ -1439,6 +1478,13 @@ init(2);
 window.addEventListener("resize", positionTooltip);
 window.addEventListener("scroll", positionTooltip);
 
+if (window.ResizeObserver) {
+  const resizeObserver = new ResizeObserver(() => {
+    positionTooltip();
+  });
+  resizeObserver.observe(document.body);
+}
+
 function getColLetter(colIdx) {
   let temp = colIdx;
   let letter = "";
@@ -1456,23 +1502,21 @@ function updateCoordinateDisplay(address) {
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  const grid = document.getElementById("math-grid");
-  if (grid) {
-    grid.addEventListener("mouseover", (event) => {
-      const target = event.target;
-      if (target.classList.contains("grid-cell") || target.classList.contains("init-input-cell")) {
-        const r = parseInt(target.dataset.row);
-        const c = parseInt(target.dataset.col);
-        if (!isNaN(r) && !isNaN(c)) {
-          const colLetter = getColLetter(c);
-          const rowNum = r + 1;
-          updateCoordinateDisplay(`${colLetter}${rowNum}`);
-        }
+const grid = document.getElementById("math-grid");
+if (grid) {
+  grid.addEventListener("mouseover", (event) => {
+    const target = event.target;
+    if (target.classList.contains("grid-cell") || target.classList.contains("init-input-cell")) {
+      const r = parseInt(target.dataset.row);
+      const c = parseInt(target.dataset.col);
+      if (!isNaN(r) && !isNaN(c)) {
+        const colLetter = getColLetter(c);
+        const rowNum = r + 1;
+        updateCoordinateDisplay(`${colLetter}${rowNum}`);
       }
-    });
-    grid.addEventListener("mouseout", (event) => {
-      updateCoordinateDisplay("-");
-    });
-  }
-});
+    }
+  });
+  grid.addEventListener("mouseout", (event) => {
+    updateCoordinateDisplay("-");
+  });
+}

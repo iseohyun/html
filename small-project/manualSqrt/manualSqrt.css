@@ -1,21 +1,3 @@
-body {
-  font-family: 'Outfit', 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f4f6f9;
-  margin: 0;
-  padding: 20px;
-  display: flex;
-  justify-content: center;
-}
-
-article {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  padding: 30px;
-  max-width: 950px;
-  width: 100%;
-}
-
 #main {
   display: flex;
   flex-direction: column;
@@ -71,7 +53,8 @@ article {
 
 /* Active cell highlight (Soft yellow background) */
 .grid-cell.active {
-  background-color: #fef08a !important; /* Soft yellow highlight */
+  background-color: #fef08a !important;
+  /* Soft yellow highlight */
   box-shadow: inset 0 0 0 2px #facc15;
 }
 
@@ -101,12 +84,17 @@ article {
   background-color: #fef08a !important;
 }
 
+.init-input-cell.division-bar {
+  border-top: 3px solid #1e293b !important;
+}
+
 /* LaTeX math variable style */
 .math-var {
   font-family: 'Times New Roman', Times, serif;
   font-style: italic;
   font-weight: 600;
-  color: #38bdf8; /* Vibrant sky blue */
+  color: #38bdf8;
+  /* Vibrant sky blue */
   padding: 0 1px;
 }
 
@@ -194,7 +182,8 @@ article {
   font-weight: bold;
 }
 
-#tooltip-prev-btn, #tooltip-next-btn {
+#tooltip-prev-btn,
+#tooltip-next-btn {
   background-color: #334155;
   border: 1px solid #475569;
   color: #cbd5e1;
@@ -206,12 +195,14 @@ article {
   transition: all 0.2s ease;
 }
 
-#tooltip-prev-btn:hover:not(:disabled), #tooltip-next-btn:hover:not(:disabled) {
+#tooltip-prev-btn:hover:not(:disabled),
+#tooltip-next-btn:hover:not(:disabled) {
   background-color: #475569;
   color: white;
 }
 
-#tooltip-prev-btn:disabled, #tooltip-next-btn:disabled {
+#tooltip-prev-btn:disabled,
+#tooltip-next-btn:disabled {
   opacity: 0.3;
   cursor: not-allowed;
 }
@@ -306,6 +297,7 @@ article {
     transform: scale(0.6);
     background-color: #fef08a;
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -357,8 +349,10 @@ article {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(15, 23, 42, 0.6); /* Slate 900 with opacity */
-  backdrop-filter: blur(4px); /* Glassmorphism backdrop blur */
+  background-color: rgba(15, 23, 42, 0.6);
+  /* Slate 900 with opacity */
+  backdrop-filter: blur(4px);
+  /* Glassmorphism backdrop blur */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -383,6 +377,7 @@ article {
     transform: scale(0.9) translateY(10px);
     opacity: 0;
   }
+
   to {
     transform: scale(1) translateY(0);
     opacity: 1;
@@ -418,7 +413,8 @@ article {
   text-align: left;
 }
 
-#shortcut-table th, #shortcut-table td {
+#shortcut-table th,
+#shortcut-table td {
   padding: 10px 12px;
   border-bottom: 1px solid #e2e8f0;
   font-size: 0.9rem;
@@ -447,7 +443,7 @@ article {
   transition: all 0.2s ease;
   text-align: center;
   color: #334155;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .key-bind-btn:hover {
@@ -486,24 +482,35 @@ article {
 }
 
 @keyframes pulse {
-  from { opacity: 1; }
-  to { opacity: 0.6; }
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0.6;
+  }
 }
 
-.grid-cell.highlight-red, .init-input-cell.highlight-red {
-  background-color: #fee2e2 !important; /* Soft pastel red */
+.grid-cell.highlight-red,
+.init-input-cell.highlight-red {
+  background-color: #fee2e2 !important;
+  /* Soft pastel red */
   color: #991b1b !important;
   border-color: #fca5a5 !important;
 }
 
-.grid-cell.highlight-blue, .init-input-cell.highlight-blue {
-  background-color: #dbeafe !important; /* Soft pastel blue */
+.grid-cell.highlight-blue,
+.init-input-cell.highlight-blue {
+  background-color: #dbeafe !important;
+  /* Soft pastel blue */
   color: #1e40af !important;
   border-color: #93c5fd !important;
 }
 
-.grid-cell.highlight-green, .init-input-cell.highlight-green {
-  background-color: #dcfce7 !important; /* Soft pastel green */
+.grid-cell.highlight-green,
+.init-input-cell.highlight-green {
+  background-color: #dcfce7 !important;
+  /* Soft pastel green */
   color: #166534 !important;
   border-color: #86efac !important;
 }
