@@ -6,7 +6,9 @@
     prev_primary: "Shift+Enter",
     prev_secondary: "ArrowLeft",
     skip_primary: "Space",
-    reset_primary: "Escape"
+    skip_secondary: "",
+    reset_primary: "Escape",
+    reset_secondary: ""
   };
 
   let currentBindings = { ...DEFAULT_BINDINGS };
@@ -17,12 +19,13 @@
     1: { // Korean
       page_title: "제곱근 구하기",
       settings_title: "단축키 설정 (Key Bindings)",
-      next_primary: "다음 단계 (Next) - 기본:",
-      next_secondary: "다음 단계 (Next) - 보조:",
-      prev_primary: "이전 단계 (Prev) - 기본:",
-      prev_secondary: "이전 단계 (Prev) - 보조:",
-      skip_primary: "스킵 (Skip/Next):",
-      reset_primary: "초기화 (Reset):",
+      th_function: "기능",
+      th_primary: "단축키",
+      th_secondary: "보조단축키",
+      label_next: "다음 단계 (Next)",
+      label_prev: "이전 단계 (Prev)",
+      label_skip: "스킵 (Skip/Next)",
+      label_reset: "초기화 (Reset)",
       reset_all: "기본값으로 초기화",
       listening: "키 입력 대기 중...",
       none: "없음"
@@ -30,12 +33,13 @@
     0: { // English
       page_title: "Finding Square Roots",
       settings_title: "Key Bindings Settings",
-      next_primary: "Next Step - Primary:",
-      next_secondary: "Next Step - Secondary:",
-      prev_primary: "Prev Step - Primary:",
-      prev_secondary: "Prev Step - Secondary:",
-      skip_primary: "Skip (or Next):",
-      reset_primary: "Reset (Esc):",
+      th_function: "Function",
+      th_primary: "Primary Shortcut",
+      th_secondary: "Secondary Shortcut",
+      label_next: "Next Step",
+      label_prev: "Prev Step",
+      label_skip: "Skip (or Next)",
+      label_reset: "Reset (Esc)",
       reset_all: "Reset to Defaults",
       listening: "Press any key...",
       none: "None"
@@ -111,10 +115,19 @@
     const settingsTitle = document.getElementById("settings-title");
     if (settingsTitle) settingsTitle.textContent = UI_TEXT[lang].settings_title;
 
-    const labels = ["next_primary", "next_secondary", "prev_primary", "prev_secondary", "skip_primary", "reset_primary"];
+    // Table Headers
+    const thFunc = document.getElementById("th-function");
+    if (thFunc) thFunc.textContent = UI_TEXT[lang].th_function;
+    const thPrimary = document.getElementById("th-primary");
+    if (thPrimary) thPrimary.textContent = UI_TEXT[lang].th_primary;
+    const thSecondary = document.getElementById("th-secondary");
+    if (thSecondary) thSecondary.textContent = UI_TEXT[lang].th_secondary;
+
+    // Row labels
+    const labels = ["next", "prev", "skip", "reset"];
     labels.forEach(id => {
-      const el = document.getElementById(`label-${id.replace("_", "-")}`);
-      if (el) el.textContent = UI_TEXT[lang][id];
+      const el = document.getElementById(`label-${id}`);
+      if (el) el.textContent = UI_TEXT[lang][`label_${id}`];
     });
 
     const resetAllBtn = document.getElementById("settings-reset-all-btn");
@@ -152,12 +165,39 @@
       });
     }
 
-    // Toggle settings panel
+    // Toggle settings modal
     const toggleBtn = document.getElementById("settings-toggle-btn");
-    const settingsPanel = document.getElementById("settings-panel");
-    if (toggleBtn && settingsPanel) {
+    const settingsModal = document.getElementById("settings-modal");
+    const closeBtn = document.getElementById("modal-close-btn");
+
+    if (toggleBtn && settingsModal) {
       toggleBtn.addEventListener("click", () => {
-        settingsPanel.classList.toggle("hidden");
+        settingsModal.classList.remove("hidden");
+        const tooltip = document.getElementById("guide-tooltip");
+        if (tooltip) {
+          tooltip.classList.add("hidden");
+        }
+      });
+    }
+
+    if (closeBtn && settingsModal) {
+      closeBtn.addEventListener("click", () => {
+        settingsModal.classList.add("hidden");
+        if (window.highlightActiveStep) {
+          window.highlightActiveStep();
+        }
+      });
+    }
+
+    // Close when clicking outside content (on the overlay)
+    if (settingsModal) {
+      settingsModal.addEventListener("click", (e) => {
+        if (e.target === settingsModal) {
+          settingsModal.classList.add("hidden");
+          if (window.highlightActiveStep) {
+            window.highlightActiveStep();
+          }
+        }
       });
     }
 
@@ -190,7 +230,7 @@
       // Ignore actions if typing in initial inputs
       if (document.activeElement && document.activeElement.classList.contains("init-input-cell")) {
         // If Escape is pressed, still reset even if focused
-        if (pressed === currentBindings.reset_primary) {
+        if (pressed === currentBindings.reset_primary || (currentBindings.reset_secondary && pressed === currentBindings.reset_secondary)) {
           e.preventDefault();
           if (window.resetToStart) window.resetToStart();
         }
@@ -198,7 +238,7 @@
       }
 
       // Esc (Reset) Action
-      if (pressed === currentBindings.reset_primary) {
+      if (pressed === currentBindings.reset_primary || (currentBindings.reset_secondary && pressed === currentBindings.reset_secondary)) {
         e.preventDefault();
         if (window.resetToStart) window.resetToStart();
         return;
@@ -207,7 +247,7 @@
       const challengeActive = isChallengeActive();
 
       // Space (Skip / Next) Action
-      if (pressed === currentBindings.skip_primary) {
+      if (pressed === currentBindings.skip_primary || (currentBindings.skip_secondary && pressed === currentBindings.skip_secondary)) {
         e.preventDefault();
         if (challengeActive) {
           if (window.skipPractice) window.skipPractice();

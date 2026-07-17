@@ -10,7 +10,10 @@ var guide_step = 0;
 var argv1 = 2;
 var argv2 = 0;
 var argv3 = 0;
+var argv4 = "";
 var N = 2, D, Q;
+var digitGroups = [];
+var numIntegerGroups = 1;
 
 const titleText = [
   "Finding Square Roots",
@@ -43,8 +46,8 @@ const sentences = [
     "$guide_step. <em>$D</em> × <em>$Q</em>를 구합니다."
   ],
   [
-    "$guide_step. Subtract <em>$argv1</em> from <em>$argv2</em> to get <em>$argv3</em>, then append '00' at the end.",
-    "$guide_step. <em>$argv2</em> - <em>$argv1</em> = <em>$argv3</em>, 뒤에 '00'을 붙입니다."
+    "$guide_step. Subtract <em>$argv1</em> from <em>$argv2</em> to get <em>$argv3</em>, then append '<em>$argv4</em>' at the end.",
+    "$guide_step. <em>$argv2</em> - <em>$argv1</em> = <em>$argv3</em>, 뒤에 '<em>$argv4</em>'을 붙입니다."
   ],
   [
     "$guide_step. <em>$argv1</em> + <em>$argv2</em> = <em>$D</em>",
@@ -78,6 +81,115 @@ class GridInput {
   }
 }
 
+function getDigitGroups(valStr) {
+  valStr = valStr.replace(/[^0-9.]/g, "");
+  if (valStr === "") return ["0"];
+  
+  const dotIdx = valStr.indexOf(".");
+  let integerPart = "";
+  let decimalPart = "";
+  if (dotIdx === -1) {
+    integerPart = valStr;
+  } else {
+    integerPart = valStr.substring(0, dotIdx);
+    decimalPart = valStr.substring(dotIdx + 1);
+  }
+  
+  const groups = [];
+  
+  let tempInt = integerPart;
+  const intGroups = [];
+  while (tempInt.length > 2) {
+    intGroups.unshift(tempInt.substring(tempInt.length - 2));
+    tempInt = tempInt.substring(0, tempInt.length - 2);
+  }
+  if (tempInt.length > 0) {
+    intGroups.unshift(tempInt);
+  }
+  if (intGroups.length === 0) {
+    intGroups.push("0");
+  }
+  
+  groups.push(...intGroups);
+  
+  let tempDec = decimalPart;
+  const decGroups = [];
+  while (tempDec.length > 0) {
+    let pair = tempDec.substring(0, 2);
+    if (pair.length === 1) {
+      pair += "0";
+    }
+    decGroups.push(pair);
+    tempDec = tempDec.substring(2);
+  }
+  
+  groups.push(...decGroups);
+  
+  return groups;
+}
+
+function getGroupEndCol(groupIndex) {
+  const inputCells = document.querySelectorAll(".init-input-cell");
+  let dotIdx = -1;
+  const digitCols = [];
+  
+  inputCells.forEach((cell) => {
+    const col = parseInt(cell.dataset.col);
+    if (cell.value === ".") {
+      dotIdx = col;
+    } else if (cell.value !== "") {
+      digitCols.push(col);
+    }
+  });
+
+  digitCols.sort((a, b) => a - b);
+
+  let intCols = [];
+  let decCols = [];
+  
+  if (dotIdx === -1) {
+    intCols = digitCols;
+  } else {
+    intCols = digitCols.filter(c => c < dotIdx);
+    decCols = digitCols.filter(c => c > dotIdx);
+  }
+
+  const intGroups = [];
+  let tempInt = [...intCols];
+  while (tempInt.length > 2) {
+    intGroups.unshift(tempInt.splice(tempInt.length - 2));
+  }
+  if (tempInt.length > 0) {
+    intGroups.unshift(tempInt);
+  }
+  if (intGroups.length === 0) {
+    intGroups.push([13]);
+  }
+
+  const decGroups = [];
+  let tempDec = [...decCols];
+  while (tempDec.length > 0) {
+    decGroups.push(tempDec.splice(0, 2));
+  }
+
+  const allGroups = [...intGroups, ...decGroups];
+
+  if (groupIndex < allGroups.length) {
+    const grp = allGroups[groupIndex];
+    return grp[grp.length - 1];
+  } else {
+    let lastEndCol = 13;
+    if (allGroups.length > 0) {
+      const lastGrp = allGroups[allGroups.length - 1];
+      lastEndCol = lastGrp[lastGrp.length - 1];
+    }
+    if (dotIdx > lastEndCol) {
+      lastEndCol = dotIdx;
+    }
+    return lastEndCol + 2 * (groupIndex - allGroups.length + 1);
+  }
+}
+
 function getCell(r, c) {
   return document.querySelector(`.grid-cell[data-row="${r}"][data-col="${c}"]`);
 }
@@ -99,19 +211,87 @@ function clearGridRow(r, startCol, endCol) {
   }
 }
 
+function drawValWithDot(row, type, value, endCol, dotCol, animate) {
+  const valStr = value.toString();
+  const len = valStr.length;
+  const rightCols = Math.max(20, numInputCells + 10);
+  const startRange = 13;
+  const endRange = 12 + rightCols;
+  const r = 2 * row + (type === 0 ? 1 : 2);
+  
+  clearGridRow(r, startRange, endRange);
+  
+  let valIdx = len - 1;
+  let c = endCol;
+  
+  while (valIdx >= 0 && c >= startRange) {
+    const cell = getCell(r, c);
+    if (c === dotCol) {
+      if (cell) cell.textContent = ""; // Leave blank, skip column
+      c--;
+      continue;
+    }
+    
+    if (cell) {
+      const prevText = cell.textContent;
+      cell.textContent = (valStr[valIdx] === " ") ? "" : valStr[valIdx];
+      if (type === 4) {
+        cell.classList.add("subtraction-line");
+      }
+      if (animate && cell.textContent !== "" && prevText === "") {
+        cell.classList.add("grid-cell-animate");
+      }
+    }
+    valIdx--;
+    c--;
+  }
+}
+
 function updateGridCellDisplay(row, type, value, animate = true) {
   const valStr = value.toString();
   const rightCols = Math.max(20, numInputCells + 10);
   
   if (type === 3) {
-    // Quotient: Row 0, Columns 13 onwards (left-aligned)
+    // Quotient: Row 0, dynamically aligned to group ending columns
     clearGridRow(0, 13, 12 + rightCols);
-    for (let k = 0; k < valStr.length; k++) {
-      const cell = getCell(0, 13 + k);
+    
+    // Find the dot column if any
+    const inputCells = document.querySelectorAll(".init-input-cell");
+    let dotCol = -1;
+    inputCells.forEach(cell => {
+      if (cell.value === ".") {
+        dotCol = parseInt(cell.dataset.col);
+      }
+    });
+
+    const digits = [];
+    let hasDot = false;
+    for (let char of valStr) {
+      if (char === ".") {
+        hasDot = true;
+      } else if (char !== " " && char !== "") {
+        digits.push(char);
+      }
+    }
+
+    digits.forEach((digit, idx) => {
+      const endCol = getGroupEndCol(idx);
+      const cell = getCell(0, endCol);
       if (cell) {
         const prevText = cell.textContent;
-        cell.textContent = (valStr[k] === " ") ? "" : valStr[k];
-        if (animate && cell.textContent !== "" && prevText === "") {
+        cell.textContent = digit;
+        if (animate && prevText === "") {
+          cell.classList.add("grid-cell-animate");
+        }
+      }
+    });
+
+    if (hasDot && dotCol !== -1) {
+      const cell = getCell(0, dotCol);
+      if (cell) {
+        const prevText = cell.textContent;
+        cell.textContent = ".";
+        if (animate && prevText === "") {
           cell.classList.add("grid-cell-animate");
         }
       }
@@ -124,38 +304,38 @@ function updateGridCellDisplay(row, type, value, animate = true) {
         input.value = valStr[idx] || "";
       });
     } else {
-      clearGridRow(2 * row + 1, 13, 12 + rightCols);
-      for (let k = 0; k < valStr.length; k++) {
-        const cell = getCell(2 * row + 1, 13 + k);
-        if (cell) {
-          const prevText = cell.textContent;
-          cell.textContent = (valStr[k] === " ") ? "" : valStr[k];
-          if (animate && cell.textContent !== "" && prevText === "") {
-            cell.classList.add("grid-cell-animate");
-          }
+      const endCol = getGroupEndCol(row);
+      
+      const inputCells = document.querySelectorAll(".init-input-cell");
+      let dotCol = -1;
+      inputCells.forEach(cell => {
+        if (cell.value === ".") {
+          dotCol = parseInt(cell.dataset.col);
         }
-      }
+      });
+      
+      drawValWithDot(row, type, valStr, endCol, dotCol, animate);
     }
   } else if (type === 4) {
-    // num_: Row 2*row + 2, Columns 13 onwards (left-aligned, with subtraction bottom line)
-    clearGridRow(2 * row + 2, 13, 12 + rightCols);
-    for (let k = 0; k < valStr.length; k++) {
-      const cell = getCell(2 * row + 2, 13 + k);
-      if (cell) {
-        const prevText = cell.textContent;
-        cell.textContent = (valStr[k] === " ") ? "" : valStr[k];
-        cell.classList.add("subtraction-line");
-        if (animate && cell.textContent !== "" && prevText === "") {
-          cell.classList.add("grid-cell-animate");
-        }
+    // num_: Row 2*row + 2, Columns 13 onwards (right-aligned to group ending column, with subtraction bottom line)
+    const endCol = getGroupEndCol(row);
+    
+    const inputCells = document.querySelectorAll(".init-input-cell");
+    let dotCol = -1;
+    inputCells.forEach(cell => {
+      if (cell.value === ".") {
+        dotCol = parseInt(cell.dataset.col);
       }
-    }
+    });
+    
+    drawValWithDot(row, type, valStr, endCol, dotCol, animate);
   } else if (type === 1) {
     // divisor: Row 2*row + 1, Columns 0-11 (right-aligned)
     clearGridRow(2 * row + 1, 0, 11);
     const len = valStr.length;
+    const startCol = Math.max(0, 12 - len);
     for (let k = 0; k < len; k++) {
-      const cell = getCell(2 * row + 1, 12 - len + k);
+      const cell = getCell(2 * row + 1, startCol + k);
       if (cell) {
         const prevText = cell.textContent;
         cell.textContent = (valStr[k] === " ") ? "" : valStr[k];
@@ -168,8 +348,9 @@ function updateGridCellDisplay(row, type, value, animate = true) {
     // divisor_: Row 2*row + 2, Columns 0-11 (right-aligned)
     clearGridRow(2 * row + 2, 0, 11);
     const len = valStr.length;
+    const startCol = Math.max(0, 12 - len);
     for (let k = 0; k < len; k++) {
-      const cell = getCell(2 * row + 2, 12 - len + k);
+      const cell = getCell(2 * row + 2, startCol + k);
       if (cell) {
         const prevText = cell.textContent;
         cell.textContent = (valStr[k] === " ") ? "" : valStr[k];
@@ -341,6 +522,7 @@ function handleInitKeydown(e) {
       if (!isNaN(parsed) && parsed > 0) {
         init(parsed);
         nextStep();
+        input.blur();
       }
     }
   }
@@ -382,7 +564,9 @@ function nextGuide() {
       case 0:
         argv1 = prevRow[4] ? prevRow[4].value : "";
         argv2 = prevRow[0] ? prevRow[0].value : "";
-        argv3 = (curRow[0] && curRow[0].value) ? parseInt(curRow[0].value) / 100 : 0;
+        argv3 = (curRow[0] && curRow[0].value) ? Math.floor(parseInt(curRow[0].value) / 100) : 0;
+        const nextGrpIdx = cur_line;
+        argv4 = (nextGrpIdx < digitGroups.length) ? digitGroups[nextGrpIdx] : "00";
         break;
       case 1:
         argv1 = prevRow[1] ? prevRow[1].value : "";
@@ -415,6 +599,7 @@ function guide() {
     .replaceAll("$argv1", argv1)
     .replaceAll("$argv2", argv2)
     .replaceAll("$argv3", argv3)
+    .replaceAll("$argv4", argv4)
     .replaceAll("$N", N)
     .replaceAll("$D", D)
     .replaceAll("$Q", Q)
@@ -536,12 +721,11 @@ function highlightActiveStep() {
     // Quotient
     targetRow = 0;
     startCol = 13;
-    const val = quotientInput.value || "";
-    endCol = 13 + Math.max(3, val.length);
+    const len = Math.max(1, stateHistory.length);
+    endCol = getGroupEndCol(len - 1);
   } else if (cur_step === 0) {
     // num
     targetRow = 2 * cur_line + 1;
-    startCol = 13;
     if (cur_line === 0) {
       document.querySelectorAll(".init-input-cell").forEach(cell => {
         cell.classList.add("active");
@@ -551,7 +735,8 @@ function highlightActiveStep() {
     } else {
       const activeInput = inputs[cur_line] ? inputs[cur_line][cur_step] : null;
       const val = activeInput ? activeInput.value : "";
-      endCol = 13 + Math.max(3, val.length);
+      endCol = getGroupEndCol(cur_line);
+      startCol = Math.min(endCol - 2, endCol - val.length + 1);
     }
   } else if (cur_step === 1) {
     // divisor
@@ -559,7 +744,7 @@ function highlightActiveStep() {
     const activeInput = inputs[cur_line] ? inputs[cur_line][cur_step] : null;
     const val = activeInput ? activeInput.value : "";
     const len = Math.max(3, val.length);
-    startCol = 12 - len;
+    startCol = Math.max(0, 12 - len);
     endCol = 11;
   } else if (cur_step === 2) {
     // divisor_
@@ -567,15 +752,15 @@ function highlightActiveStep() {
     const activeInput = inputs[cur_line] ? inputs[cur_line][cur_step] : null;
     const val = activeInput ? activeInput.value : "";
     const len = Math.max(3, val.length);
-    startCol = 12 - len;
+    startCol = Math.max(0, 12 - len);
     endCol = 11;
   } else if (cur_step === 4) {
     // num_
     targetRow = 2 * cur_line + 2;
-    startCol = 13;
     const activeInput = inputs[cur_line] ? inputs[cur_line][cur_step] : null;
     const val = activeInput ? activeInput.value : "";
-    endCol = 13 + Math.max(3, val.length);
+    endCol = getGroupEndCol(cur_line);
+    startCol = Math.min(endCol - 2, endCol - val.length + 1);
   }
 
   // Highlight these cells
@@ -592,7 +777,7 @@ function highlightActiveStep() {
 function positionTooltip() {
   const tooltip = document.getElementById("guide-tooltip");
   if (!tooltip) return;
-  if (isHidden) {
+  if (isHidden || getInitValue() === "") {
     tooltip.classList.add("hidden");
     return;
   }
@@ -631,6 +816,8 @@ function saveState() {
     cur_step,
     fStep1_1,
     pointpos,
+    numIntegerGroups,
+    digitGroups: [...digitGroups],
     guide_step,
     N,
     D,
@@ -638,6 +825,7 @@ function saveState() {
     argv1,
     argv2,
     argv3,
+    argv4,
     numInputCells,
     inputsValues: inputs.map(row => row.map(input => input._value))
   };
@@ -654,6 +842,8 @@ function prevStep() {
   cur_step = targetState.cur_step;
   fStep1_1 = targetState.fStep1_1;
   pointpos = targetState.pointpos;
+  numIntegerGroups = targetState.numIntegerGroups || 1;
+  digitGroups = targetState.digitGroups || [];
   guide_step = targetState.guide_step;
   N = targetState.N;
   D = targetState.D;
@@ -661,6 +851,7 @@ function prevStep() {
   argv1 = targetState.argv1;
   argv2 = targetState.argv2;
   argv3 = targetState.argv3;
+  argv4 = targetState.argv4 || "";
   
   numInputCells = targetState.numInputCells;
   
@@ -707,7 +898,20 @@ function init(value) {
 
 function silentInit(value) {
   guide_step = 0;
-  N = value;
+
+  const valStr = getInitValue() || value.toString();
+  digitGroups = getDigitGroups(valStr);
+  
+  const dotIdx = valStr.indexOf(".");
+  if (dotIdx === -1) {
+    numIntegerGroups = digitGroups.length;
+  } else {
+    const integerPart = valStr.substring(0, dotIdx);
+    numIntegerGroups = getDigitGroups(integerPart).length;
+  }
+
+  // Set N to the first group
+  N = parseInt(digitGroups[0]);
   argv1 = N;
 
   const rightCols = Math.max(20, numInputCells + 10);
@@ -725,18 +929,21 @@ function silentInit(value) {
   D = 0;
   Q = 0;
   fStep1_1 = false;
+  
+  // inputs[0][0]._value holds the full input string for restoration
+  inputs[0][0]._value = valStr;
+
+  // Compute pointpos for backward compatibility
   pointpos = 1;
-  inputs[0][0]._value = N.toString();
-
-  let tempN = N;
-  while (tempN > 10) {
-    pointpos++;
-    tempN = tempN / 10;
-  }
-
-  if (pointpos % 2 == 0) {
-    tempN = tempN * 10;
-    inputs[0][3]._value = " ";
+  let tempN = parseFloat(valStr);
+  if (!isNaN(tempN)) {
+    while (tempN > 10) {
+      pointpos++;
+      tempN = tempN / 10;
+    }
+    if (pointpos % 2 == 0) {
+      inputs[0][3]._value = " ";
+    }
   }
 
   stateHistory = [];
@@ -759,14 +966,16 @@ function nextStep() {
 
   switch (cur_step) {
     case 0:
-      N = Math.round((N - D * Q) * 100);
-      inputs[cur_line][cur_step].value = spacings((cur_line) * 2 + 1 - Number(N).toString().length) + N;
+      const remainder = N - D * Q;
+      const nextGroup = (cur_line < digitGroups.length) ? digitGroups[cur_line] : "00";
+      N = remainder * 100 + parseInt(nextGroup);
+      inputs[cur_line][cur_step].value = N.toString();
       break;
     case 1:
       if (fStep1_1) {
         fStep1_1 = false;
         D = D + D % 10;
-        inputs[cur_line][cur_step].value = D;
+        inputs[cur_line][cur_step].value = D.toString();
         cur_step--;
       } else {
         fStep1_1 = true;
@@ -774,30 +983,26 @@ function nextStep() {
           if ((D * 10 + i) * i <= N) {
             D = D * 10 + i;
             Q = i;
-            inputs[cur_line][cur_step].value = D;
+            inputs[cur_line][cur_step].value = D.toString();
             break;
           }
         }
       }
       break;
     case 2:
-      inputs[cur_line][cur_step].value = spacings(cur_line) + Q;
+      inputs[cur_line][cur_step].value = Q.toString();
       break;
     case 3:
       if (cur_line == 0) {
         inputs[cur_line][cur_step].value = "";
       }
       inputs[cur_line][cur_step].value += Q;
-      if (pointpos <= 2) {
+      if (cur_line === numIntegerGroups - 1) {
         inputs[cur_line][cur_step].value += ".";
-        pointpos = 1000000;
-      } else {
-        inputs[cur_line][cur_step].value += " ";
-        pointpos -= 2;
       }
       break;
     case 4:
-      inputs[cur_line][cur_step].value = spacings((cur_line) * 2 + 1 - Number(D * Q).toString().length) + D * Q;
+      inputs[cur_line][cur_step].value = (D * Q).toString();
       break;
   }
 
@@ -900,6 +1105,22 @@ function resetToStart() {
     } else {
       clearGridRow(r, 0, 12 + rightCols);
     }
+  }
+
+  // Hide the guide tooltip and clear content
+  const tooltip = document.getElementById("guide-tooltip");
+  if (tooltip) {
+    tooltip.classList.add("hidden");
+  }
+  const tooltipContent = document.getElementById("tooltip-content");
+  if (tooltipContent) {
+    tooltipContent.innerHTML = "";
+  }
+
+  // Hide the settings modal
+  const settingsModal = document.getElementById("settings-modal");
+  if (settingsModal) {
+    settingsModal.classList.add("hidden");
   }
   
   if (inputCells.length > 0) {

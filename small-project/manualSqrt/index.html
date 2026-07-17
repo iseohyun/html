@@ -25,34 +25,46 @@
       <button id="settings-toggle-btn" aria-label="Settings">⚙️</button>
     </div>
     
-    <div id="settings-panel" class="hidden">
-      <h3 id="settings-title">단축키 설정 (Key Bindings)</h3>
-      <div class="settings-row">
-        <label id="label-next-primary">다음 단계 (Next) - 기본:</label>
-        <button class="key-bind-btn" data-binding="next_primary"></button>
-      </div>
-      <div class="settings-row">
-        <label id="label-next-secondary">다음 단계 (Next) - 보조:</label>
-        <button class="key-bind-btn" data-binding="next_secondary"></button>
-      </div>
-      <div class="settings-row">
-        <label id="label-prev-primary">이전 단계 (Prev) - 기본:</label>
-        <button class="key-bind-btn" data-binding="prev_primary"></button>
-      </div>
-      <div class="settings-row">
-        <label id="label-prev-secondary">이전 단계 (Prev) - 보조:</label>
-        <button class="key-bind-btn" data-binding="prev_secondary"></button>
-      </div>
-      <div class="settings-row">
-        <label id="label-skip-primary">스킵 (Skip/Next):</label>
-        <button class="key-bind-btn" data-binding="skip_primary"></button>
-      </div>
-      <div class="settings-row">
-        <label id="label-reset-primary">초기화 (Reset):</label>
-        <button class="key-bind-btn" data-binding="reset_primary"></button>
-      </div>
-      <div class="settings-actions">
-        <button id="settings-reset-all-btn">기본값으로 초기화</button>
+    <div id="settings-modal" class="modal-overlay hidden">
+      <div class="modal-content">
+        <button id="modal-close-btn" class="close-btn">&times;</button>
+        <h3 id="settings-title">단축키 설정 (Key Bindings)</h3>
+        
+        <table id="shortcut-table">
+          <thead>
+            <tr id="table-header-row">
+              <th id="th-function">기능</th>
+              <th id="th-primary">단축키</th>
+              <th id="th-secondary">보조단축키</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td id="label-next">다음 단계 (Next)</td>
+              <td><button class="key-bind-btn" data-binding="next_primary"></button></td>
+              <td><button class="key-bind-btn" data-binding="next_secondary"></button></td>
+            </tr>
+            <tr>
+              <td id="label-prev">이전 단계 (Prev)</td>
+              <td><button class="key-bind-btn" data-binding="prev_primary"></button></td>
+              <td><button class="key-bind-btn" data-binding="prev_secondary"></button></td>
+            </tr>
+            <tr>
+              <td id="label-skip">스킵 (Skip/Next)</td>
+              <td><button class="key-bind-btn" data-binding="skip_primary"></button></td>
+              <td><button class="key-bind-btn" data-binding="skip_secondary"></button></td>
+            </tr>
+            <tr>
+              <td id="label-reset">초기화 (Reset)</td>
+              <td><button class="key-bind-btn" data-binding="reset_primary"></button></td>
+              <td><button class="key-bind-btn" data-binding="reset_secondary"></button></td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <div class="settings-actions">
+          <button id="settings-reset-all-btn">기본값으로 초기화</button>
+        </div>
       </div>
     </div>
 
