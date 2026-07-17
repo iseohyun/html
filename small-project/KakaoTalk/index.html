@@ -254,6 +254,59 @@
       </div>
     </div>
 
+    <!-- 다운로드 옵션 선택 모달 (v1.2.0) -->
+    <div id="download-modal" class="modal" style="display: none;">
+      <div class="modal-content" style="max-width: 480px;">
+        <div class="modal-header">
+          <h3>다운로드 옵션 선택</h3>
+          <span id="btn-close-download" class="modal-close">&times;</span>
+        </div>
+        <div class="modal-body" style="padding: 20px;">
+          <p style="font-size: 0.9em; color: #64748b; margin-bottom: 20px; text-align: center;">어떤 상태로 대화방을 저장할까요?</p>
+          <div class="download-options-grid">
+            <div id="opt-download-static" class="download-option-card">
+              <div class="card-icon">📷</div>
+              <div class="card-info">
+                <h4>현재 화면 저장</h4>
+                <p>지금 노출된 화면을 PNG 이미지 파일로 저장합니다.</p>
+              </div>
+            </div>
+            <div id="opt-download-animation" class="download-option-card">
+              <div class="card-icon">🎬</div>
+              <div class="card-info">
+                <h4>애니메이션 저장</h4>
+                <p>대화가 순서대로 재생되는 과정을 무음 MP4 비디오로 저장합니다.</p>
+              </div>
+            </div>
+            <div id="opt-download-full" class="download-option-card">
+              <div class="card-icon">📜</div>
+              <div class="card-info">
+                <h4>전체 대화방 저장</h4>
+                <p>전체 대화를 아래로 길게 캡처해 이미지로 저장합니다. (자동 분할)</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 모바일 길게 누르기 안내 및 팝업 모달 (v1.2.0) -->
+    <div id="mobile-save-modal" class="modal" style="display: none;">
+      <div class="modal-content" style="max-width: 420px; text-align: center;">
+        <div class="modal-header">
+          <h3>이미지 저장</h3>
+          <span id="btn-close-mobile-save" class="modal-close">&times;</span>
+        </div>
+        <div class="modal-body" style="padding: 20px;">
+          <p style="font-size: 0.9em; font-weight: bold; color: #e11d48; margin-bottom: 12px;">⚠️ 이미지를 2초간 길게 눌러 [사진에 추가] 또는 [이미지 저장]을 선택해 주세요.</p>
+          <div id="mobile-preview-container" style="border: 2px dashed #cbd5e1; border-radius: 8px; padding: 10px; background-color: #f8fafc; max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; align-items: center;">
+            <!-- 생성된 이미지 인스턴스들이 동적으로 꼽힙니다 -->
+          </div>
+          <button id="btn-close-mobile-save-confirm" class="modal-btn-primary" style="margin-top: 15px; width: 100%;">확인</button>
+        </div>
+      </div>
+    </div>
+
     <!-- 순차 모듈 로더 및 명시적 이니셜라이즈 기동 체인 (v0.1.1 2단계) -->
     <script>
       (function () {
