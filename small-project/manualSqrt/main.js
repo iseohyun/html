@@ -200,6 +200,24 @@ function getGroupEndCol(groupIndex) {
   }
 }
 
+function getDotCol() {
+  const inputCells = document.querySelectorAll(".init-input-cell");
+  for (let cell of inputCells) {
+    if (cell.value === ".") {
+      return parseInt(cell.dataset.col);
+    }
+  }
+  return -1;
+}
+
+function adjustStartForDot(startCol, endCol) {
+  const dotCol = getDotCol();
+  if (dotCol !== -1 && startCol <= dotCol && dotCol <= endCol) {
+    return startCol - 1;
+  }
+  return startCol;
+}
+
 function getCell(r, c) {
   return document.querySelector(`.grid-cell[data-row="${r}"][data-col="${c}"], .init-input-cell[data-row="${r}"][data-col="${c}"]`);
 }
@@ -886,7 +904,7 @@ function highlightActiveStep() {
       const endCol = getGroupEndCol(targetLine);
       const prod = D * Q;
       const len = prod.toString().length;
-      const startCol = endCol - len + 1;
+      const startCol = adjustStartForDot(endCol - len + 1, endCol);
       
       // Target: Product cell(s)
       for (let c = startCol; c <= endCol; c++) {
@@ -921,16 +939,19 @@ function highlightActiveStep() {
       len = Math.max(1, prevVal.length);
     }
     const endCol = getGroupEndCol(cur_line - 1);
+    const startCol = adjustStartForDot(endCol - len + 1, endCol);
     
-    for (let c = endCol - len + 1; c <= endCol; c++) {
+    for (let c = startCol; c <= endCol; c++) {
       const cell = getCell(2 * cur_line + 1, c);
       if (cell) cell.classList.add("active");
       
-      const s1 = getCell(2 * cur_line - 1, c);
-      if (s1) s1.classList.add("highlight-red");
-      
       const s2 = getCell(2 * cur_line, c);
       if (s2) s2.classList.add("highlight-blue");
+    }
+    
+    for (let c = 13; c <= endCol; c++) {
+      const s1 = getCell(2 * cur_line - 1, c);
+      if (s1) s1.classList.add("highlight-red");
     }
     positionTooltip();
     return;
@@ -940,7 +961,8 @@ function highlightActiveStep() {
     // Bring down step
     const endCol = getGroupEndCol(cur_line);
     const groupLen = (cur_line === 0) ? getDigitGroups(getInitValue())[0].length : 2;
-    for (let c = endCol - groupLen + 1; c <= endCol; c++) {
+    const startCol = adjustStartForDot(endCol - groupLen + 1, endCol);
+    for (let c = startCol; c <= endCol; c++) {
       const cell = getCell(2 * cur_line + 1, c);
       if (cell) cell.classList.add("active");
       
