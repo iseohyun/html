@@ -39,11 +39,11 @@
 
 - **STEP 5** (최초 수 내리기):
   - 툴팁: '00'을 붙입니다.
-  - 툴팁 위치: P4 아랫쪽
-  - 참조1: O2, P2
+  - 툴팁 위치: Q4 아랫쪽
+  - 참조1: P2, Q2
   - 참조2: 없음
-  - Target(Highlight): O4, P4
-  - Input: O4 = 0, P4 = 0
+  - Target(Highlight): P4, Q4
+  - Input: P4 = 0, Q4 = 0
 
 - **STEP 6** (최초 제수 덧셈 D+Q):
   - 툴팁: 1 + 1 = 2
@@ -71,35 +71,35 @@
 
 - **STEP 9** (몫에 두 번째 몫 쓰기):
   - 툴팁: 뒷 자리에 4를 붙여 줍니다.
-  - 툴팁 위치: P1 위쪽
+  - 툴팁 위치: Q1 위쪽
   - 참조1: L5
   - 참조2: 없음
-  - Target(Highlight): P1
-  - Input: P1 = 4
+  - Target(Highlight): Q1
+  - Input: Q1 = 4
 
 - **STEP 10** (두 번째 곱연산 결과 쓰기):
   - 툴팁: 24 × 4 = 96
-  - 툴팁 위치: P5 아랫쪽
+  - 툴팁 위치: Q5 아랫쪽
   - 참조1: K4, L4
   - 참조2: L5
-  - Target(Highlight): O5, P5
-  - Input: O5 = 9, P5 = 6
+  - Target(Highlight): P5, Q5
+  - Input: P5 = 9, Q5 = 6
 
 - **STEP 11** (두 번째 뺄셈 수행):
   - 툴팁: 100 - 96 = 4
-  - 툴팁 위치: P6 아랫쪽
-  - 참조1: N4, O4, P4
-  - 참조2: O5, P5
-  - Target(Highlight): N6, O6, P6
-  - Input: P6 = 4
+  - 툴팁 위치: Q6 아랫쪽
+  - 참조1: N4, P4, Q4
+  - 참조2: P5, Q5
+  - Target(Highlight): N6, P6, Q6
+  - Input: Q6 = 4
 
 - **STEP 12** (두 번째 수 내리기 - 소수점 이하 자리 채움):
   - 툴팁: '00'을 붙입니다.
-  - 툴팁 위치: R6 아랫쪽
-  - 참조1: Q2, R2
+  - 툴팁 위치: S6 아랫쪽
+  - 참조1: R2, S2
   - 참조2: 없음
-  - Target(Highlight): Q6, R6
-  - Input: Q6 = 0, R6 = 0
+  - Target(Highlight): R6, S6
+  - Input: R6 = 0, S6 = 0
 
 - **STEP 13** (두 번째 제수 덧셈 D+Q):
   - 툴팁: 24 + 4 = 28
