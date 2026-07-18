@@ -64,7 +64,7 @@ function guide() {
       tempB = r;
     }
     const mVal = rList.length - 4;
-    const targetRemIdx = mVal - substIdx + 2;
+    const targetRemIdx = mVal + 3 - substIdx;
     if (targetRemIdx >= 0 && targetRemIdx < rList.length) {
       valSub = rList[targetRemIdx];
     }
@@ -164,11 +164,11 @@ function guide() {
 
         if (subType === 1) {
           if (k === mVal + 2) {
-            rawSentence = "<1>$argv2</1> 대입";
+            rawSentence = "<1>$argv2</1>대입";
           } else if (k === mVal + 3) {
-            rawSentence = "<1>$argv1</1> 대입";
+            rawSentence = "<1>$argv1</1>대입";
           } else {
-            rawSentence = "<1>$argv4</1> 대입";
+            rawSentence = "<1>$argv4</1> 대응";
           }
         } else if (subType === 2) {
           rawSentence = "분배법칙";
