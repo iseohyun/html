@@ -1,18 +1,18 @@
-// tooltip.js - Tooltip Control and Localization
-
-let isHidden = false;
+window.isHidden = false;
 
 function guide() {
   const tooltip = document.getElementById("guide-tooltip");
   const content = document.getElementById("tooltip-content");
   if (!tooltip || !content) return;
 
-  if (isHidden) {
+  if (window.isHidden) {
     tooltip.classList.add("hidden");
     return;
   }
 
-  const stepObj = stepsData[cur_step];
+  const stepObj = (cur_step === 0)
+    ? stepsData[0]
+    : ((window.actions && window.actions[cur_step - 1]) ? window.actions[cur_step - 1] : stepsData[cur_step]);
   if (!stepObj) {
     tooltip.classList.add("hidden");
     return;
@@ -20,14 +20,171 @@ function guide() {
 
   tooltip.classList.remove("hidden");
 
+  let valA = A;
+  let valB = B;
+  let valGcd = gcd;
+
+  if (cur_step === 0) {
+    const cellA = document.querySelector('[data-row="0"][data-col="1"]');
+    const cellB = document.querySelector('[data-row="0"][data-col="2"]');
+    const inputA = cellA ? cellA.value.trim() : "";
+    const inputB = cellB ? cellB.value.trim() : "";
+    valA = inputA || "?";
+    valB = inputB || "?";
+    if (inputA && inputB) {
+      const pA = parseInt(inputA);
+      const pB = parseInt(inputB);
+      if (!isNaN(pA) && !isNaN(pB) && pA > 0 && pB > 0 && typeof window.getGcd === "function") {
+        valGcd = window.getGcd(pA, pB);
+      } else {
+        valGcd = "?";
+      }
+    } else {
+      valGcd = "?";
+    }
+  }
+
+  let valSub = "";
+  const matchC = stepObj.name ? stepObj.name.match(/^C-(\d+)-/) : null;
+  if (matchC) {
+    const substIdx = parseInt(matchC[1]);
+    let tempA = A;
+    let tempB = B;
+    if (tempA < tempB) {
+      const t = tempA;
+      tempA = tempB;
+      tempB = t;
+    }
+    let rList = [tempA, tempB];
+    while (true) {
+      let r = tempA % tempB;
+      rList.push(r);
+      if (r === 0) break;
+      tempA = tempB;
+      tempB = r;
+    }
+    const mVal = rList.length - 4;
+    const targetRemIdx = mVal - substIdx + 2;
+    if (targetRemIdx >= 0 && targetRemIdx < rList.length) {
+      valSub = rList[targetRemIdx];
+    }
+  }
+
   // Format sentence tags to styled spans
   let rawSentence = stepObj.sentence || "";
+
+  if (stepObj && stepObj.phase === 'A' && cur_step > 0) {
+    const actIdx = cur_step - 1;
+    const cycle = Math.floor(actIdx / 3);
+    const stepType = actIdx % 3;
+    const cycleRow = Math.floor(cycle / 2);
+    const isOdd = (cycle % 2 === 0);
+
+    let dividend, divisor, q, prod, rem;
+    if (cycle === 0) {
+      dividend = A;
+      divisor = B;
+    } else {
+      if (isOdd) {
+        dividend = V[cycleRow][0][0];
+        divisor = V[cycleRow][1][0];
+      } else {
+        dividend = V[cycleRow][1][0];
+        divisor = V[cycleRow+1][0][0];
+      }
+    }
+
+    if (stepType === 0) {
+      q = Math.floor(dividend / divisor);
+      rawSentence = `<1>${dividend}</1> ÷ <2>${divisor}</2> = <0>${q}</0> ... ?`;
+    } else if (stepType === 1) {
+      q = isOdd ? V[cycleRow][2][0] : V[cycleRow][2][1];
+      prod = q * divisor;
+      rawSentence = `<1>${divisor}</1> × <2>${q}</2> = <0>${prod}</0>`;
+    } else if (stepType === 2) {
+      q = isOdd ? V[cycleRow][2][0] : V[cycleRow][2][1];
+      prod = isOdd ? V[cycleRow][0][3] : V[cycleRow][1][3];
+      rem = dividend - prod;
+      rawSentence = `<1>${dividend}</1> - <2>${prod}</2> = <0>${rem}</0>`;
+    }
+  } else if (stepObj && stepObj.phase === 'B') {
+    const r = stepObj.row;
+    if (r === 0) {
+      rawSentence = "A = <1>$argv1</1>";
+    } else if (r === 1) {
+      rawSentence = "B = <1>$argv2</1>";
+    } else {
+      const i = r - 2;
+      const cycleRow = Math.floor(i / 2);
+      const isOdd = (i % 2 === 0);
+      
+      let remVal, divVal, divSorVal, qVal;
+      if (isOdd) {
+        remVal = V[cycleRow+1][0][0];
+        divVal = (i === 0) ? A : V[cycleRow][0][0];
+        divSorVal = (i === 0) ? B : V[cycleRow][1][0];
+        qVal = V[cycleRow][2][0];
+      } else {
+        remVal = V[cycleRow+1][1][0];
+        divVal = V[cycleRow][1][0];
+        divSorVal = V[cycleRow+1][0][0];
+        qVal = V[cycleRow][2][1];
+      }
+      rawSentence = `<1>${remVal}</1> = <2>${divVal}</2> - <3>${divSorVal}</3> × <4>${qVal}</4>`;
+    }
+  } else if (stepObj && stepObj.phase === 'C') {
+    if (stepObj.name === 'C-1-1') {
+      rawSentence = "GCD($argv1, $argv2) = <1>$argv3</1>";
+    } else if (stepObj.name === 'C-1-2') {
+      rawSentence = "GCD 대입";
+    } else if (stepObj.name === 'C-1-3') {
+      rawSentence = "식 정렬";
+    } else {
+      const matchName = stepObj.name ? stepObj.name.match(/^C-(\d+)-(\d+)$/) : null;
+      if (matchName) {
+        const k = parseInt(matchName[1]);
+        const subType = parseInt(matchName[2]);
+        
+        let tempA = A;
+        let tempB = B;
+        if (tempA < tempB) {
+          const t = tempA;
+          tempA = tempB;
+          tempB = t;
+        }
+        let rList = [tempA, tempB];
+        while (true) {
+          let r = tempA % tempB;
+          rList.push(r);
+          if (r === 0) break;
+          tempA = tempB;
+          tempB = r;
+        }
+        const mVal = rList.length - 4; // number of substitutions
+
+        if (subType === 1) {
+          if (k === mVal + 2) {
+            rawSentence = "<1>$argv2</1> 대입";
+          } else if (k === mVal + 3) {
+            rawSentence = "<1>$argv1</1> 대입";
+          } else {
+            rawSentence = "<1>$argv4</1> 대입";
+          }
+        } else if (subType === 2) {
+          rawSentence = "분배법칙";
+        } else if (subType === 3) {
+          rawSentence = "항정리";
+        }
+      }
+    }
+  }
   
   // Replace arguments $argv1, $argv2, etc. if present
   rawSentence = rawSentence
-    .replace(/\$argv1/g, A)
-    .replace(/\$argv2/g, B)
-    .replace(/\$argv3/g, gcd);
+    .replace(/\$argv1/g, valA)
+    .replace(/\$argv2/g, valB)
+    .replace(/\$argv3/g, valGcd)
+    .replace(/\$argv4/g, valSub);
 
   // Replace XML highlights with actual spans
   let formattedHTML = rawSentence
@@ -53,7 +210,8 @@ function guide() {
   const closeBtn = document.getElementById("tooltip-close-btn");
   if (prevBtn) prevBtn.disabled = (stateHistory.length <= 1);
 
-  const isLastStep = (cur_step === stepsData.length - 1);
+  const totalSteps = window.actions ? window.actions.length : stepsData.length;
+  const isLastStep = (cur_step === totalSteps - 1) || isFin;
   if (isLastStep) {
     if (nextBtn) nextBtn.classList.add("hidden");
     if (closeBtn) {
@@ -76,7 +234,9 @@ function guide() {
 }
 
 function positionTooltip() {
-  const stepObj = stepsData[cur_step];
+  const stepObj = (cur_step === 0)
+    ? stepsData[0]
+    : ((window.actions && window.actions[cur_step - 1]) ? window.actions[cur_step - 1] : stepsData[cur_step]);
   if (!stepObj) return;
 
   const targetCells = [];
@@ -102,7 +262,7 @@ function positionTooltip() {
 
 function positionTooltipToCells(cells) {
   const tooltip = document.getElementById("guide-tooltip");
-  if (!tooltip || isHidden) return;
+  if (!tooltip || window.isHidden) return;
 
   if (cells.length === 0) {
     // Center of the screen if no cell target
@@ -177,13 +337,13 @@ function toggleGuide() {
   const tooltip = document.getElementById("guide-tooltip");
   if (!tooltip) return;
 
-  if (isHidden) {
+  if (window.isHidden) {
     tooltip.classList.remove("hidden");
-    isHidden = false;
+    window.isHidden = false;
     guide();
   } else {
     tooltip.classList.add("hidden");
-    isHidden = true;
+    window.isHidden = true;
   }
 }
 

@@ -128,7 +128,9 @@ function highlightActiveStep() {
 
   if (isFin) return;
 
-  const stepObj = stepsData[cur_step];
+  const stepObj = (cur_step === 0)
+    ? stepsData[0]
+    : ((window.actions && window.actions[cur_step - 1]) ? window.actions[cur_step - 1] : stepsData[cur_step]);
   if (!stepObj) return;
 
   // Highlight target cell (active)
