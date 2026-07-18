@@ -88,6 +88,17 @@
   border-top: 3px solid #1e293b !important;
 }
 
+.division-bar.active,
+.division-bar.highlight-red,
+.division-bar.highlight-blue,
+.division-bar.highlight-green,
+.init-input-cell.division-bar.active,
+.init-input-cell.division-bar.highlight-red,
+.init-input-cell.division-bar.highlight-blue,
+.init-input-cell.division-bar.highlight-green {
+  border-top: 3px solid #1e293b !important;
+}
+
 /* LaTeX math variable style */
 .math-var {
   font-family: 'Times New Roman', Times, serif;

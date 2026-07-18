@@ -99,7 +99,7 @@ function resetToStart() {
   fStep1_1 = false;
   fStep0_1 = false;
   
-  const rightCols = Math.max(20, numInputCells + 10);
+  const rightCols = Math.max(20, numInputCells);
   const totalCols = 13 + rightCols;
   const totalRows = 1 + 2 * inputs.length;
   
@@ -176,7 +176,7 @@ function silentInit(value) {
   N = parseInt(digitGroups[0]);
   argv1 = N;
 
-  const rightCols = Math.max(20, numInputCells + 10);
+  const rightCols = Math.max(20, numInputCells);
   clearGridRow(0, 13, 12 + rightCols);
   for (let r = 1; r < inputs.length; r++) {
     if (r === 1) {
@@ -235,7 +235,7 @@ function checkAndStart() {
 
 function startMain() {
   // Initializing inputs list wrapper
-  const quotientInput = new GridInput(0, 3);
+  quotientInput = new GridInput(0, 3);
   for (var i = 0; i < max_line; i++) {
     const lines = [];
     lines.push(new GridInput(i, 0));

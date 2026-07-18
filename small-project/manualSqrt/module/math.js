@@ -99,9 +99,10 @@ function getGroupEndCol(groupIndex) {
 
   const allGroups = [...intGroups, ...decGroups];
 
+  let res;
   if (groupIndex < allGroups.length) {
     const grp = allGroups[groupIndex];
-    return grp[grp.length - 1];
+    res = grp[grp.length - 1];
   } else {
     let lastEndCol = 13;
     if (allGroups.length > 0) {
@@ -111,8 +112,10 @@ function getGroupEndCol(groupIndex) {
     if (dotIdx > lastEndCol) {
       lastEndCol = dotIdx;
     }
-    return lastEndCol + 2 * (groupIndex - allGroups.length + 1);
+    res = lastEndCol + 2 * (groupIndex - allGroups.length + 1);
   }
+
+  return res;
 }
 
 function getDotCol() {
@@ -239,6 +242,7 @@ function nextStep() {
     case 0:
       if (fStep0_1 && guide_step === 5) {
         fStep0_1 = false;
+        autoFillInputRowForBringDown(true);
         const remainder = N - D * Q;
         const nextGroup = (cur_line < digitGroups.length) ? digitGroups[cur_line] : "00";
         N = remainder * 100 + parseInt(nextGroup);
@@ -298,3 +302,66 @@ function nextStep() {
   }
   nextGuide();
 }
+
+function autoFillInputRowForBringDown(force = false) {
+  if (!force && guide_step !== 6) return;
+
+  const inputCells = document.querySelectorAll(".init-input-cell");
+  if (inputCells.length === 0) return;
+
+  let dotCol = -1;
+  let lastDigitCol = -1;
+
+  inputCells.forEach((cell) => {
+    const col = parseInt(cell.dataset.col);
+    if (cell.value === ".") {
+      dotCol = col;
+    } else if (cell.value !== "") {
+      if (col > lastDigitCol) {
+        lastDigitCol = col;
+      }
+    }
+  });
+
+  let startCol, endCol;
+  let newDotCol = dotCol;
+
+  if (dotCol === -1) {
+    if (lastDigitCol === -1) return;
+    newDotCol = lastDigitCol + 1;
+  }
+  
+  startCol = newDotCol + 2 * cur_line - 1;
+  endCol = newDotCol + 2 * cur_line;
+
+  const maxNeededCol = endCol;
+  const maxIdx = maxNeededCol - 13;
+  if (maxIdx >= numInputCells) {
+    numInputCells = maxIdx + 1;
+    rebuildGrid(numInputCells);
+  }
+
+  if (dotCol === -1) {
+    const dotCell = document.querySelector(`.init-input-cell[data-col="${newDotCol}"]`);
+    if (dotCell) {
+      dotCell.value = ".";
+    }
+  }
+
+  for (let c = startCol; c <= endCol; c++) {
+    const sourceCell = document.querySelector(`.init-input-cell[data-col="${c}"]`);
+    if (sourceCell && sourceCell.value === "") {
+      sourceCell.value = "0";
+    }
+  }
+
+  const startValueStr = getInitValue();
+  if (startValueStr) {
+    digitGroups = getDigitGroups(startValueStr);
+    if (typeof inputs !== "undefined" && inputs[0] && inputs[0][0]) {
+      inputs[0][0]._value = startValueStr;
+    }
+  }
+}
+
+window.autoFillInputRowForBringDown = autoFillInputRowForBringDown;

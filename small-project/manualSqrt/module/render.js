@@ -32,7 +32,7 @@ function clearGridRow(r, startCol, endCol) {
 function drawValWithDot(row, type, value, endCol, dotCol, animate) {
   const valStr = value.toString();
   const len = valStr.length;
-  const rightCols = Math.max(20, numInputCells + 10);
+  const rightCols = Math.max(20, numInputCells);
   const startRange = 13;
   const endRange = 12 + rightCols;
   const r = 2 * row + (type === 0 ? 1 : 2);
@@ -88,7 +88,7 @@ function drawDivisorRow(r, type, valStr, animate) {
 
 function updateGridCellDisplay(row, type, value, animate = true) {
   const valStr = value.toString();
-  const rightCols = Math.max(20, numInputCells + 10);
+  const rightCols = Math.max(20, numInputCells);
   
   if (type === 3) {
     // Quotient: Row 0, dynamically aligned to group ending columns
@@ -143,9 +143,7 @@ function updateGridCellDisplay(row, type, value, animate = true) {
         input.value = valStr[idx] || "";
       });
     } else {
-      const usePrevAlign = fStep0_1 && (row === cur_line);
-      const endCol = usePrevAlign ? getGroupEndCol(row - 1) : getGroupEndCol(row);
-      
+      // Find the dot column if any
       const inputCells = document.querySelectorAll(".init-input-cell");
       let dotCol = -1;
       inputCells.forEach(cell => {
@@ -153,13 +151,12 @@ function updateGridCellDisplay(row, type, value, animate = true) {
           dotCol = parseInt(cell.dataset.col);
         }
       });
-      
+      const usePrevAlign = fStep0_1 && (row === cur_line);
+      const endCol = usePrevAlign ? getGroupEndCol(row - 1) : getGroupEndCol(row);
       drawValWithDot(row, type, valStr, endCol, dotCol, animate);
     }
   } else if (type === 4) {
-    // num_: Row 2*row + 2, Columns 13 onwards (right-aligned to group ending column, with subtraction bottom line)
     const endCol = getGroupEndCol(row);
-    
     const inputCells = document.querySelectorAll(".init-input-cell");
     let dotCol = -1;
     inputCells.forEach(cell => {
@@ -167,7 +164,6 @@ function updateGridCellDisplay(row, type, value, animate = true) {
         dotCol = parseInt(cell.dataset.col);
       }
     });
-    
     drawValWithDot(row, type, valStr, endCol, dotCol, animate);
   } else if (type === 1 || type === 2) {
     for (let r = 0; r <= cur_line; r++) {
@@ -190,7 +186,7 @@ function ensureRowCapacity(neededLines) {
   const grid = document.getElementById("math-grid");
   if (!grid) return;
 
-  const rightCols = Math.max(20, numInputCells + 10);
+  const rightCols = Math.max(20, numInputCells);
   const totalCols = 13 + rightCols;
 
   for (let i = currentLines; i < neededLines; i++) {
@@ -231,13 +227,28 @@ function ensureRowCapacity(neededLines) {
   grid.style.gridTemplateRows = `2rem repeat(${1 + 2 * neededLines}, 2rem)`;
 }
 
+function repaintGridValues() {
+  if (typeof quotientInput !== "undefined" && quotientInput && quotientInput.value !== "") {
+    updateGridCellDisplay(0, 3, quotientInput.value, false);
+  }
+  if (typeof inputs !== "undefined" && inputs) {
+    inputs.forEach((rowObj, r) => {
+      rowObj.forEach(inputObj => {
+        if (inputObj.type !== 3 && inputObj.value !== "") {
+          updateGridCellDisplay(r, inputObj.type, inputObj.value, false);
+        }
+      });
+    });
+  }
+}
+
 function rebuildGrid(numCells) {
   const currentValues = [];
   document.querySelectorAll(".init-input-cell").forEach(cell => {
     currentValues.push(cell.value);
   });
 
-  const rightCols = Math.max(20, numCells + 10);
+  const rightCols = Math.max(20, numCells);
   const grid = document.getElementById("math-grid");
   if (!grid) return;
   
@@ -315,6 +326,7 @@ function rebuildGrid(numCells) {
       }
     }
   }
+  repaintGridValues();
 }
 
 function highlightActiveStep() {
@@ -328,6 +340,12 @@ function highlightActiveStep() {
 
   // If initial input is empty, do nothing
   if (getInitValue() === "") {
+    if (guide_step === 0 || guide_step === 1) {
+      document.querySelectorAll(".init-input-cell").forEach(cell => {
+        cell.classList.add("active");
+      });
+      positionTooltip();
+    }
     return;
   }
 
@@ -400,8 +418,18 @@ function highlightActiveStep() {
       const len = prod.toString().length;
       const startCol = adjustStartForDot(endCol - len + 1, endCol);
       
+      // Find the dot column if any
+      const inputCellsList = document.querySelectorAll(".init-input-cell");
+      let dotCol = -1;
+      inputCellsList.forEach(cell => {
+        if (cell.value === ".") {
+          dotCol = parseInt(cell.dataset.col);
+        }
+      });
+
       // Target: Product cell(s)
       for (let c = startCol; c <= endCol; c++) {
+        if (c === dotCol) continue;
         const cell = getCell(2 * targetLine + 2, c);
         if (cell) cell.classList.add("active");
       }
@@ -436,7 +464,16 @@ function highlightActiveStep() {
     const endCol = getGroupEndCol(cur_line - 1);
     const startCol = adjustStartForDot(endCol - len + 1, endCol);
     
+    const inputCellsList = document.querySelectorAll(".init-input-cell");
+    let dotCol = -1;
+    inputCellsList.forEach(cell => {
+      if (cell.value === ".") {
+        dotCol = parseInt(cell.dataset.col);
+      }
+    });
+
     for (let c = startCol; c <= endCol; c++) {
+      if (c === dotCol) continue;
       const cell = getCell(2 * cur_line + 1, c);
       if (cell) cell.classList.add("active");
       
@@ -448,6 +485,7 @@ function highlightActiveStep() {
     const upperLen = getUpperNumberLen(cur_line - 1);
     const startColSource1 = adjustStartForDot(endCol - upperLen + 1, endCol);
     for (let c = startColSource1; c <= endCol; c++) {
+      if (c === dotCol) continue;
       const s1 = getCell(2 * cur_line - 1, c);
       if (s1) s1.classList.add("highlight-red");
     }
@@ -460,7 +498,17 @@ function highlightActiveStep() {
     const endCol = getGroupEndCol(cur_line);
     const groupLen = (cur_line === 0) ? getDigitGroups(getInitValue())[0].length : 2;
     const startCol = adjustStartForDot(endCol - groupLen + 1, endCol);
+
+    const inputCellsList = document.querySelectorAll(".init-input-cell");
+    let dotCol = -1;
+    inputCellsList.forEach(cell => {
+      if (cell.value === ".") {
+        dotCol = parseInt(cell.dataset.col);
+      }
+    });
+
     for (let c = startCol; c <= endCol; c++) {
+      if (c === dotCol) continue;
       const cell = getCell(2 * cur_line + 1, c);
       if (cell) cell.classList.add("active");
       
