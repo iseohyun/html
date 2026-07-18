@@ -16,206 +16,454 @@ function nextStep() {
   // Save state before modifying
   saveState();
 
-  switch (cur_step) {
-    case 0: // STEP A-1-1: A2 = 6 (L0)
-      V[0][2][0] = Math.floor(A / B); // L0 = 6
-      inputs[1][0].value = V[0][2][0]; // A2 = 6
-      cur_line = 0;
-      break;
+  isGreating = false;
 
-    case 1: // STEP A-1-2: B2 = 6072 (A0_)
-      V[0][0][3] = V[0][2][0] * B; // A0_ = 6 * 1012 = 6072
-      inputs[1][1].value = V[0][0][3]; // B2 = 6072
-      cur_line = 0;
-      break;
+  const action = window.actions && window.actions[cur_step];
+  if (!action) return;
 
-    case 2: // STEP A-1-3: B3 = 120 (A1)
-      V[1][0][0] = A - V[0][0][3]; // A1 = 6192 - 6072 = 120
-      inputs[2][1].value = V[1][0][0]; // B3 = 120
-      cur_line = 0;
-      break;
+  if (action.phase === 'A') {
+    const cycle = action.cycle;
+    const stepType = action.type;
+    const cycleRow = Math.floor(cycle / 2);
+    const isOdd = (cycle % 2 === 0);
 
-    case 3: // STEP A-2-1: D2 = 8 (R0)
-      V[0][2][1] = Math.floor(B / V[1][0][0]); // R0 = floor(1012 / 120) = 8
-      inputs[1][3].value = V[0][2][1]; // D2 = 8
-      cur_line = 0;
-      break;
+    // Determine current dividend and divisor
+    let dividend, divisor;
+    if (cycle === 0) {
+      dividend = A;
+      divisor = B;
+    } else {
+      if (isOdd) {
+        dividend = V[cycleRow][0][0]; // previous remainder in B column
+        divisor = V[cycleRow][1][0];  // previous remainder in C column
+      } else {
+        dividend = V[cycleRow][1][0];  // remainder in C column
+        divisor = V[cycleRow+1][0][0]; // remainder in B column
+      }
+    }
 
-    case 4: // STEP A-2-2: C2 = 960 (B0_)
-      V[0][1][3] = V[0][2][1] * V[1][0][0]; // B0_ = 8 * 120 = 960
-      inputs[1][2].value = V[0][1][3]; // C2 = 960
-      cur_line = 0;
-      break;
-
-    case 5: // STEP A-2-3: C3 = 52 (B1)
-      V[1][1][0] = B - V[0][1][3]; // B1 = 1012 - 960 = 52
-      inputs[2][2].value = V[1][1][0]; // C3 = 52
-      cur_line = 0;
-      break;
-
-    case 6: // STEP A-3-1: A4 = 2 (L1)
-      V[1][2][0] = Math.floor(V[1][0][0] / V[1][1][0]); // L1 = floor(120 / 52) = 2
-      inputs[3][0].value = V[1][2][0]; // A4 = 2
-      cur_line = 1;
-      break;
-
-    case 7: // STEP A-3-2: B4 = 104 (A1_)
-      V[1][0][3] = V[1][2][0] * V[1][1][0]; // A1_ = 2 * 52 = 104
-      inputs[3][1].value = V[1][0][3]; // B4 = 104
-      cur_line = 1;
-      break;
-
-    case 8: // STEP A-3-3: B5 = 16 (A2)
-      V[2][0][0] = V[1][0][0] - V[1][0][3]; // A2 = 120 - 104 = 16
-      inputs[4][1].value = V[2][0][0]; // B5 = 16
-      cur_line = 1;
-      break;
-
-    case 9: // STEP A-4-1: D4 = 3 (R1)
-      V[1][2][1] = Math.floor(V[1][1][0] / V[2][0][0]); // R1 = floor(52 / 16) = 3
-      inputs[3][3].value = V[1][2][1]; // D4 = 3
-      cur_line = 1;
-      break;
-
-    case 10: // STEP A-4-2: C4 = 48 (B1_)
-      V[1][1][3] = V[1][2][1] * V[2][0][0]; // B1_ = 3 * 16 = 48
-      inputs[3][2].value = V[1][1][3]; // C4 = 48
-      cur_line = 1;
-      break;
-
-    case 11: // STEP A-4-3: C5 = 4 (B2)
-      V[2][1][0] = V[1][1][0] - V[1][1][3]; // B2 = 52 - 48 = 4
-      inputs[4][2].value = V[2][1][0]; // C5 = 4
-      cur_line = 1;
-      break;
-
-    case 12: // STEP A-5-1: A6 = 4 (L2)
-      V[2][2][0] = Math.floor(V[2][0][0] / V[2][1][0]); // L2 = floor(16 / 4) = 4
-      inputs[5][0].value = V[2][2][0]; // A6 = 4
-      cur_line = 2;
-      break;
-
-    case 13: // STEP A-5-2: B6 = 16 (A2_)
-      V[2][0][3] = V[2][2][0] * V[2][1][0]; // A2_ = 4 * 4 = 16
-      inputs[5][1].value = V[2][0][3]; // B6 = 16
-      cur_line = 2;
-      break;
-
-    case 14: // STEP A-5-3: B7 = 0 (A3)
-      V[3][0][0] = V[2][0][0] - V[2][0][3]; // A3 = 16 - 16 = 0
-      inputs[6][1].value = V[3][0][0]; // B7 = 0
-      cur_line = 2;
-      break;
-
-    case 15: // STEP B-1: F1 = 6192, G1 = A
+    if (stepType === 0) {
+      // Quotient
+      const q = Math.floor(dividend / divisor);
+      if (isOdd) {
+        if (!V[cycleRow]) V[cycleRow] = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0]];
+        V[cycleRow][2][0] = q;
+        inputs[2 * cycleRow + 1][0].value = q;
+      } else {
+        if (!V[cycleRow]) V[cycleRow] = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0]];
+        V[cycleRow][2][1] = q;
+        inputs[2 * cycleRow + 1][3].value = q;
+      }
+      cur_line = cycleRow;
+    } else if (stepType === 1) {
+      // Product
+      const q = isOdd ? V[cycleRow][2][0] : V[cycleRow][2][1];
+      const prod = q * divisor;
+      if (isOdd) {
+        V[cycleRow][0][3] = prod;
+        inputs[2 * cycleRow + 1][1].value = prod;
+      } else {
+        V[cycleRow][1][3] = prod;
+        inputs[2 * cycleRow + 1][2].value = prod;
+      }
+      cur_line = cycleRow;
+    } else if (stepType === 2) {
+      // Remainder
+      const q = isOdd ? V[cycleRow][2][0] : V[cycleRow][2][1];
+      const prod = isOdd ? V[cycleRow][0][3] : V[cycleRow][1][3];
+      const rem = dividend - prod;
+      if (!V[cycleRow+1]) V[cycleRow+1] = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0]];
+      if (isOdd) {
+        V[cycleRow+1][0][0] = rem;
+        inputs[2 * cycleRow + 2][1].value = rem;
+      } else {
+        V[cycleRow+1][1][0] = rem;
+        inputs[2 * cycleRow + 2][2].value = rem;
+      }
+      cur_line = cycleRow;
+    }
+  } else if (action.phase === 'B') {
+    const r = action.row;
+    if (r === 0) {
       inputs[0][5].value = A; // F1
       inputs[0][6].value = "A"; // G1
-      cur_line = 3;
-      break;
-
-    case 16: // STEP B-2: F2 = 1012, G2 = B
+    } else if (r === 1) {
       inputs[1][5].value = B; // F2
       inputs[1][6].value = "B"; // G2
-      cur_line = 3;
-      break;
+    } else {
+      const i = r - 2;
+      const cycleRow = Math.floor(i / 2);
+      const isOdd = (i % 2 === 0);
+      
+      let remVal, divVal, divSorVal, qVal;
+      if (isOdd) {
+        remVal = V[cycleRow+1][0][0];
+        divVal = (i === 0) ? A : V[cycleRow][0][0];
+        divSorVal = (i === 0) ? B : V[cycleRow][1][0];
+        qVal = V[cycleRow][2][0];
+      } else {
+        remVal = V[cycleRow+1][1][0];
+        divVal = V[cycleRow][1][0];
+        divSorVal = V[cycleRow+1][0][0];
+        qVal = V[cycleRow][2][1];
+      }
 
-    case 17: // STEP B-3: F3 = 120, G3 = 6192 - 1012 × 6
-      inputs[2][5].value = 120; // F3
-      inputs[2][6].value = `${A} - ${B} × 6`; // G3
-      cur_line = 3;
-      break;
-
-    case 18: // STEP B-4: F4 = 52, G4 = 1012 - 120 × 8
-      inputs[3][5].value = 52; // F4
-      inputs[3][6].value = `${B} - 120 × 8`; // G4
-      cur_line = 3;
-      break;
-
-    case 19: // STEP B-5: F5 = 16, G5 = 120 - 52 × 2
-      inputs[4][5].value = 16; // F5
-      inputs[4][6].value = `120 - 52 × 2`; // G5
-      cur_line = 3;
-      break;
-
-    case 20: // STEP B-6: F6 = 4, G6 = 52 - 16 × 3
-      inputs[5][5].value = 4; // F6
-      inputs[5][6].value = `52 - 16 × 3`; // G6
-      cur_line = 3;
-      break;
-
-    case 21: // STEP C-1-1
-      document.getElementById("resault").innerHTML = `<span class="text-red">4</span> = <span class="text-blue"><u>52</u> - <u>16</u> × 3</span>`;
-      cur_line = 3;
-      break;
-
-    case 22: // STEP C-1-2
-      document.getElementById("resault").innerHTML = `GCD = <span class="text-blue"><u>52</u> - <u>16</u> × 3</span>`;
-      cur_line = 3;
-      break;
-
-    case 23: // STEP C-1-3
-      document.getElementById("resault").innerHTML = `GCD = <u>52</u> + <u>16</u> × (-3)`;
-      cur_line = 3;
-      break;
-
-    case 24: // STEP C-2-1
-      document.getElementById("resault").innerHTML = `GCD = <u>52</u> + (<span class="text-blue"><u>120</u> - <u>52</u> × 2</span>) × (-3)`;
-      cur_line = 3;
-      break;
-
-    case 25: // STEP C-2-2
-      document.getElementById("resault").innerHTML = `GCD = <u>52</u> + <u>120</u> × (-3) + <u>52</u> × 6`;
-      cur_line = 3;
-      break;
-
-    case 26: // STEP C-2-3
-      document.getElementById("resault").innerHTML = `GCD = <u>120</u> × (-3) + <u>52</u> × 7`;
-      cur_line = 3;
-      break;
-
-    case 27: // STEP C-3-1
-      document.getElementById("resault").innerHTML = `GCD = <u>120</u> × (-3) + (<span class="text-blue"><u>1012</u> - <u>120</u> × 8</span>) × 7`;
-      cur_line = 3;
-      break;
-
-    case 28: // STEP C-3-2
-      document.getElementById("resault").innerHTML = `GCD = <u>120</u> × (-3) + <u>1012</u> × 7 + <u>120</u> × (-56)`;
-      cur_line = 3;
-      break;
-
-    case 29: // STEP C-3-3
-      document.getElementById("resault").innerHTML = `GCD = <u>1012</u> × 7 + <u>120</u> × (-59)`;
-      cur_line = 3;
-      break;
-
-    case 30: // STEP C-4-1
-      document.getElementById("resault").innerHTML = `GCD = <u>1012</u> × 7 + (<span class="text-blue"><u>6192</u> - <u>1012</u> × 6</span>) × (-59)`;
-      cur_line = 3;
-      break;
-
-    case 31: // STEP C-4-2
-      document.getElementById("resault").innerHTML = `GCD = <u>1012</u> × 7 + <u>6192</u> × (-59) + <u>1012</u> × 354`;
-      cur_line = 3;
-      break;
-
-    case 32: // STEP C-4-3
-      document.getElementById("resault").innerHTML = `GCD = <u>1012</u> × 361 + <u>6192</u> × (-59)`;
-      cur_line = 3;
-      break;
-
-    case 33: // STEP C-5-1
-      document.getElementById("resault").innerHTML = `GCD = <span class="text-blue">B</span> × 361 + <u>6192</u> × (-59)`;
-      cur_line = 3;
-      break;
-
-    case 34: // STEP C-6-1
-      document.getElementById("resault").innerHTML = `GCD = B × 361 + <span class="text-blue">A</span> × (-59)`;
-      isFin = true;
-      cur_line = 3;
-      break;
+      inputs[r][5].value = remVal;
+      inputs[r][6].value = `${divVal} - ${divSorVal} × ${qVal}`;
+    }
+    cur_line = r;
+  } else if (action.phase === 'C') {
+    const eqIdx = action.eqIdx;
+    if (eqIdx < phaseCEquations.length) {
+      document.getElementById("resault").innerHTML = phaseCEquations[eqIdx];
+      if (eqIdx === phaseCEquations.length - 1) {
+        isFin = true;
+      }
+    }
+    cur_line = -99;
   }
 
   cur_step++;
   if (typeof highlightActiveStep === "function") highlightActiveStep();
   if (typeof guide === "function") guide();
 }
+
+let phaseCEquations = [];
+let actions = [];
+
+function generatePhaseC(startA, startB) {
+  phaseCEquations = [];
+
+  let tempA = startA;
+  let tempB = startB;
+  if (tempA < tempB) {
+    const t = tempA;
+    tempA = tempB;
+    tempB = t;
+  }
+
+  let rList = [tempA, tempB];
+  let qList = [];
+  while (true) {
+    let r = tempA % tempB;
+    qList.push(Math.floor(tempA / tempB));
+    rList.push(r);
+    if (r === 0) break;
+    tempA = tempB;
+    tempB = r;
+  }
+
+  const m = rList.length - 4; // m is the number of remainders minus 1
+  const gcdVal = rList[rList.length - 2];
+
+  if (m < 0) {
+    // GCD is B itself! (e.g. 12 and 4 -> gcd is 4)
+    phaseCEquations.push(`<span class="text-red">${gcdVal}</span> = <span class="text-blue">B × 1</span>`);
+    phaseCEquations.push(`GCD = <span class="text-blue">B × 1</span>`);
+    phaseCEquations.push(`GCD = B × 1 + <span class="text-blue">A</span> × 0`);
+    return;
+  }
+
+  // We have m >= 0 non-zero remainders.
+  let term1 = { val: rList[m], coeff: 1 };
+  let term2 = { val: rList[m+1], coeff: -qList[m] };
+
+  function formatCoeff(c) {
+    return c < 0 ? `(${c})` : `${c}`;
+  }
+
+  function formatTerm(val, coeff, isUnderline = true) {
+    const valStr = isUnderline ? `<u>${val}</u>` : val;
+    if (coeff === 1) return valStr;
+    if (coeff === -1) return `-${valStr}`;
+    return `${valStr} × ${formatCoeff(coeff)}`;
+  }
+
+  // Step 1-1
+  phaseCEquations.push(`<span class="text-red">${gcdVal}</span> = <span class="text-blue"><u>${term1.val}</u> - <u>${term2.val}</u> × ${qList[m]}</span>`);
+  // Step 1-2
+  phaseCEquations.push(`GCD = <span class="text-blue"><u>${term1.val}</u> - <u>${term2.val}</u> × ${qList[m]}</span>`);
+  // Step 1-3
+  phaseCEquations.push(`GCD = ${formatTerm(term1.val, term1.coeff)} + ${formatTerm(term2.val, term2.coeff)}`);
+
+  // Substitutions
+  for (let j = m - 1; j >= 0; j--) {
+    const subVal1 = rList[j];
+    const subVal2 = rList[j+1];
+    const subQ = qList[j];
+    const term2Coeff = term2.coeff;
+
+    // Step j-1 (Substitution)
+    phaseCEquations.push(`GCD = ${formatTerm(term1.val, term1.coeff)} + (<span class="text-blue"><u>${subVal1}</u> - <u>${subVal2}</u> × ${subQ}</span>) × ${formatCoeff(term2Coeff)}`);
+
+    // Step j-2 (Expansion)
+    const expandedCoeff2 = -subQ * term2Coeff;
+    phaseCEquations.push(`GCD = ${formatTerm(term1.val, term1.coeff)} + <u>${subVal1}</u> × ${formatCoeff(term2Coeff)} + <u>${subVal2}</u> × ${formatCoeff(expandedCoeff2)}`);
+
+    // Step j-3 (Combination)
+    const combinedCoeff = term1.coeff + expandedCoeff2;
+    term1 = { val: subVal1, coeff: term2Coeff };
+    term2 = { val: subVal2, coeff: combinedCoeff };
+
+    phaseCEquations.push(`GCD = ${formatTerm(term1.val, term1.coeff)} + ${formatTerm(term2.val, term2.coeff)}`);
+  }
+
+  // Final substitutions for B and A
+  phaseCEquations.push(`GCD = <span class="text-blue">B</span> × ${formatCoeff(term2.coeff)} + ${formatTerm(term1.val, term1.coeff)}`);
+  phaseCEquations.push(`GCD = B × ${formatCoeff(term2.coeff)} + <span class="text-blue">A</span> × ${formatCoeff(term1.coeff)}`);
+}
+
+function buildActionsList(startA, startB) {
+  actions = [];
+
+  let tempA = startA;
+  let tempB = startB;
+  if (tempA < tempB) {
+    const t = tempA;
+    tempA = tempB;
+    tempB = t;
+  }
+
+  // 1. Run Euclidean division to collect cycles
+  let rList = [tempA, tempB];
+  let qList = [];
+  let cycleCount = 0;
+  while (true) {
+    let r = tempA % tempB;
+    qList.push(Math.floor(tempA / tempB));
+    rList.push(r);
+    cycleCount++;
+    if (r === 0) break;
+    tempA = tempB;
+    tempB = r;
+  }
+
+  const numCycles = cycleCount;
+
+  // 2. Add Phase A actions
+  for (let i = 0; i < numCycles; i++) {
+    const cycleRow = Math.floor(i / 2);
+    const isOdd = (i % 2 === 0);
+    const qRow = 2 * cycleRow + 1;
+    const rRow = 2 * cycleRow + 2;
+
+    // Quotient
+    actions.push({
+      phase: 'A',
+      name: `A-${i+1}-1`,
+      cycle: i,
+      type: 0,
+      targetCell: [qRow, isOdd ? 0 : 3],
+      ref1: isOdd ? [2 * cycleRow, 1] : [2 * cycleRow, 2],
+      ref2: isOdd ? [2 * cycleRow, 2] : [2 * cycleRow + 2, 1],
+      ref3: [],
+      ref4: []
+    });
+
+    // Product
+    actions.push({
+      phase: 'A',
+      name: `A-${i+1}-2`,
+      cycle: i,
+      type: 1,
+      targetCell: [qRow, isOdd ? 1 : 2],
+      ref1: isOdd ? [2 * cycleRow, 2] : [2 * cycleRow + 2, 1],
+      ref2: [qRow, isOdd ? 0 : 3],
+      ref3: [],
+      ref4: []
+    });
+
+    // Remainder
+    actions.push({
+      phase: 'A',
+      name: `A-${i+1}-3`,
+      cycle: i,
+      type: 2,
+      targetCell: [rRow, isOdd ? 1 : 2],
+      ref1: isOdd ? [2 * cycleRow, 1] : [2 * cycleRow, 2],
+      ref2: [qRow, isOdd ? 1 : 2],
+      ref3: [],
+      ref4: []
+    });
+  }
+
+  // 3. Add Phase B actions
+  actions.push({
+    phase: 'B',
+    name: `B-1`,
+    row: 0,
+    targetCell: [0, 5],
+    ref1: [0, 6],
+    ref2: [],
+    ref3: [],
+    ref4: []
+  });
+  actions.push({
+    phase: 'B',
+    name: `B-2`,
+    row: 1,
+    targetCell: [1, 5],
+    ref1: [1, 6],
+    ref2: [],
+    ref3: [],
+    ref4: []
+  });
+  for (let r = 2; r <= numCycles; r++) {
+    actions.push({
+      phase: 'B',
+      name: `B-${r+1}`,
+      row: r,
+      targetCell: [r, 5],
+      ref1: [r, 6],
+      ref2: [],
+      ref3: [],
+      ref4: []
+    });
+  }
+
+  // 4. Generate Phase C equations dynamically
+  generatePhaseC(startA, startB);
+
+  // 5. Add Phase C actions
+  const m = rList.length - 4; // number of substitutions
+
+  if (m < 0) {
+    // GCD is B itself (e.g. 12 and 4)
+    actions.push({
+      phase: 'C',
+      name: 'C-1-1',
+      eqIdx: 0,
+      targetCell: [-99, -99],
+      ref1: [1, 6],
+      ref2: [1, 5],
+      ref3: [],
+      ref4: []
+    });
+    actions.push({
+      phase: 'C',
+      name: 'C-1-2',
+      eqIdx: 1,
+      targetCell: [-99, -99],
+      ref1: [1, 6],
+      ref2: [1, 5],
+      ref3: [],
+      ref4: []
+    });
+    actions.push({
+      phase: 'C',
+      name: 'C-1-3',
+      eqIdx: 2,
+      targetCell: [-99, -99],
+      ref1: [0, 6],
+      ref2: [0, 5],
+      ref3: [],
+      ref4: []
+    });
+  } else {
+    // C-1-1 to C-1-3
+    actions.push({
+      phase: 'C',
+      name: 'C-1-1',
+      eqIdx: 0,
+      targetCell: [-99, -99],
+      ref1: [numCycles, 6],
+      ref2: [numCycles, 5],
+      ref3: [],
+      ref4: []
+    });
+    actions.push({
+      phase: 'C',
+      name: 'C-1-2',
+      eqIdx: 1,
+      targetCell: [-99, -99],
+      ref1: [numCycles, 6],
+      ref2: [numCycles, 5],
+      ref3: [],
+      ref4: []
+    });
+    actions.push({
+      phase: 'C',
+      name: 'C-1-3',
+      eqIdx: 2,
+      targetCell: [-99, -99],
+      ref1: [numCycles, 6],
+      ref2: [numCycles, 5],
+      ref3: [],
+      ref4: []
+    });
+
+    // C-j-1 to C-j-3 for j = 1 to m
+    for (let j = 1; j <= m; j++) {
+      const startEqIdx = 3 + 3 * (j - 1);
+      const subRow = numCycles - j;
+      
+      actions.push({
+        phase: 'C',
+        name: `C-${j+1}-1`,
+        eqIdx: startEqIdx,
+        targetCell: [-99, -99],
+        ref1: [subRow, 6],
+        ref2: [subRow, 5],
+        ref3: [],
+        ref4: []
+      });
+      if (startEqIdx + 1 < phaseCEquations.length) {
+        actions.push({
+          phase: 'C',
+          name: `C-${j+1}-2`,
+          eqIdx: startEqIdx + 1,
+          targetCell: [-99, -99],
+          ref1: [subRow, 6],
+          ref2: [subRow, 5],
+          ref3: [],
+          ref4: []
+        });
+      }
+      if (startEqIdx + 2 < phaseCEquations.length) {
+        actions.push({
+          phase: 'C',
+          name: `C-${j+1}-3`,
+          eqIdx: startEqIdx + 2,
+          targetCell: [-99, -99],
+          ref1: [subRow, 6],
+          ref2: [subRow, 5],
+          ref3: [],
+          ref4: []
+        });
+      }
+    }
+
+    // Final 2 steps (C-5-1, C-6-1 equivalent)
+    const finalStartIdx = 3 + 3 * m;
+    if (finalStartIdx < phaseCEquations.length) {
+      actions.push({
+        phase: 'C',
+        name: `C-${m+2}-1`,
+        eqIdx: finalStartIdx,
+        targetCell: [-99, -99],
+        ref1: [1, 6],
+        ref2: [1, 5],
+        ref3: [],
+        ref4: []
+      });
+    }
+    if (finalStartIdx + 1 < phaseCEquations.length) {
+      actions.push({
+        phase: 'C',
+        name: `C-${m+3}-1`,
+        eqIdx: finalStartIdx + 1,
+        targetCell: [-99, -99],
+        ref1: [0, 6],
+        ref2: [0, 5],
+        ref3: [],
+        ref4: []
+      });
+    }
+  }
+
+  // Update window.actions
+  window.actions = actions;
+}
+
+window.generatePhaseC = generatePhaseC;
+window.buildActionsList = buildActionsList;
