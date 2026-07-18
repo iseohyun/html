@@ -670,3 +670,16 @@ article {
   text-align: left !important;
   padding-left: 12px !important;
 }
+
+#guide-tooltip {
+  cursor: move;
+}
+
+#tooltip-nav {
+  cursor: move;
+}
+
+#tooltip-content,
+#tooltip-content * {
+  cursor: text;
+}
