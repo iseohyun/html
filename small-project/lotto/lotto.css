@@ -58,17 +58,6 @@ blockquote {
   margin: 20px auto 20px;
 }
 
-body {
-  max-width: 860px;
-  margin: 0 auto;
-  padding: 0 5px;
-  font-weight: 400;
-  font-family: 나눔고딕, 'Noto Sans KR', sans-serif;
-  text-align: justify;
-  color: #888;
-  line-height: 1.75;
-}
-
 button {
   appearance: none;
   -webkit-appearance: none;
@@ -732,10 +721,6 @@ u {
   color: #333;
   transition: background-color 0.15s, color 0.15s;
   cursor: help;
-}
-
-.heatmap-cell:hover {
-  /* cursor none 삭제 */
 }
 
 /* 📊 side-by-side 레이아웃 및 세로막대 그래프 스타일 */

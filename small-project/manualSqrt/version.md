@@ -2,6 +2,10 @@
 ## Scope
 /small-project/manualSqrt/**
 
+### [v1.2.0] - 역할별 모듈 분할 및 구조화
+- 관심사 분리(SoC): 1,500줄에 달하던 단일 `main.js` 파일을 역할에 맞게 5개 파일(`config.js`, `math.js`, `render.js`, `tooltip.js`, `main.js`)로 전면 분할 개편
+- 모듈 수납 및 정리: `keybinding.js` 및 `testRunner.js`를 포함한 모든 JS 파일을 새로 신설한 `module/` 하위 폴더로 이동 수납
+- 구조 문서화: 새로운 폴더 구조 명세와 모듈별 주력 기능을 기재한 설명서 `readme.md` 신설
 ### [v1.1.0] - 세로 정렬 및 초기화 고도화
 - 세로 덧셈 오와열 정렬: 하위 단계에서 제수 자릿수 추가 시 상단 이전 덧셈식들까지 동적 정밀 시프트되도록 정렬 보정 (`getLineShift` 연동)
 - 초기화 리셋 범위 확장: A1:AB17 영역 전체 소거 가드 적용 및 `<input>` 필드 값만 비우고 레이아웃을 보호하도록 `clearGridRow` 리팩토링
