@@ -196,11 +196,22 @@ function makeTooltipDraggable() {
 
   let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
 
-  header.onmousedown = dragMouseDown;
-  header.ontouchstart = dragMouseDown;
+  tooltip.onmousedown = dragMouseDown;
+  tooltip.ontouchstart = dragMouseDown;
 
   function dragMouseDown(e) {
     e = e || window.event;
+
+    const target = e.target;
+    if (target) {
+      if (target.tagName === "BUTTON") {
+        return;
+      }
+      if (header.contains(target)) {
+        return;
+      }
+    }
+
     if (e.type !== "touchstart") {
       e.preventDefault();
     }
