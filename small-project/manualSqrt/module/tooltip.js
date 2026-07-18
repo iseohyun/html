@@ -16,11 +16,25 @@ function getCycleStepString() {
     return (language === 1) ? "시작" : "Start";
   }
 
-  if (cur_line === 0) {
-    const subStep = guide_step - 1;
-    return `1-${subStep}`;
+  // Determine the cycle number (X)
+  let cycleNum;
+  if (guide_step === 5 || guide_step === 6 || guide_step === 7) {
+    cycleNum = cur_line;
   } else {
-    let subStep;
+    cycleNum = cur_line + 1;
+  }
+
+  // Determine the sub-step number (Y)
+  let subStep;
+  if (cycleNum === 1) {
+    if (guide_step === 2) subStep = 1;
+    else if (guide_step === 3) subStep = 2;
+    else if (guide_step === 4) subStep = 4;
+    // Subtraction, Bring down, Divisor addition are steps 5, 6, 7
+    else if (guide_step === 5) subStep = 5;
+    else if (guide_step === 6) subStep = 6;
+    else if (guide_step === 7) subStep = 7;
+  } else {
     if (guide_step === 8) subStep = 1;
     else if (guide_step === 9) subStep = 2;
     else if (guide_step === 10) subStep = 3;
@@ -28,10 +42,9 @@ function getCycleStepString() {
     else if (guide_step === 5) subStep = 5;
     else if (guide_step === 6) subStep = 6;
     else if (guide_step === 7) subStep = 7;
-    
-    const cycleNum = cur_line + 1;
-    return `${cycleNum}-${subStep}`;
   }
+
+  return `${cycleNum}-${subStep}`;
 }
 
 function guide() {
@@ -329,6 +342,12 @@ function nextGuide() {
   if (guide_step >= 11) {
     // Loop guide_step back: 11 -> 4, 12 -> 5, etc.
     guide_step = 4 + ((guide_step - 4) % 7);
+  }
+
+  if (guide_step === 6) {
+    if (window.autoFillInputRowForBringDown) {
+      window.autoFillInputRowForBringDown();
+    }
   }
 
   // Calculate arguments based on the resolved guide_step

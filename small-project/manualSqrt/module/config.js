@@ -72,6 +72,7 @@ const sentences = [
 const gridRows = 1 + 2 * max_line; // 17
 let numInputCells = 20;
 var stateHistory = [];
+let quotientInput;
 
 class GridInput {
   constructor(row, type) {
@@ -145,7 +146,7 @@ function prevStep() {
     });
   });
 
-  const rightCols = Math.max(20, numInputCells + 10);
+  const rightCols = Math.max(20, numInputCells);
   for (let r = targetState.inputsValues.length; r < inputs.length; r++) {
     clearGridRow(r, 0, 12 + rightCols);
   }
