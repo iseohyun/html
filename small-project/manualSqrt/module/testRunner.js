@@ -217,6 +217,7 @@ async function runAutoTest(mdText) {
       if (step.stepNum === 0) {
         results.push({
           step: step.stepNum,
+          cycleStep: (typeof getCycleStepString === "function") ? getCycleStepString() : "시작",
           desc: step.desc,
           isPass: true,
           errors: []
@@ -304,6 +305,7 @@ async function runAutoTest(mdText) {
       if (isPass) passCount++;
       results.push({
         step: step.stepNum,
+        cycleStep: (typeof getCycleStepString === "function") ? getCycleStepString() : `Step ${step.stepNum}`,
         desc: step.desc,
         isPass,
         errors: stepErrors
@@ -327,7 +329,7 @@ async function runAutoTest(mdText) {
       <div class="test-result-item ${r.isPass ? 'pass' : 'fail'}">
         <div class="test-result-header">
           <span class="test-badge ${r.isPass ? 'badge-pass' : 'badge-fail'}">${r.isPass ? 'PASS' : 'FAIL'}</span>
-          <strong>STEP ${r.step}</strong>: ${r.desc}
+          <strong>STEP ${r.step} (단계 ${r.cycleStep})</strong>: ${r.desc}
         </div>
         ${r.errors.length > 0 ? `
           <ul class="test-error-list">

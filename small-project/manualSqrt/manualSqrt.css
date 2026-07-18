@@ -88,6 +88,17 @@
   border-top: 3px solid #1e293b !important;
 }
 
+.division-bar.active,
+.division-bar.highlight-red,
+.division-bar.highlight-blue,
+.division-bar.highlight-green,
+.init-input-cell.division-bar.active,
+.init-input-cell.division-bar.highlight-red,
+.init-input-cell.division-bar.highlight-blue,
+.init-input-cell.division-bar.highlight-green {
+  border-top: 3px solid #1e293b !important;
+}
+
 /* LaTeX math variable style */
 .math-var {
   font-family: 'Times New Roman', Times, serif;
@@ -463,6 +474,11 @@
   display: flex;
   justify-content: flex-end;
   margin-top: 10px;
+  gap: 10px;
+}
+
+#auto-test-btn:hover {
+  background-color: #059669;
 }
 
 #settings-reset-all-btn {
@@ -526,6 +542,11 @@
   font-weight: 700;
 }
 
+.text-yellow {
+  color: #ca8a04;
+  font-weight: 700;
+}
+
 /* Excel-like Grid Header coordinates (v1.1.0) */
 .grid-header-cell {
   display: flex;
@@ -553,19 +574,12 @@
   background-color: #e5e7eb;
   border-bottom: 2px solid #d1d5db;
   border-right: 2px solid #d1d5db;
-}
-
-#coordinate-badge {
-  background-color: rgba(243, 244, 246, 0.9);
-  color: #374151;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.85rem;
-  font-weight: 700;
   font-family: monospace;
-  margin-left: auto;
-  margin-right: 1rem;
-  border: 1px solid #e5e7eb;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #374151;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 /* Auto Test Overlay Modal Styling */
