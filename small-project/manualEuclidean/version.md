@@ -2,6 +2,9 @@
 ## Scope
 /small-project/manualEuclidean/**
 
+### [v1.0.3] - SPC(Small Project Client) 래퍼 연동 최적화
+- 부모 페이지와의 CSS 레이아웃 충돌 방지를 위해 `manualEuclidean.css` 내 body 및 article의 배치/크기 관련 스타일 규칙을 제거하고, SPA 레이아웃 스크롤 및 높이 연산이 정상 작동하도록 개선했습니다.
+
 ### [v1.0.2] - 툴팁 및 자동검증기 닫기 버그 수정 및 강조 스타일 정렬
 - 툴팁 닫기(X) 버튼 및 자동검증기 닫기 오작동 수정 (.hidden 글로벌 클래스화 및 isHidden 상태 분리)
 - C단계 대입 대상 수식 밑줄(`<u>`) 표기 및 F열 강조 기능 적용
