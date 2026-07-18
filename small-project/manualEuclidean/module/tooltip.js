@@ -7,6 +7,11 @@ function guide() {
   const content = document.getElementById("tooltip-content");
   if (!tooltip || !content) return;
 
+  if (isHidden) {
+    tooltip.classList.add("hidden");
+    return;
+  }
+
   const stepObj = stepsData[cur_step];
   if (!stepObj) {
     tooltip.classList.add("hidden");
