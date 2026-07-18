@@ -9,22 +9,60 @@ function getInitValue() {
   };
 }
 
+
 function handleInitInput(e) {
+  console.log("handleInitInput fired! Event:", e.type, "value:", e.target.value);
   const input = e.target;
-  const col = parseInt(input.dataset.col);
   let val = input.value;
 
   // Sanitize to digits only
   val = val.replace(/[^0-9]/g, "");
   input.value = val;
 
-  const initVals = getInitValue();
-  if (initVals.valA && initVals.valB) {
+  const col = parseInt(input.dataset.col);
+  if (inputs[0] && inputs[0][col]) {
+    inputs[0][col]._value = val;
+  }
+
+  // If editing happens during execution, reset to Step 0 immediately
+  if (cur_step !== 0 || isFin) {
+    const initVals = getInitValue();
     const parsedA = parseInt(initVals.valA);
     const parsedB = parseInt(initVals.valB);
+    const startA = !isNaN(parsedA) ? parsedA : A;
+    const startB = !isNaN(parsedB) ? parsedB : B;
+
+    console.log("handleInitInput triggering reset to Step 0! cur_step:", cur_step);
+    init(startA, startB);
+
+    const newCell = getCell(0, col);
+    if (newCell) {
+      newCell.focus();
+      const len = newCell.value.length;
+      newCell.setSelectionRange(len, len);
+    }
+    return;
+  }
+
+  const initVals = getInitValue();
+  const inputA = initVals.valA;
+  const inputB = initVals.valB;
+
+  if (inputA && inputB) {
+    const parsedA = parseInt(inputA);
+    const parsedB = parseInt(inputB);
     if (!isNaN(parsedA) && !isNaN(parsedB) && parsedA > 0 && parsedB > 0) {
       silentInit(parsedA, parsedB);
+      document.getElementById("gcd").innerHTML = `gcd(${A}, ${B}) = ${gcd}`;
+    } else {
+      document.getElementById("gcd").innerHTML = `gcd(${inputA || "?"}, ${inputB || "?"}) = ?`;
     }
+  } else {
+    document.getElementById("gcd").innerHTML = `gcd(${inputA || "?"}, ${inputB || "?"}) = ?`;
+  }
+
+  if (cur_step === 0 && typeof guide === "function") {
+    guide();
   }
 }
 
@@ -38,6 +76,9 @@ function handleInitKeydown(e) {
       if (prevInput) {
         prevInput.focus();
         prevInput.value = "";
+        if (inputs[0] && inputs[0][1]) {
+          inputs[0][1]._value = "";
+        }
         
         const initVals = getInitValue();
         if (initVals.valA && initVals.valB) {
@@ -101,6 +142,28 @@ function resetToStart() {
   init(A, B);
 }
 
+function getRequiredRows(startA, startB) {
+  let tempA = startA;
+  let tempB = startB;
+  if (tempA < tempB) {
+    const t = tempA;
+    tempA = tempB;
+    tempB = t;
+  }
+  if (tempB === 0) return 7;
+  let cycles = 0;
+  while (true) {
+    let r = tempA % tempB;
+    cycles++;
+    if (r === 0) break;
+    tempA = tempB;
+    tempB = r;
+  }
+  const maxCycleIdx = cycles - 1;
+  const cycleRow = Math.floor(maxCycleIdx / 2);
+  return 2 * cycleRow + 3;
+}
+
 function silentInit(startA, startB) {
   if (startA < startB) {
     const temp = startA;
@@ -110,11 +173,17 @@ function silentInit(startA, startB) {
   A = startA;
   B = startB;
   gcd = getGcd(A, B);
+  if (typeof window.buildActionsList === "function") {
+    window.buildActionsList(A, B);
+  }
 }
 
 function init(startA, startB) {
-  isGreating = false;
+  console.log("init() called! Stack Trace:\n", new Error().stack);
+  isGreating = true;
   isFin = false;
+  window.isHidden = false;
+  window.inPhaseA = true;
 
   if (startA < startB) {
     const temp = startA;
@@ -123,25 +192,38 @@ function init(startA, startB) {
   }
   A = startA;
   B = startB;
+
+  // Calculate required rows and rebuild grid dynamically
+  const reqRows = getRequiredRows(A, B);
+  max_line = Math.max(7, reqRows);
+  rebuildGrid();
   
   cur_line = 0;
   cur_step = 0;
   
-  // Clear and initialize inputs
-  for (let r = 0; r < max_line; r++) {
-    for (let c = 0; c < 7; c++) {
-      inputs[r][c].value = "";
-    }
-  }
-
-  // Clear V array values
-  for (let i = 0; i < V.length; i++) {
-    V[i] = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0]];
+  // Extend V array values to match max_line
+  V.length = 0;
+  for (let i = 0; i < max_line; i++) {
+    V.push([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0]]);
   }
 
   // Setup initial V matrices
   V[0][0][0] = A;
   V[0][1][0] = B;
+
+  // Clear inputs values
+  for (let r = 0; r < max_line; r++) {
+    for (let c = 0; c < 7; c++) {
+      if (inputs[r] && inputs[r][c]) {
+        inputs[r][c].value = "";
+      }
+    }
+  }
+
+  const cellA = getCell(0, 1);
+  const cellB = getCell(0, 2);
+  if (cellA) cellA.value = A;
+  if (cellB) cellB.value = B;
 
   inputs[0][0].value = "";
   inputs[0][1].value = A;
@@ -150,6 +232,9 @@ function init(startA, startB) {
 
   gcd = getGcd(A, B);
   document.getElementById("gcd").innerHTML = `gcd(${A}, ${B}) = ${gcd}`;
+  if (typeof window.buildActionsList === "function") {
+    window.buildActionsList(A, B);
+  }
   document.getElementById("resault").innerHTML = "";
 
   saveState();

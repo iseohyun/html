@@ -7,6 +7,7 @@ var cur_line = 0;
 var language = 1; // 0: English, 1: Korean
 var isFin = false;
 var isGreating = false;
+window.inPhaseA = true;
 
 var A = 6192;
 var B = 1012;
@@ -223,7 +224,7 @@ const stepsData = [
   },
   { // 22: C-1-1
     name: "C-1-1",
-    sentence: "GCD(6192, 1012) = <1>4</1>",
+    sentence: "GCD($argv1, $argv2) = <1>$argv3</1>",
     targetCell: [-99, -99],
     ref1: [5, 6], // G6
     ref2: [5, 5], // F6
@@ -250,7 +251,7 @@ const stepsData = [
   },
   { // 25: C-2-1
     name: "C-2-1",
-    sentence: "<1>16</1> 대응",
+    sentence: "<1>$argv4</1> 대입",
     targetCell: [-99, -99],
     ref1: [4, 5], // F5
     ref2: [4, 6], // G5
@@ -277,7 +278,7 @@ const stepsData = [
   },
   { // 28: C-3-1
     name: "C-3-1",
-    sentence: "<1>52</1> 대응",
+    sentence: "<1>$argv4</1> 대입",
     targetCell: [-99, -99],
     ref1: [3, 5], // F4
     ref2: [3, 6], // G4
@@ -304,7 +305,7 @@ const stepsData = [
   },
   { // 31: C-4-1
     name: "C-4-1",
-    sentence: "<1>120</1> 대응",
+    sentence: "<1>$argv4</1> 대입",
     targetCell: [-99, -99],
     ref1: [2, 5], // F3
     ref2: [2, 6], // G3
@@ -331,7 +332,7 @@ const stepsData = [
   },
   { // 34: C-5-1
     name: "C-5-1",
-    sentence: "<1>1012</1>대입",
+    sentence: "<1>$argv2</1> 대입",
     targetCell: [-99, -99],
     ref1: [1, 5], // F2
     ref2: [1, 6], // G2
@@ -340,7 +341,7 @@ const stepsData = [
   },
   { // 35: C-6-1
     name: "C-6-1",
-    sentence: "<1>6192</1>대입",
+    sentence: "<1>$argv1</1> 대입",
     targetCell: [-99, -99],
     ref1: [0, 5], // F1
     ref2: [0, 6], // G1
@@ -381,6 +382,7 @@ function saveState() {
     B,
     gcd,
     lcm,
+    inPhaseA: window.inPhaseA,
     V: JSON.parse(JSON.stringify(V)),
     inputsValues: inputs.map(row => row.map(input => input._value))
   };
@@ -401,6 +403,7 @@ function prevStep() {
   B = targetState.B;
   gcd = targetState.gcd;
   lcm = targetState.lcm;
+  window.inPhaseA = targetState.inPhaseA;
   
   for (let i = 0; i < V.length; i++) {
     V[i] = JSON.parse(JSON.stringify(targetState.V[i]));
@@ -424,11 +427,11 @@ function prevStep() {
 }
 
 function getCycleStepString() {
-  if (isGreating) {
+  if (isGreating || cur_step === 0) {
     return "STEP 0";
   }
-  const stepObj = stepsData[cur_step];
-  return stepObj ? `STEP ${stepObj.name}` : `STEP ${cur_step}`;
+  const action = window.actions && window.actions[cur_step - 1];
+  return action ? `STEP ${action.name}` : `STEP ${cur_step}`;
 }
 
 function getPostposition(digit, type) {
