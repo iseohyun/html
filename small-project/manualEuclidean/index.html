@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title id="title">유클리드 호제법</title>
+  <link rel="stylesheet" href="manualEuclidean.css">
+  <script src="module/config.js" defer></script>
+  <script src="module/math.js" defer></script>
+  <script src="module/render.js" defer></script>
+  <script src="module/tooltip.js" defer></script>
+  <script src="module/main.js" defer></script>
+  <script src="module/keybinding.js" defer></script>
+  <script src="module/testRunner.js" defer></script>
+</head>
+<body>
+  <article>
+    <div id="error-console" style="color: #ef4444; background: #fef2f2; border: 1px solid #fee2e2; padding: 12px; margin-bottom: 20px; border-radius: 8px; font-family: monospace; display: none; font-size: 0.9rem; line-height: 1.4;"></div>
+    <script>
+      window.onerror = function(message, source, lineno, colno, error) {
+        const consoleDiv = document.getElementById("error-console");
+        if (consoleDiv) {
+          consoleDiv.style.display = "block";
+          consoleDiv.innerHTML += `<div><strong>JS Error:</strong> ${message} <br><small>at ${source}:${lineno}:${colno}</small></div>`;
+        }
+        return false;
+      };
+    </script>
+    <div id="header-row">
+      <h1 id="page-title">유클리드 호제법</h1>
+      <button id="settings-toggle-btn" aria-label="Settings">⚙️</button>
+    </div>
+    
+    <div id="settings-modal" class="modal-overlay hidden">
+      <div class="modal-content">
+        <button id="modal-close-btn" class="close-btn">&times;</button>
+        <h3 id="settings-title">단축키 설정 (Key Bindings)</h3>
+        
+        <table id="shortcut-table">
+          <thead>
+            <tr id="table-header-row">
+              <th id="th-function">기능</th>
+              <th id="th-primary">단축키</th>
+              <th id="th-secondary">보조단축키</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td id="label-next">다음 단계 (Next)</td>
+              <td><button class="key-bind-btn" data-binding="next_primary"></button></td>
+              <td><button class="key-bind-btn" data-binding="next_secondary"></button></td>
+            </tr>
+            <tr>
+              <td id="label-prev">이전 단계 (Prev)</td>
+              <td><button class="key-bind-btn" data-binding="prev_primary"></button></td>
+              <td><button class="key-bind-btn" data-binding="prev_secondary"></button></td>
+            </tr>
+            <tr>
+              <td id="label-skip">스킵 (Skip/Next)</td>
+              <td><button class="key-bind-btn" data-binding="skip_primary"></button></td>
+              <td><button class="key-bind-btn" data-binding="skip_secondary"></button></td>
+            </tr>
+            <tr>
+              <td id="label-reset">초기화 (Reset)</td>
+              <td><button class="key-bind-btn" data-binding="reset_primary"></button></td>
+              <td><button class="key-bind-btn" data-binding="reset_secondary"></button></td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <div class="settings-actions">
+          <input type="file" id="test-file-picker" accept=".md" style="display: none;" onchange="handleTestFileSelect(event)">
+          <button id="auto-test-btn" style="background-color: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s;" onclick="document.getElementById('test-file-picker').click()">테스트 실행</button>
+          <button id="settings-reset-all-btn">기본값으로 초기화</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="info">
+      <div id="gcd"></div>
+      <div id="resault"></div>
+    </div>
+
+    <div id="main">
+      <div id="math-grid"></div>
+    </div>
+
+    <div id="guide-tooltip" class="hidden">
+      <button id="tooltip-close-btn" class="hidden" onclick="toggleGuide()">&times;</button>
+      <div id="tooltip-content"></div>
+      <div id="tooltip-nav">
+        <button id="tooltip-prev-btn" onclick="prevStep()">&lt;</button>
+        <span id="tooltip-step-indicator">Step</span>
+        <button id="tooltip-next-btn" onclick="nextStep()">&gt;</button>
+      </div>
+    </div>
+  </article>
+</body>
+</html>
