@@ -126,8 +126,6 @@ function setCellHighlight(r, c, className) {
 function highlightActiveStep() {
   clearAllHighlights();
 
-  if (isFin) return;
-
   const stepObj = (cur_step === 0)
     ? stepsData[0]
     : ((window.actions && window.actions[cur_step - 1]) ? window.actions[cur_step - 1] : stepsData[cur_step]);

@@ -38,6 +38,7 @@ function parseCellsList(str) {
 function normalizeText(text) {
   if (!text) return "";
   return text
+    .replace(/\$\$/g, "")         // Strip MathJax $$ markers
     .replace(/<br\s*\/?>/gi, " ") // Replace <br> with space
     .replace(/<[^>]+>/g, "")      // Strip all HTML/XML tags
     .replace(/\s+/g, " ")         // Collapse multiple whitespace
@@ -488,7 +489,109 @@ function closeTestOverlay() {
   resetToStart();
 }
 
+function generateTestCase(A, B) {
+  const oldA = window.A;
+  const oldB = window.B;
+  const oldStep = window.cur_step;
+  const oldLanguage = window.language;
+  const oldMaxLine = window.max_line;
+
+  window.A = A;
+  window.B = B;
+  window.language = 1; // Korean
+  
+  const reqRows = getRequiredRows(A, B);
+  window.max_line = Math.max(7, reqRows);
+  window.rebuildGrid();
+  
+  window.V = [];
+  for (let i = 0; i < window.max_line; i++) {
+    window.V.push([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0]]);
+  }
+  window.V[0][0][0] = A;
+  window.V[0][1][0] = B;
+  window.inputs[0][1].value = A;
+  window.inputs[0][2].value = B;
+  window.gcd = getGcd(A, B);
+
+  buildActionsList(A, B);
+  window.isGreating = false;
+
+  let md = `### 시나리오: ${A}, ${B}\n\n`;
+  md += `- **STEP 0**\n`;
+  md += `  - 대상: B1\n`;
+  md += `  - 툴팁 방향: 아래쪽\n`;
+  md += `  - 툴팁: ${A}, ${B}로 유클리드 호제법을 수행합니다. \\n $$ ax${A}+bx${B}=gcd $$를 찾는 것이 목표입니다.\n`;
+  md += `  - 입력값: B1=${A}, C1=${B}\n\n`;
+
+  function colIndexToLetter(col) {
+    return ['A', 'B', 'C', 'D', 'E', 'F', 'G'][col];
+  }
+  function cellName(r, c) {
+    if (r === -99 && c === -99) return "resault";
+    return `${colIndexToLetter(c)}${r + 1}`;
+  }
+
+  for (let s = 0; s < window.actions.length; s++) {
+    const action = window.actions[s];
+    window.cur_step = s + 1;
+    
+    // Use actual application function to generate the exact expected guide sentence
+    const tooltipText = window.getGuideSentence();
+    
+    md += `- **STEP ${action.name}**\n`;
+    md += `  - 대상: ${cellName(action.targetCell[0], action.targetCell[1])}\n`;
+    
+    let tooltipPos = "아래쪽";
+    const matchA2 = action.name.match(/^A-(\d+)-2$/);
+    if (matchA2) {
+      const cycleNum = parseInt(matchA2[1]);
+      if (cycleNum % 2 === 0) {
+        tooltipPos = "위쪽";
+      }
+    }
+    md += `  - 툴팁 방향: ${tooltipPos}\n`;
+    md += `  - 툴팁: ${tooltipText}\n`;
+
+    if (action.ref1 && action.ref1.length === 2) {
+      md += `  - 참조1: ${cellName(action.ref1[0], action.ref1[1])}\n`;
+    }
+    if (action.ref2 && action.ref2.length === 2) {
+      md += `  - 참조2: ${cellName(action.ref2[0], action.ref2[1])}\n`;
+    }
+    if (action.ref3 && action.ref3.length === 2) {
+      md += `  - 참조3: ${cellName(action.ref3[0], action.ref3[1])}\n`;
+    }
+    if (action.ref4 && action.ref4.length === 2) {
+      md += `  - 참조4: ${cellName(action.ref4[0], action.ref4[1])}\n`;
+    }
+
+    let inputValLine = "";
+    if (action.phase === 'A' || action.phase === 'B') {
+      const cellVal = window.getCell(action.targetCell[0], action.targetCell[1]).value;
+      inputValLine = `${cellName(action.targetCell[0], action.targetCell[1])} = ${cellVal}`;
+    } else if (action.phase === 'C') {
+      const eq = window.phaseCEquations[action.eqIdx];
+      const cleanEq = eq.replace(/<[^>]+>/g, "");
+      inputValLine = `resault = "${cleanEq}"`;
+    }
+    md += `  - 입력값: ${inputValLine}\n\n`;
+    
+    window.nextStep();
+  }
+
+  window.A = oldA;
+  window.B = oldB;
+  window.cur_step = oldStep;
+  window.language = oldLanguage;
+  window.max_line = oldMaxLine;
+  window.init();
+
+  return md;
+}
+
 window.closeTestOverlay = closeTestOverlay;
 window.handleTestFileSelect = handleTestFileSelect;
 window.runAutoTest = runAutoTest;
 window.copyTestResults = copyTestResults;
+window.generateTestCase = generateTestCase;
