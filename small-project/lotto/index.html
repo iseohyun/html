@@ -1,0 +1,597 @@
+<html>
+
+<head>
+  <link rel="stylesheet" href="lotto.css">
+  <script src="reallotto.js?v=20260714"></script>
+  <script src="lotto.js?v=20260714"></script>
+</head>
+
+<body>
+  <article>
+    <div id="main-pannel">
+      <div id="pick-viewer" class="d-flex">
+        <div id="my-number" class="pannel" style="min-width: 251px;">
+          <span class="d-block w-100 text-center" style="grid-column:1/8">응모권</span>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb1" type="checkbox" onclick="chMyNum(this, 1)" />
+            <label class="tgl-btn" data-tg-off="1" data-tg-on="1" for="cb1"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb2" type="checkbox" onclick="chMyNum(this, 2)" />
+            <label class="tgl-btn" data-tg-off="2" data-tg-on="2" for="cb2"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb3" type="checkbox" onclick="chMyNum(this, 3)" />
+            <label class="tgl-btn" data-tg-off="3" data-tg-on="3" for="cb3"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb4" type="checkbox" onclick="chMyNum(this, 4)" />
+            <label class="tgl-btn" data-tg-off="4" data-tg-on="4" for="cb4"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb5" type="checkbox" onclick="chMyNum(this, 5)" />
+            <label class="tgl-btn" data-tg-off="5" data-tg-on="5" for="cb5"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb6" type="checkbox" onclick="chMyNum(this, 6)" />
+            <label class="tgl-btn" data-tg-off="6" data-tg-on="6" for="cb6"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb7" type="checkbox" onclick="chMyNum(this, 7)" />
+            <label class="tgl-btn" data-tg-off="7" data-tg-on="7" for="cb7"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb8" type="checkbox" onclick="chMyNum(this, 8)" />
+            <label class="tgl-btn" data-tg-off="8" data-tg-on="8" for="cb8"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb9" type="checkbox" onclick="chMyNum(this, 9)" />
+            <label class="tgl-btn" data-tg-off="9" data-tg-on="9" for="cb9"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb10" type="checkbox" onclick="chMyNum(this, 10)" />
+            <label class="tgl-btn" data-tg-off="10" data-tg-on="10" for="cb10"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb11" type="checkbox" onclick="chMyNum(this, 11)" />
+            <label class="tgl-btn" data-tg-off="11" data-tg-on="11" for="cb11"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb12" type="checkbox" onclick="chMyNum(this, 12)" />
+            <label class="tgl-btn" data-tg-off="12" data-tg-on="12" for="cb12"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb13" type="checkbox" onclick="chMyNum(this, 13)" />
+            <label class="tgl-btn" data-tg-off="13" data-tg-on="13" for="cb13"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb14" type="checkbox" onclick="chMyNum(this, 14)" />
+            <label class="tgl-btn" data-tg-off="14" data-tg-on="14" for="cb14"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb15" type="checkbox" onclick="chMyNum(this, 15)" />
+            <label class="tgl-btn" data-tg-off="15" data-tg-on="15" for="cb15"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb16" type="checkbox" onclick="chMyNum(this, 16)" />
+            <label class="tgl-btn" data-tg-off="16" data-tg-on="16" for="cb16"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb17" type="checkbox" onclick="chMyNum(this, 17)" />
+            <label class="tgl-btn" data-tg-off="17" data-tg-on="17" for="cb17"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb18" type="checkbox" onclick="chMyNum(this, 18)" />
+            <label class="tgl-btn" data-tg-off="18" data-tg-on="18" for="cb18"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb19" type="checkbox" onclick="chMyNum(this, 19)" />
+            <label class="tgl-btn" data-tg-off="19" data-tg-on="19" for="cb19"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb20" type="checkbox" onclick="chMyNum(this, 20)" />
+            <label class="tgl-btn" data-tg-off="20" data-tg-on="20" for="cb20"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb21" type="checkbox" onclick="chMyNum(this, 21)" />
+            <label class="tgl-btn" data-tg-off="21" data-tg-on="21" for="cb21"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb22" type="checkbox" onclick="chMyNum(this, 22)" />
+            <label class="tgl-btn" data-tg-off="22" data-tg-on="22" for="cb22"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb23" type="checkbox" onclick="chMyNum(this, 23)" />
+            <label class="tgl-btn" data-tg-off="23" data-tg-on="23" for="cb23"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb24" type="checkbox" onclick="chMyNum(this, 24)" />
+            <label class="tgl-btn" data-tg-off="24" data-tg-on="24" for="cb24"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb25" type="checkbox" onclick="chMyNum(this, 25)" />
+            <label class="tgl-btn" data-tg-off="25" data-tg-on="25" for="cb25"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb26" type="checkbox" onclick="chMyNum(this, 26)" />
+            <label class="tgl-btn" data-tg-off="26" data-tg-on="26" for="cb26"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb27" type="checkbox" onclick="chMyNum(this, 27)" />
+            <label class="tgl-btn" data-tg-off="27" data-tg-on="27" for="cb27"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb28" type="checkbox" onclick="chMyNum(this, 28)" />
+            <label class="tgl-btn" data-tg-off="28" data-tg-on="28" for="cb28"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb29" type="checkbox" onclick="chMyNum(this, 29)" />
+            <label class="tgl-btn" data-tg-off="29" data-tg-on="29" for="cb29"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb30" type="checkbox" onclick="chMyNum(this, 30)" />
+            <label class="tgl-btn" data-tg-off="30" data-tg-on="30" for="cb30"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb31" type="checkbox" onclick="chMyNum(this, 31)" />
+            <label class="tgl-btn" data-tg-off="31" data-tg-on="31" for="cb31"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb32" type="checkbox" onclick="chMyNum(this, 32)" />
+            <label class="tgl-btn" data-tg-off="32" data-tg-on="32" for="cb32"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb33" type="checkbox" onclick="chMyNum(this, 33)" />
+            <label class="tgl-btn" data-tg-off="33" data-tg-on="33" for="cb33"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb34" type="checkbox" onclick="chMyNum(this, 34)" />
+            <label class="tgl-btn" data-tg-off="34" data-tg-on="34" for="cb34"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb35" type="checkbox" onclick="chMyNum(this, 35)" />
+            <label class="tgl-btn" data-tg-off="35" data-tg-on="35" for="cb35"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb36" type="checkbox" onclick="chMyNum(this, 36)" />
+            <label class="tgl-btn" data-tg-off="36" data-tg-on="36" for="cb36"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb37" type="checkbox" onclick="chMyNum(this, 37)" />
+            <label class="tgl-btn" data-tg-off="37" data-tg-on="37" for="cb37"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb38" type="checkbox" onclick="chMyNum(this, 38)" />
+            <label class="tgl-btn" data-tg-off="38" data-tg-on="38" for="cb38"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb39" type="checkbox" onclick="chMyNum(this, 39)" />
+            <label class="tgl-btn" data-tg-off="39" data-tg-on="39" for="cb39"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb40" type="checkbox" onclick="chMyNum(this, 40)" />
+            <label class="tgl-btn" data-tg-off="40" data-tg-on="40" for="cb40"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb41" type="checkbox" onclick="chMyNum(this, 41)" />
+            <label class="tgl-btn" data-tg-off="41" data-tg-on="41" for="cb41"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb42" type="checkbox" onclick="chMyNum(this, 42)" />
+            <label class="tgl-btn" data-tg-off="42" data-tg-on="42" for="cb42"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb43" type="checkbox" onclick="chMyNum(this, 43)" />
+            <label class="tgl-btn" data-tg-off="43" data-tg-on="43" for="cb43"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb44" type="checkbox" onclick="chMyNum(this, 44)" />
+            <label class="tgl-btn" data-tg-off="44" data-tg-on="44" for="cb44"></label>
+          </div>
+          <div class="checkbox-wrapper-10">
+            <input class="tgl tgl-flip" id="cb45" type="checkbox" onclick="chMyNum(this, 45)" />
+            <label class="tgl-btn" data-tg-off="45" data-tg-on="45" for="cb45"></label>
+          </div>
+        </div>
+
+        <div class="pannel text-center" id="winner-number">
+          <span class="d-block w-100 text-center">당첨 번호</span>
+          <div id="win1">1</div>
+          <div id="win2">2</div>
+          <div id="win3">3</div>
+          <div id="win4">4</div>
+          <div id="win5">5</div>
+          <div id="win6">6</div>
+          +
+          <div id="win7">7</div>
+        </div>
+
+        <!-- 최근 당첨번호 정보 패널 (새로운 행) -->
+        <div class="pannel recent-draw-panel" id="recent-draw-panel">
+          <span id="recent-draw-info">최근 당첨번호[-]: -</span>
+        </div>
+
+        <!-- DB 다운로드 버튼 패널 (새로운 행) -->
+        <div class="pannel download-db-panel" id="download-db-panel">
+          <button type="button" id="btn-download-csv" class="btn-download">
+            💾 현재까지 실제 당첨번호 DB (.csv) 다운로드
+          </button>
+        </div>
+      </div>
+      <div id="simulator-control-pannel" class="pannel">
+        <div class="control-header">
+          <span class="text-title">⚙️ 시뮬레이션 제어</span>
+          <div class="icon-btn-container">
+            <!-- 시작/정지 토글 버튼 (아이콘으로 표현) -->
+            <button id="btn-sim-control" onclick="toggleSimulation()" title="시작/정지" class="icon-btn-sim">▶</button>
+            <!-- 설정 초기화 버튼 (아이콘으로 표현) -->
+            <button id="btn-reset-settings" onclick="resetSettings()" title="설정 초기화" class="icon-btn-reset">↻</button>
+            <!-- 도움말 버튼 (아이콘으로 표현) -->
+            <button id="btn-help" onclick="showHelpModal()" title="도움말" class="icon-btn-help">?</button>
+          </div>
+        </div>
+        <div id="simulator-settings">
+          <span>매주 응모 횟수</span>
+          <div><input type="number" id="times-a-week" value="1" onchange="changeTimesAweek(this.value)"
+              style="width: 50px;">
+            <span>회</span>
+          </div>
+          <span>응모 방법</span>
+
+          <div class="d-flex w-100">
+            <label class="flex-1 label-clickable">
+              <input type="radio" name="pick-type" id="pick-type-random" value="random" onclick="setPickType('random')" class="margin-r-6">고정
+            </label>
+            <label class="flex-1 label-clickable">
+              <input type="radio" name="pick-type" id="pick-type-myNum" value="myNum" onclick="setPickType('myNum')" checked=""
+                class="margin-r-6">무작위
+            </label>
+            <label class="flex-1 label-clickable">
+              <input type="radio" name="pick-type" id="pick-type-algo" value="myAlgorithm" onclick="showAlgorithmModal()"
+                class="margin-r-6">나만의
+            </label>
+          </div>
+
+          <span>당첨번호 선정</span>
+          <div class="d-flex w-100">
+            <label class="flex-1 label-clickable">
+              <input type="radio" name="win-type" value="random" onclick="selectWinType('random')" checked
+                class="margin-r-6">무작위
+            </label>
+            <label class="flex-1 label-clickable">
+              <input type="radio" name="win-type" value="myNum" onclick="selectWinType('myNum')" class="margin-r-6">실제
+              당첨번호
+            </label>
+          </div>
+          <span class="text-right">실제 회차</span>
+          <div class="d-flex align-center w-100 gap-8">
+            <input type="range" id="current-week" min="1" value="1" onchange="changeStartWeek(this.value)"
+              class="flex-1">
+            <input type="number" id="current-week-number" min="1" max="9999"
+              oninput="if(this.value.length > 4) this.value = this.value.slice(0, 4); changeStartWeek(this.value)"
+              style="width: 60px; flex-shrink: 0;">
+          </div>
+
+          <span>시뮬레이션 시작</span>
+          <div class="d-flex align-center gap-8">
+            <input type="date" id="simulation-start-date" onchange="updateInputs()"
+              style="padding: 4px; border-radius: 4px; border: 1px solid #ccc; font-family: inherit;">
+            <span id="start-date-day" class="text-bold text-primary"></span>
+          </div>
+          <span>추첨일</span>
+          <div class="d-flex align-center gap-8">
+            <input type="date" id="simulation-draw-date" disabled
+              style="padding: 4px; border-radius: 4px; border: 1px solid #ccc; font-family: inherit; pointer-events: none; opacity: 0.6;">
+            <span id="draw-date-day" class="text-bold text-muted"></span>
+            <span id="draw-date-elapsed" class="text-small text-danger text-bold"></span>
+          </div>
+
+          <span>시뮬레이션 속도</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <input type="range" id="sim-speed-slider" min="-9" max="9" value="0"
+              oninput="onSpeedSliderInput(this.value)" style="flex: 1; cursor: pointer;">
+            <span id="sim-speed-text"
+              style="font-weight: bold; min-width: 80px; text-align: right; font-size: 0.9em;">1주
+              = 1초</span>
+            <input type="number" id="autospeedWeeks" value="1" style="display: none;">
+            <input type="number" id="autoSpeedSeconds" value="1" style="display: none;">
+          </div>
+          <span>당첨금 설정</span>
+          <div style="display: flex; width: 100%;">
+            <!-- 1. 고정 + 상세 버튼 영역 (50%) -->
+            <label style="flex: 1; display: inline-flex; align-items: center; cursor: pointer; position: relative;">
+              <input type="radio" name="price-type" value="default" onclick="setPriceType('default')" checked
+                style="margin-right: 6px;">
+              <span style="margin-right: 6px;">고정</span>
+              <button id="btn-toggle-price" onclick="togglePriceDetails()"
+                style="padding: 1px 5px; cursor: pointer;">상세</button>
+
+              <!-- 상세 패널 (고정 레이블 기준으로 절대 위치 배치) -->
+              <div id="winning-price" class="pannel"
+                style="display: none; position: absolute; top: 100%; left: 0; z-index: 10; text-align: left; background: white; border: 1px solid #ccc; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: max-content; margin: 5px 0 0 0; cursor: default;"
+                onclick="event.stopPropagation();"> <!-- 패널 클릭 시 라디오 체크 방지 -->
+                <div>
+                  1등 당첨금: <input type="text" id="price_1st" class="price" size="7"
+                    onchange="chPrice(this.value, 1, this)">
+                </div>
+                <div>
+                  2등 당첨금 : <input type="text" id="price_2nd" class="price" size="7"
+                    onchange="chPrice(this.value, 2, this)">
+                </div>
+                <div>
+                  3등 당첨금 : <input type="text" id="price_3rd" class="price" size="7"
+                    onchange="chPrice(this.value, 3, this)">
+                </div>
+                <div>
+                  4등 당첨금 : <input type="text" id="price_4th" class="price" value="5만원" size="7" disabled>
+                </div>
+                <div>
+                  5등 당첨금 : <input type="text" id="price_5th" class="price" value="5천원" size="7" disabled>
+                </div>
+                <span style="display:block;width: 100%; text-align: right;font-size: 0.7em;">(수령액 기준)</span>
+              </div>
+            </label>
+
+            <!-- 2. 실제 영역 (50%) -->
+            <label style="flex: 1; display: inline-flex; align-items: center; cursor: pointer;">
+              <input type="radio" name="price-type" value="custom" onclick="setPriceType('reallotto')"
+                style="margin-right: 6px;">실제
+            </label>
+          </div>
+          <span>시뮬레이션 정지</span>
+          <div>
+            <input type="checkbox" id="stop-1st" checked>1등
+            <input type="checkbox" id="stop-2nd" checked>2등
+            <input type="checkbox" id="stop-3rd" checked>3등
+            <input type="checkbox" id="stop-4th">4등
+            <input type="checkbox" id="stop-5th">5등
+          </div>
+
+          <div class="slot-list-container" style="grid-column: span 2;">
+            <div id="slot-row-1" class="slot-row">
+              <span id="slot-text-1" class="slot-label">[슬롯 1] 비어있음</span>
+              <div class="slot-btn-group">
+                <button onclick="saveSlot(1)" class="btn-slot-save">저장</button>
+                <button id="slot-load-1" onclick="loadSlot(1)" class="btn-slot-load">로드</button>
+                <button onclick="editSlotName(1)" class="btn-slot-edit" title="이름 수정">✏️</button>
+                <button onclick="clearSlot(1)" class="btn-slot-clear" title="슬롯 삭제">🗑️</button>
+              </div>
+            </div>
+            <div id="slot-row-2" class="slot-row">
+              <span id="slot-text-2" class="slot-label">[슬롯 2] 비어있음</span>
+              <div class="slot-btn-group">
+                <button onclick="saveSlot(2)" class="btn-slot-save">저장</button>
+                <button id="slot-load-2" onclick="loadSlot(2)" class="btn-slot-load">로드</button>
+                <button onclick="editSlotName(2)" class="btn-slot-edit" title="이름 수정">✏️</button>
+                <button onclick="clearSlot(2)" class="btn-slot-clear" title="슬롯 삭제">🗑️</button>
+              </div>
+            </div>
+            <div id="slot-row-3" class="slot-row">
+              <span id="slot-text-3" class="slot-label">[슬롯 3] 비어있음</span>
+              <div class="slot-btn-group">
+                <button onclick="saveSlot(3)" class="btn-slot-save">저장</button>
+                <button id="slot-load-3" onclick="loadSlot(3)" class="btn-slot-load">로드</button>
+                <button onclick="editSlotName(3)" class="btn-slot-edit" title="이름 수정">✏️</button>
+                <button onclick="clearSlot(3)" class="btn-slot-clear" title="슬롯 삭제">🗑️</button>
+              </div>
+            </div>
+            <div id="slot-row-4" class="slot-row">
+              <span id="slot-text-4" class="slot-label">[슬롯 4] 비어있음</span>
+              <div class="slot-btn-group">
+                <button onclick="saveSlot(4)" class="btn-slot-save">저장</button>
+                <button id="slot-load-4" onclick="loadSlot(4)" class="btn-slot-load">로드</button>
+                <button onclick="editSlotName(4)" class="btn-slot-edit" title="이름 수정">✏️</button>
+                <button onclick="clearSlot(4)" class="btn-slot-clear" title="슬롯 삭제">🗑️</button>
+              </div>
+            </div>
+            <div id="slot-row-5" class="slot-row">
+              <span id="slot-text-5" class="slot-label">[슬롯 5] 비어있음</span>
+              <div class="slot-btn-group">
+                <button onclick="saveSlot(5)" class="btn-slot-save">저장</button>
+                <button id="slot-load-5" onclick="loadSlot(5)" class="btn-slot-load">로드</button>
+                <button onclick="editSlotName(5)" class="btn-slot-edit" title="이름 수정">✏️</button>
+                <button onclick="clearSlot(5)" class="btn-slot-clear" title="슬롯 삭제">🗑️</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 시뮬레이션 분석결과 패널로 완전 분리 -->
+      <div id="simulator-analysis-pannel" class="pannel">
+        <div class="stats-title">📊 시뮬레이션 분석 결과</div>
+
+        <div style="display: flex; gap: 16px; align-items: stretch; margin-bottom: 15px; flex-wrap: wrap;">
+          <!-- 왼쪽: 누적 요약 배너 -->
+          <div class="summary-wrapper">
+            <div class="stats-summary" style="flex: 1; margin-bottom: 0;">
+              <div class="stats-row">
+                <span>누적 지출액:</span>
+                <span id="stat-total-spent" style="font-weight: bold;">0원</span>
+                <div class="stat-bar-container">
+                  <div id="bar-total-spent" class="stat-bar bar-spent"></div>
+                </div>
+              </div>
+              <div class="stats-row">
+                <span>누적 당첨금액:</span>
+                <span id="stat-total-won" style="font-weight: bold; color: #ff3b30;">0원</span>
+                <div class="stat-bar-container">
+                  <div id="bar-total-won" class="stat-bar bar-won"></div>
+                </div>
+              </div>
+              <div class="stats-row">
+                <span>누적 수입:</span>
+                <span id="stat-total-profit" style="font-weight: bold;">0원</span>
+                <div class="stat-bar-container">
+                  <div id="bar-total-profit" class="stat-bar bar-profit"></div>
+                </div>
+              </div>
+              <div class="stats-row">
+                <span>누적 기댓값:</span>
+                <span id="stat-total-expected" style="font-weight: bold; color: #8e8e93;">0원</span>
+                <div class="stat-bar-container">
+                  <div id="bar-total-expected" class="stat-bar bar-expected"></div>
+                </div>
+              </div>
+              <div class="stats-row"
+                style="border-top: 1px solid #e5e5ea; padding-top: 6px; margin-top: 2px; flex-direction: column;align-items:flex-start">
+                <span>1등: <span id="stat-count-1st" style="font-weight:bold;">0회</span></span>
+                <span>2등: <span id="stat-count-2nd" style="font-weight:bold;">0회</span></span>
+                <span>3등: <span id="stat-count-3rd" style="font-weight:bold;">0회</span></span>
+                <span>4등: <span id="stat-count-4th" style="font-weight:bold;">0회</span></span>
+                <span>5등: <span id="stat-count-5th" style="font-weight:bold;">0회</span></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 오른쪽: 당첨 기댓값 비율 차트 -->
+          <div class="expectation-wrapper" style="height:100%">
+            <div class="bar-chart-container" style="padding: 10px; min-height: 100px; flex: 1; height:100%">
+              <div
+                style="font-size: 0.85em; font-weight: bold; color: #555; margin-bottom: 4px; display: flex; justify-content: space-between;">
+                <span>🍀 기댓값 대비 당첨 비율</span>
+                <span style="font-size: 0.8em; color: #ff3b30; font-weight: normal;">(--- 기댓값)</span>
+              </div>
+              <svg id="chart-win-ratios" class="bar-chart-svg" viewBox="0 0 250 220" style="min-height: 180px;">
+                <!-- JS로 1~5등 막대와 보조선 생성 -->
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="heatmap-container">
+          <!-- 탭 전환 스위치 메뉴 -->
+          <div class="analysis-tabs">
+            <button type="button" class="analysis-tab-btn active" id="tab-btn-my">🎯 누적 선택 번호 (응모권)</button>
+            <button type="button" class="analysis-tab-btn" id="tab-btn-win">🍀 누적 당첨 번호 (추첨기)</button>
+          </div>
+
+          <!-- 1. 누적 선택 번호 탭 컨텐츠 -->
+          <div id="tab-content-my">
+            <div class="heatmap-title">🎯 누적 선택 번호 (응모권 히트맵 및 빈도 그래프)</div>
+            <div class="heatmap-row">
+              <div class="heatmap-half">
+                <div class="heatmap-grid" id="grid-my-stats">
+                  <!-- JS로 1~45 셀 생성 -->
+                </div>
+              </div>
+              <div class="heatmap-half">
+                <div class="bar-chart-container" style="height:100%">
+                  <svg id="chart-my-bars" class="bar-chart-svg" viewBox="0 0 450 220" style="height:100%">
+                    <!-- JS로 1~45 세로 막대 생성 -->
+                  </svg>
+                  <div class="chart-mode-switch" data-chart="my">
+                    <button type="button" class="chart-mode-btn active" data-chart="my" data-mode="dramatic"
+                      onclick="setFrequencyMode('my', 'dramatic')">드라마틱하게</button>
+                    <button type="button" class="chart-mode-btn" data-chart="my" data-mode="dry"
+                      onclick="setFrequencyMode('my', 'dry')">드라이하게</button>
+                  </div>
+                  <div class="chart-range-text" id="chart-my-range">최소/최대 선택: 1번(0회) ~ 45번(0회)</div>
+                </div>
+              </div>
+            </div>
+            <div class="heatmap-tooltip-bar" id="heatmap-tooltip-bar-my">
+              번호 위에 마우스를 올리면 빈도 상세 정보가 표시됩니다.
+            </div>
+          </div>
+
+          <!-- 2. 누적 당첨 번호 탭 컨텐츠 -->
+          <div id="tab-content-win" style="display: none;">
+            <div class="heatmap-title">🍀 누적 당첨 번호 (추첨기 히트맵 및 빈도 그래프)</div>
+            <div class="heatmap-row">
+              <div class="heatmap-half">
+                <div class="heatmap-grid" id="grid-win-stats">
+                  <!-- JS로 1~45 셀 생성 -->
+                </div>
+              </div>
+              <div class="heatmap-half">
+                <div class="bar-chart-container" style="height:100%">
+                  <svg id="chart-win-bars" class="bar-chart-svg" viewBox="0 0 450 220" style="height:100%">
+                    <!-- JS로 1~45 세로 막대 생성 -->
+                  </svg>
+                  <div class="chart-mode-switch" data-chart="win">
+                    <button type="button" class="chart-mode-btn active" data-chart="win" data-mode="dramatic"
+                      onclick="setFrequencyMode('win', 'dramatic')">드라마틱하게</button>
+                    <button type="button" class="chart-mode-btn" data-chart="win" data-mode="dry"
+                      onclick="setFrequencyMode('win', 'dry')">드라이하게</button>
+                  </div>
+                  <div class="chart-range-text" id="chart-win-range">최소/최대 선택: 1번(0회) ~ 45번(0회)</div>
+                </div>
+              </div>
+            </div>
+            <div class="heatmap-tooltip-bar" id="heatmap-tooltip-bar-win">
+              번호 위에 마우스를 올리면 빈도 상세 정보가 표시됩니다.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 시뮬레이션 정지 요약 모달 -->
+    <div id="simulation-stop-modal" class="lotto-modal">
+      <div class="lotto-modal-content">
+        <div class="lotto-modal-header" id="modal-title">🎉 시뮬레이션 정지 조건 달성!</div>
+        <table class="lotto-modal-table">
+          <tr>
+            <th>당첨 등수</th>
+            <td id="modal-rank">-</td>
+          </tr>
+          <tr>
+            <th>당첨일</th>
+            <td id="modal-draw-date">-</td>
+          </tr>
+          <tr>
+            <th>당첨액</th>
+            <td id="modal-prize">-</td>
+          </tr>
+          <tr>
+            <th>누적 당첨액</th>
+            <td id="modal-total-won">-</td>
+          </tr>
+          <tr>
+            <th>누적 지출액</th>
+            <td id="modal-total-spent">-</td>
+          </tr>
+          <tr class="total-profit">
+            <th>누적 손익</th>
+            <td id="modal-net-profit">-</td>
+          </tr>
+        </table>
+        <button class="lotto-modal-btn" onclick="closeStopModal()">확인</button>
+      </div>
+    </div>
+    <!-- 나만의 알고리즘 설정 모달 -->
+    <div id="algorithm-setting-modal" class="lotto-modal">
+      <div class="lotto-modal-content" style="max-width: 690px; width: 90%;">
+        <div class="lotto-modal-header">나만의 알고리즘 설정</div>
+        <div class="lotto-modal-description" style="font-size: 0.85em; color: #666; margin-bottom: 12px; text-align: left; line-height: 1.4;">
+          ※ "매주 응모 횟수" - "나만의 설계" = "자동 응모"<br>
+          ※ "최근 당첨번호로 자주 등장하는 숫자(최근 빈출)" + "고정숫자" + "랜덤 숫자" = 6
+        </div>
+        <div id="algo-rows-container" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;">
+          <!-- JS로 동적 행들 렌더링 -->
+        </div>
+        <div class="d-flex gap-8" style="justify-content: flex-end; margin-bottom: 15px;">
+          <button type="button" onclick="addAlgorithmRow()" class="btn-slot-load" style="padding: 6px 12px;">+ 행 추가</button>
+        </div>
+        <div class="d-flex gap-8" style="justify-content: center;">
+          <button class="lotto-modal-btn" onclick="applyAlgorithmSettings()" style="margin: 0; width: 100px; background-color: #34c759;">적용</button>
+          <button class="lotto-modal-btn" onclick="closeAlgorithmModal()" style="margin: 0; width: 100px; background-color: #8e8e93;">취소</button>
+        </div>
+      </div>
+    </div>
+    <!-- 도움말 모달 -->
+    <div id="help-modal" class="lotto-modal">
+      <div class="lotto-modal-content" style="max-width: 800px; width: 90%; max-height: 80vh; display: flex; flex-direction: column;">
+        <div class="lotto-modal-header" style="flex-shrink: 0; padding-bottom: 12px; border-bottom: 1px solid #e5e5ea;">ℹ️ 시뮬레이션 도움말</div>
+        <div id="help-modal-body" style="flex: 1; overflow-y: auto; padding: 15px 0; font-size: 0.95em; line-height: 1.6; text-align: left;">
+          <!-- help.html의 내용이 비동기적으로 로드되어 삽입됨 -->
+        </div>
+        <div style="flex-shrink: 0; padding-top: 12px; border-top: 1px solid #e5e5ea; text-align: center;">
+          <button class="lotto-modal-btn" onclick="closeHelpModal()" style="margin: 0; width: 100px; background-color: #007aff;">닫기</button>
+        </div>
+      </div>
+    </div>
+  </article>
+</body>
+
+</html>
