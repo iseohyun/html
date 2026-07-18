@@ -293,7 +293,7 @@ function buildActionsList(startA, startB) {
     name: `B-1`,
     row: 0,
     targetCell: [0, 5],
-    ref1: [0, 6],
+    ref1: [0, 1],
     ref2: [],
     ref3: [],
     ref4: []
@@ -303,21 +303,38 @@ function buildActionsList(startA, startB) {
     name: `B-2`,
     row: 1,
     targetCell: [1, 5],
-    ref1: [1, 6],
+    ref1: [0, 2],
     ref2: [],
     ref3: [],
     ref4: []
   });
   for (let r = 2; r <= numCycles; r++) {
+    const i = r - 2;
+    const cycleRow = Math.floor(i / 2);
+    const isOdd = (i % 2 === 0);
+
+    let ref1, ref2, ref3, ref4;
+    if (isOdd) {
+      ref1 = [2 * cycleRow + 2, 1];
+      ref2 = (i === 0) ? [0, 1] : [2 * cycleRow, 1];
+      ref3 = (i === 0) ? [0, 2] : [2 * cycleRow, 2];
+      ref4 = [2 * cycleRow + 1, 0];
+    } else {
+      ref1 = [2 * cycleRow + 2, 2];
+      ref2 = (i === 1) ? [0, 2] : [2 * cycleRow, 2];
+      ref3 = [2 * cycleRow + 2, 1];
+      ref4 = [2 * cycleRow + 1, 3];
+    }
+
     actions.push({
       phase: 'B',
       name: `B-${r+1}`,
       row: r,
       targetCell: [r, 5],
-      ref1: [r, 6],
-      ref2: [],
-      ref3: [],
-      ref4: []
+      ref1: ref1,
+      ref2: ref2,
+      ref3: ref3,
+      ref4: ref4
     });
   }
 
@@ -402,8 +419,8 @@ function buildActionsList(startA, startB) {
         name: `C-${j+1}-1`,
         eqIdx: startEqIdx,
         targetCell: [-99, -99],
-        ref1: [subRow, 6],
-        ref2: [subRow, 5],
+        ref1: [subRow, 5],
+        ref2: [subRow, 6],
         ref3: [],
         ref4: []
       });
@@ -413,8 +430,8 @@ function buildActionsList(startA, startB) {
           name: `C-${j+1}-2`,
           eqIdx: startEqIdx + 1,
           targetCell: [-99, -99],
-          ref1: [subRow, 6],
-          ref2: [subRow, 5],
+          ref1: [subRow, 5],
+          ref2: [subRow, 6],
           ref3: [],
           ref4: []
         });
@@ -425,8 +442,8 @@ function buildActionsList(startA, startB) {
           name: `C-${j+1}-3`,
           eqIdx: startEqIdx + 2,
           targetCell: [-99, -99],
-          ref1: [subRow, 6],
-          ref2: [subRow, 5],
+          ref1: [subRow, 5],
+          ref2: [subRow, 6],
           ref3: [],
           ref4: []
         });
@@ -441,8 +458,8 @@ function buildActionsList(startA, startB) {
         name: `C-${m+2}-1`,
         eqIdx: finalStartIdx,
         targetCell: [-99, -99],
-        ref1: [1, 6],
-        ref2: [1, 5],
+        ref1: [1, 5],
+        ref2: [1, 6],
         ref3: [],
         ref4: []
       });
@@ -453,8 +470,8 @@ function buildActionsList(startA, startB) {
         name: `C-${m+3}-1`,
         eqIdx: finalStartIdx + 1,
         targetCell: [-99, -99],
-        ref1: [0, 6],
-        ref2: [0, 5],
+        ref1: [0, 5],
+        ref2: [0, 6],
         ref3: [],
         ref4: []
       });
