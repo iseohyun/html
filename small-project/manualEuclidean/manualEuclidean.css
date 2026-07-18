@@ -433,7 +433,7 @@ article {
   transition: opacity 0.25s;
 }
 
-.modal-overlay.hidden {
+.hidden {
   display: none !important;
   opacity: 0;
   pointer-events: none;
