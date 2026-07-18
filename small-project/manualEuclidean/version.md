@@ -2,6 +2,13 @@
 ## Scope
 /small-project/manualEuclidean/**
 
+### [v1.0.2] - 툴팁 및 자동검증기 닫기 버그 수정 및 강조 스타일 정렬
+- 툴팁 닫기(X) 버튼 및 자동검증기 닫기 오작동 수정 (.hidden 글로벌 클래스화 및 isHidden 상태 분리)
+- C단계 대입 대상 수식 밑줄(`<u>`) 표기 및 F열 강조 기능 적용
+- A단계 짝수-2 스텝 툴팁 한 칸 아래 정렬 및 G열 왼쪽 정렬 적용
+- 랜덤 Start 기능 추가 및 7열 오버플로우 방지 모의 주행 엔진 추가
+- A1, D1 셀 라벨 비우기 및 Step 0 중복 출력 수정
+
 ### [v1.0.0] - 역할별 모듈 분할 및 구조화 (UI/UX 개선 및 자동화 테스트 적용)
 - 관심사 분리(SoC): 기존 단일 main.js 코드를 config.js, math.js, render.js, tooltip.js, keybinding.js, testRunner.js, main.js로 전면 모듈 분할 개편
 - 디자인 일관성: manualSqrt 프로젝트의 CSS 스타일 가이드라인을 기반으로 UI/UX 디자인 일관성 100% 동기화 (색상 테마, 라벨 정렬, 드래그 지원 툴팁)
