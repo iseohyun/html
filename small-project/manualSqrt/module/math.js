@@ -365,3 +365,8 @@ function autoFillInputRowForBringDown(force = false) {
 }
 
 window.autoFillInputRowForBringDown = autoFillInputRowForBringDown;
+window.nextStep = nextStep;
+window.prevStep = prevStep;
+window.getGroupEndCol = getGroupEndCol;
+window.getDotCol = getDotCol;
+window.adjustStartForDot = adjustStartForDot;

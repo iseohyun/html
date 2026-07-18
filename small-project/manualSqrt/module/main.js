@@ -306,5 +306,8 @@ function startMain() {
   }
 }
 
+window.resetToStart = resetToStart;
+window.init = init;
+
 // Start polling loader
 checkAndStart();
