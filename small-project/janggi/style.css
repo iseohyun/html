@@ -4,7 +4,7 @@ button {
   text-align: center;
 }
 
-article {
+#janggi-app {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -18,7 +18,7 @@ article {
 }
 
 @media (min-width: 850px) {
-  article.settings-open {
+  #janggi-app.settings-open {
     padding-right: 450px;
   }
 }

@@ -201,7 +201,7 @@ function disalbeSettingBox() {
   const settingBox = document.getElementById("setting-box");
   settingBox.style.display = "none";
   
-  const article = document.querySelector("article");
+  const article = document.getElementById("janggi-app");
   if (article) article.classList.remove("settings-open");
   
   svg.classList.add("no-transition");
@@ -215,7 +215,7 @@ function enalbeSettingBox() {
   const settingBox = document.getElementById("setting-box");
   settingBox.style.display = "flex";
   
-  const article = document.querySelector("article");
+  const article = document.getElementById("janggi-app");
   if (article) article.classList.add("settings-open");
   
   svg.classList.add("no-transition");
