@@ -1,4 +1,6 @@
 // main.js - Entry point, Event listeners, and UI controller functions
+var commentBubbleTimeout = null;
+
 
 function initData() {
   for (let i = 0; i < 32; i++) {
@@ -1198,7 +1200,8 @@ function saveCurrentConfigToSlot() {
     shortcutModalBgColor,
     shortcutModalOpacity,
     commentBoxBgColor,
-    commentBoxOpacity
+    commentBoxOpacity,
+    commentDisplayDuration
   };
   localStorage.setItem("janggi_settings_slot_" + activeSlot, JSON.stringify(config));
 }
@@ -1248,9 +1251,14 @@ function loadConfigFromSlot() {
     if (config.shortcutModalOpacity !== undefined && config.shortcutModalOpacity !== null) shortcutModalOpacity = parseFloat(config.shortcutModalOpacity);
     if (config.commentBoxBgColor) commentBoxBgColor = config.commentBoxBgColor;
     if (config.commentBoxOpacity !== undefined && config.commentBoxOpacity !== null) commentBoxOpacity = parseFloat(config.commentBoxOpacity);
+    if (config.commentDisplayDuration !== undefined && config.commentDisplayDuration !== null) commentDisplayDuration = parseInt(config.commentDisplayDuration, 10);
     
     applyShortcutModalTheme();
     applyCommentBoxTheme();
+    
+    // Update comment duration input field
+    const durationInput = document.getElementById("comment-duration-input");
+    if (durationInput) durationInput.value = commentDisplayDuration;
     
     localStorage.setItem("showCoordinates", showCoordinates);
     localStorage.setItem("sizeKing", sizeKing);
@@ -1283,6 +1291,7 @@ function loadConfigFromSlot() {
     localStorage.setItem("shortcutModalOpacity", shortcutModalOpacity);
     localStorage.setItem("commentBoxBgColor", commentBoxBgColor);
     localStorage.setItem("commentBoxOpacity", commentBoxOpacity);
+    localStorage.setItem("commentDisplayDuration", commentDisplayDuration);
     
     changeBoardColor(boardColorType);
     changeChoColor(choColorType);
@@ -2705,8 +2714,14 @@ function initGame() {
   if (localStorage.getItem("commentBoxOpacity") !== null) {
     commentBoxOpacity = parseFloat(localStorage.getItem("commentBoxOpacity"));
   }
+  if (localStorage.getItem("commentDisplayDuration") !== null) {
+    commentDisplayDuration = parseInt(localStorage.getItem("commentDisplayDuration"), 10);
+  }
   applyShortcutModalTheme();
   applyCommentBoxTheme();
+  
+  const durationInput = document.getElementById("comment-duration-input");
+  if (durationInput) durationInput.value = commentDisplayDuration;
   if (localStorage.getItem("autoplaySpeed") !== null) {
     autoplaySpeed = parseFloat(localStorage.getItem("autoplaySpeed"));
   }
@@ -2909,6 +2924,38 @@ function handleKeyDown(e) {
     return;
   }
 
+  // 8c. 상대 AI 모드 토글 (Z)
+  if (matchShortcutKey("toggleOpponentAI", e)) {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleOpponentAI();
+    return;
+  }
+
+  // 8d. AI 훈수 받기 (X)
+  if (matchShortcutKey("requestAIHint", e)) {
+    e.preventDefault();
+    e.stopPropagation();
+    requestAIHint();
+    return;
+  }
+
+  // 8e. 판 좌우 반전 ([)
+  if (matchShortcutKey("flipHorizontal", e)) {
+    e.preventDefault();
+    e.stopPropagation();
+    flipBoardHorizontal();
+    return;
+  }
+
+  // 8f. 판 상하 반전 (])
+  if (matchShortcutKey("flipVertical", e)) {
+    e.preventDefault();
+    e.stopPropagation();
+    flipBoardVertical();
+    return;
+  }
+
   // 9. 커서락 모드 토글
   if (matchShortcutKey("cursorLockToggle", e)) {
     e.preventDefault();
@@ -2924,10 +2971,26 @@ function handleKeyDown(e) {
     return;
   }
 
-  // 10. ESC 취소 및 설정 창 열기
+  // 10. ESC 취소 및 설정 창 열기 (단축키/코멘트 대화창 열려있으면 해당 모달을 저장하지 않고 닫음)
   if (matchShortcutKey("cancel", e)) {
     e.preventDefault();
     e.stopPropagation();
+    
+    // 1) 코멘트 편집창이 열려있다면 저장하지 않고 닫기
+    const commentModal = document.getElementById("comment-modal");
+    if (commentModal && commentModal.style.display === "flex") {
+      closeCommentModal();
+      return;
+    }
+    
+    // 2) 단축키 설정 모달이 열려있다면 닫기
+    const shortcutModal = document.getElementById("shortcut-modal");
+    if (shortcutModal && shortcutModal.style.display === "flex") {
+      closeShortcutModal();
+      return;
+    }
+
+    // 3) 상차림 설정창이 열려있다면 닫기
     const settingBox = document.getElementById("setting-box");
     if (settingBox && settingBox.style.display === "flex") {
       disalbeSettingBox();
@@ -3107,6 +3170,10 @@ const shortcutActionNames = {
   autoplayToggle: "자동 재생 토글",
   openShortcutSettings: "단축키 지정 설정창 열기",
   openCommentEdit: "현재 수순 코멘트 편집창 열기",
+  toggleOpponentAI: "상대 AI 모드 켜기/끄기",
+  requestAIHint: "AI 훈수 한 수 받기",
+  flipHorizontal: "판 좌우 반전",
+  flipVertical: "판 상하 반전",
   up: "위로 이동",
   down: "아래로 이동",
   left: "왼쪽 이동",
@@ -3422,6 +3489,38 @@ function startRecordingKey(actionKey, type) {
 
 function resetDefaultShortcuts() {
   shortcutKeys = {
+    newGame: {
+      primary: { key: "n", ctrl: false, alt: false, shift: false },
+      secondary: { key: "F2", ctrl: false, alt: false, shift: false }
+    },
+    autoplayToggle: {
+      primary: { key: "p", ctrl: false, alt: false, shift: false },
+      secondary: { key: "p", ctrl: false, alt: true, shift: false }
+    },
+    openShortcutSettings: {
+      primary: { key: "?", ctrl: false, alt: false, shift: false },
+      secondary: null
+    },
+    openCommentEdit: {
+      primary: { key: "`", ctrl: false, alt: false, shift: false },
+      secondary: null
+    },
+    toggleOpponentAI: {
+      primary: { key: "z", ctrl: false, alt: false, shift: false },
+      secondary: null
+    },
+    requestAIHint: {
+      primary: { key: "x", ctrl: false, alt: false, shift: false },
+      secondary: null
+    },
+    flipHorizontal: {
+      primary: { key: "[", ctrl: false, alt: false, shift: false },
+      secondary: null
+    },
+    flipVertical: {
+      primary: { key: "]", ctrl: false, alt: false, shift: false },
+      secondary: null
+    },
     up: {
       primary: { key: "ArrowUp", ctrl: false, alt: false, shift: false },
       secondary: { key: "w", ctrl: false, alt: false, shift: false }
@@ -3458,10 +3557,6 @@ function resetDefaultShortcuts() {
       primary: { key: "v", ctrl: false, alt: true, shift: false },
       secondary: { key: "v", ctrl: true, alt: false, shift: false }
     },
-    newGame: {
-      primary: { key: "n", ctrl: false, alt: true, shift: false },
-      secondary: { key: "F2", ctrl: false, alt: false, shift: false }
-    },
     forwardStep: {
       primary: { key: "ArrowRight", ctrl: false, alt: true, shift: false },
       secondary: null
@@ -3477,10 +3572,6 @@ function resetDefaultShortcuts() {
     goToEnd: {
       primary: { key: "ArrowRight", ctrl: true, alt: false, shift: false },
       secondary: { key: "End", ctrl: false, alt: false, shift: false }
-    },
-    autoplayToggle: {
-      primary: { key: "p", ctrl: false, alt: false, shift: false },
-      secondary: { key: "p", ctrl: false, alt: true, shift: false }
     }
   };
   saveCurrentConfigToSlot();
@@ -3728,12 +3819,31 @@ function updateCommentBubble() {
       if (bubbleText) bubbleText.textContent = comment;
       if (bubble) bubble.style.display = "block";
       applyCommentBoxTheme();
+      
+      // 코멘트 말풍선 자동 숨김 시간 설정 (0은 무제한)
+      if (commentBubbleTimeout) {
+        clearTimeout(commentBubbleTimeout);
+        commentBubbleTimeout = null;
+      }
+      if (commentDisplayDuration > 0) {
+        commentBubbleTimeout = setTimeout(() => {
+          if (bubble) bubble.style.display = "none";
+        }, commentDisplayDuration * 1000);
+      }
     } else {
       if (bubble) bubble.style.display = "none";
+      if (commentBubbleTimeout) {
+        clearTimeout(commentBubbleTimeout);
+        commentBubbleTimeout = null;
+      }
     }
   } else {
     if (commentFormInput) commentFormInput.value = "";
     if (bubble) bubble.style.display = "none";
+    if (commentBubbleTimeout) {
+      clearTimeout(commentBubbleTimeout);
+      commentBubbleTimeout = null;
+    }
   }
 }
 
@@ -4056,6 +4166,171 @@ function applyCommentBoxTheme() {
   }
 }
 
+function flipBoardHorizontal() {
+  // 1. Flip initPieces
+  for (let i = 0; i < 32; i++) {
+    if (initPieces[i].x !== 0) {
+      initPieces[i].x = 10 - initPieces[i].x;
+    }
+  }
+  // 2. Reset pieces to initPieces
+  for (let i = 0; i < 32; i++) {
+    pieces[i].x = initPieces[i].x;
+    pieces[i].y = initPieces[i].y;
+  }
+  // 3. Flip log entries
+  log.forEach(entry => {
+    entry.x = 10 - entry.x;
+  });
+  // 4. Flip cursor position
+  kbCursorX = 10 - kbCursorX;
+  
+  // 5. Clear select and candidates
+  curSelect = 32;
+  clearCandiBox();
+  
+  // 6. Redraw
+  initPositions();
+  
+  // 7. Update URL search params to match new state
+  const url = new URL(window.location.href);
+  const pCodeArr = new Array(32);
+  for (let i = 0; i < 32; i++) {
+    pCodeArr[i] = `${initPieces[i].x}${initPieces[i].y}`;
+  }
+  url.searchParams.set("p", pCodeArr.join(""));
+  
+  const logStrArr = log.map(entry => {
+    return `${entry.i}${n2Az(entry.x)}${n2Az(entry.y)}${entry.t !== 32 ? entry.t : ""}`;
+  });
+  if (logStrArr.length > 0) {
+    url.searchParams.set("log", logStrArr.join(","));
+  }
+  window.history.replaceState({}, "", url.toString());
+
+  showToast("판 좌우 반전 및 기존 수순 변환 완료");
+}
+
+function flipBoardVertical() {
+  // 1. Flip initPieces
+  for (let i = 0; i < 32; i++) {
+    if (initPieces[i].y !== 0) {
+      initPieces[i].y = 11 - initPieces[i].y;
+    }
+  }
+  // 2. Reset pieces to initPieces
+  for (let i = 0; i < 32; i++) {
+    pieces[i].x = initPieces[i].x;
+    pieces[i].y = initPieces[i].y;
+  }
+  // 3. Flip log entries
+  log.forEach(entry => {
+    entry.y = 11 - entry.y;
+  });
+  // 4. Flip cursor position
+  kbCursorY = 11 - kbCursorY;
+  
+  // 5. Clear select and candidates
+  curSelect = 32;
+  clearCandiBox();
+  
+  // 6. Toggle iAmCho (the human plays the other team now, bottom side)
+  iAmCho = !iAmCho;
+  changeNation(iAmCho);
+  
+  // 7. AI takes the top side
+  if (aiMode !== 0) {
+    aiMode = iAmCho ? 2 : 1;
+    localStorage.setItem("aiMode", aiMode);
+    const aiModeSelect = document.getElementById("ai-mode-select");
+    if (aiModeSelect) aiModeSelect.value = aiMode;
+  }
+  
+  // 8. Redraw
+  initPositions();
+  
+  // 9. Update URL search params to match new state
+  const url = new URL(window.location.href);
+  const pCodeArr = new Array(32);
+  for (let i = 0; i < 32; i++) {
+    pCodeArr[i] = `${initPieces[i].x}${initPieces[i].y}`;
+  }
+  url.searchParams.set("p", pCodeArr.join(""));
+  url.searchParams.set("cho", iAmCho ? "Y" : "N");
+  
+  const logStrArr = log.map(entry => {
+    return `${entry.i}${n2Az(entry.x)}${n2Az(entry.y)}${entry.t !== 32 ? entry.t : ""}`;
+  });
+  if (logStrArr.length > 0) {
+    url.searchParams.set("log", logStrArr.join(","));
+  }
+  window.history.replaceState({}, "", url.toString());
+
+  showToast("판 상하 반전 및 기존 수순 변환 완료 (AI 위쪽 자동 할당)");
+}
+
+function toggleOpponentAI() {
+  if (aiMode !== 0) {
+    aiMode = 0;
+    showToast("상대 AI 모드 꺼짐");
+  } else {
+    // AI plays the top side: Han if iAmCho is true, Cho if iAmCho is false
+    aiMode = iAmCho ? 2 : 1;
+    showToast(`상대 AI 모드 켜짐 (${aiMode === 1 ? "초나라" : "한나라"} AI가 위쪽에서 플레이)`);
+  }
+  localStorage.setItem("aiMode", aiMode);
+  saveCurrentConfigToSlot();
+  
+  const aiModeSelect = document.getElementById("ai-mode-select");
+  if (aiModeSelect) aiModeSelect.value = aiMode;
+  
+  checkAndRunAI();
+}
+
+function requestAIHint() {
+  const turnEl = document.getElementById("turn");
+  if (!turnEl) return;
+  const curTurn = parseInt(turnEl.value, 10);
+  const isChoTurn = (curTurn % 2 === 0);
+  const isMyTurn = (isChoTurn === iAmCho);
+  
+  if (!isMyTurn) {
+    showToast("내 턴이 아닙니다. (훈수는 내 턴에만 가능)");
+    return;
+  }
+  
+  const myTeam = iAmCho ? "cho" : "han";
+  const bestMove = getBestAIMove(myTeam);
+  if (bestMove) {
+    showToast("AI 훈수 착수!");
+    move(bestMove.i, bestMove.x, bestMove.y);
+  } else {
+    showToast("추천할 수 있는 합법적인 수가 없습니다.");
+  }
+}
+
+function changeCommentDuration(val) {
+  commentDisplayDuration = parseInt(val, 10);
+  if (isNaN(commentDisplayDuration) || commentDisplayDuration < 0) {
+    commentDisplayDuration = 0;
+  }
+  const input = document.getElementById("comment-duration-input");
+  if (input) input.value = commentDisplayDuration;
+  saveCurrentConfigToSlot();
+  
+  updateCommentBubble();
+  showToast(`코멘트 표시 시간이 ${commentDisplayDuration === 0 ? "무제한" : commentDisplayDuration + "초"}으로 설정되었습니다.`);
+}
+
+function hideCommentBubble() {
+  const bubble = document.getElementById("comment-bubble");
+  if (bubble) bubble.style.display = "none";
+  if (commentBubbleTimeout) {
+    clearTimeout(commentBubbleTimeout);
+    commentBubbleTimeout = null;
+  }
+}
+
 // Bind to window to prevent module scoping issues
 window.rotateScorePanel = rotateScorePanel;
 window.setScoreSlide = setScoreSlide;
@@ -4084,5 +4359,11 @@ window.handleCommentModalOverlayClick = handleCommentModalOverlayClick;
 window.changeCommentBgColor = changeCommentBgColor;
 window.changeCommentOpacity = changeCommentOpacity;
 window.applyCommentBoxTheme = applyCommentBoxTheme;
+window.flipBoardHorizontal = flipBoardHorizontal;
+window.flipBoardVertical = flipBoardVertical;
+window.toggleOpponentAI = toggleOpponentAI;
+window.requestAIHint = requestAIHint;
+window.changeCommentDuration = changeCommentDuration;
+window.hideCommentBubble = hideCommentBubble;
 
 initGame();

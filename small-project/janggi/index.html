@@ -536,7 +536,7 @@
     </div>
 
     <!-- 해설 말풍선 (Neon Glassmorphic Speech Bubble) -->
-    <div id="comment-bubble" class="comment-bubble-container" style="display: none;">
+    <div id="comment-bubble" class="comment-bubble-container" style="display: none; cursor: pointer;" onclick="hideCommentBubble()">
       <div class="comment-bubble-content">
         <div class="comment-bubble-title">💡 한수 해설</div>
         <div id="comment-bubble-text">이곳에 수순별 코멘트가 표출됩니다.</div>
@@ -1133,6 +1133,13 @@
               <span style="font-size: 13px; color: rgba(255, 255, 255, 0.7);">투명도:</span>
               <input type="range" id="comment-opacity-slider" min="0.1" max="1.0" step="0.05" oninput="changeCommentOpacity(this.value)" style="width: 100px; accent-color: #3b82f6;">
               <span id="comment-opacity-val" style="font-size: 13px; min-width: 30px; text-align: right; color: #3b82f6;">0.4</span>
+            </div>
+          </div>
+          
+          <div class="modal-theme-row" style="display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-top: 10px; padding: 10px; background: rgba(255, 255, 255, 0.03); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05); flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 13px; color: rgba(255, 255, 255, 0.7);">표시 시간 (초, 0=무제한):</span>
+              <input type="number" id="comment-duration-input" min="0" max="60" step="1" onchange="changeCommentDuration(this.value)" style="width: 65px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; color: white; padding: 3px 5px; outline: none; text-align: center;">
             </div>
           </div>
         </div>

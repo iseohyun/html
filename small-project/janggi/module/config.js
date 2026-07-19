@@ -109,6 +109,22 @@ var shortcutKeys = {
     primary: { key: "`", ctrl: false, alt: false, shift: false },
     secondary: null
   },
+  toggleOpponentAI: {
+    primary: { key: "z", ctrl: false, alt: false, shift: false },
+    secondary: null
+  },
+  requestAIHint: {
+    primary: { key: "x", ctrl: false, alt: false, shift: false },
+    secondary: null
+  },
+  flipHorizontal: {
+    primary: { key: "[", ctrl: false, alt: false, shift: false },
+    secondary: null
+  },
+  flipVertical: {
+    primary: { key: "]", ctrl: false, alt: false, shift: false },
+    secondary: null
+  },
   up: {
     primary: { key: "ArrowUp", ctrl: false, alt: false, shift: false },
     secondary: { key: "w", ctrl: false, alt: false, shift: false }
@@ -174,6 +190,7 @@ var shortcutModalBgColor = "#5f80ce"; // 단축키 모달 배경색
 var shortcutModalOpacity = 0.4; // 단축키 모달 투명도
 var commentBoxBgColor = "#5f80ce"; // 코멘트 상자 배경색
 var commentBoxOpacity = 0.4; // 코멘트 상자 투명도
+var commentDisplayDuration = 0; // 코멘트 표시 시간 (초, 0=무제한)
 
 /**
  * @typedef {Object} GameMetadata - 대국 상세 메타데이터 스키마
