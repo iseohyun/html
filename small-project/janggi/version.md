@@ -2,6 +2,10 @@
 ## Scope
 /small-project/janggi/**
 
+### [v1.4.2] - 대국 역추적(뒤로가기) 시 게임 종료(외통수) 해제 및 착수 지속 조치
+- **뒤로가기(Undo) 시 gameEnded 초기화**: 대국이 이미 외통수(Checkmate)로 인해 종료되었더라도, 사용자가 뒤로가기(`prev` / `performSinglePrev`)를 눌러 이전 상태로 돌아가면 `gameEnded` 플래그를 즉시 `false`로 갱신하여 언제든지 대국을 이어서 둘 수 있도록 개선
+- **앞으로 가기(Redo) 시 외통수 상태 재동기화**: `next` 함수 내에도 `checkGameStatus()` 검사 로직을 연동하여, 뒤로 갔다가 다시 최종 종료 상태로 재진행했을 때도 외통수를 올바르게 재판별하고 동기화하도록 대칭성 구현
+
 ### [v1.4.1] - Ctrl+C 복사 시 highlightjs-line-numbers 라이브러리 충돌 에러(indexOf) 수정
 - **SVGAnimatedString prototype 패치**: 외부 하이라이트 라이브러리(`highlightjs-line-numbers.min.js`)가 copy 이벤트 발생 시 DOM 트리 내 SVG 엘리먼트의 `className`을 문자열로 오인하여 `indexOf` 함수가 누락되어 비정상 동작(Script error)을 유발하던 현상을 해결하기 위해, `SVGAnimatedString.prototype.indexOf` 및 `includes` 함수를 안전하게 바인딩(baseVal 포워딩) 처리하여 런타임 크래시를 완벽 차단
 
