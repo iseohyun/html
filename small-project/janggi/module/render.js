@@ -340,7 +340,6 @@ function moveSelectBox(i, visible = true) {
 
 function createCandiBox(i, x, y) {
   if (x < 1 || x > 9 || !isValidY(y)) {
-    console.log(`[CandiBox Debug] Rejected: x=${x}, y=${y} (isValidY=${typeof isValidY === 'function' ? isValidY(y) : 'no_func'})`);
     return;
   }
   
@@ -348,8 +347,6 @@ function createCandiBox(i, x, y) {
   let tmpAxis = getAxis(x, y);
   let targetX = tmpAxis.x - unitSize * ratio / 2;
   let targetY = tmpAxis.y - unitSize * ratio / 2;
-  
-  console.log(`[CandiBox Debug] Approved nested <g>: x=${x}, y=${y}. translate(${targetX}px, ${targetY}px). unitSize=${unitSize}`);
 
   // 브라우저 동적 SVG 렌더링 버그 우회를 위해 <g> 그룹 엘리먼트로 생성
   const candiBox = document.createElementNS("http://www.w3.org/2000/svg", "g");
@@ -401,19 +398,13 @@ function createCandiBox(i, x, y) {
   }
   
   candiBox.style.cursor = "pointer";
-  // 마우스 감지 디버그 리스너 추가
-  candiBox.addEventListener("mouseenter", function() {
-    console.log(`[CandiBox Debug] Mouse hovered candidate at x=${x}, y=${y}`);
-  });
 
   candiBoxList.push(candiBox);
   candiBox.addEventListener("click", function () {
-    console.log(`[CandiBox Debug] Clicked candidate at x=${x}, y=${y}. Moving piece...`);
     move(i, x, y);
   });
   
   svg.appendChild(candiBox);
-  console.log("[CandiBox Debug] Element appended successfully to DOM:", candiBox);
 }
 
 // 장기알 서예 글씨 이미지의 크기와 정렬 오프셋을 동적으로 갱신합니다.

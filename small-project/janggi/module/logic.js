@@ -88,380 +88,467 @@ function isValidY(y) {
 // 새 좌표계: 나의 궁성 = y: 9,0,8 (x: 4,5,6), 상대 궁성 = y: 2,1,3 (x: 4,5,6)
 // 기존→새 변환: 1→0, 2→9, 3→8, 4→7, 5→6, 6→5, 7→4, 8→3, 9→2, 10→1
 function drawCandidates(i) {
-  switch (i) {
-    // 나의 장, 사 이동경로 (내 궁성: x=4~6, y=0,9,8)
-    case 0: case 9: case 10:
-      if (pieces[i].x == 4 && pieces[i].y == 0) {
-        if (checkTeam(i, 4, 9) != 1) createCandiBox(i, 4, 9);
-        if (checkTeam(i, 5, 9) != 1) createCandiBox(i, 5, 9);
-        if (checkTeam(i, 5, 0) != 1) createCandiBox(i, 5, 0);
-      } else if (pieces[i].x == 5 && pieces[i].y == 0) {
-        if (checkTeam(i, 5, 9) != 1) createCandiBox(i, 5, 9);
-        if (checkTeam(i, 6, 0) != 1) createCandiBox(i, 6, 0);
-        if (checkTeam(i, 4, 0) != 1) createCandiBox(i, 4, 0);
-      } else if (pieces[i].x == 6 && pieces[i].y == 0) {
-        if (checkTeam(i, 6, 9) != 1) createCandiBox(i, 6, 9);
-        if (checkTeam(i, 5, 0) != 1) createCandiBox(i, 5, 0);
-        if (checkTeam(i, 5, 9) != 1) createCandiBox(i, 5, 9);
-      } else if (pieces[i].x == 4 && pieces[i].y == 9) {
-        if (checkTeam(i, 4, 8) != 1) createCandiBox(i, 4, 8);
-        if (checkTeam(i, 5, 9) != 1) createCandiBox(i, 5, 9);
-        if (checkTeam(i, 4, 0) != 1) createCandiBox(i, 4, 0);
-      } else if (pieces[i].x == 5 && pieces[i].y == 9) {
-        if (checkTeam(i, 5, 8) != 1) createCandiBox(i, 5, 8);
-        if (checkTeam(i, 6, 8) != 1) createCandiBox(i, 6, 8);
-        if (checkTeam(i, 6, 9) != 1) createCandiBox(i, 6, 9);
-        if (checkTeam(i, 6, 0) != 1) createCandiBox(i, 6, 0);
-        if (checkTeam(i, 5, 0) != 1) createCandiBox(i, 5, 0);
-        if (checkTeam(i, 4, 0) != 1) createCandiBox(i, 4, 0);
-        if (checkTeam(i, 4, 9) != 1) createCandiBox(i, 4, 9);
-        if (checkTeam(i, 4, 8) != 1) createCandiBox(i, 4, 8);
-      } else if (pieces[i].x == 6 && pieces[i].y == 9) {
-        if (checkTeam(i, 6, 8) != 1) createCandiBox(i, 6, 8);
-        if (checkTeam(i, 6, 0) != 1) createCandiBox(i, 6, 0);
-        if (checkTeam(i, 5, 9) != 1) createCandiBox(i, 5, 9);
-      } else if (pieces[i].x == 4 && pieces[i].y == 8) {
-        if (checkTeam(i, 5, 8) != 1) createCandiBox(i, 5, 8);
-        if (checkTeam(i, 5, 9) != 1) createCandiBox(i, 5, 9);
-        if (checkTeam(i, 4, 9) != 1) createCandiBox(i, 4, 9);
-      } else if (pieces[i].x == 5 && pieces[i].y == 8) {
-        if (checkTeam(i, 6, 8) != 1) createCandiBox(i, 6, 8);
-        if (checkTeam(i, 5, 9) != 1) createCandiBox(i, 5, 9);
-        if (checkTeam(i, 4, 8) != 1) createCandiBox(i, 4, 8);
-      } else if (pieces[i].x == 6 && pieces[i].y == 8) {
-        if (checkTeam(i, 6, 9) != 1) createCandiBox(i, 6, 9);
-        if (checkTeam(i, 5, 9) != 1) createCandiBox(i, 5, 9);
-        if (checkTeam(i, 5, 8) != 1) createCandiBox(i, 5, 8);
-      }
-      break;
-    // 상대의 장, 사 이동경로 (상대 궁성: x=4~6, y=1,2,3)
-    case 16: case 25: case 26:
-      if (pieces[i].x == 4 && pieces[i].y == 3) {
-        if (checkTeam(i, 4, 2) != 1) createCandiBox(i, 4, 2);
-        if (checkTeam(i, 5, 2) != 1) createCandiBox(i, 5, 2);
-        if (checkTeam(i, 5, 3) != 1) createCandiBox(i, 5, 3);
-      } else if (pieces[i].x == 5 && pieces[i].y == 3) {
-        if (checkTeam(i, 5, 2) != 1) createCandiBox(i, 5, 2);
-        if (checkTeam(i, 6, 3) != 1) createCandiBox(i, 6, 3);
-        if (checkTeam(i, 4, 3) != 1) createCandiBox(i, 4, 3);
-      } else if (pieces[i].x == 6 && pieces[i].y == 3) {
-        if (checkTeam(i, 6, 2) != 1) createCandiBox(i, 6, 2);
-        if (checkTeam(i, 5, 3) != 1) createCandiBox(i, 5, 3);
-        if (checkTeam(i, 5, 2) != 1) createCandiBox(i, 5, 2);
-      } else if (pieces[i].x == 4 && pieces[i].y == 2) {
-        if (checkTeam(i, 4, 1) != 1) createCandiBox(i, 4, 1);
-        if (checkTeam(i, 5, 2) != 1) createCandiBox(i, 5, 2);
-        if (checkTeam(i, 4, 3) != 1) createCandiBox(i, 4, 3);
-      } else if (pieces[i].x == 5 && pieces[i].y == 2) {
-        if (checkTeam(i, 5, 1) != 1) createCandiBox(i, 5, 1);
-        if (checkTeam(i, 6, 1) != 1) createCandiBox(i, 6, 1);
-        if (checkTeam(i, 6, 2) != 1) createCandiBox(i, 6, 2);
-        if (checkTeam(i, 6, 3) != 1) createCandiBox(i, 6, 3);
-        if (checkTeam(i, 5, 3) != 1) createCandiBox(i, 5, 3);
-        if (checkTeam(i, 4, 3) != 1) createCandiBox(i, 4, 3);
-        if (checkTeam(i, 4, 2) != 1) createCandiBox(i, 4, 2);
-        if (checkTeam(i, 4, 1) != 1) createCandiBox(i, 4, 1);
-      } else if (pieces[i].x == 6 && pieces[i].y == 2) {
-        if (checkTeam(i, 6, 1) != 1) createCandiBox(i, 6, 1);
-        if (checkTeam(i, 6, 3) != 1) createCandiBox(i, 6, 3);
-        if (checkTeam(i, 5, 2) != 1) createCandiBox(i, 5, 2);
-      } else if (pieces[i].x == 4 && pieces[i].y == 1) {
-        if (checkTeam(i, 5, 1) != 1) createCandiBox(i, 5, 1);
-        if (checkTeam(i, 5, 2) != 1) createCandiBox(i, 5, 2);
-        if (checkTeam(i, 4, 2) != 1) createCandiBox(i, 4, 2);
-      } else if (pieces[i].x == 5 && pieces[i].y == 1) {
-        if (checkTeam(i, 6, 1) != 1) createCandiBox(i, 6, 1);
-        if (checkTeam(i, 5, 2) != 1) createCandiBox(i, 5, 2);
-        if (checkTeam(i, 4, 1) != 1) createCandiBox(i, 4, 1);
-      } else if (pieces[i].x == 6 && pieces[i].y == 1) {
-        if (checkTeam(i, 6, 2) != 1) createCandiBox(i, 6, 2);
-        if (checkTeam(i, 5, 2) != 1) createCandiBox(i, 5, 2);
-        if (checkTeam(i, 5, 1) != 1) createCandiBox(i, 5, 1);
-      }
-      break;
+  // 기물 고유 ID 범위에 따라 해당 행마 규칙 함수 분기 호출
+  if (i === 0 || i === 9 || i === 10 || i === 16 || i === 25 || i === 26) {
+    getKingOrGuardMoves(i);
+  } else if (i === 1 || i === 2 || i === 17 || i === 18) {
+    getChariotMoves(i);
+  } else if (i === 3 || i === 4 || i === 19 || i === 20) {
+    getCannonMoves(i);
+  } else if (i === 5 || i === 6 || i === 21 || i === 22) {
+    getHorseMoves(i);
+  } else if (i === 7 || i === 8 || i === 23 || i === 24) {
+    getElephantMoves(i);
+  } else if ((i >= 11 && i <= 15) || (i >= 27 && i <= 31)) {
+    getSoldierMoves(i);
+  }
+}
 
-    // 차 이동경로
-    case 1: case 2: case 17: case 18:
-      for (let x = pieces[i].x - 1; x >= 1; x--) {
-        if (checkTeam(i, x, pieces[i].y) != 1) createCandiBox(i, x, pieces[i].y);
-        if (checkTeam(i, x, pieces[i].y) != 0) break;
-      }
-      for (let x = pieces[i].x + 1; x <= 9; x++) {
-        if (checkTeam(i, x, pieces[i].y) != 1) createCandiBox(i, x, pieces[i].y);
-        if (checkTeam(i, x, pieces[i].y) != 0) break;
-      }
-      // 위 방향 (y 감소: ...3→2→1, 1에서 끝)
-      for (let ty = yPrev(pieces[i].y); ty != -1; ty = yPrev(ty)) {
-        if (checkTeam(i, pieces[i].x, ty) != 1) createCandiBox(i, pieces[i].x, ty);
-        if (checkTeam(i, pieces[i].x, ty) != 0) break;
-      }
-      // 아래 방향 (y 증가: ...8→9→0, 0에서 끝)
-      for (let ty = yNext(pieces[i].y); ty != -1; ty = yNext(ty)) {
-        if (checkTeam(i, pieces[i].x, ty) != 1) createCandiBox(i, pieces[i].x, ty);
-        if (checkTeam(i, pieces[i].x, ty) != 0) break;
-      }
-      // 상대 궁성 대각선 (y=1,2,3 x=4,5,6)
-      if (pieces[i].x == 4 && pieces[i].y == 3) {
-        if (checkTeam(i, 5, 2) != 1) createCandiBox(i, 5, 2);
-        if (checkTeam(i, 5, 2) == 0)
-          if (checkTeam(i, 6, 1) != 1) createCandiBox(i, 6, 1);
-      } else if (pieces[i].x == 6 && pieces[i].y == 3) {
-        if (checkTeam(i, 5, 2) != 1) createCandiBox(i, 5, 2);
-        if (checkTeam(i, 5, 2) == 0)
-          if (checkTeam(i, 4, 1) != 1) createCandiBox(i, 4, 1);
-      } else if (pieces[i].x == 4 && pieces[i].y == 1) {
-        if (checkTeam(i, 5, 2) != 1) createCandiBox(i, 5, 2);
-        if (checkTeam(i, 5, 2) == 0)
-          if (checkTeam(i, 6, 3) != 1) createCandiBox(i, 6, 3);
-      } else if (pieces[i].x == 6 && pieces[i].y == 1) {
-        if (checkTeam(i, 5, 2) != 1) createCandiBox(i, 5, 2);
-        if (checkTeam(i, 5, 2) == 0)
-          if (checkTeam(i, 4, 3) != 1) createCandiBox(i, 4, 3);
-      } else if (pieces[i].x == 5 && pieces[i].y == 2) {
-        if (checkTeam(i, 4, 3) != 1) createCandiBox(i, 4, 3);
-        if (checkTeam(i, 4, 1) != 1) createCandiBox(i, 4, 1);
-        if (checkTeam(i, 6, 3) != 1) createCandiBox(i, 6, 3);
-        if (checkTeam(i, 6, 1) != 1) createCandiBox(i, 6, 1);
-      // 내 궁성 대각선 (y=0,9,8 x=4,5,6)
-      } else if (pieces[i].x == 4 && pieces[i].y == 0) {
-        if (checkTeam(i, 5, 9) != 1) createCandiBox(i, 5, 9);
-        if (checkTeam(i, 5, 9) == 0)
-          if (checkTeam(i, 6, 8) != 1) createCandiBox(i, 6, 8);
-      } else if (pieces[i].x == 6 && pieces[i].y == 0) {
-        if (checkTeam(i, 5, 9) != 1) createCandiBox(i, 5, 9);
-        if (checkTeam(i, 5, 9) == 0)
-          if (checkTeam(i, 4, 8) != 1) createCandiBox(i, 4, 8);
-      } else if (pieces[i].x == 4 && pieces[i].y == 8) {
-        if (checkTeam(i, 5, 9) != 1) createCandiBox(i, 5, 9);
-        if (checkTeam(i, 5, 9) == 0)
-          if (checkTeam(i, 6, 0) != 1) createCandiBox(i, 6, 0);
-      } else if (pieces[i].x == 6 && pieces[i].y == 8) {
-        if (checkTeam(i, 5, 9) != 1) createCandiBox(i, 5, 9);
-        if (checkTeam(i, 5, 9) == 0)
-          if (checkTeam(i, 4, 0) != 1) createCandiBox(i, 4, 0);
-      } else if (pieces[i].x == 5 && pieces[i].y == 9) {
-        if (checkTeam(i, 4, 0) != 1) createCandiBox(i, 4, 0);
-        if (checkTeam(i, 4, 8) != 1) createCandiBox(i, 4, 8);
-        if (checkTeam(i, 6, 0) != 1) createCandiBox(i, 6, 0);
-        if (checkTeam(i, 6, 8) != 1) createCandiBox(i, 6, 8);
-      }
-      break;
+/**
+ * 궁(장) 및 사의 행마 계산 (궁성 내부 이동)
+ * @param {number} i - 기물 ID
+ */
+function getKingOrGuardMoves(i) {
+  // 초나라 궁/사 (내 궁성: x=4~6, y=0,9,8)
+  if (i === 0 || i === 9 || i === 10) {
+    const px = pieces[i].x;
+    const py = pieces[i].y;
+    if (px === 4 && py === 0) {
+      if (checkTeam(i, 4, 9) !== 1) createCandiBox(i, 4, 9);
+      if (checkTeam(i, 5, 9) !== 1) createCandiBox(i, 5, 9);
+      if (checkTeam(i, 5, 0) !== 1) createCandiBox(i, 5, 0);
+    } else if (px === 5 && py === 0) {
+      if (checkTeam(i, 5, 9) !== 1) createCandiBox(i, 5, 9);
+      if (checkTeam(i, 6, 0) !== 1) createCandiBox(i, 6, 0);
+      if (checkTeam(i, 4, 0) !== 1) createCandiBox(i, 4, 0);
+    } else if (px === 6 && py === 0) {
+      if (checkTeam(i, 6, 9) !== 1) createCandiBox(i, 6, 9);
+      if (checkTeam(i, 5, 0) !== 1) createCandiBox(i, 5, 0);
+      if (checkTeam(i, 5, 9) !== 1) createCandiBox(i, 5, 9);
+    } else if (px === 4 && py === 9) {
+      if (checkTeam(i, 4, 8) !== 1) createCandiBox(i, 4, 8);
+      if (checkTeam(i, 5, 9) !== 1) createCandiBox(i, 5, 9);
+      if (checkTeam(i, 4, 0) !== 1) createCandiBox(i, 4, 0);
+    } else if (px === 5 && py === 9) {
+      if (checkTeam(i, 5, 8) !== 1) createCandiBox(i, 5, 8);
+      if (checkTeam(i, 6, 8) !== 1) createCandiBox(i, 6, 8);
+      if (checkTeam(i, 6, 9) !== 1) createCandiBox(i, 6, 9);
+      if (checkTeam(i, 6, 0) !== 1) createCandiBox(i, 6, 0);
+      if (checkTeam(i, 5, 0) !== 1) createCandiBox(i, 5, 0);
+      if (checkTeam(i, 4, 0) !== 1) createCandiBox(i, 4, 0);
+      if (checkTeam(i, 4, 9) !== 1) createCandiBox(i, 4, 9);
+      if (checkTeam(i, 4, 8) !== 1) createCandiBox(i, 4, 8);
+    } else if (px === 6 && py === 9) {
+      if (checkTeam(i, 6, 8) !== 1) createCandiBox(i, 6, 8);
+      if (checkTeam(i, 6, 0) !== 1) createCandiBox(i, 6, 0);
+      if (checkTeam(i, 5, 9) !== 1) createCandiBox(i, 5, 9);
+    } else if (px === 4 && py === 8) {
+      if (checkTeam(i, 5, 8) !== 1) createCandiBox(i, 5, 8);
+      if (checkTeam(i, 5, 9) !== 1) createCandiBox(i, 5, 9);
+      if (checkTeam(i, 4, 9) !== 1) createCandiBox(i, 4, 9);
+    } else if (px === 5 && py === 8) {
+      if (checkTeam(i, 6, 8) !== 1) createCandiBox(i, 6, 8);
+      if (checkTeam(i, 5, 9) !== 1) createCandiBox(i, 5, 9);
+      if (checkTeam(i, 4, 8) !== 1) createCandiBox(i, 4, 8);
+    } else if (px === 6 && py === 8) {
+      if (checkTeam(i, 6, 9) !== 1) createCandiBox(i, 6, 9);
+      if (checkTeam(i, 5, 9) !== 1) createCandiBox(i, 5, 9);
+      if (checkTeam(i, 5, 8) !== 1) createCandiBox(i, 5, 8);
+    }
+  }
+  // 한나라 궁/사 (상대 궁성: x=4~6, y=1,2,3)
+  else {
+    const px = pieces[i].x;
+    const py = pieces[i].y;
+    if (px === 4 && py === 3) {
+      if (checkTeam(i, 4, 2) !== 1) createCandiBox(i, 4, 2);
+      if (checkTeam(i, 5, 2) !== 1) createCandiBox(i, 5, 2);
+      if (checkTeam(i, 5, 3) !== 1) createCandiBox(i, 5, 3);
+    } else if (px === 5 && py === 3) {
+      if (checkTeam(i, 5, 2) !== 1) createCandiBox(i, 5, 2);
+      if (checkTeam(i, 6, 3) !== 1) createCandiBox(i, 6, 3);
+      if (checkTeam(i, 4, 3) !== 1) createCandiBox(i, 4, 3);
+    } else if (px === 6 && py === 3) {
+      if (checkTeam(i, 6, 2) !== 1) createCandiBox(i, 6, 2);
+      if (checkTeam(i, 5, 3) !== 1) createCandiBox(i, 5, 3);
+      if (checkTeam(i, 5, 2) !== 1) createCandiBox(i, 5, 2);
+    } else if (px === 4 && py === 2) {
+      if (checkTeam(i, 4, 1) !== 1) createCandiBox(i, 4, 1);
+      if (checkTeam(i, 5, 2) !== 1) createCandiBox(i, 5, 2);
+      if (checkTeam(i, 4, 3) !== 1) createCandiBox(i, 4, 3);
+    } else if (px === 5 && py === 2) {
+      if (checkTeam(i, 5, 1) !== 1) createCandiBox(i, 5, 1);
+      if (checkTeam(i, 6, 1) !== 1) createCandiBox(i, 6, 1);
+      if (checkTeam(i, 6, 2) !== 1) createCandiBox(i, 6, 2);
+      if (checkTeam(i, 6, 3) !== 1) createCandiBox(i, 6, 3);
+      if (checkTeam(i, 5, 3) !== 1) createCandiBox(i, 5, 3);
+      if (checkTeam(i, 4, 3) !== 1) createCandiBox(i, 4, 3);
+      if (checkTeam(i, 4, 2) !== 1) createCandiBox(i, 4, 2);
+      if (checkTeam(i, 4, 1) !== 1) createCandiBox(i, 4, 1);
+    } else if (px === 6 && py === 2) {
+      if (checkTeam(i, 6, 1) !== 1) createCandiBox(i, 6, 1);
+      if (checkTeam(i, 6, 3) !== 1) createCandiBox(i, 6, 3);
+      if (checkTeam(i, 5, 2) !== 1) createCandiBox(i, 5, 2);
+    } else if (px === 4 && py === 1) {
+      if (checkTeam(i, 5, 1) !== 1) createCandiBox(i, 5, 1);
+      if (checkTeam(i, 5, 2) !== 1) createCandiBox(i, 5, 2);
+      if (checkTeam(i, 4, 2) !== 1) createCandiBox(i, 4, 2);
+    } else if (px === 5 && py === 1) {
+      if (checkTeam(i, 6, 1) !== 1) createCandiBox(i, 6, 1);
+      if (checkTeam(i, 5, 2) !== 1) createCandiBox(i, 5, 2);
+      if (checkTeam(i, 4, 1) !== 1) createCandiBox(i, 4, 1);
+    } else if (px === 6 && py === 1) {
+      if (checkTeam(i, 6, 2) !== 1) createCandiBox(i, 6, 2);
+      if (checkTeam(i, 5, 2) !== 1) createCandiBox(i, 5, 2);
+      if (checkTeam(i, 5, 1) !== 1) createCandiBox(i, 5, 1);
+    }
+  }
+}
 
-    // 포 이동경로
-    case 3: case 4: case 19: case 20:
-      var bridge = false;
-      for (let x = pieces[i].x - 1; x >= 1; x--) {
-        let t = whoIsit(x, pieces[i].y);
-        if (isPo(t)) break;
-        if (bridge == false) {
-          if (t < 32) bridge = true;
-        } else {
-          if (isEnemy(i, t) != 1) {
-            createCandiBox(i, x, pieces[i].y);
-            if (isEnemy(i, t) == 2) break;
-          } else
-            break;
-        }
-      }
-      bridge = false;
-      for (let x = pieces[i].x + 1; x <= 9; x++) {
-        let t = whoIsit(x, pieces[i].y);
-        if (isPo(t)) break;
-        if (bridge == false) {
-          if (t < 32) bridge = true;
-        } else {
-          if (isEnemy(i, t) != 1) {
-            createCandiBox(i, x, pieces[i].y);
-            if (isEnemy(i, t) == 2) break;
-          } else
-            break;
-        }
-      }
-      bridge = false;
-      // 위 방향 (y 감소)
-      for (let ty = yPrev(pieces[i].y); ty != -1; ty = yPrev(ty)) {
-        let t = whoIsit(pieces[i].x, ty);
-        if (isPo(t)) break;
-        if (bridge == false) {
-          if (t < 32) bridge = true;
-        } else {
-          if (isEnemy(i, t) != 1) {
-            createCandiBox(i, pieces[i].x, ty);
-            if (isEnemy(i, t) == 2) break;
-          } else
-            break;
-        }
-      }
-      bridge = false;
-      // 아래 방향 (y 증가)
-      for (let ty = yNext(pieces[i].y); ty != -1; ty = yNext(ty)) {
-        let t = whoIsit(pieces[i].x, ty);
-        if (isPo(t)) break;
-        if (bridge == false) {
-          if (t < 32) bridge = true;
-        } else {
-          if (isEnemy(i, t) != 1) {
-            createCandiBox(i, pieces[i].x, ty);
-            if (isEnemy(i, t) == 2) break;
-          } else
-            break;
-        }
-      }
-      // 내 궁성 포 대각선 (y=0,9,8)
-      if (pieces[i].x == 4 && pieces[i].y == 0) {
-        let t = whoIsit(5, 9);
-        if (!isPo(t) && t < 32 && (checkTeam(i, 6, 8) != 1) && !isPo(whoIsit(6, 8))) createCandiBox(i, 6, 8);
-      } else if (pieces[i].x == 6 && pieces[i].y == 0) {
-        let t = whoIsit(5, 9);
-        if (!isPo(t) && t < 32 && (checkTeam(i, 4, 8) != 1) && !isPo(whoIsit(4, 8))) createCandiBox(i, 4, 8);
-      } else if (pieces[i].x == 4 && pieces[i].y == 8) {
-        let t = whoIsit(5, 9);
-        if (!isPo(t) && t < 32 && (checkTeam(i, 6, 0) != 1) && !isPo(whoIsit(6, 0))) createCandiBox(i, 6, 0);
-      } else if (pieces[i].x == 6 && pieces[i].y == 8) {
-        let t = whoIsit(5, 9);
-        if (!isPo(t) && t < 32 && (checkTeam(i, 4, 0) != 1) && !isPo(whoIsit(4, 0))) createCandiBox(i, 4, 0);
-      // 상대 궁성 포 대각선 (y=1,2,3)
-      } else if (pieces[i].x == 4 && pieces[i].y == 1) {
-        let t = whoIsit(5, 2);
-        if (!isPo(t) && t < 32 && (checkTeam(i, 6, 3) != 1) && !isPo(whoIsit(6, 3))) createCandiBox(i, 6, 3);
-      } else if (pieces[i].x == 6 && pieces[i].y == 1) {
-        let t = whoIsit(5, 2);
-        if (!isPo(t) && t < 32 && (checkTeam(i, 4, 3) != 1) && !isPo(whoIsit(4, 3))) createCandiBox(i, 4, 3);
-      } else if (pieces[i].x == 4 && pieces[i].y == 3) {
-        let t = whoIsit(5, 2);
-        if (!isPo(t) && t < 32 && (checkTeam(i, 6, 1) != 1) && !isPo(whoIsit(6, 1))) createCandiBox(i, 6, 1);
-      } else if (pieces[i].x == 6 && pieces[i].y == 3) {
-        let t = whoIsit(5, 2);
-        if (!isPo(t) && t < 32 && (checkTeam(i, 4, 1) != 1) && !isPo(whoIsit(4, 1))) createCandiBox(i, 4, 1);
-      }
-      break;
+/**
+ * 차(車)의 행마 계산 (직진 및 궁성 대각선)
+ * @param {number} i - 기물 ID
+ */
+function getChariotMoves(i) {
+  const px = pieces[i].x;
+  const py = pieces[i].y;
+  
+  // 가로 방향 탐색
+  for (let x = px - 1; x >= 1; x--) {
+    if (checkTeam(i, x, py) !== 1) createCandiBox(i, x, py);
+    if (checkTeam(i, x, py) !== 0) break;
+  }
+  for (let x = px + 1; x <= 9; x++) {
+    if (checkTeam(i, x, py) !== 1) createCandiBox(i, x, py);
+    if (checkTeam(i, x, py) !== 0) break;
+  }
+  
+  // 세로 방향 탐색
+  for (let ty = yPrev(py); ty !== -1; ty = yPrev(ty)) {
+    if (checkTeam(i, px, ty) !== 1) createCandiBox(i, px, ty);
+    if (checkTeam(i, px, ty) !== 0) break;
+  }
+  for (let ty = yNext(py); ty !== -1; ty = yNext(ty)) {
+    if (checkTeam(i, px, ty) !== 1) createCandiBox(i, px, ty);
+    if (checkTeam(i, px, ty) !== 0) break;
+  }
+  
+  // 상대 궁성 대각선 행마 (y=1,2,3 x=4,5,6)
+  if (px === 4 && py === 3) {
+    if (checkTeam(i, 5, 2) !== 1) createCandiBox(i, 5, 2);
+    if (checkTeam(i, 5, 2) === 0) {
+      if (checkTeam(i, 6, 1) !== 1) createCandiBox(i, 6, 1);
+    }
+  } else if (px === 6 && py === 3) {
+    if (checkTeam(i, 5, 2) !== 1) createCandiBox(i, 5, 2);
+    if (checkTeam(i, 5, 2) === 0) {
+      if (checkTeam(i, 4, 1) !== 1) createCandiBox(i, 4, 1);
+    }
+  } else if (px === 4 && py === 1) {
+    if (checkTeam(i, 5, 2) !== 1) createCandiBox(i, 5, 2);
+    if (checkTeam(i, 5, 2) === 0) {
+      if (checkTeam(i, 6, 3) !== 1) createCandiBox(i, 6, 3);
+    }
+  } else if (px === 6 && py === 1) {
+    if (checkTeam(i, 5, 2) !== 1) createCandiBox(i, 5, 2);
+    if (checkTeam(i, 5, 2) === 0) {
+      if (checkTeam(i, 4, 3) !== 1) createCandiBox(i, 4, 3);
+    }
+  } else if (px === 5 && py === 2) {
+    if (checkTeam(i, 4, 3) !== 1) createCandiBox(i, 4, 3);
+    if (checkTeam(i, 4, 1) !== 1) createCandiBox(i, 4, 1);
+    if (checkTeam(i, 6, 3) !== 1) createCandiBox(i, 6, 3);
+    if (checkTeam(i, 6, 1) !== 1) createCandiBox(i, 6, 1);
+  }
+  // 내 궁성 대각선 행마 (y=0,9,8 x=4,5,6)
+  else if (px === 4 && py === 0) {
+    if (checkTeam(i, 5, 9) !== 1) createCandiBox(i, 5, 9);
+    if (checkTeam(i, 5, 9) === 0) {
+      if (checkTeam(i, 6, 8) !== 1) createCandiBox(i, 6, 8);
+    }
+  } else if (px === 6 && py === 0) {
+    if (checkTeam(i, 5, 9) !== 1) createCandiBox(i, 5, 9);
+    if (checkTeam(i, 5, 9) === 0) {
+      if (checkTeam(i, 4, 8) !== 1) createCandiBox(i, 4, 8);
+    }
+  } else if (px === 4 && py === 8) {
+    if (checkTeam(i, 5, 9) !== 1) createCandiBox(i, 5, 9);
+    if (checkTeam(i, 5, 9) === 0) {
+      if (checkTeam(i, 6, 0) !== 1) createCandiBox(i, 6, 0);
+    }
+  } else if (px === 6 && py === 8) {
+    if (checkTeam(i, 5, 9) !== 1) createCandiBox(i, 5, 9);
+    if (checkTeam(i, 5, 9) === 0) {
+      if (checkTeam(i, 4, 0) !== 1) createCandiBox(i, 4, 0);
+    }
+  } else if (px === 5 && py === 9) {
+    if (checkTeam(i, 4, 0) !== 1) createCandiBox(i, 4, 0);
+    if (checkTeam(i, 4, 8) !== 1) createCandiBox(i, 4, 8);
+    if (checkTeam(i, 6, 0) !== 1) createCandiBox(i, 6, 0);
+    if (checkTeam(i, 6, 8) !== 1) createCandiBox(i, 6, 8);
+  }
+}
 
-    // 마 이동경로
-    case 5: case 6: case 21: case 22:
-      if (whoIsit(pieces[i].x - 1, pieces[i].y) >= 32) {
-        if (isEnemy(i, whoIsit(pieces[i].x - 2, yPrev(pieces[i].y) == -1 ? -1 : yPrev(pieces[i].y))) != 1 && yPrev(pieces[i].y) != -1) createCandiBox(i, pieces[i].x - 2, yPrev(pieces[i].y));
-        if (isEnemy(i, whoIsit(pieces[i].x - 2, yNext(pieces[i].y) == -1 ? -1 : yNext(pieces[i].y))) != 1 && yNext(pieces[i].y) != -1) createCandiBox(i, pieces[i].x - 2, yNext(pieces[i].y));
+/**
+ * 포(包)의 행마 계산 (도약 행마, 포끼리 차단)
+ * @param {number} i - 기물 ID
+ */
+function getCannonMoves(i) {
+  const px = pieces[i].x;
+  const py = pieces[i].y;
+  let bridge = false;
+  
+  // 가로 왼쪽 탐색
+  for (let x = px - 1; x >= 1; x--) {
+    let t = whoIsit(x, py);
+    if (isPo(t)) break; // 포는 포를 다리로 삼을 수 없고 포를 잡을 수 없음
+    if (bridge === false) {
+      if (t < 32) bridge = true;
+    } else {
+      if (isEnemy(i, t) !== 1) {
+        createCandiBox(i, x, py);
+        if (isEnemy(i, t) === 2) break; // 적 기물을 잡으면 탐색 종료
+      } else {
+        break;
       }
-      if (whoIsit(pieces[i].x + 1, pieces[i].y) >= 32) {
-        if (isEnemy(i, whoIsit(pieces[i].x + 2, yPrev(pieces[i].y) == -1 ? -1 : yPrev(pieces[i].y))) != 1 && yPrev(pieces[i].y) != -1) createCandiBox(i, pieces[i].x + 2, yPrev(pieces[i].y));
-        if (isEnemy(i, whoIsit(pieces[i].x + 2, yNext(pieces[i].y) == -1 ? -1 : yNext(pieces[i].y))) != 1 && yNext(pieces[i].y) != -1) createCandiBox(i, pieces[i].x + 2, yNext(pieces[i].y));
+    }
+  }
+  
+  // 가로 오른쪽 탐색
+  bridge = false;
+  for (let x = px + 1; x <= 9; x++) {
+    let t = whoIsit(x, py);
+    if (isPo(t)) break;
+    if (bridge === false) {
+      if (t < 32) bridge = true;
+    } else {
+      if (isEnemy(i, t) !== 1) {
+        createCandiBox(i, x, py);
+        if (isEnemy(i, t) === 2) break;
+      } else {
+        break;
       }
-      {
-        let py = yPrev(pieces[i].y);
-        if (py != -1 && whoIsit(pieces[i].x, py) >= 32) {
-          let ppy = yPrev(py);
-          if (ppy != -1) {
-            if (isEnemy(i, whoIsit(pieces[i].x - 1, ppy)) != 1) createCandiBox(i, pieces[i].x - 1, ppy);
-            if (isEnemy(i, whoIsit(pieces[i].x + 1, ppy)) != 1) createCandiBox(i, pieces[i].x + 1, ppy);
-          }
-        }
+    }
+  }
+  
+  // 세로 위쪽 탐색
+  bridge = false;
+  for (let ty = yPrev(py); ty !== -1; ty = yPrev(ty)) {
+    let t = whoIsit(px, ty);
+    if (isPo(t)) break;
+    if (bridge === false) {
+      if (t < 32) bridge = true;
+    } else {
+      if (isEnemy(i, t) !== 1) {
+        createCandiBox(i, px, ty);
+        if (isEnemy(i, t) === 2) break;
+      } else {
+        break;
       }
-      {
-        let ny = yNext(pieces[i].y);
-        if (ny != -1 && whoIsit(pieces[i].x, ny) >= 32) {
-          let nny = yNext(ny);
-          if (nny != -1) {
-            if (isEnemy(i, whoIsit(pieces[i].x - 1, nny)) != 1) createCandiBox(i, pieces[i].x - 1, nny);
-            if (isEnemy(i, whoIsit(pieces[i].x + 1, nny)) != 1) createCandiBox(i, pieces[i].x + 1, nny);
-          }
-        }
+    }
+  }
+  
+  // 세로 아래쪽 탐색
+  bridge = false;
+  for (let ty = yNext(py); ty !== -1; ty = yNext(ty)) {
+    let t = whoIsit(px, ty);
+    if (isPo(t)) break;
+    if (bridge === false) {
+      if (t < 32) bridge = true;
+    } else {
+      if (isEnemy(i, t) !== 1) {
+        createCandiBox(i, px, ty);
+        if (isEnemy(i, t) === 2) break;
+      } else {
+        break;
       }
-      break;
+    }
+  }
+  
+  // 내 궁성 대각선 포 도약 (y=0,9,8)
+  if (px === 4 && py === 0) {
+    let t = whoIsit(5, 9);
+    if (!isPo(t) && t < 32 && (checkTeam(i, 6, 8) !== 1) && !isPo(whoIsit(6, 8))) createCandiBox(i, 6, 8);
+  } else if (px === 6 && py === 0) {
+    let t = whoIsit(5, 9);
+    if (!isPo(t) && t < 32 && (checkTeam(i, 4, 8) !== 1) && !isPo(whoIsit(4, 8))) createCandiBox(i, 4, 8);
+  } else if (px === 4 && py === 8) {
+    let t = whoIsit(5, 9);
+    if (!isPo(t) && t < 32 && (checkTeam(i, 6, 0) !== 1) && !isPo(whoIsit(6, 0))) createCandiBox(i, 6, 0);
+  } else if (px === 6 && py === 8) {
+    let t = whoIsit(5, 9);
+    if (!isPo(t) && t < 32 && (checkTeam(i, 4, 0) !== 1) && !isPo(whoIsit(4, 0))) createCandiBox(i, 4, 0);
+  }
+  // 상대 궁성 대각선 포 도약 (y=1,2,3)
+  else if (px === 4 && py === 1) {
+    let t = whoIsit(5, 2);
+    if (!isPo(t) && t < 32 && (checkTeam(i, 6, 3) !== 1) && !isPo(whoIsit(6, 3))) createCandiBox(i, 6, 3);
+  } else if (px === 6 && py === 1) {
+    let t = whoIsit(5, 2);
+    if (!isPo(t) && t < 32 && (checkTeam(i, 4, 3) !== 1) && !isPo(whoIsit(4, 3))) createCandiBox(i, 4, 3);
+  } else if (px === 4 && py === 3) {
+    let t = whoIsit(5, 2);
+    if (!isPo(t) && t < 32 && (checkTeam(i, 6, 1) !== 1) && !isPo(whoIsit(6, 1))) createCandiBox(i, 6, 1);
+  } else if (px === 6 && py === 3) {
+    let t = whoIsit(5, 2);
+    if (!isPo(t) && t < 32 && (checkTeam(i, 4, 1) !== 1) && !isPo(whoIsit(4, 1))) createCandiBox(i, 4, 1);
+  }
+}
 
-    // 상 이동경로
-    case 7: case 8: case 23: case 24:
-      if (whoIsit(pieces[i].x - 1, pieces[i].y) >= 32) {
-        let py = yPrev(pieces[i].y);
-        if (py != -1 && whoIsit(pieces[i].x - 2, py) >= 32) {
-          let ppy = yPrev(py);
-          if (ppy != -1 && isEnemy(i, whoIsit(pieces[i].x - 3, ppy)) != 1) createCandiBox(i, pieces[i].x - 3, ppy);
-        }
-        let ny = yNext(pieces[i].y);
-        if (ny != -1 && whoIsit(pieces[i].x - 2, ny) >= 32) {
-          let nny = yNext(ny);
-          if (nny != -1 && isEnemy(i, whoIsit(pieces[i].x - 3, nny)) != 1) createCandiBox(i, pieces[i].x - 3, nny);
-        }
+/**
+ * 마(馬)의 행마 계산 (멱 검사 포함)
+ * @param {number} i - 기물 ID
+ */
+function getHorseMoves(i) {
+  const px = pieces[i].x;
+  const py = pieces[i].y;
+  
+  // 좌측 멱 검사 후 L자 이동
+  if (whoIsit(px - 1, py) >= 32) {
+    let prevY = yPrev(py);
+    let nextY = yNext(py);
+    if (prevY !== -1 && isEnemy(i, whoIsit(px - 2, prevY)) !== 1) createCandiBox(i, px - 2, prevY);
+    if (nextY !== -1 && isEnemy(i, whoIsit(px - 2, nextY)) !== 1) createCandiBox(i, px - 2, nextY);
+  }
+  // 우측 멱 검사 후 L자 이동
+  if (whoIsit(px + 1, py) >= 32) {
+    let prevY = yPrev(py);
+    let nextY = yNext(py);
+    if (prevY !== -1 && isEnemy(i, whoIsit(px + 2, prevY)) !== 1) createCandiBox(i, px + 2, prevY);
+    if (nextY !== -1 && isEnemy(i, whoIsit(px + 2, nextY)) !== 1) createCandiBox(i, px + 2, nextY);
+  }
+  // 위쪽 멱 검사 후 L자 이동
+  {
+    let py1 = yPrev(py);
+    if (py1 !== -1 && whoIsit(px, py1) >= 32) {
+      let py2 = yPrev(py1);
+      if (py2 !== -1) {
+        if (isEnemy(i, whoIsit(px - 1, py2)) !== 1) createCandiBox(i, px - 1, py2);
+        if (isEnemy(i, whoIsit(px + 1, py2)) !== 1) createCandiBox(i, px + 1, py2);
       }
-      if (whoIsit(pieces[i].x + 1, pieces[i].y) >= 32) {
-        let py = yPrev(pieces[i].y);
-        if (py != -1 && whoIsit(pieces[i].x + 2, py) >= 32) {
-          let ppy = yPrev(py);
-          if (ppy != -1 && isEnemy(i, whoIsit(pieces[i].x + 3, ppy)) != 1) createCandiBox(i, pieces[i].x + 3, ppy);
-        }
-        let ny = yNext(pieces[i].y);
-        if (ny != -1 && whoIsit(pieces[i].x + 2, ny) >= 32) {
-          let nny = yNext(ny);
-          if (nny != -1 && isEnemy(i, whoIsit(pieces[i].x + 3, nny)) != 1) createCandiBox(i, pieces[i].x + 3, nny);
-        }
+    }
+  }
+  // 아래쪽 멱 검사 후 L자 이동
+  {
+    let ny1 = yNext(py);
+    if (ny1 !== -1 && whoIsit(px, ny1) >= 32) {
+      let ny2 = yNext(ny1);
+      if (ny2 !== -1) {
+        if (isEnemy(i, whoIsit(px - 1, ny2)) !== 1) createCandiBox(i, px - 1, ny2);
+        if (isEnemy(i, whoIsit(px + 1, ny2)) !== 1) createCandiBox(i, px + 1, ny2);
       }
-      {
-        let py = yPrev(pieces[i].y);
-        if (py != -1 && whoIsit(pieces[i].x, py) >= 32) {
-          let ppy = yPrev(py);
-          if (ppy != -1) {
-            if (whoIsit(pieces[i].x - 1, ppy) >= 32) {
-              let pppy = yPrev(ppy);
-              if (pppy != -1 && isEnemy(i, whoIsit(pieces[i].x - 2, pppy)) != 1) createCandiBox(i, pieces[i].x - 2, pppy);
-            }
-            if (whoIsit(pieces[i].x + 1, ppy) >= 32) {
-              let pppy = yPrev(ppy);
-              if (pppy != -1 && isEnemy(i, whoIsit(pieces[i].x + 2, pppy)) != 1) createCandiBox(i, pieces[i].x + 2, pppy);
-            }
-          }
-        }
-      }
-      {
-        let ny = yNext(pieces[i].y);
-        if (ny != -1 && whoIsit(pieces[i].x, ny) >= 32) {
-          let nny = yNext(ny);
-          if (nny != -1) {
-            if (whoIsit(pieces[i].x - 1, nny) >= 32) {
-              let nnny = yNext(nny);
-              if (nnny != -1 && isEnemy(i, whoIsit(pieces[i].x - 2, nnny)) != 1) createCandiBox(i, pieces[i].x - 2, nnny);
-            }
-            if (whoIsit(pieces[i].x + 1, nny) >= 32) {
-              let nnny = yNext(nny);
-              if (nnny != -1 && isEnemy(i, whoIsit(pieces[i].x + 2, nnny)) != 1) createCandiBox(i, pieces[i].x + 2, nnny);
-            }
-          }
-        }
-      }
-      break;
+    }
+  }
+}
 
-    // 졸/병 이동경로
-    case 11: case 12: case 13: case 14: case 15:
-    case 27: case 28: case 29: case 30: case 31:
-      if (isEnemy(i, whoIsit(pieces[i].x - 1, pieces[i].y)) != 1) createCandiBox(i, pieces[i].x - 1, pieces[i].y);
-      if (isEnemy(i, whoIsit(pieces[i].x + 1, pieces[i].y)) != 1) createCandiBox(i, pieces[i].x + 1, pieces[i].y);
-      if (i > 16) {
-        // 상대 졸: 아래로 전진 (y 증가)
-        let ny = yNext(pieces[i].y);
-        if (ny != -1 && isEnemy(i, whoIsit(pieces[i].x, ny)) != 1) createCandiBox(i, pieces[i].x, ny);
-        // 내 궁성(y=0,9,8) 대각선
-        if (pieces[i].x == 4 && pieces[i].y == 8) {
-          if (isEnemy(i, whoIsit(5, 9)) != 1) createCandiBox(i, 5, 9);
-        } else if (pieces[i].x == 6 && pieces[i].y == 8) {
-          if (isEnemy(i, whoIsit(5, 9)) != 1) createCandiBox(i, 5, 9);
-        } else if (pieces[i].x == 5 && pieces[i].y == 9) {
-          if (isEnemy(i, whoIsit(4, 0)) != 1) createCandiBox(i, 4, 0);
-          if (isEnemy(i, whoIsit(6, 0)) != 1) createCandiBox(i, 6, 0);
+/**
+ * 상(象)의 행마 계산 (이중 멱 검사 포함)
+ * @param {number} i - 기물 ID
+ */
+function getElephantMoves(i) {
+  const px = pieces[i].x;
+  const py = pieces[i].y;
+  
+  // 좌측 멱 검사 후 대각선 행마
+  if (whoIsit(px - 1, py) >= 32) {
+    let py1 = yPrev(py);
+    if (py1 !== -1 && whoIsit(px - 2, py1) >= 32) {
+      let py2 = yPrev(py1);
+      if (py2 !== -1 && isEnemy(i, whoIsit(px - 3, py2)) !== 1) createCandiBox(i, px - 3, py2);
+    }
+    let ny1 = yNext(py);
+    if (ny1 !== -1 && whoIsit(px - 2, ny1) >= 32) {
+      let ny2 = yNext(ny1);
+      if (ny2 !== -1 && isEnemy(i, whoIsit(px - 3, ny2)) !== 1) createCandiBox(i, px - 3, ny2);
+    }
+  }
+  // 우측 멱 검사 후 대각선 행마
+  if (whoIsit(px + 1, py) >= 32) {
+    let py1 = yPrev(py);
+    if (py1 !== -1 && whoIsit(px + 2, py1) >= 32) {
+      let py2 = yPrev(py1);
+      if (py2 !== -1 && isEnemy(i, whoIsit(px + 3, py2)) !== 1) createCandiBox(i, px + 3, py2);
+    }
+    let ny1 = yNext(py);
+    if (ny1 !== -1 && whoIsit(px + 2, ny1) >= 32) {
+      let ny2 = yNext(ny1);
+      if (ny2 !== -1 && isEnemy(i, whoIsit(px + 3, ny2)) !== 1) createCandiBox(i, px + 3, ny2);
+    }
+  }
+  // 위쪽 멱 검사 후 대각선 행마
+  {
+    let py1 = yPrev(py);
+    if (py1 !== -1 && whoIsit(px, py1) >= 32) {
+      let py2 = yPrev(py1);
+      if (py2 !== -1) {
+        if (whoIsit(px - 1, py2) >= 32) {
+          let py3 = yPrev(py2);
+          if (py3 !== -1 && isEnemy(i, whoIsit(px - 2, py3)) !== 1) createCandiBox(i, px - 2, py3);
+        }
+        if (whoIsit(px + 1, py2) >= 32) {
+          let py3 = yPrev(py2);
+          if (py3 !== -1 && isEnemy(i, whoIsit(px + 2, py3)) !== 1) createCandiBox(i, px + 2, py3);
         }
       }
-      if (i < 16) {
-        // 나의 졸: 위로 전진 (y 감소)
-        let py = yPrev(pieces[i].y);
-        if (py != -1 && isEnemy(i, whoIsit(pieces[i].x, py)) != 1) createCandiBox(i, pieces[i].x, py);
-        // 상대 궁성(y=1,2,3) 대각선
-        if (pieces[i].x == 4 && pieces[i].y == 3) {
-          if (isEnemy(i, whoIsit(5, 2)) != 1) createCandiBox(i, 5, 2);
-        } else if (pieces[i].x == 6 && pieces[i].y == 3) {
-          if (isEnemy(i, whoIsit(5, 2)) != 1) createCandiBox(i, 5, 2);
-        } else if (pieces[i].x == 5 && pieces[i].y == 2) {
-          if (isEnemy(i, whoIsit(4, 1)) != 1) createCandiBox(i, 4, 1);
-          if (isEnemy(i, whoIsit(6, 1)) != 1) createCandiBox(i, 6, 1);
+    }
+  }
+  // 아래쪽 멱 검사 후 대각선 행마
+  {
+    let ny1 = yNext(py);
+    if (ny1 !== -1 && whoIsit(px, ny1) >= 32) {
+      let ny2 = yNext(ny1);
+      if (ny2 !== -1) {
+        if (whoIsit(px - 1, ny2) >= 32) {
+          let ny3 = yNext(ny2);
+          if (ny3 !== -1 && isEnemy(i, whoIsit(px - 2, ny3)) !== 1) createCandiBox(i, px - 2, ny3);
+        }
+        if (whoIsit(px + 1, ny2) >= 32) {
+          let ny3 = yNext(ny2);
+          if (ny3 !== -1 && isEnemy(i, whoIsit(px + 2, ny3)) !== 1) createCandiBox(i, px + 2, ny3);
         }
       }
-      break;
-    default:
+    }
+  }
+}
+
+/**
+ * 졸/병(卒/兵)의 행마 계산 (전진, 좌우 및 궁성 사선 전진)
+ * @param {number} i - 기물 ID
+ */
+function getSoldierMoves(i) {
+  const px = pieces[i].x;
+  const py = pieces[i].y;
+  
+  // 좌우 탐색
+  if (isEnemy(i, whoIsit(px - 1, py)) !== 1) createCandiBox(i, px - 1, py);
+  if (isEnemy(i, whoIsit(px + 1, py)) !== 1) createCandiBox(i, px + 1, py);
+  
+  // 한나라 병 (ID 17~31, y 증가 방향으로 전진)
+  if (i > 16) {
+    let ny = yNext(py);
+    if (ny !== -1 && isEnemy(i, whoIsit(px, ny)) !== 1) createCandiBox(i, px, ny);
+    // 내 궁성(y=0,9,8 x=4,5,6) 대각선 길목 추가
+    if (px === 4 && py === 8) {
+      if (isEnemy(i, whoIsit(5, 9)) !== 1) createCandiBox(i, 5, 9);
+    } else if (px === 6 && py === 8) {
+      if (isEnemy(i, whoIsit(5, 9)) !== 1) createCandiBox(i, 5, 9);
+    } else if (px === 5 && py === 9) {
+      if (isEnemy(i, whoIsit(4, 0)) !== 1) createCandiBox(i, 4, 0);
+      if (isEnemy(i, whoIsit(6, 0)) !== 1) createCandiBox(i, 6, 0);
+    }
+  }
+  // 초나라 졸 (ID 0~15, y 감소 방향으로 전진)
+  else {
+    let prevY = yPrev(py);
+    if (prevY !== -1 && isEnemy(i, whoIsit(px, prevY)) !== 1) createCandiBox(i, px, prevY);
+    // 상대 궁성(y=1,2,3 x=4,5,6) 대각선 길목 추가
+    if (px === 4 && py === 3) {
+      if (isEnemy(i, whoIsit(5, 2)) !== 1) createCandiBox(i, 5, 2);
+    } else if (px === 6 && py === 3) {
+      if (isEnemy(i, whoIsit(5, 2)) !== 1) createCandiBox(i, 5, 2);
+    } else if (px === 5 && py === 2) {
+      if (isEnemy(i, whoIsit(4, 1)) !== 1) createCandiBox(i, 4, 1);
+      if (isEnemy(i, whoIsit(6, 1)) !== 1) createCandiBox(i, 6, 1);
+    }
   }
 }
