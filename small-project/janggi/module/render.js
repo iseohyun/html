@@ -213,9 +213,16 @@ function setting(code) {
 function initPositions() {
   for (let i = 0; i < 32; i++) {
     const ratio = getPieceSizeRatio(i);
-    let tmpAxis = getAxis(pieces[i].x, pieces[i].y);
-    let targetX = tmpAxis.x - unitSize * ratio / 2;
-    let targetY = tmpAxis.y - unitSize * ratio / 2;
+    let targetX, targetY;
+    
+    if (pieces[i].x === 0 && pieces[i].y === 0) {
+      targetX = -unitSize * ratio * 2;
+      targetY = -unitSize * ratio * 2;
+    } else {
+      let tmpAxis = getAxis(pieces[i].x, pieces[i].y);
+      targetX = tmpAxis.x - unitSize * ratio / 2;
+      targetY = tmpAxis.y - unitSize * ratio / 2;
+    }
     
     pieces[i].e.setAttribute("width", unitSize * ratio);
     pieces[i].e.setAttribute("height", unitSize * ratio);
