@@ -209,8 +209,9 @@ function initPositions() {
   for (let i = 0; i < 32; i++) {
     const ratio = getPieceSizeRatio(i);
     let tmpAxis = getAxis(pieces[i].x, pieces[i].y);
-    pieces[i].e.setAttribute("x", tmpAxis.x - unitSize * ratio / 2);
-    pieces[i].e.setAttribute("y", tmpAxis.y - unitSize * ratio / 2);
+    let targetX = tmpAxis.x - unitSize * ratio / 2;
+    let targetY = tmpAxis.y - unitSize * ratio / 2;
+    pieces[i].e.style.transform = `translate(${targetX}px, ${targetY}px)`;
   }
 
   let curTurn = parseInt(document.getElementById("turn").value);
@@ -347,13 +348,102 @@ function createCandiBox(i, x, y) {
   svg.appendChild(candiBox);
 }
 
-function setPieces(i, x, y) {
-  let tmpAxis = getAxis(x, y);
+function setPieces(i, x, y, animate = false) {
   pieces[i].x = x;
   pieces[i].y = y;
   const ratio = getPieceSizeRatio(i);
-  pieces[i].e.setAttribute("x", tmpAxis.x - unitSize * ratio / 2);
-  pieces[i].e.setAttribute("y", tmpAxis.y - unitSize * ratio / 2);
+  
+  // 기존 진행 중인 프레임이 있다면 취소하여 동시성 레이스 차단
+  if (pieces[i].animId) {
+    cancelAnimationFrame(pieces[i].animId);
+    pieces[i].animId = null;
+  }
+
+  if (x === 0 && y === 0) {
+    // 따먹혀서 판 밖으로 나가는 경우 애니메이션 없이 즉시 숨김
+    let targetX = -unitSize * ratio * 2;
+    let targetY = -unitSize * ratio * 2;
+    pieces[i].e.style.transform = `translate(${targetX}px, ${targetY}px) scale(1)`;
+    pieces[i].e.style.filter = "";
+    return;
+  }
+
+  // 기물 이동 시 z-index 보장을 위해 DOM 트리의 맨 뒤로 이동 (항상 화면 최상단에 렌더링)
+  svg.appendChild(pieces[i].e);
+
+  let tmpAxis = getAxis(x, y);
+  let endX = tmpAxis.x - unitSize * ratio / 2;
+  let endY = tmpAxis.y - unitSize * ratio / 2;
+
+  // 만약 애니메이션 설정 시간이 0초이거나, animate 플래그가 false인 경우 즉시 이동
+  if (!animate || animDuration <= 0) {
+    pieces[i].e.style.transform = `translate(${endX}px, ${endY}px) scale(1)`;
+    pieces[i].e.style.filter = "";
+    return;
+  }
+
+  // 현재 위치 추출 (현재 transform 값에서 파싱)
+  let startX = endX;
+  let startY = endY;
+  const transformStr = pieces[i].e.style.transform;
+  if (transformStr && transformStr.includes("translate")) {
+    const matches = transformStr.match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/);
+    if (matches && matches.length >= 3) {
+      startX = parseFloat(matches[1]);
+      startY = parseFloat(matches[2]);
+    }
+  }
+
+  // 시작 위치와 끝 위치가 완전히 동일하다면 연산 없이 배치
+  if (Math.abs(startX - endX) < 0.5 && Math.abs(startY - endY) < 0.5) {
+    pieces[i].e.style.transform = `translate(${endX}px, ${endY}px) scale(1)`;
+    pieces[i].e.style.filter = "";
+    return;
+  }
+
+  // 3D 곡선 경로를 만들기 위해 포물선 제어점 연산 (animHeight 비율 적용)
+  let dx = endX - startX;
+  let dy = endY - startY;
+  let dist = Math.sqrt(dx * dx + dy * dy);
+  let archH = dist * 0.22 * animHeight; // 3D 높이 포물선 아치 깊이
+  
+  let p1X = (startX + endX) / 2;
+  let p1Y = (startY + endY) / 2 - archH; // Y축 상향(마이너스) 방향으로 둥글게
+
+  let startTime = performance.now();
+  let duration = animDuration * 1000;
+
+  function animateFrame(now) {
+    let elapsed = now - startTime;
+    let t = Math.min(elapsed / duration, 1);
+    
+    // Ease-in-out Cubic 보간 곡선 적용
+    let te = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+    // 2차 베지어 포물선 위치 계산
+    let xt = (1 - te) * (1 - te) * startX + 2 * (1 - te) * te * p1X + te * te * endX;
+    let yt = (1 - te) * (1 - te) * startY + 2 * (1 - te) * te * p1Y + te * te * endY;
+
+    // 기물 들었다 놓기 크기 조절 (가운데 50% 지점에서 최대 1.18배 * animHeight 배율)
+    let scale = 1 + 0.18 * animHeight * Math.sin(te * Math.PI);
+
+    // 높은 고도에 맞춰 다이나믹 그림자 팽창 연산
+    let shadowBlur = 4 + 10 * animHeight * Math.sin(te * Math.PI);
+    let shadowOffset = 4 + 8 * animHeight * Math.sin(te * Math.PI);
+    
+    pieces[i].e.style.transform = `translate(${xt}px, ${yt}px) scale(${scale})`;
+    pieces[i].e.style.filter = `drop-shadow(${shadowOffset}px ${shadowOffset * 1.5}px ${shadowBlur}px rgba(0, 0, 0, 0.42))`;
+
+    if (t < 1) {
+      pieces[i].animId = requestAnimationFrame(animateFrame);
+    } else {
+      pieces[i].e.style.transform = `translate(${endX}px, ${endY}px) scale(1)`;
+      pieces[i].e.style.filter = "";
+      pieces[i].animId = null;
+    }
+  }
+
+  pieces[i].animId = requestAnimationFrame(animateFrame);
 }
 
 // 현재 그려진 모든 이동가능 경로를 삭제합니다.

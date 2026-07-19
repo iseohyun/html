@@ -178,10 +178,7 @@ function move(i, x, y) {
   // 따먹은 객체가 있다면 처리
   let t = whoIsit(x, y);
   if (t < 32) {
-    pieces[t].e.setAttribute("x", -unitSize);
-    pieces[t].e.setAttribute("y", -unitSize);
-    pieces[t].x = 0;
-    pieces[t].y = 0;
+    setPieces(t, 0, 0);
 
     // 점수 재계산
     updateScore();
@@ -201,7 +198,7 @@ function move(i, x, y) {
   turn.value = curTurn + 1;
 
   // 객체 이동
-  setPieces(i, x, y);
+  setPieces(i, x, y, true);
 
   // 선택 상자 및 이동가능 경로 후보지 삭제
   clearCandiBox();
@@ -232,7 +229,7 @@ function next() {
   // 로그에 기록된 다음 턴이 있는지 확인합니다.
   if (log.length > curTurn) {
     // 로그에 따라 장기말을 움직입니다.
-    setPieces(log[curTurn].i, log[curTurn].x, log[curTurn].y);
+    setPieces(log[curTurn].i, log[curTurn].x, log[curTurn].y, true);
 
     // 선택창은 현재 움직인 말을 보여주되, 선택이 되지 않은 상태로 만듭니다.
     curSelect = 32;
@@ -240,7 +237,7 @@ function next() {
 
     // 만약, 잡은 돌이 있다면 삭제합니다.
     if (log[curTurn].t != 32)
-      setPieces(log[curTurn].t, 0, 0);
+      setPieces(log[curTurn].t, 0, 0, true);
 
     // 턴 정보를 업데이트 합니다.
     turn.value = curTurn + 1;
@@ -266,14 +263,14 @@ function prev() {
   if (curTurn >= 0) {
     // 따먹은 객채가 있다면 되돌립니다.
     if (log[curTurn].t != 32) {
-      setPieces(log[curTurn].t, log[curTurn].x, log[curTurn].y);
+      setPieces(log[curTurn].t, log[curTurn].x, log[curTurn].y, true);
     }
 
     // 현재 턴에 움직인 객체가 어디서 왔는지 조회합니다.
     let originPos = whereWasIt(log[curTurn].i, curTurn - 1);
 
     // 조회된 정보를 기반으로 돌을 과거로 되돌립니다.
-    setPieces(log[curTurn].i, originPos.x, originPos.y);
+    setPieces(log[curTurn].i, originPos.x, originPos.y, true);
 
     // 움직인 말은 선택되지 않은 상태로 만들어줍니다. 사용자가 선택하면 그 때 선택상태가 됩니다.
     curSelect = 32;
@@ -379,9 +376,31 @@ function toggleCoordinates() {
   if (btn) {
     btn.textContent = showCoordinates ? "좌표 보기 닫기" : "좌표 보기";
   }
-  // 좌표 상태에 따라 패딩을 재계산하고 보드를 다시 그립니다.
+  // 좌표 상태에 따라 패딩을 재계산할 때 트랜지션을 일시 비활성화합니다.
+  svg.classList.add("no-transition");
   initBoard();
   initPositions();
+  svg.offsetHeight; // Force reflow
+  svg.classList.remove("no-transition");
+}
+
+function changeAnimDuration(val) {
+  animDuration = parseFloat(val);
+  const valSpan = document.getElementById("anim-duration-val");
+  if (valSpan) {
+    valSpan.textContent = animDuration.toFixed(1);
+  }
+  if (svg) {
+    svg.style.setProperty("--anim-duration", `${animDuration}s`);
+  }
+}
+
+function changeAnimHeight(val) {
+  animHeight = parseFloat(val);
+  const valSpan = document.getElementById("anim-height-val");
+  if (valSpan) {
+    valSpan.textContent = animHeight.toFixed(1);
+  }
 }
 
 // 안전한 초기 호출부 (스크립트 로드 순서 비동기 대응)
@@ -390,12 +409,26 @@ function checkAndInit() {
       typeof initBoard === "function" && 
       typeof initPositions === "function") {
     initData();
+    
+    // 애니메이션 시간 초기값 설정
+    if (svg) {
+      svg.style.setProperty("--anim-duration", `${animDuration}s`);
+    }
+    
+    // 초기 로딩 시 말들이 0,0에서 날아오는 트랜지션을 방지합니다.
+    svg.classList.add("no-transition");
     initBoard();
     initPositions();
+    svg.offsetHeight; // Force reflow
+    svg.classList.remove("no-transition");
 
     window.addEventListener("resize", () => {
+      // 크기 조절 시 레이아웃 재배치가 애니메이션되는 것을 방지합니다.
+      svg.classList.add("no-transition");
       initBoard();
       initPositions();
+      svg.offsetHeight; // Force reflow
+      svg.classList.remove("no-transition");
     });
   } else {
     setTimeout(checkAndInit, 10);
