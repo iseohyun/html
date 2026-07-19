@@ -314,12 +314,16 @@ function next() {
     updateRecordUI();
   }
 
+  // 외통수 여부 재검사 (앞으로 갈 때도 최종 상태 도달 시 외통 재확인)
+  checkGameStatus();
+
   checkAndRunAI();
 }
 
 function performSinglePrev() {
   // 보조 마커를 지웁니다.
   clearCandiBox();
+  gameEnded = false; // 뒤로가기를 하면 게임 종료 플래그를 지우고 다시 둘 수 있게 합니다.
 
   // 현재 턴을 가져옵니다.
   const turn = document.getElementById("turn");
