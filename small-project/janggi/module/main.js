@@ -2316,8 +2316,10 @@ function importRecordFromText(text) {
   
   // 만약 뒤집힌 기보라면 초기 상차림 및 진영도 180도 역회전 적용
   if (shouldFlipImport) {
-    startingCode = rotateLayoutCode180(startingCode);
-    determinedCho = !determinedCho;
+    if (!layoutTextMatch) {
+      startingCode = rotateLayoutCode180(startingCode);
+    }
+    determinedCho = true;
   }
   
   changeNation(determinedCho);
@@ -4249,30 +4251,38 @@ function flipBoardHorizontal() {
   if (!boardSvg || boardAnimating) return;
   
   boardAnimating = true;
-  flipActive = true;
   
-  for (let i = 0; i < 32; i++) {
-    pieces[i].e.classList.add("smooth-move-anim");
-  }
-  const cursor = document.getElementById("kb-cursor");
-  if (cursor) cursor.classList.add("smooth-move-anim");
-  
+  // Phase 1: Board flips horizontally as one body.
   boardSvg.classList.add("flip-h-anim");
-  executeFlipBoardHorizontal();
   
   setTimeout(() => {
-    boardSvg.classList.remove("flip-h-anim");
+    // Phase 2: Board finished flipping. Now we run the flip and translate the pieces.
+    flipActive = true;
+    
     for (let i = 0; i < 32; i++) {
-      pieces[i].e.classList.remove("smooth-move-anim");
+      pieces[i].e.classList.add("smooth-move-anim");
     }
-    if (cursor) cursor.classList.remove("smooth-move-anim");
-    flipActive = false;
+    const cursor = document.getElementById("kb-cursor");
+    if (cursor) cursor.classList.add("smooth-move-anim");
     
-    initPositions();
-    if (kbCursorActive) updateKeyboardCursor();
+    executeFlipBoardHorizontal();
     
-    boardAnimating = false;
-  }, 600);
+    setTimeout(() => {
+      // Clean up Phase 2
+      boardSvg.classList.remove("flip-h-anim");
+      for (let i = 0; i < 32; i++) {
+        pieces[i].e.classList.remove("smooth-move-anim");
+      }
+      if (cursor) cursor.classList.remove("smooth-move-anim");
+      flipActive = false;
+      
+      initPositions();
+      if (kbCursorActive) updateKeyboardCursor();
+      
+      boardAnimating = false;
+    }, 500); // Phase 2 duration
+    
+  }, 500); // Phase 1 duration
 }
 
 function executeFlipBoardHorizontal() {
@@ -4333,30 +4343,38 @@ function flipBoardVertical() {
   if (!boardSvg || boardAnimating) return;
   
   boardAnimating = true;
-  rotateActive = true;
   
-  for (let i = 0; i < 32; i++) {
-    pieces[i].e.classList.add("smooth-move-anim");
-  }
-  const cursor = document.getElementById("kb-cursor");
-  if (cursor) cursor.classList.add("smooth-move-anim");
-  
+  // Phase 1: Board spins 180 degrees as one body.
   boardSvg.classList.add("rotate-180-anim");
-  executeFlipBoardVertical();
   
   setTimeout(() => {
-    boardSvg.classList.remove("rotate-180-anim");
+    // Phase 2: Board finished spinning. Now we run the flip and translate the pieces.
+    rotateActive = true;
+    
     for (let i = 0; i < 32; i++) {
-      pieces[i].e.classList.remove("smooth-move-anim");
+      pieces[i].e.classList.add("smooth-move-anim");
     }
-    if (cursor) cursor.classList.remove("smooth-move-anim");
-    rotateActive = false;
+    const cursor = document.getElementById("kb-cursor");
+    if (cursor) cursor.classList.add("smooth-move-anim");
     
-    initPositions();
-    if (kbCursorActive) updateKeyboardCursor();
+    executeFlipBoardVertical();
     
-    boardAnimating = false;
-  }, 600);
+    setTimeout(() => {
+      // Clean up Phase 2
+      boardSvg.classList.remove("rotate-180-anim");
+      for (let i = 0; i < 32; i++) {
+        pieces[i].e.classList.remove("smooth-move-anim");
+      }
+      if (cursor) cursor.classList.remove("smooth-move-anim");
+      rotateActive = false;
+      
+      initPositions();
+      if (kbCursorActive) updateKeyboardCursor();
+      
+      boardAnimating = false;
+    }, 500); // Phase 2 duration
+    
+  }, 500); // Phase 1 duration
 }
 
 function executeFlipBoardVertical() {
