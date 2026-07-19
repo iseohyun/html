@@ -4488,6 +4488,8 @@ function flipBoardVertical() {
         const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
         const dy = (boardHeight - axisEnd.y - axisStart.y) / 2;
         
+        console.log(`[Phase 2 Axis] Piece ${i} (${pieces[i].e.id}): x=${startPos.x}, y=${startPos.y} => target x=${finalLogicalPos.x}, y=${finalLogicalPos.y} | sizeVal=${sizeVal.toFixed(2)} | dx=${dx.toFixed(2)}, dy=${dy.toFixed(2)} | Axis relative to board: (${(ax + sizeVal/2 + dx).toFixed(2)}, ${(ay + sizeVal/2 + dy).toFixed(2)}) | transformOrigin: calc(50% + ${dx.toFixed(2)}px) calc(50% + ${dy.toFixed(2)}px)`);
+        
         pieces[i].e.style.transition = "none";
         pieces[i].e.style.transformOrigin = `calc(50% + ${dx}px) calc(50% + ${dy}px)`;
         pieces[i].e.style.transform = `translate(${ax}px, ${ay}px) rotate(0deg)`;
