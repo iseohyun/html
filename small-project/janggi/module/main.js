@@ -954,13 +954,13 @@ function resetCategory1() {
 
 function resetCategory2() {
   showCoordinates = true;
-  sizeKing = 1.10;
-  sizeMiddle = 0.95;
-  sizeSmall = 0.75;
-  fontScaleKing = 1.00;
-  fontScaleMiddle = 1.00;
-  fontScaleSmall = 1.00;
-  coordsTextScale = 0.22;
+  sizeKing = 1.15;
+  sizeMiddle = 0.90;
+  sizeSmall = 0.70;
+  fontScaleKing = 1.25;
+  fontScaleMiddle = 1.45;
+  fontScaleSmall = 1.45;
+  coordsTextScale = 0.18;
   boardColorType = "wood";
   choColorType = "blue";
   hanColorType = "red";
