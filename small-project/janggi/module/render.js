@@ -75,8 +75,8 @@ function initBoard() {
     pieces[i].e.style.width = `${unitSize * ratio}px`;
     pieces[i].e.style.height = `${unitSize * ratio}px`;
 
-    // 클릭되었을 때 수행할 함수를 지정합니다.
-    pieces[i].e.addEventListener("click", function () { selected(i) });
+    // 클릭되었을 때 수행할 함수를 지정합니다. (중복 등록 방지를 위해 onclick 속성 사용)
+    pieces[i].e.onclick = function () { selected(i) };
   }
 }
 
