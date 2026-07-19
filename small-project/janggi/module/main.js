@@ -764,6 +764,7 @@ function changeHanColor(value) {
 }
 
 function changePieceShape(value) {
+  if (!value || typeof value !== "string") value = "octagon";
   pieceShapeType = value;
   localStorage.setItem("pieceShapeType", pieceShapeType);
   const octs = document.querySelectorAll(".piece-svg polygon");
@@ -779,6 +780,7 @@ function changePieceShape(value) {
 }
 
 function changeCandiShape(value) {
+  if (!value || typeof value !== "string") value = "empty_circle";
   candiShapeType = value;
   localStorage.setItem("candiShapeType", candiShapeType);
   saveCurrentConfigToSlot();
@@ -873,6 +875,7 @@ function changeSettingsOpacity(val) {
 }
 
 function changeSettingsTextColorType(value) {
+  if (!value || typeof value !== "string") value = "auto";
   settingsTextColorType = value;
   localStorage.setItem("settingsTextColorType", settingsTextColorType);
   const picker = document.getElementById("settings-text-color-picker");
@@ -886,6 +889,7 @@ function changeSettingsTextColorType(value) {
 }
 
 function changeSettingsTextColorCustom(value) {
+  if (!value || typeof value !== "string") value = "#f8fafc";
   settingsTextColorCustom = value;
   localStorage.setItem("settingsTextColorCustom", settingsTextColorCustom);
   updateSettingsTextColor();
@@ -1054,27 +1058,27 @@ function loadConfigFromSlot() {
   }
   try {
     const config = JSON.parse(saved);
-    if (config.showCoordinates !== undefined) showCoordinates = config.showCoordinates;
-    if (config.sizeKing !== undefined) sizeKing = config.sizeKing;
-    if (config.sizeMiddle !== undefined) sizeMiddle = config.sizeMiddle;
-    if (config.sizeSmall !== undefined) sizeSmall = config.sizeSmall;
-    if (config.fontScaleKing !== undefined) fontScaleKing = config.fontScaleKing;
-    if (config.fontScaleMiddle !== undefined) fontScaleMiddle = config.fontScaleMiddle;
-    if (config.fontScaleSmall !== undefined) fontScaleSmall = config.fontScaleSmall;
-    if (config.coordsTextScale !== undefined) coordsTextScale = config.coordsTextScale;
-    if (config.boardColorType !== undefined) boardColorType = config.boardColorType;
-    if (config.choColorType !== undefined) choColorType = config.choColorType;
-    if (config.hanColorType !== undefined) hanColorType = config.hanColorType;
-    if (config.pieceShapeType !== undefined) pieceShapeType = config.pieceShapeType;
-    if (config.candiShapeType !== undefined) candiShapeType = config.candiShapeType;
-    if (config.candiColorType !== undefined) candiColorType = config.candiColorType;
-    if (config.animDuration !== undefined) animDuration = config.animDuration;
-    if (config.animHeight !== undefined) animHeight = config.animHeight;
-    if (config.settingsBgColor !== undefined) settingsBgColor = config.settingsBgColor;
-    if (config.settingsOpacity !== undefined) settingsOpacity = config.settingsOpacity;
-    if (config.settingsTextColorType !== undefined) settingsTextColorType = config.settingsTextColorType;
-    if (config.settingsTextColorCustom !== undefined) settingsTextColorCustom = config.settingsTextColorCustom;
-    if (config.settingsAccentColor !== undefined) settingsAccentColor = config.settingsAccentColor;
+    if (config.showCoordinates !== undefined && config.showCoordinates !== null) showCoordinates = config.showCoordinates;
+    if (config.sizeKing !== undefined && config.sizeKing !== null) sizeKing = config.sizeKing;
+    if (config.sizeMiddle !== undefined && config.sizeMiddle !== null) sizeMiddle = config.sizeMiddle;
+    if (config.sizeSmall !== undefined && config.sizeSmall !== null) sizeSmall = config.sizeSmall;
+    if (config.fontScaleKing !== undefined && config.fontScaleKing !== null) fontScaleKing = config.fontScaleKing;
+    if (config.fontScaleMiddle !== undefined && config.fontScaleMiddle !== null) fontScaleMiddle = config.fontScaleMiddle;
+    if (config.fontScaleSmall !== undefined && config.fontScaleSmall !== null) fontScaleSmall = config.fontScaleSmall;
+    if (config.coordsTextScale !== undefined && config.coordsTextScale !== null) coordsTextScale = config.coordsTextScale;
+    if (config.boardColorType) boardColorType = config.boardColorType;
+    if (config.choColorType) choColorType = config.choColorType;
+    if (config.hanColorType) hanColorType = config.hanColorType;
+    if (config.pieceShapeType) pieceShapeType = config.pieceShapeType;
+    if (config.candiShapeType) candiShapeType = config.candiShapeType;
+    if (config.candiColorType) candiColorType = config.candiColorType;
+    if (config.animDuration !== undefined && config.animDuration !== null) animDuration = config.animDuration;
+    if (config.animHeight !== undefined && config.animHeight !== null) animHeight = config.animHeight;
+    if (config.settingsBgColor) settingsBgColor = config.settingsBgColor;
+    if (config.settingsOpacity !== undefined && config.settingsOpacity !== null) settingsOpacity = config.settingsOpacity;
+    if (config.settingsTextColorType) settingsTextColorType = config.settingsTextColorType;
+    if (config.settingsTextColorCustom) settingsTextColorCustom = config.settingsTextColorCustom;
+    if (config.settingsAccentColor) settingsAccentColor = config.settingsAccentColor;
     
     localStorage.setItem("showCoordinates", showCoordinates);
     localStorage.setItem("sizeKing", sizeKing);
