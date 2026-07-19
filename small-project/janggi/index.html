@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <!-- 모바일 스케일 고정 -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="keywords" content="iseohyun, 장기, janggi">
+  <meta name="author" content="iseohyun">
+
+  <!-- 페이지 타이틀 -->
+  <title>장기 - iseohyun </title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-453XSP5W9M');
+  </script>
+
+  <!-- 공통스킨 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@900&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+  <!-- 모듈식 스크립트 순차 로드 -->
+  <script src="module/config.js" defer charset="UTF-8"></script>
+  <script src="module/logic.js" defer charset="UTF-8"></script>
+  <script src="module/render.js" defer charset="UTF-8"></script>
+  <script src="module/main.js" defer charset="UTF-8"></script>
+</head>
+
+<body style="overflow: hidden;">
+  <article>
+    <div id="setting-box">
+      <button id="close-btn" onclick="disalbeSettingBox()">닫기</button>
+      <div id="charim">
+        <button id="restart-btn" onclick="newStart()">완전 초기화</button>
+        <table>
+          <tr>
+            <td></td>
+            <td style="text-align: center;">상차림</td>
+            <td>진영(선택: 초)</td>
+          </tr>
+          <tr>
+            <td>위</td>
+            <td>
+              <button class="charim1" onclick="changeCharim(1, 0, this)">마상마상</button>
+              <button class="charim1" onclick="changeCharim(1, 1, this)">마상상마</button>
+              <button class="charim1" onclick="changeCharim(1, 2, this)">상마마상</button>
+              <button class="charim1" onclick="changeCharim(1, 3, this)">상마상마</button>
+            </td>
+            <td>
+              <button id="nation-top" onclick="changeNation(false)">한</button>
+            </td>
+          </tr>
+          <tr>
+            <td>아래</td>
+            <td>
+              <button class="charim0" onclick="changeCharim(0, 0, this)">마상마상</button>
+              <button class="charim0" onclick="changeCharim(0, 1, this)">마상상마</button>
+              <button class="charim0" onclick="changeCharim(0, 2, this)">상마마상</button>
+              <button class="charim0" onclick="changeCharim(0, 3, this)">상마상마</button>
+            </td>
+            <td>
+              <button id="nation-bottom" onclick="changeNation(true)">초</button>
+            </td>
+          </tr>
+        </table>
+        <button id="restart-btn" onclick="reload()">상차림 변경(URL로 공유하기)</button>
+        <button id="restart-now-btn" onclick="reload_now()">현재의 상태로 재시작(로그삭제)</button>
+      </div>
+      <div id="info">
+        소스코드 :
+        <ul>
+          <li>사용설명서: <a href="https://iseohyun.tistory.com/90" target="_blank">https://iseohyun.tistory.com/90</a></li>
+          <li>Github: <a href="https://github.com/iseohyun/html/tree/main/etc/fun/janggi" target="_blank">
+              https://github.com/iseohyun/html/tree/main/etc/fun/janggi</a> CC-BY-SA 4.0</li>
+        </ul>
+        <div>
+          글자 크기 변경 :
+          <button onclick="changeFontSize(1)">+</button>
+          <button onclick="changeFontSize(-1)">-</button>
+        </div>
+      </div>
+    </div>
+    <div id="control-box">
+      <div>
+        <input id="turn" type="number" value="0"></input>
+        <button id="prev" onclick="prev()">&lt;</button>
+        <button id="next" onclick="next()">></button>
+      </div>
+      <div>
+        <input id="score-han" type="number" disabled></input>
+        <input id="score-cho" type="number" disabled></input>
+        =
+        <input id="score-diff" type="number" disabled></input>
+      </div>
+      <div>
+        <button onclick="enalbeSettingBox()">설정</button>
+        <button onclick="download()">그림 다운로드</button>
+      </div>
+    </div>
+    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xml="http://www.w3.org/XML/1998/namespace"
+      xmlns:xlink="http://www.w3.org/1999/xlink">
+
+      <defs>
+        <!-- Board wood base gradient -->
+        <linearGradient id="board-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#ebd2a9" />
+          <stop offset="50%" stop-color="#dfb67c" />
+          <stop offset="100%" stop-color="#cba063" />
+        </linearGradient>
+
+        <!-- Stretched vertical noise for wood grain texture -->
+        <filter id="wood-grain" x="0%" y="0%" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.01 0.08" numOctaves="4" result="noise" />
+          <feColorMatrix type="matrix" values="
+            0.15 0 0 0 0.85
+            0.10 0 0 0 0.65
+            0.05 0 0 0 0.40
+            0 0 0 0.15 0" in="noise" result="grain" />
+          <feComposite operator="over" in="grain" in2="SourceGraphic" />
+        </filter>
+
+        <!-- Drop shadow for the 3D tokens (matched to Cho piece shadow in user's image) -->
+        <filter id="piece-shadow" x="-25%" y="-25%" width="150%" height="150%">
+          <feDropShadow dx="2" dy="5" stdDeviation="3.5" flood-color="#000" flood-opacity="0.4" />
+        </filter>
+
+        <!-- Aura glow for selected piece -->
+        <filter id="selected-glow" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="6" result="blur" />
+          <feComponentTransfer in="blur" result="glow1">
+            <feFuncA type="linear" slope="3" />
+          </feComponentTransfer>
+          <feColorMatrix type="matrix" values="
+            1 0 0 0 0.98
+            0 1 0 0 0.88
+            0 0 1 0 0.40
+            0 0 0 1 0" in="glow1" result="glow" />
+          <feMerge>
+            <feMergeNode in="glow" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+
+        <!-- Glow for candidate movements -->
+        <filter id="candi-glow" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="3" result="blur" />
+          <feComponentTransfer in="blur" result="glow1">
+            <feFuncA type="linear" slope="2" />
+          </feComponentTransfer>
+          <feColorMatrix type="matrix" values="
+            0 0 0 0 0.23
+            0 0 0 0 0.51
+            0 0 0 0 0.96
+            0 0 0 1 0" in="glow1" result="glow" />
+          <feMerge>
+            <feMergeNode in="glow" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+
+        <!-- Face gradient for Cho (Blue) pieces: polished stone/white shell -->
+        <linearGradient id="cho-face-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#ffffff" />
+          <stop offset="100%" stop-color="#f1f5f9" />
+        </linearGradient>
+
+        <!-- Face gradient for Han (Red) pieces: warm light wood grain -->
+        <radialGradient id="han-face-grad" cx="45%" cy="40%" r="50%">
+          <stop offset="0%" stop-color="#ebd1ad" />
+          <stop offset="70%" stop-color="#d7af77" />
+          <stop offset="100%" stop-color="#c19456" />
+        </radialGradient>
+      </defs>
+
+      <!-- Board representation -->
+      <rect id="board" x="0" y="0" fill="url(#board-grad)" filter="url(#wood-grain)" />
+      <path id="lines" fill="none" stroke="#52391b" stroke-width="1.8" />
+
+      <!-- Cho (Blue) pieces: 3D Beveled Octagons with Cursive Text Overlays -->
+      <!-- King -->
+      <svg id="cho-king" class="piece-svg cho-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#94a3b8" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#cho-face-grad)" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#2563eb" stroke-width="1.5" />
+        <image href="src/cho_King.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <!-- Chariot 1 & 2 -->
+      <svg id="cho-cha1" class="piece-svg cho-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#94a3b8" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#cho-face-grad)" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#2563eb" stroke-width="1.5" />
+        <image href="src/cho_Cha.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <svg id="cho-cha2" class="piece-svg cho-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#94a3b8" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#cho-face-grad)" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#2563eb" stroke-width="1.5" />
+        <image href="src/cho_Cha.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <!-- Cannon 1 & 2 -->
+      <svg id="cho-po1" class="piece-svg cho-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#94a3b8" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#cho-face-grad)" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#2563eb" stroke-width="1.5" />
+        <image href="src/cho_Po.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <svg id="cho-po2" class="piece-svg cho-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#94a3b8" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#cho-face-grad)" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#2563eb" stroke-width="1.5" />
+        <image href="src/cho_Po.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <!-- Horse 1 & 2 -->
+      <svg id="cho-ma1" class="piece-svg cho-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#94a3b8" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#cho-face-grad)" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#2563eb" stroke-width="1.5" />
+        <image href="src/cho_Ma.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <svg id="cho-ma2" class="piece-svg cho-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#94a3b8" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#cho-face-grad)" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#2563eb" stroke-width="1.5" />
+        <image href="src/cho_Ma.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <!-- Elephant 1 & 2 -->
+      <svg id="cho-sang1" class="piece-svg cho-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#94a3b8" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#cho-face-grad)" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#2563eb" stroke-width="1.5" />
+        <image href="src/cho_Sang.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <svg id="cho-sang2" class="piece-svg cho-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#94a3b8" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#cho-face-grad)" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#2563eb" stroke-width="1.5" />
+        <image href="src/cho_Sang.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <!-- Guard 1 & 2 -->
+      <svg id="cho-sa1" class="piece-svg cho-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#94a3b8" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#cho-face-grad)" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#2563eb" stroke-width="1.5" />
+        <image href="src/cho_Sa.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <svg id="cho-sa2" class="piece-svg cho-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#94a3b8" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#cho-face-grad)" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#2563eb" stroke-width="1.5" />
+        <image href="src/cho_Sa.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <!-- Soldier 1 to 5 -->
+      <svg id="cho-zol1" class="piece-svg cho-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#94a3b8" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#cho-face-grad)" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#2563eb" stroke-width="1.5" />
+        <image href="src/cho_Zol.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <svg id="cho-zol2" class="piece-svg cho-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#94a3b8" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#cho-face-grad)" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#2563eb" stroke-width="1.5" />
+        <image href="src/cho_Zol.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <svg id="cho-zol3" class="piece-svg cho-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#94a3b8" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#cho-face-grad)" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#2563eb" stroke-width="1.5" />
+        <image href="src/cho_Zol.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <svg id="cho-zol4" class="piece-svg cho-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#94a3b8" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#cho-face-grad)" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#2563eb" stroke-width="1.5" />
+        <image href="src/cho_Zol.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <svg id="cho-zol5" class="piece-svg cho-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#94a3b8" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#cho-face-grad)" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#2563eb" stroke-width="1.5" />
+        <image href="src/cho_Zol.png" x="15" y="15" width="70" height="70" />
+      </svg>
+
+
+      <!-- Han (Red) pieces: 3D Beveled Octagons with wood face and Regular Text Overlays -->
+      <!-- King -->
+      <svg id="han-king" class="piece-svg han-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#8b5a2b" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#han-face-grad)" />
+        <polygon points="34,15 66,15 81,30 81,65 66,80 34,80 19,65 19,30" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
+        <polygon points="38,20 62,20 74,32 74,60 62,72 38,72 26,60 26,32" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#991b1b" stroke-width="1.5" />
+        <image href="src/han_King.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <!-- Chariot 1 & 2 -->
+      <svg id="han-cha1" class="piece-svg han-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#8b5a2b" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#han-face-grad)" />
+        <polygon points="34,15 66,15 81,30 81,65 66,80 34,80 19,65 19,30" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
+        <polygon points="38,20 62,20 74,32 74,60 62,72 38,72 26,60 26,32" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#991b1b" stroke-width="1.5" />
+        <image href="src/han_Cha.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <svg id="han-cha2" class="piece-svg han-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#8b5a2b" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#han-face-grad)" />
+        <polygon points="34,15 66,15 81,30 81,65 66,80 34,80 19,65 19,30" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
+        <polygon points="38,20 62,20 74,32 74,60 62,72 38,72 26,60 26,32" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#991b1b" stroke-width="1.5" />
+        <image href="src/han_Cha.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <!-- Cannon 1 & 2 -->
+      <svg id="han-po1" class="piece-svg han-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#8b5a2b" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#han-face-grad)" />
+        <polygon points="34,15 66,15 81,30 81,65 66,80 34,80 19,65 19,30" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
+        <polygon points="38,20 62,20 74,32 74,60 62,72 38,72 26,60 26,32" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#991b1b" stroke-width="1.5" />
+        <image href="src/han_Po.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <svg id="han-po2" class="piece-svg han-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#8b5a2b" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#han-face-grad)" />
+        <polygon points="34,15 66,15 81,30 81,65 66,80 34,80 19,65 19,30" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
+        <polygon points="38,20 62,20 74,32 74,60 62,72 38,72 26,60 26,32" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#991b1b" stroke-width="1.5" />
+        <image href="src/han_Po.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <!-- Horse 1 & 2 -->
+      <svg id="han-ma1" class="piece-svg han-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#8b5a2b" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#han-face-grad)" />
+        <polygon points="34,15 66,15 81,30 81,65 66,80 34,80 19,65 19,30" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
+        <polygon points="38,20 62,20 74,32 74,60 62,72 38,72 26,60 26,32" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#991b1b" stroke-width="1.5" />
+        <image href="src/han_Ma.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <svg id="han-ma2" class="piece-svg han-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#8b5a2b" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#han-face-grad)" />
+        <polygon points="34,15 66,15 81,30 81,65 66,80 34,80 19,65 19,30" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
+        <polygon points="38,20 62,20 74,32 74,60 62,72 38,72 26,60 26,32" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#991b1b" stroke-width="1.5" />
+        <image href="src/han_Ma.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <!-- Elephant 1 & 2 -->
+      <svg id="han-sang1" class="piece-svg han-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#8b5a2b" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#han-face-grad)" />
+        <polygon points="34,15 66,15 81,30 81,65 66,80 34,80 19,65 19,30" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
+        <polygon points="38,20 62,20 74,32 74,60 62,72 38,72 26,60 26,32" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#991b1b" stroke-width="1.5" />
+        <image href="src/han_Sang.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <svg id="han-sang2" class="piece-svg han-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#8b5a2b" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#han-face-grad)" />
+        <polygon points="34,15 66,15 81,30 81,65 66,80 34,80 19,65 19,30" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
+        <polygon points="38,20 62,20 74,32 74,60 62,72 38,72 26,60 26,32" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#991b1b" stroke-width="1.5" />
+        <image href="src/han_Sang.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <!-- Guard 1 & 2 -->
+      <svg id="han-sa1" class="piece-svg han-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#8b5a2b" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#han-face-grad)" />
+        <polygon points="34,15 66,15 81,30 81,65 66,80 34,80 19,65 19,30" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
+        <polygon points="38,20 62,20 74,32 74,60 62,72 38,72 26,60 26,32" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#991b1b" stroke-width="1.5" />
+        <image href="src/han_Sa.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <svg id="han-sa2" class="piece-svg han-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#8b5a2b" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#han-face-grad)" />
+        <polygon points="34,15 66,15 81,30 81,65 66,80 34,80 19,65 19,30" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
+        <polygon points="38,20 62,20 74,32 74,60 62,72 38,72 26,60 26,32" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#991b1b" stroke-width="1.5" />
+        <image href="src/han_Sa.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <!-- Soldier 1 to 5 -->
+      <svg id="han-zol1" class="piece-svg han-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#8b5a2b" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#han-face-grad)" />
+        <polygon points="34,15 66,15 81,30 81,65 66,80 34,80 19,65 19,30" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
+        <polygon points="38,20 62,20 74,32 74,60 62,72 38,72 26,60 26,32" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#991b1b" stroke-width="1.5" />
+        <image href="src/han_Byung.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <svg id="han-zol2" class="piece-svg han-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#8b5a2b" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#han-face-grad)" />
+        <polygon points="34,15 66,15 81,30 81,65 66,80 34,80 19,65 19,30" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
+        <polygon points="38,20 62,20 74,32 74,60 62,72 38,72 26,60 26,32" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#991b1b" stroke-width="1.5" />
+        <image href="src/han_Byung.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <svg id="han-zol3" class="piece-svg han-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#8b5a2b" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#han-face-grad)" />
+        <polygon points="34,15 66,15 81,30 81,65 66,80 34,80 19,65 19,30" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
+        <polygon points="38,20 62,20 74,32 74,60 62,72 38,72 26,60 26,32" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#991b1b" stroke-width="1.5" />
+        <image href="src/han_Byung.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <svg id="han-zol4" class="piece-svg han-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#8b5a2b" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#han-face-grad)" />
+        <polygon points="34,15 66,15 81,30 81,65 66,80 34,80 19,65 19,30" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
+        <polygon points="38,20 62,20 74,32 74,60 62,72 38,72 26,60 26,32" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#991b1b" stroke-width="1.5" />
+        <image href="src/han_Byung.png" x="15" y="15" width="70" height="70" />
+      </svg>
+      <svg id="han-zol5" class="piece-svg han-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
+        <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
+        <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#8b5a2b" />
+        <polygon points="32,12 68,12 86,30 86,68 68,86 32,86 14,68 14,30" fill="url(#han-face-grad)" />
+        <polygon points="34,15 66,15 81,30 81,65 66,80 34,80 19,65 19,30" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
+        <polygon points="38,20 62,20 74,32 74,60 62,72 38,72 26,60 26,32" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
+        <polygon points="34,14 66,14 83,31 83,66 66,83 34,83 17,66 17,31" fill="none" stroke="#991b1b" stroke-width="1.5" />
+        <image href="src/han_Byung.png" x="15" y="15" width="70" height="70" />
+      </svg>
+
+      <rect id="select-box" stroke="red" stroke-width="2" fill="none" />
+    </svg>
+  </article>
+</body>
+
+</html>
