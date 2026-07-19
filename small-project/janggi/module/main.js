@@ -149,7 +149,8 @@ function selected(i) {
   kbCursorActive = false;
   updateKeyboardCursor();
 
-  const curTurn = log.length;
+  const turnEl = document.getElementById("turn");
+  const curTurn = turnEl ? parseInt(turnEl.value, 10) : log.length;
   const isChoTurn = (curTurn % 2 === 0);
   const currentTeam = isChoTurn ? "cho" : "han";
 
@@ -2661,7 +2662,8 @@ function handleKeyDown(e) {
     e.preventDefault();
     
     if (cursorLockMode) {
-      const curTurn = log.length;
+      const turnEl = document.getElementById("turn");
+      const curTurn = turnEl ? parseInt(turnEl.value, 10) : log.length;
       const isChoTurn = (curTurn % 2 === 0);
       const currentTeam = isChoTurn ? "cho" : "han";
       const allFilteredMoves = getFilteredLegalMoves(currentTeam);
@@ -2722,7 +2724,8 @@ function handleKeyDown(e) {
           kbCursorX = pieces[curSelect].x;
           kbCursorY = pieces[curSelect].y;
         } else {
-          const curTurn = log.length;
+          const turnEl = document.getElementById("turn");
+          const curTurn = turnEl ? parseInt(turnEl.value, 10) : log.length;
           const isChoTurn = (curTurn % 2 === 0);
           const kingIdx = isChoTurn ? 0 : 16;
           kbCursorX = pieces[kingIdx].x;
@@ -2777,7 +2780,8 @@ function handleKeyDown(e) {
     if (!kbCursorActive) return;
     e.preventDefault();
 
-    const curTurn = log.length;
+    const turnEl = document.getElementById("turn");
+    const curTurn = turnEl ? parseInt(turnEl.value, 10) : log.length;
     const isChoTurn = (curTurn % 2 === 0);
     const currentTeam = isChoTurn ? "cho" : "han";
 
