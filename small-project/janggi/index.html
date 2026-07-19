@@ -429,6 +429,49 @@
           </div>
         </div>
         
+        <!-- 대국 상세 정보 입력 (메타데이터) -->
+        <div class="setting-category">
+          <div class="category-header">
+            <span class="category-title">대국 상세 정보 입력 (메타데이터)</span>
+          </div>
+          <table class="settings-table" style="margin-top: 8px;">
+            <tr>
+              <td>초나라 대국자</td>
+              <td><input type="text" id="meta-cho-player" class="settings-input" placeholder="초나라 플레이어명" oninput="updateMetadataFromForm()"></td>
+            </tr>
+            <tr>
+              <td>한나라 대국자</td>
+              <td><input type="text" id="meta-han-player" class="settings-input" placeholder="한나라 플레이어명" oninput="updateMetadataFromForm()"></td>
+            </tr>
+            <tr>
+              <td>대회명</td>
+              <td><input type="text" id="meta-tournament" class="settings-input" placeholder="대회 이름" oninput="updateMetadataFromForm()"></td>
+            </tr>
+            <tr>
+              <td>대국정보</td>
+              <td><input type="text" id="meta-round" class="settings-input" placeholder="예: 1국 (2026-07-19)" oninput="updateMetadataFromForm()"></td>
+            </tr>
+            <tr>
+              <td>기보별명</td>
+              <td><input type="text" id="meta-nickname" class="settings-input" placeholder="예: 귀마 대 귀마 정석" oninput="updateMetadataFromForm()"></td>
+            </tr>
+            <tr>
+              <td>총평</td>
+              <td><textarea id="meta-summary" class="settings-textarea" placeholder="대국에 대한 전반적인 해설이나 총평을 남겨주세요." oninput="updateMetadataFromForm()" style="width: 100%; height: 50px; resize: none; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 4px; color: #fff; padding: 4px; font-size: 0.9em; box-sizing: border-box;"></textarea></td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- 현재 수순 코멘트 편집 -->
+        <div class="setting-category">
+          <div class="category-header">
+            <span class="category-title" id="current-step-comment-title">현재 수순 (0수) 코멘트</span>
+          </div>
+          <div style="margin-top: 8px;">
+            <input type="text" id="current-step-comment" class="settings-input" placeholder="이 수순에 대한 해설 코멘트 입력" oninput="updateCurrentStepComment()" style="width: 100%;">
+          </div>
+        </div>
+
         <!-- 2. 저장된 기보 목록 -->
         <div class="setting-category">
           <div class="category-header">
@@ -439,6 +482,15 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- 해설 말풍선 (Neon Glassmorphic Speech Bubble) -->
+    <div id="comment-bubble" class="comment-bubble-container" style="display: none;">
+      <div class="comment-bubble-content">
+        <div class="comment-bubble-title">💡 한수 해설</div>
+        <div id="comment-bubble-text">이곳에 수순별 코멘트가 표출됩니다.</div>
+      </div>
+      <div class="comment-bubble-arrow"></div>
     </div>
 
     <div id="control-box">
@@ -461,16 +513,45 @@
           </button>
         </div>
         
-        <!-- Sum/Score Progress Bar Panel (Middle) -->
-        <div id="score-panel">
-          <div class="score-row">
-            <span id="han-score-val" class="score-label han-label">한: 73.5</span>
-            <span id="diff-score-val" class="score-diff-val">0.0</span>
-            <span id="cho-score-val" class="score-label cho-label">초: 72.0</span>
+        <!-- Sum/Score Progress Bar Panel (Middle) - Rotating Info Panel -->
+        <div id="score-panel" onclick="rotateScorePanel()">
+          <div class="score-slides-wrapper">
+            <!-- Slide 1: 기본 점수판 -->
+            <div class="score-slide active" id="score-slide-1">
+              <div class="score-row">
+                <span id="han-score-val" class="score-label han-label">한: 73.5</span>
+                <span id="diff-score-val" class="score-diff-val">0.0</span>
+                <span id="cho-score-val" class="score-label cho-label">초: 72.0</span>
+              </div>
+              <div class="score-bar-container">
+                <div id="han-score-bar" class="score-bar han-bar"></div>
+                <div id="cho-score-bar" class="score-bar cho-bar"></div>
+              </div>
+            </div>
+            <!-- Slide 2: 대국 시간 타이머 -->
+            <div class="score-slide" id="score-slide-2">
+              <div class="timer-row">
+                <div class="timer-player han-timer">한: <span id="han-timer-val">00:00</span></div>
+                <div class="timer-vs">VS</div>
+                <div class="timer-player cho-timer"><span id="cho-timer-val">00:00</span> :초</div>
+              </div>
+              <div class="timer-active-turn" id="active-turn-timer-desc">초나라 차례</div>
+            </div>
+            <!-- Slide 3: 대국 정보 카드 -->
+            <div class="score-slide" id="score-slide-3">
+              <div class="meta-row">
+                <span id="meta-tournament-display">대회명 미지정</span>
+              </div>
+              <div class="meta-row-players">
+                <span id="meta-cho-player-display">초나라</span> vs <span id="meta-han-player-display">한나라</span>
+              </div>
+            </div>
           </div>
-          <div class="score-bar-container">
-            <div id="han-score-bar" class="score-bar han-bar"></div>
-            <div id="cho-score-bar" class="score-bar cho-bar"></div>
+          <!-- 슬라이드 제어용 도트 인디케이터 -->
+          <div class="score-slide-dots">
+            <span class="score-dot active" onclick="setScoreSlide(0); event.stopPropagation();"></span>
+            <span class="score-dot" onclick="setScoreSlide(1); event.stopPropagation();"></span>
+            <span class="score-dot" onclick="setScoreSlide(2); event.stopPropagation();"></span>
           </div>
         </div>
         

@@ -13,6 +13,7 @@
  * @property {number} x - 이동 대상 X 좌표 (1~9)
  * @property {number} y - 이동 대상 Y 좌표 (0~9)
  * @property {number} t - 포획된 기물의 ID (포획 대상이 없으면 32)
+ * @property {string} [comment] - 착수별 해설 코멘트
  */
 
 window.addEventListener('error', function(e) {
@@ -104,6 +105,24 @@ var shortcutKeys = {
   loadNotation: "v"
 };
 var currentLoadedRecordId = null; // 현재 불러와서 보여주고 있는 기보의 로컬스토리지 ID
+
+/**
+ * @typedef {Object} GameMetadata - 대국 상세 메타데이터 스키마
+ * @property {string} choPlayer - 초나라 대국자명
+ * @property {string} hanPlayer - 한나라 대국자명
+ * @property {string} tournament - 대회명
+ * @property {string} round - 대국 정보 (예: 몇국, 일시)
+ * @property {string} nickname - 기보 별명
+ * @property {string} summary - 총평
+ */
+var gameMetadata = {
+  choPlayer: "",
+  hanPlayer: "",
+  tournament: "",
+  round: "",
+  nickname: "",
+  summary: ""
+};
 const knownStart = [
   [
     "59109028882070308040601737577797",

@@ -155,11 +155,12 @@ function selected(i) {
   const currentTeam = isChoTurn ? "cho" : "han";
 
   // 턴 및 조작 제한 (기본 턴 제한 + AI 전용 가드)
+  const isChoPiece = (i < 16) === iAmCho;
   if (isChoTurn) {
-    if (i >= 16) return; // 초의 턴인데 한의 기물을 조작하려고 하는 경우 차단
+    if (!isChoPiece) return; // 초의 턴인데 한의 기물을 조작하려고 하는 경우 차단
     if (aiMode === 1) return; // AI가 초인데 사용자가 조작하려고 하는 경우 차단
   } else {
-    if (i < 16) return; // 한의 턴인데 초의 기물을 조작하려고 하는 경우 차단
+    if (isChoPiece) return; // 한의 턴인데 초의 기물을 조작하려고 하는 경우 차단
     if (aiMode === 2) return; // AI가 한인데 사용자가 조작하려고 하는 경우 차단
   }
 
@@ -240,6 +241,7 @@ function move(i, x, y) {
   if (recordBox && recordBox.style.display === "flex") {
     updateRecordUI();
   }
+  updateCommentBubble();
 
   // 외통수 여부 판단
   checkGameStatus();
@@ -318,6 +320,8 @@ function next() {
   // 외통수 여부 재검사 (앞으로 갈 때도 최종 상태 도달 시 외통 재확인)
   checkGameStatus();
 
+  updateCommentBubble();
+
   checkAndRunAI();
 }
 
@@ -362,6 +366,7 @@ function performSinglePrev() {
   if (recordBox && recordBox.style.display === "flex") {
     updateRecordUI();
   }
+  updateCommentBubble();
 }
 
 function prev() {
@@ -597,6 +602,20 @@ function startNewGame() {
   
   // 8. 설정창 닫기
   disalbeSettingBox();
+  
+  // 9. 메타데이터 및 타이머 리셋
+  gameMetadata = {
+    choPlayer: "",
+    hanPlayer: "",
+    tournament: "",
+    round: "",
+    nickname: "",
+    summary: ""
+  };
+  updateMetadataFormFromState();
+  updateMetadataDisplay();
+  initScoreboardRotation();
+  updateCommentBubble();
 }
 
 function adjustPieceSize(type, delta) {
@@ -1613,7 +1632,7 @@ function rebuildHistory() {
     const startX = tempPieces[i].x;
     const startY = tempPieces[i].y;
     
-    const player = (i <= 15) ? "초" : "한";
+    const player = ((i <= 15) === iAmCho) ? "초" : "한";
     
     let pieceName = "";
     if (i === 0) pieceName = "궁";
@@ -1639,7 +1658,8 @@ function rebuildHistory() {
       startY,
       endX,
       endY,
-      captured: t
+      captured: t,
+      comment: moveInfo.comment || ""
     });
     
     tempPieces[i].x = endX;
@@ -1666,9 +1686,22 @@ function generateGameRecordText() {
   let lines = [];
   lines.push(`상차림: ${sideLayoutDesc}`);
   
+  if (gameMetadata.choPlayer) lines.push(`초나라: ${gameMetadata.choPlayer}`);
+  if (gameMetadata.hanPlayer) lines.push(`한나라: ${gameMetadata.hanPlayer}`);
+  if (gameMetadata.tournament) lines.push(`대회명: ${gameMetadata.tournament}`);
+  if (gameMetadata.round) lines.push(`대국정보: ${gameMetadata.round}`);
+  if (gameMetadata.nickname) lines.push(`기보별명: ${gameMetadata.nickname}`);
+  if (gameMetadata.summary) {
+    const cleanSummary = gameMetadata.summary.replace(/\r?\n/g, "  ");
+    lines.push(`총평: ${cleanSummary}`);
+  }
+  
+  lines.push("");
+  
   const history = rebuildHistory();
   history.forEach(h => {
-    lines.push(`${h.step}. ${h.player} ${h.startY}${h.startX}${h.pieceName}${h.endY}${h.endX}`);
+    const commentSuffix = h.comment ? ` (${h.comment})` : "";
+    lines.push(`${h.step}. ${h.player} ${h.startY}${h.startX}${h.pieceName}${h.endY}${h.endX}${commentSuffix}`);
   });
   
   return lines.join("\n");
@@ -1912,6 +1945,17 @@ function parseMoveLine(line, index) {
   let clean = line.trim();
   if (!clean) return null;
   
+  // 마크다운 강조 기호 제거
+  clean = clean.replace(/[\*_`]/g, "").trim();
+  
+  // Extract comment if present inside parentheses
+  let comment = "";
+  const commentMatch = clean.match(/\(([^)]+)\)/);
+  if (commentMatch) {
+    comment = commentMatch[1].trim();
+    clean = clean.replace(/\([^)]+\)/, "").trim();
+  }
+  
   // Extract step number if present at start (e.g., "1. " or "1: ")
   let step = null;
   const stepMatch = clean.match(/^(\d+)\s*[\.:]/);
@@ -1934,9 +1978,11 @@ function parseMoveLine(line, index) {
   clean = clean.replace(/->|=>/g, "").replace(/\s+/g, "");
   
   // Extract all digits and optional piece character
-  const digits = clean.replace(/[^0-9]/g, "");
   const pieceMatch = clean.match(/[궁차포마상사졸병]/);
   const pieceName = pieceMatch ? pieceMatch[0] : "";
+  if (!pieceName) return null;
+  
+  const digits = clean.replace(/[^0-9]/g, "");
   
   let startStr = "";
   let endStr = "";
@@ -1977,7 +2023,7 @@ function parseMoveLine(line, index) {
     step = index + 1;
   }
   
-  return { step, player, startX, startY, endX, endY, pieceName };
+  return { step, player, startX, startY, endX, endY, pieceName, comment };
 }
 
 function determineIAmChoFromText(text) {
@@ -2047,6 +2093,34 @@ function parseLayoutText(text) {
       }
     }
   }
+
+  // Fallback: 유연한 매칭 (상차림: 키워드가 들어간 줄)
+  for (let line of lines) {
+    const clean = line.replace(/[\*_`]/g, "").trim();
+    if (clean.startsWith("상차림:")) {
+      const content = clean.substring(4).trim();
+      const names = ["마상마상", "마상상마", "상마마상", "상마상마"];
+      
+      let foundLayouts = [];
+      for (let name of names) {
+        if (content.includes(name)) {
+          foundLayouts.push(name);
+        }
+      }
+      
+      if (foundLayouts.length === 1) {
+        const layout = foundLayouts[0];
+        const typeIdx = names.indexOf(layout);
+        const startingCode = knownStart[0][typeIdx] + knownStart[1][typeIdx];
+        return { startingCode, determinedChoIsBottom: true };
+      } else if (foundLayouts.length >= 2) {
+        const typeIdx1 = names.indexOf(foundLayouts[0]);
+        const typeIdx2 = names.indexOf(foundLayouts[1]);
+        const startingCode = knownStart[0][typeIdx1] + knownStart[1][typeIdx2];
+        return { startingCode, determinedChoIsBottom: true };
+      }
+    }
+  }
   return null;
 }
 
@@ -2056,7 +2130,44 @@ function importRecordFromText(text) {
     return;
   }
   
+  // 마크다운 강조 표시(*, **, ` 등) 제거하여 파싱 안정성 확보
+  text = text.replace(/[\*_`]/g, "");
+  
   gameEnded = false;
+  
+  // 0. 메타데이터 초기화 및 파싱
+  gameMetadata = {
+    choPlayer: "",
+    hanPlayer: "",
+    tournament: "",
+    round: "",
+    nickname: "",
+    summary: ""
+  };
+  
+  const rawLines = text.split("\n");
+  for (let line of rawLines) {
+    const cleanLine = line.trim();
+    if (!cleanLine) continue;
+    if (cleanLine.match(/^(\d+)\s*[\.:]/)) {
+      break; // 첫 착수가 등장하면 헤더 파싱 중단
+    }
+    const parts = cleanLine.split(":");
+    if (parts.length >= 2) {
+      const key = parts[0].trim();
+      const val = parts.slice(1).join(":").trim();
+      if (key === "초나라") gameMetadata.choPlayer = val;
+      else if (key === "한나라") gameMetadata.hanPlayer = val;
+      else if (key === "대회명") gameMetadata.tournament = val;
+      else if (key === "대국정보") gameMetadata.round = val;
+      else if (key === "기보별명") gameMetadata.nickname = val;
+      else if (key === "총평") gameMetadata.summary = val;
+    }
+  }
+  
+  updateMetadataFormFromState();
+  updateMetadataDisplay();
+  
   // 1. 상차림 코드 및 진영(iAmCho) 파싱
   let startingCode = "";
   let determinedCho = true;
@@ -2066,7 +2177,6 @@ function importRecordFromText(text) {
     startingCode = layoutTextMatch.startingCode;
     determinedCho = layoutTextMatch.determinedChoIsBottom;
   } else {
-    // Fallback to 64-digit layout code
     const layoutMatch = text.match(/\b\d{64}\b/);
     if (layoutMatch) {
       startingCode = layoutMatch[0];
@@ -2079,11 +2189,10 @@ function importRecordFromText(text) {
   changeNation(determinedCho);
   
   // 2. 착수 로그 파싱
-  const lines = text.split("\n");
   const parsedMoves = [];
   let validLineIdx = 0;
   
-  for (let line of lines) {
+  for (let line of rawLines) {
     const move = parseMoveLine(line, validLineIdx);
     if (move) {
       parsedMoves.push(move);
@@ -2091,7 +2200,6 @@ function importRecordFromText(text) {
     }
   }
   
-  // 만약 착수 로그도 없고, 상차림 텍스트/코드 매칭도 되지 않는다면 에러 처리
   if (parsedMoves.length === 0 && !layoutTextMatch && !text.match(/\b\d{64}\b/)) {
     alert("유효한 기보 데이터를 찾을 수 없습니다. 형식을 확인해 주세요.");
     return;
@@ -2116,7 +2224,6 @@ function importRecordFromText(text) {
       continue;
     }
     
-    // 잡히는 기물 확인
     let capturedId = 32;
     for (let pIdx = 0; pIdx < 32; pIdx++) {
       if (pieces[pIdx].x === move.endX && pieces[pIdx].y === move.endY) {
@@ -2125,10 +2232,8 @@ function importRecordFromText(text) {
       }
     }
     
-    // 로그 추가
-    log.push({ i: pieceId, x: move.endX, y: move.endY, t: capturedId });
+    log.push({ i: pieceId, x: move.endX, y: move.endY, t: capturedId, comment: move.comment || "" });
     
-    // 기물 좌표 수정
     pieces[pieceId].x = move.endX;
     pieces[pieceId].y = move.endY;
     if (capturedId < 32) {
@@ -2228,7 +2333,7 @@ function checkAndRunAI() {
 }
 
 function isKingInCheck(team) {
-  const kingIdx = (team === "cho") ? 0 : 16;
+  const kingIdx = ((team === "cho") === iAmCho) ? 0 : 16;
   const kingX = pieces[kingIdx].x;
   const kingY = pieces[kingIdx].y;
   
@@ -2313,8 +2418,9 @@ function getLegalMoves(team) {
     moves.push({ i: idx, x: tx, y: ty });
   };
   
-  const startIdx = (team === "cho") ? 0 : 16;
-  const endIdx = (team === "cho") ? 15 : 31;
+  const isCho = (team === "cho");
+  const startIdx = (isCho === iAmCho) ? 0 : 16;
+  const endIdx = (isCho === iAmCho) ? 15 : 31;
   
   for (let idx = startIdx; idx <= endIdx; idx++) {
     if (pieces[idx].x !== 0) {
@@ -2475,30 +2581,24 @@ function evaluateBoard() {
   
   for (let idx = 0; idx < 32; idx++) {
     if (pieces[idx].x !== 0) {
-      score += values[idx];
+      const isChoPiece = (idx < 16) === iAmCho;
+      const val = Math.abs(values[idx]);
+      score += isChoPiece ? val : -val;
       
       // 포지션 가치: X축은 중앙에 가까울수록 가치 증가 (최대 2점)
       const xDist = Math.abs(pieces[idx].x - 5);
-      const xBonus = (4 - xDist) * 0.5;
+      const xBonus = (4 - xDist) * 0.5 * (isChoPiece ? 1 : -1);
       
       // Y축은 상대편 진영 방향으로 진격할수록 가치 증가 (최대 3점, 졸/병/마/상 전진성 유도)
-      let yBonus = 0;
-      if (idx < 16) {
-        yBonus = (10 - pieces[idx].y) * 0.3; // 초(Blue): y=10 -> y=1 전진
-      } else {
-        yBonus = -(pieces[idx].y - 1) * 0.3; // 한(Red): y=1 -> y=10 전진
-      }
+      const dist = (idx < 16) ? (10 - pieces[idx].y) : (pieces[idx].y - 1);
+      const yBonus = dist * 0.3 * (isChoPiece ? 1 : -1);
       
       score += xBonus + yBonus;
     }
   }
   
   // 덤 (한나라 후수 1.5점 가중치 보정)
-  if (iAmCho) {
-    score -= 1.5;
-  } else {
-    score += 1.5;
-  }
+  score -= 1.5;
   
   return score;
 }
@@ -2599,7 +2699,8 @@ function initGame() {
       if (recordBox && recordBox.style.display === "flex") {
         updateRecordUI();
       }
-
+      
+      updateCommentBubble();
       checkAndRunAI();
     });
   }
@@ -2618,6 +2719,8 @@ function initGame() {
 
   // 로드 직후 AI 작동 여부 검사
   checkAndRunAI();
+  initScoreboardRotation();
+  updateCommentBubble();
 }
 
 function handleKeyDown(e) {
@@ -2679,7 +2782,7 @@ function handleKeyDown(e) {
           if (!kbCursorActive) {
             kbCursorActive = true;
             // 최초 활성화 시에는 현재 턴 왕의 위치와 가장 가까운 기물이나 첫 기물 선택
-            const kingIdx = isChoTurn ? 0 : 16;
+            const kingIdx = (isChoTurn === iAmCho) ? 0 : 16;
             currIdx = selectablePieceIds.indexOf(kingIdx);
             if (currIdx === -1) currIdx = 0;
           } else {
@@ -2727,7 +2830,7 @@ function handleKeyDown(e) {
           const turnEl = document.getElementById("turn");
           const curTurn = turnEl ? parseInt(turnEl.value, 10) : log.length;
           const isChoTurn = (curTurn % 2 === 0);
-          const kingIdx = isChoTurn ? 0 : 16;
+          const kingIdx = (isChoTurn === iAmCho) ? 0 : 16;
           kbCursorX = pieces[kingIdx].x;
           kbCursorY = pieces[kingIdx].y;
         }
@@ -2790,7 +2893,8 @@ function handleKeyDown(e) {
       let pIdx = whoIsit(kbCursorX, kbCursorY);
       if (pIdx < 32) {
         // 내 기물일 때만 선택 허용
-        if (isChoTurn ? (pIdx < 16) : (pIdx >= 16)) {
+        const isChoPiece = (pIdx < 16) === iAmCho;
+        if (isChoTurn === isChoPiece) {
           selected(pIdx);
         }
       }
@@ -2805,7 +2909,8 @@ function handleKeyDown(e) {
       } else {
         // 후보 이동지가 아닌 경우, 해당 좌표에 내 다른 기물이 있으면 해당 기물로 선택 변경
         let pIdx = whoIsit(kbCursorX, kbCursorY);
-        if (pIdx < 32 && (isChoTurn ? (pIdx < 16) : (pIdx >= 16))) {
+        const isChoPiece = (pIdx < 16) === iAmCho;
+        if (pIdx < 32 && (isChoTurn === isChoPiece)) {
           selected(pIdx);
         } else {
           // 허공이나 상대 기물 클릭 시 선택 취소
@@ -2954,5 +3059,203 @@ function resetDefaultShortcuts() {
   populateShortcutTable();
   showToast("단축키 기본값이 복원되었습니다.");
 }
+
+// === Milestone 1: Rotating Scoreboard & Metadata speech bubble helpers ===
+var currentScoreSlideIndex = 0;
+var scoreRotationInterval = null;
+var scoreboardTimerInterval = null;
+var choTimeSpent = 0;
+var hanTimeSpent = 0;
+
+function initScoreboardRotation() {
+  if (scoreRotationInterval) clearInterval(scoreRotationInterval);
+  scoreRotationInterval = setInterval(() => {
+    rotateScorePanel();
+  }, 5000);
+  
+  if (scoreboardTimerInterval) clearInterval(scoreboardTimerInterval);
+  scoreboardTimerInterval = setInterval(() => {
+    updateScoreboardTimer();
+  }, 1000);
+  
+  choTimeSpent = 0;
+  hanTimeSpent = 0;
+}
+
+function rotateScorePanel() {
+  setScoreSlide((currentScoreSlideIndex + 1) % 3);
+}
+
+function setScoreSlide(index) {
+  currentScoreSlideIndex = index;
+  const slides = document.querySelectorAll(".score-slide");
+  const dots = document.querySelectorAll(".score-dot");
+  
+  slides.forEach((slide, i) => {
+    if (i === index) {
+      slide.classList.add("active");
+    } else {
+      slide.classList.remove("active");
+    }
+  });
+  
+  dots.forEach((dot, i) => {
+    if (i === index) {
+      dot.classList.add("active");
+    } else {
+      dot.classList.remove("active");
+    }
+  });
+  
+  if (scoreRotationInterval) {
+    clearInterval(scoreRotationInterval);
+    scoreRotationInterval = setInterval(() => {
+      rotateScorePanel();
+    }, 5000);
+  }
+}
+
+function updateScoreboardTimer() {
+  if (gameEnded) return;
+  
+  const turnInput = document.getElementById("turn");
+  if (!turnInput) return;
+  const curTurn = parseInt(turnInput.value, 10);
+  const isChoTurn = (curTurn % 2 === 0);
+  
+  if (isChoTurn) {
+    choTimeSpent++;
+  } else {
+    hanTimeSpent++;
+  }
+  
+  const formatTime = (totalSeconds) => {
+    const m = Math.floor(totalSeconds / 60).toString().padStart(2, "0");
+    const s = (totalSeconds % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+  };
+  
+  const choTimerVal = document.getElementById("cho-timer-val");
+  const hanTimerVal = document.getElementById("han-timer-val");
+  if (choTimerVal) choTimerVal.textContent = formatTime(choTimeSpent);
+  if (hanTimerVal) hanTimerVal.textContent = formatTime(hanTimeSpent);
+  
+  const activeTurnDesc = document.getElementById("active-turn-timer-desc");
+  if (activeTurnDesc) {
+    activeTurnDesc.textContent = isChoTurn ? "초나라 (Blue) 차례" : "한나라 (Red) 차례";
+    activeTurnDesc.style.color = isChoTurn ? "#60a5fa" : "#f87171";
+  }
+}
+
+function updateMetadataFromForm() {
+  const choVal = document.getElementById("meta-cho-player").value;
+  const hanVal = document.getElementById("meta-han-player").value;
+  const tourVal = document.getElementById("meta-tournament").value;
+  const roundVal = document.getElementById("meta-round").value;
+  const nickVal = document.getElementById("meta-nickname").value;
+  const sumVal = document.getElementById("meta-summary").value;
+  
+  gameMetadata.choPlayer = choVal;
+  gameMetadata.hanPlayer = hanVal;
+  gameMetadata.tournament = tourVal;
+  gameMetadata.round = roundVal;
+  gameMetadata.nickname = nickVal;
+  gameMetadata.summary = sumVal;
+  
+  updateMetadataDisplay();
+}
+
+function updateMetadataFormFromState() {
+  const choEl = document.getElementById("meta-cho-player");
+  const hanEl = document.getElementById("meta-han-player");
+  const tourEl = document.getElementById("meta-tournament");
+  const roundEl = document.getElementById("meta-round");
+  const nickEl = document.getElementById("meta-nickname");
+  const sumEl = document.getElementById("meta-summary");
+  
+  if (choEl) choEl.value = gameMetadata.choPlayer || "";
+  if (hanEl) hanEl.value = gameMetadata.hanPlayer || "";
+  if (tourEl) tourEl.value = gameMetadata.tournament || "";
+  if (roundEl) roundEl.value = gameMetadata.round || "";
+  if (nickEl) nickEl.value = gameMetadata.nickname || "";
+  if (sumEl) sumEl.value = gameMetadata.summary || "";
+}
+
+function updateMetadataDisplay() {
+  const tourDisp = document.getElementById("meta-tournament-display");
+  const choDisp = document.getElementById("meta-cho-player-display");
+  const hanDisp = document.getElementById("meta-han-player-display");
+  
+  if (tourDisp) {
+    tourDisp.textContent = gameMetadata.tournament || (gameMetadata.nickname ? gameMetadata.nickname : "대회명 미지정");
+  }
+  if (choDisp) {
+    choDisp.textContent = gameMetadata.choPlayer || "초나라";
+  }
+  if (hanDisp) {
+    hanDisp.textContent = gameMetadata.hanPlayer || "한나라";
+  }
+}
+
+function updateCurrentStepComment() {
+  const turnInput = document.getElementById("turn");
+  if (!turnInput) return;
+  const curTurn = parseInt(turnInput.value, 10);
+  if (curTurn <= 0) return;
+  
+  const commentInput = document.getElementById("current-step-comment");
+  if (!commentInput) return;
+  
+  if (log[curTurn - 1]) {
+    log[curTurn - 1].comment = commentInput.value;
+    updateCommentBubble();
+  }
+}
+
+function updateCommentBubble() {
+  const turnInput = document.getElementById("turn");
+  if (!turnInput) return;
+  const curTurn = parseInt(turnInput.value, 10);
+  
+  const bubble = document.getElementById("comment-bubble");
+  const bubbleText = document.getElementById("comment-bubble-text");
+  const commentFormInput = document.getElementById("current-step-comment");
+  const commentTitle = document.getElementById("current-step-comment-title");
+  
+  if (commentTitle) {
+    commentTitle.textContent = `현재 수순 (${curTurn}수) 코멘트`;
+  }
+  
+  if (curTurn <= 0) {
+    if (bubble) bubble.style.display = "none";
+    if (commentFormInput) commentFormInput.value = "";
+    return;
+  }
+  
+  const currentMove = log[curTurn - 1];
+  if (currentMove) {
+    const comment = currentMove.comment || "";
+    if (commentFormInput) {
+      commentFormInput.value = comment;
+    }
+    
+    if (comment.trim()) {
+      if (bubbleText) bubbleText.textContent = comment;
+      if (bubble) bubble.style.display = "block";
+    } else {
+      if (bubble) bubble.style.display = "none";
+    }
+  } else {
+    if (commentFormInput) commentFormInput.value = "";
+    if (bubble) bubble.style.display = "none";
+  }
+}
+
+// Bind to window to prevent module scoping issues
+window.rotateScorePanel = rotateScorePanel;
+window.setScoreSlide = setScoreSlide;
+window.updateMetadataFromForm = updateMetadataFromForm;
+window.updateCurrentStepComment = updateCurrentStepComment;
+window.updateCommentBubble = updateCommentBubble;
 
 initGame();
