@@ -4049,6 +4049,149 @@ function updateAutoplayUI() {
   }
 }
 
+function flipBoardHorizontal() {
+  const boardSvg = document.getElementById("janggi-svg");
+  if (!boardSvg || boardAnimating) return;
+  
+  boardAnimating = true;
+  
+  logPieceCenters("0ms Start");
+  
+  const startPositions = [];
+  for (let i = 0; i < 32; i++) {
+    startPositions[i] = { x: pieces[i].x, y: pieces[i].y };
+  }
+  const oldKbCursorX = kbCursorX;
+  const oldKbCursorY = kbCursorY;
+  
+  boardSvg.style.transformOrigin = `${boardWidth / 2}px ${boardHeight / 2}px`;
+  
+  // Stage 1: Board flips horizontally (0ms -> 500ms)
+  boardSvg.classList.add("flip-h-anim");
+  
+  setTimeout(() => {
+    logPieceCenters("500ms Phase 1 Complete (Board rotated 180deg)");
+    
+    // Stage 2: Pieces rotate 180deg in place (500ms -> 1000ms)
+    flipActive = true;
+    
+    for (let i = 0; i < 32; i++) {
+      if (pieces[i].x !== 0 && startPositions[i].x !== 0) {
+        const startPos = startPositions[i];
+        const ratio = (i === 0 || i === 16) ? sizeKing : ((i === 1 || i === 2 || i === 17 || i === 18 || i === 3 || i === 4 || i === 19 || i === 20 || i === 5 || i === 6 || i === 21 || i === 22 || i === 7 || i === 8 || i === 23 || i === 24) ? sizeMiddle : sizeSmall);
+        const sizeVal = unitSize * ratio;
+        const ax = getAxis(startPos.x, startPos.y).x - sizeVal / 2;
+        const ay = getAxis(startPos.x, startPos.y).y - sizeVal / 2;
+        
+        pieces[i].e.style.transition = "none";
+        pieces[i].e.style.transformOrigin = "50% 50%";
+        pieces[i].e.style.transform = `translate(${ax}px, ${ay}px) rotateY(0deg)`;
+        pieces[i].e.classList.add("smooth-move-anim");
+      }
+    }
+    
+    const cursor = document.getElementById("kb-cursor");
+    if (cursor && kbCursorActive) {
+      const sizeVal = unitSize * 0.85;
+      const ax = getAxis(oldKbCursorX, oldKbCursorY).x - sizeVal / 2;
+      const ay = getAxis(oldKbCursorX, oldKbCursorY).y - sizeVal / 2;
+      
+      cursor.style.transition = "none";
+      cursor.style.transformOrigin = "50% 50%";
+      cursor.style.transform = `translate(${ax}px, ${ay}px) rotateY(0deg)`;
+      cursor.classList.add("smooth-move-anim");
+    }
+    
+    document.body.offsetHeight; // Force reflow
+    
+    // Trigger Stage 2: Rotate 180deg in place
+    for (let i = 0; i < 32; i++) {
+      if (pieces[i].x !== 0 && startPositions[i].x !== 0) {
+        const startPos = startPositions[i];
+        const ratio = (i === 0 || i === 16) ? sizeKing : ((i === 1 || i === 2 || i === 17 || i === 18 || i === 3 || i === 4 || i === 19 || i === 20 || i === 5 || i === 6 || i === 21 || i === 22 || i === 7 || i === 8 || i === 23 || i === 24) ? sizeMiddle : sizeSmall);
+        const sizeVal = unitSize * ratio;
+        const ax = getAxis(startPos.x, startPos.y).x - sizeVal / 2;
+        const ay = getAxis(startPos.x, startPos.y).y - sizeVal / 2;
+        
+        pieces[i].e.style.transition = "";
+        pieces[i].e.style.transform = `translate(${ax}px, ${ay}px) rotateY(-180deg)`;
+      }
+    }
+    
+    if (cursor && kbCursorActive) {
+      const sizeVal = unitSize * 0.85;
+      const ax = getAxis(oldKbCursorX, oldKbCursorY).x - sizeVal / 2;
+      const ay = getAxis(oldKbCursorX, oldKbCursorY).y - sizeVal / 2;
+      
+      cursor.style.transition = "";
+      cursor.style.transform = `translate(${ax}px, ${ay}px) rotateY(-180deg)`;
+    }
+    
+    setTimeout(() => {
+      logPieceCenters("1000ms Phase 2 Complete (Pieces counter-rotated)");
+      
+      // Stage 3: Pieces slide to target positions (1000ms -> 1500ms)
+      for (let i = 0; i < 32; i++) {
+        if (pieces[i].x !== 0 && startPositions[i].x !== 0) {
+          const startPos = startPositions[i];
+          const finalLogicalPos = { x: 10 - startPos.x, y: startPos.y };
+          const axisStart = getAxis(startPos.x, startPos.y);
+          const axisEnd = getAxis(finalLogicalPos.x, finalLogicalPos.y);
+          
+          const ratio = (i === 0 || i === 16) ? sizeKing : ((i === 1 || i === 2 || i === 17 || i === 18 || i === 3 || i === 4 || i === 19 || i === 20 || i === 5 || i === 6 || i === 21 || i === 22 || i === 7 || i === 8 || i === 23 || i === 24) ? sizeMiddle : sizeSmall);
+          const sizeVal = unitSize * ratio;
+          const ax = axisStart.x - sizeVal / 2;
+          const ay = axisStart.y - sizeVal / 2;
+          
+          const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
+          const dy = 0;
+          
+          pieces[i].e.style.transform = `translate(${ax + 2 * dx}px, ${ay + 2 * dy}px) rotateY(-180deg)`;
+        }
+      }
+      
+      if (cursor && kbCursorActive) {
+        const sizeVal = unitSize * 0.85;
+        const axisStart = getAxis(oldKbCursorX, oldKbCursorY);
+        const axisEnd = getAxis(10 - oldKbCursorX, oldKbCursorY);
+        const ax = axisStart.x - sizeVal / 2;
+        const ay = axisStart.y - sizeVal / 2;
+        
+        const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
+        const dy = 0;
+        
+        cursor.style.transform = `translate(${ax + 2 * dx}px, ${ay + 2 * dy}px) rotateY(-180deg)`;
+      }
+      
+      setTimeout(() => {
+        logPieceCenters("1500ms Phase 3 Complete (Pieces slid to destination)");
+        
+        executeFlipBoardHorizontal();
+        
+        boardSvg.classList.remove("flip-h-anim");
+        boardSvg.style.transformOrigin = "";
+        for (let i = 0; i < 32; i++) {
+          pieces[i].e.style.transformOrigin = "";
+          pieces[i].e.style.transform = "";
+          pieces[i].e.classList.remove("smooth-move-anim");
+        }
+        if (cursor) {
+          cursor.style.transformOrigin = "";
+          cursor.style.transform = "";
+          cursor.classList.remove("smooth-move-anim");
+        }
+        
+        initPositions();
+        if (kbCursorActive) updateKeyboardCursor();
+        
+        boardAnimating = false;
+      }, 500); // Phase 3 duration
+      
+    }, 500); // Phase 2 duration
+    
+  }, 500); // Phase 1 duration
+};
+
 function goToStart() {
   clearCandiBox();
   let startingLayoutCode = knownStart[0][newGameState[0]] + knownStart[1][newGameState[1]];
@@ -4246,135 +4389,6 @@ function applyCommentBoxTheme() {
   }
 }
 
-function flipBoardHorizontal() {
-  const boardSvg = document.getElementById("janggi-svg");
-  if (!boardSvg || boardAnimating) return;
-  
-  boardAnimating = true;
-  
-  // Save starting positions before any changes
-  const startPositions = [];
-  for (let i = 0; i < 32; i++) {
-    startPositions[i] = { x: pieces[i].x, y: pieces[i].y };
-  }
-  const oldKbCursorX = kbCursorX;
-  const oldKbCursorY = kbCursorY;
-  
-  // Set explicit transform-origin based on exact mathematical coordinates to bypass browser SVG bounding-box bugs
-  boardSvg.style.transformOrigin = `${boardWidth / 2}px ${boardHeight / 2}px`;
-  
-  // Phase 1: Board flips horizontally as one body.
-  boardSvg.classList.add("flip-h-anim");
-  
-  setTimeout(() => {
-    // Phase 2: Board finished flipping.
-    for (let i = 0; i < 32; i++) {
-      if (pieces[i].x !== 0 && startPositions[i].x !== 0) {
-        const startPos = startPositions[i];
-        const finalLogicalPos = { x: 10 - startPos.x, y: startPos.y };
-        
-        const axisStart = getAxis(startPos.x, startPos.y);
-        const axisEnd = getAxis(finalLogicalPos.x, finalLogicalPos.y);
-        
-        const ratio = (i === 0 || i === 16) ? sizeKing : ((i === 1 || i === 2 || i === 17 || i === 18 || i === 3 || i === 4 || i === 19 || i === 20 || i === 5 || i === 6 || i === 21 || i === 22 || i === 7 || i === 8 || i === 23 || i === 24) ? sizeMiddle : sizeSmall);
-        const sizeVal = unitSize * ratio;
-        
-        const ax = axisStart.x - sizeVal / 2;
-        const ay = axisStart.y - sizeVal / 2;
-        
-        // Midpoint calculation based on screen coordinates (incorporating padding margins)
-        const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
-        const dy = 0; // Horizontal flip keeps Y physically unchanged on screen
-        
-        pieces[i].e.style.transition = "none";
-        pieces[i].e.style.transformOrigin = "50% 50%";
-        pieces[i].e.style.transform = `translate(${ax}px, ${ay}px) rotateY(0deg)`;
-        pieces[i].e.classList.add("smooth-move-anim");
-      }
-    }
-    
-    const cursor = document.getElementById("kb-cursor");
-    if (cursor && kbCursorActive) {
-      const sizeVal = unitSize * 0.85;
-      const axisStart = getAxis(oldKbCursorX, oldKbCursorY);
-      const axisEnd = getAxis(10 - oldKbCursorX, oldKbCursorY);
-      
-      const ax = axisStart.x - sizeVal / 2;
-      const ay = axisStart.y - sizeVal / 2;
-      
-      const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
-      const dy = 0;
-      
-      cursor.style.transition = "none";
-      cursor.style.transformOrigin = "50% 50%";
-      cursor.style.transform = `translate(${ax}px, ${ay}px) rotateY(0deg)`;
-      cursor.classList.add("smooth-move-anim");
-    }
-    
-    // Force style recalculation to apply start state
-    document.body.offsetHeight;
-    
-    // Trigger transition to target transforms (rotate 180 degrees around midpoint via translation)
-    for (let i = 0; i < 32; i++) {
-      if (pieces[i].x !== 0 && startPositions[i].x !== 0) {
-        const startPos = startPositions[i];
-        const finalLogicalPos = { x: 10 - startPos.x, y: startPos.y };
-        const axisStart = getAxis(startPos.x, startPos.y);
-        const axisEnd = getAxis(finalLogicalPos.x, finalLogicalPos.y);
-        
-        const ratio = (i === 0 || i === 16) ? sizeKing : ((i === 1 || i === 2 || i === 17 || i === 18 || i === 3 || i === 4 || i === 19 || i === 20 || i === 5 || i === 6 || i === 21 || i === 22 || i === 7 || i === 8 || i === 23 || i === 24) ? sizeMiddle : sizeSmall);
-        const sizeVal = unitSize * ratio;
-        const ax = axisStart.x - sizeVal / 2;
-        const ay = axisStart.y - sizeVal / 2;
-        
-        const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
-        const dy = 0;
-        
-        pieces[i].e.style.transition = "";
-        pieces[i].e.style.transform = `translate(${ax + 2 * dx}px, ${ay + 2 * dy}px) rotateY(-180deg)`;
-      }
-    }
-    
-    if (cursor && kbCursorActive) {
-      const sizeVal = unitSize * 0.85;
-      const axisStart = getAxis(oldKbCursorX, oldKbCursorY);
-      const axisEnd = getAxis(10 - oldKbCursorX, oldKbCursorY);
-      const ax = axisStart.x - sizeVal / 2;
-      const ay = axisStart.y - sizeVal / 2;
-      
-      const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
-      const dy = 0;
-      
-      cursor.style.transition = "";
-      cursor.style.transform = `translate(${ax + 2 * dx}px, ${ay + 2 * dy}px) rotateY(-180deg)`;
-    }
-    
-    setTimeout(() => {
-      // Phase 2 finished. Execute logical horizontal flip
-      executeFlipBoardHorizontal();
-      
-      // Clean up Phase 2 style overrides
-      boardSvg.classList.remove("flip-h-anim");
-      boardSvg.style.transformOrigin = "";
-      for (let i = 0; i < 32; i++) {
-        pieces[i].e.style.transformOrigin = "";
-        pieces[i].e.style.transform = "";
-        pieces[i].e.classList.remove("smooth-move-anim");
-      }
-      if (cursor) {
-        cursor.style.transformOrigin = "";
-        cursor.style.transform = "";
-        cursor.classList.remove("smooth-move-anim");
-      }
-      
-      initPositions();
-      if (kbCursorActive) updateKeyboardCursor();
-      
-      boardAnimating = false;
-    }, 500); // Phase 2 duration
-    
-  }, 500); // Phase 1 duration
-}
 
 function executeFlipBoardHorizontal() {
   // 1. Flip initPieces
@@ -4451,10 +4465,8 @@ function flipBoardVertical() {
   
   boardAnimating = true;
   
-  // Log 1: Start of board rotation (0ms)
   logPieceCenters("0ms Start");
   
-  // Save starting positions of all pieces
   const startPositions = [];
   for (let i = 0; i < 32; i++) {
     startPositions[i] = { x: pieces[i].x, y: pieces[i].y };
@@ -4462,43 +4474,24 @@ function flipBoardVertical() {
   const oldKbCursorX = kbCursorX;
   const oldKbCursorY = kbCursorY;
   
-  // Set explicit transform-origin based on exact mathematical coordinates to bypass browser SVG bounding-box bugs
   boardSvg.style.transformOrigin = `${boardWidth / 2}px ${boardHeight / 2}px`;
   
-  // Phase 1: Board spins 180 degrees as one body.
+  // Stage 1: Board spins (0ms -> 500ms)
   boardSvg.classList.add("rotate-180-anim");
   
   setTimeout(() => {
-    // Log 2: Phase 1 complete / Phase 2 start (500ms)
     logPieceCenters("500ms Phase 1 Complete (Board rotated 180deg)");
     
-    // Phase 2: Board finished spinning. Animate the pieces relative to their unchanged positions.
+    // Stage 2: Pieces rotate 180deg in place (500ms -> 1000ms)
     rotateActive = true;
     
     for (let i = 0; i < 32; i++) {
       if (pieces[i].x !== 0 && startPositions[i].x !== 0) {
         const startPos = startPositions[i];
-        
-        // Use the piece's own flipped coordinates as its target position
-        const finalLogicalPos = {
-          x: 10 - startPos.x,
-          y: flipYCoordinate(startPos.y)
-        };
-        
-        const axisStart = getAxis(startPos.x, startPos.y);
-        const axisEnd = getAxis(finalLogicalPos.x, finalLogicalPos.y);
-        
         const ratio = (i === 0 || i === 16) ? sizeKing : ((i === 1 || i === 2 || i === 17 || i === 18 || i === 3 || i === 4 || i === 19 || i === 20 || i === 5 || i === 6 || i === 21 || i === 22 || i === 7 || i === 8 || i === 23 || i === 24) ? sizeMiddle : sizeSmall);
         const sizeVal = unitSize * ratio;
-        
-        const ax = axisStart.x - sizeVal / 2;
-        const ay = axisStart.y - sizeVal / 2;
-        
-        // Midpoint calculation based on screen coordinates (incorporating padding margins)
-        const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
-        const dy = (boardHeight - axisEnd.y - axisStart.y) / 2;
-        
-        console.log(`[Phase 2 Axis] Piece ${i} (${pieces[i].e.id}): x=${startPos.x}, y=${startPos.y} => target x=${finalLogicalPos.x}, y=${finalLogicalPos.y} | sizeVal=${sizeVal.toFixed(2)} | dx=${dx.toFixed(2)}, dy=${dy.toFixed(2)} | Axis relative to board: (${(ax + sizeVal/2 + dx).toFixed(2)}, ${(ay + sizeVal/2 + dy).toFixed(2)}) | transformOrigin: 50% 50%`);
+        const ax = getAxis(startPos.x, startPos.y).x - sizeVal / 2;
+        const ay = getAxis(startPos.x, startPos.y).y - sizeVal / 2;
         
         pieces[i].e.style.transition = "none";
         pieces[i].e.style.transformOrigin = "50% 50%";
@@ -4510,14 +4503,8 @@ function flipBoardVertical() {
     const cursor = document.getElementById("kb-cursor");
     if (cursor && kbCursorActive) {
       const sizeVal = unitSize * 0.85;
-      const axisStart = getAxis(oldKbCursorX, oldKbCursorY);
-      const axisEnd = getAxis(10 - oldKbCursorX, flipYCoordinate(oldKbCursorY));
-      
-      const ax = axisStart.x - sizeVal / 2;
-      const ay = axisStart.y - sizeVal / 2;
-      
-      const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
-      const dy = (boardHeight - axisEnd.y - axisStart.y) / 2;
+      const ax = getAxis(oldKbCursorX, oldKbCursorY).x - sizeVal / 2;
+      const ay = getAxis(oldKbCursorX, oldKbCursorY).y - sizeVal / 2;
       
       cursor.style.transition = "none";
       cursor.style.transformOrigin = "50% 50%";
@@ -4525,75 +4512,96 @@ function flipBoardVertical() {
       cursor.classList.add("smooth-move-anim");
     }
     
-    // Force style recalculation to apply start state
-    document.body.offsetHeight;
+    document.body.offsetHeight; // Force reflow
     
-    // Trigger transition to target transforms (rotate 180 degrees around midpoint via translation)
+    // Trigger Stage 2: Rotate 180deg in place
     for (let i = 0; i < 32; i++) {
       if (pieces[i].x !== 0 && startPositions[i].x !== 0) {
         const startPos = startPositions[i];
-        const finalLogicalPos = {
-          x: 10 - startPos.x,
-          y: flipYCoordinate(startPos.y)
-        };
-        const axisStart = getAxis(startPos.x, startPos.y);
-        const axisEnd = getAxis(finalLogicalPos.x, finalLogicalPos.y);
         const ratio = (i === 0 || i === 16) ? sizeKing : ((i === 1 || i === 2 || i === 17 || i === 18 || i === 3 || i === 4 || i === 19 || i === 20 || i === 5 || i === 6 || i === 21 || i === 22 || i === 7 || i === 8 || i === 23 || i === 24) ? sizeMiddle : sizeSmall);
         const sizeVal = unitSize * ratio;
+        const ax = getAxis(startPos.x, startPos.y).x - sizeVal / 2;
+        const ay = getAxis(startPos.x, startPos.y).y - sizeVal / 2;
+        
+        pieces[i].e.style.transition = "";
+        pieces[i].e.style.transform = `translate(${ax}px, ${ay}px) rotate(-180deg)`;
+      }
+    }
+    
+    if (cursor && kbCursorActive) {
+      const sizeVal = unitSize * 0.85;
+      const ax = getAxis(oldKbCursorX, oldKbCursorY).x - sizeVal / 2;
+      const ay = getAxis(oldKbCursorX, oldKbCursorY).y - sizeVal / 2;
+      
+      cursor.style.transition = "";
+      cursor.style.transform = `translate(${ax}px, ${ay}px) rotate(-180deg)`;
+    }
+    
+    setTimeout(() => {
+      logPieceCenters("1000ms Phase 2 Complete (Pieces counter-rotated)");
+      
+      // Stage 3: Pieces slide to target positions (1000ms -> 1500ms)
+      for (let i = 0; i < 32; i++) {
+        if (pieces[i].x !== 0 && startPositions[i].x !== 0) {
+          const startPos = startPositions[i];
+          const finalLogicalPos = {
+            x: 10 - startPos.x,
+            y: flipYCoordinate(startPos.y)
+          };
+          const axisStart = getAxis(startPos.x, startPos.y);
+          const axisEnd = getAxis(finalLogicalPos.x, finalLogicalPos.y);
+          const ratio = (i === 0 || i === 16) ? sizeKing : ((i === 1 || i === 2 || i === 17 || i === 18 || i === 3 || i === 4 || i === 19 || i === 20 || i === 5 || i === 6 || i === 21 || i === 22 || i === 7 || i === 8 || i === 23 || i === 24) ? sizeMiddle : sizeSmall);
+          const sizeVal = unitSize * ratio;
+          const ax = axisStart.x - sizeVal / 2;
+          const ay = axisStart.y - sizeVal / 2;
+          
+          const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
+          const dy = (boardHeight - axisEnd.y - axisStart.y) / 2;
+          
+          pieces[i].e.style.transform = `translate(${ax + 2 * dx}px, ${ay + 2 * dy}px) rotate(-180deg)`;
+        }
+      }
+      
+      if (cursor && kbCursorActive) {
+        const sizeVal = unitSize * 0.85;
+        const axisStart = getAxis(oldKbCursorX, oldKbCursorY);
+        const axisEnd = getAxis(10 - oldKbCursorX, flipYCoordinate(oldKbCursorY));
         const ax = axisStart.x - sizeVal / 2;
         const ay = axisStart.y - sizeVal / 2;
         
         const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
         const dy = (boardHeight - axisEnd.y - axisStart.y) / 2;
         
-        pieces[i].e.style.transition = "";
-        pieces[i].e.style.transform = `translate(${ax + 2 * dx}px, ${ay + 2 * dy}px) rotate(-180deg)`;
+        cursor.style.transform = `translate(${ax + 2 * dx}px, ${ay + 2 * dy}px) rotate(-180deg)`;
       }
-    }
-    
-    if (cursor && kbCursorActive) {
-      const sizeVal = unitSize * 0.85;
-      const axisStart = getAxis(oldKbCursorX, oldKbCursorY);
-      const axisEnd = getAxis(10 - oldKbCursorX, flipYCoordinate(oldKbCursorY));
-      const ax = axisStart.x - sizeVal / 2;
-      const ay = axisStart.y - sizeVal / 2;
       
-      const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
-      const dy = (boardHeight - axisEnd.y - axisStart.y) / 2;
+      setTimeout(() => {
+        logPieceCenters("1500ms Phase 3 Complete (Pieces slid to destination)");
+        
+        executeFlipBoardVertical();
+        
+        boardSvg.classList.remove("rotate-180-anim");
+        boardSvg.style.transformOrigin = "";
+        for (let i = 0; i < 32; i++) {
+          pieces[i].e.style.transformOrigin = "";
+          pieces[i].e.style.transform = "";
+          pieces[i].e.classList.remove("smooth-move-anim");
+        }
+        if (cursor) {
+          cursor.style.transformOrigin = "";
+          cursor.style.transform = "";
+          cursor.classList.remove("smooth-move-anim");
+        }
+        rotateActive = false;
+        
+        initPositions();
+        if (kbCursorActive) updateKeyboardCursor();
+        
+        logPieceCenters("1500ms+ Final Redraw Complete");
+        
+        boardAnimating = false;
+      }, 500); // Phase 3 duration
       
-      cursor.style.transition = "";
-      cursor.style.transform = `translate(${ax + 2 * dx}px, ${ay + 2 * dy}px) rotate(-180deg)`;
-    }
-    
-    setTimeout(() => {
-      // Log 3: Phase 2 complete (1000ms, before executeFlipBoardVertical)
-      logPieceCenters("1000ms Phase 2 Complete (Pieces counter-rotated)");
-      
-      // Phase 2 finished. Execute logical vertical flip
-      executeFlipBoardVertical();
-      
-      // Clean up Phase 2 style overrides
-      boardSvg.classList.remove("rotate-180-anim");
-      boardSvg.style.transformOrigin = "";
-      for (let i = 0; i < 32; i++) {
-        pieces[i].e.style.transformOrigin = "";
-        pieces[i].e.style.transform = "";
-        pieces[i].e.classList.remove("smooth-move-anim");
-      }
-      if (cursor) {
-        cursor.style.transformOrigin = "";
-        cursor.style.transform = "";
-        cursor.classList.remove("smooth-move-anim");
-      }
-      rotateActive = false;
-      
-      initPositions();
-      if (kbCursorActive) updateKeyboardCursor();
-      
-      // Log 4: Final updated positions (after redraw)
-      logPieceCenters("1000ms+ Final Redraw Complete");
-      
-      boardAnimating = false;
     }, 500); // Phase 2 duration
     
   }, 500); // Phase 1 duration
