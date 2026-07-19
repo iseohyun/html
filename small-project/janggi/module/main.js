@@ -2806,19 +2806,18 @@ function evaluateBoard() {
 
 // 게임 초기화 실행부
 function initGame() {
-  // 새로고침(F5) 시에는 URL의 이전 게임 상태(p, log, t, cho)만 비우고 무조건 새 대국으로 시작 (SPA의 다른 라우팅 파라미터는 보존)
-  const isReload = performance.getEntriesByType("navigation")[0]?.type === "reload";
-  if (isReload) {
-    const url = new URL(window.location.href);
+  // 1. 데이터 및 기물 DOM 바인딩 선행 수행
+  initData();
+  
+  // URL에서 대국 정보를 읽은 직후, 주소창의 대국 상태 파라미터(p, log, t, cho)만 비워 새로고침 시 무조건 새 게임이 시작되도록 함
+  const url = new URL(window.location.href);
+  if (url.searchParams.has("p") || url.searchParams.has("log") || url.searchParams.has("t") || url.searchParams.has("cho")) {
     url.searchParams.delete("p");
     url.searchParams.delete("log");
     url.searchParams.delete("t");
     url.searchParams.delete("cho");
     window.history.replaceState({}, "", url.toString());
   }
-
-  // 1. 데이터 및 기물 DOM 바인딩 선행 수행
-  initData();
   
   // active slot 로드
   if (localStorage.getItem("janggi_active_slot") !== null) {
