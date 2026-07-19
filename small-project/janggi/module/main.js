@@ -1161,7 +1161,8 @@ function saveCurrentConfigToSlot() {
     settingsTextColorType,
     settingsTextColorCustom,
     settingsAccentColor,
-    aiMode
+    aiMode,
+    cursorLockMode
   };
   localStorage.setItem("janggi_settings_slot_" + activeSlot, JSON.stringify(config));
 }
@@ -1196,6 +1197,7 @@ function loadConfigFromSlot() {
     if (config.settingsTextColorCustom) settingsTextColorCustom = config.settingsTextColorCustom;
     if (config.settingsAccentColor) settingsAccentColor = config.settingsAccentColor;
     if (config.aiMode !== undefined && config.aiMode !== null) aiMode = parseInt(config.aiMode, 10);
+    if (config.cursorLockMode !== undefined && config.cursorLockMode !== null) cursorLockMode = (config.cursorLockMode === "true" || config.cursorLockMode === true);
     
     localStorage.setItem("showCoordinates", showCoordinates);
     localStorage.setItem("sizeKing", sizeKing);
@@ -1215,6 +1217,7 @@ function loadConfigFromSlot() {
     localStorage.setItem("settingsTextColorCustom", settingsTextColorCustom);
     localStorage.setItem("settingsAccentColor", settingsAccentColor);
     localStorage.setItem("aiMode", aiMode);
+    localStorage.setItem("cursorLockMode", cursorLockMode);
     
     changeBoardColor(boardColorType);
     changeChoColor(choColorType);
@@ -1506,6 +1509,9 @@ function initSettingsUI() {
   
   const aiModeSelect = document.getElementById("ai-mode-select");
   if (aiModeSelect) aiModeSelect.value = aiMode;
+
+  const cursorLockSelect = document.getElementById("cursor-lock-select");
+  if (cursorLockSelect) cursorLockSelect.value = cursorLockMode ? "true" : "false";
 }
 
 // ----------------------------------------------------
@@ -2163,6 +2169,13 @@ function changeAiMode(val) {
   checkAndRunAI();
 }
 
+function changeCursorLockMode(val) {
+  cursorLockMode = (val === "true" || val === true);
+  localStorage.setItem("cursorLockMode", cursorLockMode);
+  saveCurrentConfigToSlot();
+  initSettingsUI();
+}
+
 var aiThinking = false;
 
 function checkAndRunAI() {
@@ -2498,6 +2511,9 @@ function initGame() {
   if (localStorage.getItem("aiMode") !== null) {
     aiMode = parseInt(localStorage.getItem("aiMode"), 10);
   }
+  if (localStorage.getItem("cursorLockMode") !== null) {
+    cursorLockMode = (localStorage.getItem("cursorLockMode") === "true");
+  }
 
   initSettingsUI();
   
@@ -2595,50 +2611,132 @@ function handleKeyDown(e) {
     return;
   }
 
+  // CapsLock 키로 커서락 모드 토글
+  if (e.key === "CapsLock") {
+    e.preventDefault();
+    cursorLockMode = !cursorLockMode;
+    localStorage.setItem("cursorLockMode", cursorLockMode);
+    
+    // UI 업데이트
+    const cursorLockSelect = document.getElementById("cursor-lock-select");
+    if (cursorLockSelect) cursorLockSelect.value = cursorLockMode ? "true" : "false";
+    
+    showToast(cursorLockMode ? "커서락 모드 활성화" : "커서락 모드 비활성화");
+    return;
+  }
+
   // 방향키 처리
   if (e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === "ArrowLeft" || e.key === "ArrowRight") {
     e.preventDefault();
-    if (!kbCursorActive) {
-      kbCursorActive = true;
-      
-      // 이미 선택된 기물이 있다면 해당 기물 좌표에서 시작, 아니면 현재 턴 왕의 위치에서 시작
-      if (curSelect < 32 && pieces[curSelect].x !== 0) {
-        kbCursorX = pieces[curSelect].x;
-        kbCursorY = pieces[curSelect].y;
-      } else {
-        const curTurn = log.length;
-        const isChoTurn = (curTurn % 2 === 0);
-        const kingIdx = isChoTurn ? 0 : 16;
-        kbCursorX = pieces[kingIdx].x;
-        kbCursorY = pieces[kingIdx].y;
-      }
-    }
     
-    // 키보드 모드 활성화 여부와 상관없이 항상 이동 명령을 즉각 실행
-    if (e.key === "ArrowUp") {
-      let ny = yPrev(kbCursorY);
-      if (ny !== -1) kbCursorY = ny;
-    } else if (e.key === "ArrowDown") {
-      let ny = yNext(kbCursorY);
-      if (ny !== -1) kbCursorY = ny;
-    } else if (e.key === "ArrowLeft") {
-      if (kbCursorX > 1) kbCursorX -= 1;
-    } else if (e.key === "ArrowRight") {
-      if (kbCursorX < 9) kbCursorX += 1;
+    if (cursorLockMode) {
+      const curTurn = log.length;
+      const isChoTurn = (curTurn % 2 === 0);
+      const currentTeam = isChoTurn ? "cho" : "han";
+      const allFilteredMoves = getFilteredLegalMoves(currentTeam);
+      
+      const isForward = (e.key === "ArrowRight" || e.key === "ArrowDown");
+      
+      if (curSelect === 32) {
+        // 커서락 모드 - 선택 기물 고르기
+        const selectablePieceIds = Array.from(new Set(allFilteredMoves.map(m => m.i))).sort((a, b) => a - b);
+        if (selectablePieceIds.length > 0) {
+          let currIdx = selectablePieceIds.findIndex(id => pieces[id].x === kbCursorX && pieces[id].y === kbCursorY);
+          
+          if (!kbCursorActive) {
+            kbCursorActive = true;
+            // 최초 활성화 시에는 현재 턴 왕의 위치와 가장 가까운 기물이나 첫 기물 선택
+            const kingIdx = isChoTurn ? 0 : 16;
+            currIdx = selectablePieceIds.indexOf(kingIdx);
+            if (currIdx === -1) currIdx = 0;
+          } else {
+            if (isForward) {
+              currIdx = (currIdx + 1) % selectablePieceIds.length;
+            } else {
+              currIdx = (currIdx - 1 + selectablePieceIds.length) % selectablePieceIds.length;
+            }
+          }
+          
+          kbCursorX = pieces[selectablePieceIds[currIdx]].x;
+          kbCursorY = pieces[selectablePieceIds[currIdx]].y;
+        }
+      } else {
+        // 커서락 모드 - 기물이 이미 선택된 상태에서 가용한 후보 영역 중에서만 순환 이동
+        const validMoves = allFilteredMoves.filter(m => m.i === curSelect);
+        if (validMoves.length > 0) {
+          let currIdx = validMoves.findIndex(m => m.x === kbCursorX && m.y === kbCursorY);
+          
+          if (!kbCursorActive) {
+            kbCursorActive = true;
+            currIdx = 0;
+          } else {
+            if (isForward) {
+              currIdx = (currIdx + 1) % validMoves.length;
+            } else {
+              currIdx = (currIdx - 1 + validMoves.length) % validMoves.length;
+            }
+          }
+          
+          kbCursorX = validMoves[currIdx].x;
+          kbCursorY = validMoves[currIdx].y;
+        }
+      }
+    } else {
+      // 일반 자유 이동 모드
+      if (!kbCursorActive) {
+        kbCursorActive = true;
+        
+        // 이미 선택된 기물이 있다면 해당 기물 좌표에서 시작, 아니면 현재 턴 왕의 위치에서 시작
+        if (curSelect < 32 && pieces[curSelect].x !== 0) {
+          kbCursorX = pieces[curSelect].x;
+          kbCursorY = pieces[curSelect].y;
+        } else {
+          const curTurn = log.length;
+          const isChoTurn = (curTurn % 2 === 0);
+          const kingIdx = isChoTurn ? 0 : 16;
+          kbCursorX = pieces[kingIdx].x;
+          kbCursorY = pieces[kingIdx].y;
+        }
+      }
+      
+      // 키보드 모드 활성화 여부와 상관없이 항상 이동 명령을 즉각 실행
+      if (e.key === "ArrowUp") {
+        let ny = yPrev(kbCursorY);
+        if (ny !== -1) kbCursorY = ny;
+      } else if (e.key === "ArrowDown") {
+        let ny = yNext(kbCursorY);
+        if (ny !== -1) kbCursorY = ny;
+      } else if (e.key === "ArrowLeft") {
+        if (kbCursorX > 1) kbCursorX -= 1;
+      } else if (e.key === "ArrowRight") {
+        if (kbCursorX < 9) kbCursorX += 1;
+      }
     }
     
     updateKeyboardCursor();
     return;
   }
 
-  // ESC 키로 활성 취소 및 키보드 커서 숨김
+  // ESC 키로 활성 취소, 창 닫기, 혹은 상차림창 열기
   if (e.key === "Escape") {
+    const settingBox = document.getElementById("setting-box");
+    if (settingBox && settingBox.style.display === "flex") {
+      disalbeSettingBox();
+      return;
+    }
+
     if (kbCursorActive) {
-      kbCursorActive = false;
-      updateKeyboardCursor();
       if (curSelect < 32) {
         selected(curSelect); // 선택 해제
+      } else {
+        // 이미 선택 해제되어 있는 상태에서 ESC를 한번 더 누르면 상차림(설정) 열기
+        kbCursorActive = false;
+        updateKeyboardCursor();
+        enalbeSettingBox();
       }
+    } else {
+      // 키보드 커서가 안 켜져 있을 때 ESC를 누르면 바로 상차림 열기
+      enalbeSettingBox();
     }
     return;
   }
