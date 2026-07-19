@@ -4445,7 +4445,8 @@ function flipBoardVertical() {
     for (let i = 0; i < 32; i++) {
       if (pieces[i].x !== 0 && startPositions[i].x !== 0) {
         const startPos = startPositions[i];
-        const endPos = { x: 10 - startPos.x, y: startPos.y }; // Horizontal swing on same row to reach target side
+        // For 180-degree rotation, the target position relative to the board is the flipped coordinate in both X and Y.
+        const endPos = { x: 10 - startPos.x, y: flipYCoordinate(startPos.y) };
         
         const axisA = getAxis(startPos.x, startPos.y);
         const axisB = getAxis(endPos.x, endPos.y);
@@ -4473,7 +4474,7 @@ function flipBoardVertical() {
     if (cursor && kbCursorActive) {
       const sizeVal = unitSize * 0.85;
       const axisA = getAxis(oldKbCursorX, oldKbCursorY);
-      const axisB = getAxis(10 - oldKbCursorX, oldKbCursorY);
+      const axisB = getAxis(10 - oldKbCursorX, flipYCoordinate(oldKbCursorY));
       
       const ax = axisA.x - sizeVal / 2;
       const ay = axisA.y - sizeVal / 2;
