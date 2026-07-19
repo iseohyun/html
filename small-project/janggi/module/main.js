@@ -85,7 +85,7 @@ function getData() {
   let param_P = urlParams.get('p');
   if (param_P == undefined) {
     // 나: 마상마상 - 너 : 마상마상
-    setting("5211912383217131814161143454749459109028882070308040601737577797");
+    setting("5910902888207030804060173757779752119123832171318141611434547494");
   } else {
     for (let i = 0; i < 4; i++) {
       if (param_P.includes(knownStart[0][i])) {
@@ -145,6 +145,8 @@ function getData() {
 
 // 장기말이 클릭되었을 때, 동작을 기술합니다.
 function selected(i) {
+  console.log(`[Click Debug] Piece ID: ${i}, Coords: x=${pieces[i] ? pieces[i].x : '?'}, y=${pieces[i] ? pieces[i].y : '?'}, Element: ${pieces[i] && pieces[i].e ? pieces[i].e.id : 'null'}`);
+
   if (curSelect == i) {
     clearCandiBox();
     moveSelectBox(i, false);
