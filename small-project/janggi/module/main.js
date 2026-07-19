@@ -1162,7 +1162,8 @@ function saveCurrentConfigToSlot() {
     settingsTextColorCustom,
     settingsAccentColor,
     aiMode,
-    cursorLockMode
+    cursorLockMode,
+    shortcutKeys
   };
   localStorage.setItem("janggi_settings_slot_" + activeSlot, JSON.stringify(config));
 }
@@ -1198,6 +1199,9 @@ function loadConfigFromSlot() {
     if (config.settingsAccentColor) settingsAccentColor = config.settingsAccentColor;
     if (config.aiMode !== undefined && config.aiMode !== null) aiMode = parseInt(config.aiMode, 10);
     if (config.cursorLockMode !== undefined && config.cursorLockMode !== null) cursorLockMode = (config.cursorLockMode === "true" || config.cursorLockMode === true);
+    if (config.shortcutKeys) {
+      shortcutKeys = Object.assign({}, shortcutKeys, config.shortcutKeys);
+    }
     
     localStorage.setItem("showCoordinates", showCoordinates);
     localStorage.setItem("sizeKing", sizeKing);
@@ -1218,6 +1222,7 @@ function loadConfigFromSlot() {
     localStorage.setItem("settingsAccentColor", settingsAccentColor);
     localStorage.setItem("aiMode", aiMode);
     localStorage.setItem("cursorLockMode", cursorLockMode);
+    localStorage.setItem("shortcutKeys", JSON.stringify(shortcutKeys));
     
     changeBoardColor(boardColorType);
     changeChoColor(choColorType);
@@ -2514,6 +2519,13 @@ function initGame() {
   if (localStorage.getItem("cursorLockMode") !== null) {
     cursorLockMode = (localStorage.getItem("cursorLockMode") === "true");
   }
+  if (localStorage.getItem("shortcutKeys") !== null) {
+    try {
+      shortcutKeys = Object.assign({}, shortcutKeys, JSON.parse(localStorage.getItem("shortcutKeys")));
+    } catch (e) {
+      console.error("Failed parsing shortcutKeys from localStorage:", e);
+    }
+  }
 
   initSettingsUI();
   
@@ -2605,14 +2617,29 @@ function initGame() {
 
 function handleKeyDown(e) {
   if (gameEnded) return;
+  if (isRecordingKey !== null) return; // 단축키 입력 녹화 중에는 전역 단축키 핸들러 작동 정지
 
   const activeEl = document.activeElement;
   if (activeEl && (activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA" || activeEl.tagName === "SELECT")) {
     return;
   }
 
-  // CapsLock 키로 커서락 모드 토글
-  if (e.key === "CapsLock") {
+  // Ctrl + S: 기보 클립보드 복사 및 보관함 저장
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === shortcutKeys.copyNotation.toLowerCase()) {
+    e.preventDefault();
+    saveRecordToLibrary(null);
+    return;
+  }
+
+  // Ctrl + V: 클립보드로부터 기보 불러오기
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === shortcutKeys.loadNotation.toLowerCase()) {
+    e.preventDefault();
+    loadRecordFromClipboard();
+    return;
+  }
+
+  // CapsLock 등 지정된 커서락 모드 토글 키 처리
+  if (e.key === shortcutKeys.cursorLockToggle) {
     e.preventDefault();
     cursorLockMode = !cursorLockMode;
     localStorage.setItem("cursorLockMode", cursorLockMode);
@@ -2625,8 +2652,8 @@ function handleKeyDown(e) {
     return;
   }
 
-  // 방향키 처리
-  if (e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === "ArrowLeft" || e.key === "ArrowRight") {
+  // 방향키 처리 (지정된 up, down, left, right 키)
+  if (e.key === shortcutKeys.up || e.key === shortcutKeys.down || e.key === shortcutKeys.left || e.key === shortcutKeys.right) {
     e.preventDefault();
     
     if (cursorLockMode) {
@@ -2635,7 +2662,7 @@ function handleKeyDown(e) {
       const currentTeam = isChoTurn ? "cho" : "han";
       const allFilteredMoves = getFilteredLegalMoves(currentTeam);
       
-      const isForward = (e.key === "ArrowRight" || e.key === "ArrowDown");
+      const isForward = (e.key === shortcutKeys.right || e.key === shortcutKeys.down);
       
       if (curSelect === 32) {
         // 커서락 모드 - 선택 기물 고르기
@@ -2700,15 +2727,15 @@ function handleKeyDown(e) {
       }
       
       // 키보드 모드 활성화 여부와 상관없이 항상 이동 명령을 즉각 실행
-      if (e.key === "ArrowUp") {
+      if (e.key === shortcutKeys.up) {
         let ny = yPrev(kbCursorY);
         if (ny !== -1) kbCursorY = ny;
-      } else if (e.key === "ArrowDown") {
+      } else if (e.key === shortcutKeys.down) {
         let ny = yNext(kbCursorY);
         if (ny !== -1) kbCursorY = ny;
-      } else if (e.key === "ArrowLeft") {
+      } else if (e.key === shortcutKeys.left) {
         if (kbCursorX > 1) kbCursorX -= 1;
-      } else if (e.key === "ArrowRight") {
+      } else if (e.key === shortcutKeys.right) {
         if (kbCursorX < 9) kbCursorX += 1;
       }
     }
@@ -2718,7 +2745,7 @@ function handleKeyDown(e) {
   }
 
   // ESC 키로 활성 취소, 창 닫기, 혹은 상차림창 열기
-  if (e.key === "Escape") {
+  if (e.key === shortcutKeys.cancel) {
     const settingBox = document.getElementById("setting-box");
     if (settingBox && settingBox.style.display === "flex") {
       disalbeSettingBox();
@@ -2742,7 +2769,7 @@ function handleKeyDown(e) {
   }
 
   // 엔터 또는 스페이스바로 선택 및 착수 실행
-  if (e.key === "Enter" || e.key === " ") {
+  if (e.key === shortcutKeys.select || e.key === shortcutKeys.selectAlt) {
     if (!kbCursorActive) return;
     e.preventDefault();
 
@@ -2780,6 +2807,144 @@ function handleKeyDown(e) {
     }
     updateKeyboardCursor();
   }
+}
+
+// ----------------------------------------------------
+// 단축키 커스텀 설정 모달 구현부
+// ----------------------------------------------------
+var isRecordingKey = null; // 현재 바인딩 기록 대기 중인 기능 키 (예: 'up', 'down' 등)
+
+const shortcutActionNames = {
+  up: "방향 이동 (위)",
+  down: "방향 이동 (아래)",
+  left: "방향 이동 (왼쪽)",
+  right: "방향 이동 (오른쪽)",
+  select: "선택 및 착수",
+  selectAlt: "선택 및 착수 (보조)",
+  cursorLockToggle: "커서락 모드 토글",
+  cancel: "선택 취소 / 상차림 복귀",
+  copyNotation: "기보 클립보드 복사 (Ctrl + 키)",
+  loadNotation: "기보 클립보드 불러오기 (Ctrl + 키)"
+};
+
+function openShortcutModal() {
+  const modal = document.getElementById("shortcut-modal");
+  if (!modal) return;
+  
+  populateShortcutTable();
+  modal.style.display = "flex";
+  modal.offsetHeight; // Force reflow
+  modal.classList.add("open");
+}
+
+function closeShortcutModal() {
+  const modal = document.getElementById("shortcut-modal");
+  if (!modal) return;
+  
+  isRecordingKey = null;
+  modal.classList.remove("open");
+  setTimeout(() => {
+    modal.style.display = "none";
+  }, 300);
+}
+
+function handleModalOverlayClick(e) {
+  if (e.target.id === "shortcut-modal") {
+    closeShortcutModal();
+  }
+}
+
+function populateShortcutTable() {
+  const tbody = document.getElementById("shortcut-table-body");
+  if (!tbody) return;
+  
+  tbody.innerHTML = "";
+  
+  Object.keys(shortcutKeys).forEach(actionKey => {
+    const tr = document.createElement("tr");
+    tr.className = "shortcut-row";
+    
+    const tdName = document.createElement("td");
+    tdName.textContent = shortcutActionNames[actionKey] || actionKey;
+    tr.appendChild(tdName);
+    
+    const tdKey = document.createElement("td");
+    const btn = document.createElement("button");
+    btn.className = "shortcut-key-btn";
+    
+    let displayVal = shortcutKeys[actionKey];
+    if (actionKey === "copyNotation" || actionKey === "loadNotation") {
+      displayVal = "Ctrl + " + displayVal.toUpperCase();
+    } else if (displayVal === " ") {
+      displayVal = "Space";
+    }
+    
+    if (isRecordingKey === actionKey) {
+      btn.textContent = "입력 대기 중...";
+      btn.classList.add("recording");
+    } else {
+      btn.textContent = displayVal;
+    }
+    
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      startRecordingKey(actionKey);
+    };
+    
+    tdKey.appendChild(btn);
+    tr.appendChild(tdKey);
+    tbody.appendChild(tr);
+  });
+}
+
+function startRecordingKey(actionKey) {
+  isRecordingKey = actionKey;
+  populateShortcutTable();
+  
+  const handleKeyRecord = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    let keyName = e.key;
+    
+    // Ctrl 관련 특수 단축키의 경우 기호만 보존
+    if (isRecordingKey === "copyNotation" || isRecordingKey === "loadNotation") {
+      if (["control", "shift", "alt", "meta"].includes(keyName.toLowerCase())) {
+        return; // 보조키만 단독 입력은 무시
+      }
+      keyName = keyName.toLowerCase();
+    }
+    
+    // 키 할당 및 로컬 저장
+    shortcutKeys[isRecordingKey] = keyName;
+    saveCurrentConfigToSlot();
+    
+    // 리스너 해제 및 복구
+    isRecordingKey = null;
+    window.removeEventListener("keydown", handleKeyRecord, true);
+    populateShortcutTable();
+    showToast("단축키가 지정되었습니다.");
+  };
+  
+  window.addEventListener("keydown", handleKeyRecord, true);
+}
+
+function resetDefaultShortcuts() {
+  shortcutKeys = {
+    up: "ArrowUp",
+    down: "ArrowDown",
+    left: "ArrowLeft",
+    right: "ArrowRight",
+    select: "Enter",
+    selectAlt: " ",
+    cursorLockToggle: "CapsLock",
+    cancel: "Escape",
+    copyNotation: "s",
+    loadNotation: "v"
+  };
+  saveCurrentConfigToSlot();
+  populateShortcutTable();
+  showToast("단축키 기본값이 복원되었습니다.");
 }
 
 initGame();

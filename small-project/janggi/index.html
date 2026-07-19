@@ -380,6 +380,14 @@
                 </div>
               </td>
             </tr>
+            <tr>
+              <td>단축키 설정</td>
+              <td>
+                <div style="display: flex; align-items: center; justify-content: flex-end;">
+                  <button class="settings-action-btn" onclick="openShortcutModal()" style="font-weight: bold; border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 6px; padding: 6px 12px; background: rgba(59, 130, 246, 0.1); color: #60a5fa; cursor: pointer; transition: all 0.2s;">단축키 지정하기</button>
+                </div>
+              </td>
+            </tr>
           </table>
         </div>
       </div>
@@ -915,6 +923,34 @@
       <rect id="select-box" stroke="red" stroke-width="2" fill="none" />
       <rect id="kb-cursor" stroke="#10b981" stroke-width="3" fill="none" stroke-dasharray="5 3" rx="6" style="display: none; transition: transform 0.1s ease-out; filter: drop-shadow(0 0 6px #10b981);" />
     </svg>
+
+    <!-- 단축키 지정 모달 -->
+    <div id="shortcut-modal" class="modal-overlay" onclick="handleModalOverlayClick(event)">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="modal-title">단축키 지정</span>
+          <button class="modal-close" onclick="closeShortcutModal()">X</button>
+        </div>
+        <div class="modal-body">
+          <p style="margin-bottom: 12px; font-size: 13px; opacity: 0.8;">변경할 기능을 선택한 뒤, 새로운 키를 입력해 주세요.</p>
+          <table class="shortcut-table">
+            <thead>
+              <tr>
+                <th>기능</th>
+                <th>단축키</th>
+              </tr>
+            </thead>
+            <tbody id="shortcut-table-body">
+              <!-- JS에서 동적으로 채워집니다 -->
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-footer">
+          <button class="modal-btn reset" onclick="resetDefaultShortcuts()">기본값 복원</button>
+          <button class="modal-btn close" onclick="closeShortcutModal()">닫기</button>
+        </div>
+      </div>
+    </div>
   </article>
 </body>
 

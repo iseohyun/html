@@ -77,6 +77,18 @@ var curSelect = 32;
 var kbCursorX = 5;
 var kbCursorY = 4;
 var kbCursorActive = false;
+var shortcutKeys = {
+  up: "ArrowUp",
+  down: "ArrowDown",
+  left: "ArrowLeft",
+  right: "ArrowRight",
+  select: "Enter",
+  selectAlt: " ",
+  cursorLockToggle: "CapsLock",
+  cancel: "Escape",
+  copyNotation: "s",
+  loadNotation: "v"
+};
 var currentLoadedRecordId = null; // 현재 불러와서 보여주고 있는 기보의 로컬스토리지 ID
 const knownStart = [
   [
