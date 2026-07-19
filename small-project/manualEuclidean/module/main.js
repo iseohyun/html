@@ -182,6 +182,9 @@ function init(startA, startB) {
   isFin = false;
   window.isHidden = false;
   window.inPhaseA = true;
+  if (typeof stateHistory !== "undefined") {
+    stateHistory.length = 0;
+  }
 
   if (startA < startB) {
     const temp = startA;
