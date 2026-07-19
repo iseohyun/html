@@ -188,10 +188,14 @@ function selected(i) {
   const isChoPiece = (i < 16) === iAmCho;
   if (isChoTurn) {
     if (!isChoPiece) return; // 초의 턴인데 한의 기물을 조작하려고 하는 경우 차단
-    if (aiMode === 1) return; // AI가 초인데 사용자가 조작하려고 하는 경우 차단
   } else {
     if (isChoPiece) return; // 한의 턴인데 초의 기물을 조작하려고 하는 경우 차단
-    if (aiMode === 2) return; // AI가 한인데 사용자가 조작하려고 하는 경우 차단
+  }
+
+  // 만약 AI 모드가 켜져 있고, 현재 턴이 AI(위쪽)의 턴이면 사용자 조작 차단
+  if (aiMode === 1) {
+    const isUserTurn = (isChoTurn === iAmCho);
+    if (!isUserTurn) return;
   }
 
   // Clean up any old diagnostic overlay if present
@@ -405,10 +409,7 @@ function prev() {
     if (turn) {
       const curTurn = parseInt(turn.value, 10);
       const isChoTurn = (curTurn % 2 === 0);
-      const aiIsCho = (aiMode === 1);
-      const aiIsHan = (aiMode === 2);
-      
-      const isUserTurnNow = (isChoTurn && !aiIsCho) || (!isChoTurn && !aiIsHan);
+      const isUserTurnNow = (isChoTurn === iAmCho);
       
       if (isUserTurnNow && log.length >= 2) {
         performSinglePrev();
@@ -1305,7 +1306,10 @@ function loadConfigFromSlot() {
     if (config.settingsTextColorType) settingsTextColorType = config.settingsTextColorType;
     if (config.settingsTextColorCustom) settingsTextColorCustom = config.settingsTextColorCustom;
     if (config.settingsAccentColor) settingsAccentColor = config.settingsAccentColor;
-    if (config.aiMode !== undefined && config.aiMode !== null) aiMode = parseInt(config.aiMode, 10);
+    if (config.aiMode !== undefined && config.aiMode !== null) {
+      aiMode = parseInt(config.aiMode, 10);
+      if (aiMode === 2) aiMode = 1;
+    }
     if (config.cursorLockMode !== undefined && config.cursorLockMode !== null) cursorLockMode = (config.cursorLockMode === "true" || config.cursorLockMode === true);
     if (config.shortcutKeys) {
       shortcutKeys = migrateShortcutKeys(config.shortcutKeys);
@@ -2503,8 +2507,8 @@ function checkAndRunAI(immediate = false) {
   }
   
   const isChoTurn = (curTurn % 2 === 0);
-  const aiIsCho = (aiMode === 1);
-  const aiIsHan = (aiMode === 2);
+  const aiIsCho = (aiMode === 1 && !iAmCho);
+  const aiIsHan = (aiMode === 1 && iAmCho);
   
   if ((isChoTurn && aiIsCho) || (!isChoTurn && aiIsHan)) {
     aiThinking = true;
@@ -2831,6 +2835,7 @@ function initGame() {
   // 로컬 스토리지 개별값 로드 대응
   if (localStorage.getItem("aiMode") !== null) {
     aiMode = parseInt(localStorage.getItem("aiMode"), 10);
+    if (aiMode === 2) aiMode = 1;
   }
   if (localStorage.getItem("cursorLockMode") !== null) {
     cursorLockMode = (localStorage.getItem("cursorLockMode") === "true");
@@ -4746,7 +4751,7 @@ function executeFlipBoardVertical() {
   
   // 7. AI takes the top side
   if (aiMode !== 0) {
-    aiMode = iAmCho ? 2 : 1;
+    aiMode = 1;
     localStorage.setItem("aiMode", aiMode);
     const aiModeSelect = document.getElementById("ai-mode-select");
     if (aiModeSelect) aiModeSelect.value = aiMode;
@@ -4805,9 +4810,8 @@ function toggleOpponentAI() {
     aiMode = 0;
     showToast("상대 AI 모드 꺼짐");
   } else {
-    // AI plays the top side: Han if iAmCho is true, Cho if iAmCho is false
-    aiMode = iAmCho ? 2 : 1;
-    showToast(`상대 AI 모드 켜짐 (${aiMode === 1 ? "초나라" : "한나라"} AI가 위쪽에서 플레이)`);
+    aiMode = 1;
+    showToast("상대 AI 모드 켜짐 (AI가 위쪽에서 플레이)");
   }
   localStorage.setItem("aiMode", aiMode);
   saveCurrentConfigToSlot();

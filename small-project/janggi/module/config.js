@@ -62,7 +62,7 @@ var hanColorType = "red";
 var pieceShapeType = "octagon";
 var candiShapeType = "empty_circle";
 var candiColorType = "#3b82f6";
-var aiMode = 0; // AI 모드: 0=사용안함, 1=AI가 초(Blue), 2=AI가 한(Red)
+var aiMode = 0; // AI 모드: 0=사용 안함 (로컬 2인용), 1=사용함 (AI가 항상 위쪽에서 플레이)
 var cursorLockMode = false; // 키보드 커서락 모드 여부
 var gameEnded = false; // 외통수 등으로 대국이 종료되었는지 여부
 
