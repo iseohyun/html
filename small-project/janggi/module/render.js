@@ -1,17 +1,57 @@
 // render.js - Board drawing and HTML display updates
 
 function initBoard() {
-  // 화면 크기를 가져옵니다. 장기판은 제어판(controlBox)의 넓이를 제외한 가장 큰 크기로 그려져야 합니다.
+  // 제어판 요소를 가져옵니다.
   const controlBox = document.getElementById("control-box");
+  // 제어판의 부모 컨테이너(상위 SPA의 article 등)를 기준으로 크기를 가져옵니다.
+  const container = controlBox.parentElement || document.body;
 
-  const tmpWidth = window.innerWidth - 2 * (boardMargin + boardPadding);
-  const tmpHeight = window.innerHeight - controlBox.offsetHeight - 2 * (boardMargin + boardPadding);
+  let containerWidth = container.clientWidth || window.innerWidth;
+  
+  // 상단 고정 헤더(fixed header)의 존재 여부와 높이를 감지합니다.
+  const header = document.querySelector("header");
+  const headerHeight = header ? header.offsetHeight : 0;
+  
+  // 헤더가 있는 경우(임베드 모드) 제어판 상단에 마진을 주어 헤더 밑으로 밀어냅니다.
+  const headerGap = headerHeight > 0 ? headerHeight + 5 : 5;
+  controlBox.style.marginTop = `${headerGap}px`;
 
-  // 장기판의 최대 크기를 계산합니다.
-  unitSize = (tmpWidth * 9) > (tmpHeight * 10) ? tmpHeight / 10 : tmpWidth / 9;
+  // 컨테이너가 고정 높이가 아니거나 유동적으로 늘어날 경우를 대비하여 뷰포트 물리 높이를 한계치로 설정합니다.
+  const containerRect = container.getBoundingClientRect();
+  const topOffset = containerRect.top > 0 ? containerRect.top : 0;
+  
+  // 뷰포트 내 남은 실제 물리적 높이 계산 (헤더 마진 공간 추가로 차감)
+  const viewportRemainingHeight = window.innerHeight - topOffset - headerGap;
+  
+  // 실제 사용 가능한 물리 한계 높이
+  let containerHeight = container.clientHeight;
+  if (!containerHeight || containerHeight > viewportRemainingHeight) {
+    containerHeight = viewportRemainingHeight;
+  }
 
+  // 여백(margin)을 제외한 가용 너비와 높이를 구합니다.
+  const marginOffset = 2 * boardMargin;
+  const tmpWidth = containerWidth - marginOffset;
+  // 제어판 높이와 상하 마진 및 최소 안전 마진(15px)을 제외하여 가용 높이 계산
+  const tmpHeight = containerHeight - controlBox.offsetHeight - marginOffset - 15;
+
+  // boardPadding을 제외한 격자 영역의 가용 너비와 높이
+  const gridAvailableWidth = tmpWidth - 2 * boardPadding;
+  const gridAvailableHeight = tmpHeight - 2 * boardPadding;
+
+  // 가용 영역 내에서 9:10 비율에 맞춘 unitSize 계산
+  const unitByWidth = gridAvailableWidth / 9;
+  const unitByHeight = gridAvailableHeight / 10;
+  unitSize = Math.min(unitByWidth, unitByHeight);
+
+  // 최종 보드 크기 계산 (격자 영역 + 양측 패딩)
   boardWidth = unitSize * 9 + boardPadding * 2;
   boardHeight = unitSize * 10 + boardPadding * 2;
+
+
+
+  // 제어판의 넓이를 장기판 넓이와 일치시킵니다.
+  controlBox.style.width = `${boardWidth}px`;
 
   // 장기판을 그립니다.
   drawBoard();
@@ -27,14 +67,20 @@ function initBoard() {
 }
 
 function drawBoard() {
-  // svg의 넓이를 다시 설정합니다.
-  svg.style.height = boardHeight;
-  svg.style.width = boardWidth;
-  svg.style.margin = boardMargin;
+  // svg의 viewBox와 크기 속성을 설정합니다. (반응형 100% 대응)
+  svg.setAttribute("width", boardWidth);
+  svg.setAttribute("height", boardHeight);
+  svg.setAttribute("viewBox", `0 0 ${boardWidth} ${boardHeight}`);
+
+  // CSS 스타일로 계산 완료된 정확한 수치를 적용합니다.
+  svg.style.width = `${boardWidth}px`;
+  svg.style.height = `${boardHeight}px`;
+  svg.style.display = "block";
+  svg.style.margin = "0 auto";
 
   // 장기판의 크기를 설정합니다.
-  board.style.width = `${boardWidth}px`;
-  board.style.height = `${boardHeight}px`;
+  board.setAttribute("width", boardWidth);
+  board.setAttribute("height", boardHeight);
 
   // 장기판에 8 * 9 의 정사각형 그림을 그립니다.
   const lines = document.getElementById('lines');
@@ -124,8 +170,8 @@ function initPositions() {
 }
 
 function updateScore() {
-  let scoreA = 0;
-  let scoreB = 0;
+  let scoreA = 0; // 초나라 점수 (기본)
+  let scoreB = 0; // 한나라 점수 (기본)
   if (pieces[1].x != 0 || pieces[1].y != 0) scoreA += 13;
   if (pieces[2].x != 0 || pieces[2].y != 0) scoreA += 13;
   if (pieces[3].x != 0 || pieces[3].y != 0) scoreA += 7;
@@ -158,29 +204,47 @@ function updateScore() {
   if (pieces[30].x != 0 || pieces[30].y != 0) scoreB += 2;
   if (pieces[31].x != 0 || pieces[31].y != 0) scoreB += 2;
 
-  const diff = document.getElementById("score-diff");
+  let scoreHan = 0;
+  let scoreCho = 0;
 
   if (iAmCho) {
-    scoreB += 1.5;
-    document.getElementById("score-han").value = scoreB;
-    document.getElementById("score-cho").value = scoreA;
-    if (scoreB > scoreA) {
-      diff.style.backgroundColor = "#FCC";
-    } else {
-      diff.style.backgroundColor = "#CCF";
-    }
+    scoreB += 1.5; // 한나라 후수 덤 적용
+    scoreHan = scoreB;
+    scoreCho = scoreA;
   } else {
-    scoreA += 1.5;
-    document.getElementById("score-han").value = scoreA;
-    document.getElementById("score-cho").value = scoreB;
-    document.getElementById("score-diff").value = scoreB - scoreA;
-    if (scoreA > scoreB) {
-      diff.style.backgroundColor = "#FCC";
-    } else {
-      diff.style.backgroundColor = "#CCF";
-    }
+    scoreA += 1.5; // 한나라 후수 덤 적용
+    scoreHan = scoreA;
+    scoreCho = scoreB;
   }
-  diff.value = Math.abs(scoreA - scoreB);
+
+  // 텍스트 수치 업데이트
+  document.getElementById("han-score-val").textContent = `한: ${scoreHan.toFixed(1)}`;
+  document.getElementById("cho-score-val").textContent = `초: ${scoreCho.toFixed(1)}`;
+
+  // 점수차 및 강조 색상
+  const scoreDiff = Math.abs(scoreHan - scoreCho);
+  const diffEl = document.getElementById("diff-score-val");
+  diffEl.textContent = scoreDiff.toFixed(1);
+  
+  if (scoreHan > scoreCho) {
+    diffEl.style.color = "#b91c1c"; // 한나라 리드 시 빨간색
+  } else if (scoreCho > scoreHan) {
+    diffEl.style.color = "#1e3a8a"; // 초나라 리드 시 파란색
+  } else {
+    diffEl.style.color = "#0f172a"; // 동점 시 어두운 회색
+  }
+
+  // 막대그래프 비율 갱신 (최대 100%)
+  const total = scoreHan + scoreCho;
+  let hanPercent = 50;
+  let choPercent = 50;
+  if (total > 0) {
+    hanPercent = (scoreHan / total) * 100;
+    choPercent = 100 - hanPercent;
+  }
+
+  document.getElementById("han-score-bar").style.width = `${hanPercent}%`;
+  document.getElementById("cho-score-bar").style.width = `${choPercent}%`;
 }
 
 function moveSelectBox(i, visible = true) {
