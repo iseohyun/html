@@ -172,7 +172,7 @@ function drawBoard() {
         coordsGroup.appendChild(text);
       }
 
-      // 2. 가로선 (줄) 번호: 왼쪽에 1~10줄 배치 (아래쪽이 1, 위쪽이 10)
+      // 2. 가로선 (줄) 번호: 왼쪽에 1~10줄 배치 (맨 위가 1, 맨 아래가 0)
       for (let y = 1; y <= 10; y++) {
         let axis = getAxis(1, y);
         const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
@@ -184,7 +184,7 @@ function drawBoard() {
         text.setAttribute("font-size", `${unitSize * coordsTextScale}px`);
         text.setAttribute("font-weight", "800");
         text.setAttribute("opacity", "0.85");
-        text.textContent = y;
+        text.textContent = (11 - y) % 10;
         coordsGroup.appendChild(text);
       }
     }
