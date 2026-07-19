@@ -42,10 +42,7 @@
       <div class="settings-header">
         <button id="close-btn" onclick="disalbeSettingBox()">X</button>
         <span class="settings-title">설정</span>
-        <div class="settings-slots">
-          <button id="slot-1-btn" class="slot-btn" onclick="selectSlot(1)">슬롯 1</button>
-          <button id="slot-2-btn" class="slot-btn" onclick="selectSlot(2)">슬롯 2</button>
-        </div>
+        <button id="start-btn-in-settings" class="start-settings-btn" onclick="startNewGame()" title="새 대국 시작하기">시작하기</button>
       </div>
       
       <!-- 스크롤 가능한 설정 콘텐츠 영역 -->
@@ -53,8 +50,10 @@
         <!-- 1. 상차림 -->
         <div class="setting-category">
           <div class="category-header">
-            <h2>상차림</h2>
-            <button class="reset-category-btn" onclick="resetCategory1()" title="상차림 설정 초기화">🔄 초기화</button>
+            <span class="category-title">상차림</span>
+            <div class="category-header-actions">
+              <button class="reset-category-btn" onclick="resetCategory1()" title="상차림 설정 초기화">🔄</button>
+            </div>
           </div>
           <div class="charim-container">
             <div class="charim-table-wrapper">
@@ -95,11 +94,9 @@
           <!-- 상차림 배치 예시 그림 (미니어처 9칸 back-row 표현) -->
           <div class="charim-preview-container">
             <div class="charim-preview-row">
-              <span class="charim-preview-label">상대편:</span>
               <div id="preview-han" class="charim-preview-tokens"></div>
             </div>
             <div class="charim-preview-row">
-              <span class="charim-preview-label">본인:</span>
               <div id="preview-cho" class="charim-preview-tokens"></div>
             </div>
           </div>
@@ -108,8 +105,13 @@
         <!-- 2. 장기판 보기 -->
         <div class="setting-category">
           <div class="category-header">
-            <h2>장기판 보기</h2>
-            <button class="reset-category-btn" onclick="resetCategory2()" title="장기판 보기 설정 초기화">🔄 초기화</button>
+            <span class="category-title">장기판 보기</span>
+            <div class="category-header-actions">
+              <button class="reset-category-btn" onclick="resetCategory2()" title="장기판 보기 설정 초기화">🔄</button>
+              <button id="slot-1-btn" class="slot-btn" onclick="selectSlot(1)" title="슬롯 1 불러오기">1</button>
+              <button id="slot-2-btn" class="slot-btn" onclick="selectSlot(2)" title="슬롯 2 불러오기">2</button>
+              <button class="copy-btn" onclick="copyConfigToClipboard(this)" title="설정 클립보드로 복사">📋</button>
+            </div>
           </div>
           <table class="settings-table">
             <tr>
@@ -265,8 +267,10 @@
         <!-- 3. 애니메이션 -->
         <div class="setting-category">
           <div class="category-header">
-            <h2>애니메이션</h2>
-            <button class="reset-category-btn" onclick="resetCategory3()" title="애니메이션 설정 초기화">🔄 초기화</button>
+            <span class="category-title">애니메이션</span>
+            <div class="category-header-actions">
+              <button class="reset-category-btn" onclick="resetCategory3()" title="애니메이션 설정 초기화">🔄</button>
+            </div>
           </div>
           <table class="settings-table">
             <tr>
@@ -326,7 +330,6 @@
         
         <!-- Icon Actions Group (Setting, Download) (Right) -->
         <div class="control-group action-icons">
-          <button id="start-btn" onclick="startNewGame()" title="새 대국 시작하기" style="font-weight: bold; background: #3b82f6; color: white; border: none; border-radius: 6px; padding: 6px 14px; cursor: pointer; font-size: 0.9em; transition: background-color 0.2s, transform 0.1s; margin-right: 8px;">시작하기</button>
           <button id="setting-btn" class="icon-btn" onclick="enalbeSettingBox()" title="설정">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="3"></circle>
