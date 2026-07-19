@@ -147,6 +147,24 @@ function getData() {
 function selected(i) {
   console.log(`[Click Debug] Piece ID: ${i}, Coords: x=${pieces[i] ? pieces[i].x : '?'}, y=${pieces[i] ? pieces[i].y : '?'}, Element: ${pieces[i] && pieces[i].e ? pieces[i].e.id : 'null'}`);
 
+  // Diagnostic floating UI overlay
+  let debugDiv = document.getElementById("janggi-debug-info");
+  if (!debugDiv) {
+    debugDiv = document.createElement("div");
+    debugDiv.id = "janggi-debug-info";
+    debugDiv.style.cssText = "position:fixed; bottom:10px; left:10px; background:rgba(15,23,42,0.9); color:#f8fafc; padding:10px; font-family:monospace; font-size:11px; z-index:9999; pointer-events:none; border-radius:6px; border:1px solid rgba(255,255,255,0.15); box-shadow: 0 4px 12px rgba(0,0,0,0.5); line-height:1.5;";
+    document.body.appendChild(debugDiv);
+  }
+  debugDiv.innerHTML = `
+    <strong>[Janggi Runtime Debug]</strong><br>
+    Active Slot: ${activeSlot}<br>
+    candiColorType: <span style="color:${candiColorType}; font-weight:bold;">"${candiColorType}"</span><br>
+    candiShapeType: "${candiShapeType}"<br>
+    unitSize: ${typeof unitSize !== 'undefined' ? unitSize.toFixed(1) : '?'}<br>
+    Padding: L=${boardPaddingLeft}, T=${boardPaddingTop}<br>
+    showCoordinates: ${showCoordinates}
+  `;
+
   if (curSelect == i) {
     clearCandiBox();
     moveSelectBox(i, false);
