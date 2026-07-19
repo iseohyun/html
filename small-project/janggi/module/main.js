@@ -4220,20 +4220,35 @@ function flipYCoordinate(y) {
 }
 
 function flipBoardVertical() {
-  // 1. Flip initPieces (captured pieces are at x=0, y=0; they are not flipped)
-  for (let i = 0; i < 32; i++) {
-    if (initPieces[i].x !== 0 || initPieces[i].y !== 0) {
-      initPieces[i].y = flipYCoordinate(initPieces[i].y);
-    }
+  // 1. Flip and swap initPieces Y coordinates and X coordinates (0-15 <-> 16-31)
+  for (let i = 0; i < 16; i++) {
+    const p1 = initPieces[i];
+    const p2 = initPieces[i + 16];
+    
+    const y1Flipped = (p1.x !== 0 || p1.y !== 0) ? flipYCoordinate(p1.y) : p1.y;
+    const y2Flipped = (p2.x !== 0 || p2.y !== 0) ? flipYCoordinate(p2.y) : p2.y;
+    
+    const tempX = p1.x;
+    const tempY = y1Flipped;
+    
+    p1.x = p2.x;
+    p1.y = y2Flipped;
+    
+    p2.x = tempX;
+    p2.y = tempY;
   }
   // 2. Reset pieces to initPieces
   for (let i = 0; i < 32; i++) {
     pieces[i].x = initPieces[i].x;
     pieces[i].y = initPieces[i].y;
   }
-  // 3. Flip log entries
+  // 3. Flip and swap log entries
   log.forEach(entry => {
     entry.y = flipYCoordinate(entry.y);
+    entry.i = (entry.i + 16) % 32;
+    if (entry.t !== 32) {
+      entry.t = (entry.t + 16) % 32;
+    }
   });
   // 4. Flip cursor position
   kbCursorY = flipYCoordinate(kbCursorY);
