@@ -4419,11 +4419,30 @@ function flipYCoordinate(y) {
   return (flippedR + 1) % 10;
 }
 
+function logPieceCenters(phaseName) {
+  const boardSvg = document.getElementById("janggi-svg");
+  if (!boardSvg) return;
+  if (typeof boardSvg.getBoundingClientRect !== 'function') return;
+  const svgRect = boardSvg.getBoundingClientRect();
+  console.log(`=== [${phaseName}] Piece Centers ===`);
+  for (let i = 0; i < 32; i++) {
+    if (pieces[i].x !== 0 && pieces[i].e && typeof pieces[i].e.getBoundingClientRect === 'function') {
+      const rect = pieces[i].e.getBoundingClientRect();
+      const cx = (rect.left - svgRect.left + rect.width / 2).toFixed(2);
+      const cy = (rect.top - svgRect.top + rect.height / 2).toFixed(2);
+      console.log(`Piece ${i} (${pieces[i].e.id}): x=${pieces[i].x}, y=${pieces[i].y} => Physical Center: (${cx}, ${cy})`);
+    }
+  }
+}
+
 function flipBoardVertical() {
   const boardSvg = document.getElementById("janggi-svg");
   if (!boardSvg || boardAnimating) return;
   
   boardAnimating = true;
+  
+  // Log 1: Start of board rotation (0ms)
+  logPieceCenters("0ms Start");
   
   // Save starting positions of all pieces
   const startPositions = [];
@@ -4440,6 +4459,9 @@ function flipBoardVertical() {
   boardSvg.classList.add("rotate-180-anim");
   
   setTimeout(() => {
+    // Log 2: Phase 1 complete / Phase 2 start (500ms)
+    logPieceCenters("500ms Phase 1 Complete (Board rotated 180deg)");
+    
     // Phase 2: Board finished spinning. Animate the pieces relative to their unchanged positions.
     rotateActive = true;
     
@@ -4520,6 +4542,9 @@ function flipBoardVertical() {
     }
     
     setTimeout(() => {
+      // Log 3: Phase 2 complete (1000ms, before executeFlipBoardVertical)
+      logPieceCenters("1000ms Phase 2 Complete (Pieces counter-rotated)");
+      
       // Phase 2 finished. Execute logical vertical flip
       executeFlipBoardVertical();
       
@@ -4540,6 +4565,9 @@ function flipBoardVertical() {
       
       initPositions();
       if (kbCursorActive) updateKeyboardCursor();
+      
+      // Log 4: Final updated positions (after redraw)
+      logPieceCenters("1000ms+ Final Redraw Complete");
       
       boardAnimating = false;
     }, 500); // Phase 2 duration
