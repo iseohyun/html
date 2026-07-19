@@ -418,6 +418,39 @@ function prevStep() {
     });
   });
 
+  const resaultDiv = document.getElementById("resault");
+  if (resaultDiv) {
+    if (cur_step === 0) {
+      resaultDiv.innerHTML = "";
+    } else {
+      const action = window.actions && window.actions[cur_step - 1];
+      if (action) {
+        if (action.phase === 'C') {
+          const eqIdx = action.eqIdx;
+          if (window.phaseCEquations && eqIdx < window.phaseCEquations.length) {
+            resaultDiv.innerHTML = window.phaseCEquations[eqIdx];
+          }
+        } else if (action.phase === 'D') {
+          const valA = A;
+          const valB = B;
+          const coeffA = window.final_A_coeff;
+          const coeffB = window.final_B_coeff;
+          const termA = valA * coeffA;
+          const termB = valB * coeffB;
+          const absA = Math.abs(termA);
+          const expr = termB >= 0 
+            ? `${termB} - ${absA} = ${gcd}`
+            : `${termA} - ${Math.abs(termB)} = ${gcd}`;
+          resaultDiv.innerHTML = `GCD = ${expr}`;
+        } else {
+          resaultDiv.innerHTML = "";
+        }
+      } else {
+        resaultDiv.innerHTML = "";
+      }
+    }
+  }
+
   if (typeof highlightActiveStep === "function") {
     highlightActiveStep();
   }

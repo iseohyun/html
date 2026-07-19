@@ -159,9 +159,7 @@ function getRequiredRows(startA, startB) {
     tempA = tempB;
     tempB = r;
   }
-  const maxCycleIdx = cycles - 1;
-  const cycleRow = Math.floor(maxCycleIdx / 2);
-  return 2 * cycleRow + 3;
+  return cycles + 2;
 }
 
 function silentInit(startA, startB) {

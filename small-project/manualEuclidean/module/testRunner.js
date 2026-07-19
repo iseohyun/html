@@ -574,6 +574,18 @@ function generateTestCase(A, B) {
       const eq = window.phaseCEquations[action.eqIdx];
       const cleanEq = eq.replace(/<[^>]+>/g, "");
       inputValLine = `resault = "${cleanEq}"`;
+    } else if (action.phase === 'D') {
+      const valA = A;
+      const valB = B;
+      const coeffA = window.final_A_coeff;
+      const coeffB = window.final_B_coeff;
+      const termA = valA * coeffA;
+      const termB = valB * coeffB;
+      const absA = Math.abs(termA);
+      const expr = termB >= 0 
+        ? `${termB} - ${absA} = ${gcd}`
+        : `${termA} - ${Math.abs(termB)} = ${gcd}`;
+      inputValLine = `resault = "GCD = ${expr}"`;
     }
     md += `  - 입력값: ${inputValLine}\n\n`;
     

@@ -1,24 +1,10 @@
 window.isHidden = false;
 
-function guide() {
-  const tooltip = document.getElementById("guide-tooltip");
-  const content = document.getElementById("tooltip-content");
-  if (!tooltip || !content) return;
-
-  if (window.isHidden) {
-    tooltip.classList.add("hidden");
-    return;
-  }
-
+function getGuideSentence() {
   const stepObj = (cur_step === 0)
     ? stepsData[0]
     : ((window.actions && window.actions[cur_step - 1]) ? window.actions[cur_step - 1] : stepsData[cur_step]);
-  if (!stepObj) {
-    tooltip.classList.add("hidden");
-    return;
-  }
-
-  tooltip.classList.remove("hidden");
+  if (!stepObj) return "";
 
   let valA = A;
   let valB = B;
@@ -70,7 +56,6 @@ function guide() {
     }
   }
 
-  // Format sentence tags to styled spans
   let rawSentence = stepObj.sentence || "";
 
   if (stepObj && stepObj.phase === 'A' && cur_step > 0) {
@@ -160,7 +145,7 @@ function guide() {
           tempA = tempB;
           tempB = r;
         }
-        const mVal = rList.length - 4; // number of substitutions
+        const mVal = rList.length - 4;
 
         if (subType === 1) {
           if (k === mVal + 2) {
@@ -177,16 +162,51 @@ function guide() {
         }
       }
     }
+  } else if (stepObj && stepObj.phase === 'D') {
+    const valA = A;
+    const valB = B;
+    const coeffA = window.final_A_coeff;
+    const coeffB = window.final_B_coeff;
+    const termA = valA * coeffA;
+    const termB = valB * coeffB;
+    const absA = Math.abs(termA);
+    const line3 = termB >= 0
+      ? `${termB} - ${absA} = ${gcd} = GCD`
+      : `${termA} - ${Math.abs(termB)} = ${gcd} = GCD`;
+    rawSentence = `${valB} × ${coeffB} = ${termB}\\n${valA} × ${coeffA} = ${termA}\\n${line3}`;
   }
   
-  // Replace arguments $argv1, $argv2, etc. if present
   rawSentence = rawSentence
     .replace(/\$argv1/g, valA)
     .replace(/\$argv2/g, valB)
     .replace(/\$argv3/g, valGcd)
     .replace(/\$argv4/g, valSub);
 
-  // Replace XML highlights with actual spans
+  return rawSentence;
+}
+
+function guide() {
+  const tooltip = document.getElementById("guide-tooltip");
+  const content = document.getElementById("tooltip-content");
+  if (!tooltip || !content) return;
+
+  if (window.isHidden) {
+    tooltip.classList.add("hidden");
+    return;
+  }
+
+  const stepObj = (cur_step === 0)
+    ? stepsData[0]
+    : ((window.actions && window.actions[cur_step - 1]) ? window.actions[cur_step - 1] : stepsData[cur_step]);
+  if (!stepObj) {
+    tooltip.classList.add("hidden");
+    return;
+  }
+
+  tooltip.classList.remove("hidden");
+
+  let rawSentence = getGuideSentence();
+
   let formattedHTML = rawSentence
     .replace(/<0>([^<]+)<\/0>/g, '<span class="text-yellow">$1</span>')
     .replace(/<1>([^<]+)<\/1>/g, '<span class="text-red">$1</span>')
@@ -198,7 +218,6 @@ function guide() {
 
   content.innerHTML = formattedHTML;
 
-  // Update step navigation indicators
   const stepIndicator = document.getElementById("tooltip-step-indicator");
   if (stepIndicator) {
     stepIndicator.textContent = getCycleStepString();
@@ -207,13 +226,15 @@ function guide() {
   // Update button disabled state
   const prevBtn = document.getElementById("tooltip-prev-btn");
   const nextBtn = document.getElementById("tooltip-next-btn");
+  const lastBtn = document.getElementById("tooltip-last-btn");
   const closeBtn = document.getElementById("tooltip-close-btn");
   if (prevBtn) prevBtn.disabled = (stateHistory.length <= 1);
 
   const totalSteps = window.actions ? window.actions.length : stepsData.length;
-  const isLastStep = (cur_step === totalSteps - 1) || isFin;
+  const isLastStep = (cur_step === totalSteps) || isFin;
   if (isLastStep) {
     if (nextBtn) nextBtn.classList.add("hidden");
+    if (lastBtn) lastBtn.classList.add("hidden");
     if (closeBtn) {
       closeBtn.classList.remove("hidden");
     }
@@ -221,6 +242,10 @@ function guide() {
     if (nextBtn) {
       nextBtn.classList.remove("hidden");
       nextBtn.disabled = isFin;
+    }
+    if (lastBtn) {
+      lastBtn.classList.remove("hidden");
+      lastBtn.disabled = isFin;
     }
     if (closeBtn) closeBtn.classList.add("hidden");
   }
@@ -257,10 +282,10 @@ function positionTooltip() {
     if (c) targetCells.push(c);
   }
 
-  positionTooltipToCells(targetCells);
+  positionTooltipToCells(targetCells, stepObj);
 }
 
-function positionTooltipToCells(cells) {
+function positionTooltipToCells(cells, stepObj) {
   const tooltip = document.getElementById("guide-tooltip");
   if (!tooltip || window.isHidden) return;
 
@@ -304,7 +329,12 @@ function positionTooltipToCells(cells) {
 
   // Position logic (by default below target)
   let top = targetBottomY + 8; // Small gap (8px instead of 12px)
-  let left = targetCenterX - tooltipWidth / 2;
+  let left;
+  if (stepObj && (stepObj.phase === 'C' || stepObj.phase === 'D')) {
+    left = parentRect.width / 2 - tooltipWidth / 2;
+  } else {
+    left = targetCenterX - tooltipWidth / 2;
+  }
   let isPlacedAbove = false;
 
   // Check if placing below exceeds the viewport
@@ -418,3 +448,5 @@ if (document.readyState === "loading") {
 } else {
   makeTooltipDraggable();
 }
+
+window.getGuideSentence = getGuideSentence;
