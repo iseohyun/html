@@ -4287,7 +4287,7 @@ function flipBoardHorizontal() {
         const dy = 0; // Horizontal flip keeps Y physically unchanged on screen
         
         pieces[i].e.style.transition = "none";
-        pieces[i].e.style.transformOrigin = `${sizeVal / 2 + dx}px ${sizeVal / 2 + dy}px`;
+        pieces[i].e.style.transformOrigin = `${50 + (dx * 100 / sizeVal)}% ${50 + (dy * 100 / sizeVal)}%`;
         pieces[i].e.style.transform = `translate(${ax}px, ${ay}px) rotateY(0deg)`;
         pieces[i].e.classList.add("smooth-move-anim");
       }
@@ -4306,7 +4306,7 @@ function flipBoardHorizontal() {
       const dy = 0;
       
       cursor.style.transition = "none";
-      cursor.style.transformOrigin = `${sizeVal / 2 + dx}px ${sizeVal / 2 + dy}px`;
+      cursor.style.transformOrigin = `${50 + (dx * 100 / sizeVal)}% ${50 + (dy * 100 / sizeVal)}%`;
       cursor.style.transform = `translate(${ax}px, ${ay}px) rotateY(0deg)`;
       cursor.classList.add("smooth-move-anim");
     }
@@ -4488,10 +4488,10 @@ function flipBoardVertical() {
         const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
         const dy = (boardHeight - axisEnd.y - axisStart.y) / 2;
         
-        console.log(`[Phase 2 Axis] Piece ${i} (${pieces[i].e.id}): x=${startPos.x}, y=${startPos.y} => target x=${finalLogicalPos.x}, y=${finalLogicalPos.y} | sizeVal=${sizeVal.toFixed(2)} | dx=${dx.toFixed(2)}, dy=${dy.toFixed(2)} | Axis relative to board: (${(ax + sizeVal/2 + dx).toFixed(2)}, ${(ay + sizeVal/2 + dy).toFixed(2)}) | transformOrigin: ${(sizeVal / 2 + dx).toFixed(2)}px ${(sizeVal / 2 + dy).toFixed(2)}px`);
+        console.log(`[Phase 2 Axis] Piece ${i} (${pieces[i].e.id}): x=${startPos.x}, y=${startPos.y} => target x=${finalLogicalPos.x}, y=${finalLogicalPos.y} | sizeVal=${sizeVal.toFixed(2)} | dx=${dx.toFixed(2)}, dy=${dy.toFixed(2)} | Axis relative to board: (${(ax + sizeVal/2 + dx).toFixed(2)}, ${(ay + sizeVal/2 + dy).toFixed(2)}) | transformOrigin: ${sizeVal / 2 + dx}px ${sizeVal / 2 + dy}px -> ${50 + (dx * 100 / sizeVal)}% ${50 + (dy * 100 / sizeVal)}%`);
         
         pieces[i].e.style.transition = "none";
-        pieces[i].e.style.transformOrigin = `${sizeVal / 2 + dx}px ${sizeVal / 2 + dy}px`;
+        pieces[i].e.style.transformOrigin = `${50 + (dx * 100 / sizeVal)}% ${50 + (dy * 100 / sizeVal)}%`;
         pieces[i].e.style.transform = `translate(${ax}px, ${ay}px) rotate(0deg)`;
         pieces[i].e.classList.add("smooth-move-anim");
       }
@@ -4510,7 +4510,7 @@ function flipBoardVertical() {
       const dy = (boardHeight - axisEnd.y - axisStart.y) / 2;
       
       cursor.style.transition = "none";
-      cursor.style.transformOrigin = `${sizeVal / 2 + dx}px ${sizeVal / 2 + dy}px`;
+      cursor.style.transformOrigin = `${50 + (dx * 100 / sizeVal)}% ${50 + (dy * 100 / sizeVal)}%`;
       cursor.style.transform = `translate(${ax}px, ${ay}px) rotate(0deg)`;
       cursor.classList.add("smooth-move-anim");
     }
