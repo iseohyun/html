@@ -2798,10 +2798,15 @@ function evaluateBoard() {
 
 // 게임 초기화 실행부
 function initGame() {
-  // 새로고침(F5) 시에는 URL의 이전 게임 상태(p, log, t)를 비우고 무조건 새 대국으로 시작
+  // 새로고침(F5) 시에는 URL의 이전 게임 상태(p, log, t, cho)만 비우고 무조건 새 대국으로 시작 (SPA의 다른 라우팅 파라미터는 보존)
   const isReload = performance.getEntriesByType("navigation")[0]?.type === "reload";
   if (isReload) {
-    window.history.replaceState({}, "", window.location.pathname);
+    const url = new URL(window.location.href);
+    url.searchParams.delete("p");
+    url.searchParams.delete("log");
+    url.searchParams.delete("t");
+    url.searchParams.delete("cho");
+    window.history.replaceState({}, "", url.toString());
   }
 
   // 1. 데이터 및 기물 DOM 바인딩 선행 수행
