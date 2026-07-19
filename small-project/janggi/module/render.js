@@ -58,8 +58,9 @@ function initBoard() {
 
   // 말의 크기를 조절합니다.
   for (let i = 0; i < 32; i++) {
-    pieces[i].e.setAttribute("width", unitSize * piecesSize);
-    pieces[i].e.setAttribute("height", unitSize * piecesSize);
+    const ratio = getPieceSizeRatio(i);
+    pieces[i].e.setAttribute("width", unitSize * ratio);
+    pieces[i].e.setAttribute("height", unitSize * ratio);
 
     // 클릭되었을 때 수행할 함수를 지정합니다.
     pieces[i].e.addEventListener("click", function () { selected(i) });
@@ -155,9 +156,10 @@ function setting(code) {
 // 데이터에 따라 말의 위치를 배치합니다.
 function initPositions() {
   for (let i = 0; i < 32; i++) {
+    const ratio = getPieceSizeRatio(i);
     let tmpAxis = getAxis(pieces[i].x, pieces[i].y);
-    pieces[i].e.setAttribute("x", tmpAxis.x - unitSize * piecesSize / 2);
-    pieces[i].e.setAttribute("y", tmpAxis.y - unitSize * piecesSize / 2);
+    pieces[i].e.setAttribute("x", tmpAxis.x - unitSize * ratio / 2);
+    pieces[i].e.setAttribute("y", tmpAxis.y - unitSize * ratio / 2);
   }
 
   let curTurn = parseInt(document.getElementById("turn").value);
@@ -274,11 +276,12 @@ function moveSelectBox(i, visible = true) {
 function createCandiBox(i, x, y) {
   if (x < 1 || x > 9 || y < 1 || y > 10) return;
 
+  const ratio = getPieceSizeRatio(i);
   let tmpAxis = getAxis(x, y);
   const candiBox = document.createElementNS("http://www.w3.org/2000/svg", "circle");
   candiBox.setAttribute("cx", tmpAxis.x);
   candiBox.setAttribute("cy", tmpAxis.y);
-  candiBox.setAttribute("r", (unitSize * piecesSize / 2) - 4);
+  candiBox.setAttribute("r", (unitSize * ratio / 2) - 4);
   candiBox.setAttribute("fill", "#3b82f6");
   candiBox.setAttribute("fill-opacity", "0.15");
   candiBox.setAttribute("stroke", "#3b82f6");
@@ -297,8 +300,9 @@ function setPieces(i, x, y) {
   let tmpAxis = getAxis(x, y);
   pieces[i].x = x;
   pieces[i].y = y;
-  pieces[i].e.setAttribute("x", tmpAxis.x - unitSize * piecesSize / 2);
-  pieces[i].e.setAttribute("y", tmpAxis.y - unitSize * piecesSize / 2);
+  const ratio = getPieceSizeRatio(i);
+  pieces[i].e.setAttribute("x", tmpAxis.x - unitSize * ratio / 2);
+  pieces[i].e.setAttribute("y", tmpAxis.y - unitSize * ratio / 2);
 }
 
 // 현재 그려진 모든 이동가능 경로를 삭제합니다.
