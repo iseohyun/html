@@ -116,10 +116,22 @@ function nextStep() {
     const eqIdx = action.eqIdx;
     if (eqIdx < phaseCEquations.length) {
       document.getElementById("resault").innerHTML = phaseCEquations[eqIdx];
-      if (eqIdx === phaseCEquations.length - 1) {
-        isFin = true;
-      }
     }
+    cur_line = -99;
+  } else if (action.phase === 'D') {
+    const valA = A;
+    const valB = B;
+    const coeffA = window.final_A_coeff;
+    const coeffB = window.final_B_coeff;
+    const termA = valA * coeffA;
+    const termB = valB * coeffB;
+    const absA = Math.abs(termA);
+    const expr = termB >= 0 
+      ? `${termB} - ${absA} = ${gcd}`
+      : `${termA} - ${Math.abs(termB)} = ${gcd}`;
+    
+    document.getElementById("resault").innerHTML = `GCD = ${expr}`;
+    isFin = true;
     cur_line = -99;
   }
 
@@ -133,6 +145,7 @@ let actions = [];
 
 function generatePhaseC(startA, startB) {
   phaseCEquations = [];
+  window.phaseCEquations = phaseCEquations;
 
   let tempA = startA;
   let tempB = startB;
@@ -161,6 +174,8 @@ function generatePhaseC(startA, startB) {
     phaseCEquations.push(`<span class="text-red">${gcdVal}</span> = <span class="text-blue">B × 1</span>`);
     phaseCEquations.push(`GCD = <span class="text-blue">B × 1</span>`);
     phaseCEquations.push(`GCD = B × 1 + <span class="text-blue">A</span> × 0`);
+    window.final_A_coeff = 0;
+    window.final_B_coeff = 1;
     return;
   }
 
@@ -211,6 +226,8 @@ function generatePhaseC(startA, startB) {
   // Final substitutions for B and A
   phaseCEquations.push(`GCD = <span class="text-blue">B</span> × ${formatCoeff(term2.coeff)} + ${formatTerm(term1.val, term1.coeff)}`);
   phaseCEquations.push(`GCD = B × ${formatCoeff(term2.coeff)} + <span class="text-blue">A</span> × ${formatCoeff(term1.coeff)}`);
+  window.final_A_coeff = term1.coeff;
+  window.final_B_coeff = term2.coeff;
 }
 
 function buildActionsList(startA, startB) {
@@ -478,9 +495,29 @@ function buildActionsList(startA, startB) {
     }
   }
 
+  // 6. Add Phase D verification step
+  actions.push({
+    phase: 'D',
+    name: 'D-1-1',
+    targetCell: [-99, -99],
+    ref1: [0, 5], // F1
+    ref2: [0, 6], // G1
+    ref3: [1, 5], // F2
+    ref4: [1, 6], // G2
+  });
+
   // Update window.actions
   window.actions = actions;
 }
 
+function lastStep() {
+  if (isFin) return;
+  const totalSteps = window.actions ? window.actions.length : 0;
+  while (cur_step < totalSteps && !isFin) {
+    nextStep();
+  }
+}
+
 window.generatePhaseC = generatePhaseC;
 window.buildActionsList = buildActionsList;
+window.lastStep = lastStep;
