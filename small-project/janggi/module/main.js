@@ -146,6 +146,8 @@ function getData() {
 // 장기말이 클릭되었을 때, 동작을 기술합니다.
 function selected(i) {
   if (gameEnded) return;
+  kbCursorActive = false;
+  updateKeyboardCursor();
 
   const curTurn = log.length;
   const isChoTurn = (curTurn % 2 === 0);
@@ -196,6 +198,8 @@ function selected(i) {
 
 // 움직임 처리
 function move(i, x, y) {
+  kbCursorActive = false;
+  updateKeyboardCursor();
   currentLoadedRecordId = null;
   updateSavedRecordsListUI();
 
@@ -2576,8 +2580,106 @@ function initGame() {
     svg.classList.remove("no-transition");
   });
 
+  // 키보드 단축키 방향키 및 엔터 리스너 등록
+  window.addEventListener("keydown", handleKeyDown);
+
   // 로드 직후 AI 작동 여부 검사
   checkAndRunAI();
+}
+
+function handleKeyDown(e) {
+  if (gameEnded) return;
+
+  const activeEl = document.activeElement;
+  if (activeEl && (activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA" || activeEl.tagName === "SELECT")) {
+    return;
+  }
+
+  // 방향키 처리
+  if (e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === "ArrowLeft" || e.key === "ArrowRight") {
+    e.preventDefault();
+    if (!kbCursorActive) {
+      kbCursorActive = true;
+      
+      // 이미 선택된 기물이 있다면 해당 기물 좌표에서 시작, 아니면 현재 턴 왕의 위치에서 시작
+      if (curSelect < 32 && pieces[curSelect].x !== 0) {
+        kbCursorX = pieces[curSelect].x;
+        kbCursorY = pieces[curSelect].y;
+      } else {
+        const curTurn = log.length;
+        const isChoTurn = (curTurn % 2 === 0);
+        const kingIdx = isChoTurn ? 0 : 16;
+        kbCursorX = pieces[kingIdx].x;
+        kbCursorY = pieces[kingIdx].y;
+      }
+    } else {
+      if (e.key === "ArrowUp") {
+        let ny = yPrev(kbCursorY);
+        if (ny !== -1) kbCursorY = ny;
+      } else if (e.key === "ArrowDown") {
+        let ny = yNext(kbCursorY);
+        if (ny !== -1) kbCursorY = ny;
+      } else if (e.key === "ArrowLeft") {
+        if (kbCursorX > 1) kbCursorX -= 1;
+      } else if (e.key === "ArrowRight") {
+        if (kbCursorX < 9) kbCursorX += 1;
+      }
+    }
+    updateKeyboardCursor();
+    return;
+  }
+
+  // ESC 키로 활성 취소 및 키보드 커서 숨김
+  if (e.key === "Escape") {
+    if (kbCursorActive) {
+      kbCursorActive = false;
+      updateKeyboardCursor();
+      if (curSelect < 32) {
+        selected(curSelect); // 선택 해제
+      }
+    }
+    return;
+  }
+
+  // 엔터 또는 스페이스바로 선택 및 착수 실행
+  if (e.key === "Enter" || e.key === " ") {
+    if (!kbCursorActive) return;
+    e.preventDefault();
+
+    const curTurn = log.length;
+    const isChoTurn = (curTurn % 2 === 0);
+    const currentTeam = isChoTurn ? "cho" : "han";
+
+    if (curSelect === 32) {
+      // 기물 선택 시도
+      let pIdx = whoIsit(kbCursorX, kbCursorY);
+      if (pIdx < 32) {
+        // 내 기물일 때만 선택 허용
+        if (isChoTurn ? (pIdx < 16) : (pIdx >= 16)) {
+          selected(pIdx);
+        }
+      }
+    } else {
+      // 기물이 이미 선택되어 있는 경우
+      const validMoves = getFilteredLegalMoves(currentTeam);
+      const matchedMove = validMoves.find(m => m.i === curSelect && m.x === kbCursorX && m.y === kbCursorY);
+      
+      if (matchedMove) {
+        // 이동 실행!
+        move(curSelect, kbCursorX, kbCursorY);
+      } else {
+        // 후보 이동지가 아닌 경우, 해당 좌표에 내 다른 기물이 있으면 해당 기물로 선택 변경
+        let pIdx = whoIsit(kbCursorX, kbCursorY);
+        if (pIdx < 32 && (isChoTurn ? (pIdx < 16) : (pIdx >= 16))) {
+          selected(pIdx);
+        } else {
+          // 허공이나 상대 기물 클릭 시 선택 취소
+          selected(curSelect);
+        }
+      }
+    }
+    updateKeyboardCursor();
+  }
 }
 
 initGame();

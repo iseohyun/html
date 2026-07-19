@@ -235,6 +235,30 @@ function initPositions() {
   }
 
   updateScore();
+  updateKeyboardCursor();
+}
+
+function updateKeyboardCursor() {
+  const cursor = document.getElementById("kb-cursor");
+  if (!cursor) return;
+  
+  if (!kbCursorActive) {
+    cursor.style.display = "none";
+    return;
+  }
+  
+  const size = unitSize * 0.85;
+  let axis = getAxis(kbCursorX, kbCursorY);
+  let targetX = axis.x - size / 2;
+  let targetY = axis.y - size / 2;
+  
+  cursor.setAttribute("width", size);
+  cursor.setAttribute("height", size);
+  cursor.style.width = `${size}px`;
+  cursor.style.height = `${size}px`;
+  cursor.style.display = "block";
+  
+  cursor.style.transform = `translate(${targetX}px, ${targetY}px)`;
 }
 
 function updateScore() {
