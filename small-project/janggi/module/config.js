@@ -105,6 +105,11 @@ var shortcutKeys = {
   loadNotation: "v"
 };
 var currentLoadedRecordId = null; // 현재 불러와서 보여주고 있는 기보의 로컬스토리지 ID
+var scoreAutoRotate = true; // 점수판 자동 순환 여부
+var scoreRotateInterval = 5; // 점수판 순환 주기 (초)
+var scoreShowSlide1 = true; // 점수판 슬라이드 1 (점수차) 표출 여부
+var scoreShowSlide2 = true; // 점수판 슬라이드 2 (타이머) 표출 여부
+var scoreShowSlide3 = true; // 점수판 슬라이드 3 (대회정보) 표출 여부
 
 /**
  * @typedef {Object} GameMetadata - 대국 상세 메타데이터 스키마
