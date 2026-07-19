@@ -2841,8 +2841,9 @@ function matchShortcutKey(action, keyEvent) {
 function handleKeyDown(e) {
   if (boardAnimating) return;
   
+  const isEscape = (e.key === "Escape");
   const activeEl = document.activeElement;
-  if (activeEl && (activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA" || activeEl.tagName === "SELECT")) {
+  if (!isEscape && activeEl && (activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA" || activeEl.tagName === "SELECT")) {
     return;
   }
 
