@@ -125,6 +125,10 @@ var shortcutKeys = {
     primary: { key: "]", ctrl: false, alt: false, shift: false },
     secondary: null
   },
+  toggleCoordinates: {
+    primary: { key: "/", ctrl: false, alt: false, shift: false },
+    secondary: null
+  },
   up: {
     primary: { key: "ArrowUp", ctrl: false, alt: false, shift: false },
     secondary: { key: "w", ctrl: false, alt: false, shift: false }

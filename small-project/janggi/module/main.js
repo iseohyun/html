@@ -2830,7 +2830,10 @@ function matchShortcutKey(action, keyEvent) {
   
   const matchCombo = (combo) => {
     if (!combo || !combo.key) return false;
-    const keyMatch = keyEvent.key.toLowerCase() === combo.key.toLowerCase();
+    let keyMatch = keyEvent.key.toLowerCase() === combo.key.toLowerCase();
+    if (!keyMatch && combo.key === "`" && keyEvent.code === "Backquote") {
+      keyMatch = true;
+    }
     const ctrlMatch = (keyEvent.ctrlKey || keyEvent.metaKey) === !!combo.ctrl;
     const altMatch = keyEvent.altKey === !!combo.alt;
     const shiftMatch = keyEvent.shiftKey === !!combo.shift;
@@ -3275,6 +3278,11 @@ function migrateShortcutKeys(parsedKeys) {
   }
   if (migrated.autoplayToggle && migrated.autoplayToggle.primary && migrated.autoplayToggle.primary.key === "p") {
     migrated.autoplayToggle.primary.ctrl = false;
+  }
+  if (migrated.openCommentEdit && migrated.openCommentEdit.primary && migrated.openCommentEdit.primary.key === "`") {
+    migrated.openCommentEdit.primary.ctrl = false;
+    migrated.openCommentEdit.primary.alt = false;
+    migrated.openCommentEdit.primary.shift = false;
   }
 
   return migrated;
