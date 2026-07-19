@@ -4268,22 +4268,20 @@ function flipBoardHorizontal() {
     for (let i = 0; i < 32; i++) {
       if (pieces[i].x !== 0 && startPositions[i].x !== 0) {
         const startPos = startPositions[i];
-        const endPos = { x: 10 - startPos.x, y: startPos.y };
+        const finalLogicalPos = { x: 10 - startPos.x, y: startPos.y };
         
-        const axisA = getAxis(startPos.x, startPos.y);
-        const axisB = getAxis(endPos.x, endPos.y);
+        const axisStart = getAxis(startPos.x, startPos.y);
+        const axisEnd = getAxis(finalLogicalPos.x, finalLogicalPos.y);
         
         const ratio = (i === 0 || i === 16) ? sizeKing : ((i === 1 || i === 2 || i === 17 || i === 18 || i === 3 || i === 4 || i === 19 || i === 20 || i === 5 || i === 6 || i === 21 || i === 22 || i === 7 || i === 8 || i === 23 || i === 24) ? sizeMiddle : sizeSmall);
         const sizeVal = unitSize * ratio;
         
-        const ax = axisA.x - sizeVal / 2;
-        const ay = axisA.y - sizeVal / 2;
+        const ax = axisStart.x - sizeVal / 2;
+        const ay = axisStart.y - sizeVal / 2;
         
-        const bx = axisB.x - sizeVal / 2;
-        const by = axisB.y - sizeVal / 2;
-        
-        const dx = (bx - ax) / 2;
-        const dy = (by - ay) / 2;
+        // Midpoint calculation based on screen coordinates (incorporating padding margins)
+        const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
+        const dy = 0; // Horizontal flip keeps Y physically unchanged on screen
         
         pieces[i].e.style.transition = "none";
         pieces[i].e.style.transformOrigin = `calc(50% + ${dx}px) calc(50% + ${dy}px)`;
@@ -4295,17 +4293,14 @@ function flipBoardHorizontal() {
     const cursor = document.getElementById("kb-cursor");
     if (cursor && kbCursorActive) {
       const sizeVal = unitSize * 0.85;
-      const axisA = getAxis(oldKbCursorX, oldKbCursorY);
-      const axisB = getAxis(10 - oldKbCursorX, oldKbCursorY);
+      const axisStart = getAxis(oldKbCursorX, oldKbCursorY);
+      const axisEnd = getAxis(10 - oldKbCursorX, oldKbCursorY);
       
-      const ax = axisA.x - sizeVal / 2;
-      const ay = axisA.y - sizeVal / 2;
+      const ax = axisStart.x - sizeVal / 2;
+      const ay = axisStart.y - sizeVal / 2;
       
-      const bx = axisB.x - sizeVal / 2;
-      const by = axisB.y - sizeVal / 2;
-      
-      const dx = (bx - ax) / 2;
-      const dy = (by - ay) / 2;
+      const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
+      const dy = 0;
       
       cursor.style.transition = "none";
       cursor.style.transformOrigin = `calc(50% + ${dx}px) calc(50% + ${dy}px)`;
@@ -4320,11 +4315,11 @@ function flipBoardHorizontal() {
     for (let i = 0; i < 32; i++) {
       if (pieces[i].x !== 0 && startPositions[i].x !== 0) {
         const startPos = startPositions[i];
-        const axisA = getAxis(startPos.x, startPos.y);
+        const axisStart = getAxis(startPos.x, startPos.y);
         const ratio = (i === 0 || i === 16) ? sizeKing : ((i === 1 || i === 2 || i === 17 || i === 18 || i === 3 || i === 4 || i === 19 || i === 20 || i === 5 || i === 6 || i === 21 || i === 22 || i === 7 || i === 8 || i === 23 || i === 24) ? sizeMiddle : sizeSmall);
         const sizeVal = unitSize * ratio;
-        const ax = axisA.x - sizeVal / 2;
-        const ay = axisA.y - sizeVal / 2;
+        const ax = axisStart.x - sizeVal / 2;
+        const ay = axisStart.y - sizeVal / 2;
         
         pieces[i].e.style.transition = "";
         pieces[i].e.style.transform = `translate(${ax}px, ${ay}px) rotateY(-180deg)`;
@@ -4333,9 +4328,9 @@ function flipBoardHorizontal() {
     
     if (cursor && kbCursorActive) {
       const sizeVal = unitSize * 0.85;
-      const axisA = getAxis(oldKbCursorX, oldKbCursorY);
-      const ax = axisA.x - sizeVal / 2;
-      const ay = axisA.y - sizeVal / 2;
+      const axisStart = getAxis(oldKbCursorX, oldKbCursorY);
+      const ax = axisStart.x - sizeVal / 2;
+      const ay = axisStart.y - sizeVal / 2;
       
       cursor.style.transition = "";
       cursor.style.transform = `translate(${ax}px, ${ay}px) rotateY(-180deg)`;
@@ -4444,22 +4439,20 @@ function flipBoardVertical() {
     for (let i = 0; i < 32; i++) {
       if (pieces[i].x !== 0 && startPositions[i].x !== 0) {
         const startPos = startPositions[i];
-        const endPos = { x: 10 - startPos.x, y: startPos.y }; // Horizontal swing on same row to reach target side
+        const finalLogicalPos = { x: startPos.x, y: flipYCoordinate(startPos.y) };
         
-        const axisA = getAxis(startPos.x, startPos.y);
-        const axisB = getAxis(endPos.x, endPos.y);
+        const axisStart = getAxis(startPos.x, startPos.y);
+        const axisEnd = getAxis(finalLogicalPos.x, finalLogicalPos.y);
         
         const ratio = (i === 0 || i === 16) ? sizeKing : ((i === 1 || i === 2 || i === 17 || i === 18 || i === 3 || i === 4 || i === 19 || i === 20 || i === 5 || i === 6 || i === 21 || i === 22 || i === 7 || i === 8 || i === 23 || i === 24) ? sizeMiddle : sizeSmall);
         const sizeVal = unitSize * ratio;
         
-        const ax = axisA.x - sizeVal / 2;
-        const ay = axisA.y - sizeVal / 2;
+        const ax = axisStart.x - sizeVal / 2;
+        const ay = axisStart.y - sizeVal / 2;
         
-        const bx = axisB.x - sizeVal / 2;
-        const by = axisB.y - sizeVal / 2;
-        
-        const dx = (bx - ax) / 2;
-        const dy = (by - ay) / 2;
+        // Midpoint calculation based on screen coordinates (incorporating padding margins)
+        const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
+        const dy = (boardHeight - axisEnd.y - axisStart.y) / 2;
         
         pieces[i].e.style.transition = "none";
         pieces[i].e.style.transformOrigin = `calc(50% + ${dx}px) calc(50% + ${dy}px)`;
@@ -4471,17 +4464,14 @@ function flipBoardVertical() {
     const cursor = document.getElementById("kb-cursor");
     if (cursor && kbCursorActive) {
       const sizeVal = unitSize * 0.85;
-      const axisA = getAxis(oldKbCursorX, oldKbCursorY);
-      const axisB = getAxis(10 - oldKbCursorX, oldKbCursorY);
+      const axisStart = getAxis(oldKbCursorX, oldKbCursorY);
+      const axisEnd = getAxis(oldKbCursorX, flipYCoordinate(oldKbCursorY));
       
-      const ax = axisA.x - sizeVal / 2;
-      const ay = axisA.y - sizeVal / 2;
+      const ax = axisStart.x - sizeVal / 2;
+      const ay = axisStart.y - sizeVal / 2;
       
-      const bx = axisB.x - sizeVal / 2;
-      const by = axisB.y - sizeVal / 2;
-      
-      const dx = (bx - ax) / 2;
-      const dy = (by - ay) / 2;
+      const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
+      const dy = (boardHeight - axisEnd.y - axisStart.y) / 2;
       
       cursor.style.transition = "none";
       cursor.style.transformOrigin = `calc(50% + ${dx}px) calc(50% + ${dy}px)`;
@@ -4492,15 +4482,15 @@ function flipBoardVertical() {
     // Force style recalculation to apply start state
     document.body.offsetHeight;
     
-    // Trigger transition to target transforms
+    // Trigger transition to target transforms (rotate 180 degrees around midpoint)
     for (let i = 0; i < 32; i++) {
       if (pieces[i].x !== 0 && startPositions[i].x !== 0) {
         const startPos = startPositions[i];
-        const axisA = getAxis(startPos.x, startPos.y);
+        const axisStart = getAxis(startPos.x, startPos.y);
         const ratio = (i === 0 || i === 16) ? sizeKing : ((i === 1 || i === 2 || i === 17 || i === 18 || i === 3 || i === 4 || i === 19 || i === 20 || i === 5 || i === 6 || i === 21 || i === 22 || i === 7 || i === 8 || i === 23 || i === 24) ? sizeMiddle : sizeSmall);
         const sizeVal = unitSize * ratio;
-        const ax = axisA.x - sizeVal / 2;
-        const ay = axisA.y - sizeVal / 2;
+        const ax = axisStart.x - sizeVal / 2;
+        const ay = axisStart.y - sizeVal / 2;
         
         pieces[i].e.style.transition = "";
         pieces[i].e.style.transform = `translate(${ax}px, ${ay}px) rotate(-180deg)`;
@@ -4509,9 +4499,9 @@ function flipBoardVertical() {
     
     if (cursor && kbCursorActive) {
       const sizeVal = unitSize * 0.85;
-      const axisA = getAxis(oldKbCursorX, oldKbCursorY);
-      const ax = axisA.x - sizeVal / 2;
-      const ay = axisA.y - sizeVal / 2;
+      const axisStart = getAxis(oldKbCursorX, oldKbCursorY);
+      const ax = axisStart.x - sizeVal / 2;
+      const ay = axisStart.y - sizeVal / 2;
       
       cursor.style.transition = "";
       cursor.style.transform = `translate(${ax}px, ${ay}px) rotate(-180deg)`;
