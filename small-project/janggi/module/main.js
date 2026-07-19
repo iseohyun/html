@@ -607,9 +607,15 @@ function changeChoColor(value) {
     if (select) select.value = "custom";
     if (picker) {
       picker.style.display = "inline-block";
-      if (value.startsWith("#")) picker.value = value;
+      if (value.startsWith("#")) {
+        picker.value = value;
+        chosenColor = value;
+      } else {
+        chosenColor = picker.value || "#1e3a8a";
+      }
+    } else {
+      chosenColor = value.startsWith("#") ? value : "#1e3a8a";
     }
-    chosenColor = picker ? picker.value : "#1e3a8a";
     choColorType = chosenColor;
     localStorage.setItem("choColorType", choColorType);
     
@@ -684,9 +690,15 @@ function changeHanColor(value) {
     if (select) select.value = "custom";
     if (picker) {
       picker.style.display = "inline-block";
-      if (value.startsWith("#")) picker.value = value;
+      if (value.startsWith("#")) {
+        picker.value = value;
+        chosenColor = value;
+      } else {
+        chosenColor = picker.value || "#991b1b";
+      }
+    } else {
+      chosenColor = value.startsWith("#") ? value : "#991b1b";
     }
-    chosenColor = picker ? picker.value : "#991b1b";
     hanColorType = chosenColor;
     localStorage.setItem("hanColorType", hanColorType);
     
@@ -780,16 +792,21 @@ function changeCandiColor(value) {
     if (select) select.value = "custom";
     if (picker) {
       picker.style.display = "inline-block";
-      if (value.startsWith("#")) picker.value = value;
+      if (value.startsWith("#")) {
+        picker.value = value;
+        candiColorType = value;
+      } else {
+        candiColorType = picker.value || "#3b82f6";
+      }
+    } else {
+      candiColorType = value.startsWith("#") ? value : "#3b82f6";
     }
-    candiColorType = picker ? picker.value : "#3b82f6";
-    localStorage.setItem("candiColorType", candiColorType);
   } else {
     if (picker) picker.style.display = "none";
     if (select) select.value = value;
     candiColorType = value;
-    localStorage.setItem("candiColorType", candiColorType);
   }
+  localStorage.setItem("candiColorType", candiColorType);
   saveCurrentConfigToSlot();
 }
 
@@ -824,9 +841,15 @@ function changeSettingsBgColor(value) {
     if (select) select.value = "custom";
     if (picker) {
       picker.style.display = "inline-block";
-      if (value.startsWith("#")) picker.value = value;
+      if (value.startsWith("#")) {
+        picker.value = value;
+        settingsBgColor = value;
+      } else {
+        settingsBgColor = picker.value || "#0f172a";
+      }
+    } else {
+      settingsBgColor = value.startsWith("#") ? value : "#0f172a";
     }
-    settingsBgColor = picker ? picker.value : "#0f172a";
   } else {
     if (picker) picker.style.display = "none";
     if (select) select.value = value;
@@ -877,9 +900,15 @@ function changeSettingsAccentColor(value) {
     if (select) select.value = "custom";
     if (picker) {
       picker.style.display = "inline-block";
-      if (value.startsWith("#")) picker.value = value;
+      if (value.startsWith("#")) {
+        picker.value = value;
+        settingsAccentColor = value;
+      } else {
+        settingsAccentColor = picker.value || "#3b82f6";
+      }
+    } else {
+      settingsAccentColor = value.startsWith("#") ? value : "#3b82f6";
     }
-    settingsAccentColor = picker ? picker.value : "#3b82f6";
   } else {
     if (picker) picker.style.display = "none";
     if (select) select.value = value;

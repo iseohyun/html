@@ -392,9 +392,9 @@ function createCandiBox(i, x, y) {
     circle.setAttribute("cy", center);
     circle.setAttribute("r", boxSize * 0.4);
     circle.setAttribute("fill", candiColorType);
-    circle.setAttribute("fill-opacity", "1.0"); // 100% solid opacity
-    circle.setAttribute("stroke", "#ff0000"); // Red border for extreme visibility test
-    circle.setAttribute("stroke-width", "10");
+    circle.setAttribute("fill-opacity", "0.2"); // Semi-transparent fill
+    circle.setAttribute("stroke", candiColorType); // Theme color stroke
+    circle.setAttribute("stroke-width", "4"); // Elegant border width
     circle.setAttribute("pointer-events", "all");
     circle.style.pointerEvents = "auto";
     candiBox.appendChild(circle);
