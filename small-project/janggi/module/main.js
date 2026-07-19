@@ -4260,6 +4260,9 @@ function flipBoardHorizontal() {
   const oldKbCursorX = kbCursorX;
   const oldKbCursorY = kbCursorY;
   
+  // Set explicit transform-origin based on exact mathematical coordinates to bypass browser SVG bounding-box bugs
+  boardSvg.style.transformOrigin = `${boardWidth / 2}px ${boardHeight / 2}px`;
+  
   // Phase 1: Board flips horizontally as one body.
   boardSvg.classList.add("flip-h-anim");
   
@@ -4342,6 +4345,7 @@ function flipBoardHorizontal() {
       
       // Clean up Phase 2 style overrides
       boardSvg.classList.remove("flip-h-anim");
+      boardSvg.style.transformOrigin = "";
       for (let i = 0; i < 32; i++) {
         pieces[i].e.style.transformOrigin = "";
         pieces[i].e.style.transform = "";
@@ -4428,6 +4432,9 @@ function flipBoardVertical() {
   }
   const oldKbCursorX = kbCursorX;
   const oldKbCursorY = kbCursorY;
+  
+  // Set explicit transform-origin based on exact mathematical coordinates to bypass browser SVG bounding-box bugs
+  boardSvg.style.transformOrigin = `${boardWidth / 2}px ${boardHeight / 2}px`;
   
   // Phase 1: Board spins 180 degrees as one body.
   boardSvg.classList.add("rotate-180-anim");
@@ -4518,6 +4525,7 @@ function flipBoardVertical() {
       
       // Clean up Phase 2 style overrides
       boardSvg.classList.remove("rotate-180-anim");
+      boardSvg.style.transformOrigin = "";
       for (let i = 0; i < 32; i++) {
         pieces[i].e.style.transformOrigin = "";
         pieces[i].e.style.transform = "";
