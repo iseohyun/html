@@ -197,6 +197,11 @@ function move(i, x, y) {
   let tmpAxis = getAxis(x, y);
   selectBox.setAttribute("x", tmpAxis.x - unitSize / 2);
   selectBox.setAttribute("y", tmpAxis.y - unitSize / 2);
+
+  const recordBox = document.getElementById("record-box");
+  if (recordBox && recordBox.style.display === "flex") {
+    updateRecordUI();
+  }
 }
 
 function disalbeSettingBox() {
@@ -1345,6 +1350,401 @@ function initSettingsUI() {
   }
 }
 
+// ----------------------------------------------------
+// 기보 라이브러리 및 보관함 로직
+// ----------------------------------------------------
+function getLayoutName(type) {
+  const names = ["마상마상", "마상상마", "상마마상", "상마상마"];
+  return names[type] || "마상마상";
+}
+
+function getScoreLeadString() {
+  let scoreA = 0;
+  let scoreB = 0;
+  if (pieces[1].x != 0 || pieces[1].y != 0) scoreA += 13;
+  if (pieces[2].x != 0 || pieces[2].y != 0) scoreA += 13;
+  if (pieces[3].x != 0 || pieces[3].y != 0) scoreA += 7;
+  if (pieces[4].x != 0 || pieces[4].y != 0) scoreA += 7;
+  if (pieces[5].x != 0 || pieces[5].y != 0) scoreA += 5;
+  if (pieces[6].x != 0 || pieces[6].y != 0) scoreA += 5;
+  if (pieces[7].x != 0 || pieces[7].y != 0) scoreA += 3;
+  if (pieces[8].x != 0 || pieces[8].y != 0) scoreA += 3;
+  if (pieces[9].x != 0 || pieces[9].y != 0) scoreA += 3;
+  if (pieces[10].x != 0 || pieces[10].y != 0) scoreA += 3;
+  if (pieces[11].x != 0 || pieces[11].y != 0) scoreA += 2;
+  if (pieces[12].x != 0 || pieces[12].y != 0) scoreA += 2;
+  if (pieces[13].x != 0 || pieces[13].y != 0) scoreA += 2;
+  if (pieces[14].x != 0 || pieces[14].y != 0) scoreA += 2;
+  if (pieces[15].x != 0 || pieces[15].y != 0) scoreA += 2;
+  
+  if (pieces[17].x != 0 || pieces[17].y != 0) scoreB += 13;
+  if (pieces[18].x != 0 || pieces[18].y != 0) scoreB += 13;
+  if (pieces[19].x != 0 || pieces[19].y != 0) scoreB += 7;
+  if (pieces[20].x != 0 || pieces[20].y != 0) scoreB += 7;
+  if (pieces[21].x != 0 || pieces[21].y != 0) scoreB += 5;
+  if (pieces[22].x != 0 || pieces[22].y != 0) scoreB += 5;
+  if (pieces[23].x != 0 || pieces[23].y != 0) scoreB += 3;
+  if (pieces[24].x != 0 || pieces[24].y != 0) scoreB += 3;
+  if (pieces[25].x != 0 || pieces[25].y != 0) scoreB += 3;
+  if (pieces[26].x != 0 || pieces[26].y != 0) scoreB += 3;
+  if (pieces[27].x != 0 || pieces[27].y != 0) scoreB += 2;
+  if (pieces[28].x != 0 || pieces[28].y != 0) scoreB += 2;
+  if (pieces[29].x != 0 || pieces[29].y != 0) scoreB += 2;
+  if (pieces[30].x != 0 || pieces[30].y != 0) scoreB += 2;
+  if (pieces[31].x != 0 || pieces[31].y != 0) scoreB += 2;
+
+  let scoreHan = 0;
+  let scoreCho = 0;
+  if (iAmCho) {
+    scoreB += 1.5;
+    scoreHan = scoreB;
+    scoreCho = scoreA;
+  } else {
+    scoreA += 1.5;
+    scoreHan = scoreA;
+    scoreCho = scoreB;
+  }
+
+  if (scoreHan > scoreCho) {
+    return `한_${(scoreHan - scoreCho).toFixed(1)}점`;
+  } else if (scoreCho > scoreHan) {
+    return `초_${(scoreCho - scoreHan).toFixed(1)}점`;
+  } else {
+    return `동점_0.0점`;
+  }
+}
+
+function getStartingCode() {
+  let code = "";
+  for (let idx = 0; idx < 32; idx++) {
+    code += `${initPieces[idx].x}${initPieces[idx].y}`;
+  }
+  return code;
+}
+
+function rebuildHistory() {
+  const tempPieces = [];
+  for (let idx = 0; idx < 32; idx++) {
+    tempPieces[idx] = { x: initPieces[idx].x, y: initPieces[idx].y };
+  }
+  
+  const history = [];
+  for (let step = 0; step < log.length; step++) {
+    const moveInfo = log[step];
+    const i = moveInfo.i;
+    const endX = moveInfo.x;
+    const endY = moveInfo.y;
+    const t = moveInfo.t;
+    
+    const startX = tempPieces[i].x;
+    const startY = tempPieces[i].y;
+    
+    const player = (i <= 15) ? "초" : "한";
+    
+    let pieceName = "";
+    if (i === 0) pieceName = "궁";
+    else if (i === 1 || i === 2) pieceName = "차";
+    else if (i === 3 || i === 4) pieceName = "포";
+    else if (i === 5 || i === 6) pieceName = "마";
+    else if (i === 7 || i === 8) pieceName = "상";
+    else if (i === 9 || i === 10) pieceName = "사";
+    else if (i >= 11 && i <= 15) pieceName = "졸";
+    else if (i === 16) pieceName = "궁";
+    else if (i === 17 || i === 18) pieceName = "차";
+    else if (i === 19 || i === 20) pieceName = "포";
+    else if (i === 21 || i === 22) pieceName = "마";
+    else if (i === 23 || i === 24) pieceName = "상";
+    else if (i === 25 || i === 26) pieceName = "사";
+    else if (i >= 27 && i <= 31) pieceName = "병";
+    
+    history.push({
+      step: step + 1,
+      player,
+      pieceName,
+      startX,
+      startY,
+      endX,
+      endY,
+      captured: t
+    });
+    
+    tempPieces[i].x = endX;
+    tempPieces[i].y = endY;
+    if (t < 32) {
+      tempPieces[t].x = 0;
+      tempPieces[t].y = 0;
+    }
+  }
+  
+  return history;
+}
+
+function generateGameRecordText() {
+  const startingCode = getStartingCode();
+  let lines = [];
+  lines.push(`상차림: ${startingCode}`);
+  
+  const history = rebuildHistory();
+  history.forEach(h => {
+    lines.push(`${h.step}. ${h.player} ${h.startY}${h.startX}${h.pieceName}${h.endY}${h.endX}`);
+  });
+  
+  return lines.join("\n");
+}
+
+function openRecordModal() {
+  const recordBox = document.getElementById("record-box");
+  if (recordBox) {
+    recordBox.style.display = "flex";
+    
+    const article = document.getElementById("janggi-app");
+    if (article) article.classList.add("record-open");
+    
+    updateRecordUI();
+    updateSavedRecordsListUI();
+  }
+}
+
+function closeRecordModal() {
+  const recordBox = document.getElementById("record-box");
+  if (recordBox) {
+    recordBox.style.display = "none";
+    
+    const article = document.getElementById("janggi-app");
+    if (article) article.classList.remove("record-open");
+  }
+}
+
+function updateRecordUI() {
+  const recordTextArea = document.getElementById("record-text-area");
+  if (recordTextArea) {
+    recordTextArea.value = generateGameRecordText();
+  }
+}
+
+function saveRecordToLibrary(btn) {
+  const recordText = generateGameRecordText();
+  
+  // 1. 클립보드 복사
+  navigator.clipboard.writeText(recordText).then(() => {
+    const originalText = btn.textContent;
+    btn.textContent = "저장되었습니다!";
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.textContent = originalText;
+      btn.disabled = false;
+    }, 1000);
+  }).catch(err => {
+    console.error("클립보드 복사 실패", err);
+    alert("클립보드 복사에 실패하였습니다.");
+  });
+
+  // 2. localStorage 보관함 저장
+  const bottomLayout = getLayoutName(iAmCho ? newGameState[0] : newGameState[1]);
+  const topLayout = getLayoutName(iAmCho ? newGameState[1] : newGameState[0]);
+  const recordName = `${bottomLayout}대${topLayout}_${log.length}수_${getScoreLeadString()}`;
+  
+  const now = new Date();
+  const saveDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  
+  const newRecord = {
+    id: Date.now(),
+    name: recordName,
+    date: saveDate,
+    text: recordText
+  };
+  
+  let saved = JSON.parse(localStorage.getItem("janggi_saved_records") || "[]");
+  saved.unshift(newRecord);
+  localStorage.setItem("janggi_saved_records", JSON.stringify(saved));
+  
+  // 3. UI 갱신
+  updateSavedRecordsListUI();
+}
+
+function updateSavedRecordsListUI() {
+  const container = document.getElementById("saved-records-list");
+  if (!container) return;
+  
+  container.innerHTML = "";
+  let saved = JSON.parse(localStorage.getItem("janggi_saved_records") || "[]");
+  
+  if (saved.length === 0) {
+    container.innerHTML = `<div style="text-align: center; padding: 24px 0; color: #64748b; font-size: 0.9em;">저장된 기보가 없습니다.</div>`;
+    return;
+  }
+  
+  saved.forEach(record => {
+    const row = document.createElement("div");
+    row.className = "saved-record-row";
+    row.innerHTML = `
+      <div class="saved-record-info">
+        <span class="saved-record-name">${record.name}</span>
+        <span class="saved-record-date">${record.date}</span>
+      </div>
+      <div class="saved-record-actions">
+        <button class="saved-record-btn load-btn" onclick="loadSavedRecord(${record.id})" title="기보 불러오기">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+        <button class="saved-record-btn delete-btn" onclick="deleteSavedRecord(${record.id}, event)" title="기보 삭제">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            <line x1="10" y1="11" x2="10" y2="17"></line>
+            <line x1="14" y1="11" x2="14" y2="17"></line>
+          </svg>
+        </button>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+function loadSavedRecord(id) {
+  let saved = JSON.parse(localStorage.getItem("janggi_saved_records") || "[]");
+  const record = saved.find(r => r.id === id);
+  if (record) {
+    importRecordFromText(record.text);
+  }
+}
+
+function deleteSavedRecord(id, event) {
+  if (event) event.stopPropagation();
+  if (!confirm("이 기보를 정말 삭제하시겠습니까?")) return;
+  
+  let saved = JSON.parse(localStorage.getItem("janggi_saved_records") || "[]");
+  saved = saved.filter(r => r.id !== id);
+  localStorage.setItem("janggi_saved_records", JSON.stringify(saved));
+  
+  updateSavedRecordsListUI();
+}
+
+function clearAllSavedRecords() {
+  if (!confirm("모든 저장된 기보를 삭제하시겠습니까?")) return;
+  localStorage.removeItem("janggi_saved_records");
+  updateSavedRecordsListUI();
+}
+
+function importRecordFromText(directText = null) {
+  let text = directText;
+  if (text === null) {
+    const recordTextArea = document.getElementById("record-text-area");
+    if (!recordTextArea) return;
+    text = recordTextArea.value;
+  }
+  
+  if (!text || !text.trim()) {
+    alert("기보 데이터가 비어 있습니다.");
+    return;
+  }
+  
+  // 1. 상차림 코드 파싱
+  const layoutMatch = text.match(/\b\d{64}\b/);
+  let startingCode = "";
+  if (layoutMatch) {
+    startingCode = layoutMatch[0];
+  } else {
+    startingCode = getStartingCode();
+  }
+  
+  // 2. 착수 로그 파싱
+  const lines = text.split("\n");
+  const parsedMoves = [];
+  // 72졸62 및 72졸 -> 62 형식 모두 호환하는 regex
+  const moveRegex = /(\d+)\s*[\.:]?\s*(초|한)\s*([0-9])([0-9])([궁차포마상사졸병])\s*(?:->|=>)?\s*([0-9])([0-9])/;
+  
+  for (let line of lines) {
+    const match = line.match(moveRegex);
+    if (match) {
+      const step = parseInt(match[1], 10);
+      const player = match[2];
+      const startY = parseInt(match[3], 10);
+      const startX = parseInt(match[4], 10);
+      const pieceChar = match[5];
+      const endY = parseInt(match[6], 10);
+      const endX = parseInt(match[7], 10);
+      parsedMoves.push({ step, player, startX, startY, endX, endY });
+    }
+  }
+  
+  if (parsedMoves.length === 0 && !layoutMatch) {
+    alert("유효한 기보 데이터를 찾을 수 없습니다. 형식을 확인해 주세요.");
+    return;
+  }
+  
+  // 3. 보드 초기 상차림으로 재설정
+  setting(startingCode);
+  log.length = 0;
+  
+  // 4. 착수 시뮬레이션을 통해 log 배열 빌드 및 기물 메모리 위치 동기화
+  for (let move of parsedMoves) {
+    let pieceId = -1;
+    for (let pIdx = 0; pIdx < 32; pIdx++) {
+      if (pieces[pIdx].x === move.startX && pieces[pIdx].y === move.startY) {
+        pieceId = pIdx;
+        break;
+      }
+    }
+    
+    if (pieceId === -1) {
+      console.warn(`기물을 찾을 수 없습니다: x=${move.startX}, y=${move.startY}`);
+      continue;
+    }
+    
+    // 잡히는 기물 확인
+    let capturedId = 32;
+    for (let pIdx = 0; pIdx < 32; pIdx++) {
+      if (pieces[pIdx].x === move.endX && pieces[pIdx].y === move.endY) {
+        capturedId = pIdx;
+        break;
+      }
+    }
+    
+    // 로그 추가
+    log.push({ i: pieceId, x: move.endX, y: move.endY, t: capturedId });
+    
+    // 기물 좌표 수정
+    pieces[pieceId].x = move.endX;
+    pieces[pieceId].y = move.endY;
+    if (capturedId < 32) {
+      pieces[capturedId].x = 0;
+      pieces[capturedId].y = 0;
+    }
+  }
+  
+  // 5. 그래픽 보드 업데이트
+  svg.classList.add("no-transition");
+  initPositions();
+  updateScore();
+  
+  // 턴 카운터 업데이트
+  const turnInput = document.getElementById("turn");
+  if (turnInput) {
+    turnInput.value = log.length;
+  }
+  
+  // 네비게이션 버튼 처리
+  document.getElementById("prev").disabled = (log.length === 0);
+  document.getElementById("next").disabled = true;
+  
+  // 기물 선택 프레임 제거
+  curSelect = 32;
+  clearCandiBox();
+  const selectBox = document.getElementById("select-box");
+  if (selectBox) {
+    selectBox.setAttribute("x", -1000);
+    selectBox.setAttribute("y", -1000);
+  }
+  
+  svg.offsetHeight; // reflow 강제
+  svg.classList.remove("no-transition");
+  
+  // 기보 텍스트 영역 최신화
+  updateRecordUI();
+}
+
 // 안전한 초기 호출부 (스크립트 로드 순서 비동기 대응)
 function checkAndInit() {
   if (typeof pieces !== "undefined" && 
@@ -1384,6 +1784,53 @@ function checkAndInit() {
     // 애니메이션 시간 초기값 설정
     if (svg) {
       svg.style.setProperty("--anim-duration", `${animDuration}s`);
+    }
+
+    const turnEl = document.getElementById("turn");
+    if (turnEl) {
+      turnEl.addEventListener("change", function() {
+        let targetTurn = parseInt(this.value, 10);
+        if (isNaN(targetTurn)) return;
+        if (targetTurn < 0) targetTurn = 0;
+        if (targetTurn > log.length) targetTurn = log.length;
+        this.value = targetTurn;
+        
+        let startingCode = getStartingCode();
+        setting(startingCode);
+        
+        for (let idx = 0; idx < targetTurn; idx++) {
+          const m = log[idx];
+          pieces[m.i].x = m.x;
+          pieces[m.i].y = m.y;
+          if (m.t < 32) {
+            pieces[m.t].x = 0;
+            pieces[m.t].y = 0;
+          }
+        }
+        
+        svg.classList.add("no-transition");
+        initPositions();
+        updateScore();
+        
+        document.getElementById("prev").disabled = (targetTurn === 0);
+        document.getElementById("next").disabled = (targetTurn === log.length);
+        
+        curSelect = 32;
+        clearCandiBox();
+        const selectBox = document.getElementById("select-box");
+        if (selectBox) {
+          selectBox.setAttribute("x", -1000);
+          selectBox.setAttribute("y", -1000);
+        }
+        
+        svg.offsetHeight;
+        svg.classList.remove("no-transition");
+        
+        const recordBox = document.getElementById("record-box");
+        if (recordBox && recordBox.style.display === "flex") {
+          updateRecordUI();
+        }
+      });
     }
 
     window.addEventListener("resize", () => {
