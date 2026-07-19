@@ -274,11 +274,11 @@
           </div>
           <table class="settings-table">
             <tr>
-              <td>애니메이션 시간</td>
+              <td>애니메이션 시간(초)</td>
               <td>
                 <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
                   <input type="range" id="anim-duration-slider" min="0" max="2" step="0.1" value="0.5" oninput="changeAnimDuration(this.value)" style="width: 150px; accent-color: #3b82f6;">
-                  <span id="anim-duration-val" style="min-width: 45px; text-align: right; color: #3b82f6;">0.5</span>초
+                  <span id="anim-duration-val" style="min-width: 45px; text-align: right; color: #3b82f6;">0.5</span>
                 </div>
               </td>
             </tr>
@@ -300,6 +300,7 @@
             <span class="category-title">설정</span>
             <div class="category-header-actions">
               <button class="reset-category-btn" onclick="resetCategory4()" title="설정 초기화">🔄</button>
+              <button class="copy-btn" onclick="copyConfigToClipboard(this)" title="설정 클립보드로 복사">📋</button>
             </div>
           </div>
           <table class="settings-table">
@@ -324,6 +325,35 @@
                 <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
                   <input type="range" id="settings-opacity-slider" min="0.1" max="1.0" step="0.05" value="0.78" oninput="changeSettingsOpacity(this.value)" style="width: 150px; accent-color: #3b82f6;">
                   <span id="settings-opacity-val" style="min-width: 45px; text-align: right; color: #3b82f6;">0.78</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>각 글자색 옵션</td>
+              <td>
+                <div style="display: flex; align-items: center; justify-content: flex-end;">
+                  <select id="settings-text-color-select" onchange="changeSettingsTextColorType(this.value)">
+                    <option value="auto">자동</option>
+                    <option value="complementary">보색</option>
+                    <option value="custom">사용자 설정</option>
+                  </select>
+                  <input type="color" id="settings-text-color-picker" oninput="changeSettingsTextColorCustom(this.value)" style="display: none; vertical-align: middle; margin-left: 10px; width: 30px; height: 30px; padding: 0; border: none; border-radius: 4px; background: transparent; cursor: pointer;">
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>강조색</td>
+              <td>
+                <div style="display: flex; align-items: center; justify-content: flex-end;">
+                  <select id="settings-accent-color-select" onchange="changeSettingsAccentColor(this.value)">
+                    <option value="#3b82f6">파란색</option>
+                    <option value="#10b981">초록색</option>
+                    <option value="#f97316">주황색</option>
+                    <option value="#a855f7">보라색</option>
+                    <option value="#eab308">노란색</option>
+                    <option value="custom">사용자 지정</option>
+                  </select>
+                  <input type="color" id="settings-accent-color-picker" oninput="changeSettingsAccentColor('custom')" style="display: none; vertical-align: middle; margin-left: 10px; width: 30px; height: 30px; padding: 0; border: none; border-radius: 4px; background: transparent; cursor: pointer;">
                 </div>
               </td>
             </tr>

@@ -827,6 +827,7 @@ function changeSettingsBgColor(value) {
   }
   localStorage.setItem("settingsBgColor", settingsBgColor);
   updateSettingsBoxStyle();
+  updateSettingsTextColor();
   saveCurrentConfigToSlot();
 }
 
@@ -838,6 +839,47 @@ function changeSettingsOpacity(val) {
     valSpan.textContent = settingsOpacity.toFixed(2);
   }
   updateSettingsBoxStyle();
+  saveCurrentConfigToSlot();
+}
+
+function changeSettingsTextColorType(value) {
+  settingsTextColorType = value;
+  localStorage.setItem("settingsTextColorType", settingsTextColorType);
+  const picker = document.getElementById("settings-text-color-picker");
+  if (value === "custom") {
+    if (picker) picker.style.display = "inline-block";
+  } else {
+    if (picker) picker.style.display = "none";
+  }
+  updateSettingsTextColor();
+  saveCurrentConfigToSlot();
+}
+
+function changeSettingsTextColorCustom(value) {
+  settingsTextColorCustom = value;
+  localStorage.setItem("settingsTextColorCustom", settingsTextColorCustom);
+  updateSettingsTextColor();
+  saveCurrentConfigToSlot();
+}
+
+function changeSettingsAccentColor(value) {
+  const select = document.getElementById("settings-accent-color-select");
+  const picker = document.getElementById("settings-accent-color-picker");
+  
+  if (value === "custom" || value.startsWith("#")) {
+    if (select) select.value = "custom";
+    if (picker) {
+      picker.style.display = "inline-block";
+      if (value.startsWith("#")) picker.value = value;
+    }
+    settingsAccentColor = picker ? picker.value : "#3b82f6";
+  } else {
+    if (picker) picker.style.display = "none";
+    if (select) select.value = value;
+    settingsAccentColor = value;
+  }
+  localStorage.setItem("settingsAccentColor", settingsAccentColor);
+  updateSettingsAccentColor();
   saveCurrentConfigToSlot();
 }
 
@@ -854,6 +896,65 @@ function updateSettingsBoxStyle() {
   let b = parseInt(hex.substr(4, 2), 16) || 42;
   
   box.style.backgroundColor = `rgba(${r}, ${g}, ${b}, ${settingsOpacity})`;
+}
+
+function updateSettingsTextColor() {
+  const box = document.getElementById("setting-box");
+  if (!box) return;
+  
+  let color = "#f8fafc";
+  
+  if (settingsTextColorType === "auto") {
+    let hex = settingsBgColor.replace(/^\s*#|\s*$/g, '');
+    if (hex.length === 3) hex = hex.replace(/(.)/g, '$1$1');
+    let r = parseInt(hex.substr(0, 2), 16) || 15;
+    let g = parseInt(hex.substr(2, 2), 16) || 23;
+    let b = parseInt(hex.substr(4, 2), 16) || 42;
+    
+    let luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    color = luminance > 0.5 ? "#0f172a" : "#f8fafc";
+  } else if (settingsTextColorType === "complementary") {
+    let hex = settingsBgColor.replace(/^\s*#|\s*$/g, '');
+    if (hex.length === 3) hex = hex.replace(/(.)/g, '$1$1');
+    let r = 255 - (parseInt(hex.substr(0, 2), 16) || 15);
+    let g = 255 - (parseInt(hex.substr(2, 2), 16) || 23);
+    let b = 255 - (parseInt(hex.substr(4, 2), 16) || 42);
+    color = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+  } else if (settingsTextColorType === "custom") {
+    color = settingsTextColorCustom || "#f8fafc";
+  }
+  
+  box.style.color = color;
+  
+  const titles = box.querySelectorAll(".category-title, .settings-title, td, span, table");
+  titles.forEach(el => {
+    if (el.tagName !== "BUTTON" && el.tagName !== "SELECT" && el.tagName !== "INPUT" && !el.classList.contains("slot-btn") && el.id !== "close-btn") {
+      el.style.color = color;
+    }
+  });
+}
+
+function updateSettingsAccentColor() {
+  const box = document.getElementById("setting-box");
+  if (!box) return;
+  
+  const sliders = box.querySelectorAll("input[type='range']");
+  sliders.forEach(slider => {
+    slider.style.accentColor = settingsAccentColor;
+  });
+  
+  const activeButtons = box.querySelectorAll(".slot-btn.active, .start-settings-btn");
+  activeButtons.forEach(btn => {
+    btn.style.backgroundColor = settingsAccentColor;
+    if (btn.classList.contains("slot-btn")) {
+      btn.style.borderColor = settingsAccentColor;
+    }
+  });
+  
+  const valSpans = box.querySelectorAll("#anim-duration-val, #anim-height-val, #settings-opacity-val");
+  valSpans.forEach(span => {
+    span.style.color = settingsAccentColor;
+  });
 }
 
 // ----------------------------------------------------
@@ -879,6 +980,7 @@ function updateSlotButtonsUI() {
     s2.classList.add("active");
     s1.classList.remove("active");
   }
+  updateSettingsAccentColor();
 }
 
 function saveCurrentConfigToSlot() {
@@ -900,7 +1002,10 @@ function saveCurrentConfigToSlot() {
     animDuration,
     animHeight,
     settingsBgColor,
-    settingsOpacity
+    settingsOpacity,
+    settingsTextColorType,
+    settingsTextColorCustom,
+    settingsAccentColor
   };
   localStorage.setItem("janggi_settings_slot_" + activeSlot, JSON.stringify(config));
 }
@@ -931,6 +1036,9 @@ function loadConfigFromSlot() {
     if (config.animHeight !== undefined) animHeight = config.animHeight;
     if (config.settingsBgColor !== undefined) settingsBgColor = config.settingsBgColor;
     if (config.settingsOpacity !== undefined) settingsOpacity = config.settingsOpacity;
+    if (config.settingsTextColorType !== undefined) settingsTextColorType = config.settingsTextColorType;
+    if (config.settingsTextColorCustom !== undefined) settingsTextColorCustom = config.settingsTextColorCustom;
+    if (config.settingsAccentColor !== undefined) settingsAccentColor = config.settingsAccentColor;
     
     localStorage.setItem("showCoordinates", showCoordinates);
     localStorage.setItem("sizeKing", sizeKing);
@@ -946,6 +1054,9 @@ function loadConfigFromSlot() {
     localStorage.setItem("animHeight", animHeight);
     localStorage.setItem("settingsBgColor", settingsBgColor);
     localStorage.setItem("settingsOpacity", settingsOpacity);
+    localStorage.setItem("settingsTextColorType", settingsTextColorType);
+    localStorage.setItem("settingsTextColorCustom", settingsTextColorCustom);
+    localStorage.setItem("settingsAccentColor", settingsAccentColor);
     
     changeBoardColor(boardColorType);
     changeChoColor(choColorType);
@@ -957,6 +1068,9 @@ function loadConfigFromSlot() {
     changeAnimHeight(animHeight);
     changeSettingsBgColor(settingsBgColor);
     changeSettingsOpacity(settingsOpacity);
+    changeSettingsTextColorType(settingsTextColorType);
+    if (settingsTextColorType === "custom") changeSettingsTextColorCustom(settingsTextColorCustom);
+    changeSettingsAccentColor(settingsAccentColor);
     
     initBoard();
     initPositions();
@@ -985,7 +1099,10 @@ function copyConfigToClipboard(btn) {
     animDuration,
     animHeight,
     settingsBgColor,
-    settingsOpacity
+    settingsOpacity,
+    settingsTextColorType,
+    settingsTextColorCustom,
+    settingsAccentColor
   };
   const text = JSON.stringify(config);
   navigator.clipboard.writeText(text).then(() => {
@@ -1058,12 +1175,20 @@ function resetCategory3() {
 function resetCategory4() {
   settingsBgColor = "#0f172a";
   settingsOpacity = 0.78;
+  settingsTextColorType = "auto";
+  settingsTextColorCustom = "#f8fafc";
+  settingsAccentColor = "#3b82f6";
   
   localStorage.setItem("settingsBgColor", settingsBgColor);
   localStorage.setItem("settingsOpacity", settingsOpacity);
+  localStorage.setItem("settingsTextColorType", settingsTextColorType);
+  localStorage.setItem("settingsTextColorCustom", settingsTextColorCustom);
+  localStorage.setItem("settingsAccentColor", settingsAccentColor);
   
   changeSettingsBgColor(settingsBgColor);
   changeSettingsOpacity(settingsOpacity);
+  changeSettingsTextColorType(settingsTextColorType);
+  changeSettingsAccentColor(settingsAccentColor);
   
   initSettingsUI();
   saveCurrentConfigToSlot();
@@ -1187,6 +1312,35 @@ function initSettingsUI() {
   if (settingsOpacitySlider) settingsOpacitySlider.value = settingsOpacity;
   const settingsOpacityVal = document.getElementById("settings-opacity-val");
   if (settingsOpacityVal) settingsOpacityVal.textContent = settingsOpacity.toFixed(2);
+
+  const settingsTextColorSelect = document.getElementById("settings-text-color-select");
+  const settingsTextColorPicker = document.getElementById("settings-text-color-picker");
+  if (settingsTextColorSelect) {
+    settingsTextColorSelect.value = settingsTextColorType;
+    if (settingsTextColorType === "custom") {
+      if (settingsTextColorPicker) {
+        settingsTextColorPicker.style.display = "inline-block";
+        settingsTextColorPicker.value = settingsTextColorCustom;
+      }
+    } else {
+      if (settingsTextColorPicker) settingsTextColorPicker.style.display = "none";
+    }
+  }
+
+  const settingsAccentSelect = document.getElementById("settings-accent-color-select");
+  const settingsAccentPicker = document.getElementById("settings-accent-color-picker");
+  if (settingsAccentSelect) {
+    if (settingsAccentColor.startsWith("#") && !["#3b82f6", "#10b981", "#f97316", "#a855f7", "#eab308"].includes(settingsAccentColor)) {
+      settingsAccentSelect.value = "custom";
+      if (settingsAccentPicker) {
+        settingsAccentPicker.style.display = "inline-block";
+        settingsAccentPicker.value = settingsAccentColor;
+      }
+    } else {
+      settingsAccentSelect.value = settingsAccentColor;
+      if (settingsAccentPicker) settingsAccentPicker.style.display = "none";
+    }
+  }
 }
 
 // 안전한 초기 호출부 (스크립트 로드 순서 비동기 대응)
@@ -1222,6 +1376,8 @@ function checkAndInit() {
     changeHanColor(hanColorType);
     changePieceShape(pieceShapeType);
     updateSettingsBoxStyle();
+    updateSettingsTextColor();
+    updateSettingsAccentColor();
 
     // 애니메이션 시간 초기값 설정
     if (svg) {
