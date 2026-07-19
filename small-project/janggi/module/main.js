@@ -4439,7 +4439,13 @@ function flipBoardVertical() {
     for (let i = 0; i < 32; i++) {
       if (pieces[i].x !== 0 && startPositions[i].x !== 0) {
         const startPos = startPositions[i];
-        const finalLogicalPos = { x: startPos.x, y: flipYCoordinate(startPos.y) };
+        
+        // Correct target index logic after executeFlipBoardVertical (swaps team and flips coordinates horizontally & vertically)
+        const oldIndex = (i < 16) ? (i + 16) : (i - 16);
+        const finalLogicalPos = {
+          x: 10 - pieces[oldIndex].x,
+          y: flipYCoordinate(pieces[oldIndex].y)
+        };
         
         const axisStart = getAxis(startPos.x, startPos.y);
         const axisEnd = getAxis(finalLogicalPos.x, finalLogicalPos.y);
@@ -4465,7 +4471,7 @@ function flipBoardVertical() {
     if (cursor && kbCursorActive) {
       const sizeVal = unitSize * 0.85;
       const axisStart = getAxis(oldKbCursorX, oldKbCursorY);
-      const axisEnd = getAxis(oldKbCursorX, flipYCoordinate(oldKbCursorY));
+      const axisEnd = getAxis(10 - oldKbCursorX, flipYCoordinate(oldKbCursorY));
       
       const ax = axisStart.x - sizeVal / 2;
       const ay = axisStart.y - sizeVal / 2;
