@@ -72,6 +72,8 @@ function initBoard() {
     const ratio = getPieceSizeRatio(i);
     pieces[i].e.setAttribute("width", unitSize * ratio);
     pieces[i].e.setAttribute("height", unitSize * ratio);
+    pieces[i].e.style.width = `${unitSize * ratio}px`;
+    pieces[i].e.style.height = `${unitSize * ratio}px`;
 
     // 클릭되었을 때 수행할 함수를 지정합니다.
     pieces[i].e.addEventListener("click", function () { selected(i) });
@@ -211,6 +213,12 @@ function initPositions() {
     let tmpAxis = getAxis(pieces[i].x, pieces[i].y);
     let targetX = tmpAxis.x - unitSize * ratio / 2;
     let targetY = tmpAxis.y - unitSize * ratio / 2;
+    
+    pieces[i].e.setAttribute("width", unitSize * ratio);
+    pieces[i].e.setAttribute("height", unitSize * ratio);
+    pieces[i].e.style.width = `${unitSize * ratio}px`;
+    pieces[i].e.style.height = `${unitSize * ratio}px`;
+    
     pieces[i].e.style.transform = `translate(${targetX}px, ${targetY}px)`;
   }
 

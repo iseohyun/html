@@ -2,6 +2,10 @@
 ## Scope
 /small-project/janggi/**
 
+### [v1.1.6] - 장기알 크기 옵션 변경 시 크기 동시 갱신 및 inline width/height 스타일 속성 강제 부여
+- **기물 크기 동적 갱신 반영**: 크기 변경 이벤트 시 동작하는 `initPositions()` 함수 내부에서도 기물들의 `width` 및 `height` 속성이 최신 비율에 맞게 즉시 동적 갱신되도록 수식을 정비하여, 크기가 바뀌지 않고 중심점 이동으로 인해 위치만 좌상향으로 쏠리던 버그를 완벽하게 해소
+- **inline CSS width/height 속성 동시 지정**: 상위 블로그 플랫폼 또는 외부 전역 CSS 규칙이 기물들의 사이즈를 강제로 고정하여 스케일 조절을 차단하는 상황을 방지하고자, SVG 요소에 `width/height` 속성을 주입할 뿐 아니라 인라인 스타일(`style.width`, `style.height`)까지 강제 적용하여 높은 우선순위로 브라우저에 기물 렌더링 스케일링이 확실하게 관철되도록 고도화
+
 ### [v1.1.5] - 초기화 진입 시점 순서 제어 버그 수정 (initBoard 호출 전 initData 선행 실행 강제)
 - **checkAndInit 내 initData 선행 수행**: 페이지 로드 후 `loadConfigFromSlot()` 내에서 기물들의 속성을 다루는 `initBoard()`가 호출될 때, 기물 DOM 바인딩이 아직 완료되지 않아 `pieces[i]`가 undefined 상태로 평가되어 "Cannot read properties of undefined (reading 'e')" 예외가 유발되는 초기 기동 버그 수정. `checkAndInit()` 진입 직후 최우선적으로 `initData()`를 실행하여 pieces 오브젝트 배열 구성을 완전히 빌드하고 안전하게 슬롯 로드 절차가 실행되도록 순서를 바로잡음
 
