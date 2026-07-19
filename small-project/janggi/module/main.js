@@ -4134,6 +4134,7 @@ function flipBoardHorizontal() {
   const oldKbCursorY = kbCursorY;
   
   // Stage 1: Board flips horizontally (0ms -> 500ms)
+  boardSvg.style.transformOrigin = `${boardWidth / 2}px ${boardHeight / 2}px`;
   boardSvg.classList.add("flip-h-anim");
   
   setTimeout(() => {
@@ -4152,7 +4153,7 @@ function flipBoardHorizontal() {
         
         pieces[i].e.style.transition = "none";
         pieces[i].e.style.transformOrigin = `${sizeVal / 2}px ${sizeVal / 2}px`;
-        pieces[i].e.style.transform = `translate(${ax}px, ${ay}px) rotateY(0deg)`;
+        pieces[i].e.style.transform = `translate(${ax}px, ${ay}px) scaleX(1)`;
         pieces[i].e.classList.add("smooth-move-anim");
       }
     }
@@ -4165,7 +4166,7 @@ function flipBoardHorizontal() {
       
       cursor.style.transition = "none";
       cursor.style.transformOrigin = `${sizeVal / 2}px ${sizeVal / 2}px`;
-      cursor.style.transform = `translate(${ax}px, ${ay}px) rotateY(0deg)`;
+      cursor.style.transform = `translate(${ax}px, ${ay}px) scaleX(1)`;
       cursor.classList.add("smooth-move-anim");
     }
     
@@ -4181,7 +4182,7 @@ function flipBoardHorizontal() {
         const ay = getAxis(startPos.x, startPos.y).y - sizeVal / 2;
         
         pieces[i].e.style.transition = "";
-        pieces[i].e.style.transform = `translate(${ax}px, ${ay}px) rotateY(-180deg)`;
+        pieces[i].e.style.transform = `translate(${ax}px, ${ay}px) scaleX(-1)`;
       }
     }
     
@@ -4191,7 +4192,7 @@ function flipBoardHorizontal() {
       const ay = getAxis(oldKbCursorX, oldKbCursorY).y - sizeVal / 2;
       
       cursor.style.transition = "";
-      cursor.style.transform = `translate(${ax}px, ${ay}px) rotateY(-180deg)`;
+      cursor.style.transform = `translate(${ax}px, ${ay}px) scaleX(-1)`;
     }
     
     setTimeout(() => {
@@ -4213,7 +4214,7 @@ function flipBoardHorizontal() {
           const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
           const dy = 0;
           
-          pieces[i].e.style.transform = `translate(${ax + 2 * dx}px, ${ay + 2 * dy}px) rotateY(-180deg)`;
+          pieces[i].e.style.transform = `translate(${ax + 2 * dx}px, ${ay + 2 * dy}px) scaleX(-1)`;
         }
       }
       
@@ -4227,7 +4228,7 @@ function flipBoardHorizontal() {
         const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
         const dy = 0;
         
-        cursor.style.transform = `translate(${ax + 2 * dx}px, ${ay + 2 * dy}px) rotateY(-180deg)`;
+        cursor.style.transform = `translate(${ax + 2 * dx}px, ${ay + 2 * dy}px) scaleX(-1)`;
       }
       
       setTimeout(() => {
@@ -4236,6 +4237,7 @@ function flipBoardHorizontal() {
         executeFlipBoardHorizontal();
         
         boardSvg.classList.remove("flip-h-anim");
+        boardSvg.style.transformOrigin = "";
         for (let i = 0; i < 32; i++) {
           pieces[i].e.style.transformOrigin = "";
           pieces[i].e.style.transform = "";
@@ -4562,6 +4564,7 @@ function flipBoardVertical() {
   const oldKbCursorY = kbCursorY;
   
   // Stage 1: Board spins (0ms -> 500ms)
+  boardSvg.style.transformOrigin = `${boardWidth / 2}px ${boardHeight / 2}px`;
   boardSvg.classList.add("rotate-180-anim");
   
   setTimeout(() => {
@@ -4666,6 +4669,7 @@ function flipBoardVertical() {
         executeFlipBoardVertical();
         
         boardSvg.classList.remove("rotate-180-anim");
+        boardSvg.style.transformOrigin = "";
         for (let i = 0; i < 32; i++) {
           pieces[i].e.style.transformOrigin = "";
           pieces[i].e.style.transform = "";
