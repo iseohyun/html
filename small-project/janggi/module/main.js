@@ -162,11 +162,14 @@ function getData() {
 
   let param_turn = urlParams.get('t');
   if (param_turn != undefined) {
-    param_turn = parseInt(param_turn);
+    param_turn = parseInt(param_turn, 10);
     if (!isNaN(param_turn)) {
       const turn = document.getElementById('turn');
-      turn.value = param_turn;
+      if (turn) turn.value = param_turn;
     }
+  } else {
+    const turn = document.getElementById('turn');
+    if (turn) turn.value = log.length;
   }
 }
 
@@ -3330,18 +3333,20 @@ function migrateShortcutKeys(parsedKeys) {
       if (typeof legacyVal === "string") {
         migrated[key] = {
           primary: parseSingle(legacyVal),
-          secondary: null
+          secondary: defaultVal ? defaultVal.secondary : null
         };
       } else if (typeof legacyVal === "object") {
         if (legacyVal.primary !== undefined || legacyVal.secondary !== undefined) {
+          const prim = parseSingle(legacyVal.primary);
+          const sec = parseSingle(legacyVal.secondary);
           migrated[key] = {
-            primary: parseSingle(legacyVal.primary),
-            secondary: parseSingle(legacyVal.secondary)
+            primary: prim !== null ? prim : (defaultVal ? defaultVal.primary : null),
+            secondary: sec !== null ? sec : (defaultVal ? defaultVal.secondary : null)
           };
         } else if (legacyVal.key !== undefined) {
           migrated[key] = {
             primary: parseSingle(legacyVal),
-            secondary: null
+            secondary: defaultVal ? defaultVal.secondary : null
           };
         }
       }
