@@ -102,7 +102,7 @@ var shortcutKeys = {
     secondary: { key: "p", ctrl: false, alt: true, shift: false }
   },
   openShortcutSettings: {
-    primary: { key: "?", ctrl: false, alt: false, shift: false },
+    primary: { key: "?", ctrl: false, alt: false, shift: true },
     secondary: null
   },
   openCommentEdit: {

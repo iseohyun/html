@@ -1,5 +1,7 @@
 // main.js - Entry point, Event listeners, and UI controller functions
 var commentBubbleTimeout = null;
+var boardAnimating = false;
+
 
 
 function initData() {
@@ -2837,6 +2839,8 @@ function matchShortcutKey(action, keyEvent) {
 }
 
 function handleKeyDown(e) {
+  if (boardAnimating) return;
+  
   const activeEl = document.activeElement;
   if (activeEl && (activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA" || activeEl.tagName === "SELECT")) {
     return;
@@ -3253,10 +3257,13 @@ function migrateShortcutKeys(parsedKeys) {
     }
   });
   
-  if (parsedKeys.selectAlt && typeof parsedKeys.selectAlt === "string") {
-    if (migrated.select && !migrated.select.secondary) {
-      migrated.select.secondary = parseSingle(parsedKeys.selectAlt);
-    }
+
+  // 강제 핫키 정정 마이그레이션 (구버전 스토리지 마이그레이션 보호)
+  if (migrated.openShortcutSettings && migrated.openShortcutSettings.primary && migrated.openShortcutSettings.primary.key === "?") {
+    migrated.openShortcutSettings.primary.shift = true;
+  }
+  if (migrated.autoplayToggle && migrated.autoplayToggle.primary && migrated.autoplayToggle.primary.key === "p") {
+    migrated.autoplayToggle.primary.ctrl = false;
   }
 
   return migrated;
@@ -3498,7 +3505,7 @@ function resetDefaultShortcuts() {
       secondary: { key: "p", ctrl: false, alt: true, shift: false }
     },
     openShortcutSettings: {
-      primary: { key: "?", ctrl: false, alt: false, shift: false },
+      primary: { key: "?", ctrl: false, alt: false, shift: true },
       secondary: null
     },
     openCommentEdit: {
@@ -3957,14 +3964,14 @@ function updateAutoplayUI() {
           <rect x="14" y="4" width="4" height="16" rx="1"/>
         </svg>
       `;
-      playBtn.title = "자동 재생 일시정지 (Ctrl + P)";
+      playBtn.title = "자동 재생 일시정지 (P)";
     } else {
       playBtn.innerHTML = `
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
           <polygon points="6,4 20,12 6,20"/>
         </svg>
       `;
-      playBtn.title = "자동 재생 시작 (Ctrl + P)";
+      playBtn.title = "자동 재생 시작 (P)";
     }
   }
 }
@@ -4167,6 +4174,20 @@ function applyCommentBoxTheme() {
 }
 
 function flipBoardHorizontal() {
+  const boardSvg = document.getElementById("janggi-svg");
+  if (!boardSvg || boardAnimating) return;
+  
+  boardAnimating = true;
+  boardSvg.classList.add("flip-h-anim");
+  
+  setTimeout(() => {
+    boardSvg.classList.remove("flip-h-anim");
+    executeFlipBoardHorizontal();
+    boardAnimating = false;
+  }, 600);
+}
+
+function executeFlipBoardHorizontal() {
   // 1. Flip initPieces
   for (let i = 0; i < 32; i++) {
     if (initPieces[i].x !== 0) {
@@ -4220,6 +4241,20 @@ function flipYCoordinate(y) {
 }
 
 function flipBoardVertical() {
+  const boardSvg = document.getElementById("janggi-svg");
+  if (!boardSvg || boardAnimating) return;
+  
+  boardAnimating = true;
+  boardSvg.classList.add("rotate-180-anim");
+  
+  setTimeout(() => {
+    boardSvg.classList.remove("rotate-180-anim");
+    executeFlipBoardVertical();
+    boardAnimating = false;
+  }, 600);
+}
+
+function executeFlipBoardVertical() {
   // 1. Flip and swap initPieces Y coordinates and X coordinates (0-15 <-> 16-31)
   for (let i = 0; i < 16; i++) {
     const p1 = initPieces[i];
