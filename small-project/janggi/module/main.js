@@ -851,10 +851,7 @@ function saveCurrentConfigToSlot() {
     candiShapeType,
     candiColorType,
     animDuration,
-    animHeight,
-    topCharim: newGameState[1],
-    bottomCharim: newGameState[0],
-    iAmCho
+    animHeight
   };
   localStorage.setItem("janggi_settings_slot_" + activeSlot, JSON.stringify(config));
 }
@@ -897,13 +894,6 @@ function loadConfigFromSlot() {
     localStorage.setItem("animDuration", animDuration);
     localStorage.setItem("animHeight", animHeight);
     
-    if (config.topCharim !== undefined) newGameState[1] = config.topCharim;
-    if (config.bottomCharim !== undefined) newGameState[0] = config.bottomCharim;
-    if (config.iAmCho !== undefined) {
-      iAmCho = config.iAmCho;
-      changeNation(iAmCho);
-    }
-    
     changeBoardColor(boardColorType);
     changeChoColor(choColorType);
     changeHanColor(hanColorType);
@@ -913,13 +903,43 @@ function loadConfigFromSlot() {
     changeAnimDuration(animDuration);
     changeAnimHeight(animHeight);
     
-    syncCharimButtonStyles();
     initBoard();
     initPositions();
     initSettingsUI();
   } catch (e) {
     console.error("Failed to load settings from slot", e);
   }
+}
+
+function copyConfigToClipboard(btn) {
+  const config = {
+    showCoordinates,
+    sizeKing,
+    sizeMiddle,
+    sizeSmall,
+    fontScaleKing,
+    fontScaleMiddle,
+    fontScaleSmall,
+    coordsTextScale,
+    boardColorType,
+    choColorType,
+    hanColorType,
+    pieceShapeType,
+    candiShapeType,
+    candiColorType,
+    animDuration,
+    animHeight
+  };
+  const text = JSON.stringify(config);
+  navigator.clipboard.writeText(text).then(() => {
+    const originalText = btn.textContent;
+    btn.textContent = "✅";
+    setTimeout(() => {
+      btn.textContent = "📋";
+    }, 1500);
+  }).catch(err => {
+    console.error("Clipboard copy failed", err);
+  });
 }
 
 // ----------------------------------------------------

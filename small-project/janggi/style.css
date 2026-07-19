@@ -595,14 +595,78 @@ button {
   display: none !important;
 }
 
-/* Slots and Reset Buttons Styles */
-.settings-slots {
+/* Slots, Reset, Copy and Settings Start Button Styles */
+.start-settings-btn {
   position: absolute;
   right: 24px;
   top: 50%;
   transform: translateY(-50%);
+  background: #3b82f6;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-weight: bold;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.start-settings-btn:hover {
+  background: #2563eb;
+}
+
+.start-settings-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.category-header {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 6px;
+  height: 32px;
+  box-sizing: border-box;
+}
+
+.category-title {
+  font-size: 1.1em;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.category-header-actions {
+  display: flex;
+  align-items: center;
   gap: 8px;
+  height: 100%;
+}
+
+.reset-category-btn,
+.copy-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 1.05em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  box-sizing: border-box;
+  transition: color 0.2s, transform 0.1s;
+}
+
+.reset-category-btn:hover,
+.copy-btn:hover {
+  color: #cbd5e1;
+}
+
+.reset-category-btn:active,
+.copy-btn:active {
+  transform: scale(0.9);
 }
 
 .slot-btn {
@@ -611,9 +675,14 @@ button {
   border-radius: 4px;
   color: #94a3b8;
   font-size: 0.8em;
-  font-weight: 600;
-  padding: 4px 10px;
+  font-weight: 700;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+  box-sizing: border-box;
   transition: all 0.2s;
 }
 
@@ -627,53 +696,4 @@ button {
   border-color: #3b82f6;
   color: white;
   box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
-}
-
-.category-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding-bottom: 6px;
-}
-
-.category-header h2 {
-  margin: 0;
-  border-bottom: none !important;
-  padding-bottom: 0 !important;
-  font-size: 1.15em;
-}
-
-.reset-category-btn {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  color: #cbd5e1;
-  font-size: 0.75em;
-  font-weight: 500;
-  padding: 3px 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  transition: all 0.2s;
-}
-
-.reset-category-btn:hover {
-  background: rgba(239, 68, 68, 0.12);
-  border-color: rgba(239, 68, 68, 0.3);
-  color: #fca5a5;
-}
-
-.reset-category-btn:active {
-  transform: scale(0.95);
-}
-
-/* Hover and active scales for main start button */
-#start-btn:hover {
-  background: #2563eb !important;
-}
-#start-btn:active {
-  transform: scale(0.95) !important;
 }
