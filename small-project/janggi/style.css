@@ -9,7 +9,8 @@ body {
 }
 
 #janggi-svg {
-  transform-origin: center;
+  transform-origin: 50% 50%;
+  transform-box: view-box;
   transform-style: preserve-3d;
 }
 
