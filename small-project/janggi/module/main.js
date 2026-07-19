@@ -2486,13 +2486,21 @@ var aiThinking = false;
 function checkAndRunAI(immediate = false) {
   if (aiMode === 0) return;
   if (aiThinking) return;
+  if (gameEnded) return;
   
   const turn = document.getElementById("turn");
   if (!turn) return;
   const curTurn = parseInt(turn.value, 10);
   
-  // 기보 리뷰 모드 등 과거를 돌려보는 중이면 AI 작동 차단
-  if (curTurn < log.length) return;
+  // 기보 리뷰 모드 등 과거를 돌려보는 중이면 AI 작동 차단 (단, 즉시 강제 실행 모드일 경우 그 시점부터 뒤를 자르고 실행)
+  if (curTurn < log.length) {
+    if (immediate) {
+      log.length = curTurn;
+      updateRecordUI();
+    } else {
+      return;
+    }
+  }
   
   const isChoTurn = (curTurn % 2 === 0);
   const aiIsCho = (aiMode === 1);
