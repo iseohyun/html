@@ -2798,6 +2798,12 @@ function evaluateBoard() {
 
 // 게임 초기화 실행부
 function initGame() {
+  // 새로고침(F5) 시에는 URL의 이전 게임 상태(p, log, t)를 비우고 무조건 새 대국으로 시작
+  const isReload = performance.getEntriesByType("navigation")[0]?.type === "reload";
+  if (isReload) {
+    window.history.replaceState({}, "", window.location.pathname);
+  }
+
   // 1. 데이터 및 기물 DOM 바인딩 선행 수행
   initData();
   
