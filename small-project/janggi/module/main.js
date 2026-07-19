@@ -2783,7 +2783,7 @@ function initGame() {
   });
 
   // 키보드 단축키 방향키 및 엔터 리스너 등록
-  window.addEventListener("keydown", handleKeyDown);
+  window.addEventListener("keydown", handleKeyDown, true);
 
   // 로드 직후 AI 작동 여부 검사
   checkAndRunAI();
@@ -2808,73 +2808,81 @@ function matchShortcutKey(action, keyEvent) {
 }
 
 function handleKeyDown(e) {
-  if (gameEnded) return;
-  if (isRecordingKey !== null) return; // 단축키 입력 녹화 중에는 전역 단축키 핸들러 작동 정지
-
   const activeEl = document.activeElement;
   if (activeEl && (activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA" || activeEl.tagName === "SELECT")) {
     return;
   }
 
-  // Ctrl + N: 새 대국 시작하기
+  if (isRecordingKey !== null) return; // 단축키 입력 녹화 중에는 전역 단축키 핸들러 작동 정지
+
+  // 1. 새 게임 (게임이 끝났어도 새 게임은 가능해야 함)
   if (matchShortcutKey("newGame", e)) {
     e.preventDefault();
+    e.stopPropagation();
     startNewGame();
     return;
   }
 
-  // Ctrl + S: 기보 클립보드 복사 및 보관함 저장
-  if (matchShortcutKey("copyNotation", e)) {
-    e.preventDefault();
-    saveRecordToLibrary(null);
-    return;
-  }
-
-  // Ctrl + V: 클립보드로부터 기보 불러오기
+  // 2. 기보 불러오기
   if (matchShortcutKey("loadNotation", e)) {
     e.preventDefault();
+    e.stopPropagation();
     loadRecordFromClipboard();
     return;
   }
 
-  // Alt + Right: 앞으로 이동
+  // 3. 기보 복사 및 저장
+  if (matchShortcutKey("copyNotation", e)) {
+    e.preventDefault();
+    e.stopPropagation();
+    saveRecordToLibrary(null);
+    return;
+  }
+
+  // 4. 앞으로 이동 (복기용)
   if (matchShortcutKey("forwardStep", e)) {
     e.preventDefault();
+    e.stopPropagation();
     next();
     return;
   }
 
-  // Alt + Left: 뒤로 이동
+  // 5. 뒤로 이동 (복기용)
   if (matchShortcutKey("backwardStep", e)) {
     e.preventDefault();
+    e.stopPropagation();
     prev();
     return;
   }
 
-  // Ctrl + Left: 맨 앞으로 이동
+  // 6. 맨 앞으로 이동 (복기용)
   if (matchShortcutKey("goToStart", e)) {
     e.preventDefault();
+    e.stopPropagation();
     goToStart();
     return;
   }
 
-  // Ctrl + Right: 맨 뒤로 이동
+  // 7. 맨 뒤로 이동 (복기용)
   if (matchShortcutKey("goToEnd", e)) {
     e.preventDefault();
+    e.stopPropagation();
     goToEnd();
     return;
   }
 
-  // Ctrl + P: 자동 재생 토글
+  // 8. 자동 재생 토글 (복기용)
   if (matchShortcutKey("autoplayToggle", e)) {
     e.preventDefault();
+    e.stopPropagation();
     toggleAutoplay();
     return;
   }
 
-  // CapsLock 등 지정된 커서락 모드 토글 키 처리
+  // 9. 커서락 모드 토글
   if (matchShortcutKey("cursorLockToggle", e)) {
     e.preventDefault();
+    e.stopPropagation();
     cursorLockMode = !cursorLockMode;
     localStorage.setItem("cursorLockMode", cursorLockMode);
     
@@ -2886,6 +2894,35 @@ function handleKeyDown(e) {
     return;
   }
 
+  // 10. ESC 취소 및 설정 창 열기
+  if (matchShortcutKey("cancel", e)) {
+    e.preventDefault();
+    e.stopPropagation();
+    const settingBox = document.getElementById("setting-box");
+    if (settingBox && settingBox.style.display === "flex") {
+      disalbeSettingBox();
+      return;
+    }
+
+    if (kbCursorActive) {
+      if (curSelect < 32) {
+        selected(curSelect); // 선택 해제
+      } else {
+        // 이미 선택 해제되어 있는 상태에서 ESC를 한번 더 누르면 상차림(설정) 열기
+        kbCursorActive = false;
+        updateKeyboardCursor();
+        enalbeSettingBox();
+      }
+    } else {
+      // 키보드 커서가 안 켜져 있을 때 ESC를 누르면 바로 상차림 열기
+      enalbeSettingBox();
+    }
+    return;
+  }
+
+  // 이 아래 기물 조작(착수) 관련 입력은 게임 진행 중일 때만 반응
+  if (gameEnded) return;
+
   // 방향키 처리 (지정된 up, down, left, right 키)
   const isUp = matchShortcutKey("up", e);
   const isDown = matchShortcutKey("down", e);
@@ -2894,6 +2931,7 @@ function handleKeyDown(e) {
 
   if (isUp || isDown || isLeft || isRight) {
     e.preventDefault();
+    e.stopPropagation();
     
     if (cursorLockMode) {
       const turnEl = document.getElementById("turn");
@@ -2982,30 +3020,6 @@ function handleKeyDown(e) {
     }
     
     updateKeyboardCursor();
-    return;
-  }
-
-  // ESC 키로 활성 취소, 창 닫기, 혹은 상차림창 열기
-  if (matchShortcutKey("cancel", e)) {
-    const settingBox = document.getElementById("setting-box");
-    if (settingBox && settingBox.style.display === "flex") {
-      disalbeSettingBox();
-      return;
-    }
-
-    if (kbCursorActive) {
-      if (curSelect < 32) {
-        selected(curSelect); // 선택 해제
-      } else {
-        // 이미 선택 해제되어 있는 상태에서 ESC를 한번 더 누르면 상차림(설정) 열기
-        kbCursorActive = false;
-        updateKeyboardCursor();
-        enalbeSettingBox();
-      }
-    } else {
-      // 키보드 커서가 안 켜져 있을 때 ESC를 누르면 바로 상차림 열기
-      enalbeSettingBox();
-    }
     return;
   }
 
