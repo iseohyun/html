@@ -1174,7 +1174,7 @@ function resetCategory3() {
 
 function resetCategory4() {
   settingsBgColor = "#0f172a";
-  settingsOpacity = 0.78;
+  settingsOpacity = 0.55;
   settingsTextColorType = "auto";
   settingsTextColorCustom = "#f8fafc";
   settingsAccentColor = "#3b82f6";
