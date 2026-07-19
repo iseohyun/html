@@ -4287,7 +4287,7 @@ function flipBoardHorizontal() {
         const dy = 0; // Horizontal flip keeps Y physically unchanged on screen
         
         pieces[i].e.style.transition = "none";
-        pieces[i].e.style.transformOrigin = `${50 + (dx * 100 / sizeVal)}% ${50 + (dy * 100 / sizeVal)}%`;
+        pieces[i].e.style.transformOrigin = "50% 50%";
         pieces[i].e.style.transform = `translate(${ax}px, ${ay}px) rotateY(0deg)`;
         pieces[i].e.classList.add("smooth-move-anim");
       }
@@ -4306,7 +4306,7 @@ function flipBoardHorizontal() {
       const dy = 0;
       
       cursor.style.transition = "none";
-      cursor.style.transformOrigin = `${50 + (dx * 100 / sizeVal)}% ${50 + (dy * 100 / sizeVal)}%`;
+      cursor.style.transformOrigin = "50% 50%";
       cursor.style.transform = `translate(${ax}px, ${ay}px) rotateY(0deg)`;
       cursor.classList.add("smooth-move-anim");
     }
@@ -4314,29 +4314,39 @@ function flipBoardHorizontal() {
     // Force style recalculation to apply start state
     document.body.offsetHeight;
     
-    // Trigger transition to target transforms (rotate 180 degrees around midpoint)
+    // Trigger transition to target transforms (rotate 180 degrees around midpoint via translation)
     for (let i = 0; i < 32; i++) {
       if (pieces[i].x !== 0 && startPositions[i].x !== 0) {
         const startPos = startPositions[i];
+        const finalLogicalPos = { x: 10 - startPos.x, y: startPos.y };
         const axisStart = getAxis(startPos.x, startPos.y);
+        const axisEnd = getAxis(finalLogicalPos.x, finalLogicalPos.y);
+        
         const ratio = (i === 0 || i === 16) ? sizeKing : ((i === 1 || i === 2 || i === 17 || i === 18 || i === 3 || i === 4 || i === 19 || i === 20 || i === 5 || i === 6 || i === 21 || i === 22 || i === 7 || i === 8 || i === 23 || i === 24) ? sizeMiddle : sizeSmall);
         const sizeVal = unitSize * ratio;
         const ax = axisStart.x - sizeVal / 2;
         const ay = axisStart.y - sizeVal / 2;
         
+        const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
+        const dy = 0;
+        
         pieces[i].e.style.transition = "";
-        pieces[i].e.style.transform = `translate(${ax}px, ${ay}px) rotateY(-180deg)`;
+        pieces[i].e.style.transform = `translate(${ax + 2 * dx}px, ${ay + 2 * dy}px) rotateY(-180deg)`;
       }
     }
     
     if (cursor && kbCursorActive) {
       const sizeVal = unitSize * 0.85;
       const axisStart = getAxis(oldKbCursorX, oldKbCursorY);
+      const axisEnd = getAxis(10 - oldKbCursorX, oldKbCursorY);
       const ax = axisStart.x - sizeVal / 2;
       const ay = axisStart.y - sizeVal / 2;
       
+      const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
+      const dy = 0;
+      
       cursor.style.transition = "";
-      cursor.style.transform = `translate(${ax}px, ${ay}px) rotateY(-180deg)`;
+      cursor.style.transform = `translate(${ax + 2 * dx}px, ${ay + 2 * dy}px) rotateY(-180deg)`;
     }
     
     setTimeout(() => {
@@ -4488,10 +4498,10 @@ function flipBoardVertical() {
         const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
         const dy = (boardHeight - axisEnd.y - axisStart.y) / 2;
         
-        console.log(`[Phase 2 Axis] Piece ${i} (${pieces[i].e.id}): x=${startPos.x}, y=${startPos.y} => target x=${finalLogicalPos.x}, y=${finalLogicalPos.y} | sizeVal=${sizeVal.toFixed(2)} | dx=${dx.toFixed(2)}, dy=${dy.toFixed(2)} | Axis relative to board: (${(ax + sizeVal/2 + dx).toFixed(2)}, ${(ay + sizeVal/2 + dy).toFixed(2)}) | transformOrigin: ${sizeVal / 2 + dx}px ${sizeVal / 2 + dy}px -> ${50 + (dx * 100 / sizeVal)}% ${50 + (dy * 100 / sizeVal)}%`);
+        console.log(`[Phase 2 Axis] Piece ${i} (${pieces[i].e.id}): x=${startPos.x}, y=${startPos.y} => target x=${finalLogicalPos.x}, y=${finalLogicalPos.y} | sizeVal=${sizeVal.toFixed(2)} | dx=${dx.toFixed(2)}, dy=${dy.toFixed(2)} | Axis relative to board: (${(ax + sizeVal/2 + dx).toFixed(2)}, ${(ay + sizeVal/2 + dy).toFixed(2)}) | transformOrigin: 50% 50%`);
         
         pieces[i].e.style.transition = "none";
-        pieces[i].e.style.transformOrigin = `${50 + (dx * 100 / sizeVal)}% ${50 + (dy * 100 / sizeVal)}%`;
+        pieces[i].e.style.transformOrigin = "50% 50%";
         pieces[i].e.style.transform = `translate(${ax}px, ${ay}px) rotate(0deg)`;
         pieces[i].e.classList.add("smooth-move-anim");
       }
@@ -4510,7 +4520,7 @@ function flipBoardVertical() {
       const dy = (boardHeight - axisEnd.y - axisStart.y) / 2;
       
       cursor.style.transition = "none";
-      cursor.style.transformOrigin = `${50 + (dx * 100 / sizeVal)}% ${50 + (dy * 100 / sizeVal)}%`;
+      cursor.style.transformOrigin = "50% 50%";
       cursor.style.transform = `translate(${ax}px, ${ay}px) rotate(0deg)`;
       cursor.classList.add("smooth-move-anim");
     }
@@ -4518,29 +4528,41 @@ function flipBoardVertical() {
     // Force style recalculation to apply start state
     document.body.offsetHeight;
     
-    // Trigger transition to target transforms (rotate 180 degrees around midpoint)
+    // Trigger transition to target transforms (rotate 180 degrees around midpoint via translation)
     for (let i = 0; i < 32; i++) {
       if (pieces[i].x !== 0 && startPositions[i].x !== 0) {
         const startPos = startPositions[i];
+        const finalLogicalPos = {
+          x: 10 - startPos.x,
+          y: flipYCoordinate(startPos.y)
+        };
         const axisStart = getAxis(startPos.x, startPos.y);
+        const axisEnd = getAxis(finalLogicalPos.x, finalLogicalPos.y);
         const ratio = (i === 0 || i === 16) ? sizeKing : ((i === 1 || i === 2 || i === 17 || i === 18 || i === 3 || i === 4 || i === 19 || i === 20 || i === 5 || i === 6 || i === 21 || i === 22 || i === 7 || i === 8 || i === 23 || i === 24) ? sizeMiddle : sizeSmall);
         const sizeVal = unitSize * ratio;
         const ax = axisStart.x - sizeVal / 2;
         const ay = axisStart.y - sizeVal / 2;
         
+        const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
+        const dy = (boardHeight - axisEnd.y - axisStart.y) / 2;
+        
         pieces[i].e.style.transition = "";
-        pieces[i].e.style.transform = `translate(${ax}px, ${ay}px) rotate(-180deg)`;
+        pieces[i].e.style.transform = `translate(${ax + 2 * dx}px, ${ay + 2 * dy}px) rotate(-180deg)`;
       }
     }
     
     if (cursor && kbCursorActive) {
       const sizeVal = unitSize * 0.85;
       const axisStart = getAxis(oldKbCursorX, oldKbCursorY);
+      const axisEnd = getAxis(10 - oldKbCursorX, flipYCoordinate(oldKbCursorY));
       const ax = axisStart.x - sizeVal / 2;
       const ay = axisStart.y - sizeVal / 2;
       
+      const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
+      const dy = (boardHeight - axisEnd.y - axisStart.y) / 2;
+      
       cursor.style.transition = "";
-      cursor.style.transform = `translate(${ax}px, ${ay}px) rotate(-180deg)`;
+      cursor.style.transform = `translate(${ax + 2 * dx}px, ${ay + 2 * dy}px) rotate(-180deg)`;
     }
     
     setTimeout(() => {
