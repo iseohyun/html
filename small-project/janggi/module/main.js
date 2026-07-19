@@ -372,11 +372,11 @@ function changeFontSize(amount) {
 
 function toggleCoordinates() {
   showCoordinates = !showCoordinates;
-  const btn = document.getElementById("toggle-coords-btn");
+  localStorage.setItem("showCoordinates", showCoordinates);
+  const btn = document.getElementById("toggle-coords-btn-settings");
   if (btn) {
-    btn.textContent = showCoordinates ? "좌표 보기 닫기" : "좌표 보기";
+    btn.textContent = showCoordinates ? "좌표 표시 중" : "좌표 숨김 중";
   }
-  // 좌표 상태에 따라 패딩을 재계산할 때 트랜지션을 일시 비활성화합니다.
   svg.classList.add("no-transition");
   initBoard();
   initPositions();
@@ -384,8 +384,194 @@ function toggleCoordinates() {
   svg.classList.remove("no-transition");
 }
 
+function startNewGame() {
+  let param_P = knownStart[0][newGameState[0]] + knownStart[1][newGameState[1]];
+  let param_cho = "&cho=" + ((iAmCho) ? "Y" : "N");
+  location.href = `index.html?p=${param_P}${param_cho}`;
+}
+
+function adjustPieceSize(type, delta) {
+  if (type === "king") {
+    sizeKing = Math.max(0.5, Math.min(2.0, sizeKing + delta));
+    localStorage.setItem("sizeKing", sizeKing);
+    const span = document.getElementById("val-size-king");
+    if (span) span.textContent = sizeKing.toFixed(2);
+  } else if (type === "middle") {
+    sizeMiddle = Math.max(0.5, Math.min(2.0, sizeMiddle + delta));
+    localStorage.setItem("sizeMiddle", sizeMiddle);
+    const span = document.getElementById("val-size-middle");
+    if (span) span.textContent = sizeMiddle.toFixed(2);
+  } else if (type === "small") {
+    sizeSmall = Math.max(0.5, Math.min(2.0, sizeSmall + delta));
+    localStorage.setItem("sizeSmall", sizeSmall);
+    const span = document.getElementById("val-size-small");
+    if (span) span.textContent = sizeSmall.toFixed(2);
+  }
+  
+  svg.classList.add("no-transition");
+  initPositions();
+  svg.offsetHeight;
+  svg.classList.remove("no-transition");
+}
+
+function adjustPieceFontSize(type, delta) {
+  if (type === "king") {
+    fontScaleKing = Math.max(0.5, Math.min(2.0, fontScaleKing + delta));
+    localStorage.setItem("fontScaleKing", fontScaleKing);
+    const span = document.getElementById("val-font-king");
+    if (span) span.textContent = fontScaleKing.toFixed(2);
+  } else if (type === "middle") {
+    fontScaleMiddle = Math.max(0.5, Math.min(2.0, fontScaleMiddle + delta));
+    localStorage.setItem("fontScaleMiddle", fontScaleMiddle);
+    const span = document.getElementById("val-font-middle");
+    if (span) span.textContent = fontScaleMiddle.toFixed(2);
+  } else if (type === "small") {
+    fontScaleSmall = Math.max(0.5, Math.min(2.0, fontScaleSmall + delta));
+    localStorage.setItem("fontScaleSmall", fontScaleSmall);
+    const span = document.getElementById("val-font-small");
+    if (span) span.textContent = fontScaleSmall.toFixed(2);
+  }
+  
+  updatePieceGraphics();
+}
+
+function adjustCoordsFontSize(delta) {
+  coordsTextScale = Math.max(0.1, Math.min(0.5, coordsTextScale + delta));
+  localStorage.setItem("coordsTextScale", coordsTextScale);
+  const span = document.getElementById("val-coords-size");
+  if (span) span.textContent = coordsTextScale.toFixed(2);
+  
+  drawBoard();
+}
+
+function changeBoardColor(value) {
+  boardColorType = value;
+  localStorage.setItem("boardColorType", boardColorType);
+  const boardEl = document.getElementById("board");
+  if (!boardEl) return;
+  
+  if (value === "wood") {
+    boardEl.setAttribute("fill", "url(#board-grad)");
+    boardEl.setAttribute("filter", "url(#wood-grain)");
+  } else if (value === "green") {
+    boardEl.setAttribute("fill", "#2e5c3e");
+    boardEl.setAttribute("filter", "");
+  } else if (value === "dark") {
+    boardEl.setAttribute("fill", "#2d3130");
+    boardEl.setAttribute("filter", "");
+  } else if (value === "navy") {
+    boardEl.setAttribute("fill", "#1e293b");
+    boardEl.setAttribute("filter", "");
+  }
+}
+
+function changeChoColor(value) {
+  choColorType = value;
+  localStorage.setItem("choColorType", choColorType);
+  const piecesEl = document.querySelectorAll(".cho-piece");
+  piecesEl.forEach(p => {
+    const polygons = p.querySelectorAll("polygon");
+    if (polygons.length >= 3) {
+      if (value === "blue") {
+        polygons[0].setAttribute("fill", "#1e3a8a");
+        polygons[1].setAttribute("fill", "#1e293b");
+        polygons[2].setAttribute("fill", "url(#cho-face-grad)");
+      } else if (value === "green") {
+        polygons[0].setAttribute("fill", "#15803d");
+        polygons[1].setAttribute("fill", "#14532d");
+        polygons[2].setAttribute("fill", "#e8f5e9");
+      } else if (value === "gold") {
+        polygons[0].setAttribute("fill", "#b45309");
+        polygons[1].setAttribute("fill", "#78350f");
+        polygons[2].setAttribute("fill", "#fef3c7");
+      }
+    }
+    const circles = p.querySelectorAll("circle");
+    if (circles.length >= 3) {
+      if (value === "blue") {
+        circles[0].setAttribute("fill", "#1e3a8a");
+        circles[1].setAttribute("fill", "#1e293b");
+        circles[2].setAttribute("fill", "url(#cho-face-grad)");
+      } else if (value === "green") {
+        circles[0].setAttribute("fill", "#15803d");
+        circles[1].setAttribute("fill", "#14532d");
+        circles[2].setAttribute("fill", "#e8f5e9");
+      } else if (value === "gold") {
+        circles[0].setAttribute("fill", "#b45309");
+        circles[1].setAttribute("fill", "#78350f");
+        circles[2].setAttribute("fill", "#fef3c7");
+      }
+    }
+  });
+}
+
+function changeHanColor(value) {
+  hanColorType = value;
+  localStorage.setItem("hanColorType", hanColorType);
+  const piecesEl = document.querySelectorAll(".han-piece");
+  piecesEl.forEach(p => {
+    const polygons = p.querySelectorAll("polygon");
+    if (polygons.length >= 3) {
+      if (value === "red") {
+        polygons[0].setAttribute("fill", "#991b1b");
+        polygons[1].setAttribute("fill", "#3f1c0d");
+        polygons[2].setAttribute("fill", "url(#han-face-grad)");
+      } else if (value === "purple") {
+        polygons[0].setAttribute("fill", "#7e22ce");
+        polygons[1].setAttribute("fill", "#4c1d95");
+        polygons[2].setAttribute("fill", "#faf5ff");
+      } else if (value === "slate") {
+        polygons[0].setAttribute("fill", "#374151");
+        polygons[1].setAttribute("fill", "#1f2937");
+        polygons[2].setAttribute("fill", "#f3f4f6");
+      }
+    }
+    const circles = p.querySelectorAll("circle");
+    if (circles.length >= 3) {
+      if (value === "red") {
+        circles[0].setAttribute("fill", "#991b1b");
+        circles[1].setAttribute("fill", "#3f1c0d");
+        circles[2].setAttribute("fill", "url(#han-face-grad)");
+      } else if (value === "purple") {
+        circles[0].setAttribute("fill", "#7e22ce");
+        circles[1].setAttribute("fill", "#4c1d95");
+        circles[2].setAttribute("fill", "#faf5ff");
+      } else if (value === "slate") {
+        circles[0].setAttribute("fill", "#374151");
+        circles[1].setAttribute("fill", "#1f2937");
+        circles[2].setAttribute("fill", "#f3f4f6");
+      }
+    }
+  });
+}
+
+function changePieceShape(value) {
+  pieceShapeType = value;
+  localStorage.setItem("pieceShapeType", pieceShapeType);
+  const octs = document.querySelectorAll(".piece-svg polygon");
+  const circs = document.querySelectorAll(".piece-svg circle");
+  if (value === "octagon") {
+    octs.forEach(el => el.style.display = "");
+    circs.forEach(el => el.style.display = "none");
+  } else if (value === "circle") {
+    octs.forEach(el => el.style.display = "none");
+    circs.forEach(el => el.style.display = "");
+  }
+}
+
+function changeCandiShape(value) {
+  candiShapeType = value;
+  localStorage.setItem("candiShapeType", candiShapeType);
+}
+
+function changeCandiColor(value) {
+  candiColorType = value;
+  localStorage.setItem("candiColorType", candiColorType);
+}
+
 function changeAnimDuration(val) {
   animDuration = parseFloat(val);
+  localStorage.setItem("animDuration", animDuration);
   const valSpan = document.getElementById("anim-duration-val");
   if (valSpan) {
     valSpan.textContent = animDuration.toFixed(1);
@@ -397,10 +583,63 @@ function changeAnimDuration(val) {
 
 function changeAnimHeight(val) {
   animHeight = parseFloat(val);
+  localStorage.setItem("animHeight", animHeight);
   const valSpan = document.getElementById("anim-height-val");
   if (valSpan) {
     valSpan.textContent = animHeight.toFixed(1);
   }
+}
+
+function initSettingsUI() {
+  const coordsBtn = document.getElementById("toggle-coords-btn-settings");
+  if (coordsBtn) {
+    coordsBtn.textContent = showCoordinates ? "좌표 표시 중" : "좌표 숨김 중";
+  }
+  
+  const durSlider = document.getElementById("anim-duration-slider");
+  if (durSlider) durSlider.value = animDuration;
+  const durVal = document.getElementById("anim-duration-val");
+  if (durVal) durVal.textContent = animDuration.toFixed(1);
+  
+  const heightSlider = document.getElementById("anim-height-slider");
+  if (heightSlider) heightSlider.value = animHeight;
+  const heightVal = document.getElementById("anim-height-val");
+  if (heightVal) heightVal.textContent = animHeight.toFixed(1);
+  
+  const valSizeKing = document.getElementById("val-size-king");
+  if (valSizeKing) valSizeKing.textContent = sizeKing.toFixed(2);
+  const valSizeMiddle = document.getElementById("val-size-middle");
+  if (valSizeMiddle) valSizeMiddle.textContent = sizeMiddle.toFixed(2);
+  const valSizeSmall = document.getElementById("val-size-small");
+  if (valSizeSmall) valSizeSmall.textContent = sizeSmall.toFixed(2);
+  
+  const valFontKing = document.getElementById("val-font-king");
+  if (valFontKing) valFontKing.textContent = fontScaleKing.toFixed(2);
+  const valFontMiddle = document.getElementById("val-font-middle");
+  if (valFontMiddle) valFontMiddle.textContent = fontScaleMiddle.toFixed(2);
+  const valFontSmall = document.getElementById("val-font-small");
+  if (valFontSmall) valFontSmall.textContent = fontScaleSmall.toFixed(2);
+  
+  const valCoordsSize = document.getElementById("val-coords-size");
+  if (valCoordsSize) valCoordsSize.textContent = coordsTextScale.toFixed(2);
+  
+  const boardColorSelect = document.getElementById("board-color-select");
+  if (boardColorSelect) boardColorSelect.value = boardColorType;
+  
+  const choColorSelect = document.getElementById("cho-color-select");
+  if (choColorSelect) choColorSelect.value = choColorType;
+  
+  const hanColorSelect = document.getElementById("han-color-select");
+  if (hanColorSelect) hanColorSelect.value = hanColorType;
+  
+  const pieceShapeSelect = document.getElementById("piece-shape-select");
+  if (pieceShapeSelect) pieceShapeSelect.value = pieceShapeType;
+  
+  const candiShapeSelect = document.getElementById("candi-shape-select");
+  if (candiShapeSelect) candiShapeSelect.value = candiShapeType;
+  
+  const candiColorSelect = document.getElementById("candi-color-select");
+  if (candiColorSelect) candiColorSelect.value = candiColorType;
 }
 
 // 안전한 초기 호출부 (스크립트 로드 순서 비동기 대응)
@@ -408,12 +647,59 @@ function checkAndInit() {
   if (typeof pieces !== "undefined" && 
       typeof initBoard === "function" && 
       typeof initPositions === "function") {
-    initData();
     
-    // 애니메이션 시간 초기값 설정
-    if (svg) {
-      svg.style.setProperty("--anim-duration", `${animDuration}s`);
+    // LocalStorage를 활용해 설정을 로드합니다.
+    if (localStorage.getItem("showCoordinates") !== null) {
+      showCoordinates = localStorage.getItem("showCoordinates") === "true";
     }
+    if (localStorage.getItem("animDuration") !== null) {
+      animDuration = parseFloat(localStorage.getItem("animDuration"));
+    }
+    if (localStorage.getItem("animHeight") !== null) {
+      animHeight = parseFloat(localStorage.getItem("animHeight"));
+    }
+    if (localStorage.getItem("sizeKing") !== null) {
+      sizeKing = parseFloat(localStorage.getItem("sizeKing"));
+    }
+    if (localStorage.getItem("sizeMiddle") !== null) {
+      sizeMiddle = parseFloat(localStorage.getItem("sizeMiddle"));
+    }
+    if (localStorage.getItem("sizeSmall") !== null) {
+      sizeSmall = parseFloat(localStorage.getItem("sizeSmall"));
+    }
+    if (localStorage.getItem("fontScaleKing") !== null) {
+      fontScaleKing = parseFloat(localStorage.getItem("fontScaleKing"));
+    }
+    if (localStorage.getItem("fontScaleMiddle") !== null) {
+      fontScaleMiddle = parseFloat(localStorage.getItem("fontScaleMiddle"));
+    }
+    if (localStorage.getItem("fontScaleSmall") !== null) {
+      fontScaleSmall = parseFloat(localStorage.getItem("fontScaleSmall"));
+    }
+    if (localStorage.getItem("coordsTextScale") !== null) {
+      coordsTextScale = parseFloat(localStorage.getItem("coordsTextScale"));
+    }
+    if (localStorage.getItem("boardColorType") !== null) {
+      boardColorType = localStorage.getItem("boardColorType");
+    }
+    if (localStorage.getItem("choColorType") !== null) {
+      choColorType = localStorage.getItem("choColorType");
+    }
+    if (localStorage.getItem("hanColorType") !== null) {
+      hanColorType = localStorage.getItem("hanColorType");
+    }
+    if (localStorage.getItem("pieceShapeType") !== null) {
+      pieceShapeType = localStorage.getItem("pieceShapeType");
+    }
+    if (localStorage.getItem("candiShapeType") !== null) {
+      candiShapeType = localStorage.getItem("candiShapeType");
+    }
+    if (localStorage.getItem("candiColorType") !== null) {
+      candiColorType = localStorage.getItem("candiColorType");
+    }
+
+    initData();
+    initSettingsUI();
     
     // 초기 로딩 시 말들이 0,0에서 날아오는 트랜지션을 방지합니다.
     svg.classList.add("no-transition");
@@ -421,6 +707,17 @@ function checkAndInit() {
     initPositions();
     svg.offsetHeight; // Force reflow
     svg.classList.remove("no-transition");
+    
+    // 설정값의 외관 테마 적용
+    changeBoardColor(boardColorType);
+    changeChoColor(choColorType);
+    changeHanColor(hanColorType);
+    changePieceShape(pieceShapeType);
+
+    // 애니메이션 시간 초기값 설정
+    if (svg) {
+      svg.style.setProperty("--anim-duration", `${animDuration}s`);
+    }
 
     window.addEventListener("resize", () => {
       // 크기 조절 시 레이아웃 재배치가 애니메이션되는 것을 방지합니다.
