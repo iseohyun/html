@@ -7,8 +7,12 @@
 ## 🎯 마일스톤 구성
 
 ```mermaid
-graph TD
-    M1["Milestone 1: 점수판 고도화 & 기보 메타데이터 확장"] --> M2["Milestone 2: 인공지능 (AI) 엔진 고도화"]
+flowchart TB
+    subgraph SG1 [" "]
+        direction LR
+        M1["Milestone 1: 점수판 고도화 & 기보 메타데이터 확장"] --> M2["Milestone 2: 인공지능 (AI) 엔진 고도화"]
+    end
+    style SG1 fill:none,stroke:none
     M2 --> M3["Milestone 3: 서버 연동 실시간 온라인 대국 (P2P)"]
 ```
 
