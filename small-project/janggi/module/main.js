@@ -2294,7 +2294,7 @@ function getLegalMoves(team) {
   const endIdx = (team === "cho") ? 15 : 31;
   
   for (let idx = startIdx; idx <= endIdx; idx++) {
-    if (pieces[idx].x !== 0 && pieces[idx].y !== 0) {
+    if (pieces[idx].x !== 0) {
       drawCandidates(idx);
     }
   }
@@ -2451,7 +2451,7 @@ function evaluateBoard() {
   ];
   
   for (let idx = 0; idx < 32; idx++) {
-    if (pieces[idx].x !== 0 && pieces[idx].y !== 0) {
+    if (pieces[idx].x !== 0) {
       score += values[idx];
       
       // 포지션 가치: X축은 중앙에 가까울수록 가치 증가 (최대 2점)
@@ -2612,19 +2612,21 @@ function handleKeyDown(e) {
         kbCursorX = pieces[kingIdx].x;
         kbCursorY = pieces[kingIdx].y;
       }
-    } else {
-      if (e.key === "ArrowUp") {
-        let ny = yPrev(kbCursorY);
-        if (ny !== -1) kbCursorY = ny;
-      } else if (e.key === "ArrowDown") {
-        let ny = yNext(kbCursorY);
-        if (ny !== -1) kbCursorY = ny;
-      } else if (e.key === "ArrowLeft") {
-        if (kbCursorX > 1) kbCursorX -= 1;
-      } else if (e.key === "ArrowRight") {
-        if (kbCursorX < 9) kbCursorX += 1;
-      }
     }
+    
+    // 키보드 모드 활성화 여부와 상관없이 항상 이동 명령을 즉각 실행
+    if (e.key === "ArrowUp") {
+      let ny = yPrev(kbCursorY);
+      if (ny !== -1) kbCursorY = ny;
+    } else if (e.key === "ArrowDown") {
+      let ny = yNext(kbCursorY);
+      if (ny !== -1) kbCursorY = ny;
+    } else if (e.key === "ArrowLeft") {
+      if (kbCursorX > 1) kbCursorX -= 1;
+    } else if (e.key === "ArrowRight") {
+      if (kbCursorX < 9) kbCursorX += 1;
+    }
+    
     updateKeyboardCursor();
     return;
   }
