@@ -2,6 +2,9 @@
 ## Scope
 /small-project/janggi/**
 
+### [v1.2.3] - 런타임 디버그 오버레이 추가
+- 기물 클릭 시 브라우저 화면 좌측 하단에 설정 상태(슬롯번호, candiColorType, candiShapeType, unitSize, padding, showCoordinates)를 직접 보여주는 실시간 디버그용 검사용 오버레이 카드(Dynamic UI Card) 탑재
+
 ### [v1.2.2] - 설정 복원 시 타입 가드 및 Null 방어 조치 추가 (레이스 컨디션 완벽 차단)
 - localStorage 슬롯 파싱 로직에 null/undefined 방어 코드를 전면 도입하여 잘못되거나 손상된 값이 슬롯에 들어가 있어도 기본값으로 안전 회귀하도록 구현
 - 모든 설정 변경 함수(changePieceShape, changeCandiColor 등)의 입력을 문자열(typeof === "string") 타입으로 자동 검증하고 가드 처리를 추가하여 비정상 인입 시의 JavaScript TypeError 발생 가능성을 원천적으로 차단
