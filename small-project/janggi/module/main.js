@@ -200,11 +200,29 @@ function move(i, x, y) {
 function disalbeSettingBox() {
   const settingBox = document.getElementById("setting-box");
   settingBox.style.display = "none";
+  
+  const article = document.querySelector("article");
+  if (article) article.classList.remove("settings-open");
+  
+  svg.classList.add("no-transition");
+  initBoard();
+  initPositions();
+  svg.offsetHeight; // Force reflow
+  svg.classList.remove("no-transition");
 }
 
 function enalbeSettingBox() {
   const settingBox = document.getElementById("setting-box");
-  settingBox.style.display = "block";
+  settingBox.style.display = "flex";
+  
+  const article = document.querySelector("article");
+  if (article) article.classList.add("settings-open");
+  
+  svg.classList.add("no-transition");
+  initBoard();
+  initPositions();
+  svg.offsetHeight; // Force reflow
+  svg.classList.remove("no-transition");
 }
 
 function next() {
@@ -367,6 +385,10 @@ function changeNation(amIcho) {
   }
   
   updateCharimPreview();
+}
+
+function toggleNation() {
+  changeNation(!iAmCho);
 }
 
 function download() {
