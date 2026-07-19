@@ -145,8 +145,25 @@ function getData() {
 
 // 장기말이 클릭되었을 때, 동작을 기술합니다.
 function selected(i) {
+  if (gameEnded) return;
   console.log(`[Click Debug] Piece ID: ${i}, Coords: x=${pieces[i] ? pieces[i].x : '?'}, y=${pieces[i] ? pieces[i].y : '?'}, Element: ${pieces[i] && pieces[i].e ? pieces[i].e.id : 'null'}`);
   printDebugEnv("PIECE_CLICKED");
+
+  // AI 모드에 따른 턴 및 조작 제한
+  if (aiMode !== 0) {
+    const curTurn = log.length;
+    const isChoTurn = (curTurn % 2 === 0);
+    const aiIsCho = (aiMode === 1);
+    const aiIsHan = (aiMode === 2);
+    
+    if (isChoTurn) {
+      if (i >= 16) return; // 초의 턴인데 한의 기물을 조작하려고 하는 경우 차단
+      if (aiIsCho) return; // AI가 초인데 사용자가 조작하려고 하는 경우 차단
+    } else {
+      if (i < 16) return; // 한의 턴인데 초의 기물을 조작하려고 하는 경우 차단
+      if (aiIsHan) return; // AI가 한인데 사용자가 조작하려고 하는 경우 차단
+    }
+  }
 
   // Clean up any old diagnostic overlay if present
   const oldDebug = document.getElementById("janggi-debug-info");
@@ -210,6 +227,14 @@ function move(i, x, y) {
   if (recordBox && recordBox.style.display === "flex") {
     updateRecordUI();
   }
+
+  // 외통수 여부 판단
+  checkGameStatus();
+
+  // AI 플레이 대기 및 실행 트리거
+  if (!gameEnded) {
+    checkAndRunAI();
+  }
 }
 
 function disalbeSettingBox() {
@@ -271,9 +296,16 @@ function next() {
     document.getElementById("prev").disabled = false;
   }
   updateScore();
+  
+  const recordBox = document.getElementById("record-box");
+  if (recordBox && recordBox.style.display === "flex") {
+    updateRecordUI();
+  }
+
+  checkAndRunAI();
 }
 
-function prev() {
+function performSinglePrev() {
   // 보조 마커를 지웁니다.
   clearCandiBox();
 
@@ -308,6 +340,34 @@ function prev() {
     document.getElementById("next").disabled = false;
   }
   updateScore();
+  
+  const recordBox = document.getElementById("record-box");
+  if (recordBox && recordBox.style.display === "flex") {
+    updateRecordUI();
+  }
+}
+
+function prev() {
+  if (aiMode !== 0) {
+    const turn = document.getElementById("turn");
+    if (turn) {
+      const curTurn = parseInt(turn.value, 10);
+      const isChoTurn = (curTurn % 2 === 0);
+      const aiIsCho = (aiMode === 1);
+      const aiIsHan = (aiMode === 2);
+      
+      const isUserTurnNow = (isChoTurn && !aiIsCho) || (!isChoTurn && !aiIsHan);
+      
+      if (isUserTurnNow && log.length >= 2) {
+        performSinglePrev();
+        performSinglePrev();
+        checkAndRunAI();
+        return;
+      }
+    }
+  }
+  performSinglePrev();
+  checkAndRunAI();
 }
 
 function changeCharim(group, type, element) {
@@ -456,6 +516,7 @@ function toggleCoordinates() {
 }
 
 function startNewGame() {
+  gameEnded = false;
   // 1. 착수 로그 비우기
   log.length = 0;
   
@@ -1073,7 +1134,8 @@ function saveCurrentConfigToSlot() {
     settingsOpacity,
     settingsTextColorType,
     settingsTextColorCustom,
-    settingsAccentColor
+    settingsAccentColor,
+    aiMode
   };
   localStorage.setItem("janggi_settings_slot_" + activeSlot, JSON.stringify(config));
   printDebugEnv("SAVE_SLOT");
@@ -1109,6 +1171,7 @@ function loadConfigFromSlot() {
     if (config.settingsTextColorType) settingsTextColorType = config.settingsTextColorType;
     if (config.settingsTextColorCustom) settingsTextColorCustom = config.settingsTextColorCustom;
     if (config.settingsAccentColor) settingsAccentColor = config.settingsAccentColor;
+    if (config.aiMode !== undefined && config.aiMode !== null) aiMode = parseInt(config.aiMode, 10);
     
     localStorage.setItem("showCoordinates", showCoordinates);
     localStorage.setItem("sizeKing", sizeKing);
@@ -1127,6 +1190,7 @@ function loadConfigFromSlot() {
     localStorage.setItem("settingsTextColorType", settingsTextColorType);
     localStorage.setItem("settingsTextColorCustom", settingsTextColorCustom);
     localStorage.setItem("settingsAccentColor", settingsAccentColor);
+    localStorage.setItem("aiMode", aiMode);
     
     changeBoardColor(boardColorType);
     changeChoColor(choColorType);
@@ -1173,7 +1237,8 @@ function copyConfigToClipboard(btn) {
     settingsOpacity,
     settingsTextColorType,
     settingsTextColorCustom,
-    settingsAccentColor
+    settingsAccentColor,
+    aiMode
   };
   const text = JSON.stringify(config);
   navigator.clipboard.writeText(text).then(() => {
@@ -1251,12 +1316,14 @@ function resetCategory4() {
   settingsTextColorType = "auto";
   settingsTextColorCustom = "#f8fafc";
   settingsAccentColor = "#3b82f6";
+  aiMode = 0;
   
   localStorage.setItem("settingsBgColor", settingsBgColor);
   localStorage.setItem("settingsOpacity", settingsOpacity);
   localStorage.setItem("settingsTextColorType", settingsTextColorType);
   localStorage.setItem("settingsTextColorCustom", settingsTextColorCustom);
   localStorage.setItem("settingsAccentColor", settingsAccentColor);
+  localStorage.setItem("aiMode", aiMode);
   
   changeSettingsBgColor(settingsBgColor);
   changeSettingsOpacity(settingsOpacity);
@@ -1414,6 +1481,9 @@ function initSettingsUI() {
       if (settingsAccentPicker) settingsAccentPicker.style.display = "none";
     }
   }
+  
+  const aiModeSelect = document.getElementById("ai-mode-select");
+  if (aiModeSelect) aiModeSelect.value = aiMode;
 }
 
 // ----------------------------------------------------
@@ -1945,6 +2015,7 @@ function importRecordFromText(text) {
     return;
   }
   
+  gameEnded = false;
   // 1. 상차림 코드 및 진영(iAmCho) 파싱
   let startingCode = "";
   let determinedCho = true;
@@ -2054,6 +2125,334 @@ function importRecordFromText(text) {
   
   // 기보 텍스트 영역 최신화
   updateRecordUI();
+  
+  // AI 플레이 대기 및 실행 트리거
+  checkAndRunAI();
+}
+
+// AI 대국 모드 제어 함수
+function changeAiMode(val) {
+  aiMode = parseInt(val, 10);
+  localStorage.setItem("aiMode", aiMode);
+  saveCurrentConfigToSlot();
+  checkAndRunAI();
+}
+
+var aiThinking = false;
+
+function checkAndRunAI() {
+  if (aiMode === 0) return;
+  if (aiThinking) return;
+  
+  const turn = document.getElementById("turn");
+  if (!turn) return;
+  const curTurn = parseInt(turn.value, 10);
+  
+  // 기보 리뷰 모드 등 과거를 돌려보는 중이면 AI 작동 차단
+  if (curTurn < log.length) return;
+  
+  const isChoTurn = (curTurn % 2 === 0);
+  const aiIsCho = (aiMode === 1);
+  const aiIsHan = (aiMode === 2);
+  
+  if ((isChoTurn && aiIsCho) || (!isChoTurn && aiIsHan)) {
+    aiThinking = true;
+    
+    // 약간의 딜레이를 주어 AI가 생각하는 척하는 자연스러운 연출 적용
+    setTimeout(() => {
+      try {
+        const aiTeam = isChoTurn ? "cho" : "han";
+        const bestMove = getBestAIMove(aiTeam);
+        
+        if (bestMove) {
+          console.log(`[AI Move] Executing move: Piece ${bestMove.i} (${pieces[bestMove.i].e.id}) -> x=${bestMove.x}, y=${bestMove.y}`);
+          move(bestMove.i, bestMove.x, bestMove.y);
+        } else {
+          console.warn("[AI Move] No legal moves found for AI.");
+        }
+      } catch (err) {
+        console.error("[AI Error] Error during AI move calculation:", err);
+      } finally {
+        aiThinking = false;
+      }
+    }, 500);
+  }
+}
+
+function isKingInCheck(team) {
+  const kingIdx = (team === "cho") ? 0 : 16;
+  const kingX = pieces[kingIdx].x;
+  const kingY = pieces[kingIdx].y;
+  
+  if (kingX === 0 && kingY === 0) return false;
+  
+  const opponentTeam = (team === "cho") ? "han" : "cho";
+  const opponentMoves = getLegalMoves(opponentTeam);
+  
+  for (let m of opponentMoves) {
+    if (m.x === kingX && m.y === kingY) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function getFilteredLegalMoves(team) {
+  const allMoves = getLegalMoves(team);
+  const validMoves = [];
+  
+  const savedState = pieces.map(p => ({ x: p.x, y: p.y }));
+  
+  for (let move of allMoves) {
+    const originalPos = savedState[move.i];
+    const targetPieceIdx = pieces.findIndex((p, idx) => idx !== move.i && p.x === move.x && p.y === move.y);
+    
+    pieces[move.i].x = move.x;
+    pieces[move.i].y = move.y;
+    let capturedPiece = null;
+    if (targetPieceIdx !== -1) {
+      capturedPiece = { idx: targetPieceIdx, x: pieces[targetPieceIdx].x, y: pieces[targetPieceIdx].y };
+      pieces[targetPieceIdx].x = 0;
+      pieces[targetPieceIdx].y = 0;
+    }
+    
+    const inCheck = isKingInCheck(team);
+    
+    pieces[move.i].x = originalPos.x;
+    pieces[move.i].y = originalPos.y;
+    if (capturedPiece) {
+      pieces[capturedPiece.idx].x = capturedPiece.x;
+      pieces[capturedPiece.idx].y = capturedPiece.y;
+    }
+    
+    if (!inCheck) {
+      validMoves.push(move);
+    }
+  }
+  
+  return validMoves;
+}
+
+function checkGameStatus() {
+  const turn = document.getElementById("turn");
+  if (!turn) return;
+  const curTurn = parseInt(turn.value, 10);
+  
+  const isChoTurn = (curTurn % 2 === 0);
+  const currentTeam = isChoTurn ? "cho" : "han";
+  
+  const inCheck = isKingInCheck(currentTeam);
+  const validMoves = getFilteredLegalMoves(currentTeam);
+  
+  if (validMoves.length === 0) {
+    if (inCheck) {
+      gameEnded = true;
+      const winner = isChoTurn ? "한나라 (Red)" : "초나라 (Blue)";
+      setTimeout(() => {
+        alert(`외통수! ${winner}가 승리하였습니다!`);
+      }, 100);
+    }
+  }
+}
+
+function getLegalMoves(team) {
+  let moves = [];
+  const originalCreateCandiBox = createCandiBox;
+  
+  // 임시 가로채기(Mocking) 리스너 주입
+  createCandiBox = function(idx, tx, ty) {
+    if (tx < 1 || tx > 9 || ty < 0 || ty > 9) return;
+    moves.push({ i: idx, x: tx, y: ty });
+  };
+  
+  const startIdx = (team === "cho") ? 0 : 16;
+  const endIdx = (team === "cho") ? 15 : 31;
+  
+  for (let idx = startIdx; idx <= endIdx; idx++) {
+    if (pieces[idx].x !== 0 && pieces[idx].y !== 0) {
+      drawCandidates(idx);
+    }
+  }
+  
+  // 원래 함수 복구
+  createCandiBox = originalCreateCandiBox;
+  return moves;
+}
+
+function getBestAIMove(aiTeam) {
+  const isChoAI = (aiTeam === "cho");
+  const aiMoves = getFilteredLegalMoves(aiTeam);
+  
+  if (aiMoves.length === 0) return null;
+  
+  // 현재 보드 좌표 백업
+  const savedState = pieces.map(p => ({ x: p.x, y: p.y }));
+  
+  let bestScore = isChoAI ? -Infinity : Infinity;
+  let bestMoves = [];
+  
+  for (let aiMove of aiMoves) {
+    // 1. AI 수 시뮬레이션
+    const originalPos = savedState[aiMove.i];
+    const targetPieceIdx = pieces.findIndex((p, idx) => idx !== aiMove.i && p.x === aiMove.x && p.y === aiMove.y);
+    
+    pieces[aiMove.i].x = aiMove.x;
+    pieces[aiMove.i].y = aiMove.y;
+    let capturedPiece = null;
+    if (targetPieceIdx !== -1) {
+      capturedPiece = { idx: targetPieceIdx, x: pieces[targetPieceIdx].x, y: pieces[targetPieceIdx].y };
+      pieces[targetPieceIdx].x = 0;
+      pieces[targetPieceIdx].y = 0;
+    }
+    
+    // 2. 상대방의 최선 대응 수 예측 (Depth 2 Minimax)
+    const opponentTeam = isChoAI ? "han" : "cho";
+    const opponentReplies = getLegalMoves(opponentTeam);
+    
+    let worstReplyScore = isChoAI ? Infinity : -Infinity;
+    
+    if (opponentReplies.length === 0) {
+      worstReplyScore = isChoAI ? 999999 : -999999;
+    } else {
+      for (let reply of opponentReplies) {
+        // 상대방 수 시뮬레이션
+        const replyOrigPos = { x: pieces[reply.i].x, y: pieces[reply.i].y };
+        const replyTargetIdx = pieces.findIndex((p, idx) => idx !== reply.i && p.x === reply.x && p.y === reply.y);
+        
+        pieces[reply.i].x = reply.x;
+        pieces[reply.i].y = reply.y;
+        let replyCaptured = null;
+        if (replyTargetIdx !== -1) {
+          replyCaptured = { idx: replyTargetIdx, x: pieces[replyTargetIdx].x, y: pieces[replyTargetIdx].y };
+          pieces[replyTargetIdx].x = 0;
+          pieces[replyTargetIdx].y = 0;
+        }
+        
+        // 보드 점수 평가
+        const score = evaluateBoard();
+        
+        // 상대방 수 롤백
+        pieces[reply.i].x = replyOrigPos.x;
+        pieces[reply.i].y = replyOrigPos.y;
+        if (replyCaptured) {
+          pieces[replyCaptured.idx].x = replyCaptured.x;
+          pieces[replyCaptured.idx].y = replyCaptured.y;
+        }
+        
+        // 상대방(한/초)은 자신에게 가장 유리한 수(점수 최소화/최대화)를 선택함
+        if (isChoAI) {
+          if (score < worstReplyScore) {
+            worstReplyScore = score;
+          }
+        } else {
+          if (score > worstReplyScore) {
+            worstReplyScore = score;
+          }
+        }
+      }
+    }
+    
+    // AI 수 롤백
+    pieces[aiMove.i].x = originalPos.x;
+    pieces[aiMove.i].y = originalPos.y;
+    if (capturedPiece) {
+      pieces[capturedPiece.idx].x = capturedPiece.x;
+      pieces[capturedPiece.idx].y = capturedPiece.y;
+    }
+    
+    // 약간의 랜덤성(Jitter)을 주어 대국 양상의 다양성 확보 (동점일 때 다른 선택을 하도록 유도)
+    const scoreWithJitter = worstReplyScore + (Math.random() - 0.5) * 0.1;
+    
+    if (isChoAI) {
+      if (scoreWithJitter > bestScore) {
+        bestScore = scoreWithJitter;
+        bestMoves = [aiMove];
+      } else if (Math.abs(scoreWithJitter - bestScore) < 0.01) {
+        bestMoves.push(aiMove);
+      }
+    } else {
+      if (scoreWithJitter < bestScore) {
+        bestScore = scoreWithJitter;
+        bestMoves = [aiMove];
+      } else if (Math.abs(scoreWithJitter - bestScore) < 0.01) {
+        bestMoves.push(aiMove);
+      }
+    }
+  }
+  
+  if (bestMoves.length === 0) return null;
+  const randomIndex = Math.floor(Math.random() * bestMoves.length);
+  return bestMoves[randomIndex];
+}
+
+function evaluateBoard() {
+  let score = 0;
+  
+  // 각 기물의 절댓값 가치 정의 (초 = 양수, 한 = 음수)
+  const values = [
+    100000, // 궁 (Cho 0)
+    130,   // 차
+    130,   // 차
+    70,    // 포
+    70,    // 포
+    50,    // 마
+    50,    // 마
+    30,    // 상
+    30,    // 상
+    30,    // 사
+    30,    // 사
+    20,    // 졸
+    20,    // 졸
+    20,    // 졸
+    20,    // 졸
+    20,    // 졸
+    
+    -100000, // 궁 (Han 16)
+    -130,   // 차
+    -130,   // 차
+    -70,    // 포
+    -70,    // 포
+    -50,    // 마
+    -50,    // 마
+    -30,    // 상
+    -30,    // 상
+    -30,    // 사
+    -30,    // 사
+    -20,    // 병
+    -20,    // 병
+    -20,    // 병
+    -20,    // 병
+    -20     // 병
+  ];
+  
+  for (let idx = 0; idx < 32; idx++) {
+    if (pieces[idx].x !== 0 && pieces[idx].y !== 0) {
+      score += values[idx];
+      
+      // 포지션 가치: X축은 중앙에 가까울수록 가치 증가 (최대 2점)
+      const xDist = Math.abs(pieces[idx].x - 5);
+      const xBonus = (4 - xDist) * 0.5;
+      
+      // Y축은 상대편 진영 방향으로 진격할수록 가치 증가 (최대 3점, 졸/병/마/상 전진성 유도)
+      let yBonus = 0;
+      if (idx < 16) {
+        yBonus = (10 - pieces[idx].y) * 0.3; // 초(Blue): y=10 -> y=1 전진
+      } else {
+        yBonus = -(pieces[idx].y - 1) * 0.3; // 한(Red): y=1 -> y=10 전진
+      }
+      
+      score += xBonus + yBonus;
+    }
+  }
+  
+  // 덤 (한나라 후수 1.5점 가중치 보정)
+  if (iAmCho) {
+    score -= 1.5;
+  } else {
+    score += 1.5;
+  }
+  
+  return score;
 }
 
 // 안전한 초기 호출부 (스크립트 로드 순서 비동기 대응)
@@ -2073,6 +2472,11 @@ function checkAndInit() {
     
     // 슬롯으로부터 구성정보 로드 (DOM 조작 안심 수행)
     loadConfigFromSlot();
+
+    // 로컬 스토리지 개별값 로드 대응
+    if (localStorage.getItem("aiMode") !== null) {
+      aiMode = parseInt(localStorage.getItem("aiMode"), 10);
+    }
 
     initSettingsUI();
     
@@ -2143,6 +2547,8 @@ function checkAndInit() {
         if (recordBox && recordBox.style.display === "flex") {
           updateRecordUI();
         }
+
+        checkAndRunAI();
       });
     }
 
@@ -2154,6 +2560,9 @@ function checkAndInit() {
       svg.offsetHeight; // Force reflow
       svg.classList.remove("no-transition");
     });
+
+    // 로드 직후 AI 작동 여부 검사
+    checkAndRunAI();
   } else {
     setTimeout(checkAndInit, 10);
   }
