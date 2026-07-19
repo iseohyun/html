@@ -381,6 +381,49 @@
               </td>
             </tr>
             <tr>
+              <td colspan="2" style="font-weight: bold; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 12px; color: rgba(255, 255, 255, 0.4); font-size: 0.85em; text-align: left;">점수판 설정</td>
+            </tr>
+            <tr>
+              <td>자동 순환 (Auto Rotation)</td>
+              <td>
+                <div style="display: flex; align-items: center; justify-content: flex-end;">
+                  <select id="score-auto-rotate" onchange="updateScoreboardSettings()">
+                    <option value="true">활성화 (자동)</option>
+                    <option value="false">비활성화 (수동 클릭)</option>
+                  </select>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>순환 간격</td>
+              <td>
+                <div style="display: flex; align-items: center; justify-content: flex-end;">
+                  <select id="score-rotate-interval" onchange="updateScoreboardSettings()">
+                    <option value="3">3초</option>
+                    <option value="5">5초</option>
+                    <option value="10">10초</option>
+                    <option value="15">15초</option>
+                  </select>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>표출 슬라이드 항목</td>
+              <td>
+                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap;">
+                  <label style="display: flex; align-items: center; gap: 4px; font-size: 0.85em; cursor: pointer; color: #cbd5e1; user-select: none;">
+                    <input type="checkbox" id="score-show-slide1" checked onchange="updateScoreboardSettings()" style="cursor: pointer;"> 점수차
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 4px; font-size: 0.85em; cursor: pointer; color: #cbd5e1; user-select: none;">
+                    <input type="checkbox" id="score-show-slide2" checked onchange="updateScoreboardSettings()" style="cursor: pointer;"> 타이머
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 4px; font-size: 0.85em; cursor: pointer; color: #cbd5e1; user-select: none;">
+                    <input type="checkbox" id="score-show-slide3" checked onchange="updateScoreboardSettings()" style="cursor: pointer;"> 대회정보
+                  </label>
+                </div>
+              </td>
+            </tr>
+            <tr>
               <td>단축키 설정</td>
               <td>
                 <div style="display: flex; align-items: center; justify-content: flex-end;">
@@ -406,69 +449,60 @@
       
       <!-- 스크롤 가능한 기보 콘텐츠 영역 -->
       <div class="settings-scroll-area">
-        <!-- 1. 기보 저장 및 불러오기 -->
-        <div class="setting-category">
-          <div class="category-header">
-            <span class="category-title">기보 저장 및 불러오기</span>
+        <!-- 대국 상세 정보 (접이식 아코디언) -->
+        <div class="setting-category collapsible collapsed" id="metadata-category">
+          <div class="category-header accordion-toggle" onclick="toggleMetadataCategory(event)" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
+            <span class="category-title">대국 상세 정보</span>
+            <div style="display: flex; align-items: center; gap: 10px;" onclick="event.stopPropagation();">
+              <button id="save-record-square-btn" class="record-header-action-icon-btn" onclick="saveRecordToLibrary(this)" title="현재 기보 저장 (클립보드 및 보관함)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                  <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                  <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+              </button>
+              <button id="load-record-square-btn" class="record-header-action-icon-btn" onclick="loadRecordFromClipboard()" title="클립보드 기보 불러오기">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                </svg>
+              </button>
+              <span id="accordion-arrow" style="margin-left: 4px; font-size: 0.8em; color: rgba(255,255,255,0.4); transition: transform 0.2s;">▼</span>
+            </div>
           </div>
-          <div style="display: flex; gap: 12px; align-items: center; margin-top: 8px;">
-            <button id="save-record-square-btn" class="record-square-btn" onclick="saveRecordToLibrary(this)" title="현재 기보 저장 (클립보드 및 보관함)">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="7 10 12 15 17 10"></polyline>
-                <line x1="12" y1="15" x2="12" y2="3"></line>
-              </svg>
-            </button>
-            <button id="load-record-square-btn" class="record-square-btn" onclick="loadRecordFromClipboard()" title="클립보드 기보 불러오기">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="17 8 12 3 7 8"></polyline>
-                <line x1="12" y1="3" x2="12" y2="15"></line>
-              </svg>
-            </button>
-          </div>
-        </div>
-        
-        <!-- 대국 상세 정보 입력 (메타데이터) -->
-        <div class="setting-category">
-          <div class="category-header">
-            <span class="category-title">대국 상세 정보 입력 (메타데이터)</span>
-          </div>
-          <table class="settings-table" style="margin-top: 8px;">
-            <tr>
-              <td>초나라 대국자</td>
-              <td><input type="text" id="meta-cho-player" class="settings-input" placeholder="초나라 플레이어명" oninput="updateMetadataFromForm()"></td>
-            </tr>
-            <tr>
-              <td>한나라 대국자</td>
-              <td><input type="text" id="meta-han-player" class="settings-input" placeholder="한나라 플레이어명" oninput="updateMetadataFromForm()"></td>
-            </tr>
-            <tr>
-              <td>대회명</td>
-              <td><input type="text" id="meta-tournament" class="settings-input" placeholder="대회 이름" oninput="updateMetadataFromForm()"></td>
-            </tr>
-            <tr>
-              <td>대국정보</td>
-              <td><input type="text" id="meta-round" class="settings-input" placeholder="예: 1국 (2026-07-19)" oninput="updateMetadataFromForm()"></td>
-            </tr>
-            <tr>
-              <td>기보별명</td>
-              <td><input type="text" id="meta-nickname" class="settings-input" placeholder="예: 귀마 대 귀마 정석" oninput="updateMetadataFromForm()"></td>
-            </tr>
-            <tr>
-              <td>총평</td>
-              <td><textarea id="meta-summary" class="settings-textarea" placeholder="대국에 대한 전반적인 해설이나 총평을 남겨주세요." oninput="updateMetadataFromForm()" style="width: 100%; height: 50px; resize: none; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 4px; color: #fff; padding: 4px; font-size: 0.9em; box-sizing: border-box;"></textarea></td>
-            </tr>
-          </table>
-        </div>
-
-        <!-- 현재 수순 코멘트 편집 -->
-        <div class="setting-category">
-          <div class="category-header">
-            <span class="category-title" id="current-step-comment-title">현재 수순 (0수) 코멘트</span>
-          </div>
-          <div style="margin-top: 8px;">
-            <input type="text" id="current-step-comment" class="settings-input" placeholder="이 수순에 대한 해설 코멘트 입력" oninput="updateCurrentStepComment()" style="width: 100%;">
+          
+          <div id="metadata-category-content" style="display: none; margin-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 10px;">
+            <table class="settings-table">
+              <tr>
+                <td>초나라 대국자</td>
+                <td><input type="text" id="meta-cho-player" class="settings-input" placeholder="초나라 플레이어명" oninput="updateMetadataFromForm()"></td>
+              </tr>
+              <tr>
+                <td>한나라 대국자</td>
+                <td><input type="text" id="meta-han-player" class="settings-input" placeholder="한나라 플레이어명" oninput="updateMetadataFromForm()"></td>
+              </tr>
+              <tr>
+                <td>대회명</td>
+                <td><input type="text" id="meta-tournament" class="settings-input" placeholder="대회 이름" oninput="updateMetadataFromForm()"></td>
+              </tr>
+              <tr>
+                <td>대국정보</td>
+                <td><input type="text" id="meta-round" class="settings-input" placeholder="예: 1국 (2026-07-19)" oninput="updateMetadataFromForm()"></td>
+              </tr>
+              <tr>
+                <td>기보별명</td>
+                <td><input type="text" id="meta-nickname" class="settings-input" placeholder="예: 귀마 대 귀마 정석" oninput="updateMetadataFromForm()"></td>
+              </tr>
+              <tr>
+                <td>총평</td>
+                <td><textarea id="meta-summary" class="settings-textarea" placeholder="대국에 대한 전반적인 해설이나 총평을 남겨주세요." oninput="updateMetadataFromForm()" style="width: 100%; height: 50px; resize: none; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 4px; color: #fff; padding: 4px; font-size: 0.9em; box-sizing: border-box;"></textarea></td>
+              </tr>
+            </table>
+            
+            <div style="margin-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 12px;">
+              <span class="category-title" id="current-step-comment-title" style="font-size: 0.9em; display: block; margin-bottom: 6px;">현재 수순 (0수) 코멘트</span>
+              <input type="text" id="current-step-comment" class="settings-input" placeholder="이 수순에 대한 해설 코멘트 입력" oninput="updateCurrentStepComment()" style="width: 100%;">
+            </div>
           </div>
         </div>
 

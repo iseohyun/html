@@ -1381,3 +1381,32 @@ button {
     transform: translate(-50%, 0);
   }
 }
+
+/* Collapsible accordion and icon action buttons in record-box */
+.record-header-action-icon-btn {
+  background: none;
+  border: none;
+  padding: 6px;
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+}
+
+.record-header-action-icon-btn:hover {
+  color: #3b82f6;
+  background: rgba(59, 130, 246, 0.12);
+}
+
+.record-header-action-icon-btn:active {
+  transform: scale(0.92);
+}
+
+.record-header-action-icon-btn.success {
+  color: #10b981 !important;
+  background: rgba(16, 185, 129, 0.15) !important;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+}

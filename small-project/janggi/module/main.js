@@ -1187,7 +1187,12 @@ function saveCurrentConfigToSlot() {
     settingsAccentColor,
     aiMode,
     cursorLockMode,
-    shortcutKeys
+    shortcutKeys,
+    scoreAutoRotate,
+    scoreRotateInterval,
+    scoreShowSlide1,
+    scoreShowSlide2,
+    scoreShowSlide3
   };
   localStorage.setItem("janggi_settings_slot_" + activeSlot, JSON.stringify(config));
 }
@@ -1226,6 +1231,11 @@ function loadConfigFromSlot() {
     if (config.shortcutKeys) {
       shortcutKeys = Object.assign({}, shortcutKeys, config.shortcutKeys);
     }
+    if (config.scoreAutoRotate !== undefined && config.scoreAutoRotate !== null) scoreAutoRotate = (config.scoreAutoRotate === "true" || config.scoreAutoRotate === true);
+    if (config.scoreRotateInterval !== undefined && config.scoreRotateInterval !== null) scoreRotateInterval = parseInt(config.scoreRotateInterval, 10);
+    if (config.scoreShowSlide1 !== undefined && config.scoreShowSlide1 !== null) scoreShowSlide1 = (config.scoreShowSlide1 === "true" || config.scoreShowSlide1 === true);
+    if (config.scoreShowSlide2 !== undefined && config.scoreShowSlide2 !== null) scoreShowSlide2 = (config.scoreShowSlide2 === "true" || config.scoreShowSlide2 === true);
+    if (config.scoreShowSlide3 !== undefined && config.scoreShowSlide3 !== null) scoreShowSlide3 = (config.scoreShowSlide3 === "true" || config.scoreShowSlide3 === true);
     
     localStorage.setItem("showCoordinates", showCoordinates);
     localStorage.setItem("sizeKing", sizeKing);
@@ -1247,6 +1257,11 @@ function loadConfigFromSlot() {
     localStorage.setItem("aiMode", aiMode);
     localStorage.setItem("cursorLockMode", cursorLockMode);
     localStorage.setItem("shortcutKeys", JSON.stringify(shortcutKeys));
+    localStorage.setItem("scoreAutoRotate", scoreAutoRotate);
+    localStorage.setItem("scoreRotateInterval", scoreRotateInterval);
+    localStorage.setItem("scoreShowSlide1", scoreShowSlide1);
+    localStorage.setItem("scoreShowSlide2", scoreShowSlide2);
+    localStorage.setItem("scoreShowSlide3", scoreShowSlide3);
     
     changeBoardColor(boardColorType);
     changeChoColor(choColorType);
@@ -1265,6 +1280,7 @@ function loadConfigFromSlot() {
     initBoard();
     initPositions();
     initSettingsUI();
+    applyScoreboardConfig();
   } catch (e) {
     console.error("Failed to load settings from slot", e);
   }
@@ -1541,6 +1557,22 @@ function initSettingsUI() {
 
   const cursorLockSelect = document.getElementById("cursor-lock-select");
   if (cursorLockSelect) cursorLockSelect.value = cursorLockMode ? "true" : "false";
+
+  // Scoreboard Settings Sync
+  const autoRotateEl = document.getElementById("score-auto-rotate");
+  if (autoRotateEl) autoRotateEl.value = scoreAutoRotate ? "true" : "false";
+  
+  const rotateIntervalEl = document.getElementById("score-rotate-interval");
+  if (rotateIntervalEl) rotateIntervalEl.value = scoreRotateInterval.toString();
+  
+  const showSlide1El = document.getElementById("score-show-slide1");
+  if (showSlide1El) showSlide1El.checked = scoreShowSlide1;
+  
+  const showSlide2El = document.getElementById("score-show-slide2");
+  if (showSlide2El) showSlide2El.checked = scoreShowSlide2;
+  
+  const showSlide3El = document.getElementById("score-show-slide3");
+  if (showSlide3El) showSlide3El.checked = scoreShowSlide3;
 }
 
 // ----------------------------------------------------
@@ -3068,10 +3100,7 @@ var choTimeSpent = 0;
 var hanTimeSpent = 0;
 
 function initScoreboardRotation() {
-  if (scoreRotationInterval) clearInterval(scoreRotationInterval);
-  scoreRotationInterval = setInterval(() => {
-    rotateScorePanel();
-  }, 5000);
+  applyScoreboardConfig();
   
   if (scoreboardTimerInterval) clearInterval(scoreboardTimerInterval);
   scoreboardTimerInterval = setInterval(() => {
@@ -3082,8 +3111,50 @@ function initScoreboardRotation() {
   hanTimeSpent = 0;
 }
 
+function getActiveSlides() {
+  const active = [];
+  if (scoreShowSlide1) active.push(0);
+  if (scoreShowSlide2) active.push(1);
+  if (scoreShowSlide3) active.push(2);
+  if (active.length === 0) active.push(0);
+  return active;
+}
+
+function applyScoreboardConfig() {
+  const activeSlides = getActiveSlides();
+  
+  const dots = document.querySelectorAll(".score-dot");
+  if (dots.length === 3) {
+    dots[0].style.display = scoreShowSlide1 ? "inline-block" : "none";
+    dots[1].style.display = scoreShowSlide2 ? "inline-block" : "none";
+    dots[2].style.display = scoreShowSlide3 ? "inline-block" : "none";
+  }
+  
+  if (!activeSlides.includes(currentScoreSlideIndex)) {
+    setScoreSlide(activeSlides[0]);
+  } else {
+    setScoreSlide(currentScoreSlideIndex);
+  }
+  
+  if (scoreRotationInterval) clearInterval(scoreRotationInterval);
+  if (scoreAutoRotate && activeSlides.length > 1) {
+    scoreRotationInterval = setInterval(() => {
+      rotateScorePanel();
+    }, scoreRotateInterval * 1000);
+  }
+}
+
 function rotateScorePanel() {
-  setScoreSlide((currentScoreSlideIndex + 1) % 3);
+  const activeSlides = getActiveSlides();
+  if (activeSlides.length <= 1) {
+    if (activeSlides.length === 1) {
+      setScoreSlide(activeSlides[0]);
+    }
+    return;
+  }
+  const currIdxInActive = activeSlides.indexOf(currentScoreSlideIndex);
+  const nextIdxInActive = (currIdxInActive + 1) % activeSlides.length;
+  setScoreSlide(activeSlides[nextIdxInActive]);
 }
 
 function setScoreSlide(index) {
@@ -3107,12 +3178,30 @@ function setScoreSlide(index) {
     }
   });
   
-  if (scoreRotationInterval) {
-    clearInterval(scoreRotationInterval);
+  const activeSlides = getActiveSlides();
+  if (scoreRotationInterval) clearInterval(scoreRotationInterval);
+  if (scoreAutoRotate && activeSlides.length > 1) {
     scoreRotationInterval = setInterval(() => {
       rotateScorePanel();
-    }, 5000);
+    }, scoreRotateInterval * 1000);
   }
+}
+
+function updateScoreboardSettings() {
+  const autoRotateEl = document.getElementById("score-auto-rotate");
+  const rotateIntervalEl = document.getElementById("score-rotate-interval");
+  const showSlide1El = document.getElementById("score-show-slide1");
+  const showSlide2El = document.getElementById("score-show-slide2");
+  const showSlide3El = document.getElementById("score-show-slide3");
+  
+  if (autoRotateEl) scoreAutoRotate = (autoRotateEl.value === "true");
+  if (rotateIntervalEl) scoreRotateInterval = parseInt(rotateIntervalEl.value, 10);
+  if (showSlide1El) scoreShowSlide1 = showSlide1El.checked;
+  if (showSlide2El) scoreShowSlide2 = showSlide2El.checked;
+  if (showSlide3El) scoreShowSlide3 = showSlide3El.checked;
+  
+  applyScoreboardConfig();
+  saveCurrentConfigToSlot();
 }
 
 function updateScoreboardTimer() {
@@ -3251,11 +3340,35 @@ function updateCommentBubble() {
   }
 }
 
+function toggleMetadataCategory(event) {
+  if (event.target.closest('button')) return;
+  
+  const category = document.getElementById("metadata-category");
+  const content = document.getElementById("metadata-category-content");
+  const arrow = document.getElementById("accordion-arrow");
+  
+  if (!category || !content) return;
+  
+  const isCollapsed = category.classList.contains("collapsed");
+  
+  if (isCollapsed) {
+    category.classList.remove("collapsed");
+    content.style.display = "block";
+    if (arrow) arrow.style.transform = "rotate(180deg)";
+  } else {
+    category.classList.add("collapsed");
+    content.style.display = "none";
+    if (arrow) arrow.style.transform = "rotate(0deg)";
+  }
+}
+
 // Bind to window to prevent module scoping issues
 window.rotateScorePanel = rotateScorePanel;
 window.setScoreSlide = setScoreSlide;
 window.updateMetadataFromForm = updateMetadataFromForm;
 window.updateCurrentStepComment = updateCurrentStepComment;
 window.updateCommentBubble = updateCommentBubble;
+window.updateScoreboardSettings = updateScoreboardSettings;
+window.toggleMetadataCategory = toggleMetadataCategory;
 
 initGame();
