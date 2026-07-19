@@ -146,24 +146,11 @@ function getData() {
 // 장기말이 클릭되었을 때, 동작을 기술합니다.
 function selected(i) {
   console.log(`[Click Debug] Piece ID: ${i}, Coords: x=${pieces[i] ? pieces[i].x : '?'}, y=${pieces[i] ? pieces[i].y : '?'}, Element: ${pieces[i] && pieces[i].e ? pieces[i].e.id : 'null'}`);
+  printDebugEnv("PIECE_CLICKED");
 
-  // Diagnostic floating UI overlay
-  let debugDiv = document.getElementById("janggi-debug-info");
-  if (!debugDiv) {
-    debugDiv = document.createElement("div");
-    debugDiv.id = "janggi-debug-info";
-    debugDiv.style.cssText = "position:fixed; bottom:10px; left:10px; background:rgba(15,23,42,0.9); color:#f8fafc; padding:10px; font-family:monospace; font-size:11px; z-index:9999; pointer-events:none; border-radius:6px; border:1px solid rgba(255,255,255,0.15); box-shadow: 0 4px 12px rgba(0,0,0,0.5); line-height:1.5;";
-    document.body.appendChild(debugDiv);
-  }
-  debugDiv.innerHTML = `
-    <strong>[Janggi Runtime Debug]</strong><br>
-    Active Slot: ${activeSlot}<br>
-    candiColorType: <span style="color:${candiColorType}; font-weight:bold;">"${candiColorType}"</span><br>
-    candiShapeType: "${candiShapeType}"<br>
-    unitSize: ${typeof unitSize !== 'undefined' ? unitSize.toFixed(1) : '?'}<br>
-    Padding: L=${boardPaddingLeft}, T=${boardPaddingTop}<br>
-    showCoordinates: ${showCoordinates}
-  `;
+  // Clean up any old diagnostic overlay if present
+  const oldDebug = document.getElementById("janggi-debug-info");
+  if (oldDebug) oldDebug.remove();
 
   if (curSelect == i) {
     clearCandiBox();
@@ -1041,6 +1028,22 @@ function updateSlotButtonsUI() {
   updateSettingsAccentColor();
 }
 
+function printDebugEnv(tag) {
+  console.log(`[Janggi Debug Env - ${tag}] activeSlot: ${activeSlot}`);
+  console.log(`[Janggi Debug Env - ${tag}] candiColorType: "${candiColorType}"`);
+  console.log(`[Janggi Debug Env - ${tag}] candiShapeType: "${candiShapeType}"`);
+  console.log(`[Janggi Debug Env - ${tag}] showCoordinates: ${showCoordinates}`);
+  console.log(`[Janggi Debug Env - ${tag}] unitSize: ${typeof unitSize !== 'undefined' ? unitSize : '?'}`);
+  console.log(`[Janggi Debug Env - ${tag}] padding: L=${boardPaddingLeft}, T=${boardPaddingTop}`);
+  console.log(`[Janggi Debug Env - ${tag}] sizes: King=${sizeKing}, Mid=${sizeMiddle}, Sm=${sizeSmall}`);
+  console.log(`[Janggi Debug Env - ${tag}] fontScales: King=${fontScaleKing}, Mid=${fontScaleMiddle}, Sm=${fontScaleSmall}`);
+  console.log(`[Janggi Debug Env - ${tag}] boardColorType: "${boardColorType}"`);
+  console.log(`[Janggi Debug Env - ${tag}] choColorType: "${choColorType}"`);
+  console.log(`[Janggi Debug Env - ${tag}] hanColorType: "${hanColorType}"`);
+  console.log(`[Janggi Debug Env - ${tag}] pieceShapeType: "${pieceShapeType}"`);
+  console.log(`[Janggi Debug Env - ${tag}] Raw Slot string in localStorage:`, localStorage.getItem("janggi_settings_slot_" + activeSlot));
+}
+
 function saveCurrentConfigToSlot() {
   const config = {
     showCoordinates,
@@ -1066,9 +1069,11 @@ function saveCurrentConfigToSlot() {
     settingsAccentColor
   };
   localStorage.setItem("janggi_settings_slot_" + activeSlot, JSON.stringify(config));
+  printDebugEnv("SAVE_SLOT");
 }
 
 function loadConfigFromSlot() {
+  printDebugEnv("LOAD_START");
   const saved = localStorage.getItem("janggi_settings_slot_" + activeSlot);
   if (!saved) {
     saveCurrentConfigToSlot();
@@ -1133,6 +1138,7 @@ function loadConfigFromSlot() {
     initBoard();
     initPositions();
     initSettingsUI();
+    printDebugEnv("LOAD_END");
   } catch (e) {
     console.error("Failed to load settings from slot", e);
   }
@@ -1185,6 +1191,7 @@ function resetCategory1() {
 }
 
 function resetCategory2() {
+  console.log("[Janggi Reset Debug] resetCategory2() called");
   showCoordinates = true;
   sizeKing = 1.15;
   sizeMiddle = 0.90;
@@ -1222,6 +1229,7 @@ function resetCategory2() {
   initPositions();
   initSettingsUI();
   saveCurrentConfigToSlot();
+  printDebugEnv("RESET_CATEGORY_2");
 }
 
 function resetCategory3() {
@@ -1836,6 +1844,8 @@ function checkAndInit() {
     if (svg) {
       svg.style.setProperty("--anim-duration", `${animDuration}s`);
     }
+
+    printDebugEnv("INIT_COMPLETE");
 
     const turnEl = document.getElementById("turn");
     if (turnEl) {
