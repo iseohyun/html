@@ -265,6 +265,49 @@ function changeLanguage() {
   guide();
 }
 
+function triggerRandomStart() {
+  let randA = 0;
+  let randB = 0;
+  let steps = 0;
+  let attempts = 0;
+
+  // Try to find a pair of numbers that requires between 4 and 8 steps to solve.
+  // This keeps the grid size visually appealing and educational.
+  do {
+    randA = Math.floor(Math.random() * 9000) + 1000; // 1000 ~ 9999
+    randB = Math.floor(Math.random() * 900) + 100;   // 100 ~ 999
+    if (randA < randB) {
+      const temp = randA;
+      randA = randB;
+      randB = temp;
+    }
+    steps = getRequiredRows(randA, randB);
+    attempts++;
+  } while ((steps < 4 || steps > 8) && attempts < 100);
+
+  // Fallback if no perfect match found
+  if (steps < 3) {
+    randA = 6192;
+    randB = 1012;
+  }
+
+  // Update inputs B1 and C1
+  const cellA = getCell(0, 1);
+  const cellB = getCell(0, 2);
+  if (cellA) cellA.value = randA;
+  if (cellB) cellB.value = randB;
+
+  if (inputs[0]) {
+    if (inputs[0][1]) inputs[0][1]._value = randA.toString();
+    if (inputs[0][2]) inputs[0][2]._value = randB.toString();
+  }
+
+  // Initialize with the new values
+  init(randA, randB);
+}
+
+window.triggerRandomStart = triggerRandomStart;
+
 // Window resizing adjustments
 let resizeObserver;
 function initApp() {
