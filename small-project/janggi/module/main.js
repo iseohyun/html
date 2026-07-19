@@ -474,17 +474,17 @@ function startNewGame() {
 
 function adjustPieceSize(type, delta) {
   if (type === "king") {
-    sizeKing = Math.max(0.5, Math.min(2.0, sizeKing + delta));
+    sizeKing = Math.round(Math.max(0.5, Math.min(2.0, sizeKing + delta)) * 100) / 100;
     localStorage.setItem("sizeKing", sizeKing);
     const span = document.getElementById("val-size-king");
     if (span) span.textContent = sizeKing.toFixed(2);
   } else if (type === "middle") {
-    sizeMiddle = Math.max(0.5, Math.min(2.0, sizeMiddle + delta));
+    sizeMiddle = Math.round(Math.max(0.5, Math.min(2.0, sizeMiddle + delta)) * 100) / 100;
     localStorage.setItem("sizeMiddle", sizeMiddle);
     const span = document.getElementById("val-size-middle");
     if (span) span.textContent = sizeMiddle.toFixed(2);
   } else if (type === "small") {
-    sizeSmall = Math.max(0.5, Math.min(2.0, sizeSmall + delta));
+    sizeSmall = Math.round(Math.max(0.5, Math.min(2.0, sizeSmall + delta)) * 100) / 100;
     localStorage.setItem("sizeSmall", sizeSmall);
     const span = document.getElementById("val-size-small");
     if (span) span.textContent = sizeSmall.toFixed(2);
@@ -499,17 +499,17 @@ function adjustPieceSize(type, delta) {
 
 function adjustPieceFontSize(type, delta) {
   if (type === "king") {
-    fontScaleKing = Math.max(0.5, Math.min(2.0, fontScaleKing + delta));
+    fontScaleKing = Math.round(Math.max(0.5, Math.min(2.0, fontScaleKing + delta)) * 100) / 100;
     localStorage.setItem("fontScaleKing", fontScaleKing);
     const span = document.getElementById("val-font-king");
     if (span) span.textContent = fontScaleKing.toFixed(2);
   } else if (type === "middle") {
-    fontScaleMiddle = Math.max(0.5, Math.min(2.0, fontScaleMiddle + delta));
+    fontScaleMiddle = Math.round(Math.max(0.5, Math.min(2.0, fontScaleMiddle + delta)) * 100) / 100;
     localStorage.setItem("fontScaleMiddle", fontScaleMiddle);
     const span = document.getElementById("val-font-middle");
     if (span) span.textContent = fontScaleMiddle.toFixed(2);
   } else if (type === "small") {
-    fontScaleSmall = Math.max(0.5, Math.min(2.0, fontScaleSmall + delta));
+    fontScaleSmall = Math.round(Math.max(0.5, Math.min(2.0, fontScaleSmall + delta)) * 100) / 100;
     localStorage.setItem("fontScaleSmall", fontScaleSmall);
     const span = document.getElementById("val-font-small");
     if (span) span.textContent = fontScaleSmall.toFixed(2);
@@ -520,7 +520,7 @@ function adjustPieceFontSize(type, delta) {
 }
 
 function adjustCoordsFontSize(delta) {
-  coordsTextScale = Math.max(0.1, Math.min(0.5, coordsTextScale + delta));
+  coordsTextScale = Math.round(Math.max(0.1, Math.min(0.5, coordsTextScale + delta)) * 100) / 100;
   localStorage.setItem("coordsTextScale", coordsTextScale);
   const span = document.getElementById("val-coords-size");
   if (span) span.textContent = coordsTextScale.toFixed(2);
@@ -787,7 +787,7 @@ function changeCandiColor(value) {
 }
 
 function changeAnimDuration(val) {
-  animDuration = parseFloat(val);
+  animDuration = Math.round(parseFloat(val) * 10) / 10;
   localStorage.setItem("animDuration", animDuration);
   const valSpan = document.getElementById("anim-duration-val");
   if (valSpan) {
@@ -800,7 +800,7 @@ function changeAnimDuration(val) {
 }
 
 function changeAnimHeight(val) {
-  animHeight = parseFloat(val);
+  animHeight = Math.round(parseFloat(val) * 10) / 10;
   localStorage.setItem("animHeight", animHeight);
   const valSpan = document.getElementById("anim-height-val");
   if (valSpan) {
