@@ -569,7 +569,7 @@ body {
   cursor: pointer;
   transition: filter 0.2s;
   transform-origin: 50% 50%;
-  transform-box: view-box;
+  transform-box: border-box;
 }
 
 /* Disable transitions during resize and initialization */
