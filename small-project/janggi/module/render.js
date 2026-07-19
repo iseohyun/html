@@ -29,6 +29,17 @@ function initBoard() {
     containerHeight = viewportRemainingHeight;
   }
 
+  // 좌표선 옵션 활성화 여부에 따른 패딩 세팅 (비대칭 패딩 적용)
+  if (showCoordinates) {
+    boardPaddingLeft = 45;
+    boardPaddingTop = 45;
+  } else {
+    boardPaddingLeft = 20;
+    boardPaddingTop = 20;
+  }
+  boardPaddingRight = 20;
+  boardPaddingBottom = 20;
+
   // 여백(margin)을 제외한 가용 너비와 높이를 구합니다.
   const marginOffset = 2 * boardMargin;
   const tmpWidth = containerWidth - marginOffset;
@@ -36,8 +47,8 @@ function initBoard() {
   const tmpHeight = containerHeight - controlBox.offsetHeight - marginOffset - 15;
 
   // boardPadding을 제외한 격자 영역의 가용 너비와 높이
-  const gridAvailableWidth = tmpWidth - 2 * boardPadding;
-  const gridAvailableHeight = tmpHeight - 2 * boardPadding;
+  const gridAvailableWidth = tmpWidth - (boardPaddingLeft + boardPaddingRight);
+  const gridAvailableHeight = tmpHeight - (boardPaddingTop + boardPaddingBottom);
 
   // 가용 영역 내에서 9:10 비율에 맞춘 unitSize 계산
   const unitByWidth = gridAvailableWidth / 9;
@@ -45,8 +56,8 @@ function initBoard() {
   unitSize = Math.min(unitByWidth, unitByHeight);
 
   // 최종 보드 크기 계산 (격자 영역 + 양측 패딩)
-  boardWidth = unitSize * 9 + boardPadding * 2;
-  boardHeight = unitSize * 10 + boardPadding * 2;
+  boardWidth = unitSize * 9 + boardPaddingLeft + boardPaddingRight;
+  boardHeight = unitSize * 10 + boardPaddingTop + boardPaddingBottom;
 
 
 
@@ -136,6 +147,46 @@ function drawBoard() {
   lineSts += checkBoardMarker(8, 8);
 
   lines.setAttribute('d', lineSts);
+
+  // 공식 기보용 좌표 레이블 작성 (대한장기협회 기준)
+  const coordsGroup = document.getElementById("coords-labels");
+  if (coordsGroup) {
+    coordsGroup.innerHTML = "";
+
+    if (showCoordinates) {
+      // 1. 세로선 (열) 번호: 맨 위쪽에 1~9열 배치 (왼쪽이 1, 오른쪽이 9)
+      for (let x = 1; x <= 9; x++) {
+        let axis = getAxis(x, 1);
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("x", axis.x);
+        text.setAttribute("y", boardPaddingTop - 25);
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("dominant-baseline", "middle");
+        text.setAttribute("fill", "#4b3621"); // 목판화풍 짙은 갈색
+        text.setAttribute("font-size", `${unitSize * 0.22}px`);
+        text.setAttribute("font-weight", "800");
+        text.setAttribute("opacity", "0.85");
+        text.textContent = x;
+        coordsGroup.appendChild(text);
+      }
+
+      // 2. 가로선 (줄) 번호: 왼쪽에 1~10줄 배치 (아래쪽이 1, 위쪽이 10)
+      for (let y = 1; y <= 10; y++) {
+        let axis = getAxis(1, y);
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("x", boardPaddingLeft - 25);
+        text.setAttribute("y", axis.y);
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("dominant-baseline", "middle");
+        text.setAttribute("fill", "#4b3621");
+        text.setAttribute("font-size", `${unitSize * 0.22}px`);
+        text.setAttribute("font-weight", "800");
+        text.setAttribute("opacity", "0.85");
+        text.textContent = y;
+        coordsGroup.appendChild(text);
+      }
+    }
+  }
 }
 
 function checkBoardMarker(x, y) {

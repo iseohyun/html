@@ -3,7 +3,11 @@ const svg = document.getElementById("janggi-svg");
 const board = document.getElementById("board");
 const selectBox = document.getElementById("select-box");
 const boardMargin = 0;  // 장기판의 외부 하얀색 여백(margin)
-const boardPadding = 20;  // 장기판 내부의 나무색 여백(padding)
+var showCoordinates = true; // 좌표선 표시 여부
+var boardPaddingLeft = 45;
+var boardPaddingRight = 20;
+var boardPaddingTop = 45;
+var boardPaddingBottom = 20;
 var boardWidth;
 var boardHeight;
 var unitSize; // 한 칸의 크기 (그릴 수 있는 최대 크기)
