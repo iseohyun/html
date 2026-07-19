@@ -643,6 +643,7 @@ function startNewGame() {
   updateMetadataDisplay();
   initScoreboardRotation();
   updateCommentBubble();
+  checkAndRunAI();
 }
 
 function adjustPieceSize(type, delta) {
@@ -1173,6 +1174,47 @@ function selectSlot(num) {
   localStorage.setItem("janggi_active_slot", activeSlot);
   updateSlotButtonsUI();
   loadConfigFromSlot();
+  applyLoadedConfig();
+}
+
+function applyLoadedConfig() {
+  // 1. UI 및 외관 테마 적용
+  changeBoardColor(boardColorType);
+  changeChoColor(choColorType);
+  changeHanColor(hanColorType);
+  changePieceShape(pieceShapeType);
+  changeCandiShape(candiShapeType);
+  changeCandiColor(candiColorType);
+  
+  changeSettingsBgColor(settingsBgColor);
+  changeSettingsOpacity(settingsOpacity);
+  changeSettingsTextColorType(settingsTextColorType);
+  changeSettingsAccentColor(settingsAccentColor);
+  
+  if (svg) {
+    svg.style.setProperty("--anim-duration", `${animDuration}s`);
+  }
+  
+  applyShortcutModalTheme();
+  applyCommentBoxTheme();
+  
+  const durationInput = document.getElementById("comment-duration-input");
+  if (durationInput) durationInput.value = commentDisplayDuration;
+  
+  // 2. 보드 격자 및 기물 배치 다시 그리기
+  svg.classList.add("no-transition");
+  initBoard();
+  initPositions();
+  svg.offsetHeight; // Force reflow
+  svg.classList.remove("no-transition");
+  
+  // 3. 설정 창 UI 값들 최신화
+  initSettingsUI();
+  initScoreboardRotation();
+  updateCommentBubble();
+  
+  // 4. AI 대국 모드 점검 및 실행
+  checkAndRunAI();
 }
 
 function updateSlotButtonsUI() {
@@ -2792,11 +2834,6 @@ function initGame() {
   if (localStorage.getItem("commentDisplayDuration") !== null) {
     commentDisplayDuration = parseInt(localStorage.getItem("commentDisplayDuration"), 10);
   }
-  applyShortcutModalTheme();
-  applyCommentBoxTheme();
-  
-  const durationInput = document.getElementById("comment-duration-input");
-  if (durationInput) durationInput.value = commentDisplayDuration;
   if (localStorage.getItem("autoplaySpeed") !== null) {
     autoplaySpeed = parseFloat(localStorage.getItem("autoplaySpeed"));
   }
@@ -2804,28 +2841,7 @@ function initGame() {
     autoplayUseAnim = (localStorage.getItem("autoplayUseAnim") === "true");
   }
 
-  initSettingsUI();
-  
-  // 초기 로딩 시 말들이 0,0에서 날아오는 트랜지션을 방지합니다.
-  svg.classList.add("no-transition");
-  initBoard();
-  initPositions();
-  svg.offsetHeight; // Force reflow
-  svg.classList.remove("no-transition");
-  
-  // 설정값의 외관 테마 적용
-  changeBoardColor(boardColorType);
-  changeChoColor(choColorType);
-  changeHanColor(hanColorType);
-  changePieceShape(pieceShapeType);
-  updateSettingsBoxStyle();
-  updateSettingsTextColor();
-  updateSettingsAccentColor();
-
-  // 애니메이션 시간 초기값 설정
-  if (svg) {
-    svg.style.setProperty("--anim-duration", `${animDuration}s`);
-  }
+  applyLoadedConfig();
 
   const turnEl = document.getElementById("turn");
   if (turnEl) {
@@ -2889,10 +2905,7 @@ function initGame() {
   // 키보드 단축키 방향키 및 엔터 리스너 등록
   window.addEventListener("keydown", handleKeyDown, true);
 
-  // 로드 직후 AI 작동 여부 검사
-  checkAndRunAI();
-  initScoreboardRotation();
-  updateCommentBubble();
+
 }
 
 function matchShortcutKey(action, keyEvent) {
@@ -4249,6 +4262,8 @@ function goToStart() {
   initPositions();
   svg.offsetHeight; // Force reflow
   svg.classList.remove("no-transition");
+  
+  checkAndRunAI();
 }
 
 function goToEnd() {
