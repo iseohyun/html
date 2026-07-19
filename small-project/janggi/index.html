@@ -38,69 +38,213 @@
 <body style="overflow: hidden;">
   <article>
     <div id="setting-box">
-      <button id="close-btn" onclick="disalbeSettingBox()">닫기</button>
-      <div id="charim">
-        <button id="restart-btn" onclick="newStart()">완전 초기화</button>
-        <table>
+      <!-- 닫기 버튼: 왼쪽 위에 X표시 -->
+      <button id="close-btn" onclick="disalbeSettingBox()">X</button>
+      
+      <!-- 1. 상차림 -->
+      <div class="setting-category">
+        <h2>1. 상차림</h2>
+        <div class="charim-container">
+          <div class="charim-table-wrapper">
+            <table>
+              <tr>
+                <td></td>
+                <td style="text-align: center; font-weight: bold;">상차림 배치</td>
+                <td style="text-align: center; font-weight: bold;">진영</td>
+              </tr>
+              <tr>
+                <td>위 (상대편 진영)</td>
+                <td>
+                  <button class="charim1" onclick="changeCharim(1, 0, this)">마상마상</button>
+                  <button class="charim1" onclick="changeCharim(1, 1, this)">마상상마</button>
+                  <button class="charim1" onclick="changeCharim(1, 2, this)">상마마상</button>
+                  <button class="charim1" onclick="changeCharim(1, 3, this)">상마상마</button>
+                </td>
+                <td>
+                  <button id="nation-top" onclick="changeNation(false)" style="background-color: #ef4444; color: white; font-weight: bold; border: none; border-radius: 6px; padding: 6px 15px;">한</button>
+                </td>
+              </tr>
+              <tr>
+                <td>아래 (본인 진영)</td>
+                <td>
+                  <button class="charim0" onclick="changeCharim(0, 0, this)">마상마상</button>
+                  <button class="charim0" onclick="changeCharim(0, 1, this)">마상상마</button>
+                  <button class="charim0" onclick="changeCharim(0, 2, this)">상마마상</button>
+                  <button class="charim0" onclick="changeCharim(0, 3, this)">상마상마</button>
+                </td>
+                <td>
+                  <button id="nation-bottom" onclick="changeNation(true)" style="background-color: #3b82f6; color: white; font-weight: bold; border: none; border-radius: 6px; padding: 6px 15px;">초</button>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <div class="charim-btn-wrapper">
+            <button onclick="startNewGame()" style="padding: 15px 30px; font-size: 1.15em; font-weight: 700; background-color: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3); transition: all 0.2s;">시작하기</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. 장기판 보기 -->
+      <div class="setting-category">
+        <h2>2. 장기판 보기</h2>
+        <table class="settings-table">
           <tr>
-            <td></td>
-            <td style="text-align: center;">상차림</td>
-            <td>진영(선택: 초)</td>
+            <td>좌표 보기</td>
+            <td>
+              <button id="toggle-coords-btn-settings" onclick="toggleCoordinates()">좌표 표시 중</button>
+            </td>
           </tr>
           <tr>
-            <td>위</td>
+            <td>장기알 크기 (왕)</td>
             <td>
-              <button class="charim1" onclick="changeCharim(1, 0, this)">마상마상</button>
-              <button class="charim1" onclick="changeCharim(1, 1, this)">마상상마</button>
-              <button class="charim1" onclick="changeCharim(1, 2, this)">상마마상</button>
-              <button class="charim1" onclick="changeCharim(1, 3, this)">상마상마</button>
-            </td>
-            <td>
-              <button id="nation-top" onclick="changeNation(false)">한</button>
+              <button onclick="adjustPieceSize('king', -0.05)">-</button>
+              <span id="val-size-king">1.10</span>
+              <button onclick="adjustPieceSize('king', 0.05)">+</button>
             </td>
           </tr>
           <tr>
-            <td>아래</td>
+            <td>장기알 크기 (큰기물)</td>
             <td>
-              <button class="charim0" onclick="changeCharim(0, 0, this)">마상마상</button>
-              <button class="charim0" onclick="changeCharim(0, 1, this)">마상상마</button>
-              <button class="charim0" onclick="changeCharim(0, 2, this)">상마마상</button>
-              <button class="charim0" onclick="changeCharim(0, 3, this)">상마상마</button>
+              <button onclick="adjustPieceSize('middle', -0.05)">-</button>
+              <span id="val-size-middle">0.95</span>
+              <button onclick="adjustPieceSize('middle', 0.05)">+</button>
             </td>
+          </tr>
+          <tr>
+            <td>장기알 크기 (작은기물)</td>
             <td>
-              <button id="nation-bottom" onclick="changeNation(true)">초</button>
+              <button onclick="adjustPieceSize('small', -0.05)">-</button>
+              <span id="val-size-small">0.75</span>
+              <button onclick="adjustPieceSize('small', 0.05)">+</button>
+            </td>
+          </tr>
+          <tr>
+            <td>장기알 글씨 크기 (왕)</td>
+            <td>
+              <button onclick="adjustPieceFontSize('king', -0.05)">-</button>
+              <span id="val-font-king">1.00</span>
+              <button onclick="adjustPieceFontSize('king', 0.05)">+</button>
+            </td>
+          </tr>
+          <tr>
+            <td>장기알 글씨 크기 (큰기물)</td>
+            <td>
+              <button onclick="adjustPieceFontSize('middle', -0.05)">-</button>
+              <span id="val-font-middle">1.00</span>
+              <button onclick="adjustPieceFontSize('middle', 0.05)">+</button>
+            </td>
+          </tr>
+          <tr>
+            <td>장기알 글씨 크기 (작은기물)</td>
+            <td>
+              <button onclick="adjustPieceFontSize('small', -0.05)">-</button>
+              <span id="val-font-small">1.00</span>
+              <button onclick="adjustPieceFontSize('small', 0.05)">+</button>
+            </td>
+          </tr>
+          <tr>
+            <td>좌표 크기</td>
+            <td>
+              <button onclick="adjustCoordsFontSize(-0.02)">-</button>
+              <span id="val-coords-size">0.22</span>
+              <button onclick="adjustCoordsFontSize(0.02)">+</button>
+            </td>
+          </tr>
+          <tr>
+            <td>시스템 글자 크기</td>
+            <td>
+              <button onclick="changeFontSize(-1)">작게</button>
+              <button onclick="changeFontSize(1)">크게</button>
+            </td>
+          </tr>
+          <tr>
+            <td>장기판 색상</td>
+            <td>
+              <select id="board-color-select" onchange="changeBoardColor(this.value)">
+                <option value="wood">전통 나무색</option>
+                <option value="green">클래식 초록색</option>
+                <option value="dark">모던 다크 회색</option>
+                <option value="navy">슬레이트 네이비</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>장기알 색상 (초나라)</td>
+            <td>
+              <select id="cho-color-select" onchange="changeChoColor(this.value)">
+                <option value="blue">기본 청색 (Blue)</option>
+                <option value="green">비취 녹색 (Green)</option>
+                <option value="gold">황금 황색 (Gold)</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>장기알 색상 (한나라)</td>
+            <td>
+              <select id="han-color-select" onchange="changeHanColor(this.value)">
+                <option value="red">기본 적색 (Red)</option>
+                <option value="purple">자옥 자색 (Purple)</option>
+                <option value="slate">오닉스 회색 (Slate)</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>장기알 모양</td>
+            <td>
+              <select id="piece-shape-select" onchange="changePieceShape(this.value)">
+                <option value="octagon">전통 팔각형</option>
+                <option value="circle">현대 원형</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>이동 가능 위치 모양</td>
+            <td>
+              <select id="candi-shape-select" onchange="changeCandiShape(this.value)">
+                <option value="empty_circle">빈 원 (경계선)</option>
+                <option value="filled_circle">꽉찬 원</option>
+                <option value="empty_square">빈 사각형</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>이동 가능 위치 색상</td>
+            <td>
+              <select id="candi-color-select" onchange="changeCandiColor(this.value)">
+                <option value="#3b82f6">파란색 (Blue)</option>
+                <option value="#10b981">초록색 (Green)</option>
+                <option value="#f97316">주황색 (Orange)</option>
+                <option value="#a855f7">보라색 (Purple)</option>
+                <option value="#eab308">노란색 (Yellow)</option>
+              </select>
             </td>
           </tr>
         </table>
-        <button id="restart-btn" onclick="reload()">상차림 변경(URL로 공유하기)</button>
-        <button id="restart-now-btn" onclick="reload_now()">현재의 상태로 재시작(로그삭제)</button>
       </div>
-      <div id="info">
-        소스코드 :
-        <ul>
-          <li>사용설명서: <a href="https://iseohyun.tistory.com/90" target="_blank">https://iseohyun.tistory.com/90</a></li>
-          <li>Github: <a href="https://github.com/iseohyun/html/tree/main/etc/fun/janggi" target="_blank">
-              https://github.com/iseohyun/html/tree/main/etc/fun/janggi</a> CC-BY-SA 4.0</li>
-        </ul>
-        <div>
-          글자 크기 변경 :
-          <button onclick="changeFontSize(1)">+</button>
-          <button onclick="changeFontSize(-1)">-</button>
-        </div>
-        <div style="margin-top: 10px;">
-          좌표 보기 설정 :
-          <button id="toggle-coords-btn" onclick="toggleCoordinates()">좌표 보기 닫기</button>
-        </div>
-        <div style="margin-top: 15px;">
-          애니메이션 시간 : <span id="anim-duration-val">0.5</span>초
-          <br>
-          <input type="range" id="anim-duration-slider" min="0" max="2" step="0.1" value="0.5" oninput="changeAnimDuration(this.value)" style="width: 80%; vertical-align: middle; accent-color: #2563eb;">
-        </div>
-        <div style="margin-top: 15px;">
-          기물 들기 높이 : <span id="anim-height-val">0.2</span>
-          <br>
-          <input type="range" id="anim-height-slider" min="0" max="2" step="0.1" value="0.2" oninput="changeAnimHeight(this.value)" style="width: 80%; vertical-align: middle; accent-color: #2563eb;">
-        </div>
+
+      <!-- 3. 애니메이션 -->
+      <div class="setting-category">
+        <h2>3. 애니메이션</h2>
+        <table class="settings-table">
+          <tr>
+            <td>애니메이션 시간</td>
+            <td>
+              <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+                <input type="range" id="anim-duration-slider" min="0" max="2" step="0.1" value="0.5" oninput="changeAnimDuration(this.value)" style="width: 150px; accent-color: #3b82f6;">
+                <span id="anim-duration-val" style="min-width: 45px; text-align: right; color: #3b82f6;">0.5</span>초
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>기물 들기 높이</td>
+            <td>
+              <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+                <input type="range" id="anim-height-slider" min="0" max="2" step="0.1" value="0.2" oninput="changeAnimHeight(this.value)" style="width: 150px; accent-color: #3b82f6;">
+                <span id="anim-height-val" style="min-width: 45px; text-align: right; color: #3b82f6;">0.2</span>
+              </div>
+            </td>
+          </tr>
+        </table>
       </div>
     </div>
     <div id="control-box">
@@ -249,6 +393,9 @@
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#1e293b" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#cho-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#1e3a8a" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#1e293b" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#cho-face-grad)" style="display: none;" />
         <image href="src/cho_King.png" x="10" y="10" width="74" height="74" filter="url(#thicken-char)" />
       </svg>
       <!-- Chariot 1 & 2 -->
@@ -256,12 +403,18 @@
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#1e293b" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#cho-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#1e3a8a" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#1e293b" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#cho-face-grad)" style="display: none;" />
         <image href="src/cho_Cha.png" x="10" y="10" width="74" height="74" filter="url(#thicken-char)" />
       </svg>
       <svg id="cho-cha2" class="piece-svg cho-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#1e293b" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#cho-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#1e3a8a" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#1e293b" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#cho-face-grad)" style="display: none;" />
         <image href="src/cho_Cha.png" x="10" y="10" width="74" height="74" filter="url(#thicken-char)" />
       </svg>
       <!-- Cannon 1 & 2 -->
@@ -269,12 +422,18 @@
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#1e293b" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#cho-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#1e3a8a" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#1e293b" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#cho-face-grad)" style="display: none;" />
         <image href="src/cho_Po.png" x="10" y="10" width="74" height="74" filter="url(#thicken-char)" />
       </svg>
       <svg id="cho-po2" class="piece-svg cho-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#1e293b" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#cho-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#1e3a8a" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#1e293b" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#cho-face-grad)" style="display: none;" />
         <image href="src/cho_Po.png" x="10" y="10" width="74" height="74" filter="url(#thicken-char)" />
       </svg>
       <!-- Horse 1 & 2 -->
@@ -282,12 +441,18 @@
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#1e293b" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#cho-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#1e3a8a" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#1e293b" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#cho-face-grad)" style="display: none;" />
         <image href="src/cho_Ma.png" x="10" y="10" width="74" height="74" filter="url(#thicken-char)" />
       </svg>
       <svg id="cho-ma2" class="piece-svg cho-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#1e293b" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#cho-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#1e3a8a" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#1e293b" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#cho-face-grad)" style="display: none;" />
         <image href="src/cho_Ma.png" x="10" y="10" width="74" height="74" filter="url(#thicken-char)" />
       </svg>
       <!-- Elephant 1 & 2 -->
@@ -295,12 +460,18 @@
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#1e293b" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#cho-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#1e3a8a" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#1e293b" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#cho-face-grad)" style="display: none;" />
         <image href="src/cho_Sang.png" x="10" y="10" width="74" height="74" filter="url(#thicken-char)" />
       </svg>
       <svg id="cho-sang2" class="piece-svg cho-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#1e293b" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#cho-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#1e3a8a" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#1e293b" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#cho-face-grad)" style="display: none;" />
         <image href="src/cho_Sang.png" x="10" y="10" width="74" height="74" filter="url(#thicken-char)" />
       </svg>
       <!-- Guard 1 & 2 -->
@@ -308,12 +479,18 @@
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#1e293b" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#cho-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#1e3a8a" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#1e293b" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#cho-face-grad)" style="display: none;" />
         <image href="src/cho_Sa.png" x="6" y="6" width="82" height="82" filter="url(#thicken-char)" />
       </svg>
       <svg id="cho-sa2" class="piece-svg cho-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#1e293b" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#cho-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#1e3a8a" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#1e293b" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#cho-face-grad)" style="display: none;" />
         <image href="src/cho_Sa.png" x="6" y="6" width="82" height="82" filter="url(#thicken-char)" />
       </svg>
       <!-- Soldier 1 to 5 -->
@@ -321,30 +498,45 @@
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#1e293b" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#cho-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#1e3a8a" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#1e293b" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#cho-face-grad)" style="display: none;" />
         <image href="src/cho_Zol.png" x="6" y="6" width="82" height="82" filter="url(#thicken-char)" />
       </svg>
       <svg id="cho-zol2" class="piece-svg cho-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#1e293b" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#cho-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#1e3a8a" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#1e293b" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#cho-face-grad)" style="display: none;" />
         <image href="src/cho_Zol.png" x="6" y="6" width="82" height="82" filter="url(#thicken-char)" />
       </svg>
       <svg id="cho-zol3" class="piece-svg cho-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#1e293b" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#cho-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#1e3a8a" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#1e293b" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#cho-face-grad)" style="display: none;" />
         <image href="src/cho_Zol.png" x="6" y="6" width="82" height="82" filter="url(#thicken-char)" />
       </svg>
       <svg id="cho-zol4" class="piece-svg cho-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#1e293b" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#cho-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#1e3a8a" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#1e293b" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#cho-face-grad)" style="display: none;" />
         <image href="src/cho_Zol.png" x="6" y="6" width="82" height="82" filter="url(#thicken-char)" />
       </svg>
       <svg id="cho-zol5" class="piece-svg cho-piece" viewBox="0 0 100 100" filter="url(#piece-shadow)">
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#1e3a8a" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#1e293b" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#cho-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#1e3a8a" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#1e293b" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#cho-face-grad)" style="display: none;" />
         <image href="src/cho_Zol.png" x="6" y="6" width="82" height="82" filter="url(#thicken-char)" />
       </svg>
 
@@ -355,6 +547,9 @@
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#3f1c0d" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#han-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#2d1d10" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#3f1c0d" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#han-face-grad)" style="display: none;" />
         <polygon points="31,12 63,12 78,27 78,62 63,77 31,77 16,62 16,27" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
         <polygon points="35,17 59,17 71,29 71,57 59,69 35,69 23,57 23,29" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
         <image href="src/han_King.png" x="10" y="10" width="74" height="74" filter="url(#thicken-char)" />
@@ -364,6 +559,9 @@
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#3f1c0d" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#han-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#2d1d10" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#3f1c0d" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#han-face-grad)" style="display: none;" />
         <polygon points="31,12 63,12 78,27 78,62 63,77 31,77 16,62 16,27" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
         <polygon points="35,17 59,17 71,29 71,57 59,69 35,69 23,57 23,29" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
         <image href="src/han_Cha.png" x="10" y="10" width="74" height="74" filter="url(#thicken-char)" />
@@ -372,6 +570,9 @@
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#3f1c0d" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#han-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#2d1d10" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#3f1c0d" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#han-face-grad)" style="display: none;" />
         <polygon points="31,12 63,12 78,27 78,62 63,77 31,77 16,62 16,27" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
         <polygon points="35,17 59,17 71,29 71,57 59,69 35,69 23,57 23,29" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
         <image href="src/han_Cha.png" x="10" y="10" width="74" height="74" filter="url(#thicken-char)" />
@@ -381,6 +582,9 @@
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#3f1c0d" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#han-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#2d1d10" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#3f1c0d" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#han-face-grad)" style="display: none;" />
         <polygon points="31,12 63,12 78,27 78,62 63,77 31,77 16,62 16,27" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
         <polygon points="35,17 59,17 71,29 71,57 59,69 35,69 23,57 23,29" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
         <image href="src/han_Po.png" x="10" y="10" width="74" height="74" filter="url(#thicken-char)" />
@@ -389,6 +593,9 @@
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#3f1c0d" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#han-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#2d1d10" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#3f1c0d" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#han-face-grad)" style="display: none;" />
         <polygon points="31,12 63,12 78,27 78,62 63,77 31,77 16,62 16,27" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
         <polygon points="35,17 59,17 71,29 71,57 59,69 35,69 23,57 23,29" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
         <image href="src/han_Po.png" x="10" y="10" width="74" height="74" filter="url(#thicken-char)" />
@@ -398,6 +605,9 @@
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#3f1c0d" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#han-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#2d1d10" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#3f1c0d" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#han-face-grad)" style="display: none;" />
         <polygon points="31,12 63,12 78,27 78,62 63,77 31,77 16,62 16,27" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
         <polygon points="35,17 59,17 71,29 71,57 59,69 35,69 23,57 23,29" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
         <image href="src/han_Ma.png" x="10" y="10" width="74" height="74" filter="url(#thicken-char)" />
@@ -406,6 +616,9 @@
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#3f1c0d" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#han-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#2d1d10" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#3f1c0d" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#han-face-grad)" style="display: none;" />
         <polygon points="31,12 63,12 78,27 78,62 63,77 31,77 16,62 16,27" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
         <polygon points="35,17 59,17 71,29 71,57 59,69 35,69 23,57 23,29" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
         <image href="src/han_Ma.png" x="10" y="10" width="74" height="74" filter="url(#thicken-char)" />
@@ -415,6 +628,9 @@
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#3f1c0d" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#han-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#2d1d10" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#3f1c0d" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#han-face-grad)" style="display: none;" />
         <polygon points="31,12 63,12 78,27 78,62 63,77 31,77 16,62 16,27" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
         <polygon points="35,17 59,17 71,29 71,57 59,69 35,69 23,57 23,29" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
         <image href="src/han_Sang.png" x="10" y="10" width="74" height="74" filter="url(#thicken-char)" />
@@ -423,6 +639,9 @@
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#3f1c0d" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#han-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#2d1d10" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#3f1c0d" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#han-face-grad)" style="display: none;" />
         <polygon points="31,12 63,12 78,27 78,62 63,77 31,77 16,62 16,27" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
         <polygon points="35,17 59,17 71,29 71,57 59,69 35,69 23,57 23,29" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
         <image href="src/han_Sang.png" x="10" y="10" width="74" height="74" filter="url(#thicken-char)" />
@@ -432,6 +651,9 @@
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#3f1c0d" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#han-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#2d1d10" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#3f1c0d" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#han-face-grad)" style="display: none;" />
         <polygon points="31,12 63,12 78,27 78,62 63,77 31,77 16,62 16,27" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
         <polygon points="35,17 59,17 71,29 71,57 59,69 35,69 23,57 23,29" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
         <image href="src/han_Sa.png" x="6" y="6" width="82" height="82" filter="url(#thicken-char)" />
@@ -440,6 +662,9 @@
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#3f1c0d" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#han-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#2d1d10" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#3f1c0d" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#han-face-grad)" style="display: none;" />
         <polygon points="31,12 63,12 78,27 78,62 63,77 31,77 16,62 16,27" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
         <polygon points="35,17 59,17 71,29 71,57 59,69 35,69 23,57 23,29" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
         <image href="src/han_Sa.png" x="6" y="6" width="82" height="82" filter="url(#thicken-char)" />
@@ -449,6 +674,9 @@
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#3f1c0d" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#han-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#2d1d10" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#3f1c0d" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#han-face-grad)" style="display: none;" />
         <polygon points="31,12 63,12 78,27 78,62 63,77 31,77 16,62 16,27" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
         <polygon points="35,17 59,17 71,29 71,57 59,69 35,69 23,57 23,29" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
         <image href="src/han_Byung.png" x="6" y="6" width="82" height="82" filter="url(#thicken-char)" />
@@ -457,6 +685,9 @@
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#3f1c0d" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#han-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#2d1d10" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#3f1c0d" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#han-face-grad)" style="display: none;" />
         <polygon points="31,12 63,12 78,27 78,62 63,77 31,77 16,62 16,27" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
         <polygon points="35,17 59,17 71,29 71,57 59,69 35,69 23,57 23,29" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
         <image href="src/han_Byung.png" x="6" y="6" width="82" height="82" filter="url(#thicken-char)" />
@@ -465,6 +696,9 @@
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#3f1c0d" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#han-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#2d1d10" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#3f1c0d" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#han-face-grad)" style="display: none;" />
         <polygon points="31,12 63,12 78,27 78,62 63,77 31,77 16,62 16,27" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
         <polygon points="35,17 59,17 71,29 71,57 59,69 35,69 23,57 23,29" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
         <image href="src/han_Byung.png" x="6" y="6" width="82" height="82" filter="url(#thicken-char)" />
@@ -473,6 +707,9 @@
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#3f1c0d" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#han-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#2d1d10" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#3f1c0d" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#han-face-grad)" style="display: none;" />
         <polygon points="31,12 63,12 78,27 78,62 63,77 31,77 16,62 16,27" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
         <polygon points="35,17 59,17 71,29 71,57 59,69 35,69 23,57 23,29" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
         <image href="src/han_Byung.png" x="6" y="6" width="82" height="82" filter="url(#thicken-char)" />
@@ -481,6 +718,9 @@
         <polygon points="30,12 70,12 90,32 90,72 70,92 30,92 10,72 10,32" fill="#2d1d10" />
         <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="#3f1c0d" />
         <polygon points="29,9 65,9 83,27 83,65 65,83 29,83 11,65 11,27" fill="url(#han-face-grad)" />
+        <circle class="circ" cx="50" cy="52" r="40" fill="#2d1d10" style="display: none;" />
+        <circle class="circ" cx="50" cy="50" r="40" fill="#3f1c0d" style="display: none;" />
+        <circle class="circ" cx="47" cy="47" r="37" fill="url(#han-face-grad)" style="display: none;" />
         <polygon points="31,12 63,12 78,27 78,62 63,77 31,77 16,62 16,27" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="10 15" opacity="0.35" />
         <polygon points="35,17 59,17 71,29 71,57 59,69 35,69 23,57 23,29" fill="none" stroke="#7e5a36" stroke-width="1" stroke-dasharray="8 12" opacity="0.35" />
         <image href="src/han_Byung.png" x="6" y="6" width="82" height="82" filter="url(#thicken-char)" />

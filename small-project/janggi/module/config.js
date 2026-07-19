@@ -6,6 +6,28 @@ const boardMargin = 0;  // 장기판의 외부 하얀색 여백(margin)
 var showCoordinates = true; // 좌표선 표시 여부
 var animDuration = 0.5; // 애니메이션 이동 시간 (초 단위)
 var animHeight = 0.2;   // 애니메이션 기물 들기 높이 배율 (기본 0.2, 범위 0~2.0)
+
+// 장기알 크기 배율 (왕, 큰기물, 작은기물)
+var sizeKing = 1.10;
+var sizeMiddle = 0.95;
+var sizeSmall = 0.75;
+
+// 장기알 글씨 크기 배율 (왕, 큰기물, 작은기물)
+var fontScaleKing = 1.0;
+var fontScaleMiddle = 1.0;
+var fontScaleSmall = 1.0;
+
+// 좌표 라벨 글씨 크기 배율
+var coordsTextScale = 0.22;
+
+// 디자인 커스텀 상태값
+var boardColorType = "wood";
+var choColorType = "blue";
+var hanColorType = "red";
+var pieceShapeType = "octagon";
+var candiShapeType = "empty_circle";
+var candiColorType = "#3b82f6";
+
 var boardPaddingLeft = 45;
 var boardPaddingRight = 20;
 var boardPaddingTop = 45;
@@ -39,14 +61,11 @@ const knownStart = [
 
 // 각 기물의 역할을 분석해 크기 배율을 반환합니다. (왕: 대형, 차포마상: 중형, 사졸병: 소형)
 function getPieceSizeRatio(i) {
-  // 0, 16 : 궁(왕) -> 큰 기물 (110%)
   if (i === 0 || i === 16) {
-    return 1.10;
+    return sizeKing;
   }
-  // 1~8, 17~24 : 차, 포, 마, 상 -> 중간 기물 (95%)
   if ((i >= 1 && i <= 8) || (i >= 17 && i <= 24)) {
-    return 0.95;
+    return sizeMiddle;
   }
-  // 9~15, 25~31 : 사, 졸, 병 -> 작은 기물 (75%)
-  return 0.75;
+  return sizeSmall;
 }

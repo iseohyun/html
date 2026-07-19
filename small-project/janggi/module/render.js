@@ -163,7 +163,7 @@ function drawBoard() {
         text.setAttribute("text-anchor", "middle");
         text.setAttribute("dominant-baseline", "middle");
         text.setAttribute("fill", "#4b3621"); // 목판화풍 짙은 갈색
-        text.setAttribute("font-size", `${unitSize * 0.22}px`);
+        text.setAttribute("font-size", `${unitSize * coordsTextScale}px`);
         text.setAttribute("font-weight", "800");
         text.setAttribute("opacity", "0.85");
         text.textContent = x;
@@ -179,7 +179,7 @@ function drawBoard() {
         text.setAttribute("text-anchor", "middle");
         text.setAttribute("dominant-baseline", "middle");
         text.setAttribute("fill", "#4b3621");
-        text.setAttribute("font-size", `${unitSize * 0.22}px`);
+        text.setAttribute("font-size", `${unitSize * coordsTextScale}px`);
         text.setAttribute("font-weight", "800");
         text.setAttribute("opacity", "0.85");
         text.textContent = y;
@@ -213,6 +213,9 @@ function initPositions() {
     let targetY = tmpAxis.y - unitSize * ratio / 2;
     pieces[i].e.style.transform = `translate(${targetX}px, ${targetY}px)`;
   }
+
+  // 기물 내 글자 오버레이 크기 적용
+  updatePieceGraphics();
 
   let curTurn = parseInt(document.getElementById("turn").value);
   for (let i = 0; i < curTurn; i++) {
@@ -324,21 +327,50 @@ function moveSelectBox(i, visible = true) {
   selectBox.setAttribute("height", unitSize);
 }
 
-// 이동가능 경로 1개를 그립니다. (네온 블루 서클 스타일)
+// 이동가능 경로 1개를 그립니다.
 function createCandiBox(i, x, y) {
   if (x < 1 || x > 9 || y < 1 || y > 10) return;
 
   const ratio = getPieceSizeRatio(i);
   let tmpAxis = getAxis(x, y);
-  const candiBox = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-  candiBox.setAttribute("cx", tmpAxis.x);
-  candiBox.setAttribute("cy", tmpAxis.y);
-  candiBox.setAttribute("r", (unitSize * ratio / 2) - 4);
-  candiBox.setAttribute("fill", "#3b82f6");
-  candiBox.setAttribute("fill-opacity", "0.15");
-  candiBox.setAttribute("stroke", "#3b82f6");
-  candiBox.setAttribute("stroke-width", "2.5");
-  candiBox.setAttribute("filter", "url(#candi-glow)");
+  
+  let candiBox;
+  let size = (unitSize * ratio) - 8;
+  
+  if (candiShapeType === "empty_square") {
+    candiBox = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    candiBox.setAttribute("x", tmpAxis.x - size / 2);
+    candiBox.setAttribute("y", tmpAxis.y - size / 2);
+    candiBox.setAttribute("width", size);
+    candiBox.setAttribute("height", size);
+    candiBox.setAttribute("rx", "4");
+    candiBox.setAttribute("ry", "4");
+    candiBox.setAttribute("fill", candiColorType);
+    candiBox.setAttribute("fill-opacity", "0.15");
+    candiBox.setAttribute("stroke", candiColorType);
+    candiBox.setAttribute("stroke-width", "2.5");
+  } else if (candiShapeType === "filled_circle") {
+    candiBox = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    candiBox.setAttribute("cx", tmpAxis.x);
+    candiBox.setAttribute("cy", tmpAxis.y);
+    candiBox.setAttribute("r", size / 2);
+    candiBox.setAttribute("fill", candiColorType);
+    candiBox.setAttribute("fill-opacity", "0.7");
+    candiBox.setAttribute("stroke", candiColorType);
+    candiBox.setAttribute("stroke-width", "0");
+  } else { // default "empty_circle"
+    candiBox = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    candiBox.setAttribute("cx", tmpAxis.x);
+    candiBox.setAttribute("cy", tmpAxis.y);
+    candiBox.setAttribute("r", size / 2);
+    candiBox.setAttribute("fill", candiColorType);
+    candiBox.setAttribute("fill-opacity", "0.15");
+    candiBox.setAttribute("stroke", candiColorType);
+    candiBox.setAttribute("stroke-width", "2.5");
+  }
+  
+  // 하드웨어 가속 필터를 이용해 동적으로 글로우 효과 반영
+  candiBox.style.filter = `drop-shadow(0px 0px 5px ${candiColorType})`;
   candiBox.style.cursor = "pointer";
 
   candiBoxList.push(candiBox);
@@ -346,6 +378,33 @@ function createCandiBox(i, x, y) {
     move(i, x, y);
   });
   svg.appendChild(candiBox);
+}
+
+// 장기알 서예 글씨 이미지의 크기와 정렬 오프셋을 동적으로 갱신합니다.
+function updatePieceGraphics() {
+  for (let i = 0; i < 32; i++) {
+    if (!pieces[i] || !pieces[i].e) continue;
+    const img = pieces[i].e.querySelector("image");
+    if (img) {
+      let baseSize = ((i >= 9 && i <= 15) || (i >= 25 && i <= 31)) ? 82 : 74;
+      let scale = 1.0;
+      if (i === 0 || i === 16) {
+        scale = fontScaleKing;
+      } else if ((i >= 1 && i <= 8) || (i >= 17 && i <= 24)) {
+        scale = fontScaleMiddle;
+      } else {
+        scale = fontScaleSmall;
+      }
+      let w = baseSize * scale;
+      let h = baseSize * scale;
+      let imgX = 50 - w / 2 - 3;
+      let imgY = 50 - h / 2 - 3;
+      img.setAttribute("x", imgX);
+      img.setAttribute("y", imgY);
+      img.setAttribute("width", w);
+      img.setAttribute("height", h);
+    }
+  }
 }
 
 function setPieces(i, x, y, animate = false) {
