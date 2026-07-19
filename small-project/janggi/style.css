@@ -23,6 +23,11 @@ body {
   transform: rotateY(180deg) !important;
 }
 
+.piece-svg.smooth-move-anim,
+#kb-cursor.smooth-move-anim {
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
 
 #janggi-app {
   display: flex;
