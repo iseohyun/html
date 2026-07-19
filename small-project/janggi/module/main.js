@@ -4211,11 +4211,19 @@ function flipBoardHorizontal() {
   showToast("판 좌우 반전 및 기존 수순 변환 완료");
 }
 
+function flipYCoordinate(y) {
+  // y 좌표 sequence: 1(top) -> 2 -> ... -> 9 -> 0(bottom)
+  // rowIndex = (y + 9) % 10. rowIndex 범위는 0 (top) ~ 9 (bottom)
+  const r = (y + 9) % 10;
+  const flippedR = 9 - r;
+  return (flippedR + 1) % 10;
+}
+
 function flipBoardVertical() {
-  // 1. Flip initPieces
+  // 1. Flip initPieces (captured pieces are at x=0, y=0; they are not flipped)
   for (let i = 0; i < 32; i++) {
-    if (initPieces[i].y !== 0) {
-      initPieces[i].y = 11 - initPieces[i].y;
+    if (initPieces[i].x !== 0 || initPieces[i].y !== 0) {
+      initPieces[i].y = flipYCoordinate(initPieces[i].y);
     }
   }
   // 2. Reset pieces to initPieces
@@ -4225,10 +4233,10 @@ function flipBoardVertical() {
   }
   // 3. Flip log entries
   log.forEach(entry => {
-    entry.y = 11 - entry.y;
+    entry.y = flipYCoordinate(entry.y);
   });
   // 4. Flip cursor position
-  kbCursorY = 11 - kbCursorY;
+  kbCursorY = flipYCoordinate(kbCursorY);
   
   // 5. Clear select and candidates
   curSelect = 32;
