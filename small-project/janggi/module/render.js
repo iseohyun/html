@@ -229,7 +229,13 @@ function initPositions() {
     pieces[i].e.style.width = `${unitSize * ratio}px`;
     pieces[i].e.style.height = `${unitSize * ratio}px`;
     
-    pieces[i].e.style.transform = `translate(${targetX}px, ${targetY}px)`;
+    let transformStr = `translate(${targetX}px, ${targetY}px)`;
+    if (typeof rotateActive !== 'undefined' && rotateActive) {
+      transformStr += ' rotate(-180deg)';
+    } else if (typeof flipActive !== 'undefined' && flipActive) {
+      transformStr += ' rotateY(-180deg)';
+    }
+    pieces[i].e.style.transform = transformStr;
   }
 
   // 기물 내 글자 오버레이 크기 적용
@@ -265,7 +271,13 @@ function updateKeyboardCursor() {
   cursor.style.height = `${size}px`;
   cursor.style.display = "block";
   
-  cursor.style.transform = `translate(${targetX}px, ${targetY}px)`;
+    let transformStr = `translate(${targetX}px, ${targetY}px)`;
+  if (typeof rotateActive !== 'undefined' && rotateActive) {
+    transformStr += ' rotate(-180deg)';
+  } else if (typeof flipActive !== 'undefined' && flipActive) {
+    transformStr += ' rotateY(-180deg)';
+  }
+  cursor.style.transform = transformStr;
 }
 
 function updateScore() {

@@ -1,6 +1,8 @@
 // main.js - Entry point, Event listeners, and UI controller functions
 var commentBubbleTimeout = null;
 var boardAnimating = false;
+var rotateActive = false;
+var flipActive = false;
 
 
 
@@ -2961,6 +2963,14 @@ function handleKeyDown(e) {
     return;
   }
 
+  // 8g. 좌표보기 토글 (/)
+  if (matchShortcutKey("toggleCoordinates", e)) {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleCoordinates();
+    return;
+  }
+
   // 9. 커서락 모드 토글
   if (matchShortcutKey("cursorLockToggle", e)) {
     e.preventDefault();
@@ -3527,6 +3537,10 @@ function resetDefaultShortcuts() {
     },
     flipVertical: {
       primary: { key: "]", ctrl: false, alt: false, shift: false },
+      secondary: null
+    },
+    toggleCoordinates: {
+      primary: { key: "/", ctrl: false, alt: false, shift: false },
       secondary: null
     },
     up: {
@@ -4179,11 +4193,28 @@ function flipBoardHorizontal() {
   if (!boardSvg || boardAnimating) return;
   
   boardAnimating = true;
+  flipActive = true;
+  
+  for (let i = 0; i < 32; i++) {
+    pieces[i].e.classList.add("smooth-move-anim");
+  }
+  const cursor = document.getElementById("kb-cursor");
+  if (cursor) cursor.classList.add("smooth-move-anim");
+  
   boardSvg.classList.add("flip-h-anim");
+  executeFlipBoardHorizontal();
   
   setTimeout(() => {
     boardSvg.classList.remove("flip-h-anim");
-    executeFlipBoardHorizontal();
+    for (let i = 0; i < 32; i++) {
+      pieces[i].e.classList.remove("smooth-move-anim");
+    }
+    if (cursor) cursor.classList.remove("smooth-move-anim");
+    flipActive = false;
+    
+    initPositions();
+    if (kbCursorActive) updateKeyboardCursor();
+    
     boardAnimating = false;
   }, 600);
 }
@@ -4246,11 +4277,28 @@ function flipBoardVertical() {
   if (!boardSvg || boardAnimating) return;
   
   boardAnimating = true;
+  rotateActive = true;
+  
+  for (let i = 0; i < 32; i++) {
+    pieces[i].e.classList.add("smooth-move-anim");
+  }
+  const cursor = document.getElementById("kb-cursor");
+  if (cursor) cursor.classList.add("smooth-move-anim");
+  
   boardSvg.classList.add("rotate-180-anim");
+  executeFlipBoardVertical();
   
   setTimeout(() => {
     boardSvg.classList.remove("rotate-180-anim");
-    executeFlipBoardVertical();
+    for (let i = 0; i < 32; i++) {
+      pieces[i].e.classList.remove("smooth-move-anim");
+    }
+    if (cursor) cursor.classList.remove("smooth-move-anim");
+    rotateActive = false;
+    
+    initPositions();
+    if (kbCursorActive) updateKeyboardCursor();
+    
     boardAnimating = false;
   }, 600);
 }
