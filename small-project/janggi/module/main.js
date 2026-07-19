@@ -4269,10 +4269,29 @@ function flipBoardVertical() {
     if (aiModeSelect) aiModeSelect.value = aiMode;
   }
   
-  // 8. Redraw
+  // 8. Now apply the horizontal flip (automatically trigger [ horizontal flip effect)
+  // Flip X coords of initPieces
+  for (let i = 0; i < 32; i++) {
+    if (initPieces[i].x !== 0) {
+      initPieces[i].x = 10 - initPieces[i].x;
+    }
+  }
+  // Reset pieces to initPieces again
+  for (let i = 0; i < 32; i++) {
+    pieces[i].x = initPieces[i].x;
+    pieces[i].y = initPieces[i].y;
+  }
+  // Flip log entries X coords
+  log.forEach(entry => {
+    entry.x = 10 - entry.x;
+  });
+  // Flip cursor X
+  kbCursorX = 10 - kbCursorX;
+
+  // 9. Redraw
   initPositions();
   
-  // 9. Update URL search params to match new state
+  // 10. Update URL search params to match new state
   const url = new URL(window.location.href);
   const pCodeArr = new Array(32);
   for (let i = 0; i < 32; i++) {
@@ -4289,7 +4308,10 @@ function flipBoardVertical() {
   }
   window.history.replaceState({}, "", url.toString());
 
-  showToast("판 상하 반전 및 기존 수순 변환 완료 (AI 위쪽 자동 할당)");
+  showToast("판 180도 회전 및 기존 수순 변환 완료 (AI 위쪽 자동 할당)");
+
+  // 11. Run AI if it's now the AI's turn
+  checkAndRunAI();
 }
 
 function toggleOpponentAI() {
