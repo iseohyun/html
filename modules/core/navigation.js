@@ -678,6 +678,7 @@ window.SiteModules.Navigation = (function () {
       if (scriptType) newScript.type = scriptType;
       if (src) {
         newScript.src = src;
+        newScript.async = false; // 브라우저 스크립트 실행 순서 보장 (defer/순서 준수)
         if (id) newScript.id = id;
         document.head.appendChild(newScript);
 

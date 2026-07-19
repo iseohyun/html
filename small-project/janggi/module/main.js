@@ -373,7 +373,22 @@ function changeFontSize(amount) {
   });
 }
 
-// 초기 호출부
-initData();
-initBoard();
-initPositions();
+// 안전한 초기 호출부 (스크립트 로드 순서 비동기 대응)
+function checkAndInit() {
+  if (typeof pieces !== "undefined" && 
+      typeof initBoard === "function" && 
+      typeof initPositions === "function") {
+    initData();
+    initBoard();
+    initPositions();
+
+    window.addEventListener("resize", () => {
+      initBoard();
+      initPositions();
+    });
+  } else {
+    setTimeout(checkAndInit, 10);
+  }
+}
+
+checkAndInit();
