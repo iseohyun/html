@@ -4252,7 +4252,7 @@ function flipBoardHorizontal() {
   
   boardAnimating = true;
   
-  // Save starting positions
+  // Save starting positions before any changes
   const startPositions = [];
   for (let i = 0; i < 32; i++) {
     startPositions[i] = { x: pieces[i].x, y: pieces[i].y };
@@ -4264,16 +4264,12 @@ function flipBoardHorizontal() {
   boardSvg.classList.add("flip-h-anim");
   
   setTimeout(() => {
-    // Phase 2: Board finished flipping. Now we run the flip and translate the pieces.
-    flipActive = true;
-    
-    executeFlipBoardHorizontal();
-    
-    // Set up start transforms with midpoint origin
+    // Phase 2: Board finished flipping.
+    // Set up start transforms with midpoint origin relative to unchanged pieces
     for (let i = 0; i < 32; i++) {
       if (pieces[i].x !== 0 && startPositions[i].x !== 0) {
         const startPos = startPositions[i];
-        const endPos = { x: pieces[i].x, y: pieces[i].y };
+        const endPos = { x: 10 - startPos.x, y: startPos.y };
         
         const axisA = getAxis(startPos.x, startPos.y);
         const axisB = getAxis(endPos.x, endPos.y);
@@ -4287,12 +4283,12 @@ function flipBoardHorizontal() {
         const bx = axisB.x - sizeVal / 2;
         const by = axisB.y - sizeVal / 2;
         
-        const dx = (ax - bx) / 2;
-        const dy = (ay - by) / 2;
+        const dx = (bx - ax) / 2;
+        const dy = (by - ay) / 2;
         
         pieces[i].e.style.transition = "none";
         pieces[i].e.style.transformOrigin = `calc(50% + ${dx}px) calc(50% + ${dy}px)`;
-        pieces[i].e.style.transform = `translate(${bx}px, ${by}px) rotateY(-180deg)`;
+        pieces[i].e.style.transform = `translate(${ax}px, ${ay}px) rotateY(0deg)`;
         pieces[i].e.classList.add("smooth-move-anim");
       }
     }
@@ -4301,7 +4297,7 @@ function flipBoardHorizontal() {
     if (cursor && kbCursorActive) {
       const sizeVal = unitSize * 0.85;
       const axisA = getAxis(oldKbCursorX, oldKbCursorY);
-      const axisB = getAxis(kbCursorX, kbCursorY);
+      const axisB = getAxis(10 - oldKbCursorX, oldKbCursorY);
       
       const ax = axisA.x - sizeVal / 2;
       const ay = axisA.y - sizeVal / 2;
@@ -4309,12 +4305,12 @@ function flipBoardHorizontal() {
       const bx = axisB.x - sizeVal / 2;
       const by = axisB.y - sizeVal / 2;
       
-      const dx = (ax - bx) / 2;
-      const dy = (ay - by) / 2;
+      const dx = (bx - ax) / 2;
+      const dy = (by - ay) / 2;
       
       cursor.style.transition = "none";
       cursor.style.transformOrigin = `calc(50% + ${dx}px) calc(50% + ${dy}px)`;
-      cursor.style.transform = `translate(${bx}px, ${by}px) rotateY(-180deg)`;
+      cursor.style.transform = `translate(${ax}px, ${ay}px) rotateY(0deg)`;
       cursor.classList.add("smooth-move-anim");
     }
     
@@ -4324,30 +4320,33 @@ function flipBoardHorizontal() {
     // Trigger transition to target transforms
     for (let i = 0; i < 32; i++) {
       if (pieces[i].x !== 0 && startPositions[i].x !== 0) {
-        const endPos = { x: pieces[i].x, y: pieces[i].y };
-        const axisB = getAxis(endPos.x, endPos.y);
+        const startPos = startPositions[i];
+        const axisA = getAxis(startPos.x, startPos.y);
         const ratio = (i === 0 || i === 16) ? sizeKing : ((i === 1 || i === 2 || i === 17 || i === 18 || i === 3 || i === 4 || i === 19 || i === 20 || i === 5 || i === 6 || i === 21 || i === 22 || i === 7 || i === 8 || i === 23 || i === 24) ? sizeMiddle : sizeSmall);
         const sizeVal = unitSize * ratio;
-        const bx = axisB.x - sizeVal / 2;
-        const by = axisB.y - sizeVal / 2;
+        const ax = axisA.x - sizeVal / 2;
+        const ay = axisA.y - sizeVal / 2;
         
         pieces[i].e.style.transition = "";
-        pieces[i].e.style.transform = `translate(${bx}px, ${by}px) rotateY(0deg)`;
+        pieces[i].e.style.transform = `translate(${ax}px, ${ay}px) rotateY(-180deg)`;
       }
     }
     
     if (cursor && kbCursorActive) {
-      const axisB = getAxis(kbCursorX, kbCursorY);
       const sizeVal = unitSize * 0.85;
-      const bx = axisB.x - sizeVal / 2;
-      const by = axisB.y - sizeVal / 2;
+      const axisA = getAxis(oldKbCursorX, oldKbCursorY);
+      const ax = axisA.x - sizeVal / 2;
+      const ay = axisA.y - sizeVal / 2;
       
       cursor.style.transition = "";
-      cursor.style.transform = `translate(${bx}px, ${by}px) rotateY(0deg)`;
+      cursor.style.transform = `translate(${ax}px, ${ay}px) rotateY(-180deg)`;
     }
     
     setTimeout(() => {
-      // Clean up Phase 2
+      // Phase 2 finished. Execute logical horizontal flip
+      executeFlipBoardHorizontal();
+      
+      // Clean up Phase 2 style overrides
       boardSvg.classList.remove("flip-h-anim");
       for (let i = 0; i < 32; i++) {
         pieces[i].e.style.transformOrigin = "";
@@ -4359,7 +4358,6 @@ function flipBoardHorizontal() {
         cursor.style.transform = "";
         cursor.classList.remove("smooth-move-anim");
       }
-      flipActive = false;
       
       initPositions();
       if (kbCursorActive) updateKeyboardCursor();
