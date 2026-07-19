@@ -91,41 +91,52 @@
     </div>
     <div id="control-box">
       <div class="control-row">
-        <!-- Turn & Navigation Group -->
-        <div class="control-group">
-          <input id="turn" type="number" value="0"></input>
-          <button id="prev" onclick="prev()">&lt;</button>
-          <button id="next" onclick="next()">></button>
+        <!-- Turn & Navigation Group (Left) -->
+        <div class="control-group turn-nav-group">
+          <button id="prev" class="nav-btn" onclick="prev()" title="이전 수">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <div class="turn-display">
+            <input id="turn" type="number" value="0" min="0"></input>
+            <span class="turn-suffix">수</span>
+          </div>
+          <button id="next" class="nav-btn" onclick="next()" title="다음 수">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
         </div>
         
-        <!-- Icon Actions Group (Setting, Download) -->
+        <!-- Sum/Score Progress Bar Panel (Middle) -->
+        <div id="score-panel">
+          <div class="score-row">
+            <span id="han-score-val" class="score-label han-label">한: 73.5</span>
+            <span id="diff-score-val" class="score-diff-val">0.0</span>
+            <span id="cho-score-val" class="score-label cho-label">초: 72.0</span>
+          </div>
+          <div class="score-bar-container">
+            <div id="han-score-bar" class="score-bar han-bar"></div>
+            <div id="cho-score-bar" class="score-bar cho-bar"></div>
+          </div>
+        </div>
+        
+        <!-- Icon Actions Group (Setting, Download) (Right) -->
         <div class="control-group action-icons">
           <button id="setting-btn" class="icon-btn" onclick="enalbeSettingBox()" title="설정">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="3"></circle>
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
             </svg>
           </button>
           <button id="download-btn" class="icon-btn" onclick="download()" title="그림 다운로드">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
               <polyline points="7 10 12 15 17 10"></polyline>
               <line x1="12" y1="15" x2="12" y2="3"></line>
             </svg>
           </button>
-        </div>
-      </div>
-
-      <!-- Sum/Score Progress Bar Panel -->
-      <div id="score-panel">
-        <div class="score-row">
-          <span id="han-score-val" class="score-label han-label">한: 73.5</span>
-          <span id="diff-score-val" class="score-diff-val">0.0</span>
-          <span id="cho-score-val" class="score-label cho-label">초: 72.0</span>
-        </div>
-        <div class="score-bar-container">
-          <div id="han-score-bar" class="score-bar han-bar"></div>
-          <div id="cho-score-bar" class="score-bar cho-bar"></div>
         </div>
       </div>
     </div>
