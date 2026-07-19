@@ -688,3 +688,93 @@ article {
 #tooltip-content * {
   cursor: text;
 }
+
+/* Test Selection Modal Styles */
+.test-selection-card {
+  background-color: #ffffff;
+  width: 90%;
+  max-width: 480px;
+  border-radius: 16px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e2e8f0;
+}
+
+.test-selection-btn {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+}
+
+.test-selection-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px -1px rgba(59, 130, 246, 0.4);
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+}
+
+.test-example-select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 2px solid #e2e8f0;
+  font-size: 0.9rem;
+  font-weight: 500;
+  background-color: #f8fafc;
+  color: #1e293b;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.test-example-select:focus {
+  border-color: #3b82f6;
+  background-color: #ffffff;
+}
+
+.example-run-btn {
+  flex: 1;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+}
+
+.example-run-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px -1px rgba(16, 185, 129, 0.4);
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.example-download-btn {
+  flex: 1;
+  background: #64748b;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.example-download-btn:hover {
+  background: #475569;
+  transform: translateY(-1px);
+}
