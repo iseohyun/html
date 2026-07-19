@@ -42,13 +42,20 @@
       <div class="settings-header">
         <button id="close-btn" onclick="disalbeSettingBox()">X</button>
         <span class="settings-title">설정</span>
+        <div class="settings-slots">
+          <button id="slot-1-btn" class="slot-btn" onclick="selectSlot(1)">슬롯 1</button>
+          <button id="slot-2-btn" class="slot-btn" onclick="selectSlot(2)">슬롯 2</button>
+        </div>
       </div>
       
       <!-- 스크롤 가능한 설정 콘텐츠 영역 -->
       <div class="settings-scroll-area">
         <!-- 1. 상차림 -->
         <div class="setting-category">
-          <h2>1. 상차림</h2>
+          <div class="category-header">
+            <h2>상차림</h2>
+            <button class="reset-category-btn" onclick="resetCategory1()" title="상차림 설정 초기화">🔄 초기화</button>
+          </div>
           <div class="charim-container">
             <div class="charim-table-wrapper">
               <table>
@@ -58,7 +65,7 @@
                   <td style="text-align: center; font-weight: bold;">진영</td>
                 </tr>
                 <tr>
-                  <td>위 (상대편 진영)</td>
+                  <td>위</td>
                   <td>
                     <button class="charim1" onclick="changeCharim(1, 0, this)">마상마상</button>
                     <button class="charim1" onclick="changeCharim(1, 1, this)">마상상마</button>
@@ -70,7 +77,7 @@
                   </td>
                 </tr>
                 <tr>
-                  <td>아래 (본인 진영)</td>
+                  <td>아래</td>
                   <td>
                     <button class="charim0" onclick="changeCharim(0, 0, this)">마상마상</button>
                     <button class="charim0" onclick="changeCharim(0, 1, this)">마상상마</button>
@@ -83,19 +90,16 @@
                 </tr>
               </table>
             </div>
-            <div class="charim-btn-wrapper">
-              <button onclick="startNewGame()">시작하기</button>
-            </div>
           </div>
           
           <!-- 상차림 배치 예시 그림 (미니어처 9칸 back-row 표현) -->
           <div class="charim-preview-container">
             <div class="charim-preview-row">
-              <span class="charim-preview-label">상대편 (위) 배치:</span>
+              <span class="charim-preview-label">상대편:</span>
               <div id="preview-han" class="charim-preview-tokens"></div>
             </div>
             <div class="charim-preview-row">
-              <span class="charim-preview-label">본인 (아래) 배치:</span>
+              <span class="charim-preview-label">본인:</span>
               <div id="preview-cho" class="charim-preview-tokens"></div>
             </div>
           </div>
@@ -103,7 +107,10 @@
 
         <!-- 2. 장기판 보기 -->
         <div class="setting-category">
-          <h2>2. 장기판 보기</h2>
+          <div class="category-header">
+            <h2>장기판 보기</h2>
+            <button class="reset-category-btn" onclick="resetCategory2()" title="장기판 보기 설정 초기화">🔄 초기화</button>
+          </div>
           <table class="settings-table">
             <tr>
               <td>좌표 보기</td>
@@ -183,7 +190,7 @@
                     <option value="green">클래식 초록색</option>
                     <option value="dark">모던 다크 회색</option>
                     <option value="navy">슬레이트 네이비</option>
-                    <option value="custom">사용자 지정 색상...</option>
+                    <option value="custom">사용자 지정</option>
                   </select>
                   <input type="color" id="board-color-picker" oninput="changeBoardColor('custom')" style="display: none; vertical-align: middle; margin-left: 10px; width: 30px; height: 30px; padding: 0; border: none; border-radius: 4px; background: transparent; cursor: pointer;">
                 </div>
@@ -197,7 +204,7 @@
                     <option value="blue">기본 청색 (Blue)</option>
                     <option value="green">비취 녹색 (Green)</option>
                     <option value="gold">황금 황색 (Gold)</option>
-                    <option value="custom">사용자 지정 색상...</option>
+                    <option value="custom">사용자 지정</option>
                   </select>
                   <input type="color" id="cho-color-picker" oninput="changeChoColor('custom')" style="display: none; vertical-align: middle; margin-left: 10px; width: 30px; height: 30px; padding: 0; border: none; border-radius: 4px; background: transparent; cursor: pointer;">
                 </div>
@@ -211,7 +218,7 @@
                     <option value="red">기본 적색 (Red)</option>
                     <option value="purple">자옥 자색 (Purple)</option>
                     <option value="slate">오닉스 회색 (Slate)</option>
-                    <option value="custom">사용자 지정 색상...</option>
+                    <option value="custom">사용자 지정</option>
                   </select>
                   <input type="color" id="han-color-picker" oninput="changeHanColor('custom')" style="display: none; vertical-align: middle; margin-left: 10px; width: 30px; height: 30px; padding: 0; border: none; border-radius: 4px; background: transparent; cursor: pointer;">
                 </div>
@@ -246,7 +253,7 @@
                     <option value="#f97316">주황색 (Orange)</option>
                     <option value="#a855f7">보라색 (Purple)</option>
                     <option value="#eab308">노란색 (Yellow)</option>
-                    <option value="custom">사용자 지정 색상...</option>
+                    <option value="custom">사용자 지정</option>
                   </select>
                   <input type="color" id="candi-color-picker" oninput="changeCandiColor('custom')" style="display: none; vertical-align: middle; margin-left: 10px; width: 30px; height: 30px; padding: 0; border: none; border-radius: 4px; background: transparent; cursor: pointer;">
                 </div>
@@ -257,7 +264,10 @@
 
         <!-- 3. 애니메이션 -->
         <div class="setting-category">
-          <h2>3. 애니메이션</h2>
+          <div class="category-header">
+            <h2>애니메이션</h2>
+            <button class="reset-category-btn" onclick="resetCategory3()" title="애니메이션 설정 초기화">🔄 초기화</button>
+          </div>
           <table class="settings-table">
             <tr>
               <td>애니메이션 시간</td>
@@ -316,6 +326,7 @@
         
         <!-- Icon Actions Group (Setting, Download) (Right) -->
         <div class="control-group action-icons">
+          <button id="start-btn" onclick="startNewGame()" title="새 대국 시작하기" style="font-weight: bold; background: #3b82f6; color: white; border: none; border-radius: 6px; padding: 6px 14px; cursor: pointer; font-size: 0.9em; transition: background-color 0.2s, transform 0.1s; margin-right: 8px;">시작하기</button>
           <button id="setting-btn" class="icon-btn" onclick="enalbeSettingBox()" title="설정">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="3"></circle>

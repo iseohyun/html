@@ -298,6 +298,7 @@ function prev() {
 function changeCharim(group, type, element) {
   newGameState[group] = type;
   syncCharimButtonStyles();
+  saveCurrentConfigToSlot();
 }
 
 function syncCharimButtonStyles() {
@@ -385,6 +386,7 @@ function changeNation(amIcho) {
   }
   
   updateCharimPreview();
+  saveCurrentConfigToSlot();
 }
 
 function toggleNation() {
@@ -431,6 +433,7 @@ function toggleCoordinates() {
   initPositions();
   svg.offsetHeight; // Force reflow
   svg.classList.remove("no-transition");
+  saveCurrentConfigToSlot();
 }
 
 function startNewGame() {
@@ -491,6 +494,7 @@ function adjustPieceSize(type, delta) {
   initPositions();
   svg.offsetHeight;
   svg.classList.remove("no-transition");
+  saveCurrentConfigToSlot();
 }
 
 function adjustPieceFontSize(type, delta) {
@@ -512,6 +516,7 @@ function adjustPieceFontSize(type, delta) {
   }
   
   updatePieceGraphics();
+  saveCurrentConfigToSlot();
 }
 
 function adjustCoordsFontSize(delta) {
@@ -521,6 +526,7 @@ function adjustCoordsFontSize(delta) {
   if (span) span.textContent = coordsTextScale.toFixed(2);
   
   drawBoard();
+  saveCurrentConfigToSlot();
 }
 
 function darkenColor(hex, percent) {
@@ -750,11 +756,13 @@ function changePieceShape(value) {
     octs.forEach(el => el.style.display = "none");
     circs.forEach(el => el.style.display = "");
   }
+  saveCurrentConfigToSlot();
 }
 
 function changeCandiShape(value) {
   candiShapeType = value;
   localStorage.setItem("candiShapeType", candiShapeType);
+  saveCurrentConfigToSlot();
 }
 
 function changeCandiColor(value) {
@@ -775,6 +783,7 @@ function changeCandiColor(value) {
     candiColorType = value;
     localStorage.setItem("candiColorType", candiColorType);
   }
+  saveCurrentConfigToSlot();
 }
 
 function changeAnimDuration(val) {
@@ -787,6 +796,7 @@ function changeAnimDuration(val) {
   if (svg) {
     svg.style.setProperty("--anim-duration", `${animDuration}s`);
   }
+  saveCurrentConfigToSlot();
 }
 
 function changeAnimHeight(val) {
@@ -796,6 +806,176 @@ function changeAnimHeight(val) {
   if (valSpan) {
     valSpan.textContent = animHeight.toFixed(1);
   }
+  saveCurrentConfigToSlot();
+}
+
+// ----------------------------------------------------
+// Save/Load Slots Logic
+// ----------------------------------------------------
+let activeSlot = 1;
+
+function selectSlot(num) {
+  activeSlot = num;
+  localStorage.setItem("janggi_active_slot", activeSlot);
+  updateSlotButtonsUI();
+  loadConfigFromSlot();
+}
+
+function updateSlotButtonsUI() {
+  const s1 = document.getElementById("slot-1-btn");
+  const s2 = document.getElementById("slot-2-btn");
+  if (!s1 || !s2) return;
+  if (activeSlot === 1) {
+    s1.classList.add("active");
+    s2.classList.remove("active");
+  } else {
+    s2.classList.add("active");
+    s1.classList.remove("active");
+  }
+}
+
+function saveCurrentConfigToSlot() {
+  const config = {
+    showCoordinates,
+    sizeKing,
+    sizeMiddle,
+    sizeSmall,
+    fontScaleKing,
+    fontScaleMiddle,
+    fontScaleSmall,
+    coordsTextScale,
+    boardColorType,
+    choColorType,
+    hanColorType,
+    pieceShapeType,
+    candiShapeType,
+    candiColorType,
+    animDuration,
+    animHeight,
+    topCharim: newGameState[1],
+    bottomCharim: newGameState[0],
+    iAmCho
+  };
+  localStorage.setItem("janggi_settings_slot_" + activeSlot, JSON.stringify(config));
+}
+
+function loadConfigFromSlot() {
+  const saved = localStorage.getItem("janggi_settings_slot_" + activeSlot);
+  if (!saved) {
+    saveCurrentConfigToSlot();
+    return;
+  }
+  try {
+    const config = JSON.parse(saved);
+    if (config.showCoordinates !== undefined) showCoordinates = config.showCoordinates;
+    if (config.sizeKing !== undefined) sizeKing = config.sizeKing;
+    if (config.sizeMiddle !== undefined) sizeMiddle = config.sizeMiddle;
+    if (config.sizeSmall !== undefined) sizeSmall = config.sizeSmall;
+    if (config.fontScaleKing !== undefined) fontScaleKing = config.fontScaleKing;
+    if (config.fontScaleMiddle !== undefined) fontScaleMiddle = config.fontScaleMiddle;
+    if (config.fontScaleSmall !== undefined) fontScaleSmall = config.fontScaleSmall;
+    if (config.coordsTextScale !== undefined) coordsTextScale = config.coordsTextScale;
+    if (config.boardColorType !== undefined) boardColorType = config.boardColorType;
+    if (config.choColorType !== undefined) choColorType = config.choColorType;
+    if (config.hanColorType !== undefined) hanColorType = config.hanColorType;
+    if (config.pieceShapeType !== undefined) pieceShapeType = config.pieceShapeType;
+    if (config.candiShapeType !== undefined) candiShapeType = config.candiShapeType;
+    if (config.candiColorType !== undefined) candiColorType = config.candiColorType;
+    if (config.animDuration !== undefined) animDuration = config.animDuration;
+    if (config.animHeight !== undefined) animHeight = config.animHeight;
+    
+    localStorage.setItem("showCoordinates", showCoordinates);
+    localStorage.setItem("sizeKing", sizeKing);
+    localStorage.setItem("sizeMiddle", sizeMiddle);
+    localStorage.setItem("sizeSmall", sizeSmall);
+    localStorage.setItem("fontScaleKing", fontScaleKing);
+    localStorage.setItem("fontScaleMiddle", fontScaleMiddle);
+    localStorage.setItem("fontScaleSmall", fontScaleSmall);
+    localStorage.setItem("coordsTextScale", coordsTextScale);
+    localStorage.setItem("pieceShapeType", pieceShapeType);
+    localStorage.setItem("candiShapeType", candiShapeType);
+    localStorage.setItem("animDuration", animDuration);
+    localStorage.setItem("animHeight", animHeight);
+    
+    if (config.topCharim !== undefined) newGameState[1] = config.topCharim;
+    if (config.bottomCharim !== undefined) newGameState[0] = config.bottomCharim;
+    if (config.iAmCho !== undefined) {
+      iAmCho = config.iAmCho;
+      changeNation(iAmCho);
+    }
+    
+    changeBoardColor(boardColorType);
+    changeChoColor(choColorType);
+    changeHanColor(hanColorType);
+    changePieceShape(pieceShapeType);
+    changeCandiShape(candiShapeType);
+    changeCandiColor(candiColorType);
+    changeAnimDuration(animDuration);
+    changeAnimHeight(animHeight);
+    
+    syncCharimButtonStyles();
+    initBoard();
+    initPositions();
+    initSettingsUI();
+  } catch (e) {
+    console.error("Failed to load settings from slot", e);
+  }
+}
+
+// ----------------------------------------------------
+// Category Reset Functions
+// ----------------------------------------------------
+function resetCategory1() {
+  changeCharim(1, 0, null); // Top default: 마상마상
+  changeCharim(0, 0, null); // Bottom default: 마상마상
+  changeNation(true); // default nation: Cho (iAmCho = true)
+  saveCurrentConfigToSlot();
+}
+
+function resetCategory2() {
+  showCoordinates = true;
+  sizeKing = 1.10;
+  sizeMiddle = 0.95;
+  sizeSmall = 0.75;
+  fontScaleKing = 1.00;
+  fontScaleMiddle = 1.00;
+  fontScaleSmall = 1.00;
+  coordsTextScale = 0.22;
+  boardColorType = "wood";
+  choColorType = "blue";
+  hanColorType = "red";
+  pieceShapeType = "octagon";
+  candiShapeType = "empty_circle";
+  candiColorType = "#3b82f6";
+  
+  localStorage.setItem("showCoordinates", showCoordinates);
+  localStorage.setItem("sizeKing", sizeKing);
+  localStorage.setItem("sizeMiddle", sizeMiddle);
+  localStorage.setItem("sizeSmall", sizeSmall);
+  localStorage.setItem("fontScaleKing", fontScaleKing);
+  localStorage.setItem("fontScaleMiddle", fontScaleMiddle);
+  localStorage.setItem("fontScaleSmall", fontScaleSmall);
+  localStorage.setItem("coordsTextScale", coordsTextScale);
+  localStorage.setItem("pieceShapeType", pieceShapeType);
+  localStorage.setItem("candiShapeType", candiShapeType);
+  
+  changeBoardColor(boardColorType);
+  changeChoColor(choColorType);
+  changeHanColor(hanColorType);
+  changePieceShape(pieceShapeType);
+  changeCandiShape(candiShapeType);
+  changeCandiColor(candiColorType);
+  
+  initBoard();
+  initPositions();
+  initSettingsUI();
+  saveCurrentConfigToSlot();
+}
+
+function resetCategory3() {
+  changeAnimDuration(0.5);
+  changeAnimHeight(0.2);
+  saveCurrentConfigToSlot();
 }
 
 function initSettingsUI() {
@@ -904,55 +1084,14 @@ function checkAndInit() {
       typeof initBoard === "function" && 
       typeof initPositions === "function") {
     
-    // LocalStorage를 활용해 설정을 로드합니다.
-    if (localStorage.getItem("showCoordinates") !== null) {
-      showCoordinates = localStorage.getItem("showCoordinates") === "true";
+    // active slot 로드
+    if (localStorage.getItem("janggi_active_slot") !== null) {
+      activeSlot = parseInt(localStorage.getItem("janggi_active_slot"), 10);
     }
-    if (localStorage.getItem("animDuration") !== null) {
-      animDuration = parseFloat(localStorage.getItem("animDuration"));
-    }
-    if (localStorage.getItem("animHeight") !== null) {
-      animHeight = parseFloat(localStorage.getItem("animHeight"));
-    }
-    if (localStorage.getItem("sizeKing") !== null) {
-      sizeKing = parseFloat(localStorage.getItem("sizeKing"));
-    }
-    if (localStorage.getItem("sizeMiddle") !== null) {
-      sizeMiddle = parseFloat(localStorage.getItem("sizeMiddle"));
-    }
-    if (localStorage.getItem("sizeSmall") !== null) {
-      sizeSmall = parseFloat(localStorage.getItem("sizeSmall"));
-    }
-    if (localStorage.getItem("fontScaleKing") !== null) {
-      fontScaleKing = parseFloat(localStorage.getItem("fontScaleKing"));
-    }
-    if (localStorage.getItem("fontScaleMiddle") !== null) {
-      fontScaleMiddle = parseFloat(localStorage.getItem("fontScaleMiddle"));
-    }
-    if (localStorage.getItem("fontScaleSmall") !== null) {
-      fontScaleSmall = parseFloat(localStorage.getItem("fontScaleSmall"));
-    }
-    if (localStorage.getItem("coordsTextScale") !== null) {
-      coordsTextScale = parseFloat(localStorage.getItem("coordsTextScale"));
-    }
-    if (localStorage.getItem("boardColorType") !== null) {
-      boardColorType = localStorage.getItem("boardColorType");
-    }
-    if (localStorage.getItem("choColorType") !== null) {
-      choColorType = localStorage.getItem("choColorType");
-    }
-    if (localStorage.getItem("hanColorType") !== null) {
-      hanColorType = localStorage.getItem("hanColorType");
-    }
-    if (localStorage.getItem("pieceShapeType") !== null) {
-      pieceShapeType = localStorage.getItem("pieceShapeType");
-    }
-    if (localStorage.getItem("candiShapeType") !== null) {
-      candiShapeType = localStorage.getItem("candiShapeType");
-    }
-    if (localStorage.getItem("candiColorType") !== null) {
-      candiColorType = localStorage.getItem("candiColorType");
-    }
+    updateSlotButtonsUI();
+    
+    // 슬롯으로부터 구성정보 로드 (없다면 현재 상태 저장)
+    loadConfigFromSlot();
 
     initData();
     initSettingsUI();
