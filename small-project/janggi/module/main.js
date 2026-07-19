@@ -809,6 +809,53 @@ function changeAnimHeight(val) {
   saveCurrentConfigToSlot();
 }
 
+function changeSettingsBgColor(value) {
+  const select = document.getElementById("settings-bg-select");
+  const picker = document.getElementById("settings-bg-picker");
+  
+  if (value === "custom" || value.startsWith("#")) {
+    if (select) select.value = "custom";
+    if (picker) {
+      picker.style.display = "inline-block";
+      if (value.startsWith("#")) picker.value = value;
+    }
+    settingsBgColor = picker ? picker.value : "#0f172a";
+  } else {
+    if (picker) picker.style.display = "none";
+    if (select) select.value = value;
+    settingsBgColor = value;
+  }
+  localStorage.setItem("settingsBgColor", settingsBgColor);
+  updateSettingsBoxStyle();
+  saveCurrentConfigToSlot();
+}
+
+function changeSettingsOpacity(val) {
+  settingsOpacity = Math.round(parseFloat(val) * 100) / 100;
+  localStorage.setItem("settingsOpacity", settingsOpacity);
+  const valSpan = document.getElementById("settings-opacity-val");
+  if (valSpan) {
+    valSpan.textContent = settingsOpacity.toFixed(2);
+  }
+  updateSettingsBoxStyle();
+  saveCurrentConfigToSlot();
+}
+
+function updateSettingsBoxStyle() {
+  const box = document.getElementById("setting-box");
+  if (!box) return;
+  
+  let hex = settingsBgColor.replace(/^\s*#|\s*$/g, '');
+  if (hex.length === 3) {
+    hex = hex.replace(/(.)/g, '$1$1');
+  }
+  let r = parseInt(hex.substr(0, 2), 16) || 15;
+  let g = parseInt(hex.substr(2, 2), 16) || 23;
+  let b = parseInt(hex.substr(4, 2), 16) || 42;
+  
+  box.style.backgroundColor = `rgba(${r}, ${g}, ${b}, ${settingsOpacity})`;
+}
+
 // ----------------------------------------------------
 // Save/Load Slots Logic
 // ----------------------------------------------------
@@ -851,7 +898,9 @@ function saveCurrentConfigToSlot() {
     candiShapeType,
     candiColorType,
     animDuration,
-    animHeight
+    animHeight,
+    settingsBgColor,
+    settingsOpacity
   };
   localStorage.setItem("janggi_settings_slot_" + activeSlot, JSON.stringify(config));
 }
@@ -880,6 +929,8 @@ function loadConfigFromSlot() {
     if (config.candiColorType !== undefined) candiColorType = config.candiColorType;
     if (config.animDuration !== undefined) animDuration = config.animDuration;
     if (config.animHeight !== undefined) animHeight = config.animHeight;
+    if (config.settingsBgColor !== undefined) settingsBgColor = config.settingsBgColor;
+    if (config.settingsOpacity !== undefined) settingsOpacity = config.settingsOpacity;
     
     localStorage.setItem("showCoordinates", showCoordinates);
     localStorage.setItem("sizeKing", sizeKing);
@@ -893,6 +944,8 @@ function loadConfigFromSlot() {
     localStorage.setItem("candiShapeType", candiShapeType);
     localStorage.setItem("animDuration", animDuration);
     localStorage.setItem("animHeight", animHeight);
+    localStorage.setItem("settingsBgColor", settingsBgColor);
+    localStorage.setItem("settingsOpacity", settingsOpacity);
     
     changeBoardColor(boardColorType);
     changeChoColor(choColorType);
@@ -902,6 +955,8 @@ function loadConfigFromSlot() {
     changeCandiColor(candiColorType);
     changeAnimDuration(animDuration);
     changeAnimHeight(animHeight);
+    changeSettingsBgColor(settingsBgColor);
+    changeSettingsOpacity(settingsOpacity);
     
     initBoard();
     initPositions();
@@ -928,7 +983,9 @@ function copyConfigToClipboard(btn) {
     candiShapeType,
     candiColorType,
     animDuration,
-    animHeight
+    animHeight,
+    settingsBgColor,
+    settingsOpacity
   };
   const text = JSON.stringify(config);
   navigator.clipboard.writeText(text).then(() => {
@@ -995,6 +1052,20 @@ function resetCategory2() {
 function resetCategory3() {
   changeAnimDuration(0.5);
   changeAnimHeight(0.2);
+  saveCurrentConfigToSlot();
+}
+
+function resetCategory4() {
+  settingsBgColor = "#0f172a";
+  settingsOpacity = 0.78;
+  
+  localStorage.setItem("settingsBgColor", settingsBgColor);
+  localStorage.setItem("settingsOpacity", settingsOpacity);
+  
+  changeSettingsBgColor(settingsBgColor);
+  changeSettingsOpacity(settingsOpacity);
+  
+  initSettingsUI();
   saveCurrentConfigToSlot();
 }
 
@@ -1096,6 +1167,26 @@ function initSettingsUI() {
       if (candiColorPicker) candiColorPicker.style.display = "none";
     }
   }
+  
+  const settingsBgSelect = document.getElementById("settings-bg-select");
+  const settingsBgPicker = document.getElementById("settings-bg-picker");
+  if (settingsBgSelect) {
+    if (settingsBgColor.startsWith("#") && !["#0f172a", "#1e293b", "#1e1b4b", "#022c22"].includes(settingsBgColor)) {
+      settingsBgSelect.value = "custom";
+      if (settingsBgPicker) {
+        settingsBgPicker.style.display = "inline-block";
+        settingsBgPicker.value = settingsBgColor;
+      }
+    } else {
+      settingsBgSelect.value = settingsBgColor;
+      if (settingsBgPicker) settingsBgPicker.style.display = "none";
+    }
+  }
+  
+  const settingsOpacitySlider = document.getElementById("settings-opacity-slider");
+  if (settingsOpacitySlider) settingsOpacitySlider.value = settingsOpacity;
+  const settingsOpacityVal = document.getElementById("settings-opacity-val");
+  if (settingsOpacityVal) settingsOpacityVal.textContent = settingsOpacity.toFixed(2);
 }
 
 // 안전한 초기 호출부 (스크립트 로드 순서 비동기 대응)
@@ -1130,6 +1221,7 @@ function checkAndInit() {
     changeChoColor(choColorType);
     changeHanColor(hanColorType);
     changePieceShape(pieceShapeType);
+    updateSettingsBoxStyle();
 
     // 애니메이션 시간 초기값 설정
     if (svg) {
