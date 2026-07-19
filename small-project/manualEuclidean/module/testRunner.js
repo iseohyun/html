@@ -253,7 +253,7 @@ async function runAutoTest(mdText) {
 
       // 1. Verify Tooltip Text (normalized)
       const tooltipElem = document.getElementById("tooltip-content");
-      const actualTooltip = tooltipElem ? normalizeText(tooltipElem.textContent) : "";
+      const actualTooltip = tooltipElem ? normalizeText(tooltipElem.innerHTML) : "";
       const expectedTooltip = normalizeText(step.tooltipText);
       if (actualTooltip !== expectedTooltip) {
         stepErrors.push(`툴팁 내용 불일치: (기대값: "${expectedTooltip}" | 실젯값: "${actualTooltip}")`);
@@ -361,28 +361,44 @@ async function runAutoTest(mdText) {
         }
       });
 
-      // 5.2. Verify Reference 4 (Highlight-green)
+      // 5.2. Verify Reference 4 (Highlight-purple)
       step.ref4.forEach(cell => {
         const cellElem = getCell(cell.row, cell.col);
         if (!cellElem) {
           stepErrors.push(`참조4 셀 [${cell.name}]을 찾을 수 없음`);
-        } else if (!cellElem.classList.contains("highlight-green")) {
-          stepErrors.push(`참조4 셀 [${cell.name}] 연한 초록색 하이라이트(highlight-green) 누락`);
+        } else if (!cellElem.classList.contains("highlight-purple")) {
+          stepErrors.push(`참조4 셀 [${cell.name}] 연한 보라색 하이라이트(highlight-purple) 누락`);
         }
       });
       // Check green highlights
       const greenCells = document.querySelectorAll(".grid-cell-input.highlight-green, #resault.highlight-green");
       greenCells.forEach(cell => {
         if (cell.id === "resault") {
-          const inExpected = step.ref3.some(tc => tc.row === -99 && tc.col === -99) || step.ref4.some(tc => tc.row === -99 && tc.col === -99);
+          const inExpected = step.ref3.some(tc => tc.row === -99 && tc.col === -99);
           if (!inExpected) stepErrors.push(`의도하지 않은 highlight-green 결과 창 감지`);
         } else {
           const r = parseInt(cell.dataset.row);
           const c = parseInt(cell.dataset.col);
-          const inExpected = step.ref3.some(tc => tc.row === r && tc.col === c) || step.ref4.some(tc => tc.row === r && tc.col === c);
+          const inExpected = step.ref3.some(tc => tc.row === r && tc.col === c);
           if (!inExpected) {
             const colLetter = String.fromCharCode(c + 65);
             stepErrors.push(`의도하지 않은 highlight-green 셀 감지: [${colLetter}${r + 1}]`);
+          }
+        }
+      });
+      // Check purple highlights
+      const purpleCells = document.querySelectorAll(".grid-cell-input.highlight-purple, #resault.highlight-purple");
+      purpleCells.forEach(cell => {
+        if (cell.id === "resault") {
+          const inExpected = step.ref4.some(tc => tc.row === -99 && tc.col === -99);
+          if (!inExpected) stepErrors.push(`의도하지 않은 highlight-purple 결과 창 감지`);
+        } else {
+          const r = parseInt(cell.dataset.row);
+          const c = parseInt(cell.dataset.col);
+          const inExpected = step.ref4.some(tc => tc.row === r && tc.col === c);
+          if (!inExpected) {
+            const colLetter = String.fromCharCode(c + 65);
+            stepErrors.push(`의도하지 않은 highlight-purple 셀 감지: [${colLetter}${r + 1}]`);
           }
         }
       });
