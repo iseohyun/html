@@ -87,6 +87,10 @@
           <button onclick="changeFontSize(1)">+</button>
           <button onclick="changeFontSize(-1)">-</button>
         </div>
+        <div style="margin-top: 10px;">
+          좌표 보기 설정 :
+          <button id="toggle-coords-btn" onclick="toggleCoordinates()">좌표 보기 닫기</button>
+        </div>
       </div>
     </div>
     <div id="control-box">
@@ -227,6 +231,7 @@
       <!-- Board representation -->
       <rect id="board" x="0" y="0" fill="url(#board-grad)" filter="url(#wood-grain)" />
       <path id="lines" fill="none" stroke="#52391b" stroke-width="1.8" />
+      <g id="coords-labels"></g>
 
       <!-- Cho (Blue) pieces: 3D Beveled Octagons with Cursive Text Overlays -->
       <!-- King -->

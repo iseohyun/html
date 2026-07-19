@@ -12,8 +12,8 @@ function n2Az(n) {
 // 좌표의 실제 도화지 위치를 반환합니다.
 function getAxis(x, y) {
   const axis = { 
-    x: Math.floor((x - 1) * unitSize + boardPadding + unitSize / 2), 
-    y: Math.floor(boardHeight - ((y - 1) * unitSize + boardPadding + unitSize / 2)) 
+    x: Math.floor((x - 1) * unitSize + boardPaddingLeft + unitSize / 2), 
+    y: Math.floor(boardHeight - ((y - 1) * unitSize + boardPaddingBottom + unitSize / 2)) 
   };
   return axis;
 }

@@ -373,6 +373,17 @@ function changeFontSize(amount) {
   });
 }
 
+function toggleCoordinates() {
+  showCoordinates = !showCoordinates;
+  const btn = document.getElementById("toggle-coords-btn");
+  if (btn) {
+    btn.textContent = showCoordinates ? "좌표 보기 닫기" : "좌표 보기";
+  }
+  // 좌표 상태에 따라 패딩을 재계산하고 보드를 다시 그립니다.
+  initBoard();
+  initPositions();
+}
+
 // 안전한 초기 호출부 (스크립트 로드 순서 비동기 대응)
 function checkAndInit() {
   if (typeof pieces !== "undefined" && 
