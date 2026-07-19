@@ -1,4 +1,20 @@
 // config.js - Global variables and game state configurations
+
+/**
+ * @typedef {Object} Piece - 장기 기물 객체 스키마
+ * @property {number} x - 기물의 X 좌표 (1~9, 0이면 잡혀서 판 밖으로 나간 상태)
+ * @property {number} y - 기물의 Y 좌표 (0~9, 세로 1~9행과 최하단 10번째 행을 0으로 표현)
+ * @property {SVGElement} e - 기물에 해당하는 SVG 이미지 엘리먼트 객체
+ */
+
+/**
+ * @typedef {Object} LogEntry - 착수 로그 기록 단일 항목 스키마
+ * @property {number} i - 움직인 기물의 ID (0~31)
+ * @property {number} x - 이동 대상 X 좌표 (1~9)
+ * @property {number} y - 이동 대상 Y 좌표 (0~9)
+ * @property {number} t - 포획된 기물의 ID (포획 대상이 없으면 32)
+ */
+
 window.addEventListener('error', function(e) {
   console.error("[Janggi Runtime Error]", e.message, "at", e.filename, ":", e.lineno, ":", e.colno);
 });

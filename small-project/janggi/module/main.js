@@ -146,23 +146,18 @@ function getData() {
 // 장기말이 클릭되었을 때, 동작을 기술합니다.
 function selected(i) {
   if (gameEnded) return;
-  console.log(`[Click Debug] Piece ID: ${i}, Coords: x=${pieces[i] ? pieces[i].x : '?'}, y=${pieces[i] ? pieces[i].y : '?'}, Element: ${pieces[i] && pieces[i].e ? pieces[i].e.id : 'null'}`);
-  printDebugEnv("PIECE_CLICKED");
 
-  // AI 모드에 따른 턴 및 조작 제한
-  if (aiMode !== 0) {
-    const curTurn = log.length;
-    const isChoTurn = (curTurn % 2 === 0);
-    const aiIsCho = (aiMode === 1);
-    const aiIsHan = (aiMode === 2);
-    
-    if (isChoTurn) {
-      if (i >= 16) return; // 초의 턴인데 한의 기물을 조작하려고 하는 경우 차단
-      if (aiIsCho) return; // AI가 초인데 사용자가 조작하려고 하는 경우 차단
-    } else {
-      if (i < 16) return; // 한의 턴인데 초의 기물을 조작하려고 하는 경우 차단
-      if (aiIsHan) return; // AI가 한인데 사용자가 조작하려고 하는 경우 차단
-    }
+  const curTurn = log.length;
+  const isChoTurn = (curTurn % 2 === 0);
+  const currentTeam = isChoTurn ? "cho" : "han";
+
+  // 턴 및 조작 제한 (기본 턴 제한 + AI 전용 가드)
+  if (isChoTurn) {
+    if (i >= 16) return; // 초의 턴인데 한의 기물을 조작하려고 하는 경우 차단
+    if (aiMode === 1) return; // AI가 초인데 사용자가 조작하려고 하는 경우 차단
+  } else {
+    if (i < 16) return; // 한의 턴인데 초의 기물을 조작하려고 하는 경우 차단
+    if (aiMode === 2) return; // AI가 한인데 사용자가 조작하려고 하는 경우 차단
   }
 
   // Clean up any old diagnostic overlay if present
@@ -182,8 +177,21 @@ function selected(i) {
   // 이전에 이미 선택된 객체로부터 그려진 이동가능 경로를 삭제합니다.
   clearCandiBox();
 
-  // 나의 이동가능 경로를 그립니다.
+  // 해당 진영의 장군 회피 가능한 실제 합법적인 수들만 필터링하여 그립니다.
+  const validMoves = getFilteredLegalMoves(currentTeam);
+  
+  const originalCreateCandiBox = createCandiBox;
+  createCandiBox = function(idx, tx, ty) {
+    const isValid = validMoves.some(m => m.i === idx && m.x === tx && m.y === ty);
+    if (isValid) {
+      originalCreateCandiBox(idx, tx, ty);
+    }
+  };
+
   drawCandidates(i);
+
+  // 원래 함수 복원
+  createCandiBox = originalCreateCandiBox;
 }
 
 // 움직임 처리
@@ -462,6 +470,9 @@ function changeNation(amIcho) {
     topEl.innerHTML = "초";
   }
   
+  // Re-bind pieces elements to match the new iAmCho state
+  initElements();
+  
   updateCharimPreview();
   saveCurrentConfigToSlot();
   currentLoadedRecordId = null;
@@ -470,6 +481,33 @@ function changeNation(amIcho) {
 
 function toggleNation() {
   changeNation(!iAmCho);
+  
+  // 1. 착수 로그 및 상태 초기화
+  log.length = 0;
+  const turnEl = document.getElementById("turn");
+  if (turnEl) turnEl.value = 0;
+  gameEnded = false;
+  curSelect = 32;
+  clearCandiBox();
+  const selectBox = document.getElementById("select-box");
+  if (selectBox) {
+    selectBox.setAttribute("x", -1000);
+    selectBox.setAttribute("y", -1000);
+  }
+
+  // 2. 현재 설정한 상차림에 부합하는 배치 데이터 산출 및 복원
+  let startingLayoutCode = knownStart[0][newGameState[0]] + knownStart[1][newGameState[1]];
+  setting(startingLayoutCode);
+
+  // 3. 보드 및 기물 위치 갱신
+  svg.classList.add("no-transition");
+  initBoard();
+  initPositions();
+  svg.offsetHeight; // Force reflow
+  svg.classList.remove("no-transition");
+
+  saveCurrentConfigToSlot();
+  checkAndRunAI();
 }
 
 function download() {
@@ -525,10 +563,10 @@ function startNewGame() {
   if (turnEl) turnEl.value = 0;
   
   // 3. 현재 설정한 상차림에 부합하는 배치 데이터 산출
-  let param_P = knownStart[0][newGameState[0]] + knownStart[1][newGameState[1]];
+  let startingLayoutCode = knownStart[0][newGameState[0]] + knownStart[1][newGameState[1]];
   
   // 4. 기물 위치 데이터 복원
-  setting(param_P);
+  setting(startingLayoutCode);
   
   // 5. 기물 선택 상태 초기화
   curSelect = 32;
@@ -1096,22 +1134,6 @@ function updateSlotButtonsUI() {
   updateSettingsAccentColor();
 }
 
-function printDebugEnv(tag) {
-  console.log(`[Janggi Debug Env - ${tag}] activeSlot: ${activeSlot}`);
-  console.log(`[Janggi Debug Env - ${tag}] candiColorType: "${candiColorType}"`);
-  console.log(`[Janggi Debug Env - ${tag}] candiShapeType: "${candiShapeType}"`);
-  console.log(`[Janggi Debug Env - ${tag}] showCoordinates: ${showCoordinates}`);
-  console.log(`[Janggi Debug Env - ${tag}] unitSize: ${typeof unitSize !== 'undefined' ? unitSize : '?'}`);
-  console.log(`[Janggi Debug Env - ${tag}] padding: L=${boardPaddingLeft}, T=${boardPaddingTop}`);
-  console.log(`[Janggi Debug Env - ${tag}] sizes: King=${sizeKing}, Mid=${sizeMiddle}, Sm=${sizeSmall}`);
-  console.log(`[Janggi Debug Env - ${tag}] fontScales: King=${fontScaleKing}, Mid=${fontScaleMiddle}, Sm=${fontScaleSmall}`);
-  console.log(`[Janggi Debug Env - ${tag}] boardColorType: "${boardColorType}"`);
-  console.log(`[Janggi Debug Env - ${tag}] choColorType: "${choColorType}"`);
-  console.log(`[Janggi Debug Env - ${tag}] hanColorType: "${hanColorType}"`);
-  console.log(`[Janggi Debug Env - ${tag}] pieceShapeType: "${pieceShapeType}"`);
-  console.log(`[Janggi Debug Env - ${tag}] Raw Slot string in localStorage:`, localStorage.getItem("janggi_settings_slot_" + activeSlot));
-}
-
 function saveCurrentConfigToSlot() {
   const config = {
     showCoordinates,
@@ -1138,11 +1160,9 @@ function saveCurrentConfigToSlot() {
     aiMode
   };
   localStorage.setItem("janggi_settings_slot_" + activeSlot, JSON.stringify(config));
-  printDebugEnv("SAVE_SLOT");
 }
 
 function loadConfigFromSlot() {
-  printDebugEnv("LOAD_START");
   const saved = localStorage.getItem("janggi_settings_slot_" + activeSlot);
   if (!saved) {
     saveCurrentConfigToSlot();
@@ -1209,7 +1229,6 @@ function loadConfigFromSlot() {
     initBoard();
     initPositions();
     initSettingsUI();
-    printDebugEnv("LOAD_END");
   } catch (e) {
     console.error("Failed to load settings from slot", e);
   }
@@ -1301,7 +1320,6 @@ function resetCategory2() {
   initPositions();
   initSettingsUI();
   saveCurrentConfigToSlot();
-  printDebugEnv("RESET_CATEGORY_2");
 }
 
 function resetCategory3() {
@@ -1922,12 +1940,15 @@ function parseMoveLine(line, index) {
   }
   
   const startX = parseInt(startStr.slice(-1), 10);
-  const startY = parseInt(startStr.slice(0, -1), 10);
-  const endX = parseInt(endStr.slice(-1), 10);
-  const endY = parseInt(endStr.slice(0, -1), 10);
+  let startY = parseInt(startStr.slice(0, -1), 10);
+  if (startY === 10) startY = 0;
   
-  if (startX < 1 || startX > 9 || startY < 1 || startY > 10) return null;
-  if (endX < 1 || endX > 9 || endY < 1 || endY > 10) return null;
+  const endX = parseInt(endStr.slice(-1), 10);
+  let endY = parseInt(endStr.slice(0, -1), 10);
+  if (endY === 10) endY = 0;
+  
+  if (startX < 1 || startX > 9 || startY < 0 || startY > 9) return null;
+  if (endX < 1 || endX > 9 || endY < 0 || endY > 9) return null;
   
   if (!player) {
     player = (index % 2 === 0) ? "초" : "한";
@@ -2307,7 +2328,7 @@ function getBestAIMove(aiTeam) {
     
     // 2. 상대방의 최선 대응 수 예측 (Depth 2 Minimax)
     const opponentTeam = isChoAI ? "han" : "cho";
-    const opponentReplies = getLegalMoves(opponentTeam);
+    const opponentReplies = getFilteredLegalMoves(opponentTeam);
     
     let worstReplyScore = isChoAI ? Infinity : -Infinity;
     
@@ -2455,117 +2476,108 @@ function evaluateBoard() {
   return score;
 }
 
-// 안전한 초기 호출부 (스크립트 로드 순서 비동기 대응)
-function checkAndInit() {
-  if (typeof pieces !== "undefined" && 
-      typeof initBoard === "function" && 
-      typeof initPositions === "function") {
-    
-    // 1. 데이터 및 기물 DOM 바인딩 선행 수행
-    initData();
-    
-    // active slot 로드
-    if (localStorage.getItem("janggi_active_slot") !== null) {
-      activeSlot = parseInt(localStorage.getItem("janggi_active_slot"), 10);
-    }
-    updateSlotButtonsUI();
-    
-    // 슬롯으로부터 구성정보 로드 (DOM 조작 안심 수행)
-    loadConfigFromSlot();
+// 게임 초기화 실행부
+function initGame() {
+  // 1. 데이터 및 기물 DOM 바인딩 선행 수행
+  initData();
+  
+  // active slot 로드
+  if (localStorage.getItem("janggi_active_slot") !== null) {
+    activeSlot = parseInt(localStorage.getItem("janggi_active_slot"), 10);
+  }
+  updateSlotButtonsUI();
+  
+  // 슬롯으로부터 구성정보 로드 (DOM 조작 안심 수행)
+  loadConfigFromSlot();
 
-    // 로컬 스토리지 개별값 로드 대응
-    if (localStorage.getItem("aiMode") !== null) {
-      aiMode = parseInt(localStorage.getItem("aiMode"), 10);
-    }
+  // 로컬 스토리지 개별값 로드 대응
+  if (localStorage.getItem("aiMode") !== null) {
+    aiMode = parseInt(localStorage.getItem("aiMode"), 10);
+  }
 
-    initSettingsUI();
-    
-    // 초기 로딩 시 말들이 0,0에서 날아오는 트랜지션을 방지합니다.
+  initSettingsUI();
+  
+  // 초기 로딩 시 말들이 0,0에서 날아오는 트랜지션을 방지합니다.
+  svg.classList.add("no-transition");
+  initBoard();
+  initPositions();
+  svg.offsetHeight; // Force reflow
+  svg.classList.remove("no-transition");
+  
+  // 설정값의 외관 테마 적용
+  changeBoardColor(boardColorType);
+  changeChoColor(choColorType);
+  changeHanColor(hanColorType);
+  changePieceShape(pieceShapeType);
+  updateSettingsBoxStyle();
+  updateSettingsTextColor();
+  updateSettingsAccentColor();
+
+  // 애니메이션 시간 초기값 설정
+  if (svg) {
+    svg.style.setProperty("--anim-duration", `${animDuration}s`);
+  }
+
+  const turnEl = document.getElementById("turn");
+  if (turnEl) {
+    turnEl.addEventListener("change", function() {
+      let targetTurn = parseInt(this.value, 10);
+      if (isNaN(targetTurn)) return;
+      if (targetTurn < 0) targetTurn = 0;
+      if (targetTurn > log.length) targetTurn = log.length;
+      this.value = targetTurn;
+      
+      let startingCode = getStartingCode();
+      setting(startingCode);
+      
+      for (let idx = 0; idx < targetTurn; idx++) {
+        const m = log[idx];
+        pieces[m.i].x = m.x;
+        pieces[m.i].y = m.y;
+        if (m.t < 32) {
+          pieces[m.t].x = 0;
+          pieces[m.t].y = 0;
+        }
+      }
+      
+      svg.classList.add("no-transition");
+      initPositions();
+      updateScore();
+      
+      document.getElementById("prev").disabled = (targetTurn === 0);
+      document.getElementById("next").disabled = (targetTurn === log.length);
+      
+      curSelect = 32;
+      clearCandiBox();
+      const selectBox = document.getElementById("select-box");
+      if (selectBox) {
+        selectBox.setAttribute("x", -1000);
+        selectBox.setAttribute("y", -1000);
+      }
+      
+      svg.offsetHeight;
+      svg.classList.remove("no-transition");
+      
+      const recordBox = document.getElementById("record-box");
+      if (recordBox && recordBox.style.display === "flex") {
+        updateRecordUI();
+      }
+
+      checkAndRunAI();
+    });
+  }
+
+  window.addEventListener("resize", () => {
+    // 크기 조절 시 레이아웃 재배치가 애니메이션되는 것을 방지합니다.
     svg.classList.add("no-transition");
     initBoard();
     initPositions();
     svg.offsetHeight; // Force reflow
     svg.classList.remove("no-transition");
-    
-    // 설정값의 외관 테마 적용
-    changeBoardColor(boardColorType);
-    changeChoColor(choColorType);
-    changeHanColor(hanColorType);
-    changePieceShape(pieceShapeType);
-    updateSettingsBoxStyle();
-    updateSettingsTextColor();
-    updateSettingsAccentColor();
+  });
 
-    // 애니메이션 시간 초기값 설정
-    if (svg) {
-      svg.style.setProperty("--anim-duration", `${animDuration}s`);
-    }
-
-    printDebugEnv("INIT_COMPLETE");
-
-    const turnEl = document.getElementById("turn");
-    if (turnEl) {
-      turnEl.addEventListener("change", function() {
-        let targetTurn = parseInt(this.value, 10);
-        if (isNaN(targetTurn)) return;
-        if (targetTurn < 0) targetTurn = 0;
-        if (targetTurn > log.length) targetTurn = log.length;
-        this.value = targetTurn;
-        
-        let startingCode = getStartingCode();
-        setting(startingCode);
-        
-        for (let idx = 0; idx < targetTurn; idx++) {
-          const m = log[idx];
-          pieces[m.i].x = m.x;
-          pieces[m.i].y = m.y;
-          if (m.t < 32) {
-            pieces[m.t].x = 0;
-            pieces[m.t].y = 0;
-          }
-        }
-        
-        svg.classList.add("no-transition");
-        initPositions();
-        updateScore();
-        
-        document.getElementById("prev").disabled = (targetTurn === 0);
-        document.getElementById("next").disabled = (targetTurn === log.length);
-        
-        curSelect = 32;
-        clearCandiBox();
-        const selectBox = document.getElementById("select-box");
-        if (selectBox) {
-          selectBox.setAttribute("x", -1000);
-          selectBox.setAttribute("y", -1000);
-        }
-        
-        svg.offsetHeight;
-        svg.classList.remove("no-transition");
-        
-        const recordBox = document.getElementById("record-box");
-        if (recordBox && recordBox.style.display === "flex") {
-          updateRecordUI();
-        }
-
-        checkAndRunAI();
-      });
-    }
-
-    window.addEventListener("resize", () => {
-      // 크기 조절 시 레이아웃 재배치가 애니메이션되는 것을 방지합니다.
-      svg.classList.add("no-transition");
-      initBoard();
-      initPositions();
-      svg.offsetHeight; // Force reflow
-      svg.classList.remove("no-transition");
-    });
-
-    // 로드 직후 AI 작동 여부 검사
-    checkAndRunAI();
-  } else {
-    setTimeout(checkAndInit, 10);
-  }
+  // 로드 직후 AI 작동 여부 검사
+  checkAndRunAI();
 }
 
-checkAndInit();
+initGame();
