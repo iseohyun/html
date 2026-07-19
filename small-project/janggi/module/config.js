@@ -1,4 +1,8 @@
 // config.js - Global variables and game state configurations
+window.addEventListener('error', function(e) {
+  console.error("[Janggi Runtime Error]", e.message, "at", e.filename, ":", e.lineno, ":", e.colno);
+});
+
 const svg = document.getElementById("janggi-svg");
 const board = document.getElementById("board");
 const selectBox = document.getElementById("select-box");
@@ -53,16 +57,16 @@ const log = new Array(); // 착수 로그를 기록합니다.
 var curSelect = 32;
 const knownStart = [
   [
-    "52119123832171318141611434547494",
-    "52119123832181317141611434547494",
-    "52119123833171218141611434547494",
-    "52119123833181217141611434547494"
-  ],
-  [
     "59109028882070308040601737577797",
     "59109028882080307040601737577797",
     "59109028883070208040601737577797",
     "59109028883080207040601737577797"
+  ],
+  [
+    "52119123832171318141611434547494",
+    "52119123832181317141611434547494",
+    "52119123833171218141611434547494",
+    "52119123833181217141611434547494"
   ]
 ];
 

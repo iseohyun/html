@@ -99,47 +99,39 @@ function drawBoard() {
   // 장기판에 8 * 9 의 정사각형 그림을 그립니다.
   const lines = document.getElementById('lines');
   var lineSts = "";
-  // 가로줄 10라인
-  for (let i = 0; i < 10; i++) {
-    let axis = getAxis(1, i + 1);
+  // 가로줄 10라인 (y좌표 순서: 1,2,...,9,0)
+  const yOrder = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
+  for (let idx = 0; idx < 10; idx++) {
+    let axis = getAxis(1, yOrder[idx]);
     lineSts += `M${axis.x} ${axis.y} h${Math.floor(unitSize * 8)} `;
   }
   // 세로줄 9라인
   for (let i = 0; i < 9; i++) {
-    let axis = getAxis(i + 1, 10);
+    let axis = getAxis(i + 1, 1);
     lineSts += `M${axis.x} ${axis.y} v${Math.floor(unitSize * 9)} `;
   }
-  // 내 궁성
-  var tmpAxis = getAxis(4, 1);
-  lineSts += `M${tmpAxis.x} ${tmpAxis.y}`;
-  tmpAxis = getAxis(6, 3);
-  lineSts += `L${tmpAxis.x} ${tmpAxis.y}`;
-
-  tmpAxis = getAxis(6, 1);
-  lineSts += `M${tmpAxis.x} ${tmpAxis.y}`;
-  tmpAxis = getAxis(4, 3);
-  lineSts += `L${tmpAxis.x} ${tmpAxis.y}`;
-
-  // 상대 궁성
-  tmpAxis = getAxis(4, 8);
-  lineSts += `M${tmpAxis.x} ${tmpAxis.y}`;
-  tmpAxis = getAxis(6, 10);
-  lineSts += `L${tmpAxis.x} ${tmpAxis.y}`;
-  tmpAxis = getAxis(4, 10);
+  // 내 궁성 (y=0,9,8)
+  var tmpAxis = getAxis(4, 0);
   lineSts += `M${tmpAxis.x} ${tmpAxis.y}`;
   tmpAxis = getAxis(6, 8);
   lineSts += `L${tmpAxis.x} ${tmpAxis.y}`;
 
-  // 내 마커
-  lineSts += checkBoardMarker(1, 4);
-  lineSts += checkBoardMarker(3, 4);
-  lineSts += checkBoardMarker(5, 4);
-  lineSts += checkBoardMarker(7, 4);
-  lineSts += checkBoardMarker(9, 4);
-  lineSts += checkBoardMarker(2, 3);
-  lineSts += checkBoardMarker(8, 3);
+  tmpAxis = getAxis(6, 0);
+  lineSts += `M${tmpAxis.x} ${tmpAxis.y}`;
+  tmpAxis = getAxis(4, 8);
+  lineSts += `L${tmpAxis.x} ${tmpAxis.y}`;
 
-  // 상대 마커
+  // 상대 궁성 (y=1,2,3)
+  tmpAxis = getAxis(4, 3);
+  lineSts += `M${tmpAxis.x} ${tmpAxis.y}`;
+  tmpAxis = getAxis(6, 1);
+  lineSts += `L${tmpAxis.x} ${tmpAxis.y}`;
+  tmpAxis = getAxis(4, 1);
+  lineSts += `M${tmpAxis.x} ${tmpAxis.y}`;
+  tmpAxis = getAxis(6, 3);
+  lineSts += `L${tmpAxis.x} ${tmpAxis.y}`;
+
+  // 내 마커 (기존 y=4→7, y=3→8)
   lineSts += checkBoardMarker(1, 7);
   lineSts += checkBoardMarker(3, 7);
   lineSts += checkBoardMarker(5, 7);
@@ -147,6 +139,15 @@ function drawBoard() {
   lineSts += checkBoardMarker(9, 7);
   lineSts += checkBoardMarker(2, 8);
   lineSts += checkBoardMarker(8, 8);
+
+  // 상대 마커 (기존 y=7→4, y=8→3)
+  lineSts += checkBoardMarker(1, 4);
+  lineSts += checkBoardMarker(3, 4);
+  lineSts += checkBoardMarker(5, 4);
+  lineSts += checkBoardMarker(7, 4);
+  lineSts += checkBoardMarker(9, 4);
+  lineSts += checkBoardMarker(2, 3);
+  lineSts += checkBoardMarker(8, 3);
 
   lines.setAttribute('d', lineSts);
 
@@ -172,9 +173,10 @@ function drawBoard() {
         coordsGroup.appendChild(text);
       }
 
-      // 2. 가로선 (줄) 번호: 왼쪽에 1~10줄 배치 (맨 위가 1, 맨 아래가 0)
-      for (let y = 1; y <= 10; y++) {
-        let axis = getAxis(1, y);
+      // 2. 가로선 (줄) 번호: 왼쪽에 배치 (맨 위가 1, 맨 아래가 0)
+      const yLabels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
+      for (let idx = 0; idx < yLabels.length; idx++) {
+        let axis = getAxis(1, yLabels[idx]);
         const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
         text.setAttribute("x", boardPaddingLeft - 25);
         text.setAttribute("y", axis.y);
@@ -184,7 +186,7 @@ function drawBoard() {
         text.setAttribute("font-size", `${unitSize * coordsTextScale}px`);
         text.setAttribute("font-weight", "800");
         text.setAttribute("opacity", "0.85");
-        text.textContent = (11 - y) % 10;
+        text.textContent = yLabels[idx];
         coordsGroup.appendChild(text);
       }
     }
@@ -198,10 +200,11 @@ function checkBoardMarker(x, y) {
 }
 
 // 데이터를 가져옵니다.
+// 새 좌표계: y값은 그대로 사용 (1=상단, 0=하단)
 function setting(code) {
   for (var i = 0; i < code.length; i += 2) {
     pieces[i / 2].x = parseInt(code[i], 10);
-    pieces[i / 2].y = parseInt(code[i + 1] == 0 ? 10 : code[i + 1], 10);
+    pieces[i / 2].y = parseInt(code[i + 1], 10);
     initPieces[i / 2] = { x: pieces[i / 2].x, y: pieces[i / 2].y };
   }
 }
@@ -335,57 +338,82 @@ function moveSelectBox(i, visible = true) {
   selectBox.setAttribute("height", unitSize);
 }
 
-// 이동가능 경로 1개를 그립니다.
 function createCandiBox(i, x, y) {
-  if (x < 1 || x > 9 || y < 1 || y > 10) return;
-
-  const ratio = getPieceSizeRatio(i);
-  let tmpAxis = getAxis(x, y);
-  
-  let candiBox;
-  let size = (unitSize * ratio) - 8;
-  
-  if (candiShapeType === "empty_square") {
-    candiBox = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    candiBox.setAttribute("x", tmpAxis.x - size / 2);
-    candiBox.setAttribute("y", tmpAxis.y - size / 2);
-    candiBox.setAttribute("width", size);
-    candiBox.setAttribute("height", size);
-    candiBox.setAttribute("rx", "4");
-    candiBox.setAttribute("ry", "4");
-    candiBox.setAttribute("fill", candiColorType);
-    candiBox.setAttribute("fill-opacity", "0.15");
-    candiBox.setAttribute("stroke", candiColorType);
-    candiBox.setAttribute("stroke-width", "2.5");
-  } else if (candiShapeType === "filled_circle") {
-    candiBox = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    candiBox.setAttribute("cx", tmpAxis.x);
-    candiBox.setAttribute("cy", tmpAxis.y);
-    candiBox.setAttribute("r", size / 2);
-    candiBox.setAttribute("fill", candiColorType);
-    candiBox.setAttribute("fill-opacity", "0.7");
-    candiBox.setAttribute("stroke", candiColorType);
-    candiBox.setAttribute("stroke-width", "0");
-  } else { // default "empty_circle"
-    candiBox = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    candiBox.setAttribute("cx", tmpAxis.x);
-    candiBox.setAttribute("cy", tmpAxis.y);
-    candiBox.setAttribute("r", size / 2);
-    candiBox.setAttribute("fill", candiColorType);
-    candiBox.setAttribute("fill-opacity", "0.15");
-    candiBox.setAttribute("stroke", candiColorType);
-    candiBox.setAttribute("stroke-width", "2.5");
+  if (x < 1 || x > 9 || !isValidY(y)) {
+    console.log(`[CandiBox Debug] Rejected: x=${x}, y=${y} (isValidY=${typeof isValidY === 'function' ? isValidY(y) : 'no_func'})`);
+    return;
   }
   
-  // 하드웨어 가속 필터를 이용해 동적으로 글로우 효과 반영
-  candiBox.style.filter = `drop-shadow(0px 0px 5px ${candiColorType})`;
+  const ratio = getPieceSizeRatio(i);
+  let tmpAxis = getAxis(x, y);
+  let targetX = tmpAxis.x - unitSize * ratio / 2;
+  let targetY = tmpAxis.y - unitSize * ratio / 2;
+  
+  console.log(`[CandiBox Debug] Approved nested <g>: x=${x}, y=${y}. translate(${targetX}px, ${targetY}px). unitSize=${unitSize}`);
+
+  // 브라우저 동적 SVG 렌더링 버그 우회를 위해 <g> 그룹 엘리먼트로 생성
+  const candiBox = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  candiBox.setAttribute("class", "candi-svg");
+  candiBox.setAttribute("pointer-events", "all");
+  candiBox.setAttribute("transform", `translate(${targetX}, ${targetY})`); // Standard SVG transform attribute without px unit
   candiBox.style.cursor = "pointer";
+
+  const boxSize = unitSize * ratio;
+  const center = boxSize / 2;
+
+  if (candiShapeType === "empty_square") {
+    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    rect.setAttribute("x", boxSize * 0.1);
+    rect.setAttribute("y", boxSize * 0.1);
+    rect.setAttribute("width", boxSize * 0.8);
+    rect.setAttribute("height", boxSize * 0.8);
+    rect.setAttribute("rx", boxSize * 0.1);
+    rect.setAttribute("ry", boxSize * 0.1);
+    rect.setAttribute("fill", candiColorType);
+    rect.setAttribute("fill-opacity", "0.2"); // Elegant semi-transparent fill
+    rect.setAttribute("stroke", candiColorType);
+    rect.setAttribute("stroke-width", "4"); // Premium thin border
+    rect.setAttribute("pointer-events", "all");
+    rect.style.pointerEvents = "auto";
+    candiBox.appendChild(rect);
+  } else if (candiShapeType === "filled_circle") {
+    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    circle.setAttribute("cx", center);
+    circle.setAttribute("cy", center);
+    circle.setAttribute("r", boxSize * 0.4);
+    circle.setAttribute("fill", candiColorType);
+    circle.setAttribute("fill-opacity", "0.75");
+    circle.setAttribute("pointer-events", "all");
+    circle.style.pointerEvents = "auto";
+    candiBox.appendChild(circle);
+  } else { // default "empty_circle"
+    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    circle.setAttribute("cx", center);
+    circle.setAttribute("cy", center);
+    circle.setAttribute("r", boxSize * 0.4);
+    circle.setAttribute("fill", candiColorType);
+    circle.setAttribute("fill-opacity", "1.0"); // 100% solid opacity
+    circle.setAttribute("stroke", "#ff0000"); // Red border for extreme visibility test
+    circle.setAttribute("stroke-width", "10");
+    circle.setAttribute("pointer-events", "all");
+    circle.style.pointerEvents = "auto";
+    candiBox.appendChild(circle);
+  }
+  
+  candiBox.style.cursor = "pointer";
+  // 마우스 감지 디버그 리스너 추가
+  candiBox.addEventListener("mouseenter", function() {
+    console.log(`[CandiBox Debug] Mouse hovered candidate at x=${x}, y=${y}`);
+  });
 
   candiBoxList.push(candiBox);
   candiBox.addEventListener("click", function () {
+    console.log(`[CandiBox Debug] Clicked candidate at x=${x}, y=${y}. Moving piece...`);
     move(i, x, y);
   });
+  
   svg.appendChild(candiBox);
+  console.log("[CandiBox Debug] Element appended successfully to DOM:", candiBox);
 }
 
 // 장기알 서예 글씨 이미지의 크기와 정렬 오프셋을 동적으로 갱신합니다.
