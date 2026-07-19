@@ -233,7 +233,7 @@ function initPositions() {
     if (typeof rotateActive !== 'undefined' && rotateActive) {
       transformStr += ' rotate(-180deg)';
     } else if (typeof flipActive !== 'undefined' && flipActive) {
-      transformStr += ' rotateY(-180deg)';
+      transformStr += ' scaleX(-1)';
     }
     pieces[i].e.style.transform = transformStr;
   }
@@ -279,7 +279,7 @@ function updateKeyboardCursor() {
   if (typeof rotateActive !== 'undefined' && rotateActive) {
     transformStr += ' rotate(-180deg)';
   } else if (typeof flipActive !== 'undefined' && flipActive) {
-    transformStr += ' rotateY(-180deg)';
+    transformStr += ' scaleX(-1)';
   }
   cursor.style.transform = transformStr;
 }

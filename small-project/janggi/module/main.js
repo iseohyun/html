@@ -4249,6 +4249,8 @@ function flipBoardHorizontal() {
           cursor.classList.remove("smooth-move-anim");
         }
         
+        flipActive = false;
+        
         initPositions();
         if (kbCursorActive) updateKeyboardCursor();
         
