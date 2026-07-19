@@ -4133,7 +4133,7 @@ function flipBoardHorizontal() {
         const ay = getAxis(startPos.x, startPos.y).y - sizeVal / 2;
         
         pieces[i].e.style.transition = "none";
-        pieces[i].e.style.transformOrigin = "50% 50%";
+        pieces[i].e.style.transformOrigin = `${sizeVal / 2}px ${sizeVal / 2}px`;
         pieces[i].e.style.transform = `translate(${ax}px, ${ay}px) rotateY(0deg)`;
         pieces[i].e.classList.add("smooth-move-anim");
       }
@@ -4146,7 +4146,7 @@ function flipBoardHorizontal() {
       const ay = getAxis(oldKbCursorX, oldKbCursorY).y - sizeVal / 2;
       
       cursor.style.transition = "none";
-      cursor.style.transformOrigin = "50% 50%";
+      cursor.style.transformOrigin = `${sizeVal / 2}px ${sizeVal / 2}px`;
       cursor.style.transform = `translate(${ax}px, ${ay}px) rotateY(0deg)`;
       cursor.classList.add("smooth-move-anim");
     }
@@ -4550,7 +4550,7 @@ function flipBoardVertical() {
         const ay = getAxis(startPos.x, startPos.y).y - sizeVal / 2;
         
         pieces[i].e.style.transition = "none";
-        pieces[i].e.style.transformOrigin = "50% 50%";
+        pieces[i].e.style.transformOrigin = `${sizeVal / 2}px ${sizeVal / 2}px`;
         pieces[i].e.style.transform = `translate(${ax}px, ${ay}px) rotate(0deg)`;
         pieces[i].e.classList.add("smooth-move-anim");
       }
@@ -4563,7 +4563,7 @@ function flipBoardVertical() {
       const ay = getAxis(oldKbCursorX, oldKbCursorY).y - sizeVal / 2;
       
       cursor.style.transition = "none";
-      cursor.style.transformOrigin = "50% 50%";
+      cursor.style.transformOrigin = `${sizeVal / 2}px ${sizeVal / 2}px`;
       cursor.style.transform = `translate(${ax}px, ${ay}px) rotate(0deg)`;
       cursor.classList.add("smooth-move-anim");
     }
