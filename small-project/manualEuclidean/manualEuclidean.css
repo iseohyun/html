@@ -47,7 +47,7 @@ article {
 
 #settings-toggle-btn {
   background: none;
-  border: 1px solid var(--border-color);
+  border: none;
   border-radius: 8px;
   font-size: 1.4rem;
   padding: 6px 12px;
@@ -69,6 +69,42 @@ article {
   padding: 12px 16px;
   border-radius: 12px;
   margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+#btn-random-start {
+  margin-left: auto;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#btn-random-start:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px -1px rgba(16, 185, 129, 0.4);
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+#btn-random-start:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 640px) {
+  #btn-random-start {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 #gcd {
