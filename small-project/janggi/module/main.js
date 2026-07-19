@@ -4440,11 +4440,10 @@ function flipBoardVertical() {
       if (pieces[i].x !== 0 && startPositions[i].x !== 0) {
         const startPos = startPositions[i];
         
-        // Correct target index logic after executeFlipBoardVertical (swaps team and flips coordinates horizontally & vertically)
-        const oldIndex = (i < 16) ? (i + 16) : (i - 16);
+        // Use the piece's own flipped coordinates as its target position
         const finalLogicalPos = {
-          x: 10 - pieces[oldIndex].x,
-          y: flipYCoordinate(pieces[oldIndex].y)
+          x: 10 - startPos.x,
+          y: flipYCoordinate(startPos.y)
         };
         
         const axisStart = getAxis(startPos.x, startPos.y);
