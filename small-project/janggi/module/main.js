@@ -2198,6 +2198,27 @@ function parseLayoutText(text) {
   return null;
 }
 
+function rotateLayoutCode180(code) {
+  if (code.length !== 64) return code;
+  const coords = [];
+  for (let i = 0; i < 32; i++) {
+    const px = parseInt(code[2 * i], 10);
+    const py = parseInt(code[2 * i + 1], 10);
+    if (px === 0 && py === 0) {
+      coords.push({ x: 0, y: 0 });
+    } else {
+      coords.push({ x: 10 - px, y: flipYCoordinate(py) });
+    }
+  }
+  // Swap 0-15 and 16-31
+  const rotated = [];
+  for (let i = 0; i < 16; i++) {
+    rotated[i] = coords[i + 16];
+    rotated[i + 16] = coords[i];
+  }
+  return rotated.map(c => `${c.x}${c.y}`).join("");
+}
+
 function importRecordFromText(text) {
   if (!text || !text.trim()) {
     alert("기보 데이터가 비어 있습니다.");
@@ -2242,7 +2263,40 @@ function importRecordFromText(text) {
   updateMetadataFormFromState();
   updateMetadataDisplay();
   
-  // 1. 상차림 코드 및 진영(iAmCho) 파싱
+  // 1. 착수 로그 파싱 (헤더 감지에 앞서 먼저 파싱)
+  const parsedMoves = [];
+  let validLineIdx = 0;
+  for (let line of rawLines) {
+    const move = parseMoveLine(line, validLineIdx);
+    if (move) {
+      parsedMoves.push(move);
+      validLineIdx++;
+    }
+  }
+  
+  // 2. 뒤집힌 기보 감지 및 복원 (한나라가 첫 수를 두는 경우)
+  let shouldFlipImport = false;
+  if (parsedMoves.length > 0 && parsedMoves[0].player === "한") {
+    shouldFlipImport = true;
+    
+    parsedMoves.forEach(move => {
+      // 플레이어 대칭 스왑
+      move.player = (move.player === "초") ? "한" : "초";
+      // 좌표 180도 스왑
+      move.startX = 10 - move.startX;
+      move.startY = flipYCoordinate(move.startY);
+      move.endX = 10 - move.endX;
+      move.endY = flipYCoordinate(move.endY);
+      // 기물 이름 스왑 (졸 <-> 병)
+      if (move.pieceName === "졸") {
+        move.pieceName = "병";
+      } else if (move.pieceName === "병") {
+        move.pieceName = "졸";
+      }
+    });
+  }
+
+  // 3. 상차림 코드 및 진영(iAmCho) 파싱
   let startingCode = "";
   let determinedCho = true;
   
@@ -2260,19 +2314,13 @@ function importRecordFromText(text) {
     determinedCho = determineIAmChoFromText(text);
   }
   
-  changeNation(determinedCho);
-  
-  // 2. 착수 로그 파싱
-  const parsedMoves = [];
-  let validLineIdx = 0;
-  
-  for (let line of rawLines) {
-    const move = parseMoveLine(line, validLineIdx);
-    if (move) {
-      parsedMoves.push(move);
-      validLineIdx++;
-    }
+  // 만약 뒤집힌 기보라면 초기 상차림 및 진영도 180도 역회전 적용
+  if (shouldFlipImport) {
+    startingCode = rotateLayoutCode180(startingCode);
+    determinedCho = !determinedCho;
   }
+  
+  changeNation(determinedCho);
   
   if (parsedMoves.length === 0 && !layoutTextMatch && !text.match(/\b\d{64}\b/)) {
     alert("유효한 기보 데이터를 찾을 수 없습니다. 형식을 확인해 주세요.");
