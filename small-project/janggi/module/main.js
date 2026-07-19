@@ -4057,6 +4057,10 @@ function flipBoardHorizontal() {
   
   logPieceCenters("0ms Start");
   
+  setTimeout(() => {
+    logPieceCenters("4000ms Post-Animation Check");
+  }, 4000);
+  
   const startPositions = [];
   for (let i = 0; i < 32; i++) {
     startPositions[i] = { x: pieces[i].x, y: pieces[i].y };
@@ -4472,6 +4476,10 @@ function flipBoardVertical() {
   boardAnimating = true;
   
   logPieceCenters("0ms Start");
+  
+  setTimeout(() => {
+    logPieceCenters("4000ms Post-Animation Check");
+  }, 4000);
   
   const startPositions = [];
   for (let i = 0; i < 32; i++) {
