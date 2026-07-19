@@ -406,7 +406,11 @@ function prevStep() {
   window.inPhaseA = targetState.inPhaseA;
   
   for (let i = 0; i < V.length; i++) {
-    V[i] = JSON.parse(JSON.stringify(targetState.V[i]));
+    if (targetState.V && targetState.V[i]) {
+      V[i] = JSON.parse(JSON.stringify(targetState.V[i]));
+    } else {
+      V[i] = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0]];
+    }
   }
 
   targetState.inputsValues.forEach((rowVals, r) => {
