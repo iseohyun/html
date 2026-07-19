@@ -19,6 +19,20 @@ window.addEventListener('error', function(e) {
   console.error("[Janggi Runtime Error]", e.message, "at", e.filename, ":", e.lineno, ":", e.colno);
 });
 
+// highlightjs-line-numbers가 copy 이벤트 시 SVG 엘리먼트의 className(SVGAnimatedString)에서 indexOf가 없어서 터지는 에러를 방지합니다.
+if (typeof SVGAnimatedString !== 'undefined') {
+  if (!SVGAnimatedString.prototype.indexOf) {
+    SVGAnimatedString.prototype.indexOf = function(str, fromIndex) {
+      return this.baseVal ? this.baseVal.indexOf(str, fromIndex) : -1;
+    };
+  }
+  if (!SVGAnimatedString.prototype.includes) {
+    SVGAnimatedString.prototype.includes = function(str, position) {
+      return this.baseVal ? this.baseVal.includes(str, position) : false;
+    };
+  }
+}
+
 const svg = document.getElementById("janggi-svg");
 const board = document.getElementById("board");
 const selectBox = document.getElementById("select-box");

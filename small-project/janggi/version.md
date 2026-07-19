@@ -2,6 +2,9 @@
 ## Scope
 /small-project/janggi/**
 
+### [v1.4.1] - Ctrl+C 복사 시 highlightjs-line-numbers 라이브러리 충돌 에러(indexOf) 수정
+- **SVGAnimatedString prototype 패치**: 외부 하이라이트 라이브러리(`highlightjs-line-numbers.min.js`)가 copy 이벤트 발생 시 DOM 트리 내 SVG 엘리먼트의 `className`을 문자열로 오인하여 `indexOf` 함수가 누락되어 비정상 동작(Script error)을 유발하던 현상을 해결하기 위해, `SVGAnimatedString.prototype.indexOf` 및 `includes` 함수를 안전하게 바인딩(baseVal 포워딩) 처리하여 런타임 크래시를 완벽 차단
+
 ### [v1.4.0] - Ctrl+S/Ctrl+V 단축키 기보 입출력 및 사용자 커스텀 단축키 설정 모달(Modal) 기능 추가
 - **Ctrl+S / Ctrl+V 단축키 기보 입출력 구현**: 
   - 대국 중 `Ctrl + S`(맥 OS는 Cmd + S 겸용)를 누르면 현재 진행된 장기 기보를 **자동 생성하여 클립보드 복사 및 저장**
