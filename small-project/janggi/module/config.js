@@ -8,17 +8,17 @@ var animDuration = 0.5; // 애니메이션 이동 시간 (초 단위)
 var animHeight = 0.2;   // 애니메이션 기물 들기 높이 배율 (기본 0.2, 범위 0~2.0)
 
 // 장기알 크기 배율 (왕, 큰기물, 작은기물)
-var sizeKing = 1.10;
-var sizeMiddle = 0.95;
-var sizeSmall = 0.75;
+var sizeKing = 1.15;
+var sizeMiddle = 0.90;
+var sizeSmall = 0.70;
 
 // 장기알 글씨 크기 배율 (왕, 큰기물, 작은기물)
-var fontScaleKing = 1.0;
-var fontScaleMiddle = 1.0;
-var fontScaleSmall = 1.0;
+var fontScaleKing = 1.25;
+var fontScaleMiddle = 1.45;
+var fontScaleSmall = 1.45;
 
 // 좌표 라벨 글씨 크기 배율
-var coordsTextScale = 0.22;
+var coordsTextScale = 0.18;
 
 // 디자인 커스텀 상태값
 var boardColorType = "wood";
