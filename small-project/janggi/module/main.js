@@ -4429,6 +4429,14 @@ function flipBoardVertical() {
   
   boardAnimating = true;
   
+  // Save starting positions
+  const startPositions = [];
+  for (let i = 0; i < 32; i++) {
+    startPositions[i] = { x: pieces[i].x, y: pieces[i].y };
+  }
+  const oldKbCursorX = kbCursorX;
+  const oldKbCursorY = kbCursorY;
+  
   // Phase 1: Board spins 180 degrees as one body.
   boardSvg.classList.add("rotate-180-anim");
   
@@ -4436,21 +4444,102 @@ function flipBoardVertical() {
     // Phase 2: Board finished spinning. Now we run the flip and translate the pieces.
     rotateActive = true;
     
-    for (let i = 0; i < 32; i++) {
-      pieces[i].e.classList.add("smooth-move-anim");
-    }
-    const cursor = document.getElementById("kb-cursor");
-    if (cursor) cursor.classList.add("smooth-move-anim");
-    
     executeFlipBoardVertical();
+    
+    // Set up start transforms with midpoint origin
+    // Since executeFlipBoardVertical swapped the DOM elements and coordinates of pieces[i] and pieces[i+16],
+    // the startPosition of the element currently in pieces[i].e was stored at oldIndex = (i+16)%32.
+    for (let i = 0; i < 32; i++) {
+      const oldIndex = (i + 16) % 32;
+      if (pieces[i].x !== 0 && startPositions[oldIndex].x !== 0) {
+        const startPos = startPositions[oldIndex];
+        const endPos = { x: pieces[i].x, y: pieces[i].y };
+        
+        const axisA = getAxis(startPos.x, startPos.y);
+        const axisB = getAxis(endPos.x, endPos.y);
+        
+        const ratio = (i === 0 || i === 16) ? sizeKing : ((i === 1 || i === 2 || i === 17 || i === 18 || i === 3 || i === 4 || i === 19 || i === 20 || i === 5 || i === 6 || i === 21 || i === 22 || i === 7 || i === 8 || i === 23 || i === 24) ? sizeMiddle : sizeSmall);
+        const sizeVal = unitSize * ratio;
+        
+        const ax = axisA.x - sizeVal / 2;
+        const ay = axisA.y - sizeVal / 2;
+        
+        const bx = axisB.x - sizeVal / 2;
+        const by = axisB.y - sizeVal / 2;
+        
+        const dx = (ax - bx) / 2;
+        const dy = (ay - by) / 2;
+        
+        pieces[i].e.style.transition = "none";
+        pieces[i].e.style.transformOrigin = `calc(50% + ${dx}px) calc(50% + ${dy}px)`;
+        pieces[i].e.style.transform = `translate(${bx}px, ${by}px) rotate(-180deg)`;
+        pieces[i].e.classList.add("smooth-move-anim");
+      }
+    }
+    
+    const cursor = document.getElementById("kb-cursor");
+    if (cursor && kbCursorActive) {
+      const sizeVal = unitSize * 0.85;
+      const axisA = getAxis(oldKbCursorX, oldKbCursorY);
+      const axisB = getAxis(kbCursorX, kbCursorY);
+      
+      const ax = axisA.x - sizeVal / 2;
+      const ay = axisA.y - sizeVal / 2;
+      
+      const bx = axisB.x - sizeVal / 2;
+      const by = axisB.y - sizeVal / 2;
+      
+      const dx = (ax - bx) / 2;
+      const dy = (ay - by) / 2;
+      
+      cursor.style.transition = "none";
+      cursor.style.transformOrigin = `calc(50% + ${dx}px) calc(50% + ${dy}px)`;
+      cursor.style.transform = `translate(${bx}px, ${by}px) rotate(-180deg)`;
+      cursor.classList.add("smooth-move-anim");
+    }
+    
+    // Force style recalculation to apply start state
+    document.body.offsetHeight;
+    
+    // Trigger transition to target transforms
+    for (let i = 0; i < 32; i++) {
+      const oldIndex = (i + 16) % 32;
+      if (pieces[i].x !== 0 && startPositions[oldIndex].x !== 0) {
+        const endPos = { x: pieces[i].x, y: pieces[i].y };
+        const axisB = getAxis(endPos.x, endPos.y);
+        const ratio = (i === 0 || i === 16) ? sizeKing : ((i === 1 || i === 2 || i === 17 || i === 18 || i === 3 || i === 4 || i === 19 || i === 20 || i === 5 || i === 6 || i === 21 || i === 22 || i === 7 || i === 8 || i === 23 || i === 24) ? sizeMiddle : sizeSmall);
+        const sizeVal = unitSize * ratio;
+        const bx = axisB.x - sizeVal / 2;
+        const by = axisB.y - sizeVal / 2;
+        
+        pieces[i].e.style.transition = "";
+        pieces[i].e.style.transform = `translate(${bx}px, ${by}px) rotate(0deg)`;
+      }
+    }
+    
+    if (cursor && kbCursorActive) {
+      const axisB = getAxis(kbCursorX, kbCursorY);
+      const sizeVal = unitSize * 0.85;
+      const bx = axisB.x - sizeVal / 2;
+      const by = axisB.y - sizeVal / 2;
+      
+      cursor.style.transition = "";
+      cursor.style.transform = `translate(${bx}px, ${by}px) rotate(0deg)`;
+    }
     
     setTimeout(() => {
       // Clean up Phase 2
       boardSvg.classList.remove("rotate-180-anim");
       for (let i = 0; i < 32; i++) {
+        pieces[i].e.style.transformOrigin = "";
+        pieces[i].e.style.transform = "";
         pieces[i].e.classList.remove("smooth-move-anim");
       }
-      if (cursor) cursor.classList.remove("smooth-move-anim");
+      if (cursor) {
+        cursor.style.transformOrigin = "";
+        cursor.style.transform = "";
+        cursor.classList.remove("smooth-move-anim");
+      }
       rotateActive = false;
       
       initPositions();
