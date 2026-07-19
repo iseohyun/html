@@ -246,13 +246,17 @@ button {
 
 .piece-svg {
   cursor: pointer;
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), filter 0.2s;
+  transition: filter 0.2s;
   transform-origin: center;
+}
+
+/* Disable transitions during resize and initialization */
+.no-transition .piece-svg {
+  transition: none !important;
 }
 
 /* Hover dynamic lift animation */
 .piece-svg:hover {
-  transform: scale(1.07) translateY(-2px);
   filter: drop-shadow(4px 8px 6px rgba(0, 0, 0, 0.45)) !important;
 }
 
