@@ -242,6 +242,7 @@ button {
 .charim-table-wrapper table {
   width: 100%;
   border-collapse: collapse;
+  margin: 0;
 }
 
 .charim-table-wrapper td {
@@ -264,6 +265,7 @@ button {
 .settings-table {
   width: 100%;
   border-collapse: collapse;
+  margin: 0;
 }
 
 .settings-table td {
@@ -937,4 +939,77 @@ button {
 .saved-record-btn.delete-btn:hover {
   background: rgba(239, 68, 68, 0.15);
   color: #f87171;
+}
+
+/* Square buttons for record save/load */
+.record-square-btn {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(30, 41, 59, 0.55);
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+}
+
+.record-square-btn:hover {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
+}
+
+.record-square-btn:active {
+  transform: scale(0.95);
+}
+
+.record-square-btn.success {
+  background: #10b981 !important;
+  color: white !important;
+  border-color: #10b981 !important;
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.6) !important;
+}
+
+/* Highlight style for currently loaded record */
+.saved-record-row.active {
+  background: rgba(59, 130, 246, 0.12) !important;
+  border-left: 3px solid #3b82f6 !important;
+  border-color: rgba(59, 130, 246, 0.25) !important;
+}
+
+.saved-record-row.active .saved-record-name {
+  color: #60a5fa !important;
+  font-weight: bold;
+}
+
+/* Edit button inline next to record name */
+.record-edit-inline-btn {
+  background: none;
+  border: none;
+  padding: 2px;
+  color: #64748b;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+  border-radius: 4px;
+}
+
+.record-edit-inline-btn:hover {
+  color: #60a5fa;
+}
+
+.record-edit-inline-btn:active {
+  transform: scale(0.9);
+}
+
+.saved-record-btn.edit-btn:hover {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
 }

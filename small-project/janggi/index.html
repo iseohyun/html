@@ -367,25 +367,34 @@
       <!-- 고정된 헤더 영역 (스크롤되지 않음) -->
       <div class="settings-header">
         <button id="close-record-btn" onclick="closeRecordModal()">X</button>
-        <span class="settings-title">기보 보관함</span>
+        <span class="settings-title">기보</span>
         <div class="record-header-actions">
           <button id="img-download-btn" class="record-header-btn" onclick="download()" title="장기판 이미지 다운로드">그림 저장</button>
-          <button id="save-record-btn" class="record-header-btn primary" onclick="saveRecordToLibrary(this)" title="기보 저장 (클립보드 및 보관함)">기보 저장</button>
         </div>
       </div>
       
       <!-- 스크롤 가능한 기보 콘텐츠 영역 -->
       <div class="settings-scroll-area">
-        <!-- 1. 기보 데이터 (가져오기) -->
+        <!-- 1. 기보 저장 및 불러오기 -->
         <div class="setting-category">
           <div class="category-header">
-            <span class="category-title">기보 데이터 불러오기</span>
+            <span class="category-title">기보 저장 및 불러오기</span>
           </div>
-          <div class="record-textarea-wrapper" style="margin-bottom: 12px; width: 100%;">
-            <textarea id="record-text-area" placeholder="기보 텍스트를 붙여넣고 아래 불러오기 버튼을 누르면 대국이 복원됩니다."></textarea>
-          </div>
-          <div style="display: flex; gap: 8px;">
-            <button id="import-record-btn" class="record-import-btn" onclick="importRecordFromText()">클립보드 기보 불러오기</button>
+          <div style="display: flex; gap: 12px; align-items: center; margin-top: 8px;">
+            <button id="save-record-square-btn" class="record-square-btn" onclick="saveRecordToLibrary(this)" title="현재 기보 저장 (클립보드 및 보관함)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+            </button>
+            <button id="load-record-square-btn" class="record-square-btn" onclick="loadRecordFromClipboard()" title="클립보드 기보 불러오기">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+            </button>
           </div>
         </div>
         
@@ -393,9 +402,6 @@
         <div class="setting-category">
           <div class="category-header">
             <span class="category-title">저장된 기보 목록</span>
-            <div class="category-header-actions">
-              <button class="reset-category-btn" onclick="clearAllSavedRecords()" title="모든 기보 삭제">🔄</button>
-            </div>
           </div>
           <div id="saved-records-list" class="saved-records-list-container">
             <!-- JavaScript dynamically inserts saved record rows here -->

@@ -55,6 +55,7 @@ var iAmCho = false;
 const candiBoxList = new Array(); // 생성된 이동가능 경로들을 관리합니다.
 const log = new Array(); // 착수 로그를 기록합니다.
 var curSelect = 32;
+var currentLoadedRecordId = null; // 현재 불러와서 보여주고 있는 기보의 로컬스토리지 ID
 const knownStart = [
   [
     "59109028882070308040601737577797",
