@@ -97,22 +97,11 @@ function getData() {
         newGameState[1] = i;
       }
     }
-
-    // 시작 버튼을 수정합니다.
-    let charim_group = document.getElementsByClassName("charim0");
-    Array.from(charim_group).forEach(element => {
-      element.style.backgroundColor = "#EFEFEF"
-    });
-    charim_group[newGameState[0]].style.backgroundColor = "#CCC";
-
-    charim_group = document.getElementsByClassName("charim1");
-    Array.from(charim_group).forEach(element => {
-      element.style.backgroundColor = "#EFEFEF"
-    });
-    charim_group[newGameState[1]].style.backgroundColor = "#CCC";
-
     setting(param_P);
   }
+
+  // 상차림 단추 색상 및 미니어처 예시 배치도 동기화
+  syncCharimButtonStyles();
 
   let param_log = urlParams.get('log');
   if (param_log != undefined) {
@@ -289,57 +278,95 @@ function prev() {
 }
 
 function changeCharim(group, type, element) {
-  let btnGroup = document.getElementsByClassName("charim" + group);
-  for (let i = 0; i < btnGroup.length; i++) {
-    btnGroup[i].style.backgroundColor = "#EFEFEF";
-  }
-  element.style.backgroundColor = "#CCC";
   newGameState[group] = type;
+  syncCharimButtonStyles();
 }
 
-function newStart() {
-  location.href = "index.html";
-}
-
-function reload() {
-  let param_P = knownStart[0][newGameState[0]] + knownStart[1][newGameState[1]];
-  param_P = `?p=${param_P}`;
-
-  let param_log = "&log=";
-  log.forEach(e => {
-    param_log += e.i + n2Az(e.x) + n2Az(e.y) + ((e.t != 32) ? e.t : "") + ",";
+function syncCharimButtonStyles() {
+  let charim_group = document.getElementsByClassName("charim0");
+  Array.from(charim_group).forEach((element, i) => {
+    element.style.backgroundColor = (i === newGameState[0]) ? "#3b82f6" : "#1e293b";
   });
-  let param_cho = "&cho=" + ((iAmCho) ? "Y" : "N");
 
-  let param_turn = "&t=" + parseInt(document.getElementById("turn").value);
-
-  location.href = param_P + param_log + param_cho + param_turn;
+  charim_group = document.getElementsByClassName("charim1");
+  Array.from(charim_group).forEach((element, i) => {
+    element.style.backgroundColor = (i === newGameState[1]) ? "#3b82f6" : "#1e293b";
+  });
+  
+  updateCharimPreview();
 }
 
-function reload_now() {
-  let param_P = "?p=";
-  for (let i = 0; i < 32; i++) {
-    param_P += pieces[i].x;
-    param_P += ((pieces[i].y == 10) ? 0 : pieces[i].y);
-  }
-  location.href = param_P;
+function updateCharimPreview() {
+  const previewHan = document.getElementById("preview-han");
+  const previewCho = document.getElementById("preview-cho");
+  if (!previewHan || !previewCho) return;
+  
+  const layouts = [
+    ["馬", "象", "馬", "象"], // 0: 마상마상
+    ["馬", "象", "象", "馬"], // 1: 마상상마
+    ["象", "馬", "馬", "象"], // 2: 상마마상
+    ["象", "馬", "象", "馬"]  // 3: 상마상마
+  ];
+  
+  let hanL = layouts[newGameState[1]];
+  let choL = layouts[newGameState[0]];
+  
+  let topIsCho = !iAmCho;
+  let bottomIsCho = iAmCho;
+  
+  let topTokenClass = topIsCho ? "preview-token-cho" : "preview-token-han";
+  let bottomTokenClass = bottomIsCho ? "preview-token-cho" : "preview-token-han";
+  
+  previewHan.innerHTML = `
+    <span class="preview-token preview-token-neutral">車</span>
+    <span class="preview-token ${topTokenClass}">${hanL[0]}</span>
+    <span class="preview-token ${topTokenClass}">${hanL[1]}</span>
+    <span class="preview-token preview-token-neutral">士</span>
+    <span class="preview-token preview-token-empty"></span>
+    <span class="preview-token preview-token-neutral">士</span>
+    <span class="preview-token ${topTokenClass}">${hanL[2]}</span>
+    <span class="preview-token ${topTokenClass}">${hanL[3]}</span>
+    <span class="preview-token preview-token-neutral">車</span>
+  `;
+  
+  previewCho.innerHTML = `
+    <span class="preview-token preview-token-neutral">車</span>
+    <span class="preview-token ${bottomTokenClass}">${choL[0]}</span>
+    <span class="preview-token ${bottomTokenClass}">${choL[1]}</span>
+    <span class="preview-token preview-token-neutral">士</span>
+    <span class="preview-token preview-token-empty"></span>
+    <span class="preview-token preview-token-neutral">士</span>
+    <span class="preview-token ${bottomTokenClass}">${choL[2]}</span>
+    <span class="preview-token ${bottomTokenClass}">${choL[3]}</span>
+    <span class="preview-token preview-token-neutral">車</span>
+  `;
 }
 
 function changeNation(amIcho) {
   iAmCho = amIcho;
   const topEl = document.getElementById("nation-top");
   const bottomEl = document.getElementById("nation-bottom");
+  if (!topEl || !bottomEl) return;
+  
   if (amIcho) {
-    bottomEl.style["background-color"] = "#AAF";
+    bottomEl.style.backgroundColor = "#3b82f6";
+    bottomEl.style.color = "white";
     bottomEl.innerHTML = "초";
-    topEl.style["background-color"] = "#FAA";
+    
+    topEl.style.backgroundColor = "#ef4444";
+    topEl.style.color = "white";
     topEl.innerHTML = "한";
   } else {
-    topEl.style["background-color"] = "#AAF";
-    topEl.innerHTML = "초";
-    bottomEl.style["background-color"] = "#FAA";
+    bottomEl.style.backgroundColor = "#ef4444";
+    bottomEl.style.color = "white";
     bottomEl.innerHTML = "한";
+    
+    topEl.style.backgroundColor = "#3b82f6";
+    topEl.style.color = "white";
+    topEl.innerHTML = "초";
   }
+  
+  updateCharimPreview();
 }
 
 function download() {
@@ -385,9 +412,39 @@ function toggleCoordinates() {
 }
 
 function startNewGame() {
+  // 1. 착수 로그 비우기
+  log.length = 0;
+  
+  // 2. 턴 수 0으로 초기화
+  const turnEl = document.getElementById("turn");
+  if (turnEl) turnEl.value = 0;
+  
+  // 3. 현재 설정한 상차림에 부합하는 배치 데이터 산출
   let param_P = knownStart[0][newGameState[0]] + knownStart[1][newGameState[1]];
-  let param_cho = "&cho=" + ((iAmCho) ? "Y" : "N");
-  location.href = `index.html?p=${param_P}${param_cho}`;
+  
+  // 4. 기물 위치 데이터 복원
+  setting(param_P);
+  
+  // 5. 기물 선택 상태 초기화
+  curSelect = 32;
+  clearCandiBox();
+  const selectBox = document.getElementById("select-box");
+  if (selectBox) {
+    selectBox.setAttribute("x", -1000);
+    selectBox.setAttribute("y", -1000);
+  }
+  
+  // 6. 점수판 및 순위 갱신
+  updateScore();
+  
+  // 7. 기물들을 초기 배치 좌표로 즉시 이동시킵니다. (트랜지션 애니메이션 차단)
+  svg.classList.add("no-transition");
+  initPositions();
+  svg.offsetHeight; // force reflow
+  svg.classList.remove("no-transition");
+  
+  // 8. 설정창 닫기
+  disalbeSettingBox();
 }
 
 function adjustPieceSize(type, delta) {

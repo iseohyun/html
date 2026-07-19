@@ -61,7 +61,7 @@
                   <button class="charim1" onclick="changeCharim(1, 3, this)">상마상마</button>
                 </td>
                 <td>
-                  <button id="nation-top" onclick="changeNation(false)" style="background-color: #ef4444; color: white; font-weight: bold; border: none; border-radius: 6px; padding: 6px 15px;">한</button>
+                  <button id="nation-top" onclick="changeNation(false)" style="font-weight: bold; border: none; border-radius: 6px; padding: 6px 15px; cursor: pointer;">한</button>
                 </td>
               </tr>
               <tr>
@@ -73,13 +73,25 @@
                   <button class="charim0" onclick="changeCharim(0, 3, this)">상마상마</button>
                 </td>
                 <td>
-                  <button id="nation-bottom" onclick="changeNation(true)" style="background-color: #3b82f6; color: white; font-weight: bold; border: none; border-radius: 6px; padding: 6px 15px;">초</button>
+                  <button id="nation-bottom" onclick="changeNation(true)" style="font-weight: bold; border: none; border-radius: 6px; padding: 6px 15px; cursor: pointer;">초</button>
                 </td>
               </tr>
             </table>
           </div>
           <div class="charim-btn-wrapper">
-            <button onclick="startNewGame()" style="padding: 15px 30px; font-size: 1.15em; font-weight: 700; background-color: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3); transition: all 0.2s;">시작하기</button>
+            <button onclick="startNewGame()">시작하기</button>
+          </div>
+        </div>
+        
+        <!-- 상차림 배치 예시 그림 (미니어처 9칸 back-row 표현) -->
+        <div class="charim-preview-container">
+          <div class="charim-preview-row">
+            <span class="charim-preview-label">상대편 (위) 배치:</span>
+            <div id="preview-han" class="charim-preview-tokens"></div>
+          </div>
+          <div class="charim-preview-row">
+            <span class="charim-preview-label">본인 (아래) 배치:</span>
+            <div id="preview-cho" class="charim-preview-tokens"></div>
           </div>
         </div>
       </div>
