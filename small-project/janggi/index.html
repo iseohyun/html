@@ -38,225 +38,247 @@
 <body style="overflow: hidden;">
   <article id="janggi-app">
     <div id="setting-box">
-      <!-- 닫기 버튼: 왼쪽 위에 X표시 -->
-      <button id="close-btn" onclick="disalbeSettingBox()">X</button>
+      <!-- 고정된 헤더 영역 (스크롤되지 않음) -->
+      <div class="settings-header">
+        <button id="close-btn" onclick="disalbeSettingBox()">X</button>
+        <span class="settings-title">설정</span>
+      </div>
       
-      <!-- 1. 상차림 -->
-      <div class="setting-category">
-        <h2>1. 상차림</h2>
-        <div class="charim-container">
-          <div class="charim-table-wrapper">
-            <table>
-              <tr>
-                <td></td>
-                <td style="text-align: center; font-weight: bold;">상차림 배치</td>
-                <td style="text-align: center; font-weight: bold;">진영</td>
-              </tr>
-              <tr>
-                <td>위 (상대편 진영)</td>
-                <td>
-                  <button class="charim1" onclick="changeCharim(1, 0, this)">마상마상</button>
-                  <button class="charim1" onclick="changeCharim(1, 1, this)">마상상마</button>
-                  <button class="charim1" onclick="changeCharim(1, 2, this)">상마마상</button>
-                  <button class="charim1" onclick="changeCharim(1, 3, this)">상마상마</button>
-                </td>
-                <td>
-                  <button id="nation-top" onclick="toggleNation()" style="font-weight: bold; border: none; border-radius: 6px; padding: 6px 15px; cursor: pointer;">한</button>
-                </td>
-              </tr>
-              <tr>
-                <td>아래 (본인 진영)</td>
-                <td>
-                  <button class="charim0" onclick="changeCharim(0, 0, this)">마상마상</button>
-                  <button class="charim0" onclick="changeCharim(0, 1, this)">마상상마</button>
-                  <button class="charim0" onclick="changeCharim(0, 2, this)">상마마상</button>
-                  <button class="charim0" onclick="changeCharim(0, 3, this)">상마상마</button>
-                </td>
-                <td>
-                  <button id="nation-bottom" onclick="toggleNation()" style="font-weight: bold; border: none; border-radius: 6px; padding: 6px 15px; cursor: pointer;">초</button>
-                </td>
-              </tr>
-            </table>
+      <!-- 스크롤 가능한 설정 콘텐츠 영역 -->
+      <div class="settings-scroll-area">
+        <!-- 1. 상차림 -->
+        <div class="setting-category">
+          <h2>1. 상차림</h2>
+          <div class="charim-container">
+            <div class="charim-table-wrapper">
+              <table>
+                <tr>
+                  <td></td>
+                  <td style="text-align: center; font-weight: bold;">상차림 배치</td>
+                  <td style="text-align: center; font-weight: bold;">진영</td>
+                </tr>
+                <tr>
+                  <td>위 (상대편 진영)</td>
+                  <td>
+                    <button class="charim1" onclick="changeCharim(1, 0, this)">마상마상</button>
+                    <button class="charim1" onclick="changeCharim(1, 1, this)">마상상마</button>
+                    <button class="charim1" onclick="changeCharim(1, 2, this)">상마마상</button>
+                    <button class="charim1" onclick="changeCharim(1, 3, this)">상마상마</button>
+                  </td>
+                  <td>
+                    <button id="nation-top" onclick="toggleNation()" style="font-weight: bold; border: none; border-radius: 6px; padding: 6px 15px; cursor: pointer;">한</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>아래 (본인 진영)</td>
+                  <td>
+                    <button class="charim0" onclick="changeCharim(0, 0, this)">마상마상</button>
+                    <button class="charim0" onclick="changeCharim(0, 1, this)">마상상마</button>
+                    <button class="charim0" onclick="changeCharim(0, 2, this)">상마마상</button>
+                    <button class="charim0" onclick="changeCharim(0, 3, this)">상마상마</button>
+                  </td>
+                  <td>
+                    <button id="nation-bottom" onclick="toggleNation()" style="font-weight: bold; border: none; border-radius: 6px; padding: 6px 15px; cursor: pointer;">초</button>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <div class="charim-btn-wrapper">
+              <button onclick="startNewGame()">시작하기</button>
+            </div>
           </div>
-          <div class="charim-btn-wrapper">
-            <button onclick="startNewGame()">시작하기</button>
+          
+          <!-- 상차림 배치 예시 그림 (미니어처 9칸 back-row 표현) -->
+          <div class="charim-preview-container">
+            <div class="charim-preview-row">
+              <span class="charim-preview-label">상대편 (위) 배치:</span>
+              <div id="preview-han" class="charim-preview-tokens"></div>
+            </div>
+            <div class="charim-preview-row">
+              <span class="charim-preview-label">본인 (아래) 배치:</span>
+              <div id="preview-cho" class="charim-preview-tokens"></div>
+            </div>
           </div>
         </div>
-        
-        <!-- 상차림 배치 예시 그림 (미니어처 9칸 back-row 표현) -->
-        <div class="charim-preview-container">
-          <div class="charim-preview-row">
-            <span class="charim-preview-label">상대편 (위) 배치:</span>
-            <div id="preview-han" class="charim-preview-tokens"></div>
-          </div>
-          <div class="charim-preview-row">
-            <span class="charim-preview-label">본인 (아래) 배치:</span>
-            <div id="preview-cho" class="charim-preview-tokens"></div>
-          </div>
+
+        <!-- 2. 장기판 보기 -->
+        <div class="setting-category">
+          <h2>2. 장기판 보기</h2>
+          <table class="settings-table">
+            <tr>
+              <td>좌표 보기</td>
+              <td>
+                <button id="toggle-coords-btn-settings" onclick="toggleCoordinates()">좌표 표시 중</button>
+              </td>
+            </tr>
+            <tr>
+              <td>장기알 크기 (왕)</td>
+              <td>
+                <button onclick="adjustPieceSize('king', -0.05)">-</button>
+                <span id="val-size-king">1.10</span>
+                <button onclick="adjustPieceSize('king', 0.05)">+</button>
+              </td>
+            </tr>
+            <tr>
+              <td>장기알 크기 (큰기물)</td>
+              <td>
+                <button onclick="adjustPieceSize('middle', -0.05)">-</button>
+                <span id="val-size-middle">0.95</span>
+                <button onclick="adjustPieceSize('middle', 0.05)">+</button>
+              </td>
+            </tr>
+            <tr>
+              <td>장기알 크기 (작은기물)</td>
+              <td>
+                <button onclick="adjustPieceSize('small', -0.05)">-</button>
+                <span id="val-size-small">0.75</span>
+                <button onclick="adjustPieceSize('small', 0.05)">+</button>
+              </td>
+            </tr>
+            <tr>
+              <td>장기알 글씨 크기 (왕)</td>
+              <td>
+                <button onclick="adjustPieceFontSize('king', -0.05)">-</button>
+                <span id="val-font-king">1.00</span>
+                <button onclick="adjustPieceFontSize('king', 0.05)">+</button>
+              </td>
+            </tr>
+            <tr>
+              <td>장기알 글씨 크기 (큰기물)</td>
+              <td>
+                <button onclick="adjustPieceFontSize('middle', -0.05)">-</button>
+                <span id="val-font-middle">1.00</span>
+                <button onclick="adjustPieceFontSize('middle', 0.05)">+</button>
+              </td>
+            </tr>
+            <tr>
+              <td>장기알 글씨 크기 (작은기물)</td>
+              <td>
+                <button onclick="adjustPieceFontSize('small', -0.05)">-</button>
+                <span id="val-font-small">1.00</span>
+                <button onclick="adjustPieceFontSize('small', 0.05)">+</button>
+              </td>
+            </tr>
+            <tr>
+              <td>좌표 크기</td>
+              <td>
+                <button onclick="adjustCoordsFontSize(-0.02)">-</button>
+                <span id="val-coords-size">0.22</span>
+                <button onclick="adjustCoordsFontSize(0.02)">+</button>
+              </td>
+            </tr>
+            <tr>
+              <td>시스템 글자 크기</td>
+              <td>
+                <button onclick="changeFontSize(-1)">작게</button>
+                <button onclick="changeFontSize(1)">크게</button>
+              </td>
+            </tr>
+            <tr>
+              <td>장기판 색상</td>
+              <td>
+                <div style="display: flex; align-items: center; justify-content: flex-end;">
+                  <select id="board-color-select" onchange="changeBoardColor(this.value)">
+                    <option value="wood">전통 나무색</option>
+                    <option value="green">클래식 초록색</option>
+                    <option value="dark">모던 다크 회색</option>
+                    <option value="navy">슬레이트 네이비</option>
+                    <option value="custom">사용자 지정 색상...</option>
+                  </select>
+                  <input type="color" id="board-color-picker" oninput="changeBoardColor('custom')" style="display: none; vertical-align: middle; margin-left: 10px; width: 30px; height: 30px; padding: 0; border: none; border-radius: 4px; background: transparent; cursor: pointer;">
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>장기알 색상 (초나라)</td>
+              <td>
+                <div style="display: flex; align-items: center; justify-content: flex-end;">
+                  <select id="cho-color-select" onchange="changeChoColor(this.value)">
+                    <option value="blue">기본 청색 (Blue)</option>
+                    <option value="green">비취 녹색 (Green)</option>
+                    <option value="gold">황금 황색 (Gold)</option>
+                    <option value="custom">사용자 지정 색상...</option>
+                  </select>
+                  <input type="color" id="cho-color-picker" oninput="changeChoColor('custom')" style="display: none; vertical-align: middle; margin-left: 10px; width: 30px; height: 30px; padding: 0; border: none; border-radius: 4px; background: transparent; cursor: pointer;">
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>장기알 색상 (한나라)</td>
+              <td>
+                <div style="display: flex; align-items: center; justify-content: flex-end;">
+                  <select id="han-color-select" onchange="changeHanColor(this.value)">
+                    <option value="red">기본 적색 (Red)</option>
+                    <option value="purple">자옥 자색 (Purple)</option>
+                    <option value="slate">오닉스 회색 (Slate)</option>
+                    <option value="custom">사용자 지정 색상...</option>
+                  </select>
+                  <input type="color" id="han-color-picker" oninput="changeHanColor('custom')" style="display: none; vertical-align: middle; margin-left: 10px; width: 30px; height: 30px; padding: 0; border: none; border-radius: 4px; background: transparent; cursor: pointer;">
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>장기알 모양</td>
+              <td>
+                <select id="piece-shape-select" onchange="changePieceShape(this.value)">
+                  <option value="octagon">전통 팔각형</option>
+                  <option value="circle">현대 원형</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>이동 가능 위치 모양</td>
+              <td>
+                <select id="candi-shape-select" onchange="changeCandiShape(this.value)">
+                  <option value="empty_circle">빈 원 (경계선)</option>
+                  <option value="filled_circle">꽉찬 원</option>
+                  <option value="empty_square">빈 사각형</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>이동 가능 위치 색상</td>
+              <td>
+                <div style="display: flex; align-items: center; justify-content: flex-end;">
+                  <select id="candi-color-select" onchange="changeCandiColor(this.value)">
+                    <option value="#3b82f6">파란색 (Blue)</option>
+                    <option value="#10b981">초록색 (Green)</option>
+                    <option value="#f97316">주황색 (Orange)</option>
+                    <option value="#a855f7">보라색 (Purple)</option>
+                    <option value="#eab308">노란색 (Yellow)</option>
+                    <option value="custom">사용자 지정 색상...</option>
+                  </select>
+                  <input type="color" id="candi-color-picker" oninput="changeCandiColor('custom')" style="display: none; vertical-align: middle; margin-left: 10px; width: 30px; height: 30px; padding: 0; border: none; border-radius: 4px; background: transparent; cursor: pointer;">
+                </div>
+              </td>
+            </tr>
+          </table>
         </div>
-      </div>
 
-      <!-- 2. 장기판 보기 -->
-      <div class="setting-category">
-        <h2>2. 장기판 보기</h2>
-        <table class="settings-table">
-          <tr>
-            <td>좌표 보기</td>
-            <td>
-              <button id="toggle-coords-btn-settings" onclick="toggleCoordinates()">좌표 표시 중</button>
-            </td>
-          </tr>
-          <tr>
-            <td>장기알 크기 (왕)</td>
-            <td>
-              <button onclick="adjustPieceSize('king', -0.05)">-</button>
-              <span id="val-size-king">1.10</span>
-              <button onclick="adjustPieceSize('king', 0.05)">+</button>
-            </td>
-          </tr>
-          <tr>
-            <td>장기알 크기 (큰기물)</td>
-            <td>
-              <button onclick="adjustPieceSize('middle', -0.05)">-</button>
-              <span id="val-size-middle">0.95</span>
-              <button onclick="adjustPieceSize('middle', 0.05)">+</button>
-            </td>
-          </tr>
-          <tr>
-            <td>장기알 크기 (작은기물)</td>
-            <td>
-              <button onclick="adjustPieceSize('small', -0.05)">-</button>
-              <span id="val-size-small">0.75</span>
-              <button onclick="adjustPieceSize('small', 0.05)">+</button>
-            </td>
-          </tr>
-          <tr>
-            <td>장기알 글씨 크기 (왕)</td>
-            <td>
-              <button onclick="adjustPieceFontSize('king', -0.05)">-</button>
-              <span id="val-font-king">1.00</span>
-              <button onclick="adjustPieceFontSize('king', 0.05)">+</button>
-            </td>
-          </tr>
-          <tr>
-            <td>장기알 글씨 크기 (큰기물)</td>
-            <td>
-              <button onclick="adjustPieceFontSize('middle', -0.05)">-</button>
-              <span id="val-font-middle">1.00</span>
-              <button onclick="adjustPieceFontSize('middle', 0.05)">+</button>
-            </td>
-          </tr>
-          <tr>
-            <td>장기알 글씨 크기 (작은기물)</td>
-            <td>
-              <button onclick="adjustPieceFontSize('small', -0.05)">-</button>
-              <span id="val-font-small">1.00</span>
-              <button onclick="adjustPieceFontSize('small', 0.05)">+</button>
-            </td>
-          </tr>
-          <tr>
-            <td>좌표 크기</td>
-            <td>
-              <button onclick="adjustCoordsFontSize(-0.02)">-</button>
-              <span id="val-coords-size">0.22</span>
-              <button onclick="adjustCoordsFontSize(0.02)">+</button>
-            </td>
-          </tr>
-          <tr>
-            <td>시스템 글자 크기</td>
-            <td>
-              <button onclick="changeFontSize(-1)">작게</button>
-              <button onclick="changeFontSize(1)">크게</button>
-            </td>
-          </tr>
-          <tr>
-            <td>장기판 색상</td>
-            <td>
-              <select id="board-color-select" onchange="changeBoardColor(this.value)">
-                <option value="wood">전통 나무색</option>
-                <option value="green">클래식 초록색</option>
-                <option value="dark">모던 다크 회색</option>
-                <option value="navy">슬레이트 네이비</option>
-              </select>
-            </td>
-          </tr>
-          <tr>
-            <td>장기알 색상 (초나라)</td>
-            <td>
-              <select id="cho-color-select" onchange="changeChoColor(this.value)">
-                <option value="blue">기본 청색 (Blue)</option>
-                <option value="green">비취 녹색 (Green)</option>
-                <option value="gold">황금 황색 (Gold)</option>
-              </select>
-            </td>
-          </tr>
-          <tr>
-            <td>장기알 색상 (한나라)</td>
-            <td>
-              <select id="han-color-select" onchange="changeHanColor(this.value)">
-                <option value="red">기본 적색 (Red)</option>
-                <option value="purple">자옥 자색 (Purple)</option>
-                <option value="slate">오닉스 회색 (Slate)</option>
-              </select>
-            </td>
-          </tr>
-          <tr>
-            <td>장기알 모양</td>
-            <td>
-              <select id="piece-shape-select" onchange="changePieceShape(this.value)">
-                <option value="octagon">전통 팔각형</option>
-                <option value="circle">현대 원형</option>
-              </select>
-            </td>
-          </tr>
-          <tr>
-            <td>이동 가능 위치 모양</td>
-            <td>
-              <select id="candi-shape-select" onchange="changeCandiShape(this.value)">
-                <option value="empty_circle">빈 원 (경계선)</option>
-                <option value="filled_circle">꽉찬 원</option>
-                <option value="empty_square">빈 사각형</option>
-              </select>
-            </td>
-          </tr>
-          <tr>
-            <td>이동 가능 위치 색상</td>
-            <td>
-              <select id="candi-color-select" onchange="changeCandiColor(this.value)">
-                <option value="#3b82f6">파란색 (Blue)</option>
-                <option value="#10b981">초록색 (Green)</option>
-                <option value="#f97316">주황색 (Orange)</option>
-                <option value="#a855f7">보라색 (Purple)</option>
-                <option value="#eab308">노란색 (Yellow)</option>
-              </select>
-            </td>
-          </tr>
-        </table>
-      </div>
-
-      <!-- 3. 애니메이션 -->
-      <div class="setting-category">
-        <h2>3. 애니메이션</h2>
-        <table class="settings-table">
-          <tr>
-            <td>애니메이션 시간</td>
-            <td>
-              <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
-                <input type="range" id="anim-duration-slider" min="0" max="2" step="0.1" value="0.5" oninput="changeAnimDuration(this.value)" style="width: 150px; accent-color: #3b82f6;">
-                <span id="anim-duration-val" style="min-width: 45px; text-align: right; color: #3b82f6;">0.5</span>초
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>기물 들기 높이</td>
-            <td>
-              <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
-                <input type="range" id="anim-height-slider" min="0" max="2" step="0.1" value="0.2" oninput="changeAnimHeight(this.value)" style="width: 150px; accent-color: #3b82f6;">
-                <span id="anim-height-val" style="min-width: 45px; text-align: right; color: #3b82f6;">0.2</span>
-              </div>
-            </td>
-          </tr>
-        </table>
+        <!-- 3. 애니메이션 -->
+        <div class="setting-category">
+          <h2>3. 애니메이션</h2>
+          <table class="settings-table">
+            <tr>
+              <td>애니메이션 시간</td>
+              <td>
+                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+                  <input type="range" id="anim-duration-slider" min="0" max="2" step="0.1" value="0.5" oninput="changeAnimDuration(this.value)" style="width: 150px; accent-color: #3b82f6;">
+                  <span id="anim-duration-val" style="min-width: 45px; text-align: right; color: #3b82f6;">0.5</span>초
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>기물 들기 높이</td>
+              <td>
+                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+                  <input type="range" id="anim-height-slider" min="0" max="2" step="0.1" value="0.2" oninput="changeAnimHeight(this.value)" style="width: 150px; accent-color: #3b82f6;">
+                  <span id="anim-height-val" style="min-width: 45px; text-align: right; color: #3b82f6;">0.2</span>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </div>
       </div>
     </div>
     <div id="control-box">

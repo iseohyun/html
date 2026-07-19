@@ -523,105 +523,219 @@ function adjustCoordsFontSize(delta) {
   drawBoard();
 }
 
+function darkenColor(hex, percent) {
+  hex = hex.replace(/^\s*#|\s*$/g, '');
+  if (hex.length === 3) {
+    hex = hex.replace(/(.)/g, '$1$1');
+  }
+  let r = parseInt(hex.substr(0, 2), 16),
+      g = parseInt(hex.substr(2, 2), 16),
+      b = parseInt(hex.substr(4, 2), 16);
+  
+  let factor = 1 - (percent / 100);
+  r = Math.max(0, Math.min(255, Math.round(r * factor)));
+  g = Math.max(0, Math.min(255, Math.round(g * factor)));
+  b = Math.max(0, Math.min(255, Math.round(b * factor)));
+  
+  const rHex = r.toString(16).padStart(2, '0');
+  const gHex = g.toString(16).padStart(2, '0');
+  const bHex = b.toString(16).padStart(2, '0');
+  
+  return `#${rHex}${gHex}${bHex}`;
+}
+
 function changeBoardColor(value) {
-  boardColorType = value;
-  localStorage.setItem("boardColorType", boardColorType);
+  const select = document.getElementById("board-color-select");
+  const picker = document.getElementById("board-color-picker");
   const boardEl = document.getElementById("board");
   if (!boardEl) return;
   
-  if (value === "wood") {
-    boardEl.setAttribute("fill", "url(#board-grad)");
-    boardEl.setAttribute("filter", "url(#wood-grain)");
-  } else if (value === "green") {
-    boardEl.setAttribute("fill", "#2e5c3e");
+  if (value === "custom" || value.startsWith("#")) {
+    if (select) select.value = "custom";
+    if (picker) {
+      picker.style.display = "inline-block";
+      if (value.startsWith("#")) picker.value = value;
+    }
+    
+    let chosenColor = picker ? picker.value : "#dfb67c";
+    boardColorType = chosenColor;
+    localStorage.setItem("boardColorType", boardColorType);
+    boardEl.setAttribute("fill", chosenColor);
     boardEl.setAttribute("filter", "");
-  } else if (value === "dark") {
-    boardEl.setAttribute("fill", "#2d3130");
-    boardEl.setAttribute("filter", "");
-  } else if (value === "navy") {
-    boardEl.setAttribute("fill", "#1e293b");
-    boardEl.setAttribute("filter", "");
+  } else {
+    if (picker) picker.style.display = "none";
+    if (select) select.value = value;
+    boardColorType = value;
+    localStorage.setItem("boardColorType", boardColorType);
+    
+    if (value === "wood") {
+      boardEl.setAttribute("fill", "url(#board-grad)");
+      boardEl.setAttribute("filter", "url(#wood-grain)");
+    } else if (value === "green") {
+      boardEl.setAttribute("fill", "#2e5c3e");
+      boardEl.setAttribute("filter", "");
+    } else if (value === "dark") {
+      boardEl.setAttribute("fill", "#2d3130");
+      boardEl.setAttribute("filter", "");
+    } else if (value === "navy") {
+      boardEl.setAttribute("fill", "#1e293b");
+      boardEl.setAttribute("filter", "");
+    }
   }
 }
 
 function changeChoColor(value) {
-  choColorType = value;
-  localStorage.setItem("choColorType", choColorType);
+  const select = document.getElementById("cho-color-select");
+  const picker = document.getElementById("cho-color-picker");
   const piecesEl = document.querySelectorAll(".cho-piece");
-  piecesEl.forEach(p => {
-    const polygons = p.querySelectorAll("polygon");
-    if (polygons.length >= 3) {
-      if (value === "blue") {
-        polygons[0].setAttribute("fill", "#1e3a8a");
-        polygons[1].setAttribute("fill", "#1e293b");
-        polygons[2].setAttribute("fill", "url(#cho-face-grad)");
-      } else if (value === "green") {
-        polygons[0].setAttribute("fill", "#15803d");
-        polygons[1].setAttribute("fill", "#14532d");
-        polygons[2].setAttribute("fill", "#e8f5e9");
-      } else if (value === "gold") {
-        polygons[0].setAttribute("fill", "#b45309");
-        polygons[1].setAttribute("fill", "#78350f");
-        polygons[2].setAttribute("fill", "#fef3c7");
-      }
+  
+  let chosenColor = value;
+  if (value === "custom" || value.startsWith("#")) {
+    if (select) select.value = "custom";
+    if (picker) {
+      picker.style.display = "inline-block";
+      if (value.startsWith("#")) picker.value = value;
     }
-    const circles = p.querySelectorAll("circle");
-    if (circles.length >= 3) {
-      if (value === "blue") {
-        circles[0].setAttribute("fill", "#1e3a8a");
-        circles[1].setAttribute("fill", "#1e293b");
-        circles[2].setAttribute("fill", "url(#cho-face-grad)");
-      } else if (value === "green") {
-        circles[0].setAttribute("fill", "#15803d");
-        circles[1].setAttribute("fill", "#14532d");
-        circles[2].setAttribute("fill", "#e8f5e9");
-      } else if (value === "gold") {
-        circles[0].setAttribute("fill", "#b45309");
-        circles[1].setAttribute("fill", "#78350f");
-        circles[2].setAttribute("fill", "#fef3c7");
+    chosenColor = picker ? picker.value : "#1e3a8a";
+    choColorType = chosenColor;
+    localStorage.setItem("choColorType", choColorType);
+    
+    const p0 = darkenColor(chosenColor, 25);
+    const p1 = darkenColor(chosenColor, 15);
+    const p2 = chosenColor;
+    
+    piecesEl.forEach(p => {
+      const polygons = p.querySelectorAll("polygon");
+      if (polygons.length >= 3) {
+        polygons[0].setAttribute("fill", p0);
+        polygons[1].setAttribute("fill", p1);
+        polygons[2].setAttribute("fill", p2);
       }
-    }
-  });
+      const circles = p.querySelectorAll("circle");
+      if (circles.length >= 3) {
+        circles[0].setAttribute("fill", p0);
+        circles[1].setAttribute("fill", p1);
+        circles[2].setAttribute("fill", p2);
+      }
+    });
+  } else {
+    if (picker) picker.style.display = "none";
+    if (select) select.value = value;
+    choColorType = value;
+    localStorage.setItem("choColorType", choColorType);
+    
+    piecesEl.forEach(p => {
+      const polygons = p.querySelectorAll("polygon");
+      if (polygons.length >= 3) {
+        if (value === "blue") {
+          polygons[0].setAttribute("fill", "#1e3a8a");
+          polygons[1].setAttribute("fill", "#1e293b");
+          polygons[2].setAttribute("fill", "url(#cho-face-grad)");
+        } else if (value === "green") {
+          polygons[0].setAttribute("fill", "#15803d");
+          polygons[1].setAttribute("fill", "#14532d");
+          polygons[2].setAttribute("fill", "#e8f5e9");
+        } else if (value === "gold") {
+          polygons[0].setAttribute("fill", "#b45309");
+          polygons[1].setAttribute("fill", "#78350f");
+          polygons[2].setAttribute("fill", "#fef3c7");
+        }
+      }
+      const circles = p.querySelectorAll("circle");
+      if (circles.length >= 3) {
+        if (value === "blue") {
+          circles[0].setAttribute("fill", "#1e3a8a");
+          circles[1].setAttribute("fill", "#1e293b");
+          circles[2].setAttribute("fill", "url(#cho-face-grad)");
+        } else if (value === "green") {
+          circles[0].setAttribute("fill", "#15803d");
+          circles[1].setAttribute("fill", "#14532d");
+          circles[2].setAttribute("fill", "#e8f5e9");
+        } else if (value === "gold") {
+          circles[0].setAttribute("fill", "#b45309");
+          circles[1].setAttribute("fill", "#78350f");
+          circles[2].setAttribute("fill", "#fef3c7");
+        }
+      }
+    });
+  }
 }
 
 function changeHanColor(value) {
-  hanColorType = value;
-  localStorage.setItem("hanColorType", hanColorType);
+  const select = document.getElementById("han-color-select");
+  const picker = document.getElementById("han-color-picker");
   const piecesEl = document.querySelectorAll(".han-piece");
-  piecesEl.forEach(p => {
-    const polygons = p.querySelectorAll("polygon");
-    if (polygons.length >= 3) {
-      if (value === "red") {
-        polygons[0].setAttribute("fill", "#991b1b");
-        polygons[1].setAttribute("fill", "#3f1c0d");
-        polygons[2].setAttribute("fill", "url(#han-face-grad)");
-      } else if (value === "purple") {
-        polygons[0].setAttribute("fill", "#7e22ce");
-        polygons[1].setAttribute("fill", "#4c1d95");
-        polygons[2].setAttribute("fill", "#faf5ff");
-      } else if (value === "slate") {
-        polygons[0].setAttribute("fill", "#374151");
-        polygons[1].setAttribute("fill", "#1f2937");
-        polygons[2].setAttribute("fill", "#f3f4f6");
-      }
+  
+  let chosenColor = value;
+  if (value === "custom" || value.startsWith("#")) {
+    if (select) select.value = "custom";
+    if (picker) {
+      picker.style.display = "inline-block";
+      if (value.startsWith("#")) picker.value = value;
     }
-    const circles = p.querySelectorAll("circle");
-    if (circles.length >= 3) {
-      if (value === "red") {
-        circles[0].setAttribute("fill", "#991b1b");
-        circles[1].setAttribute("fill", "#3f1c0d");
-        circles[2].setAttribute("fill", "url(#han-face-grad)");
-      } else if (value === "purple") {
-        circles[0].setAttribute("fill", "#7e22ce");
-        circles[1].setAttribute("fill", "#4c1d95");
-        circles[2].setAttribute("fill", "#faf5ff");
-      } else if (value === "slate") {
-        circles[0].setAttribute("fill", "#374151");
-        circles[1].setAttribute("fill", "#1f2937");
-        circles[2].setAttribute("fill", "#f3f4f6");
+    chosenColor = picker ? picker.value : "#991b1b";
+    hanColorType = chosenColor;
+    localStorage.setItem("hanColorType", hanColorType);
+    
+    const p0 = darkenColor(chosenColor, 25);
+    const p1 = darkenColor(chosenColor, 15);
+    const p2 = chosenColor;
+    
+    piecesEl.forEach(p => {
+      const polygons = p.querySelectorAll("polygon");
+      if (polygons.length >= 3) {
+        polygons[0].setAttribute("fill", p0);
+        polygons[1].setAttribute("fill", p1);
+        polygons[2].setAttribute("fill", p2);
       }
-    }
-  });
+      const circles = p.querySelectorAll("circle");
+      if (circles.length >= 3) {
+        circles[0].setAttribute("fill", p0);
+        circles[1].setAttribute("fill", p1);
+        circles[2].setAttribute("fill", p2);
+      }
+    });
+  } else {
+    if (picker) picker.style.display = "none";
+    if (select) select.value = value;
+    hanColorType = value;
+    localStorage.setItem("hanColorType", hanColorType);
+    
+    piecesEl.forEach(p => {
+      const polygons = p.querySelectorAll("polygon");
+      if (polygons.length >= 3) {
+        if (value === "red") {
+          polygons[0].setAttribute("fill", "#991b1b");
+          polygons[1].setAttribute("fill", "#3f1c0d");
+          polygons[2].setAttribute("fill", "url(#han-face-grad)");
+        } else if (value === "purple") {
+          polygons[0].setAttribute("fill", "#7e22ce");
+          polygons[1].setAttribute("fill", "#4c1d95");
+          polygons[2].setAttribute("fill", "#faf5ff");
+        } else if (value === "slate") {
+          polygons[0].setAttribute("fill", "#374151");
+          polygons[1].setAttribute("fill", "#1f2937");
+          polygons[2].setAttribute("fill", "#f3f4f6");
+        }
+      }
+      const circles = p.querySelectorAll("circle");
+      if (circles.length >= 3) {
+        if (value === "red") {
+          circles[0].setAttribute("fill", "#991b1b");
+          circles[1].setAttribute("fill", "#3f1c0d");
+          circles[2].setAttribute("fill", "url(#han-face-grad)");
+        } else if (value === "purple") {
+          circles[0].setAttribute("fill", "#7e22ce");
+          circles[1].setAttribute("fill", "#4c1d95");
+          circles[2].setAttribute("fill", "#faf5ff");
+        } else if (value === "slate") {
+          circles[0].setAttribute("fill", "#374151");
+          circles[1].setAttribute("fill", "#1f2937");
+          circles[2].setAttribute("fill", "#f3f4f6");
+        }
+      }
+    });
+  }
 }
 
 function changePieceShape(value) {
@@ -644,8 +758,23 @@ function changeCandiShape(value) {
 }
 
 function changeCandiColor(value) {
-  candiColorType = value;
-  localStorage.setItem("candiColorType", candiColorType);
+  const select = document.getElementById("candi-color-select");
+  const picker = document.getElementById("candi-color-picker");
+  
+  if (value === "custom" || value.startsWith("#")) {
+    if (select) select.value = "custom";
+    if (picker) {
+      picker.style.display = "inline-block";
+      if (value.startsWith("#")) picker.value = value;
+    }
+    candiColorType = picker ? picker.value : "#3b82f6";
+    localStorage.setItem("candiColorType", candiColorType);
+  } else {
+    if (picker) picker.style.display = "none";
+    if (select) select.value = value;
+    candiColorType = value;
+    localStorage.setItem("candiColorType", candiColorType);
+  }
 }
 
 function changeAnimDuration(val) {
@@ -703,13 +832,49 @@ function initSettingsUI() {
   if (valCoordsSize) valCoordsSize.textContent = coordsTextScale.toFixed(2);
   
   const boardColorSelect = document.getElementById("board-color-select");
-  if (boardColorSelect) boardColorSelect.value = boardColorType;
+  const boardColorPicker = document.getElementById("board-color-picker");
+  if (boardColorSelect) {
+    if (boardColorType.startsWith("#")) {
+      boardColorSelect.value = "custom";
+      if (boardColorPicker) {
+        boardColorPicker.style.display = "inline-block";
+        boardColorPicker.value = boardColorType;
+      }
+    } else {
+      boardColorSelect.value = boardColorType;
+      if (boardColorPicker) boardColorPicker.style.display = "none";
+    }
+  }
   
   const choColorSelect = document.getElementById("cho-color-select");
-  if (choColorSelect) choColorSelect.value = choColorType;
+  const choColorPicker = document.getElementById("cho-color-picker");
+  if (choColorSelect) {
+    if (choColorType.startsWith("#")) {
+      choColorSelect.value = "custom";
+      if (choColorPicker) {
+        choColorPicker.style.display = "inline-block";
+        choColorPicker.value = choColorType;
+      }
+    } else {
+      choColorSelect.value = choColorType;
+      if (choColorPicker) choColorPicker.style.display = "none";
+    }
+  }
   
   const hanColorSelect = document.getElementById("han-color-select");
-  if (hanColorSelect) hanColorSelect.value = hanColorType;
+  const hanColorPicker = document.getElementById("han-color-picker");
+  if (hanColorSelect) {
+    if (hanColorType.startsWith("#")) {
+      hanColorSelect.value = "custom";
+      if (hanColorPicker) {
+        hanColorPicker.style.display = "inline-block";
+        hanColorPicker.value = hanColorType;
+      }
+    } else {
+      hanColorSelect.value = hanColorType;
+      if (hanColorPicker) hanColorPicker.style.display = "none";
+    }
+  }
   
   const pieceShapeSelect = document.getElementById("piece-shape-select");
   if (pieceShapeSelect) pieceShapeSelect.value = pieceShapeType;
@@ -718,7 +883,19 @@ function initSettingsUI() {
   if (candiShapeSelect) candiShapeSelect.value = candiShapeType;
   
   const candiColorSelect = document.getElementById("candi-color-select");
-  if (candiColorSelect) candiColorSelect.value = candiColorType;
+  const candiColorPicker = document.getElementById("candi-color-picker");
+  if (candiColorSelect) {
+    if (candiColorType.startsWith("#") && !["#3b82f6", "#10b981", "#f97316", "#a855f7", "#eab308"].includes(candiColorType)) {
+      candiColorSelect.value = "custom";
+      if (candiColorPicker) {
+        candiColorPicker.style.display = "inline-block";
+        candiColorPicker.value = candiColorType;
+      }
+    } else {
+      candiColorSelect.value = candiColorType;
+      if (candiColorPicker) candiColorPicker.style.display = "none";
+    }
+  }
 }
 
 // 안전한 초기 호출부 (스크립트 로드 순서 비동기 대응)
