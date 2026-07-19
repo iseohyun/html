@@ -1196,7 +1196,9 @@ function saveCurrentConfigToSlot() {
     autoplaySpeed,
     autoplayUseAnim,
     shortcutModalBgColor,
-    shortcutModalOpacity
+    shortcutModalOpacity,
+    commentBoxBgColor,
+    commentBoxOpacity
   };
   localStorage.setItem("janggi_settings_slot_" + activeSlot, JSON.stringify(config));
 }
@@ -1244,8 +1246,11 @@ function loadConfigFromSlot() {
     if (config.autoplayUseAnim !== undefined && config.autoplayUseAnim !== null) autoplayUseAnim = (config.autoplayUseAnim === "true" || config.autoplayUseAnim === true);
     if (config.shortcutModalBgColor) shortcutModalBgColor = config.shortcutModalBgColor;
     if (config.shortcutModalOpacity !== undefined && config.shortcutModalOpacity !== null) shortcutModalOpacity = parseFloat(config.shortcutModalOpacity);
+    if (config.commentBoxBgColor) commentBoxBgColor = config.commentBoxBgColor;
+    if (config.commentBoxOpacity !== undefined && config.commentBoxOpacity !== null) commentBoxOpacity = parseFloat(config.commentBoxOpacity);
     
     applyShortcutModalTheme();
+    applyCommentBoxTheme();
     
     localStorage.setItem("showCoordinates", showCoordinates);
     localStorage.setItem("sizeKing", sizeKing);
@@ -1276,6 +1281,8 @@ function loadConfigFromSlot() {
     localStorage.setItem("autoplayUseAnim", autoplayUseAnim);
     localStorage.setItem("shortcutModalBgColor", shortcutModalBgColor);
     localStorage.setItem("shortcutModalOpacity", shortcutModalOpacity);
+    localStorage.setItem("commentBoxBgColor", commentBoxBgColor);
+    localStorage.setItem("commentBoxOpacity", commentBoxOpacity);
     
     changeBoardColor(boardColorType);
     changeChoColor(choColorType);
@@ -2692,7 +2699,14 @@ function initGame() {
   if (localStorage.getItem("shortcutModalOpacity") !== null) {
     shortcutModalOpacity = parseFloat(localStorage.getItem("shortcutModalOpacity"));
   }
+  if (localStorage.getItem("commentBoxBgColor") !== null) {
+    commentBoxBgColor = localStorage.getItem("commentBoxBgColor");
+  }
+  if (localStorage.getItem("commentBoxOpacity") !== null) {
+    commentBoxOpacity = parseFloat(localStorage.getItem("commentBoxOpacity"));
+  }
   applyShortcutModalTheme();
+  applyCommentBoxTheme();
   if (localStorage.getItem("autoplaySpeed") !== null) {
     autoplaySpeed = parseFloat(localStorage.getItem("autoplaySpeed"));
   }
@@ -2876,6 +2890,22 @@ function handleKeyDown(e) {
     e.preventDefault();
     e.stopPropagation();
     toggleAutoplay();
+    return;
+  }
+
+  // 8a. 단축키 지정 설정창 열기
+  if (matchShortcutKey("openShortcutSettings", e)) {
+    e.preventDefault();
+    e.stopPropagation();
+    openShortcutModal();
+    return;
+  }
+
+  // 8b. 현재 수순 코멘트 편집창 열기
+  if (matchShortcutKey("openCommentEdit", e)) {
+    e.preventDefault();
+    e.stopPropagation();
+    openCommentModal();
     return;
   }
 
@@ -3073,21 +3103,23 @@ function handleKeyDown(e) {
 var isRecordingKey = null; // 현재 바인딩 기록 대기 중인 기능 키 (예: { action, type })
 
 const shortcutActionNames = {
-  up: "방향 이동",
-  down: "방향 이동",
-  left: "방향 이동",
-  right: "방향 이동",
+  newGame: "새 대국 시작하기",
+  autoplayToggle: "자동 재생 토글",
+  openShortcutSettings: "단축키 지정 설정창 열기",
+  openCommentEdit: "현재 수순 코멘트 편집창 열기",
+  up: "위로 이동",
+  down: "아래로 이동",
+  left: "왼쪽 이동",
+  right: "오른쪽 이동",
   select: "선택 및 착수",
   cursorLockToggle: "커서락 모드 토글",
   cancel: "선택 취소",
   copyNotation: "기보 클립보드 복사",
   loadNotation: "기보 클립보드 불러오기",
-  newGame: "새 대국 시작하기",
   forwardStep: "앞으로 이동",
   backwardStep: "뒤로 이동",
   goToStart: "맨 앞으로 이동",
-  goToEnd: "맨 뒤로 이동",
-  autoplayToggle: "자동 재생 토글"
+  goToEnd: "맨 뒤로 이동"
 };
 
 function migrateShortcutKeys(parsedKeys) {
@@ -3688,6 +3720,7 @@ function updateCommentBubble() {
     if (comment.trim()) {
       if (bubbleText) bubbleText.textContent = comment;
       if (bubble) bubble.style.display = "block";
+      applyCommentBoxTheme();
     } else {
       if (bubble) bubble.style.display = "none";
     }
@@ -3905,6 +3938,117 @@ function changeAutoplayUseAnim(checked) {
   saveCurrentConfigToSlot();
 }
 
+function openCommentModal() {
+  const turnInput = document.getElementById("turn");
+  if (!turnInput) return;
+  const curTurn = parseInt(turnInput.value, 10);
+  if (curTurn <= 0) {
+    showToast("코멘트를 입력할 수순이 없습니다. (0수 상태)");
+    return;
+  }
+  
+  const title = document.getElementById("comment-modal-title");
+  if (title) title.textContent = `현재 수순 (${curTurn}수) 코멘트 편집`;
+  
+  const currentMove = log[curTurn - 1];
+  const textarea = document.getElementById("comment-modal-textarea");
+  if (textarea && currentMove) {
+    textarea.value = currentMove.comment || "";
+  }
+  
+  const commentBgPicker = document.getElementById("comment-bg-picker");
+  if (commentBgPicker) commentBgPicker.value = commentBoxBgColor;
+  
+  const commentOpacitySlider = document.getElementById("comment-opacity-slider");
+  if (commentOpacitySlider) commentOpacitySlider.value = commentBoxOpacity;
+  
+  const commentOpacityVal = document.getElementById("comment-opacity-val");
+  if (commentOpacityVal) commentOpacityVal.textContent = commentBoxOpacity.toFixed(2);
+  
+  const commentModal = document.getElementById("comment-modal");
+  if (commentModal) {
+    commentModal.style.display = "flex";
+    applyCommentBoxTheme();
+    setTimeout(() => {
+      commentModal.classList.add("open");
+      if (textarea) textarea.focus();
+    }, 10);
+  }
+}
+
+function closeCommentModal() {
+  const commentModal = document.getElementById("comment-modal");
+  if (commentModal) {
+    commentModal.classList.remove("open");
+    setTimeout(() => {
+      commentModal.style.display = "none";
+    }, 300);
+  }
+}
+
+function saveCommentModal() {
+  const turnInput = document.getElementById("turn");
+  if (!turnInput) return;
+  const curTurn = parseInt(turnInput.value, 10);
+  if (curTurn <= 0) return;
+  
+  const textarea = document.getElementById("comment-modal-textarea");
+  if (textarea && log[curTurn - 1]) {
+    log[curTurn - 1].comment = textarea.value;
+    
+    // 동기화: 메타데이터 창의 입력 필드도 갱신
+    const commentFormInput = document.getElementById("current-step-comment");
+    if (commentFormInput) {
+      commentFormInput.value = textarea.value;
+    }
+    
+    updateCommentBubble();
+    showToast(`${curTurn}수 코멘트가 저장되었습니다.`);
+  }
+  closeCommentModal();
+}
+
+function handleCommentModalOverlayClick(e) {
+  if (e.target.id === "comment-modal") {
+    closeCommentModal();
+  }
+}
+
+function changeCommentBgColor(color) {
+  commentBoxBgColor = color;
+  const picker = document.getElementById("comment-bg-picker");
+  if (picker) picker.value = color;
+  applyCommentBoxTheme();
+  saveCurrentConfigToSlot();
+}
+
+function changeCommentOpacity(opacity) {
+  commentBoxOpacity = parseFloat(opacity);
+  const slider = document.getElementById("comment-opacity-slider");
+  if (slider) slider.value = opacity;
+  const valDisp = document.getElementById("comment-opacity-val");
+  if (valDisp) valDisp.textContent = commentBoxOpacity.toFixed(2);
+  applyCommentBoxTheme();
+  saveCurrentConfigToSlot();
+}
+
+function applyCommentBoxTheme() {
+  const commentModalContent = document.querySelector("#comment-modal .modal-content");
+  if (commentModalContent) {
+    const rgba = hexToRgba(commentBoxBgColor, commentBoxOpacity);
+    commentModalContent.style.background = rgba;
+    commentModalContent.style.backdropFilter = "blur(12px)";
+  }
+  
+  const commentBubble = document.getElementById("comment-bubble");
+  if (commentBubble) {
+    const rgba = hexToRgba(commentBoxBgColor, commentBoxOpacity);
+    commentBubble.style.background = rgba;
+    commentBubble.style.backdropFilter = "blur(12px)";
+    commentBubble.style.border = `1px solid ${commentBoxBgColor}`;
+  }
+}
+
 // Bind to window to prevent module scoping issues
 window.rotateScorePanel = rotateScorePanel;
 window.setScoreSlide = setScoreSlide;
@@ -3926,5 +4070,12 @@ window.openShortcutModal = openShortcutModal;
 window.closeShortcutModal = closeShortcutModal;
 window.handleModalOverlayClick = handleModalOverlayClick;
 window.resetDefaultShortcuts = resetDefaultShortcuts;
+window.openCommentModal = openCommentModal;
+window.closeCommentModal = closeCommentModal;
+window.saveCommentModal = saveCommentModal;
+window.handleCommentModalOverlayClick = handleCommentModalOverlayClick;
+window.changeCommentBgColor = changeCommentBgColor;
+window.changeCommentOpacity = changeCommentOpacity;
+window.applyCommentBoxTheme = applyCommentBoxTheme;
 
 initGame();

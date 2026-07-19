@@ -93,6 +93,22 @@ var kbCursorX = 5;
 var kbCursorY = 4;
 var kbCursorActive = false;
 var shortcutKeys = {
+  newGame: {
+    primary: { key: "n", ctrl: false, alt: false, shift: false },
+    secondary: { key: "F2", ctrl: false, alt: false, shift: false }
+  },
+  autoplayToggle: {
+    primary: { key: "p", ctrl: false, alt: false, shift: false },
+    secondary: { key: "p", ctrl: false, alt: true, shift: false }
+  },
+  openShortcutSettings: {
+    primary: { key: "?", ctrl: false, alt: false, shift: false },
+    secondary: null
+  },
+  openCommentEdit: {
+    primary: { key: "`", ctrl: false, alt: false, shift: false },
+    secondary: null
+  },
   up: {
     primary: { key: "ArrowUp", ctrl: false, alt: false, shift: false },
     secondary: { key: "w", ctrl: false, alt: false, shift: false }
@@ -129,10 +145,6 @@ var shortcutKeys = {
     primary: { key: "v", ctrl: false, alt: true, shift: false },
     secondary: { key: "v", ctrl: true, alt: false, shift: false }
   },
-  newGame: {
-    primary: { key: "n", ctrl: false, alt: true, shift: false },
-    secondary: { key: "F2", ctrl: false, alt: false, shift: false }
-  },
   forwardStep: {
     primary: { key: "ArrowRight", ctrl: false, alt: true, shift: false },
     secondary: null
@@ -148,10 +160,6 @@ var shortcutKeys = {
   goToEnd: {
     primary: { key: "ArrowRight", ctrl: true, alt: false, shift: false },
     secondary: { key: "End", ctrl: false, alt: false, shift: false }
-  },
-  autoplayToggle: {
-    primary: { key: "p", ctrl: false, alt: false, shift: false },
-    secondary: { key: "p", ctrl: false, alt: true, shift: false }
   }
 };
 var currentLoadedRecordId = null; // 현재 불러와서 보여주고 있는 기보의 로컬스토리지 ID
@@ -164,6 +172,8 @@ var autoplaySpeed = 2; // 자동재생 속도 (초)
 var autoplayUseAnim = true; // 자동재생 시 애니메이션 사용 여부
 var shortcutModalBgColor = "#5f80ce"; // 단축키 모달 배경색
 var shortcutModalOpacity = 0.4; // 단축키 모달 투명도
+var commentBoxBgColor = "#5f80ce"; // 코멘트 상자 배경색
+var commentBoxOpacity = 0.4; // 코멘트 상자 투명도
 
 /**
  * @typedef {Object} GameMetadata - 대국 상세 메타데이터 스키마
