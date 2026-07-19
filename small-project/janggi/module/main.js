@@ -171,6 +171,9 @@ function selected(i) {
 
 // 움직임 처리
 function move(i, x, y) {
+  currentLoadedRecordId = null;
+  updateSavedRecordsListUI();
+
   // 따먹은 객체가 있다면 처리
   let t = whoIsit(x, y);
   if (t < 32) {
@@ -311,6 +314,8 @@ function changeCharim(group, type, element) {
   newGameState[group] = type;
   syncCharimButtonStyles();
   saveCurrentConfigToSlot();
+  currentLoadedRecordId = null;
+  updateSavedRecordsListUI();
 }
 
 function syncCharimButtonStyles() {
@@ -399,6 +404,8 @@ function changeNation(amIcho) {
   
   updateCharimPreview();
   saveCurrentConfigToSlot();
+  currentLoadedRecordId = null;
+  updateSavedRecordsListUI();
 }
 
 function toggleNation() {
@@ -1539,9 +1546,17 @@ function rebuildHistory() {
 }
 
 function generateGameRecordText() {
-  const startingCode = getStartingCode();
+  const bottomLayout = getLayoutName(newGameState[0]);
+  const topLayout = getLayoutName(newGameState[1]);
+  let sideLayoutDesc = "";
+  if (iAmCho) {
+    sideLayoutDesc = `초하(${bottomLayout}) vs 한상(${topLayout})`;
+  } else {
+    sideLayoutDesc = `한하(${bottomLayout}) vs 초상(${topLayout})`;
+  }
+  
   let lines = [];
-  lines.push(`상차림: ${startingCode}`);
+  lines.push(`상차림: ${sideLayoutDesc}`);
   
   const history = rebuildHistory();
   history.forEach(h => {
@@ -1574,7 +1589,57 @@ function closeRecordModal() {
   }
 }
 
+function showToast(message) {
+  let toast = document.getElementById("janggi-toast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "janggi-toast";
+    toast.style.cssText = "position: fixed; top: 24px; left: 50%; transform: translateX(-50%) translateY(-20px); background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; color: #f8fafc; padding: 12px 24px; font-size: 14px; font-weight: bold; z-index: 99999; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); pointer-events: none; opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(8px);";
+    document.body.appendChild(toast);
+  }
+  toast.textContent = message;
+  toast.offsetHeight; // Force reflow
+  toast.style.transform = "translateX(-50%) translateY(0)";
+  toast.style.opacity = "1";
+  
+  setTimeout(() => {
+    toast.style.transform = "translateX(-50%) translateY(-20px)";
+    toast.style.opacity = "0";
+  }, 1000);
+}
+
+function loadRecordFromClipboard() {
+  if (navigator.clipboard && navigator.clipboard.readText) {
+    navigator.clipboard.readText().then(text => {
+      if (text && text.trim()) {
+        importRecordFromText(text);
+        currentLoadedRecordId = null;
+        updateSavedRecordsListUI();
+        showToast("기보를 복원하였습니다.");
+      } else {
+        fallbackPromptLoad();
+      }
+    }).catch(err => {
+      console.warn("Failed to read clipboard using Clipboard API, trying prompt fallback:", err);
+      fallbackPromptLoad();
+    });
+  } else {
+    fallbackPromptLoad();
+  }
+}
+
+function fallbackPromptLoad() {
+  const text = prompt("클립보드에서 가져오지 못했습니다. 복사한 기보 텍스트를 여기에 붙여넣어 주세요:");
+  if (text && text.trim()) {
+    importRecordFromText(text);
+    currentLoadedRecordId = null;
+    updateSavedRecordsListUI();
+    showToast("기보를 복원하였습니다.");
+  }
+}
+
 function updateRecordUI() {
+  // record-text-area가 제거되었으므로 빈 함수 또는 체크용으로 둠
   const recordTextArea = document.getElementById("record-text-area");
   if (recordTextArea) {
     recordTextArea.value = generateGameRecordText();
@@ -1586,22 +1651,30 @@ function saveRecordToLibrary(btn) {
   
   // 1. 클립보드 복사
   navigator.clipboard.writeText(recordText).then(() => {
-    const originalText = btn.textContent;
-    btn.textContent = "저장되었습니다!";
-    btn.disabled = true;
-    setTimeout(() => {
-      btn.textContent = originalText;
-      btn.disabled = false;
-    }, 1000);
+    showToast("기보가 클립보드에 복사 및 저장되었습니다!");
+    if (btn) {
+      btn.classList.add("success");
+      btn.disabled = true;
+      setTimeout(() => {
+        btn.classList.remove("success");
+        btn.disabled = false;
+      }, 1000);
+    }
   }).catch(err => {
     console.error("클립보드 복사 실패", err);
     alert("클립보드 복사에 실패하였습니다.");
   });
 
   // 2. localStorage 보관함 저장
-  const bottomLayout = getLayoutName(iAmCho ? newGameState[0] : newGameState[1]);
-  const topLayout = getLayoutName(iAmCho ? newGameState[1] : newGameState[0]);
-  const recordName = `${bottomLayout}대${topLayout}_${log.length}수_${getScoreLeadString()}`;
+  const bottomLayout = getLayoutName(newGameState[0]);
+  const topLayout = getLayoutName(newGameState[1]);
+  let sideLayoutDesc = "";
+  if (iAmCho) {
+    sideLayoutDesc = `초하(${bottomLayout}) vs 한상(${topLayout})`;
+  } else {
+    sideLayoutDesc = `한하(${bottomLayout}) vs 초상(${topLayout})`;
+  }
+  const recordName = `${sideLayoutDesc}_${log.length}수_${getScoreLeadString()}`;
   
   const now = new Date();
   const saveDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
@@ -1617,8 +1690,32 @@ function saveRecordToLibrary(btn) {
   saved.unshift(newRecord);
   localStorage.setItem("janggi_saved_records", JSON.stringify(saved));
   
+  // 방금 저장한 기보를 현재 불러온 기보로 활성화 처리
+  currentLoadedRecordId = newRecord.id;
+
   // 3. UI 갱신
   updateSavedRecordsListUI();
+}
+
+function renameSavedRecord(id) {
+  let saved = JSON.parse(localStorage.getItem("janggi_saved_records") || "[]");
+  const recordIndex = saved.findIndex(r => r.id === id);
+  if (recordIndex === -1) return;
+  
+  const currentName = saved[recordIndex].name;
+  const newName = prompt("기보 이름을 변경하시겠습니까?", currentName);
+  if (newName === null) return; // User cancelled
+  
+  const trimmedName = newName.trim();
+  if (!trimmedName) {
+    alert("이름은 비워둘 수 없습니다.");
+    return;
+  }
+  
+  saved[recordIndex].name = trimmedName;
+  localStorage.setItem("janggi_saved_records", JSON.stringify(saved));
+  updateSavedRecordsListUI();
+  showToast("이름이 수정되었습니다.");
 }
 
 function updateSavedRecordsListUI() {
@@ -1634,8 +1731,9 @@ function updateSavedRecordsListUI() {
   }
   
   saved.forEach(record => {
+    const isCurrent = record.id === currentLoadedRecordId;
     const row = document.createElement("div");
-    row.className = "saved-record-row";
+    row.className = "saved-record-row" + (isCurrent ? " active" : "");
     row.innerHTML = `
       <div class="saved-record-info">
         <span class="saved-record-name">${record.name}</span>
@@ -1645,6 +1743,12 @@ function updateSavedRecordsListUI() {
         <button class="saved-record-btn load-btn" onclick="loadSavedRecord(${record.id})" title="기보 불러오기">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+        <button class="saved-record-btn edit-btn" onclick="renameSavedRecord(${record.id})" title="이름 수정">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
           </svg>
         </button>
         <button class="saved-record-btn delete-btn" onclick="deleteSavedRecord(${record.id}, event)" title="기보 삭제">
@@ -1666,6 +1770,9 @@ function loadSavedRecord(id) {
   const record = saved.find(r => r.id === id);
   if (record) {
     importRecordFromText(record.text);
+    currentLoadedRecordId = id;
+    updateSavedRecordsListUI();
+    showToast("기보를 불러왔습니다.");
   }
 }
 
@@ -1677,58 +1784,203 @@ function deleteSavedRecord(id, event) {
   saved = saved.filter(r => r.id !== id);
   localStorage.setItem("janggi_saved_records", JSON.stringify(saved));
   
+  if (currentLoadedRecordId === id) {
+    currentLoadedRecordId = null;
+  }
+  
   updateSavedRecordsListUI();
+  showToast("기보가 삭제되었습니다.");
 }
 
 function clearAllSavedRecords() {
   if (!confirm("모든 저장된 기보를 삭제하시겠습니까?")) return;
   localStorage.removeItem("janggi_saved_records");
+  currentLoadedRecordId = null;
   updateSavedRecordsListUI();
+  showToast("모든 기보가 삭제되었습니다.");
 }
 
-function importRecordFromText(directText = null) {
-  let text = directText;
-  if (text === null) {
-    const recordTextArea = document.getElementById("record-text-area");
-    if (!recordTextArea) return;
-    text = recordTextArea.value;
+function parseMoveLine(line, index) {
+  let clean = line.trim();
+  if (!clean) return null;
+  
+  // Extract step number if present at start (e.g., "1. " or "1: ")
+  let step = null;
+  const stepMatch = clean.match(/^(\d+)\s*[\.:]/);
+  if (stepMatch) {
+    step = parseInt(stepMatch[1], 10);
+    clean = clean.replace(/^(\d+)\s*[\.:]/, "").trim();
   }
   
+  // Extract player if present
+  let player = null;
+  if (clean.includes("초")) {
+    player = "초";
+    clean = clean.replace("초", "").trim();
+  } else if (clean.includes("한")) {
+    player = "한";
+    clean = clean.replace("한", "").trim();
+  }
+  
+  // Remove arrows and normalize whitespaces
+  clean = clean.replace(/->|=>/g, "").replace(/\s+/g, "");
+  
+  // Extract all digits and optional piece character
+  const digits = clean.replace(/[^0-9]/g, "");
+  const pieceMatch = clean.match(/[궁차포마상사졸병]/);
+  const pieceName = pieceMatch ? pieceMatch[0] : "";
+  
+  let startStr = "";
+  let endStr = "";
+  
+  if (digits.length === 4) {
+    startStr = digits.slice(0, 2);
+    endStr = digits.slice(2);
+  } else if (digits.length === 5) {
+    if (digits.startsWith("10")) {
+      startStr = digits.slice(0, 3);
+      endStr = digits.slice(3);
+    } else {
+      startStr = digits.slice(0, 2);
+      endStr = digits.slice(2);
+    }
+  } else if (digits.length === 6) {
+    startStr = digits.slice(0, 3);
+    endStr = digits.slice(3);
+  } else {
+    return null;
+  }
+  
+  const startX = parseInt(startStr.slice(-1), 10);
+  const startY = parseInt(startStr.slice(0, -1), 10);
+  const endX = parseInt(endStr.slice(-1), 10);
+  const endY = parseInt(endStr.slice(0, -1), 10);
+  
+  if (startX < 1 || startX > 9 || startY < 1 || startY > 10) return null;
+  if (endX < 1 || endX > 9 || endY < 1 || endY > 10) return null;
+  
+  if (!player) {
+    player = (index % 2 === 0) ? "초" : "한";
+  }
+  if (!step) {
+    step = index + 1;
+  }
+  
+  return { step, player, startX, startY, endX, endY, pieceName };
+}
+
+function determineIAmChoFromText(text) {
+  const lines = text.split("\n");
+  let validLineIdx = 0;
+  for (let idx = 0; idx < lines.length; idx++) {
+    const parsed = parseMoveLine(lines[idx], validLineIdx);
+    if (parsed) {
+      validLineIdx++;
+      if (parsed.pieceName) {
+        const isZol = parsed.pieceName === "졸";
+        const isByung = parsed.pieceName === "병";
+        if (isZol || isByung) {
+          const isBottom = parsed.startY >= 6;
+          if (isZol) {
+            return isBottom;
+          } else {
+            return !isBottom;
+          }
+        }
+      }
+    }
+  }
+  return true; // Default fallback: bottom is Cho
+}
+
+function parseLayoutText(text) {
+  const lines = text.split("\n");
+  for (let line of lines) {
+    const clean = line.replace(/\s+/g, "");
+    // Match "초하(마상마상)vs한상(마상마상)" pattern
+    const match = clean.match(/(초|한)(하|상)\((마상마상|마상상마|상마마상|상마상마)\)vs(초|한)(하|상)\((마상마상|마상상마|상마마상|상마상마)\)/);
+    if (match) {
+      const side1 = match[1];
+      const pos1 = match[2];
+      const layout1 = match[3];
+      
+      const side2 = match[4];
+      const pos2 = match[5];
+      const layout2 = match[6];
+      
+      let bottomLayoutStr = "";
+      let topLayoutStr = "";
+      let determinedChoIsBottom = true;
+      
+      if (pos1 === "하") {
+        bottomLayoutStr = layout1;
+        determinedChoIsBottom = (side1 === "초");
+      } else {
+        topLayoutStr = layout1;
+      }
+      
+      if (pos2 === "하") {
+        bottomLayoutStr = layout2;
+        determinedChoIsBottom = (side2 === "초");
+      } else {
+        topLayoutStr = layout2;
+      }
+      
+      const names = ["마상마상", "마상상마", "상마마상", "상마상마"];
+      const bottomType = names.indexOf(bottomLayoutStr);
+      const topType = names.indexOf(topLayoutStr);
+      
+      if (bottomType !== -1 && topType !== -1) {
+        const startingCode = knownStart[0][bottomType] + knownStart[1][topType];
+        return { startingCode, determinedChoIsBottom };
+      }
+    }
+  }
+  return null;
+}
+
+function importRecordFromText(text) {
   if (!text || !text.trim()) {
     alert("기보 데이터가 비어 있습니다.");
     return;
   }
   
-  // 1. 상차림 코드 파싱
-  const layoutMatch = text.match(/\b\d{64}\b/);
+  // 1. 상차림 코드 및 진영(iAmCho) 파싱
   let startingCode = "";
-  if (layoutMatch) {
-    startingCode = layoutMatch[0];
+  let determinedCho = true;
+  
+  const layoutTextMatch = parseLayoutText(text);
+  if (layoutTextMatch) {
+    startingCode = layoutTextMatch.startingCode;
+    determinedCho = layoutTextMatch.determinedChoIsBottom;
   } else {
-    startingCode = getStartingCode();
+    // Fallback to 64-digit layout code
+    const layoutMatch = text.match(/\b\d{64}\b/);
+    if (layoutMatch) {
+      startingCode = layoutMatch[0];
+    } else {
+      startingCode = getStartingCode();
+    }
+    determinedCho = determineIAmChoFromText(text);
   }
+  
+  changeNation(determinedCho);
   
   // 2. 착수 로그 파싱
   const lines = text.split("\n");
   const parsedMoves = [];
-  // 72졸62 및 72졸 -> 62 형식 모두 호환하는 regex
-  const moveRegex = /(\d+)\s*[\.:]?\s*(초|한)\s*([0-9])([0-9])([궁차포마상사졸병])\s*(?:->|=>)?\s*([0-9])([0-9])/;
+  let validLineIdx = 0;
   
   for (let line of lines) {
-    const match = line.match(moveRegex);
-    if (match) {
-      const step = parseInt(match[1], 10);
-      const player = match[2];
-      const startY = parseInt(match[3], 10);
-      const startX = parseInt(match[4], 10);
-      const pieceChar = match[5];
-      const endY = parseInt(match[6], 10);
-      const endX = parseInt(match[7], 10);
-      parsedMoves.push({ step, player, startX, startY, endX, endY });
+    const move = parseMoveLine(line, validLineIdx);
+    if (move) {
+      parsedMoves.push(move);
+      validLineIdx++;
     }
   }
   
-  if (parsedMoves.length === 0 && !layoutMatch) {
+  // 만약 착수 로그도 없고, 상차림 텍스트/코드 매칭도 되지 않는다면 에러 처리
+  if (parsedMoves.length === 0 && !layoutTextMatch && !text.match(/\b\d{64}\b/)) {
     alert("유효한 기보 데이터를 찾을 수 없습니다. 형식을 확인해 주세요.");
     return;
   }
