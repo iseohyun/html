@@ -369,6 +369,17 @@
                 </div>
               </td>
             </tr>
+            <tr>
+              <td>키보드 커서락 모드</td>
+              <td>
+                <div style="display: flex; align-items: center; justify-content: flex-end;">
+                  <select id="cursor-lock-select" onchange="changeCursorLockMode(this.value)">
+                    <option value="false">비활성화</option>
+                    <option value="true">활성화 (CapsLock 토글)</option>
+                  </select>
+                </div>
+              </td>
+            </tr>
           </table>
         </div>
       </div>
