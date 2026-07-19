@@ -293,6 +293,42 @@
             </tr>
           </table>
         </div>
+
+        <!-- 4. 설정 -->
+        <div class="setting-category">
+          <div class="category-header">
+            <span class="category-title">설정</span>
+            <div class="category-header-actions">
+              <button class="reset-category-btn" onclick="resetCategory4()" title="설정 초기화">🔄</button>
+            </div>
+          </div>
+          <table class="settings-table">
+            <tr>
+              <td>설정 배경 색</td>
+              <td>
+                <div style="display: flex; align-items: center; justify-content: flex-end;">
+                  <select id="settings-bg-select" onchange="changeSettingsBgColor(this.value)">
+                    <option value="#0f172a">슬레이트 네이비</option>
+                    <option value="#1e293b">다크 그레이</option>
+                    <option value="#1e1b4b">딥 인디고</option>
+                    <option value="#022c22">포레스트 그린</option>
+                    <option value="custom">사용자 지정</option>
+                  </select>
+                  <input type="color" id="settings-bg-picker" oninput="changeSettingsBgColor('custom')" style="display: none; vertical-align: middle; margin-left: 10px; width: 30px; height: 30px; padding: 0; border: none; border-radius: 4px; background: transparent; cursor: pointer;">
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>설정창 투명도</td>
+              <td>
+                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+                  <input type="range" id="settings-opacity-slider" min="0.1" max="1.0" step="0.05" value="0.78" oninput="changeSettingsOpacity(this.value)" style="width: 150px; accent-color: #3b82f6;">
+                  <span id="settings-opacity-val" style="min-width: 45px; text-align: right; color: #3b82f6;">0.78</span>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </div>
       </div>
     </div>
     <div id="control-box">
