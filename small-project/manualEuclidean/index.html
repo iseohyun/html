@@ -14,13 +14,13 @@
     };
   </script>
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-  <script src="module/config.js" defer></script>
-  <script src="module/math.js" defer></script>
-  <script src="module/render.js" defer></script>
-  <script src="module/tooltip.js" defer></script>
-  <script src="module/main.js" defer></script>
-  <script src="module/keybinding.js" defer></script>
-  <script src="module/testRunner.js" defer></script>
+  <script src="module/config.js" defer charset="UTF-8"></script>
+  <script src="module/math.js" defer charset="UTF-8"></script>
+  <script src="module/render.js" defer charset="UTF-8"></script>
+  <script src="module/tooltip.js" defer charset="UTF-8"></script>
+  <script src="module/main.js" defer charset="UTF-8"></script>
+  <script src="module/keybinding.js" defer charset="UTF-8"></script>
+  <script src="module/testRunner.js?v=11" defer charset="UTF-8"></script>
 </head>
 <body>
   <article>
@@ -79,7 +79,7 @@
         
         <div class="settings-actions">
           <input type="file" id="test-file-picker" accept=".md" style="display: none;" onchange="handleTestFileSelect(event)">
-          <button id="auto-test-btn" style="background-color: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s;" onclick="document.getElementById('test-file-picker').click()">테스트 실행</button>
+          <button id="auto-test-btn" style="background-color: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s;" onclick="openTestSelectionModal()">테스트 실행</button>
           <button id="settings-reset-all-btn">기본값으로 초기화</button>
         </div>
       </div>
