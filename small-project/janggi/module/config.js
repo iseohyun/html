@@ -95,19 +95,19 @@ var kbCursorActive = false;
 var shortcutKeys = {
   up: {
     primary: { key: "ArrowUp", ctrl: false, alt: false, shift: false },
-    secondary: null
+    secondary: { key: "w", ctrl: false, alt: false, shift: false }
   },
   down: {
     primary: { key: "ArrowDown", ctrl: false, alt: false, shift: false },
-    secondary: null
+    secondary: { key: "s", ctrl: false, alt: false, shift: false }
   },
   left: {
     primary: { key: "ArrowLeft", ctrl: false, alt: false, shift: false },
-    secondary: null
+    secondary: { key: "a", ctrl: false, alt: false, shift: false }
   },
   right: {
     primary: { key: "ArrowRight", ctrl: false, alt: false, shift: false },
-    secondary: null
+    secondary: { key: "d", ctrl: false, alt: false, shift: false }
   },
   select: {
     primary: { key: "Enter", ctrl: false, alt: false, shift: false },
@@ -122,16 +122,16 @@ var shortcutKeys = {
     secondary: null
   },
   copyNotation: {
-    primary: { key: "s", ctrl: true, alt: false, shift: false },
-    secondary: null
+    primary: { key: "s", ctrl: false, alt: true, shift: false },
+    secondary: { key: "s", ctrl: true, alt: false, shift: false }
   },
   loadNotation: {
-    primary: { key: "v", ctrl: true, alt: false, shift: false },
-    secondary: null
+    primary: { key: "v", ctrl: false, alt: true, shift: false },
+    secondary: { key: "v", ctrl: true, alt: false, shift: false }
   },
   newGame: {
-    primary: { key: "n", ctrl: true, alt: false, shift: false },
-    secondary: null
+    primary: { key: "n", ctrl: false, alt: true, shift: false },
+    secondary: { key: "F2", ctrl: false, alt: false, shift: false }
   },
   forwardStep: {
     primary: { key: "ArrowRight", ctrl: false, alt: true, shift: false },
@@ -143,15 +143,15 @@ var shortcutKeys = {
   },
   goToStart: {
     primary: { key: "ArrowLeft", ctrl: true, alt: false, shift: false },
-    secondary: null
+    secondary: { key: "Home", ctrl: false, alt: false, shift: false }
   },
   goToEnd: {
     primary: { key: "ArrowRight", ctrl: true, alt: false, shift: false },
-    secondary: null
+    secondary: { key: "End", ctrl: false, alt: false, shift: false }
   },
   autoplayToggle: {
-    primary: { key: "p", ctrl: true, alt: false, shift: false },
-    secondary: null
+    primary: { key: "p", ctrl: false, alt: false, shift: false },
+    secondary: { key: "p", ctrl: false, alt: true, shift: false }
   }
 };
 var currentLoadedRecordId = null; // 현재 불러와서 보여주고 있는 기보의 로컬스토리지 ID
@@ -162,8 +162,8 @@ var scoreShowSlide2 = true; // 점수판 슬라이드 2 (타이머) 표출 여�
 var scoreShowSlide3 = true; // 점수판 슬라이드 3 (대회정보) 표출 여부
 var autoplaySpeed = 2; // 자동재생 속도 (초)
 var autoplayUseAnim = true; // 자동재생 시 애니메이션 사용 여부
-var shortcutModalBgColor = "#0f172a"; // 단축키 모달 배경색
-var shortcutModalOpacity = 0.9; // 단축키 모달 투명도
+var shortcutModalBgColor = "#5f80ce"; // 단축키 모달 배경색
+var shortcutModalOpacity = 0.4; // 단축키 모달 투명도
 
 /**
  * @typedef {Object} GameMetadata - 대국 상세 메타데이터 스키마
