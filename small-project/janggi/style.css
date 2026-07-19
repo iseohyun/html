@@ -60,15 +60,109 @@ button {
 .charim-container {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: stretch; /* Stretch table and button wrapper to equal height */
   justify-content: space-between;
-  gap: 20px;
+  gap: 24px;
   flex-wrap: wrap;
 }
 
 .charim-table-wrapper {
   flex: 1;
   min-width: 300px;
+}
+
+.charim-btn-wrapper {
+  display: flex;
+  align-items: stretch;
+}
+
+.charim-btn-wrapper button {
+  height: 100%;
+  padding: 0 30px;
+  font-size: 1.15em;
+  font-weight: 700;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+  transition: all 0.2s;
+  min-width: 120px;
+}
+
+.charim-btn-wrapper button:hover {
+  background-color: #2563eb;
+  box-shadow: 0 6px 8px rgba(37, 99, 235, 0.4);
+}
+
+/* 상차림 배치 예시 그림(미니어처 토큰) 스타일 */
+.charim-preview-container {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 10px;
+  padding: 15px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.charim-preview-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.charim-preview-label {
+  font-size: 0.9em;
+  color: #94a3b8;
+  min-width: 110px;
+  font-weight: bold;
+}
+
+.charim-preview-tokens {
+  display: flex;
+  gap: 6px;
+}
+
+.preview-token {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  user-select: none;
+}
+
+.preview-token-han {
+  background: #991b1b;
+  color: #fca5a5;
+  border: 1.5px solid #ef4444;
+}
+
+.preview-token-cho {
+  background: #1e3a8a;
+  color: #93c5fd;
+  border: 1.5px solid #3b82f6;
+}
+
+.preview-token-neutral {
+  background: #334155;
+  color: #94a3b8;
+  border: 1.5px solid #475569;
+  opacity: 0.7;
+}
+
+.preview-token-empty {
+  width: 26px;
+  height: 26px;
+  background: transparent;
+  border: 1.5px dashed rgba(255, 255, 255, 0.15);
 }
 
 .charim-table-wrapper table {
