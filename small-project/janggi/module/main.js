@@ -3233,6 +3233,20 @@ function changeModalOpacity(opacity) {
   saveCurrentConfigToSlot();
 }
 
+function hexToRgba(hex, alpha) {
+  let hexStr = hex || "#0f172a";
+  if (hexStr.length === 4) {
+    hexStr = "#" + hexStr[1] + hexStr[1] + hexStr[2] + hexStr[2] + hexStr[3] + hexStr[3];
+  }
+  let r = parseInt(hexStr.slice(1, 3), 16);
+  let g = parseInt(hexStr.slice(3, 5), 16);
+  let b = parseInt(hexStr.slice(5, 7), 16);
+  if (isNaN(r) || isNaN(g) || isNaN(b)) {
+    r = 15; g = 23; b = 42;
+  }
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 function applyShortcutModalTheme() {
   const modalContent = document.querySelector("#shortcut-modal .modal-content");
   if (!modalContent) return;
@@ -3240,14 +3254,7 @@ function applyShortcutModalTheme() {
   let hex = shortcutModalBgColor || "#0f172a";
   let opacity = shortcutModalOpacity !== undefined ? shortcutModalOpacity : 0.9;
   
-  let r = parseInt(hex.slice(1, 3), 16);
-  let g = parseInt(hex.slice(3, 5), 16);
-  let b = parseInt(hex.slice(5, 7), 16);
-  if (isNaN(r) || isNaN(g) || isNaN(b)) {
-    r = 15; g = 23; b = 42;
-  }
-  
-  modalContent.style.background = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  modalContent.style.background = hexToRgba(hex, opacity);
 }
 
 function openShortcutModal() {
