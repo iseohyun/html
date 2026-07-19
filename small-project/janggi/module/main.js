@@ -1192,7 +1192,11 @@ function saveCurrentConfigToSlot() {
     scoreRotateInterval,
     scoreShowSlide1,
     scoreShowSlide2,
-    scoreShowSlide3
+    scoreShowSlide3,
+    autoplaySpeed,
+    autoplayUseAnim,
+    shortcutModalBgColor,
+    shortcutModalOpacity
   };
   localStorage.setItem("janggi_settings_slot_" + activeSlot, JSON.stringify(config));
 }
@@ -1229,13 +1233,19 @@ function loadConfigFromSlot() {
     if (config.aiMode !== undefined && config.aiMode !== null) aiMode = parseInt(config.aiMode, 10);
     if (config.cursorLockMode !== undefined && config.cursorLockMode !== null) cursorLockMode = (config.cursorLockMode === "true" || config.cursorLockMode === true);
     if (config.shortcutKeys) {
-      shortcutKeys = Object.assign({}, shortcutKeys, config.shortcutKeys);
+      shortcutKeys = migrateShortcutKeys(config.shortcutKeys);
     }
     if (config.scoreAutoRotate !== undefined && config.scoreAutoRotate !== null) scoreAutoRotate = (config.scoreAutoRotate === "true" || config.scoreAutoRotate === true);
     if (config.scoreRotateInterval !== undefined && config.scoreRotateInterval !== null) scoreRotateInterval = parseInt(config.scoreRotateInterval, 10);
     if (config.scoreShowSlide1 !== undefined && config.scoreShowSlide1 !== null) scoreShowSlide1 = (config.scoreShowSlide1 === "true" || config.scoreShowSlide1 === true);
     if (config.scoreShowSlide2 !== undefined && config.scoreShowSlide2 !== null) scoreShowSlide2 = (config.scoreShowSlide2 === "true" || config.scoreShowSlide2 === true);
     if (config.scoreShowSlide3 !== undefined && config.scoreShowSlide3 !== null) scoreShowSlide3 = (config.scoreShowSlide3 === "true" || config.scoreShowSlide3 === true);
+    if (config.autoplaySpeed !== undefined && config.autoplaySpeed !== null) autoplaySpeed = parseFloat(config.autoplaySpeed);
+    if (config.autoplayUseAnim !== undefined && config.autoplayUseAnim !== null) autoplayUseAnim = (config.autoplayUseAnim === "true" || config.autoplayUseAnim === true);
+    if (config.shortcutModalBgColor) shortcutModalBgColor = config.shortcutModalBgColor;
+    if (config.shortcutModalOpacity !== undefined && config.shortcutModalOpacity !== null) shortcutModalOpacity = parseFloat(config.shortcutModalOpacity);
+    
+    applyShortcutModalTheme();
     
     localStorage.setItem("showCoordinates", showCoordinates);
     localStorage.setItem("sizeKing", sizeKing);
@@ -1262,6 +1272,10 @@ function loadConfigFromSlot() {
     localStorage.setItem("scoreShowSlide1", scoreShowSlide1);
     localStorage.setItem("scoreShowSlide2", scoreShowSlide2);
     localStorage.setItem("scoreShowSlide3", scoreShowSlide3);
+    localStorage.setItem("autoplaySpeed", autoplaySpeed);
+    localStorage.setItem("autoplayUseAnim", autoplayUseAnim);
+    localStorage.setItem("shortcutModalBgColor", shortcutModalBgColor);
+    localStorage.setItem("shortcutModalOpacity", shortcutModalOpacity);
     
     changeBoardColor(boardColorType);
     changeChoColor(choColorType);
@@ -1573,6 +1587,14 @@ function initSettingsUI() {
   
   const showSlide3El = document.getElementById("score-show-slide3");
   if (showSlide3El) showSlide3El.checked = scoreShowSlide3;
+
+  // Autoplay Settings Sync
+  const autoplaySpeedSlider = document.getElementById("autoplay-speed-slider");
+  if (autoplaySpeedSlider) autoplaySpeedSlider.value = autoplaySpeed;
+  const autoplaySpeedVal = document.getElementById("autoplay-speed-val");
+  if (autoplaySpeedVal) autoplaySpeedVal.textContent = autoplaySpeed.toFixed(1);
+  const autoplayUseAnimCheck = document.getElementById("autoplay-use-anim");
+  if (autoplayUseAnimCheck) autoplayUseAnimCheck.checked = autoplayUseAnim;
 }
 
 // ----------------------------------------------------
@@ -2658,10 +2680,24 @@ function initGame() {
   }
   if (localStorage.getItem("shortcutKeys") !== null) {
     try {
-      shortcutKeys = Object.assign({}, shortcutKeys, JSON.parse(localStorage.getItem("shortcutKeys")));
+      const parsedKeys = JSON.parse(localStorage.getItem("shortcutKeys"));
+      shortcutKeys = migrateShortcutKeys(parsedKeys);
     } catch (e) {
       console.error("Failed parsing shortcutKeys from localStorage:", e);
     }
+  }
+  if (localStorage.getItem("shortcutModalBgColor") !== null) {
+    shortcutModalBgColor = localStorage.getItem("shortcutModalBgColor");
+  }
+  if (localStorage.getItem("shortcutModalOpacity") !== null) {
+    shortcutModalOpacity = parseFloat(localStorage.getItem("shortcutModalOpacity"));
+  }
+  applyShortcutModalTheme();
+  if (localStorage.getItem("autoplaySpeed") !== null) {
+    autoplaySpeed = parseFloat(localStorage.getItem("autoplaySpeed"));
+  }
+  if (localStorage.getItem("autoplayUseAnim") !== null) {
+    autoplayUseAnim = (localStorage.getItem("autoplayUseAnim") === "true");
   }
 
   initSettingsUI();
@@ -2755,6 +2791,22 @@ function initGame() {
   updateCommentBubble();
 }
 
+function matchShortcutKey(action, keyEvent) {
+  const shortcut = shortcutKeys[action];
+  if (!shortcut) return false;
+  
+  const matchCombo = (combo) => {
+    if (!combo || !combo.key) return false;
+    const keyMatch = keyEvent.key.toLowerCase() === combo.key.toLowerCase();
+    const ctrlMatch = (keyEvent.ctrlKey || keyEvent.metaKey) === !!combo.ctrl;
+    const altMatch = keyEvent.altKey === !!combo.alt;
+    const shiftMatch = keyEvent.shiftKey === !!combo.shift;
+    return keyMatch && ctrlMatch && altMatch && shiftMatch;
+  };
+  
+  return matchCombo(shortcut.primary) || matchCombo(shortcut.secondary);
+}
+
 function handleKeyDown(e) {
   if (gameEnded) return;
   if (isRecordingKey !== null) return; // 단축키 입력 녹화 중에는 전역 단축키 핸들러 작동 정지
@@ -2764,22 +2816,64 @@ function handleKeyDown(e) {
     return;
   }
 
+  // Ctrl + N: 새 대국 시작하기
+  if (matchShortcutKey("newGame", e)) {
+    e.preventDefault();
+    startNewGame();
+    return;
+  }
+
   // Ctrl + S: 기보 클립보드 복사 및 보관함 저장
-  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === shortcutKeys.copyNotation.toLowerCase()) {
+  if (matchShortcutKey("copyNotation", e)) {
     e.preventDefault();
     saveRecordToLibrary(null);
     return;
   }
 
   // Ctrl + V: 클립보드로부터 기보 불러오기
-  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === shortcutKeys.loadNotation.toLowerCase()) {
+  if (matchShortcutKey("loadNotation", e)) {
     e.preventDefault();
     loadRecordFromClipboard();
     return;
   }
 
+  // Alt + Right: 앞으로 이동
+  if (matchShortcutKey("forwardStep", e)) {
+    e.preventDefault();
+    next();
+    return;
+  }
+
+  // Alt + Left: 뒤로 이동
+  if (matchShortcutKey("backwardStep", e)) {
+    e.preventDefault();
+    prev();
+    return;
+  }
+
+  // Ctrl + Left: 맨 앞으로 이동
+  if (matchShortcutKey("goToStart", e)) {
+    e.preventDefault();
+    goToStart();
+    return;
+  }
+
+  // Ctrl + Right: 맨 뒤로 이동
+  if (matchShortcutKey("goToEnd", e)) {
+    e.preventDefault();
+    goToEnd();
+    return;
+  }
+
+  // Ctrl + P: 자동 재생 토글
+  if (matchShortcutKey("autoplayToggle", e)) {
+    e.preventDefault();
+    toggleAutoplay();
+    return;
+  }
+
   // CapsLock 등 지정된 커서락 모드 토글 키 처리
-  if (e.key === shortcutKeys.cursorLockToggle) {
+  if (matchShortcutKey("cursorLockToggle", e)) {
     e.preventDefault();
     cursorLockMode = !cursorLockMode;
     localStorage.setItem("cursorLockMode", cursorLockMode);
@@ -2793,7 +2887,12 @@ function handleKeyDown(e) {
   }
 
   // 방향키 처리 (지정된 up, down, left, right 키)
-  if (e.key === shortcutKeys.up || e.key === shortcutKeys.down || e.key === shortcutKeys.left || e.key === shortcutKeys.right) {
+  const isUp = matchShortcutKey("up", e);
+  const isDown = matchShortcutKey("down", e);
+  const isLeft = matchShortcutKey("left", e);
+  const isRight = matchShortcutKey("right", e);
+
+  if (isUp || isDown || isLeft || isRight) {
     e.preventDefault();
     
     if (cursorLockMode) {
@@ -2803,7 +2902,7 @@ function handleKeyDown(e) {
       const currentTeam = isChoTurn ? "cho" : "han";
       const allFilteredMoves = getFilteredLegalMoves(currentTeam);
       
-      const isForward = (e.key === shortcutKeys.right || e.key === shortcutKeys.down);
+      const isForward = (isRight || isDown);
       
       if (curSelect === 32) {
         // 커서락 모드 - 선택 기물 고르기
@@ -2869,15 +2968,15 @@ function handleKeyDown(e) {
       }
       
       // 키보드 모드 활성화 여부와 상관없이 항상 이동 명령을 즉각 실행
-      if (e.key === shortcutKeys.up) {
+      if (isUp) {
         let ny = yPrev(kbCursorY);
         if (ny !== -1) kbCursorY = ny;
-      } else if (e.key === shortcutKeys.down) {
+      } else if (isDown) {
         let ny = yNext(kbCursorY);
         if (ny !== -1) kbCursorY = ny;
-      } else if (e.key === shortcutKeys.left) {
+      } else if (isLeft) {
         if (kbCursorX > 1) kbCursorX -= 1;
-      } else if (e.key === shortcutKeys.right) {
+      } else if (isRight) {
         if (kbCursorX < 9) kbCursorX += 1;
       }
     }
@@ -2887,7 +2986,7 @@ function handleKeyDown(e) {
   }
 
   // ESC 키로 활성 취소, 창 닫기, 혹은 상차림창 열기
-  if (e.key === shortcutKeys.cancel) {
+  if (matchShortcutKey("cancel", e)) {
     const settingBox = document.getElementById("setting-box");
     if (settingBox && settingBox.style.display === "flex") {
       disalbeSettingBox();
@@ -2911,7 +3010,7 @@ function handleKeyDown(e) {
   }
 
   // 엔터 또는 스페이스바로 선택 및 착수 실행
-  if (e.key === shortcutKeys.select || e.key === shortcutKeys.selectAlt) {
+  if (matchShortcutKey("select", e)) {
     if (!kbCursorActive) return;
     e.preventDefault();
 
@@ -2957,25 +3056,161 @@ function handleKeyDown(e) {
 // ----------------------------------------------------
 // 단축키 커스텀 설정 모달 구현부
 // ----------------------------------------------------
-var isRecordingKey = null; // 현재 바인딩 기록 대기 중인 기능 키 (예: 'up', 'down' 등)
+var isRecordingKey = null; // 현재 바인딩 기록 대기 중인 기능 키 (예: { action, type })
 
 const shortcutActionNames = {
-  up: "방향 이동 (위)",
-  down: "방향 이동 (아래)",
-  left: "방향 이동 (왼쪽)",
-  right: "방향 이동 (오른쪽)",
+  up: "방향 이동",
+  down: "방향 이동",
+  left: "방향 이동",
+  right: "방향 이동",
   select: "선택 및 착수",
-  selectAlt: "선택 및 착수 (보조)",
   cursorLockToggle: "커서락 모드 토글",
-  cancel: "선택 취소 / 상차림 복귀",
-  copyNotation: "기보 클립보드 복사 (Ctrl + 키)",
-  loadNotation: "기보 클립보드 불러오기 (Ctrl + 키)"
+  cancel: "선택 취소",
+  copyNotation: "기보 클립보드 복사",
+  loadNotation: "기보 클립보드 불러오기",
+  newGame: "새 대국 시작하기",
+  forwardStep: "앞으로 이동",
+  backwardStep: "뒤로 이동",
+  goToStart: "맨 앞으로 이동",
+  goToEnd: "맨 뒤로 이동",
+  autoplayToggle: "자동 재생 토글"
 };
+
+function migrateShortcutKeys(parsedKeys) {
+  if (!parsedKeys) return shortcutKeys;
+  const migrated = {};
+  
+  const parseSingle = (v) => {
+    if (!v) return null;
+    if (typeof v === "string") {
+      let ctrl = false;
+      let alt = false;
+      let shift = false;
+      let key = v;
+      if (key.toLowerCase().startsWith("ctrl + ")) {
+        ctrl = true;
+        key = key.substring(7);
+      } else if (key.toLowerCase().startsWith("alt + ")) {
+        alt = true;
+        key = key.substring(6);
+      }
+      return { key, ctrl, alt, shift };
+    }
+    if (typeof v === "object") {
+      return {
+        key: v.key || "",
+        ctrl: !!v.ctrl,
+        alt: !!v.alt,
+        shift: !!v.shift
+      };
+    }
+    return null;
+  };
+
+  Object.keys(shortcutKeys).forEach(key => {
+    const legacyVal = parsedKeys[key];
+    const defaultVal = shortcutKeys[key];
+    
+    if (legacyVal) {
+      if (typeof legacyVal === "string") {
+        migrated[key] = {
+          primary: parseSingle(legacyVal),
+          secondary: null
+        };
+      } else if (typeof legacyVal === "object") {
+        if (legacyVal.primary !== undefined || legacyVal.secondary !== undefined) {
+          migrated[key] = {
+            primary: parseSingle(legacyVal.primary),
+            secondary: parseSingle(legacyVal.secondary)
+          };
+        } else if (legacyVal.key !== undefined) {
+          migrated[key] = {
+            primary: parseSingle(legacyVal),
+            secondary: null
+          };
+        }
+      }
+    }
+    
+    if (!migrated[key]) {
+      migrated[key] = {
+        primary: defaultVal ? defaultVal.primary : null,
+        secondary: defaultVal ? defaultVal.secondary : null
+      };
+    }
+  });
+  
+  if (parsedKeys.selectAlt && typeof parsedKeys.selectAlt === "string") {
+    if (migrated.select && !migrated.select.secondary) {
+      migrated.select.secondary = parseSingle(parsedKeys.selectAlt);
+    }
+  }
+
+  return migrated;
+}
+
+function formatKeyCombination(combo) {
+  if (!combo || !combo.key) return "미지정";
+  const parts = [];
+  if (combo.ctrl) parts.push("Ctrl");
+  if (combo.alt) parts.push("Alt");
+  if (combo.shift) parts.push("Shift");
+  
+  let k = combo.key;
+  if (k === " ") k = "Space";
+  else if (k.length === 1) k = k.toUpperCase();
+  
+  parts.push(k);
+  return parts.join(" + ");
+}
+
+function changeModalBgColor(color) {
+  shortcutModalBgColor = color;
+  const picker = document.getElementById("modal-bg-picker");
+  if (picker) picker.value = color;
+  applyShortcutModalTheme();
+  saveCurrentConfigToSlot();
+}
+
+function changeModalOpacity(opacity) {
+  shortcutModalOpacity = parseFloat(opacity);
+  const slider = document.getElementById("modal-opacity-slider");
+  if (slider) slider.value = opacity;
+  const valEl = document.getElementById("modal-opacity-val");
+  if (valEl) valEl.textContent = shortcutModalOpacity.toFixed(2);
+  applyShortcutModalTheme();
+  saveCurrentConfigToSlot();
+}
+
+function applyShortcutModalTheme() {
+  const modalContent = document.querySelector("#shortcut-modal .modal-content");
+  if (!modalContent) return;
+  
+  let hex = shortcutModalBgColor || "#0f172a";
+  let opacity = shortcutModalOpacity !== undefined ? shortcutModalOpacity : 0.9;
+  
+  let r = parseInt(hex.slice(1, 3), 16);
+  let g = parseInt(hex.slice(3, 5), 16);
+  let b = parseInt(hex.slice(5, 7), 16);
+  if (isNaN(r) || isNaN(g) || isNaN(b)) {
+    r = 15; g = 23; b = 42;
+  }
+  
+  modalContent.style.background = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}
 
 function openShortcutModal() {
   const modal = document.getElementById("shortcut-modal");
   if (!modal) return;
   
+  const picker = document.getElementById("modal-bg-picker");
+  if (picker) picker.value = shortcutModalBgColor;
+  const slider = document.getElementById("modal-opacity-slider");
+  if (slider) slider.value = shortcutModalOpacity;
+  const valEl = document.getElementById("modal-opacity-val");
+  if (valEl) valEl.textContent = shortcutModalOpacity.toFixed(2);
+  
+  applyShortcutModalTheme();
   populateShortcutTable();
   modal.style.display = "flex";
   modal.offsetHeight; // Force reflow
@@ -3006,6 +3241,8 @@ function populateShortcutTable() {
   tbody.innerHTML = "";
   
   Object.keys(shortcutKeys).forEach(actionKey => {
+    if (actionKey === "selectAlt") return; // Deprecated
+    
     const tr = document.createElement("tr");
     tr.className = "shortcut-row";
     
@@ -3013,62 +3250,113 @@ function populateShortcutTable() {
     tdName.textContent = shortcutActionNames[actionKey] || actionKey;
     tr.appendChild(tdName);
     
-    const tdKey = document.createElement("td");
-    const btn = document.createElement("button");
-    btn.className = "shortcut-key-btn";
+    // Primary key
+    const tdPrimary = document.createElement("td");
+    const btnPrimary = document.createElement("button");
+    btnPrimary.className = "shortcut-key-btn";
     
-    let displayVal = shortcutKeys[actionKey];
-    if (actionKey === "copyNotation" || actionKey === "loadNotation") {
-      displayVal = "Ctrl + " + displayVal.toUpperCase();
-    } else if (displayVal === " ") {
-      displayVal = "Space";
-    }
+    let displayPrimary = formatKeyCombination(shortcutKeys[actionKey].primary);
     
-    if (isRecordingKey === actionKey) {
-      btn.textContent = "입력 대기 중...";
-      btn.classList.add("recording");
+    if (isRecordingKey && isRecordingKey.action === actionKey && isRecordingKey.type === "primary") {
+      btnPrimary.textContent = "입력 대기...";
+      btnPrimary.classList.add("recording");
     } else {
-      btn.textContent = displayVal;
+      btnPrimary.textContent = displayPrimary;
     }
     
-    btn.onclick = (e) => {
+    btnPrimary.onclick = (e) => {
       e.stopPropagation();
-      startRecordingKey(actionKey);
+      startRecordingKey(actionKey, "primary");
     };
+    tdPrimary.appendChild(btnPrimary);
+    tr.appendChild(tdPrimary);
     
-    tdKey.appendChild(btn);
-    tr.appendChild(tdKey);
+    // Secondary key
+    const tdSecondary = document.createElement("td");
+    const btnSecondary = document.createElement("button");
+    btnSecondary.className = "shortcut-key-btn";
+    
+    let displaySecondary = formatKeyCombination(shortcutKeys[actionKey].secondary);
+    
+    if (isRecordingKey && isRecordingKey.action === actionKey && isRecordingKey.type === "secondary") {
+      btnSecondary.textContent = "입력 대기...";
+      btnSecondary.classList.add("recording");
+    } else {
+      btnSecondary.textContent = displaySecondary;
+    }
+    
+    btnSecondary.onclick = (e) => {
+      e.stopPropagation();
+      startRecordingKey(actionKey, "secondary");
+    };
+    tdSecondary.appendChild(btnSecondary);
+    tr.appendChild(tdSecondary);
+    
     tbody.appendChild(tr);
   });
 }
 
-function startRecordingKey(actionKey) {
-  isRecordingKey = actionKey;
+function startRecordingKey(actionKey, type) {
+  isRecordingKey = { action: actionKey, type: type };
   populateShortcutTable();
   
   const handleKeyRecord = (e) => {
     e.preventDefault();
     e.stopPropagation();
     
-    let keyName = e.key;
+    const keyName = e.key;
     
-    // Ctrl 관련 특수 단축키의 경우 기호만 보존
-    if (isRecordingKey === "copyNotation" || isRecordingKey === "loadNotation") {
-      if (["control", "shift", "alt", "meta"].includes(keyName.toLowerCase())) {
-        return; // 보조키만 단독 입력은 무시
-      }
-      keyName = keyName.toLowerCase();
+    if (["control", "shift", "alt", "meta"].includes(keyName.toLowerCase())) {
+      return;
     }
     
-    // 키 할당 및 로컬 저장
-    shortcutKeys[isRecordingKey] = keyName;
-    saveCurrentConfigToSlot();
+    if ((keyName === "Escape" || keyName === "Backspace") && isRecordingKey.action !== "cancel") {
+      shortcutKeys[isRecordingKey.action][isRecordingKey.type] = null;
+      isRecordingKey = null;
+      saveCurrentConfigToSlot();
+      populateShortcutTable();
+      window.removeEventListener("keydown", handleKeyRecord, true);
+      showToast("단축키가 해제되었습니다.");
+      return;
+    }
     
-    // 리스너 해제 및 복구
+    const combo = {
+      key: keyName,
+      ctrl: e.ctrlKey || e.metaKey,
+      alt: e.altKey,
+      shift: e.shiftKey
+    };
+    
+    let duplicated = false;
+    Object.keys(shortcutKeys).forEach(aKey => {
+      const keysObj = shortcutKeys[aKey];
+      const matchCombo = (c) => {
+        if (!c || !c.key) return false;
+        return c.key.toLowerCase() === combo.key.toLowerCase() &&
+               !!c.ctrl === !!combo.ctrl &&
+               !!c.alt === !!combo.alt &&
+               !!c.shift === !!combo.shift;
+      };
+      if (keysObj && (matchCombo(keysObj.primary) || matchCombo(keysObj.secondary))) {
+        if (aKey === isRecordingKey.action) return;
+        duplicated = true;
+      }
+    });
+    
+    if (duplicated) {
+      showToast("이미 다른 기능에 지정된 키 조합입니다!");
+      isRecordingKey = null;
+      populateShortcutTable();
+      window.removeEventListener("keydown", handleKeyRecord, true);
+      return;
+    }
+    
+    shortcutKeys[isRecordingKey.action][isRecordingKey.type] = combo;
     isRecordingKey = null;
+    saveCurrentConfigToSlot();
     window.removeEventListener("keydown", handleKeyRecord, true);
     populateShortcutTable();
-    showToast("단축키가 지정되었습니다.");
+    showToast(`단축키가 '${formatKeyCombination(combo)}'(으)로 지정되었습니다.`);
   };
   
   window.addEventListener("keydown", handleKeyRecord, true);
@@ -3076,16 +3364,66 @@ function startRecordingKey(actionKey) {
 
 function resetDefaultShortcuts() {
   shortcutKeys = {
-    up: "ArrowUp",
-    down: "ArrowDown",
-    left: "ArrowLeft",
-    right: "ArrowRight",
-    select: "Enter",
-    selectAlt: " ",
-    cursorLockToggle: "CapsLock",
-    cancel: "Escape",
-    copyNotation: "s",
-    loadNotation: "v"
+    up: {
+      primary: { key: "ArrowUp", ctrl: false, alt: false, shift: false },
+      secondary: null
+    },
+    down: {
+      primary: { key: "ArrowDown", ctrl: false, alt: false, shift: false },
+      secondary: null
+    },
+    left: {
+      primary: { key: "ArrowLeft", ctrl: false, alt: false, shift: false },
+      secondary: null
+    },
+    right: {
+      primary: { key: "ArrowRight", ctrl: false, alt: false, shift: false },
+      secondary: null
+    },
+    select: {
+      primary: { key: "Enter", ctrl: false, alt: false, shift: false },
+      secondary: { key: " ", ctrl: false, alt: false, shift: false }
+    },
+    cursorLockToggle: {
+      primary: { key: "CapsLock", ctrl: false, alt: false, shift: false },
+      secondary: null
+    },
+    cancel: {
+      primary: { key: "Escape", ctrl: false, alt: false, shift: false },
+      secondary: null
+    },
+    copyNotation: {
+      primary: { key: "s", ctrl: true, alt: false, shift: false },
+      secondary: null
+    },
+    loadNotation: {
+      primary: { key: "v", ctrl: true, alt: false, shift: false },
+      secondary: null
+    },
+    newGame: {
+      primary: { key: "n", ctrl: true, alt: false, shift: false },
+      secondary: null
+    },
+    forwardStep: {
+      primary: { key: "ArrowRight", ctrl: false, alt: true, shift: false },
+      secondary: null
+    },
+    backwardStep: {
+      primary: { key: "ArrowLeft", ctrl: false, alt: true, shift: false },
+      secondary: null
+    },
+    goToStart: {
+      primary: { key: "ArrowLeft", ctrl: true, alt: false, shift: false },
+      secondary: null
+    },
+    goToEnd: {
+      primary: { key: "ArrowRight", ctrl: true, alt: false, shift: false },
+      secondary: null
+    },
+    autoplayToggle: {
+      primary: { key: "p", ctrl: true, alt: false, shift: false },
+      secondary: null
+    }
   };
   saveCurrentConfigToSlot();
   populateShortcutTable();
@@ -3362,6 +3700,192 @@ function toggleMetadataCategory(event) {
   }
 }
 
+function toggleSettingCategory(categoryId) {
+  const category = document.getElementById(categoryId);
+  const content = document.getElementById(categoryId + "-content");
+  let arrowId = "";
+  if (categoryId === "board-view-category") arrowId = "board-view-arrow";
+  else if (categoryId === "anim-category") arrowId = "anim-arrow";
+  else if (categoryId === "settings-category") arrowId = "settings-arrow";
+  
+  const arrow = document.getElementById(arrowId);
+  
+  if (!category || !content) return;
+  
+  const isCollapsed = category.classList.contains("collapsed");
+  
+  if (isCollapsed) {
+    category.classList.remove("collapsed");
+    content.style.display = "block";
+    if (arrow) arrow.style.transform = "rotate(180deg)";
+  } else {
+    category.classList.add("collapsed");
+    content.style.display = "none";
+    if (arrow) arrow.style.transform = "rotate(0deg)";
+  }
+}
+
+var autoplayInterval = null;
+var isAutoplayActive = false;
+
+function toggleAutoplay() {
+  if (isAutoplayActive) {
+    stopAutoplay();
+  } else {
+    startAutoplay();
+  }
+}
+
+function startAutoplay() {
+  if (isAutoplayActive) return;
+  const turnEl = document.getElementById("turn");
+  if (!turnEl) return;
+  let curTurn = parseInt(turnEl.value, 10);
+  if (curTurn >= log.length) {
+    showToast("이미 마지막 수순입니다.");
+    return;
+  }
+  isAutoplayActive = true;
+  showToast("자동 재생 시작");
+  updateAutoplayUI();
+  
+  autoplayInterval = setInterval(() => {
+    let curTurn = parseInt(turnEl.value, 10);
+    if (curTurn < log.length) {
+      if (!autoplayUseAnim) {
+        svg.classList.add("no-transition");
+      }
+      next();
+      if (!autoplayUseAnim) {
+        svg.offsetHeight; // force reflow
+        svg.classList.remove("no-transition");
+      }
+    } else {
+      stopAutoplay();
+      showToast("자동 재생 완료");
+    }
+  }, autoplaySpeed * 1000);
+}
+
+function stopAutoplay() {
+  if (!isAutoplayActive) return;
+  isAutoplayActive = false;
+  if (autoplayInterval) {
+    clearInterval(autoplayInterval);
+    autoplayInterval = null;
+  }
+  showToast("자동 재생 정지");
+  updateAutoplayUI();
+}
+
+function updateAutoplayUI() {
+  const playBtn = document.getElementById("nav-play-btn");
+  if (playBtn) {
+    if (isAutoplayActive) {
+      playBtn.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <rect x="6" y="4" width="4" height="16" rx="1"/>
+          <rect x="14" y="4" width="4" height="16" rx="1"/>
+        </svg>
+      `;
+      playBtn.title = "자동 재생 일시정지 (Ctrl + P)";
+    } else {
+      playBtn.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <polygon points="6,4 20,12 6,20"/>
+        </svg>
+      `;
+      playBtn.title = "자동 재생 시작 (Ctrl + P)";
+    }
+  }
+}
+
+function goToStart() {
+  clearCandiBox();
+  let startingLayoutCode = knownStart[0][newGameState[0]] + knownStart[1][newGameState[1]];
+  setting(startingLayoutCode);
+  curSelect = 32;
+  const selectBox = document.getElementById("select-box");
+  if (selectBox) {
+    selectBox.setAttribute("x", -1000);
+    selectBox.setAttribute("y", -1000);
+  }
+  const turnEl = document.getElementById("turn");
+  if (turnEl) turnEl.value = 0;
+  updateScore();
+  const recordBox = document.getElementById("record-box");
+  if (recordBox && recordBox.style.display === "flex") {
+    updateRecordUI();
+  }
+  updateCommentBubble();
+  document.getElementById("prev").disabled = true;
+  if (log.length > 0) {
+    document.getElementById("next").disabled = false;
+  } else {
+    document.getElementById("next").disabled = true;
+  }
+  
+  svg.classList.add("no-transition");
+  initPositions();
+  svg.offsetHeight; // Force reflow
+  svg.classList.remove("no-transition");
+}
+
+function goToEnd() {
+  clearCandiBox();
+  const turnEl = document.getElementById("turn");
+  if (!turnEl) return;
+  let curTurn = parseInt(turnEl.value, 10);
+  
+  svg.classList.add("no-transition");
+  while (curTurn < log.length) {
+    setPieces(log[curTurn].i, log[curTurn].x, log[curTurn].y, true);
+    if (log[curTurn].t != 32) {
+      setPieces(log[curTurn].t, 0, 0, true);
+    }
+    curTurn++;
+  }
+  turnEl.value = log.length;
+  curSelect = 32;
+  const lastMove = log[log.length - 1];
+  if (lastMove) {
+    moveSelectBox(lastMove.i);
+  }
+  document.getElementById("next").disabled = true;
+  if (log.length > 0) {
+    document.getElementById("prev").disabled = false;
+  }
+  updateScore();
+  const recordBox = document.getElementById("record-box");
+  if (recordBox && recordBox.style.display === "flex") {
+    updateRecordUI();
+  }
+  initPositions();
+  svg.offsetHeight; // Force reflow
+  svg.classList.remove("no-transition");
+  
+  checkGameStatus();
+  updateCommentBubble();
+  checkAndRunAI();
+}
+
+function changeAutoplaySpeed(val) {
+  autoplaySpeed = parseFloat(val);
+  const valEl = document.getElementById("autoplay-speed-val");
+  if (valEl) valEl.textContent = autoplaySpeed.toFixed(1);
+  
+  if (isAutoplayActive) {
+    stopAutoplay();
+    startAutoplay();
+  }
+  saveCurrentConfigToSlot();
+}
+
+function changeAutoplayUseAnim(checked) {
+  autoplayUseAnim = checked;
+  saveCurrentConfigToSlot();
+}
+
 // Bind to window to prevent module scoping issues
 window.rotateScorePanel = rotateScorePanel;
 window.setScoreSlide = setScoreSlide;
@@ -3370,5 +3894,18 @@ window.updateCurrentStepComment = updateCurrentStepComment;
 window.updateCommentBubble = updateCommentBubble;
 window.updateScoreboardSettings = updateScoreboardSettings;
 window.toggleMetadataCategory = toggleMetadataCategory;
+window.toggleSettingCategory = toggleSettingCategory;
+window.toggleAutoplay = toggleAutoplay;
+window.goToStart = goToStart;
+window.goToEnd = goToEnd;
+window.changeAutoplaySpeed = changeAutoplaySpeed;
+window.changeAutoplayUseAnim = changeAutoplayUseAnim;
+window.changeModalBgColor = changeModalBgColor;
+window.changeModalOpacity = changeModalOpacity;
+window.applyShortcutModalTheme = applyShortcutModalTheme;
+window.openShortcutModal = openShortcutModal;
+window.closeShortcutModal = closeShortcutModal;
+window.handleModalOverlayClick = handleModalOverlayClick;
+window.resetDefaultShortcuts = resetDefaultShortcuts;
 
 initGame();
