@@ -364,30 +364,41 @@
 
     <!-- 기보 관리 및 저장창 (기보창) -->
     <div id="record-box">
-      <!-- 고정된 헤더 영역 -->
-      <div class="record-header">
+      <!-- 고정된 헤더 영역 (스크롤되지 않음) -->
+      <div class="settings-header">
         <button id="close-record-btn" onclick="closeRecordModal()">X</button>
-        <span class="record-title">기보창</span>
-        <button id="img-download-btn" class="img-download-btn" onclick="download()" title="장기판 이미지 다운로드">그림 저장</button>
+        <span class="settings-title">기보 보관함</span>
+        <div class="record-header-actions">
+          <button id="img-download-btn" class="record-header-btn" onclick="download()" title="장기판 이미지 다운로드">그림 저장</button>
+          <button id="save-record-btn" class="record-header-btn primary" onclick="saveRecordToLibrary(this)" title="기보 저장 (클립보드 및 보관함)">기보 저장</button>
+        </div>
       </div>
       
-      <!-- 콘텐츠 영역 -->
-      <div class="record-content-area">
-        <!-- 기보 리스트 영역 -->
-        <div class="record-list-section">
-          <span class="section-title">기보 진행 이력</span>
-          <div id="record-list-container" class="record-list-container">
-            <!-- JavaScript dynamically inserts rows here -->
+      <!-- 스크롤 가능한 기보 콘텐츠 영역 -->
+      <div class="settings-scroll-area">
+        <!-- 1. 기보 데이터 (가져오기) -->
+        <div class="setting-category">
+          <div class="category-header">
+            <span class="category-title">기보 데이터 불러오기</span>
+          </div>
+          <div class="record-textarea-wrapper" style="margin-bottom: 12px; width: 100%;">
+            <textarea id="record-text-area" placeholder="기보 텍스트를 붙여넣고 아래 불러오기 버튼을 누르면 대국이 복원됩니다."></textarea>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button id="import-record-btn" class="record-import-btn" onclick="importRecordFromText()">클립보드 기보 불러오기</button>
           </div>
         </div>
         
-        <!-- 기보 저장/가져오기 텍스트 영역 -->
-        <div class="record-save-section">
-          <span class="section-title">기보 데이터 (저장/불러오기)</span>
-          <textarea id="record-text-area" placeholder="기보 텍스트가 여기에 표시됩니다. 가져오려면 여기에 기보 텍스트를 붙여넣고 아래 불러오기 버튼을 누르세요."></textarea>
-          <div class="record-actions-row">
-            <button id="copy-record-btn" onclick="copyRecordToClipboard(this)">기보 복사</button>
-            <button id="import-record-btn" onclick="importRecordFromText()">기보 불러오기</button>
+        <!-- 2. 저장된 기보 목록 -->
+        <div class="setting-category">
+          <div class="category-header">
+            <span class="category-title">저장된 기보 목록</span>
+            <div class="category-header-actions">
+              <button class="reset-category-btn" onclick="clearAllSavedRecords()" title="모든 기보 삭제">🔄</button>
+            </div>
+          </div>
+          <div id="saved-records-list" class="saved-records-list-container">
+            <!-- JavaScript dynamically inserts saved record rows here -->
           </div>
         </div>
       </div>
