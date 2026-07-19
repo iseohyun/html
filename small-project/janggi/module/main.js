@@ -4184,7 +4184,13 @@ function flipBoardHorizontal() {
         initPositions();
         if (kbCursorActive) updateKeyboardCursor();
         
+        logPieceCenters("1500ms+ Final Redraw Complete");
+        
         boardAnimating = false;
+        
+        setTimeout(() => {
+          logPieceCenters("2000ms Settled State Check");
+        }, 500);
       }, 500); // Phase 3 duration
       
     }, 500); // Phase 2 duration
@@ -4600,6 +4606,10 @@ function flipBoardVertical() {
         logPieceCenters("1500ms+ Final Redraw Complete");
         
         boardAnimating = false;
+        
+        setTimeout(() => {
+          logPieceCenters("2000ms Settled State Check");
+        }, 500);
       }, 500); // Phase 3 duration
       
     }, 500); // Phase 2 duration
