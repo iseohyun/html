@@ -2,6 +2,10 @@
 ## Scope
 /small-project/janggi/**
 
+### [v1.2.4] - 진단용 콘솔 로깅 및 모달 기반 디버그 코드 제거
+- 브라우저 개발자 도구 콘솔에 로딩 즉시(LOAD_START, LOAD_END, INIT_COMPLETE), 기물 클릭 시(PIECE_CLICKED), 초기화 시(RESET_CATEGORY_2) 모든 주요 런타임 설정 변수들을 자동으로 출력하여 이상 현상을 원격 추적할 수 있도록 콘솔 추적 시스템 도입
+- 불필요한 화면 오버레이 디버그 창을 완전 제거하여 UI 오염 차단
+
 ### [v1.2.3] - 런타임 디버그 오버레이 추가
 - 기물 클릭 시 브라우저 화면 좌측 하단에 설정 상태(슬롯번호, candiColorType, candiShapeType, unitSize, padding, showCoordinates)를 직접 보여주는 실시간 디버그용 검사용 오버레이 카드(Dynamic UI Card) 탑재
 
