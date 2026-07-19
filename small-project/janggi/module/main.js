@@ -1104,16 +1104,18 @@ function checkAndInit() {
       typeof initBoard === "function" && 
       typeof initPositions === "function") {
     
+    // 1. 데이터 및 기물 DOM 바인딩 선행 수행
+    initData();
+    
     // active slot 로드
     if (localStorage.getItem("janggi_active_slot") !== null) {
       activeSlot = parseInt(localStorage.getItem("janggi_active_slot"), 10);
     }
     updateSlotButtonsUI();
     
-    // 슬롯으로부터 구성정보 로드 (없다면 현재 상태 저장)
+    // 슬롯으로부터 구성정보 로드 (DOM 조작 안심 수행)
     loadConfigFromSlot();
 
-    initData();
     initSettingsUI();
     
     // 초기 로딩 시 말들이 0,0에서 날아오는 트랜지션을 방지합니다.
