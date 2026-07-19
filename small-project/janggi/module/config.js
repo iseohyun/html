@@ -30,7 +30,7 @@ var candiColorType = "#3b82f6";
 
 // 설정창 비주얼 상태값
 var settingsBgColor = "#0f172a";
-var settingsOpacity = 0.78;
+var settingsOpacity = 0.55;
 var settingsTextColorType = "auto";
 var settingsTextColorCustom = "#f8fafc";
 var settingsAccentColor = "#3b82f6";
