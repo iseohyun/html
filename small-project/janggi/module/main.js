@@ -1710,57 +1710,15 @@ function getStartingCode() {
   return code;
 }
 
-function getNormalizedState() {
-  let normInitPieces = JSON.parse(JSON.stringify(initPieces));
-  let normLog = JSON.parse(JSON.stringify(log));
-  
-  if (!iAmCho) {
-    // 1. Swap and flip Y for initPieces (0-15 <-> 16-31)
-    for (let i = 0; i < 16; i++) {
-      const p1 = normInitPieces[i];
-      const p2 = normInitPieces[i + 16];
-      
-      const y1Flipped = (p1.x !== 0 || p1.y !== 0) ? flipYCoordinate(p1.y) : p1.y;
-      const y2Flipped = (p2.x !== 0 || p2.y !== 0) ? flipYCoordinate(p2.y) : p2.y;
-      
-      const tempX = p1.x;
-      const tempY = y1Flipped;
-      
-      p1.x = p2.x;
-      p1.y = y2Flipped;
-      
-      p2.x = tempX;
-      p2.y = tempY;
-    }
-    // 2. Flip X for initPieces
-    for (let i = 0; i < 32; i++) {
-      if (normInitPieces[i].x !== 0) {
-        normInitPieces[i].x = 10 - normInitPieces[i].x;
-      }
-    }
-    // 3. Flip and swap log entries
-    normLog.forEach(entry => {
-      entry.y = flipYCoordinate(entry.y);
-      entry.x = 10 - entry.x;
-      entry.i = (entry.i + 16) % 32;
-      if (entry.t !== 32) {
-        entry.t = (entry.t + 16) % 32;
-      }
-    });
-  }
-  return { normInitPieces, normLog };
-}
-
 function rebuildHistory() {
-  const { normInitPieces, normLog } = getNormalizedState();
   const tempPieces = [];
   for (let idx = 0; idx < 32; idx++) {
-    tempPieces[idx] = { x: normInitPieces[idx].x, y: normInitPieces[idx].y };
+    tempPieces[idx] = { x: initPieces[idx].x, y: initPieces[idx].y };
   }
   
   const history = [];
-  for (let step = 0; step < normLog.length; step++) {
-    const moveInfo = normLog[step];
+  for (let step = 0; step < log.length; step++) {
+    const moveInfo = log[step];
     const i = moveInfo.i;
     const endX = moveInfo.x;
     const endY = moveInfo.y;
@@ -1769,7 +1727,8 @@ function rebuildHistory() {
     const startX = tempPieces[i].x;
     const startY = tempPieces[i].y;
     
-    // Normalized history is always based on standard (Cho = bottom = 0..15, Han = top = 16..31)
+    // Bottom player (0..15) is always called "초" (Zol) in the record text representation.
+    // Top player (16..31) is always called "한" (Byeong).
     const player = (i <= 15) ? "초" : "한";
     
     let pieceName = "";
@@ -2323,8 +2282,25 @@ function importRecordFromText(text) {
   
   updateMetadataFormFromState();
   updateMetadataDisplay();
+  // 1. 상차림 코드 및 진영(iAmCho) 파싱
+  let startingCode = "";
+  let determinedCho = true;
   
-  // 1. 착수 로그 파싱 (헤더 감지에 앞서 먼저 파싱)
+  const layoutTextMatch = parseLayoutText(text);
+  if (layoutTextMatch) {
+    startingCode = layoutTextMatch.startingCode;
+    determinedCho = layoutTextMatch.determinedChoIsBottom;
+  } else {
+    const layoutMatch = text.match(/\b\d{64}\b/);
+    if (layoutMatch) {
+      startingCode = layoutMatch[0];
+    } else {
+      startingCode = getStartingCode();
+    }
+    determinedCho = determineIAmChoFromText(text);
+  }
+
+  // 2. 착수 로그 파싱
   const parsedMoves = [];
   let validLineIdx = 0;
   for (let line of rawLines) {
@@ -2335,11 +2311,13 @@ function importRecordFromText(text) {
     }
   }
   
-  // 2. 뒤집힌 기보 감지 및 복원 (한나라가 첫 수를 두는 경우)
-  let shouldFlipImport = false;
-  if (parsedMoves.length > 0 && parsedMoves[0].player === "한") {
+  // 3. 뒤집힌 기보 감지 및 복원 (헤더가 한하인 경우 혹은 한나라가 첫 수를 두는 경우)
+  let shouldFlipImport = !determinedCho;
+  if (!shouldFlipImport && parsedMoves.length > 0 && parsedMoves[0].player === "한") {
     shouldFlipImport = true;
-    
+  }
+  
+  if (shouldFlipImport) {
     parsedMoves.forEach(move => {
       // 플레이어 대칭 스왑
       move.player = (move.player === "초") ? "한" : "초";
@@ -2357,25 +2335,7 @@ function importRecordFromText(text) {
     });
   }
 
-  // 3. 상차림 코드 및 진영(iAmCho) 파싱
-  let startingCode = "";
-  let determinedCho = true;
-  
-  const layoutTextMatch = parseLayoutText(text);
-  if (layoutTextMatch) {
-    startingCode = layoutTextMatch.startingCode;
-    determinedCho = layoutTextMatch.determinedChoIsBottom;
-  } else {
-    const layoutMatch = text.match(/\b\d{64}\b/);
-    if (layoutMatch) {
-      startingCode = layoutMatch[0];
-    } else {
-      startingCode = getStartingCode();
-    }
-    determinedCho = determineIAmChoFromText(text);
-  }
-  
-  // 만약 뒤집힌 기보라면 초기 상차림 및 진영도 180도 역회전 적용
+  // 만약 뒤집힌 기보라면 초기 상차림 및 진영도 180도 역회전 적용하여 표준(Cho bottom) 상태로 로드
   if (shouldFlipImport) {
     if (!layoutTextMatch) {
       startingCode = rotateLayoutCode180(startingCode);
@@ -2390,7 +2350,7 @@ function importRecordFromText(text) {
     return;
   }
   
-  // 3. 보드 초기 상차림으로 재설정
+  // 4. 보드 초기 상차림으로 재설정
   setting(startingCode);
   log.length = 0;
   
