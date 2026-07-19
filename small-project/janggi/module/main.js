@@ -2471,7 +2471,7 @@ function changeAiMode(val) {
   aiMode = parseInt(val, 10);
   localStorage.setItem("aiMode", aiMode);
   saveCurrentConfigToSlot();
-  checkAndRunAI();
+  checkAndRunAI(true);
 }
 
 function changeCursorLockMode(val) {
@@ -2483,7 +2483,7 @@ function changeCursorLockMode(val) {
 
 var aiThinking = false;
 
-function checkAndRunAI() {
+function checkAndRunAI(immediate = false) {
   if (aiMode === 0) return;
   if (aiThinking) return;
   
@@ -2501,6 +2501,8 @@ function checkAndRunAI() {
   if ((isChoTurn && aiIsCho) || (!isChoTurn && aiIsHan)) {
     aiThinking = true;
     
+    const delay = immediate ? 0 : 500;
+    
     // 약간의 딜레이를 주어 AI가 생각하는 척하는 자연스러운 연출 적용
     setTimeout(() => {
       try {
@@ -2517,8 +2519,9 @@ function checkAndRunAI() {
         console.error("[AI Error] Error during AI move calculation:", err);
       } finally {
         aiThinking = false;
+        checkAndRunAI();
       }
-    }, 500);
+    }, delay);
   }
 }
 
@@ -4794,7 +4797,7 @@ function toggleOpponentAI() {
   const aiModeSelect = document.getElementById("ai-mode-select");
   if (aiModeSelect) aiModeSelect.value = aiMode;
   
-  checkAndRunAI();
+  checkAndRunAI(true);
 }
 
 function requestAIHint() {
