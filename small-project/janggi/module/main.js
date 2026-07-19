@@ -95,20 +95,44 @@ function initElements() {
 
 function getData() {
   const urlParams = new URLSearchParams(window.location.search);
+  
+  // 1. Parse param_cho first to set active nation
+  let param_cho = urlParams.get('cho');
+  if (param_cho == undefined) {
+    changeNation(true);
+  } else {
+    if (param_cho == "Y") {
+      changeNation(true);
+    } else {
+      changeNation(false);
+    }
+  }
+
+  // 2. Parse param_P and normalize it for matching starting layout types
   let param_P = urlParams.get('p');
   if (param_P == undefined) {
-    // 나: 마상마상 - 너 : 마상마상
+    // 나: 마상마상 - 너 : 마상마상 (Standard starting layout)
     setting("5910902888207030804060173757779752119123832171318141611434547494");
   } else {
+    let normalizedP = normalizeLayoutCode(param_P, !iAmCho);
+    let choIdx = 0;
+    let hanIdx = 0;
     for (let i = 0; i < 4; i++) {
-      if (param_P.includes(knownStart[0][i])) {
-        newGameState[0] = i;
+      if (normalizedP.includes(knownStart[0][i])) {
+        choIdx = i;
       }
     }
     for (let i = 0; i < 4; i++) {
-      if (param_P.includes(knownStart[1][i])) {
-        newGameState[1] = i;
+      if (normalizedP.includes(knownStart[1][i])) {
+        hanIdx = i;
       }
+    }
+    if (iAmCho) {
+      newGameState[0] = choIdx;
+      newGameState[1] = hanIdx;
+    } else {
+      newGameState[0] = hanIdx;
+      newGameState[1] = choIdx;
     }
     setting(param_P);
   }
@@ -116,6 +140,7 @@ function getData() {
   // 상차림 단추 색상 및 미니어처 예시 배치도 동기화
   syncCharimButtonStyles();
 
+  // 3. Parse log parameter
   let param_log = urlParams.get('log');
   if (param_log != undefined) {
     const logArr = param_log.split(',');
@@ -133,17 +158,6 @@ function getData() {
         log.push({ i, x, y, t });
       }
     });
-  }
-
-  let param_cho = urlParams.get('cho');
-  if (param_cho == undefined) {
-    changeNation(true);
-  } else {
-    if (param_cho == "Y") {
-      changeNation(true);
-    } else {
-      changeNation(false);
-    }
   }
 
   let param_turn = urlParams.get('t');
@@ -523,7 +537,7 @@ function toggleNation() {
   }
 
   // 2. 현재 설정한 상차림에 부합하는 배치 데이터 산출 및 복원
-  let startingLayoutCode = knownStart[0][newGameState[0]] + knownStart[1][newGameState[1]];
+  let startingLayoutCode = getStartingLayoutCode();
   setting(startingLayoutCode);
 
   // 3. 보드 및 기물 위치 갱신
@@ -590,7 +604,7 @@ function startNewGame() {
   if (turnEl) turnEl.value = 0;
   
   // 3. 현재 설정한 상차림에 부합하는 배치 데이터 산출
-  let startingLayoutCode = knownStart[0][newGameState[0]] + knownStart[1][newGameState[1]];
+  let startingLayoutCode = getStartingLayoutCode();
   
   // 4. 기물 위치 데이터 복원
   setting(startingLayoutCode);
@@ -1798,11 +1812,11 @@ function rebuildHistory() {
 }
 
 function generateGameRecordText() {
-  const bottomLayout = getLayoutName(newGameState[0]);
-  const topLayout = getLayoutName(newGameState[1]);
+  const choLayout = getLayoutName(iAmCho ? newGameState[0] : newGameState[1]);
+  const hanLayout = getLayoutName(iAmCho ? newGameState[1] : newGameState[0]);
   
   // Game record normalized description (Cho bottom, Han top)
-  const sideLayoutDesc = `초하(${bottomLayout}) vs 한상(${topLayout})`;
+  const sideLayoutDesc = `초하(${choLayout}) vs 한상(${hanLayout})`;
   
   let lines = [];
   lines.push(`상차림: ${sideLayoutDesc}`);
@@ -4248,7 +4262,7 @@ function flipBoardHorizontal() {
 
 function goToStart() {
   clearCandiBox();
-  let startingLayoutCode = knownStart[0][newGameState[0]] + knownStart[1][newGameState[1]];
+  let startingLayoutCode = getStartingLayoutCode();
   setting(startingLayoutCode);
   curSelect = 32;
   const selectBox = document.getElementById("select-box");
@@ -4467,6 +4481,12 @@ function executeFlipBoardHorizontal() {
   curSelect = 32;
   clearCandiBox();
   
+  // Mirror newGameState layouts horizontally (0 <-> 3, 1 <-> 1, 2 <-> 2)
+  const mirrorMap = { 0: 3, 1: 1, 2: 2, 3: 0 };
+  newGameState[0] = mirrorMap[newGameState[0]];
+  newGameState[1] = mirrorMap[newGameState[1]];
+  syncCharimButtonStyles();
+  
   // 6. Redraw
   initPositions();
   
@@ -4485,6 +4505,9 @@ function executeFlipBoardHorizontal() {
     url.searchParams.set("log", logStrArr.join(","));
   }
   window.history.replaceState({}, "", url.toString());
+
+  // Update record textbox UI immediately
+  updateRecordUI();
 
   showToast("판 좌우 반전 및 기존 수순 변환 완료");
 }
@@ -4704,6 +4727,18 @@ function executeFlipBoardVertical() {
   curSelect = 32;
   clearCandiBox();
   
+  // Swap newGameState layouts vertically (bottom <-> top)
+  const tempLayout = newGameState[0];
+  newGameState[0] = newGameState[1];
+  newGameState[1] = tempLayout;
+  
+  // Mirror newGameState layouts horizontally (0 <-> 3, 1 <-> 1, 2 <-> 2)
+  const mirrorMap = { 0: 3, 1: 1, 2: 2, 3: 0 };
+  newGameState[0] = mirrorMap[newGameState[0]];
+  newGameState[1] = mirrorMap[newGameState[1]];
+  
+  syncCharimButtonStyles();
+  
   // 6. Toggle iAmCho (the human plays the other team now, bottom side)
   iAmCho = !iAmCho;
   changeNation(iAmCho);
@@ -4754,6 +4789,9 @@ function executeFlipBoardVertical() {
     url.searchParams.set("log", logStrArr.join(","));
   }
   window.history.replaceState({}, "", url.toString());
+
+  // Update record textbox UI immediately
+  updateRecordUI();
 
   showToast("판 180도 회전 및 기존 수순 변환 완료 (AI 위쪽 자동 할당)");
 
@@ -4857,5 +4895,52 @@ window.toggleOpponentAI = toggleOpponentAI;
 window.requestAIHint = requestAIHint;
 window.changeCommentDuration = changeCommentDuration;
 window.hideCommentBubble = hideCommentBubble;
+
+function normalizeLayoutCode(code, flipped) {
+  if (!flipped || !code || code.length !== 64) return code;
+  let coords = [];
+  for (let i = 0; i < 64; i += 2) {
+    coords.push({
+      x: parseInt(code[i], 10),
+      y: parseInt(code[i + 1], 10)
+    });
+  }
+  let normCoords = new Array(32);
+  for (let i = 0; i < 16; i++) {
+    const c1 = coords[i];
+    const c2 = coords[i + 16];
+    const y1Flipped = (c1.x !== 0 || c1.y !== 0) ? flipYCoordinate(c1.y) : c1.y;
+    const y2Flipped = (c2.x !== 0 || c2.y !== 0) ? flipYCoordinate(c2.y) : c2.y;
+    normCoords[i] = { x: c2.x, y: y2Flipped };
+    normCoords[i + 16] = { x: c1.x, y: y1Flipped };
+  }
+  for (let i = 0; i < 32; i++) {
+    if (normCoords[i].x !== 0) {
+      normCoords[i].x = 10 - normCoords[i].x;
+    }
+  }
+  let result = "";
+  for (let i = 0; i < 32; i++) {
+    result += `${normCoords[i].x}${normCoords[i].y}`;
+  }
+  return result;
+}
+
+function getStartingLayoutCode() {
+  let choIdx, hanIdx;
+  if (iAmCho) {
+    choIdx = newGameState[0];
+    hanIdx = newGameState[1];
+  } else {
+    // Flipped state: bottom team is Han (type is newGameState[0]), top team is Cho (type is newGameState[1]).
+    // But standard starting layout maps index 0 of knownStart to Cho, index 1 to Han.
+    // So Cho's standard index is newGameState[1], Han's standard index is newGameState[0].
+    choIdx = newGameState[1];
+    hanIdx = newGameState[0];
+  }
+  
+  let stdCode = knownStart[0][choIdx] + knownStart[1][hanIdx];
+  return normalizeLayoutCode(stdCode, !iAmCho);
+}
 
 initGame();
