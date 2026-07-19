@@ -3171,7 +3171,12 @@ function formatKeyCombination(combo) {
   if (combo.shift) parts.push("Shift");
   
   let k = combo.key;
-  if (k === " ") k = "Space";
+  const kl = k.toLowerCase();
+  if (kl === " ") k = "Space";
+  else if (kl === "arrowup") k = "↑";
+  else if (kl === "arrowdown") k = "↓";
+  else if (kl === "arrowleft") k = "←";
+  else if (kl === "arrowright") k = "→";
   else if (k.length === 1) k = k.toUpperCase();
   
   parts.push(k);
@@ -3380,19 +3385,19 @@ function resetDefaultShortcuts() {
   shortcutKeys = {
     up: {
       primary: { key: "ArrowUp", ctrl: false, alt: false, shift: false },
-      secondary: null
+      secondary: { key: "w", ctrl: false, alt: false, shift: false }
     },
     down: {
       primary: { key: "ArrowDown", ctrl: false, alt: false, shift: false },
-      secondary: null
+      secondary: { key: "s", ctrl: false, alt: false, shift: false }
     },
     left: {
       primary: { key: "ArrowLeft", ctrl: false, alt: false, shift: false },
-      secondary: null
+      secondary: { key: "a", ctrl: false, alt: false, shift: false }
     },
     right: {
       primary: { key: "ArrowRight", ctrl: false, alt: false, shift: false },
-      secondary: null
+      secondary: { key: "d", ctrl: false, alt: false, shift: false }
     },
     select: {
       primary: { key: "Enter", ctrl: false, alt: false, shift: false },
@@ -3407,16 +3412,16 @@ function resetDefaultShortcuts() {
       secondary: null
     },
     copyNotation: {
-      primary: { key: "s", ctrl: true, alt: false, shift: false },
-      secondary: null
+      primary: { key: "s", ctrl: false, alt: true, shift: false },
+      secondary: { key: "s", ctrl: true, alt: false, shift: false }
     },
     loadNotation: {
-      primary: { key: "v", ctrl: true, alt: false, shift: false },
-      secondary: null
+      primary: { key: "v", ctrl: false, alt: true, shift: false },
+      secondary: { key: "v", ctrl: true, alt: false, shift: false }
     },
     newGame: {
-      primary: { key: "n", ctrl: true, alt: false, shift: false },
-      secondary: null
+      primary: { key: "n", ctrl: false, alt: true, shift: false },
+      secondary: { key: "F2", ctrl: false, alt: false, shift: false }
     },
     forwardStep: {
       primary: { key: "ArrowRight", ctrl: false, alt: true, shift: false },
@@ -3428,15 +3433,15 @@ function resetDefaultShortcuts() {
     },
     goToStart: {
       primary: { key: "ArrowLeft", ctrl: true, alt: false, shift: false },
-      secondary: null
+      secondary: { key: "Home", ctrl: false, alt: false, shift: false }
     },
     goToEnd: {
       primary: { key: "ArrowRight", ctrl: true, alt: false, shift: false },
-      secondary: null
+      secondary: { key: "End", ctrl: false, alt: false, shift: false }
     },
     autoplayToggle: {
-      primary: { key: "p", ctrl: true, alt: false, shift: false },
-      secondary: null
+      primary: { key: "p", ctrl: false, alt: false, shift: false },
+      secondary: { key: "p", ctrl: false, alt: true, shift: false }
     }
   };
   saveCurrentConfigToSlot();
