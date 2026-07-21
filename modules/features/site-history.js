@@ -441,8 +441,9 @@ window.SiteModules.UpdateLog = (function() {
             hierarchy = item.목록;
             found = true;
             break;
-          } else if (item.파일명) {
-            return path + item.파일명;
+          } else {
+            const fileName = item.hasOwnProperty('파일명') ? item.파일명 : "index.html";
+            return path + fileName;
           }
         }
       }
