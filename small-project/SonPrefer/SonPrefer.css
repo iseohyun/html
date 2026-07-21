@@ -1,0 +1,302 @@
+@import url("/style.css");
+
+/* 
+ * SonPrefer.css
+ * SPA/SPC 스타일 선언 규칙을 완벽하게 준수하여 body와 article의 레이아웃 설정을 완전히 배제했습니다.
+ * 이 소프로젝트는 상위 호스트 article의 하위 요소로 격리 렌더링됩니다.
+ */
+
+.simulation-container {
+  width: 95%;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 10px 5px 100px 5px;
+}
+
+#page-title {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #444;
+  text-align: center;
+  margin: 20px auto 30px auto;
+}
+
+.control-panel {
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  background-color: #fafafa;
+}
+
+.input-group {
+  margin-bottom: 12px;
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.input-group label {
+  font-weight: 600;
+  width: 80px;
+}
+
+.slider {
+  flex: 1;
+  min-width: 150px;
+  max-width: 320px;
+  height: 6px;
+  border-radius: 3px;
+  background: #ddd;
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  box-shadow: 0px 1px 3px rgba(0,0,0,0.2);
+}
+
+.description {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 6px;
+  line-height: 1.4;
+  width: 100%;
+}
+
+input[type="number"] {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px 8px;
+  width: 120px;
+  text-align: right;
+}
+
+input[type="number"]:disabled {
+  background-color: #f0f0f0;
+  border-color: #ddd;
+  color: #555;
+}
+
+/* 실행 및 결과 패널 */
+#result-panel {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 15px;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.action-bar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 15px;
+}
+
+#btn-run {
+  padding: 10px 24px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0px 4px 6px rgba(59, 130, 246, 0.2);
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+#btn-run:hover:not(:disabled) {
+  background-color: #2563eb;
+}
+
+#btn-run:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+#btn-run:disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+#loading-spinner {
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: opacity 0.2s;
+}
+
+.spinner-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.spinner-visible {
+  opacity: 1;
+  visibility: visible;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.spinner-icon {
+  display: inline-block;
+  animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+  100% { transform: rotate(-360deg); }
+}
+
+.result-tables-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: space-between;
+}
+
+.result-card {
+  flex: 1;
+  min-width: 250px;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.result-card h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 1.05rem;
+  color: #111827;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 8px;
+}
+
+.result-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.result-row:last-child {
+  margin-bottom: 0;
+}
+
+.result-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.result-row input[type="text"] {
+  width: 140px;
+  padding: 4px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background-color: #f3f4f6;
+  color: #1f2937;
+  text-align: right;
+  font-family: monospace, Courier, monospace !important;
+  font-weight: bold;
+}
+
+svg {
+  display: block;
+  width: 100%;
+  height: 380px;
+  border: 1px solid #fdd;
+  border-radius: 8px;
+  margin: 20px auto;
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 4px 12px;
+}
+
+svg text {
+  font-family: monospace, Courier, monospace !important;
+}
+
+.color-box {
+  width: 12px;
+  height: 12px;
+  border: 1px solid #000;
+  margin-right: 4px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.simulation-theory {
+  margin-top: 40px;
+  padding-top: 30px;
+  border-top: 2px dashed #eee;
+  text-align: left;
+}
+
+#theory-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 25px;
+}
+
+.theory-card {
+  background-color: #fafafa;
+  border-left: 4px solid #3b82f6;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+  border-radius: 0 8px 8px 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.theory-card h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+  color: #1e3a8a;
+}
+
+.theory-card p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+.theory-card ul {
+  margin: 10px 0 0 0;
+  padding-left: 20px;
+  font-size: 0.95rem;
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+.theory-card li {
+  margin-bottom: 6px;
+}

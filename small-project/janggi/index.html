@@ -42,7 +42,7 @@
       <div class="settings-header">
         <button id="close-btn" onclick="disalbeSettingBox()">X</button>
         <span class="settings-title">설정</span>
-        <button id="start-btn-in-settings" class="start-settings-btn" onclick="startNewGame()" title="새 대국 시작하기">시작하기</button>
+        <button id="shortcut-btn-in-settings" class="start-settings-btn" onclick="openShortcutModal()" title="단축키 지정하기">단축키</button>
       </div>
       
       <!-- 스크롤 가능한 설정 콘텐츠 영역 -->
@@ -103,17 +103,19 @@
         </div>
 
         <!-- 2. 장기판 보기 -->
-        <div class="setting-category">
-          <div class="category-header">
+        <div class="setting-category collapsible collapsed" id="board-view-category">
+          <div class="category-header accordion-toggle" onclick="toggleSettingCategory('board-view-category')" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
             <span class="category-title">장기판 보기</span>
-            <div class="category-header-actions">
+            <div class="category-header-actions" onclick="event.stopPropagation();" style="display: flex; align-items: center; gap: 8px;">
               <button class="reset-category-btn" onclick="resetCategory2()" title="장기판 보기 설정 초기화">🔄</button>
               <button id="slot-1-btn" class="slot-btn" onclick="selectSlot(1)" title="슬롯 1 불러오기">1</button>
               <button id="slot-2-btn" class="slot-btn" onclick="selectSlot(2)" title="슬롯 2 불러오기">2</button>
               <button class="copy-btn" onclick="copyConfigToClipboard(this)" title="설정 클립보드로 복사">📋</button>
+              <span id="board-view-arrow" style="font-size: 0.8em; color: rgba(255,255,255,0.4); margin-left: 4px; transition: transform 0.2s;">▼</span>
             </div>
           </div>
-          <table class="settings-table">
+          <div id="board-view-category-content" style="display: none; margin-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 10px;">
+            <table class="settings-table">
             <tr>
               <td>좌표 보기</td>
               <td>
@@ -263,16 +265,19 @@
             </tr>
           </table>
         </div>
+      </div>
 
         <!-- 3. 애니메이션 -->
-        <div class="setting-category">
-          <div class="category-header">
+        <div class="setting-category collapsible collapsed" id="anim-category">
+          <div class="category-header accordion-toggle" onclick="toggleSettingCategory('anim-category')" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
             <span class="category-title">애니메이션</span>
-            <div class="category-header-actions">
+            <div class="category-header-actions" onclick="event.stopPropagation();" style="display: flex; align-items: center; gap: 8px;">
               <button class="reset-category-btn" onclick="resetCategory3()" title="애니메이션 설정 초기화">🔄</button>
+              <span id="anim-arrow" style="font-size: 0.8em; color: rgba(255,255,255,0.4); margin-left: 4px; transition: transform 0.2s;">▼</span>
             </div>
           </div>
-          <table class="settings-table">
+          <div id="anim-category-content" style="display: none; margin-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 10px;">
+            <table class="settings-table">
             <tr>
               <td>애니메이션 시간(초)</td>
               <td>
@@ -291,19 +296,39 @@
                 </div>
               </td>
             </tr>
+            <tr>
+              <td>자동재생 간격 (초)</td>
+              <td>
+                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+                  <input type="range" id="autoplay-speed-slider" min="0.5" max="5" step="0.5" value="2" oninput="changeAutoplaySpeed(this.value)" style="width: 150px; accent-color: #3b82f6;">
+                  <span id="autoplay-speed-val" style="min-width: 45px; text-align: right; color: #3b82f6;">2.0</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>자동재생 중 애니메이션 사용</td>
+              <td>
+                <div style="display: flex; align-items: center; justify-content: flex-end;">
+                  <input type="checkbox" id="autoplay-use-anim" checked onchange="changeAutoplayUseAnim(this.checked)" style="cursor: pointer; width: 18px; height: 18px; accent-color: #3b82f6;">
+                </div>
+              </td>
+            </tr>
           </table>
         </div>
+      </div>
 
         <!-- 4. 설정 -->
-        <div class="setting-category">
-          <div class="category-header">
+        <div class="setting-category collapsible collapsed" id="settings-category">
+          <div class="category-header accordion-toggle" onclick="toggleSettingCategory('settings-category')" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
             <span class="category-title">설정</span>
-            <div class="category-header-actions">
+            <div class="category-header-actions" onclick="event.stopPropagation();" style="display: flex; align-items: center; gap: 8px;">
               <button class="reset-category-btn" onclick="resetCategory4()" title="설정 초기화">🔄</button>
               <button class="copy-btn" onclick="copyConfigToClipboard(this)" title="설정 클립보드로 복사">📋</button>
+              <span id="settings-arrow" style="font-size: 0.8em; color: rgba(255,255,255,0.4); margin-left: 4px; transition: transform 0.2s;">▼</span>
             </div>
           </div>
-          <table class="settings-table">
+          <div id="settings-category-content" style="display: none; margin-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 10px;">
+            <table class="settings-table">
             <tr>
               <td>설정 배경 색</td>
               <td>
@@ -363,8 +388,7 @@
                 <div style="display: flex; align-items: center; justify-content: flex-end;">
                   <select id="ai-mode-select" onchange="changeAiMode(this.value)">
                     <option value="0">사용 안함 (로컬 2인용)</option>
-                    <option value="1">AI가 초(Blue) 플레이</option>
-                    <option value="2">AI가 한(Red) 플레이</option>
+                    <option value="1">사용함 (AI가 항상 위쪽에서 플레이)</option>
                   </select>
                 </div>
               </td>
@@ -422,17 +446,9 @@
                   </label>
                 </div>
               </td>
-            </tr>
-            <tr>
-              <td>단축키 설정</td>
-              <td>
-                <div style="display: flex; align-items: center; justify-content: flex-end;">
-                  <button class="settings-action-btn" onclick="openShortcutModal()" style="font-weight: bold; border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 6px; padding: 6px 12px; background: rgba(59, 130, 246, 0.1); color: #60a5fa; cursor: pointer; transition: all 0.2s;">단축키 지정하기</button>
-                </div>
-              </td>
-            </tr>
           </table>
         </div>
+      </div>
       </div>
     </div>
 
@@ -519,7 +535,7 @@
     </div>
 
     <!-- 해설 말풍선 (Neon Glassmorphic Speech Bubble) -->
-    <div id="comment-bubble" class="comment-bubble-container" style="display: none;">
+    <div id="comment-bubble" class="comment-bubble-container" style="display: none; cursor: pointer;" onclick="hideCommentBubble()">
       <div class="comment-bubble-content">
         <div class="comment-bubble-title">💡 한수 해설</div>
         <div id="comment-bubble-text">이곳에 수순별 코멘트가 표출됩니다.</div>
@@ -531,8 +547,14 @@
       <div class="control-row">
         <!-- Turn & Navigation Group (Left) -->
         <div class="control-group turn-nav-group">
-          <button id="prev" class="nav-btn" onclick="prev()" title="이전 수">
-            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+          <button id="nav-start" class="nav-btn" onclick="goToStart()" title="맨 앞으로 이동 (Ctrl + LeftArrow)">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="5" x2="5" y2="19"></line>
+              <polyline points="19 18 12 12 19 6"></polyline>
+            </svg>
+          </button>
+          <button id="prev" class="nav-btn" onclick="prev()" title="이전 수 (Alt + LeftArrow)">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
           </button>
@@ -540,9 +562,20 @@
             <input id="turn" type="number" value="0" min="0"></input>
             <span class="turn-suffix">수</span>
           </div>
-          <button id="next" class="nav-btn" onclick="next()" title="다음 수">
-            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+          <button id="nav-play-btn" class="nav-btn" onclick="toggleAutoplay()" title="자동 재생 시작 (P)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="6,4 20,12 6,20"/>
+            </svg>
+          </button>
+          <button id="next" class="nav-btn" onclick="next()" title="다음 수 (Alt + RightArrow)">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+          <button id="nav-end" class="nav-btn" onclick="goToEnd()" title="맨 뒤로 이동 (Ctrl + RightArrow)">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="5 6 12 12 5 18"></polyline>
+              <line x1="19" y1="5" x2="19" y2="19"></line>
             </svg>
           </button>
         </div>
@@ -1048,11 +1081,25 @@
         </div>
         <div class="modal-body">
           <p style="margin-bottom: 12px; font-size: 13px; opacity: 0.8;">변경할 기능을 선택한 뒤, 새로운 키를 입력해 주세요.</p>
+          
+          <div class="modal-theme-row" style="display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 15px; padding: 10px; background: rgba(255, 255, 255, 0.03); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05); flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 13px; color: rgba(255, 255, 255, 0.7);">배경 색상:</span>
+              <input type="color" id="modal-bg-picker" oninput="changeModalBgColor(this.value)" style="width: 35px; height: 25px; border: none; border-radius: 4px; background: transparent; cursor: pointer; padding: 0;">
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1; justify-content: flex-end;">
+              <span style="font-size: 13px; color: rgba(255, 255, 255, 0.7);">투명도:</span>
+              <input type="range" id="modal-opacity-slider" min="0.3" max="1.0" step="0.05" oninput="changeModalOpacity(this.value)" style="width: 100px; accent-color: #3b82f6;">
+              <span id="modal-opacity-val" style="font-size: 13px; min-width: 30px; text-align: right; color: #3b82f6;">0.9</span>
+            </div>
+          </div>
+
           <table class="shortcut-table">
             <thead>
               <tr>
                 <th>기능</th>
-                <th>단축키</th>
+                <th>주 단축키</th>
+                <th>보조 단축키</th>
               </tr>
             </thead>
             <tbody id="shortcut-table-body">
@@ -1063,6 +1110,41 @@
         <div class="modal-footer">
           <button class="modal-btn reset" onclick="resetDefaultShortcuts()">기본값 복원</button>
           <button class="modal-btn close" onclick="closeShortcutModal()">닫기</button>
+        </div>
+      </div>
+    </div>
+    <!-- 코멘트 입력 모달 -->
+    <div id="comment-modal" class="modal-overlay" onclick="handleCommentModalOverlayClick(event)">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="modal-title" id="comment-modal-title">현재 수순 코멘트 편집</span>
+          <button class="modal-close" onclick="closeCommentModal()">X</button>
+        </div>
+        <div class="modal-body">
+          <textarea id="comment-modal-textarea" placeholder="이 수순에 대한 해설이나 코멘트를 입력하세요..." style="width: 100%; height: 120px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; padding: 10px; font-family: inherit; font-size: 14px; resize: none; box-sizing: border-box; margin-bottom: 15px; outline: none;"></textarea>
+          
+          <div class="modal-theme-row" style="display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 10px; background: rgba(255, 255, 255, 0.03); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05); flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 13px; color: rgba(255, 255, 255, 0.7);">배경 색상:</span>
+              <input type="color" id="comment-bg-picker" oninput="changeCommentBgColor(this.value)" style="width: 35px; height: 25px; border: none; border-radius: 4px; background: transparent; cursor: pointer; padding: 0;">
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1; justify-content: flex-end;">
+              <span style="font-size: 13px; color: rgba(255, 255, 255, 0.7);">투명도:</span>
+              <input type="range" id="comment-opacity-slider" min="0.1" max="1.0" step="0.05" oninput="changeCommentOpacity(this.value)" style="width: 100px; accent-color: #3b82f6;">
+              <span id="comment-opacity-val" style="font-size: 13px; min-width: 30px; text-align: right; color: #3b82f6;">0.4</span>
+            </div>
+          </div>
+          
+          <div class="modal-theme-row" style="display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-top: 10px; padding: 10px; background: rgba(255, 255, 255, 0.03); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05); flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 13px; color: rgba(255, 255, 255, 0.7);">표시 시간 (초, 0=무제한):</span>
+              <input type="number" id="comment-duration-input" min="0" max="60" step="1" onchange="changeCommentDuration(this.value)" style="width: 65px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; color: white; padding: 3px 5px; outline: none; text-align: center;">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="modal-btn save" onclick="saveCommentModal()" style="background: #3b82f6; color: #fff;">저장</button>
+          <button class="modal-btn close" onclick="closeCommentModal()">닫기</button>
         </div>
       </div>
     </div>

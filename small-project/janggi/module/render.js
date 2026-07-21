@@ -229,16 +229,26 @@ function initPositions() {
     pieces[i].e.style.width = `${unitSize * ratio}px`;
     pieces[i].e.style.height = `${unitSize * ratio}px`;
     
-    pieces[i].e.style.transform = `translate(${targetX}px, ${targetY}px)`;
+    let transformStr = `translate(${targetX}px, ${targetY}px)`;
+    if (typeof rotateActive !== 'undefined' && rotateActive) {
+      transformStr += ' rotate(-180deg)';
+    } else if (typeof flipActive !== 'undefined' && flipActive) {
+      transformStr += ' scaleX(-1)';
+    }
+    pieces[i].e.style.transform = transformStr;
   }
 
   // 기물 내 글자 오버레이 크기 적용
   updatePieceGraphics();
 
-  let curTurn = parseInt(document.getElementById("turn").value);
+  let curTurn = parseInt(document.getElementById("turn").value, 10);
+  if (isNaN(curTurn)) curTurn = log.length;
+  curTurn = Math.min(curTurn, log.length);
   for (let i = 0; i < curTurn; i++) {
-    setPieces(log[i].i, log[i].x, log[i].y);
-    if (log[i].t != 32) setPieces(log[i].t, 0, 0);
+    if (log[i]) {
+      setPieces(log[i].i, log[i].x, log[i].y);
+      if (log[i].t != 32) setPieces(log[i].t, 0, 0);
+    }
   }
 
   updateScore();
@@ -265,7 +275,13 @@ function updateKeyboardCursor() {
   cursor.style.height = `${size}px`;
   cursor.style.display = "block";
   
-  cursor.style.transform = `translate(${targetX}px, ${targetY}px)`;
+    let transformStr = `translate(${targetX}px, ${targetY}px)`;
+  if (typeof rotateActive !== 'undefined' && rotateActive) {
+    transformStr += ' rotate(-180deg)';
+  } else if (typeof flipActive !== 'undefined' && flipActive) {
+    transformStr += ' scaleX(-1)';
+  }
+  cursor.style.transform = transformStr;
 }
 
 function updateScore() {
