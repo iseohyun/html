@@ -253,8 +253,9 @@ window.SiteModules.Navigation = (function () {
     function search(items, currentDir) {
       for (const item of items) {
         const itemDir = currentDir + (item.디렉토리 || "");
-        if (item.파일명) {
-          const fullPath = itemDir + item.파일명;
+        const fileName = item.파일명 || (item.목록 ? null : "index.html");
+        if (fileName) {
+          const fullPath = itemDir + fileName;
           if (fullPath === cleanTargetPath) {
             return true;
           }
@@ -902,9 +903,11 @@ window.SiteModules.Navigation = (function () {
         const listItem = document.createElement('li');
         const currentDirectory = item.디렉토리 || "";
 
-        if (item.hasOwnProperty('파일명')) {
+        const hasFile = item.hasOwnProperty('파일명') || !item.hasOwnProperty('목록');
+        if (hasFile) {
+          const fileName = item.hasOwnProperty('파일명') ? item.파일명 : "index.html";
           const anchor = document.createElement('a');
-          anchor.href = `/${parentDirectories}${currentDirectory}${item.파일명}`;
+          anchor.href = `/${parentDirectories}${currentDirectory}${fileName}`;
           anchor.textContent = item.주제;
           listItem.appendChild(anchor);
 
@@ -1411,8 +1414,10 @@ window.SiteModules.Navigation = (function () {
         const title = item.주제 || "";
         const dir = item.디렉토리 || "";
         const pathDesc = currentBreadcrumb ? `${currentBreadcrumb} > ${title}` : title;
-        if (item.hasOwnProperty('파일명')) {
-          const fullUrl = `/${currentPath}${dir}${item.파일명}`;
+        const hasFile = item.hasOwnProperty('파일명') || !item.hasOwnProperty('목록');
+        if (hasFile) {
+          const fileName = item.hasOwnProperty('파일명') ? item.파일명 : "index.html";
+          const fullUrl = `/${currentPath}${dir}${fileName}`;
           pages.push({
             title: title,
             url: fullUrl,
@@ -1479,8 +1484,10 @@ window.SiteModules.Navigation = (function () {
       const dir = item.디렉토리 || "";
       const pathDesc = currentBreadcrumb ? `${currentBreadcrumb} > ${title}` : title;
 
-      if (item.hasOwnProperty('파일명')) {
-        const fullUrl = `/${currentPath}${dir}${item.파일명}`;
+      const hasFile = item.hasOwnProperty('파일명') || !item.hasOwnProperty('목록');
+      if (hasFile) {
+        const fileName = item.hasOwnProperty('파일명') ? item.파일명 : "index.html";
+        const fullUrl = `/${currentPath}${dir}${fileName}`;
         if (title.toLowerCase().includes(query.toLowerCase())) {
           results.push({
             title: title,
@@ -1566,13 +1573,15 @@ window.SiteModules.Navigation = (function () {
       const currentDir = item.디렉토리 || "";
       const pathDesc = currentBreadcrumb ? `${currentBreadcrumb} >> ${item.주제}` : item.주제;
 
-      if (item.hasOwnProperty('파일명')) {
-        const resolvedPath = `/${parentDirectories}${currentDir}${item.파일명}`;
+      const hasFile = item.hasOwnProperty('파일명') || !item.hasOwnProperty('목록');
+      if (hasFile) {
+        const fileName = item.hasOwnProperty('파일명') ? item.파일명 : "index.html";
+        const resolvedPath = `/${parentDirectories}${currentDir}${fileName}`;
         if (resolvedPath === cleanTarget) {
           const state = window.SiteModules.state;
           state.cur_doc.title = item.주제;
           state.cur_doc.dir = item.디렉토리;
-          state.cur_doc.file = item.파일명;
+          state.cur_doc.file = fileName;
           state.category = currentBreadcrumb;
 
           // 이전글 설정
@@ -1580,7 +1589,7 @@ window.SiteModules.Navigation = (function () {
             const prev = data[i - 1];
             state.prv_doc.title = prev.주제;
             state.prv_doc.dir = prev.디렉토리;
-            state.prv_doc.file = prev.파일명;
+            state.prv_doc.file = prev.hasOwnProperty('파일명') ? prev.파일명 : (prev.hasOwnProperty('목록') ? "" : "index.html");
             state.prv_doc.parentDirs = parentDirectories;
           } else {
             state.prv_doc = { title: "", dir: "", file: "" };
@@ -1591,7 +1600,7 @@ window.SiteModules.Navigation = (function () {
             const next = data[i + 1];
             state.next_doc.title = next.주제;
             state.next_doc.dir = next.디렉토리;
-            state.next_doc.file = next.파일명;
+            state.next_doc.file = next.hasOwnProperty('파일명') ? next.파일명 : (next.hasOwnProperty('목록') ? "" : "index.html");
             state.next_doc.parentDirs = parentDirectories;
           } else {
             state.next_doc = { title: "", dir: "", file: "" };
@@ -1624,8 +1633,9 @@ window.SiteModules.Navigation = (function () {
             hierarchy = item.목록;
             found = true;
             break;
-          } else if (item.파일명) {
-            return path + item.파일명;
+          } else {
+            const fileName = item.hasOwnProperty('파일명') ? item.파일명 : "index.html";
+            return path + fileName;
           }
         }
       }
