@@ -353,24 +353,27 @@ var stepsData = [
 // Grid Configuration
 var stateHistory = [];
 
-class GridInput {
-  constructor(row, col) {
-    this.row = row;
-    this.col = col;
-    this._value = "";
-  }
-
-  get value() {
-    return this._value === undefined || this._value === null ? "" : this._value.toString();
-  }
-
-  set value(val) {
-    this._value = val === undefined || val === null ? "" : val.toString();
-    if (typeof updateGridCellDisplay === "function") {
-      updateGridCellDisplay(this.row, this.col, this._value, true);
+if (typeof window.EuclideanGridInput === "undefined") {
+  window.EuclideanGridInput = class EuclideanGridInput {
+    constructor(row, col) {
+      this.row = row;
+      this.col = col;
+      this._value = "";
     }
-  }
+
+    get value() {
+      return this._value === undefined || this._value === null ? "" : this._value.toString();
+    }
+
+    set value(val) {
+      this._value = val === undefined || val === null ? "" : val.toString();
+      if (typeof updateGridCellDisplay === "function") {
+        updateGridCellDisplay(this.row, this.col, this._value, true);
+      }
+    }
+  };
 }
+var GridInput = window.EuclideanGridInput;
 
 function saveState() {
   const state = {
