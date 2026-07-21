@@ -1,0 +1,89 @@
+@import url("/style.css");
+
+/* ⚠️ [SPA Layout Isolation] Do NOT define margins/paddings on body/article tags */
+
+.control-box {
+  background-color: #F8F8F8;
+  border: 1px solid #eee;
+  border-radius: 15px;
+  padding: 10px;
+  margin: 10px auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.control-box button {
+  padding: 4px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: #374151;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.control-box button:hover {
+  background-color: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.control-box button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.control-box input[type="range"] {
+  flex: 1;
+  cursor: pointer;
+}
+
+svg {
+  display: block;
+  width: 100%;
+  height: 550px;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  margin: 10px auto;
+  box-shadow: rgba(0, 0, 0, 0.03) 0px 4px 12px;
+}
+
+svg text {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  font-size: 16px;
+  font-weight: bold;
+  fill: #374151;
+}
+
+/* 📏 좌표 눈금자(Ruler) 전용 스타일 */
+.ruler-bg {
+  fill: #fafafa;
+  stroke: #e5e7eb;
+  stroke-width: 1px;
+}
+
+.ruler-tick {
+  stroke: #d1d5db;
+  stroke-width: 1px;
+}
+
+.ruler-tick-major {
+  stroke: #9ca3af;
+  stroke-width: 1.2px;
+}
+
+.ruler-text {
+  font-size: 9px !important;
+  font-weight: normal !important;
+  fill: #9ca3af !important;
+  font-family: monospace, Courier, sans-serif;
+}
+
+/* 🎯 실시간 정렬 십자 가이드라인 애니메이션 효과 */
+line[id^="guide-"] {
+  transition: opacity 0.15s ease-out;
+}
