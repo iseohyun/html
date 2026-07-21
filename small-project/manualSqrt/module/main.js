@@ -277,12 +277,17 @@ function startMain() {
   // Setup event listeners for tooltip
   window.addEventListener("resize", positionTooltip);
   window.addEventListener("scroll", positionTooltip);
+  window.activeWindowListeners = window.activeWindowListeners || [];
+  window.activeWindowListeners.push({ type: "resize", fn: positionTooltip });
+  window.activeWindowListeners.push({ type: "scroll", fn: positionTooltip });
 
   if (window.ResizeObserver) {
     const resizeObserver = new ResizeObserver(() => {
       positionTooltip();
     });
     resizeObserver.observe(document.body);
+    window.activeResizeObservers = window.activeResizeObservers || [];
+    window.activeResizeObservers.push(resizeObserver);
   }
 
   // Setup coordinate grid listeners

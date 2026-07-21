@@ -2,6 +2,9 @@
 ## Scope
 /small-project/manualSqrt/**
 
+### [v1.2.1] - 2026-07-22
+- **SPA 라우팅 리사이즈 리스너 누수 방지**: 다른 소프로젝트 페이지로 이동할 때 윈도우 resize/scroll 이벤트 및 ResizeObserver가 누수되어 Uncaught ReferenceError가 유발되던 결함을 해결하기 위해, 전역 수집용 activeWindowListeners 및 activeResizeObservers 배열에 등록하여 SPA 라우터가 페이지 이탈 시 일괄 클린업(remove/disconnect)할 수 있도록 보완했습니다.
+
 ### [v1.2.0] - 역할별 모듈 분할 및 구조화
 - 관심사 분리(SoC): 1,500줄에 달하던 단일 `main.js` 파일을 역할에 맞게 5개 파일(`config.js`, `math.js`, `render.js`, `tooltip.js`, `main.js`)로 전면 분할 개편
 - 모듈 수납 및 정리: `keybinding.js` 및 `testRunner.js`를 포함한 모든 JS 파일을 새로 신설한 `module/` 하위 폴더로 이동 수납
