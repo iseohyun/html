@@ -2,6 +2,9 @@
 ## Scope
 /small-project/manualSqrt/**
 
+### [v1.2.2] - 2026-07-22
+- **전역 let/const 변수 var 치환 패치**: SPA 리로드 없이 페이지를 반복 전환해 진입할 때, 전역 렉시컬 스코프 변수(`max_line`, `inputs`, `titleText` 등)가 중복 선언되어 브라우저 구문 오류(`SyntaxError: Identifier has already been declared`)를 일으키는 문제를 해결하기 위해, 모든 전역 let/const 선언을 var로 변환했습니다.
+
 ### [v1.2.1] - 2026-07-22
 - **SPA 라우팅 리사이즈 리스너 누수 방지**: 다른 소프로젝트 페이지로 이동할 때 윈도우 resize/scroll 이벤트 및 ResizeObserver가 누수되어 Uncaught ReferenceError가 유발되던 결함을 해결하기 위해, 전역 수집용 activeWindowListeners 및 activeResizeObservers 배열에 등록하여 SPA 라우터가 페이지 이탈 시 일괄 클린업(remove/disconnect)할 수 있도록 보완했습니다.
 
