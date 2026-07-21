@@ -2,6 +2,9 @@
 ## Scope
 /small-project/manualEuclidean/**
 
+### [v1.0.6] - 2026-07-22
+- **전역 let/const 변수 var 치환 패치**: SPA 리로드 없이 페이지를 반복 전환해 진입할 때, 전역 렉시컬 스코프 변수(`max_line`, `inputs`, `V`, `stepsData` 등)가 중복 선언되어 브라우저 구문 오류(`SyntaxError: Identifier has already been declared`)를 일으키는 문제를 해결하기 위해, 모든 전역 let/const 선언을 var로 변환했습니다.
+
 ### [v1.0.5] - 2026-07-22
 - **const 변수 전역 스코프 격리 패치 및 리스너 클린업**: SPA 내 스크립트 실행 격리로 인해 `stepsData` 참조 시 `ReferenceError`가 유발되던 오류를 방지하기 위해 `window.stepsData` 전역 브릿지를 보강했습니다. 또한 다른 페이지로 라우팅 시 `ResizeObserver` 인스턴스가 파괴되지 않고 누수되어 오작동하는 문제를 방지하기 위해 activeResizeObservers 수집 배열 연동을 이식했습니다.
 

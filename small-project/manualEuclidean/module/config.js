@@ -1,7 +1,7 @@
 // config.js - Configuration, Global State, and History Management
 
-let max_line = 7;
-const inputs = [];
+var max_line = 7;
+var inputs = [];
 var cur_step = 0;
 var cur_line = 0;
 var language = 1; // 0: English, 1: Korean
@@ -15,15 +15,15 @@ var gcd = 4;
 var lcm = 0;
 
 // 구조 = [[A#, A#A, A#B, A#_], [B#, B#A, B#B, B#_], [L#, R#]]
-const V = new Array(7).fill().map(() => [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0]]);
+var V = new Array(7).fill().map(() => [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0]]);
 
-const titleText = [
+var titleText = [
   "Euclidean algorithm",
   "유클리드 호제법"
 ];
 
 // Steps data structure for side-by-side progression
-const stepsData = [
+var stepsData = [
   { // 0
     name: "0",
     sentence: "$argv1, $argv2로 유클리드 호제법을 수행합니다. \\n $$ a × $argv1 + b × $argv2 = gcd $$를 찾는 것이 목표입니다.",
