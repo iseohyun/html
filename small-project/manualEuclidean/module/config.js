@@ -474,3 +474,7 @@ function getCycleStepString() {
 function getPostposition(digit, type) {
   return "";
 }
+
+// Global bridges to bypass SPA script scoping isolation
+window.stepsData = stepsData;
+window.inputs = inputs;
