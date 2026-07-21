@@ -1,7 +1,7 @@
 // config.js - Configuration, Global State, and History Management
 
-let max_line = 8;
-const inputs = [];
+var max_line = 8;
+var inputs = [];
 var cur_step = 1;
 var cur_line = 0;
 var fStep1_1 = false;
@@ -16,12 +16,12 @@ var N = 2, D, Q;
 var digitGroups = [];
 var numIntegerGroups = 1;
 
-const titleText = [
+var titleText = [
   "Finding Square Roots",
   "제곱근 구하기"
 ];
 
-const sentences = [
+var sentences = [
   [ // 0
     "Find the square root of <em>$init_val</em>.",
     "<em>$init_val</em>의 제곱근을 구합니다.",
