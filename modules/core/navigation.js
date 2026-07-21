@@ -620,6 +620,18 @@ window.SiteModules.Navigation = (function () {
       window.activeWindowListeners = [];
     }
 
+    // SPA 페이지 전환 시 이전 소프로젝트 잔존 전역 함수 및 변수 일괄 소거 (네임스페이스 충돌 방어)
+    const globalsToClean = [
+      "init", "initApp", "rebuildGrid", "positionTooltip", "guide", "stepsData", "inputs",
+      "cur_step", "cur_line", "language", "isFin", "isGreating", "stateHistory", "state",
+      "EuclideanGridInput", "SqrtGridInput", "GridInput", "V", "titleText", "sentences",
+      "activeCells", "clearGridRow", "highlightActiveStep", "nextStep", "prevStep", "initKeybindings",
+      "triggerRandomStart", "resetToStart"
+    ];
+    globalsToClean.forEach(key => {
+      try { delete window[key]; } catch(e) {}
+    });
+
     try {
       const response = await fetch(urlPath);
       if (!response.ok) {
