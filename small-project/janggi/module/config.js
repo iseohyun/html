@@ -62,7 +62,7 @@ var hanColorType = "red";
 var pieceShapeType = "octagon";
 var candiShapeType = "empty_circle";
 var candiColorType = "#3b82f6";
-var aiMode = 0; // AI 모드: 0=사용안함, 1=AI가 초(Blue), 2=AI가 한(Red)
+var aiMode = 0; // AI 모드: 0=사용 안함 (로컬 2인용), 1=사용함 (AI가 항상 위쪽에서 플레이)
 var cursorLockMode = false; // 키보드 커서락 모드 여부
 var gameEnded = false; // 외통수 등으로 대국이 종료되었는지 여부
 
@@ -93,16 +93,94 @@ var kbCursorX = 5;
 var kbCursorY = 4;
 var kbCursorActive = false;
 var shortcutKeys = {
-  up: "ArrowUp",
-  down: "ArrowDown",
-  left: "ArrowLeft",
-  right: "ArrowRight",
-  select: "Enter",
-  selectAlt: " ",
-  cursorLockToggle: "CapsLock",
-  cancel: "Escape",
-  copyNotation: "s",
-  loadNotation: "v"
+  newGame: {
+    primary: { key: "n", ctrl: false, alt: false, shift: false },
+    secondary: { key: "F2", ctrl: false, alt: false, shift: false }
+  },
+  autoplayToggle: {
+    primary: { key: "p", ctrl: false, alt: false, shift: false },
+    secondary: { key: "p", ctrl: false, alt: true, shift: false }
+  },
+  openShortcutSettings: {
+    primary: { key: "?", ctrl: false, alt: false, shift: true },
+    secondary: null
+  },
+  openCommentEdit: {
+    primary: { key: "`", ctrl: false, alt: false, shift: false },
+    secondary: null
+  },
+  toggleOpponentAI: {
+    primary: { key: "z", ctrl: false, alt: false, shift: false },
+    secondary: null
+  },
+  requestAIHint: {
+    primary: { key: "x", ctrl: false, alt: false, shift: false },
+    secondary: null
+  },
+  flipHorizontal: {
+    primary: { key: "[", ctrl: false, alt: false, shift: false },
+    secondary: null
+  },
+  flipVertical: {
+    primary: { key: "]", ctrl: false, alt: false, shift: false },
+    secondary: null
+  },
+  toggleCoordinates: {
+    primary: { key: "/", ctrl: false, alt: false, shift: false },
+    secondary: null
+  },
+  up: {
+    primary: { key: "ArrowUp", ctrl: false, alt: false, shift: false },
+    secondary: { key: "w", ctrl: false, alt: false, shift: false }
+  },
+  down: {
+    primary: { key: "ArrowDown", ctrl: false, alt: false, shift: false },
+    secondary: { key: "s", ctrl: false, alt: false, shift: false }
+  },
+  left: {
+    primary: { key: "ArrowLeft", ctrl: false, alt: false, shift: false },
+    secondary: { key: "a", ctrl: false, alt: false, shift: false }
+  },
+  right: {
+    primary: { key: "ArrowRight", ctrl: false, alt: false, shift: false },
+    secondary: { key: "d", ctrl: false, alt: false, shift: false }
+  },
+  select: {
+    primary: { key: "Enter", ctrl: false, alt: false, shift: false },
+    secondary: { key: " ", ctrl: false, alt: false, shift: false }
+  },
+  cursorLockToggle: {
+    primary: { key: "CapsLock", ctrl: false, alt: false, shift: false },
+    secondary: null
+  },
+  cancel: {
+    primary: { key: "Escape", ctrl: false, alt: false, shift: false },
+    secondary: null
+  },
+  copyNotation: {
+    primary: { key: "s", ctrl: false, alt: true, shift: false },
+    secondary: { key: "s", ctrl: true, alt: false, shift: false }
+  },
+  loadNotation: {
+    primary: { key: "v", ctrl: false, alt: true, shift: false },
+    secondary: { key: "v", ctrl: true, alt: false, shift: false }
+  },
+  forwardStep: {
+    primary: { key: "ArrowRight", ctrl: false, alt: true, shift: false },
+    secondary: null
+  },
+  backwardStep: {
+    primary: { key: "ArrowLeft", ctrl: false, alt: true, shift: false },
+    secondary: null
+  },
+  goToStart: {
+    primary: { key: "ArrowLeft", ctrl: true, alt: false, shift: false },
+    secondary: { key: "Home", ctrl: false, alt: false, shift: false }
+  },
+  goToEnd: {
+    primary: { key: "ArrowRight", ctrl: true, alt: false, shift: false },
+    secondary: { key: "End", ctrl: false, alt: false, shift: false }
+  }
 };
 var currentLoadedRecordId = null; // 현재 불러와서 보여주고 있는 기보의 로컬스토리지 ID
 var scoreAutoRotate = true; // 점수판 자동 순환 여부
@@ -110,6 +188,13 @@ var scoreRotateInterval = 5; // 점수판 순환 주기 (초)
 var scoreShowSlide1 = true; // 점수판 슬라이드 1 (점수차) 표출 여부
 var scoreShowSlide2 = true; // 점수판 슬라이드 2 (타이머) 표출 여부
 var scoreShowSlide3 = true; // 점수판 슬라이드 3 (대회정보) 표출 여부
+var autoplaySpeed = 2; // 자동재생 속도 (초)
+var autoplayUseAnim = true; // 자동재생 시 애니메이션 사용 여부
+var shortcutModalBgColor = "#5f80ce"; // 단축키 모달 배경색
+var shortcutModalOpacity = 0.4; // 단축키 모달 투명도
+var commentBoxBgColor = "#5f80ce"; // 코멘트 상자 배경색
+var commentBoxOpacity = 0.4; // 코멘트 상자 투명도
+var commentDisplayDuration = 0; // 코멘트 표시 시간 (초, 0=무제한)
 
 /**
  * @typedef {Object} GameMetadata - 대국 상세 메타데이터 스키마

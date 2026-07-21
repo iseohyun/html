@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="keywords" content="iseohyun, Simulating, 시뮬레이션, 남아선호사상">
+  <meta name="author" content="iseohyun">
+
+  <title>남아선호사상: 시뮬레이션 - iseohyun</title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+  <link rel="stylesheet" href="SonPrefer.css">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-453XSP5W9M');
+  </script>
+
+  <!-- 목차 생성 공통 모듈 -->
+  <script src="/modules/script.js" defer></script>
+
+  <!-- KaTeX 수학식 렌더링 라이브러리 추가 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+  <!-- 모듈식 자바스크립트 로드 (simulation.js는 Web Worker로 대체) -->
+  <script src="module/config.js" defer charset="UTF-8"></script>
+  <script src="module/chart.js" defer charset="UTF-8"></script>
+  <script src="module/main.js" defer charset="UTF-8"></script>
+</head>
+
+<body>
+  <article>
+    <!-- 에러 모니터링 콘솔 -->
+    <div id="error-console" style="color: #ef4444; background: #fef2f2; border: 1px solid #fee2e2; padding: 12px; margin-bottom: 20px; border-radius: 8px; font-family: monospace; display: none; font-size: 0.9rem; line-height: 1.4;"></div>
+    <script>
+      window.onerror = function(message, source, lineno, colno, error) {
+        const consoleDiv = document.getElementById("error-console");
+        if (consoleDiv) {
+          consoleDiv.style.display = "block";
+          consoleDiv.innerHTML += `<div><strong>JS Error:</strong> ${message} <br><small>at ${source}:${lineno}:${colno}</small></div>`;
+        }
+        return false;
+      };
+    </script>
+
+    <h1 id="page-title">남아선호사상 시뮬레이션</h1>
+
+    <div class="simulation-container">
+      <!-- 시뮬레이션 설정 환경 -->
+      <div class="control-panel">
+        <span style="font-size:1.2em; font-weight:bold; display:block; margin-bottom: 15px;">시뮬레이션 환경 설정</span>
+        
+        <div class="input-group">
+          <label for="number-of-households">가구수: </label>
+          <input type="range" id="range-households" min="2" max="10" step="0.01" value="7.204" class="slider">
+          <input type="number" id="number-of-households" min="100" max="10000000000" value="16000000">
+        </div>
+        
+        <div class="input-group">
+          <label for="sex-ratios">성비: </label>
+          <input type="range" id="range-sex-ratios" min="80" max="120" step="1" value="105" class="slider">
+          <input type="number" id="sex-ratios" min="80" max="120" value="105">
+          <p class="description">
+            여자 100명에 대한 남성 출생비율입니다 (기본값: 105).
+          </p>
+        </div>
+      </div>
+
+      <!-- 실행 및 결과 비교 패널 -->
+      <div id="result-panel">
+        <div class="action-bar">
+          <button type="button" id="btn-run">테스트 실행</button>
+          <div id="loading-spinner" class="spinner-hidden">
+            <span class="spinner-icon">🔄</span> 시뮬레이션 계산 중... <span id="loading-percent">0%</span>
+          </div>
+        </div>
+        
+        <div class="result-tables-container">
+          <!-- 남아선호사상 시뮬레이션 -->
+          <div class="result-card">
+            <h3>남아선호사상 시뮬레이션</h3>
+            <div class="result-row">
+              <span class="result-label">총 출생아 수:</span>
+              <input type="text" id="son-prefer-births" disabled value="-">
+            </div>
+            <div class="result-row">
+              <span class="result-label">평균 자녀수:</span>
+              <input type="text" id="son-prefer-rate" disabled value="-">
+            </div>
+            <div class="result-row">
+              <span class="result-label">최종 성비:</span>
+              <input type="text" id="son-prefer-ratio" disabled value="-">
+            </div>
+          </div>
+          
+          <!-- 1가구 2자녀 시뮬레이션 -->
+          <div class="result-card">
+            <h3>1가구 2자녀 시뮬레이션</h3>
+            <div class="result-row">
+              <span class="result-label">총 출생아 수:</span>
+              <input type="text" id="two-children-births" disabled value="-">
+            </div>
+            <div class="result-row">
+              <span class="result-label">평균 자녀수:</span>
+              <input type="text" id="two-children-rate" disabled value="-">
+            </div>
+            <div class="result-row">
+              <span class="result-label">최종 성비:</span>
+              <input type="text" id="two-children-ratio" disabled value="-">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 시각화 차트 -->
+      <svg xmlns="http://www.w3.org/2000/svg">
+        <path id="bottom-line" stroke="#ddd" fill="none" stroke-width="3" />
+        <g id="vertical-grideline" stroke="#ddd" fill="none" stroke-width="1"></g>
+        <g id="vertical-text" stroke="none" fill="#ccc"></g>
+      </svg>
+
+      <!-- 챕터2: 시뮬레이션 원리 및 설명 -->
+      <div class="simulation-theory">
+        <h2 id="theory-title">2. 시뮬레이션 원리 및 설명</h2>
+        
+        <div class="theory-card">
+          <h4>🧬 생물학적 기본 성비 (성비 105)</h4>
+          <p>
+            자연 상태의 출생 성비는 보통 <strong>여자 100명당 남자 약 105명(105:100)</strong>입니다. 
+            남성을 결정짓는 Y염색체를 가진 정자가 X염색체를 가진 정자보다 머리가 작고 물리적인 무게가 더 가볍기 때문에, 
+            여성 생식기 내부를 빠르게 헤엄쳐 수정 확률이 미세하게 높게 나타난다고 알려져 있습니다.
+          </p>
+        </div>
+
+        <div class="theory-card">
+          <h4>⚖️ 남아선호사상이 성비를 바꾸지 못하는 수학적 원리 (독립시행)</h4>
+          <p>
+            각 가정이 남아를 얻을 때까지 계속 출산하는 관습(남아선호사상)을 따르더라도, 
+            매 임신과 출산 과정에서 남아 혹은 여아가 태어날 확률은 이전의 출산 결과에 영향을 받지 않는 <strong>독립 시행</strong>입니다. 
+            따라서 사회 전체의 최종 성비는 원래 성비(105:100)로 수렴하게 되며, 어떠한 출산 중단 규칙을 적용하더라도 인위적으로 자연의 성비를 왜곡시킬 수 없습니다.
+          </p>
+        </div>
+
+        <div class="theory-card">
+          <h4>👶 1가구 2자녀 vs 남아선호사상의 출산율 및 자녀 수 차이의 원리</h4>
+          <p>
+            두 조건의 가구당 평균 자녀수(출산율)와 사회 전체의 자녀 수 볼륨에는 다음과 같은 미세한 차이가 발생합니다:
+          </p>
+          <ul>
+            <li>
+              <strong>1가구 2자녀 조건</strong>: 가구당 성별 무관하게 정확히 2명의 자녀만 출산하므로, 가구당 평균 자녀 수는 <strong>2.0명</strong>이 됩니다.
+            </li>
+            <li>
+              <strong>남아선호사상 조건</strong>: 남아가 나올 때까지 출산하므로, 기하분포(Geometric Distribution)의 기댓값 수식인 \( \frac{1}{p} \)을 따릅니다. 
+              성비 105 기준(\( p \approx 0.512 \)), 가구당 평균 자녀 수는 약 <strong>1.95명</strong>이 됩니다. 
+              (\( 1 \times 0.512 + 2 \times 0.488 \times 0.512 + 3 \times 0.488^2 \times 0.512 + \dots \approx 1.95 \))
+            </li>
+            <li>
+              <strong>차이 원인</strong>: 남아선호사상 조건의 평균 자녀 수가 약 1.95명으로, 1가구 2자녀(평균 2.0명)보다 <strong>약 2.5%가량 적게</strong> 나타나기 때문에, 
+              그래프를 그렸을 때 남아선호사상의 총 자녀 수 막대 규모가 2자녀 조건보다 미세하게 낮게 차오르게 됩니다.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </article>
+</body>
+
+</html>

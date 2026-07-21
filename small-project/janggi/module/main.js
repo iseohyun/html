@@ -1,4 +1,10 @@
 // main.js - Entry point, Event listeners, and UI controller functions
+var commentBubbleTimeout = null;
+var boardAnimating = false;
+var rotateActive = false;
+var flipActive = false;
+
+
 
 function initData() {
   for (let i = 0; i < 32; i++) {
@@ -78,24 +84,55 @@ function initElements() {
     pieces[30].e = document.getElementById("cho-zol4");
     pieces[31].e = document.getElementById("cho-zol5");
   }
+  
+  // Rebind onclick handlers to matching indices to prevent selection mismatch after changeNation()
+  for (let i = 0; i < 32; i++) {
+    if (pieces[i].e) {
+      pieces[i].e.onclick = function () { selected(i) };
+    }
+  }
 }
 
 function getData() {
   const urlParams = new URLSearchParams(window.location.search);
+  
+  // 1. Parse param_cho first to set active nation
+  let param_cho = urlParams.get('cho');
+  if (param_cho == undefined) {
+    changeNation(true);
+  } else {
+    if (param_cho == "Y") {
+      changeNation(true);
+    } else {
+      changeNation(false);
+    }
+  }
+
+  // 2. Parse param_P and normalize it for matching starting layout types
   let param_P = urlParams.get('p');
   if (param_P == undefined) {
-    // 나: 마상마상 - 너 : 마상마상
+    // 나: 마상마상 - 너 : 마상마상 (Standard starting layout)
     setting("5910902888207030804060173757779752119123832171318141611434547494");
   } else {
+    let normalizedP = normalizeLayoutCode(param_P, !iAmCho);
+    let choIdx = 0;
+    let hanIdx = 0;
     for (let i = 0; i < 4; i++) {
-      if (param_P.includes(knownStart[0][i])) {
-        newGameState[0] = i;
+      if (normalizedP.includes(knownStart[0][i])) {
+        choIdx = i;
       }
     }
     for (let i = 0; i < 4; i++) {
-      if (param_P.includes(knownStart[1][i])) {
-        newGameState[1] = i;
+      if (normalizedP.includes(knownStart[1][i])) {
+        hanIdx = i;
       }
+    }
+    if (iAmCho) {
+      newGameState[0] = choIdx;
+      newGameState[1] = hanIdx;
+    } else {
+      newGameState[0] = hanIdx;
+      newGameState[1] = choIdx;
     }
     setting(param_P);
   }
@@ -103,6 +140,7 @@ function getData() {
   // 상차림 단추 색상 및 미니어처 예시 배치도 동기화
   syncCharimButtonStyles();
 
+  // 3. Parse log parameter
   let param_log = urlParams.get('log');
   if (param_log != undefined) {
     const logArr = param_log.split(',');
@@ -122,24 +160,16 @@ function getData() {
     });
   }
 
-  let param_cho = urlParams.get('cho');
-  if (param_cho == undefined) {
-    changeNation(true);
-  } else {
-    if (param_cho == "Y") {
-      changeNation(true);
-    } else {
-      changeNation(false);
-    }
-  }
-
   let param_turn = urlParams.get('t');
   if (param_turn != undefined) {
-    param_turn = parseInt(param_turn);
+    param_turn = parseInt(param_turn, 10);
     if (!isNaN(param_turn)) {
       const turn = document.getElementById('turn');
-      turn.value = param_turn;
+      if (turn) turn.value = param_turn;
     }
+  } else {
+    const turn = document.getElementById('turn');
+    if (turn) turn.value = log.length;
   }
 }
 
@@ -158,10 +188,14 @@ function selected(i) {
   const isChoPiece = (i < 16) === iAmCho;
   if (isChoTurn) {
     if (!isChoPiece) return; // 초의 턴인데 한의 기물을 조작하려고 하는 경우 차단
-    if (aiMode === 1) return; // AI가 초인데 사용자가 조작하려고 하는 경우 차단
   } else {
     if (isChoPiece) return; // 한의 턴인데 초의 기물을 조작하려고 하는 경우 차단
-    if (aiMode === 2) return; // AI가 한인데 사용자가 조작하려고 하는 경우 차단
+  }
+
+  // 만약 AI 모드가 켜져 있고, 현재 턴이 AI(위쪽)의 턴이면 사용자 조작 차단
+  if (aiMode === 1) {
+    const isUserTurn = (isChoTurn === iAmCho);
+    if (!isUserTurn) return;
   }
 
   // Clean up any old diagnostic overlay if present
@@ -375,10 +409,7 @@ function prev() {
     if (turn) {
       const curTurn = parseInt(turn.value, 10);
       const isChoTurn = (curTurn % 2 === 0);
-      const aiIsCho = (aiMode === 1);
-      const aiIsHan = (aiMode === 2);
-      
-      const isUserTurnNow = (isChoTurn && !aiIsCho) || (!isChoTurn && !aiIsHan);
+      const isUserTurnNow = (isChoTurn === iAmCho);
       
       if (isUserTurnNow && log.length >= 2) {
         performSinglePrev();
@@ -510,7 +541,7 @@ function toggleNation() {
   }
 
   // 2. 현재 설정한 상차림에 부합하는 배치 데이터 산출 및 복원
-  let startingLayoutCode = knownStart[0][newGameState[0]] + knownStart[1][newGameState[1]];
+  let startingLayoutCode = getStartingLayoutCode();
   setting(startingLayoutCode);
 
   // 3. 보드 및 기물 위치 갱신
@@ -577,7 +608,7 @@ function startNewGame() {
   if (turnEl) turnEl.value = 0;
   
   // 3. 현재 설정한 상차림에 부합하는 배치 데이터 산출
-  let startingLayoutCode = knownStart[0][newGameState[0]] + knownStart[1][newGameState[1]];
+  let startingLayoutCode = getStartingLayoutCode();
   
   // 4. 기물 위치 데이터 복원
   setting(startingLayoutCode);
@@ -616,6 +647,7 @@ function startNewGame() {
   updateMetadataDisplay();
   initScoreboardRotation();
   updateCommentBubble();
+  checkAndRunAI();
 }
 
 function adjustPieceSize(type, delta) {
@@ -1146,6 +1178,47 @@ function selectSlot(num) {
   localStorage.setItem("janggi_active_slot", activeSlot);
   updateSlotButtonsUI();
   loadConfigFromSlot();
+  applyLoadedConfig();
+}
+
+function applyLoadedConfig() {
+  // 1. UI 및 외관 테마 적용
+  changeBoardColor(boardColorType);
+  changeChoColor(choColorType);
+  changeHanColor(hanColorType);
+  changePieceShape(pieceShapeType);
+  changeCandiShape(candiShapeType);
+  changeCandiColor(candiColorType);
+  
+  changeSettingsBgColor(settingsBgColor);
+  changeSettingsOpacity(settingsOpacity);
+  changeSettingsTextColorType(settingsTextColorType);
+  changeSettingsAccentColor(settingsAccentColor);
+  
+  if (svg) {
+    svg.style.setProperty("--anim-duration", `${animDuration}s`);
+  }
+  
+  applyShortcutModalTheme();
+  applyCommentBoxTheme();
+  
+  const durationInput = document.getElementById("comment-duration-input");
+  if (durationInput) durationInput.value = commentDisplayDuration;
+  
+  // 2. 보드 격자 및 기물 배치 다시 그리기
+  svg.classList.add("no-transition");
+  initBoard();
+  initPositions();
+  svg.offsetHeight; // Force reflow
+  svg.classList.remove("no-transition");
+  
+  // 3. 설정 창 UI 값들 최신화
+  initSettingsUI();
+  initScoreboardRotation();
+  updateCommentBubble();
+  
+  // 4. AI 대국 모드 점검 및 실행
+  checkAndRunAI();
 }
 
 function updateSlotButtonsUI() {
@@ -1192,7 +1265,14 @@ function saveCurrentConfigToSlot() {
     scoreRotateInterval,
     scoreShowSlide1,
     scoreShowSlide2,
-    scoreShowSlide3
+    scoreShowSlide3,
+    autoplaySpeed,
+    autoplayUseAnim,
+    shortcutModalBgColor,
+    shortcutModalOpacity,
+    commentBoxBgColor,
+    commentBoxOpacity,
+    commentDisplayDuration
   };
   localStorage.setItem("janggi_settings_slot_" + activeSlot, JSON.stringify(config));
 }
@@ -1226,16 +1306,33 @@ function loadConfigFromSlot() {
     if (config.settingsTextColorType) settingsTextColorType = config.settingsTextColorType;
     if (config.settingsTextColorCustom) settingsTextColorCustom = config.settingsTextColorCustom;
     if (config.settingsAccentColor) settingsAccentColor = config.settingsAccentColor;
-    if (config.aiMode !== undefined && config.aiMode !== null) aiMode = parseInt(config.aiMode, 10);
+    if (config.aiMode !== undefined && config.aiMode !== null) {
+      aiMode = parseInt(config.aiMode, 10);
+      if (aiMode === 2) aiMode = 1;
+    }
     if (config.cursorLockMode !== undefined && config.cursorLockMode !== null) cursorLockMode = (config.cursorLockMode === "true" || config.cursorLockMode === true);
     if (config.shortcutKeys) {
-      shortcutKeys = Object.assign({}, shortcutKeys, config.shortcutKeys);
+      shortcutKeys = migrateShortcutKeys(config.shortcutKeys);
     }
     if (config.scoreAutoRotate !== undefined && config.scoreAutoRotate !== null) scoreAutoRotate = (config.scoreAutoRotate === "true" || config.scoreAutoRotate === true);
     if (config.scoreRotateInterval !== undefined && config.scoreRotateInterval !== null) scoreRotateInterval = parseInt(config.scoreRotateInterval, 10);
     if (config.scoreShowSlide1 !== undefined && config.scoreShowSlide1 !== null) scoreShowSlide1 = (config.scoreShowSlide1 === "true" || config.scoreShowSlide1 === true);
     if (config.scoreShowSlide2 !== undefined && config.scoreShowSlide2 !== null) scoreShowSlide2 = (config.scoreShowSlide2 === "true" || config.scoreShowSlide2 === true);
     if (config.scoreShowSlide3 !== undefined && config.scoreShowSlide3 !== null) scoreShowSlide3 = (config.scoreShowSlide3 === "true" || config.scoreShowSlide3 === true);
+    if (config.autoplaySpeed !== undefined && config.autoplaySpeed !== null) autoplaySpeed = parseFloat(config.autoplaySpeed);
+    if (config.autoplayUseAnim !== undefined && config.autoplayUseAnim !== null) autoplayUseAnim = (config.autoplayUseAnim === "true" || config.autoplayUseAnim === true);
+    if (config.shortcutModalBgColor) shortcutModalBgColor = config.shortcutModalBgColor;
+    if (config.shortcutModalOpacity !== undefined && config.shortcutModalOpacity !== null) shortcutModalOpacity = parseFloat(config.shortcutModalOpacity);
+    if (config.commentBoxBgColor) commentBoxBgColor = config.commentBoxBgColor;
+    if (config.commentBoxOpacity !== undefined && config.commentBoxOpacity !== null) commentBoxOpacity = parseFloat(config.commentBoxOpacity);
+    if (config.commentDisplayDuration !== undefined && config.commentDisplayDuration !== null) commentDisplayDuration = parseInt(config.commentDisplayDuration, 10);
+    
+    applyShortcutModalTheme();
+    applyCommentBoxTheme();
+    
+    // Update comment duration input field
+    const durationInput = document.getElementById("comment-duration-input");
+    if (durationInput) durationInput.value = commentDisplayDuration;
     
     localStorage.setItem("showCoordinates", showCoordinates);
     localStorage.setItem("sizeKing", sizeKing);
@@ -1262,6 +1359,13 @@ function loadConfigFromSlot() {
     localStorage.setItem("scoreShowSlide1", scoreShowSlide1);
     localStorage.setItem("scoreShowSlide2", scoreShowSlide2);
     localStorage.setItem("scoreShowSlide3", scoreShowSlide3);
+    localStorage.setItem("autoplaySpeed", autoplaySpeed);
+    localStorage.setItem("autoplayUseAnim", autoplayUseAnim);
+    localStorage.setItem("shortcutModalBgColor", shortcutModalBgColor);
+    localStorage.setItem("shortcutModalOpacity", shortcutModalOpacity);
+    localStorage.setItem("commentBoxBgColor", commentBoxBgColor);
+    localStorage.setItem("commentBoxOpacity", commentBoxOpacity);
+    localStorage.setItem("commentDisplayDuration", commentDisplayDuration);
     
     changeBoardColor(boardColorType);
     changeChoColor(choColorType);
@@ -1573,6 +1677,14 @@ function initSettingsUI() {
   
   const showSlide3El = document.getElementById("score-show-slide3");
   if (showSlide3El) showSlide3El.checked = scoreShowSlide3;
+
+  // Autoplay Settings Sync
+  const autoplaySpeedSlider = document.getElementById("autoplay-speed-slider");
+  if (autoplaySpeedSlider) autoplaySpeedSlider.value = autoplaySpeed;
+  const autoplaySpeedVal = document.getElementById("autoplay-speed-val");
+  if (autoplaySpeedVal) autoplaySpeedVal.textContent = autoplaySpeed.toFixed(1);
+  const autoplayUseAnimCheck = document.getElementById("autoplay-use-anim");
+  if (autoplayUseAnimCheck) autoplayUseAnimCheck.checked = autoplayUseAnim;
 }
 
 // ----------------------------------------------------
@@ -1664,7 +1776,9 @@ function rebuildHistory() {
     const startX = tempPieces[i].x;
     const startY = tempPieces[i].y;
     
-    const player = ((i <= 15) === iAmCho) ? "초" : "한";
+    // Bottom player (0..15) is always called "초" (Zol) in the record text representation.
+    // Top player (16..31) is always called "한" (Byeong).
+    const player = (i <= 15) ? "초" : "한";
     
     let pieceName = "";
     if (i === 0) pieceName = "궁";
@@ -1706,14 +1820,11 @@ function rebuildHistory() {
 }
 
 function generateGameRecordText() {
-  const bottomLayout = getLayoutName(newGameState[0]);
-  const topLayout = getLayoutName(newGameState[1]);
-  let sideLayoutDesc = "";
-  if (iAmCho) {
-    sideLayoutDesc = `초하(${bottomLayout}) vs 한상(${topLayout})`;
-  } else {
-    sideLayoutDesc = `한하(${bottomLayout}) vs 초상(${topLayout})`;
-  }
+  const choLayout = getLayoutName(iAmCho ? newGameState[0] : newGameState[1]);
+  const hanLayout = getLayoutName(iAmCho ? newGameState[1] : newGameState[0]);
+  
+  // Game record normalized description (Cho bottom, Han top)
+  const sideLayoutDesc = `초하(${choLayout}) vs 한상(${hanLayout})`;
   
   let lines = [];
   lines.push(`상차림: ${sideLayoutDesc}`);
@@ -2156,6 +2267,27 @@ function parseLayoutText(text) {
   return null;
 }
 
+function rotateLayoutCode180(code) {
+  if (code.length !== 64) return code;
+  const coords = [];
+  for (let i = 0; i < 32; i++) {
+    const px = parseInt(code[2 * i], 10);
+    const py = parseInt(code[2 * i + 1], 10);
+    if (px === 0 && py === 0) {
+      coords.push({ x: 0, y: 0 });
+    } else {
+      coords.push({ x: 10 - px, y: flipYCoordinate(py) });
+    }
+  }
+  // Swap 0-15 and 16-31
+  const rotated = [];
+  for (let i = 0; i < 16; i++) {
+    rotated[i] = coords[i + 16];
+    rotated[i + 16] = coords[i];
+  }
+  return rotated.map(c => `${c.x}${c.y}`).join("");
+}
+
 function importRecordFromText(text) {
   if (!text || !text.trim()) {
     alert("기보 데이터가 비어 있습니다.");
@@ -2199,7 +2331,6 @@ function importRecordFromText(text) {
   
   updateMetadataFormFromState();
   updateMetadataDisplay();
-  
   // 1. 상차림 코드 및 진영(iAmCho) 파싱
   let startingCode = "";
   let determinedCho = true;
@@ -2217,13 +2348,10 @@ function importRecordFromText(text) {
     }
     determinedCho = determineIAmChoFromText(text);
   }
-  
-  changeNation(determinedCho);
-  
+
   // 2. 착수 로그 파싱
   const parsedMoves = [];
   let validLineIdx = 0;
-  
   for (let line of rawLines) {
     const move = parseMoveLine(line, validLineIdx);
     if (move) {
@@ -2232,12 +2360,46 @@ function importRecordFromText(text) {
     }
   }
   
+  // 3. 뒤집힌 기보 감지 및 복원 (헤더가 한하인 경우 혹은 한나라가 첫 수를 두는 경우)
+  let shouldFlipImport = !determinedCho;
+  if (!shouldFlipImport && parsedMoves.length > 0 && parsedMoves[0].player === "한") {
+    shouldFlipImport = true;
+  }
+  
+  if (shouldFlipImport) {
+    parsedMoves.forEach(move => {
+      // 플레이어 대칭 스왑
+      move.player = (move.player === "초") ? "한" : "초";
+      // 좌표 180도 스왑
+      move.startX = 10 - move.startX;
+      move.startY = flipYCoordinate(move.startY);
+      move.endX = 10 - move.endX;
+      move.endY = flipYCoordinate(move.endY);
+      // 기물 이름 스왑 (졸 <-> 병)
+      if (move.pieceName === "졸") {
+        move.pieceName = "병";
+      } else if (move.pieceName === "병") {
+        move.pieceName = "졸";
+      }
+    });
+  }
+
+  // 만약 뒤집힌 기보라면 초기 상차림 및 진영도 180도 역회전 적용하여 표준(Cho bottom) 상태로 로드
+  if (shouldFlipImport) {
+    if (!layoutTextMatch) {
+      startingCode = rotateLayoutCode180(startingCode);
+    }
+    determinedCho = true;
+  }
+  
+  changeNation(determinedCho);
+  
   if (parsedMoves.length === 0 && !layoutTextMatch && !text.match(/\b\d{64}\b/)) {
     alert("유효한 기보 데이터를 찾을 수 없습니다. 형식을 확인해 주세요.");
     return;
   }
   
-  // 3. 보드 초기 상차림으로 재설정
+  // 4. 보드 초기 상차림으로 재설정
   setting(startingCode);
   log.length = 0;
   
@@ -2313,7 +2475,7 @@ function changeAiMode(val) {
   aiMode = parseInt(val, 10);
   localStorage.setItem("aiMode", aiMode);
   saveCurrentConfigToSlot();
-  checkAndRunAI();
+  checkAndRunAI(true);
 }
 
 function changeCursorLockMode(val) {
@@ -2325,23 +2487,33 @@ function changeCursorLockMode(val) {
 
 var aiThinking = false;
 
-function checkAndRunAI() {
+function checkAndRunAI(immediate = false) {
   if (aiMode === 0) return;
   if (aiThinking) return;
+  if (gameEnded) return;
   
   const turn = document.getElementById("turn");
   if (!turn) return;
   const curTurn = parseInt(turn.value, 10);
   
-  // 기보 리뷰 모드 등 과거를 돌려보는 중이면 AI 작동 차단
-  if (curTurn < log.length) return;
+  // 기보 리뷰 모드 등 과거를 돌려보는 중이면 AI 작동 차단 (단, 즉시 강제 실행 모드일 경우 그 시점부터 뒤를 자르고 실행)
+  if (curTurn < log.length) {
+    if (immediate) {
+      log.length = curTurn;
+      updateRecordUI();
+    } else {
+      return;
+    }
+  }
   
   const isChoTurn = (curTurn % 2 === 0);
-  const aiIsCho = (aiMode === 1);
-  const aiIsHan = (aiMode === 2);
+  const aiIsCho = (aiMode === 1 && !iAmCho);
+  const aiIsHan = (aiMode === 1 && iAmCho);
   
   if ((isChoTurn && aiIsCho) || (!isChoTurn && aiIsHan)) {
     aiThinking = true;
+    
+    const delay = immediate ? 0 : 500;
     
     // 약간의 딜레이를 주어 AI가 생각하는 척하는 자연스러운 연출 적용
     setTimeout(() => {
@@ -2359,8 +2531,9 @@ function checkAndRunAI() {
         console.error("[AI Error] Error during AI move calculation:", err);
       } finally {
         aiThinking = false;
+        checkAndRunAI();
       }
-    }, 500);
+    }, delay);
   }
 }
 
@@ -2640,6 +2813,16 @@ function initGame() {
   // 1. 데이터 및 기물 DOM 바인딩 선행 수행
   initData();
   
+  // URL에서 대국 정보를 읽은 직후, 주소창의 대국 상태 파라미터(p, log, t, cho)만 비워 새로고침 시 무조건 새 게임이 시작되도록 함
+  const url = new URL(window.location.href);
+  if (url.searchParams.has("p") || url.searchParams.has("log") || url.searchParams.has("t") || url.searchParams.has("cho")) {
+    url.searchParams.delete("p");
+    url.searchParams.delete("log");
+    url.searchParams.delete("t");
+    url.searchParams.delete("cho");
+    window.history.replaceState({}, "", url.toString());
+  }
+  
   // active slot 로드
   if (localStorage.getItem("janggi_active_slot") !== null) {
     activeSlot = parseInt(localStorage.getItem("janggi_active_slot"), 10);
@@ -2652,40 +2835,42 @@ function initGame() {
   // 로컬 스토리지 개별값 로드 대응
   if (localStorage.getItem("aiMode") !== null) {
     aiMode = parseInt(localStorage.getItem("aiMode"), 10);
+    if (aiMode === 2) aiMode = 1;
   }
   if (localStorage.getItem("cursorLockMode") !== null) {
     cursorLockMode = (localStorage.getItem("cursorLockMode") === "true");
   }
   if (localStorage.getItem("shortcutKeys") !== null) {
     try {
-      shortcutKeys = Object.assign({}, shortcutKeys, JSON.parse(localStorage.getItem("shortcutKeys")));
+      const parsedKeys = JSON.parse(localStorage.getItem("shortcutKeys"));
+      shortcutKeys = migrateShortcutKeys(parsedKeys);
     } catch (e) {
       console.error("Failed parsing shortcutKeys from localStorage:", e);
     }
   }
-
-  initSettingsUI();
-  
-  // 초기 로딩 시 말들이 0,0에서 날아오는 트랜지션을 방지합니다.
-  svg.classList.add("no-transition");
-  initBoard();
-  initPositions();
-  svg.offsetHeight; // Force reflow
-  svg.classList.remove("no-transition");
-  
-  // 설정값의 외관 테마 적용
-  changeBoardColor(boardColorType);
-  changeChoColor(choColorType);
-  changeHanColor(hanColorType);
-  changePieceShape(pieceShapeType);
-  updateSettingsBoxStyle();
-  updateSettingsTextColor();
-  updateSettingsAccentColor();
-
-  // 애니메이션 시간 초기값 설정
-  if (svg) {
-    svg.style.setProperty("--anim-duration", `${animDuration}s`);
+  if (localStorage.getItem("shortcutModalBgColor") !== null) {
+    shortcutModalBgColor = localStorage.getItem("shortcutModalBgColor");
   }
+  if (localStorage.getItem("shortcutModalOpacity") !== null) {
+    shortcutModalOpacity = parseFloat(localStorage.getItem("shortcutModalOpacity"));
+  }
+  if (localStorage.getItem("commentBoxBgColor") !== null) {
+    commentBoxBgColor = localStorage.getItem("commentBoxBgColor");
+  }
+  if (localStorage.getItem("commentBoxOpacity") !== null) {
+    commentBoxOpacity = parseFloat(localStorage.getItem("commentBoxOpacity"));
+  }
+  if (localStorage.getItem("commentDisplayDuration") !== null) {
+    commentDisplayDuration = parseInt(localStorage.getItem("commentDisplayDuration"), 10);
+  }
+  if (localStorage.getItem("autoplaySpeed") !== null) {
+    autoplaySpeed = parseFloat(localStorage.getItem("autoplaySpeed"));
+  }
+  if (localStorage.getItem("autoplayUseAnim") !== null) {
+    autoplayUseAnim = (localStorage.getItem("autoplayUseAnim") === "true");
+  }
+
+  applyLoadedConfig();
 
   const turnEl = document.getElementById("turn");
   if (turnEl) {
@@ -2747,40 +2932,165 @@ function initGame() {
   });
 
   // 키보드 단축키 방향키 및 엔터 리스너 등록
-  window.addEventListener("keydown", handleKeyDown);
+  window.addEventListener("keydown", handleKeyDown, true);
 
-  // 로드 직후 AI 작동 여부 검사
-  checkAndRunAI();
-  initScoreboardRotation();
-  updateCommentBubble();
+
+}
+
+function matchShortcutKey(action, keyEvent) {
+  const shortcut = shortcutKeys[action];
+  if (!shortcut) return false;
+  
+  const matchCombo = (combo) => {
+    if (!combo || !combo.key) return false;
+    let keyMatch = keyEvent.key.toLowerCase() === combo.key.toLowerCase();
+    if (!keyMatch && combo.key === "`" && keyEvent.code === "Backquote") {
+      keyMatch = true;
+    }
+    const ctrlMatch = (keyEvent.ctrlKey || keyEvent.metaKey) === !!combo.ctrl;
+    const altMatch = keyEvent.altKey === !!combo.alt;
+    const shiftMatch = keyEvent.shiftKey === !!combo.shift;
+    return keyMatch && ctrlMatch && altMatch && shiftMatch;
+  };
+  
+  return matchCombo(shortcut.primary) || matchCombo(shortcut.secondary);
 }
 
 function handleKeyDown(e) {
-  if (gameEnded) return;
+  if (boardAnimating) return;
+  
+  const isEscape = (e.key === "Escape");
+  const activeEl = document.activeElement;
+  if (!isEscape && activeEl && (activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA" || activeEl.tagName === "SELECT")) {
+    return;
+  }
+
   if (isRecordingKey !== null) return; // 단축키 입력 녹화 중에는 전역 단축키 핸들러 작동 정지
 
-  const activeEl = document.activeElement;
-  if (activeEl && (activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA" || activeEl.tagName === "SELECT")) {
+  // 1. 새 게임 (게임이 끝났어도 새 게임은 가능해야 함)
+  if (matchShortcutKey("newGame", e)) {
+    e.preventDefault();
+    e.stopPropagation();
+    startNewGame();
     return;
   }
 
-  // Ctrl + S: 기보 클립보드 복사 및 보관함 저장
-  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === shortcutKeys.copyNotation.toLowerCase()) {
+  // 2. 기보 불러오기
+  if (matchShortcutKey("loadNotation", e)) {
     e.preventDefault();
-    saveRecordToLibrary(null);
-    return;
-  }
-
-  // Ctrl + V: 클립보드로부터 기보 불러오기
-  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === shortcutKeys.loadNotation.toLowerCase()) {
-    e.preventDefault();
+    e.stopPropagation();
     loadRecordFromClipboard();
     return;
   }
 
-  // CapsLock 등 지정된 커서락 모드 토글 키 처리
-  if (e.key === shortcutKeys.cursorLockToggle) {
+  // 3. 기보 복사 및 저장
+  if (matchShortcutKey("copyNotation", e)) {
     e.preventDefault();
+    e.stopPropagation();
+    saveRecordToLibrary(null);
+    return;
+  }
+
+  // 4. 앞으로 이동 (복기용)
+  if (matchShortcutKey("forwardStep", e)) {
+    e.preventDefault();
+    e.stopPropagation();
+    next();
+    return;
+  }
+
+  // 5. 뒤로 이동 (복기용)
+  if (matchShortcutKey("backwardStep", e)) {
+    e.preventDefault();
+    e.stopPropagation();
+    prev();
+    return;
+  }
+
+  // 6. 맨 앞으로 이동 (복기용)
+  if (matchShortcutKey("goToStart", e)) {
+    e.preventDefault();
+    e.stopPropagation();
+    goToStart();
+    return;
+  }
+
+  // 7. 맨 뒤로 이동 (복기용)
+  if (matchShortcutKey("goToEnd", e)) {
+    e.preventDefault();
+    e.stopPropagation();
+    goToEnd();
+    return;
+  }
+
+  // 8. 자동 재생 토글 (복기용)
+  if (matchShortcutKey("autoplayToggle", e)) {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleAutoplay();
+    return;
+  }
+
+  // 8a. 단축키 지정 설정창 열기
+  if (matchShortcutKey("openShortcutSettings", e)) {
+    e.preventDefault();
+    e.stopPropagation();
+    openShortcutModal();
+    return;
+  }
+
+  // 8b. 현재 수순 코멘트 편집창 열기
+  if (matchShortcutKey("openCommentEdit", e)) {
+    e.preventDefault();
+    e.stopPropagation();
+    openCommentModal();
+    return;
+  }
+
+  // 8c. 상대 AI 모드 토글 (Z)
+  if (matchShortcutKey("toggleOpponentAI", e)) {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleOpponentAI();
+    return;
+  }
+
+  // 8d. AI 훈수 받기 (X)
+  if (matchShortcutKey("requestAIHint", e)) {
+    e.preventDefault();
+    e.stopPropagation();
+    requestAIHint();
+    return;
+  }
+
+  // 8e. 판 좌우 반전 ([)
+  if (matchShortcutKey("flipHorizontal", e)) {
+    e.preventDefault();
+    e.stopPropagation();
+    flipBoardHorizontal();
+    return;
+  }
+
+  // 8f. 판 상하 반전 (])
+  if (matchShortcutKey("flipVertical", e)) {
+    e.preventDefault();
+    e.stopPropagation();
+    flipBoardVertical();
+    return;
+  }
+
+  // 8g. 좌표보기 토글 (/)
+  if (matchShortcutKey("toggleCoordinates", e)) {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleCoordinates();
+    return;
+  }
+
+  // 9. 커서락 모드 토글
+  if (matchShortcutKey("cursorLockToggle", e)) {
+    e.preventDefault();
+    e.stopPropagation();
     cursorLockMode = !cursorLockMode;
     localStorage.setItem("cursorLockMode", cursorLockMode);
     
@@ -2792,9 +3102,60 @@ function handleKeyDown(e) {
     return;
   }
 
-  // 방향키 처리 (지정된 up, down, left, right 키)
-  if (e.key === shortcutKeys.up || e.key === shortcutKeys.down || e.key === shortcutKeys.left || e.key === shortcutKeys.right) {
+  // 10. ESC 취소 및 설정 창 열기 (단축키/코멘트 대화창 열려있으면 해당 모달을 저장하지 않고 닫음)
+  if (matchShortcutKey("cancel", e)) {
     e.preventDefault();
+    e.stopPropagation();
+    
+    // 1) 코멘트 편집창이 열려있다면 저장하지 않고 닫기
+    const commentModal = document.getElementById("comment-modal");
+    if (commentModal && commentModal.style.display === "flex") {
+      closeCommentModal();
+      return;
+    }
+    
+    // 2) 단축키 설정 모달이 열려있다면 닫기
+    const shortcutModal = document.getElementById("shortcut-modal");
+    if (shortcutModal && shortcutModal.style.display === "flex") {
+      closeShortcutModal();
+      return;
+    }
+
+    // 3) 상차림 설정창이 열려있다면 닫기
+    const settingBox = document.getElementById("setting-box");
+    if (settingBox && settingBox.style.display === "flex") {
+      disalbeSettingBox();
+      return;
+    }
+
+    if (kbCursorActive) {
+      if (curSelect < 32) {
+        selected(curSelect); // 선택 해제
+      } else {
+        // 이미 선택 해제되어 있는 상태에서 ESC를 한번 더 누르면 상차림(설정) 열기
+        kbCursorActive = false;
+        updateKeyboardCursor();
+        enalbeSettingBox();
+      }
+    } else {
+      // 키보드 커서가 안 켜져 있을 때 ESC를 누르면 바로 상차림 열기
+      enalbeSettingBox();
+    }
+    return;
+  }
+
+  // 이 아래 기물 조작(착수) 관련 입력은 게임 진행 중일 때만 반응
+  if (gameEnded) return;
+
+  // 방향키 처리 (지정된 up, down, left, right 키)
+  const isUp = matchShortcutKey("up", e);
+  const isDown = matchShortcutKey("down", e);
+  const isLeft = matchShortcutKey("left", e);
+  const isRight = matchShortcutKey("right", e);
+
+  if (isUp || isDown || isLeft || isRight) {
+    e.preventDefault();
+    e.stopPropagation();
     
     if (cursorLockMode) {
       const turnEl = document.getElementById("turn");
@@ -2803,7 +3164,7 @@ function handleKeyDown(e) {
       const currentTeam = isChoTurn ? "cho" : "han";
       const allFilteredMoves = getFilteredLegalMoves(currentTeam);
       
-      const isForward = (e.key === shortcutKeys.right || e.key === shortcutKeys.down);
+      const isForward = (isRight || isDown);
       
       if (curSelect === 32) {
         // 커서락 모드 - 선택 기물 고르기
@@ -2869,15 +3230,15 @@ function handleKeyDown(e) {
       }
       
       // 키보드 모드 활성화 여부와 상관없이 항상 이동 명령을 즉각 실행
-      if (e.key === shortcutKeys.up) {
+      if (isUp) {
         let ny = yPrev(kbCursorY);
         if (ny !== -1) kbCursorY = ny;
-      } else if (e.key === shortcutKeys.down) {
+      } else if (isDown) {
         let ny = yNext(kbCursorY);
         if (ny !== -1) kbCursorY = ny;
-      } else if (e.key === shortcutKeys.left) {
+      } else if (isLeft) {
         if (kbCursorX > 1) kbCursorX -= 1;
-      } else if (e.key === shortcutKeys.right) {
+      } else if (isRight) {
         if (kbCursorX < 9) kbCursorX += 1;
       }
     }
@@ -2886,32 +3247,8 @@ function handleKeyDown(e) {
     return;
   }
 
-  // ESC 키로 활성 취소, 창 닫기, 혹은 상차림창 열기
-  if (e.key === shortcutKeys.cancel) {
-    const settingBox = document.getElementById("setting-box");
-    if (settingBox && settingBox.style.display === "flex") {
-      disalbeSettingBox();
-      return;
-    }
-
-    if (kbCursorActive) {
-      if (curSelect < 32) {
-        selected(curSelect); // 선택 해제
-      } else {
-        // 이미 선택 해제되어 있는 상태에서 ESC를 한번 더 누르면 상차림(설정) 열기
-        kbCursorActive = false;
-        updateKeyboardCursor();
-        enalbeSettingBox();
-      }
-    } else {
-      // 키보드 커서가 안 켜져 있을 때 ESC를 누르면 바로 상차림 열기
-      enalbeSettingBox();
-    }
-    return;
-  }
-
   // 엔터 또는 스페이스바로 선택 및 착수 실행
-  if (e.key === shortcutKeys.select || e.key === shortcutKeys.selectAlt) {
+  if (matchShortcutKey("select", e)) {
     if (!kbCursorActive) return;
     e.preventDefault();
 
@@ -2957,25 +3294,189 @@ function handleKeyDown(e) {
 // ----------------------------------------------------
 // 단축키 커스텀 설정 모달 구현부
 // ----------------------------------------------------
-var isRecordingKey = null; // 현재 바인딩 기록 대기 중인 기능 키 (예: 'up', 'down' 등)
+var isRecordingKey = null; // 현재 바인딩 기록 대기 중인 기능 키 (예: { action, type })
 
 const shortcutActionNames = {
-  up: "방향 이동 (위)",
-  down: "방향 이동 (아래)",
-  left: "방향 이동 (왼쪽)",
-  right: "방향 이동 (오른쪽)",
+  newGame: "새 대국 시작하기",
+  autoplayToggle: "자동 재생 토글",
+  openShortcutSettings: "단축키 지정 설정창 열기",
+  openCommentEdit: "현재 수순 코멘트 편집창 열기",
+  toggleOpponentAI: "상대 AI 모드 켜기/끄기",
+  requestAIHint: "AI 훈수 한 수 받기",
+  flipHorizontal: "판 좌우 반전",
+  flipVertical: "판 상하 반전",
+  up: "위로 이동",
+  down: "아래로 이동",
+  left: "왼쪽 이동",
+  right: "오른쪽 이동",
   select: "선택 및 착수",
-  selectAlt: "선택 및 착수 (보조)",
   cursorLockToggle: "커서락 모드 토글",
-  cancel: "선택 취소 / 상차림 복귀",
-  copyNotation: "기보 클립보드 복사 (Ctrl + 키)",
-  loadNotation: "기보 클립보드 불러오기 (Ctrl + 키)"
+  cancel: "선택 취소",
+  copyNotation: "기보 클립보드 복사",
+  loadNotation: "기보 클립보드 불러오기",
+  forwardStep: "앞으로 이동",
+  backwardStep: "뒤로 이동",
+  goToStart: "맨 앞으로 이동",
+  goToEnd: "맨 뒤로 이동"
 };
+
+function migrateShortcutKeys(parsedKeys) {
+  if (!parsedKeys) return shortcutKeys;
+  const migrated = {};
+  
+  const parseSingle = (v) => {
+    if (!v) return null;
+    if (typeof v === "string") {
+      let ctrl = false;
+      let alt = false;
+      let shift = false;
+      let key = v;
+      if (key.toLowerCase().startsWith("ctrl + ")) {
+        ctrl = true;
+        key = key.substring(7);
+      } else if (key.toLowerCase().startsWith("alt + ")) {
+        alt = true;
+        key = key.substring(6);
+      }
+      return { key, ctrl, alt, shift };
+    }
+    if (typeof v === "object") {
+      return {
+        key: v.key || "",
+        ctrl: !!v.ctrl,
+        alt: !!v.alt,
+        shift: !!v.shift
+      };
+    }
+    return null;
+  };
+
+  Object.keys(shortcutKeys).forEach(key => {
+    const legacyVal = parsedKeys[key];
+    const defaultVal = shortcutKeys[key];
+    
+    if (legacyVal) {
+      if (typeof legacyVal === "string") {
+        migrated[key] = {
+          primary: parseSingle(legacyVal),
+          secondary: defaultVal ? defaultVal.secondary : null
+        };
+      } else if (typeof legacyVal === "object") {
+        if (legacyVal.primary !== undefined || legacyVal.secondary !== undefined) {
+          const prim = parseSingle(legacyVal.primary);
+          const sec = parseSingle(legacyVal.secondary);
+          migrated[key] = {
+            primary: prim !== null ? prim : (defaultVal ? defaultVal.primary : null),
+            secondary: sec !== null ? sec : (defaultVal ? defaultVal.secondary : null)
+          };
+        } else if (legacyVal.key !== undefined) {
+          migrated[key] = {
+            primary: parseSingle(legacyVal),
+            secondary: defaultVal ? defaultVal.secondary : null
+          };
+        }
+      }
+    }
+    
+    if (!migrated[key]) {
+      migrated[key] = {
+        primary: defaultVal ? defaultVal.primary : null,
+        secondary: defaultVal ? defaultVal.secondary : null
+      };
+    }
+  });
+  
+
+  // 강제 핫키 정정 마이그레이션 (구버전 스토리지 마이그레이션 보호)
+  if (migrated.openShortcutSettings && migrated.openShortcutSettings.primary && migrated.openShortcutSettings.primary.key === "?") {
+    migrated.openShortcutSettings.primary.shift = true;
+  }
+  if (migrated.autoplayToggle && migrated.autoplayToggle.primary && migrated.autoplayToggle.primary.key === "p") {
+    migrated.autoplayToggle.primary.ctrl = false;
+  }
+  if (migrated.openCommentEdit && migrated.openCommentEdit.primary && migrated.openCommentEdit.primary.key === "`") {
+    migrated.openCommentEdit.primary.ctrl = false;
+    migrated.openCommentEdit.primary.alt = false;
+    migrated.openCommentEdit.primary.shift = false;
+  }
+
+  return migrated;
+}
+
+function formatKeyCombination(combo) {
+  if (!combo || !combo.key) return "미지정";
+  const parts = [];
+  if (combo.ctrl) parts.push("Ctrl");
+  if (combo.alt) parts.push("Alt");
+  if (combo.shift) parts.push("Shift");
+  
+  let k = combo.key;
+  const kl = k.toLowerCase();
+  if (kl === " ") k = "Space";
+  else if (kl === "arrowup") k = "↑";
+  else if (kl === "arrowdown") k = "↓";
+  else if (kl === "arrowleft") k = "←";
+  else if (kl === "arrowright") k = "→";
+  else if (k.length === 1) k = k.toUpperCase();
+  
+  parts.push(k);
+  return parts.join(" + ");
+}
+
+function changeModalBgColor(color) {
+  shortcutModalBgColor = color;
+  const picker = document.getElementById("modal-bg-picker");
+  if (picker) picker.value = color;
+  applyShortcutModalTheme();
+  saveCurrentConfigToSlot();
+}
+
+function changeModalOpacity(opacity) {
+  shortcutModalOpacity = parseFloat(opacity);
+  const slider = document.getElementById("modal-opacity-slider");
+  if (slider) slider.value = opacity;
+  const valEl = document.getElementById("modal-opacity-val");
+  if (valEl) valEl.textContent = shortcutModalOpacity.toFixed(2);
+  applyShortcutModalTheme();
+  saveCurrentConfigToSlot();
+}
+
+function hexToRgba(hex, alpha) {
+  let hexStr = hex || "#0f172a";
+  if (hexStr.length === 4) {
+    hexStr = "#" + hexStr[1] + hexStr[1] + hexStr[2] + hexStr[2] + hexStr[3] + hexStr[3];
+  }
+  let r = parseInt(hexStr.slice(1, 3), 16);
+  let g = parseInt(hexStr.slice(3, 5), 16);
+  let b = parseInt(hexStr.slice(5, 7), 16);
+  if (isNaN(r) || isNaN(g) || isNaN(b)) {
+    r = 15; g = 23; b = 42;
+  }
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function applyShortcutModalTheme() {
+  const modalContent = document.querySelector("#shortcut-modal .modal-content");
+  if (!modalContent) return;
+  
+  let hex = shortcutModalBgColor || "#0f172a";
+  let opacity = shortcutModalOpacity !== undefined ? shortcutModalOpacity : 0.9;
+  
+  modalContent.style.background = hexToRgba(hex, opacity);
+}
 
 function openShortcutModal() {
   const modal = document.getElementById("shortcut-modal");
   if (!modal) return;
   
+  const picker = document.getElementById("modal-bg-picker");
+  if (picker) picker.value = shortcutModalBgColor;
+  const slider = document.getElementById("modal-opacity-slider");
+  if (slider) slider.value = shortcutModalOpacity;
+  const valEl = document.getElementById("modal-opacity-val");
+  if (valEl) valEl.textContent = shortcutModalOpacity.toFixed(2);
+  
+  applyShortcutModalTheme();
   populateShortcutTable();
   modal.style.display = "flex";
   modal.offsetHeight; // Force reflow
@@ -3006,6 +3507,8 @@ function populateShortcutTable() {
   tbody.innerHTML = "";
   
   Object.keys(shortcutKeys).forEach(actionKey => {
+    if (actionKey === "selectAlt") return; // Deprecated
+    
     const tr = document.createElement("tr");
     tr.className = "shortcut-row";
     
@@ -3013,62 +3516,113 @@ function populateShortcutTable() {
     tdName.textContent = shortcutActionNames[actionKey] || actionKey;
     tr.appendChild(tdName);
     
-    const tdKey = document.createElement("td");
-    const btn = document.createElement("button");
-    btn.className = "shortcut-key-btn";
+    // Primary key
+    const tdPrimary = document.createElement("td");
+    const btnPrimary = document.createElement("button");
+    btnPrimary.className = "shortcut-key-btn";
     
-    let displayVal = shortcutKeys[actionKey];
-    if (actionKey === "copyNotation" || actionKey === "loadNotation") {
-      displayVal = "Ctrl + " + displayVal.toUpperCase();
-    } else if (displayVal === " ") {
-      displayVal = "Space";
-    }
+    let displayPrimary = formatKeyCombination(shortcutKeys[actionKey].primary);
     
-    if (isRecordingKey === actionKey) {
-      btn.textContent = "입력 대기 중...";
-      btn.classList.add("recording");
+    if (isRecordingKey && isRecordingKey.action === actionKey && isRecordingKey.type === "primary") {
+      btnPrimary.textContent = "입력 대기...";
+      btnPrimary.classList.add("recording");
     } else {
-      btn.textContent = displayVal;
+      btnPrimary.textContent = displayPrimary;
     }
     
-    btn.onclick = (e) => {
+    btnPrimary.onclick = (e) => {
       e.stopPropagation();
-      startRecordingKey(actionKey);
+      startRecordingKey(actionKey, "primary");
     };
+    tdPrimary.appendChild(btnPrimary);
+    tr.appendChild(tdPrimary);
     
-    tdKey.appendChild(btn);
-    tr.appendChild(tdKey);
+    // Secondary key
+    const tdSecondary = document.createElement("td");
+    const btnSecondary = document.createElement("button");
+    btnSecondary.className = "shortcut-key-btn";
+    
+    let displaySecondary = formatKeyCombination(shortcutKeys[actionKey].secondary);
+    
+    if (isRecordingKey && isRecordingKey.action === actionKey && isRecordingKey.type === "secondary") {
+      btnSecondary.textContent = "입력 대기...";
+      btnSecondary.classList.add("recording");
+    } else {
+      btnSecondary.textContent = displaySecondary;
+    }
+    
+    btnSecondary.onclick = (e) => {
+      e.stopPropagation();
+      startRecordingKey(actionKey, "secondary");
+    };
+    tdSecondary.appendChild(btnSecondary);
+    tr.appendChild(tdSecondary);
+    
     tbody.appendChild(tr);
   });
 }
 
-function startRecordingKey(actionKey) {
-  isRecordingKey = actionKey;
+function startRecordingKey(actionKey, type) {
+  isRecordingKey = { action: actionKey, type: type };
   populateShortcutTable();
   
   const handleKeyRecord = (e) => {
     e.preventDefault();
     e.stopPropagation();
     
-    let keyName = e.key;
+    const keyName = e.key;
     
-    // Ctrl 관련 특수 단축키의 경우 기호만 보존
-    if (isRecordingKey === "copyNotation" || isRecordingKey === "loadNotation") {
-      if (["control", "shift", "alt", "meta"].includes(keyName.toLowerCase())) {
-        return; // 보조키만 단독 입력은 무시
-      }
-      keyName = keyName.toLowerCase();
+    if (["control", "shift", "alt", "meta"].includes(keyName.toLowerCase())) {
+      return;
     }
     
-    // 키 할당 및 로컬 저장
-    shortcutKeys[isRecordingKey] = keyName;
-    saveCurrentConfigToSlot();
+    if ((keyName === "Escape" || keyName === "Backspace") && isRecordingKey.action !== "cancel") {
+      shortcutKeys[isRecordingKey.action][isRecordingKey.type] = null;
+      isRecordingKey = null;
+      saveCurrentConfigToSlot();
+      populateShortcutTable();
+      window.removeEventListener("keydown", handleKeyRecord, true);
+      showToast("단축키가 해제되었습니다.");
+      return;
+    }
     
-    // 리스너 해제 및 복구
+    const combo = {
+      key: keyName,
+      ctrl: e.ctrlKey || e.metaKey,
+      alt: e.altKey,
+      shift: e.shiftKey
+    };
+    
+    let duplicated = false;
+    Object.keys(shortcutKeys).forEach(aKey => {
+      const keysObj = shortcutKeys[aKey];
+      const matchCombo = (c) => {
+        if (!c || !c.key) return false;
+        return c.key.toLowerCase() === combo.key.toLowerCase() &&
+               !!c.ctrl === !!combo.ctrl &&
+               !!c.alt === !!combo.alt &&
+               !!c.shift === !!combo.shift;
+      };
+      if (keysObj && (matchCombo(keysObj.primary) || matchCombo(keysObj.secondary))) {
+        if (aKey === isRecordingKey.action) return;
+        duplicated = true;
+      }
+    });
+    
+    if (duplicated) {
+      showToast("이미 다른 기능에 지정된 키 조합입니다!");
+      isRecordingKey = null;
+      populateShortcutTable();
+      window.removeEventListener("keydown", handleKeyRecord, true);
+      return;
+    }
+    
+    shortcutKeys[isRecordingKey.action][isRecordingKey.type] = combo;
     isRecordingKey = null;
+    saveCurrentConfigToSlot();
     window.removeEventListener("keydown", handleKeyRecord, true);
     populateShortcutTable();
-    showToast("단축키가 지정되었습니다.");
+    showToast(`단축키가 '${formatKeyCombination(combo)}'(으)로 지정되었습니다.`);
   };
   
   window.addEventListener("keydown", handleKeyRecord, true);
@@ -3076,16 +3630,94 @@ function startRecordingKey(actionKey) {
 
 function resetDefaultShortcuts() {
   shortcutKeys = {
-    up: "ArrowUp",
-    down: "ArrowDown",
-    left: "ArrowLeft",
-    right: "ArrowRight",
-    select: "Enter",
-    selectAlt: " ",
-    cursorLockToggle: "CapsLock",
-    cancel: "Escape",
-    copyNotation: "s",
-    loadNotation: "v"
+    newGame: {
+      primary: { key: "n", ctrl: false, alt: false, shift: false },
+      secondary: { key: "F2", ctrl: false, alt: false, shift: false }
+    },
+    autoplayToggle: {
+      primary: { key: "p", ctrl: false, alt: false, shift: false },
+      secondary: { key: "p", ctrl: false, alt: true, shift: false }
+    },
+    openShortcutSettings: {
+      primary: { key: "?", ctrl: false, alt: false, shift: true },
+      secondary: null
+    },
+    openCommentEdit: {
+      primary: { key: "`", ctrl: false, alt: false, shift: false },
+      secondary: null
+    },
+    toggleOpponentAI: {
+      primary: { key: "z", ctrl: false, alt: false, shift: false },
+      secondary: null
+    },
+    requestAIHint: {
+      primary: { key: "x", ctrl: false, alt: false, shift: false },
+      secondary: null
+    },
+    flipHorizontal: {
+      primary: { key: "[", ctrl: false, alt: false, shift: false },
+      secondary: null
+    },
+    flipVertical: {
+      primary: { key: "]", ctrl: false, alt: false, shift: false },
+      secondary: null
+    },
+    toggleCoordinates: {
+      primary: { key: "/", ctrl: false, alt: false, shift: false },
+      secondary: null
+    },
+    up: {
+      primary: { key: "ArrowUp", ctrl: false, alt: false, shift: false },
+      secondary: { key: "w", ctrl: false, alt: false, shift: false }
+    },
+    down: {
+      primary: { key: "ArrowDown", ctrl: false, alt: false, shift: false },
+      secondary: { key: "s", ctrl: false, alt: false, shift: false }
+    },
+    left: {
+      primary: { key: "ArrowLeft", ctrl: false, alt: false, shift: false },
+      secondary: { key: "a", ctrl: false, alt: false, shift: false }
+    },
+    right: {
+      primary: { key: "ArrowRight", ctrl: false, alt: false, shift: false },
+      secondary: { key: "d", ctrl: false, alt: false, shift: false }
+    },
+    select: {
+      primary: { key: "Enter", ctrl: false, alt: false, shift: false },
+      secondary: { key: " ", ctrl: false, alt: false, shift: false }
+    },
+    cursorLockToggle: {
+      primary: { key: "CapsLock", ctrl: false, alt: false, shift: false },
+      secondary: null
+    },
+    cancel: {
+      primary: { key: "Escape", ctrl: false, alt: false, shift: false },
+      secondary: null
+    },
+    copyNotation: {
+      primary: { key: "s", ctrl: false, alt: true, shift: false },
+      secondary: { key: "s", ctrl: true, alt: false, shift: false }
+    },
+    loadNotation: {
+      primary: { key: "v", ctrl: false, alt: true, shift: false },
+      secondary: { key: "v", ctrl: true, alt: false, shift: false }
+    },
+    forwardStep: {
+      primary: { key: "ArrowRight", ctrl: false, alt: true, shift: false },
+      secondary: null
+    },
+    backwardStep: {
+      primary: { key: "ArrowLeft", ctrl: false, alt: true, shift: false },
+      secondary: null
+    },
+    goToStart: {
+      primary: { key: "ArrowLeft", ctrl: true, alt: false, shift: false },
+      secondary: { key: "Home", ctrl: false, alt: false, shift: false }
+    },
+    goToEnd: {
+      primary: { key: "ArrowRight", ctrl: true, alt: false, shift: false },
+      secondary: { key: "End", ctrl: false, alt: false, shift: false }
+    }
   };
   saveCurrentConfigToSlot();
   populateShortcutTable();
@@ -3331,12 +3963,32 @@ function updateCommentBubble() {
     if (comment.trim()) {
       if (bubbleText) bubbleText.textContent = comment;
       if (bubble) bubble.style.display = "block";
+      applyCommentBoxTheme();
+      
+      // 코멘트 말풍선 자동 숨김 시간 설정 (0은 무제한)
+      if (commentBubbleTimeout) {
+        clearTimeout(commentBubbleTimeout);
+        commentBubbleTimeout = null;
+      }
+      if (commentDisplayDuration > 0) {
+        commentBubbleTimeout = setTimeout(() => {
+          if (bubble) bubble.style.display = "none";
+        }, commentDisplayDuration * 1000);
+      }
     } else {
       if (bubble) bubble.style.display = "none";
+      if (commentBubbleTimeout) {
+        clearTimeout(commentBubbleTimeout);
+        commentBubbleTimeout = null;
+      }
     }
   } else {
     if (commentFormInput) commentFormInput.value = "";
     if (bubble) bubble.style.display = "none";
+    if (commentBubbleTimeout) {
+      clearTimeout(commentBubbleTimeout);
+      commentBubbleTimeout = null;
+    }
   }
 }
 
@@ -3362,6 +4014,864 @@ function toggleMetadataCategory(event) {
   }
 }
 
+function toggleSettingCategory(categoryId) {
+  const category = document.getElementById(categoryId);
+  const content = document.getElementById(categoryId + "-content");
+  let arrowId = "";
+  if (categoryId === "board-view-category") arrowId = "board-view-arrow";
+  else if (categoryId === "anim-category") arrowId = "anim-arrow";
+  else if (categoryId === "settings-category") arrowId = "settings-arrow";
+  
+  const arrow = document.getElementById(arrowId);
+  
+  if (!category || !content) return;
+  
+  const isCollapsed = category.classList.contains("collapsed");
+  
+  if (isCollapsed) {
+    category.classList.remove("collapsed");
+    content.style.display = "block";
+    if (arrow) arrow.style.transform = "rotate(180deg)";
+  } else {
+    category.classList.add("collapsed");
+    content.style.display = "none";
+    if (arrow) arrow.style.transform = "rotate(0deg)";
+  }
+}
+
+var autoplayInterval = null;
+var isAutoplayActive = false;
+
+function toggleAutoplay() {
+  if (isAutoplayActive) {
+    stopAutoplay();
+  } else {
+    startAutoplay();
+  }
+}
+
+function startAutoplay() {
+  if (isAutoplayActive) return;
+  const turnEl = document.getElementById("turn");
+  if (!turnEl) return;
+  let curTurn = parseInt(turnEl.value, 10);
+  if (curTurn >= log.length) {
+    showToast("이미 마지막 수순입니다.");
+    return;
+  }
+  isAutoplayActive = true;
+  showToast("자동 재생 시작");
+  updateAutoplayUI();
+  
+  autoplayInterval = setInterval(() => {
+    let curTurn = parseInt(turnEl.value, 10);
+    if (curTurn < log.length) {
+      if (!autoplayUseAnim) {
+        svg.classList.add("no-transition");
+      }
+      next();
+      if (!autoplayUseAnim) {
+        svg.offsetHeight; // force reflow
+        svg.classList.remove("no-transition");
+      }
+    } else {
+      stopAutoplay();
+      showToast("자동 재생 완료");
+    }
+  }, autoplaySpeed * 1000);
+}
+
+function stopAutoplay() {
+  if (!isAutoplayActive) return;
+  isAutoplayActive = false;
+  if (autoplayInterval) {
+    clearInterval(autoplayInterval);
+    autoplayInterval = null;
+  }
+  showToast("자동 재생 정지");
+  updateAutoplayUI();
+}
+
+function updateAutoplayUI() {
+  const playBtn = document.getElementById("nav-play-btn");
+  if (playBtn) {
+    if (isAutoplayActive) {
+      playBtn.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <rect x="6" y="4" width="4" height="16" rx="1"/>
+          <rect x="14" y="4" width="4" height="16" rx="1"/>
+        </svg>
+      `;
+      playBtn.title = "자동 재생 일시정지 (P)";
+    } else {
+      playBtn.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <polygon points="6,4 20,12 6,20"/>
+        </svg>
+      `;
+      playBtn.title = "자동 재생 시작 (P)";
+    }
+  }
+}
+
+function flipBoardHorizontal() {
+  const boardSvg = document.getElementById("janggi-svg");
+  if (!boardSvg || boardAnimating) return;
+  
+  boardAnimating = true;
+  
+  logPieceCenters("0ms Start");
+  
+  setTimeout(() => {
+    logPieceCenters("4000ms Post-Animation Check");
+  }, 4000);
+  
+  const startPositions = [];
+  for (let i = 0; i < 32; i++) {
+    startPositions[i] = { x: pieces[i].x, y: pieces[i].y };
+  }
+  const oldKbCursorX = kbCursorX;
+  const oldKbCursorY = kbCursorY;
+  
+  // Stage 1: Board flips horizontally (0ms -> 500ms)
+  boardSvg.style.transformOrigin = `${boardWidth / 2}px ${boardHeight / 2}px`;
+  boardSvg.classList.add("flip-h-anim");
+  
+  setTimeout(() => {
+    logPieceCenters("500ms Phase 1 Complete (Board rotated 180deg)");
+    
+    // Stage 2: Pieces rotate 180deg in place (500ms -> 1000ms)
+    flipActive = true;
+    
+    for (let i = 0; i < 32; i++) {
+      if (pieces[i].x !== 0 && startPositions[i].x !== 0) {
+        const startPos = startPositions[i];
+        const ratio = (i === 0 || i === 16) ? sizeKing : ((i === 1 || i === 2 || i === 17 || i === 18 || i === 3 || i === 4 || i === 19 || i === 20 || i === 5 || i === 6 || i === 21 || i === 22 || i === 7 || i === 8 || i === 23 || i === 24) ? sizeMiddle : sizeSmall);
+        const sizeVal = unitSize * ratio;
+        const ax = getAxis(startPos.x, startPos.y).x - sizeVal / 2;
+        const ay = getAxis(startPos.x, startPos.y).y - sizeVal / 2;
+        
+        pieces[i].e.style.transition = "none";
+        pieces[i].e.style.transformOrigin = `${sizeVal / 2}px ${sizeVal / 2}px`;
+        pieces[i].e.style.transform = `translate(${ax}px, ${ay}px) scaleX(1)`;
+        pieces[i].e.classList.add("smooth-move-anim");
+      }
+    }
+    
+    const cursor = document.getElementById("kb-cursor");
+    if (cursor && kbCursorActive) {
+      const sizeVal = unitSize * 0.85;
+      const ax = getAxis(oldKbCursorX, oldKbCursorY).x - sizeVal / 2;
+      const ay = getAxis(oldKbCursorX, oldKbCursorY).y - sizeVal / 2;
+      
+      cursor.style.transition = "none";
+      cursor.style.transformOrigin = `${sizeVal / 2}px ${sizeVal / 2}px`;
+      cursor.style.transform = `translate(${ax}px, ${ay}px) scaleX(1)`;
+      cursor.classList.add("smooth-move-anim");
+    }
+    
+    document.body.offsetHeight; // Force reflow
+    
+    // Trigger Stage 2: Rotate 180deg in place
+    for (let i = 0; i < 32; i++) {
+      if (pieces[i].x !== 0 && startPositions[i].x !== 0) {
+        const startPos = startPositions[i];
+        const ratio = (i === 0 || i === 16) ? sizeKing : ((i === 1 || i === 2 || i === 17 || i === 18 || i === 3 || i === 4 || i === 19 || i === 20 || i === 5 || i === 6 || i === 21 || i === 22 || i === 7 || i === 8 || i === 23 || i === 24) ? sizeMiddle : sizeSmall);
+        const sizeVal = unitSize * ratio;
+        const ax = getAxis(startPos.x, startPos.y).x - sizeVal / 2;
+        const ay = getAxis(startPos.x, startPos.y).y - sizeVal / 2;
+        
+        pieces[i].e.style.transition = "";
+        pieces[i].e.style.transform = `translate(${ax}px, ${ay}px) scaleX(-1)`;
+      }
+    }
+    
+    if (cursor && kbCursorActive) {
+      const sizeVal = unitSize * 0.85;
+      const ax = getAxis(oldKbCursorX, oldKbCursorY).x - sizeVal / 2;
+      const ay = getAxis(oldKbCursorX, oldKbCursorY).y - sizeVal / 2;
+      
+      cursor.style.transition = "";
+      cursor.style.transform = `translate(${ax}px, ${ay}px) scaleX(-1)`;
+    }
+    
+    setTimeout(() => {
+      logPieceCenters("1000ms Phase 2 Complete (Pieces counter-rotated)");
+      
+      // Stage 3: Pieces slide to target positions (1000ms -> 1500ms)
+      for (let i = 0; i < 32; i++) {
+        if (pieces[i].x !== 0 && startPositions[i].x !== 0) {
+          const startPos = startPositions[i];
+          const finalLogicalPos = { x: 10 - startPos.x, y: startPos.y };
+          const axisStart = getAxis(startPos.x, startPos.y);
+          const axisEnd = getAxis(finalLogicalPos.x, finalLogicalPos.y);
+          
+          const ratio = (i === 0 || i === 16) ? sizeKing : ((i === 1 || i === 2 || i === 17 || i === 18 || i === 3 || i === 4 || i === 19 || i === 20 || i === 5 || i === 6 || i === 21 || i === 22 || i === 7 || i === 8 || i === 23 || i === 24) ? sizeMiddle : sizeSmall);
+          const sizeVal = unitSize * ratio;
+          const ax = axisStart.x - sizeVal / 2;
+          const ay = axisStart.y - sizeVal / 2;
+          
+          const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
+          const dy = 0;
+          
+          pieces[i].e.style.transform = `translate(${ax + 2 * dx}px, ${ay + 2 * dy}px) scaleX(-1)`;
+        }
+      }
+      
+      if (cursor && kbCursorActive) {
+        const sizeVal = unitSize * 0.85;
+        const axisStart = getAxis(oldKbCursorX, oldKbCursorY);
+        const axisEnd = getAxis(10 - oldKbCursorX, oldKbCursorY);
+        const ax = axisStart.x - sizeVal / 2;
+        const ay = axisStart.y - sizeVal / 2;
+        
+        const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
+        const dy = 0;
+        
+        cursor.style.transform = `translate(${ax + 2 * dx}px, ${ay + 2 * dy}px) scaleX(-1)`;
+      }
+      
+      setTimeout(() => {
+        logPieceCenters("1500ms Phase 3 Complete (Pieces slid to destination)");
+        
+        executeFlipBoardHorizontal();
+        
+        boardSvg.classList.remove("flip-h-anim");
+        boardSvg.style.transformOrigin = "";
+        for (let i = 0; i < 32; i++) {
+          pieces[i].e.style.transformOrigin = "";
+          pieces[i].e.style.transform = "";
+          pieces[i].e.classList.remove("smooth-move-anim");
+        }
+        if (cursor) {
+          cursor.style.transformOrigin = "";
+          cursor.style.transform = "";
+          cursor.classList.remove("smooth-move-anim");
+        }
+        
+        flipActive = false;
+        
+        initPositions();
+        if (kbCursorActive) updateKeyboardCursor();
+        
+        logPieceCenters("1500ms+ Final Redraw Complete");
+        
+        boardAnimating = false;
+        
+        setTimeout(() => {
+          logPieceCenters("2000ms Settled State Check");
+        }, 500);
+      }, 500); // Phase 3 duration
+      
+    }, 500); // Phase 2 duration
+    
+  }, 500); // Phase 1 duration
+};
+
+function goToStart() {
+  clearCandiBox();
+  let startingLayoutCode = getStartingLayoutCode();
+  setting(startingLayoutCode);
+  curSelect = 32;
+  const selectBox = document.getElementById("select-box");
+  if (selectBox) {
+    selectBox.setAttribute("x", -1000);
+    selectBox.setAttribute("y", -1000);
+  }
+  const turnEl = document.getElementById("turn");
+  if (turnEl) turnEl.value = 0;
+  updateScore();
+  const recordBox = document.getElementById("record-box");
+  if (recordBox && recordBox.style.display === "flex") {
+    updateRecordUI();
+  }
+  updateCommentBubble();
+  document.getElementById("prev").disabled = true;
+  if (log.length > 0) {
+    document.getElementById("next").disabled = false;
+  } else {
+    document.getElementById("next").disabled = true;
+  }
+  
+  svg.classList.add("no-transition");
+  initPositions();
+  svg.offsetHeight; // Force reflow
+  svg.classList.remove("no-transition");
+  
+  checkAndRunAI();
+}
+
+function goToEnd() {
+  clearCandiBox();
+  const turnEl = document.getElementById("turn");
+  if (!turnEl) return;
+  let curTurn = parseInt(turnEl.value, 10);
+  
+  svg.classList.add("no-transition");
+  while (curTurn < log.length) {
+    setPieces(log[curTurn].i, log[curTurn].x, log[curTurn].y, true);
+    if (log[curTurn].t != 32) {
+      setPieces(log[curTurn].t, 0, 0, true);
+    }
+    curTurn++;
+  }
+  turnEl.value = log.length;
+  curSelect = 32;
+  const lastMove = log[log.length - 1];
+  if (lastMove) {
+    moveSelectBox(lastMove.i);
+  }
+  document.getElementById("next").disabled = true;
+  if (log.length > 0) {
+    document.getElementById("prev").disabled = false;
+  }
+  updateScore();
+  const recordBox = document.getElementById("record-box");
+  if (recordBox && recordBox.style.display === "flex") {
+    updateRecordUI();
+  }
+  initPositions();
+  svg.offsetHeight; // Force reflow
+  svg.classList.remove("no-transition");
+  
+  checkGameStatus();
+  updateCommentBubble();
+  checkAndRunAI();
+}
+
+function changeAutoplaySpeed(val) {
+  autoplaySpeed = parseFloat(val);
+  const valEl = document.getElementById("autoplay-speed-val");
+  if (valEl) valEl.textContent = autoplaySpeed.toFixed(1);
+  
+  if (isAutoplayActive) {
+    stopAutoplay();
+    startAutoplay();
+  }
+  saveCurrentConfigToSlot();
+}
+
+function changeAutoplayUseAnim(checked) {
+  autoplayUseAnim = checked;
+  saveCurrentConfigToSlot();
+}
+
+function openCommentModal() {
+  const turnInput = document.getElementById("turn");
+  if (!turnInput) return;
+  const curTurn = parseInt(turnInput.value, 10);
+  if (curTurn <= 0) {
+    showToast("코멘트를 입력할 수순이 없습니다. (0수 상태)");
+    return;
+  }
+  
+  const title = document.getElementById("comment-modal-title");
+  if (title) title.textContent = `현재 수순 (${curTurn}수) 코멘트 편집`;
+  
+  const currentMove = log[curTurn - 1];
+  const textarea = document.getElementById("comment-modal-textarea");
+  if (textarea && currentMove) {
+    textarea.value = currentMove.comment || "";
+  }
+  
+  const commentBgPicker = document.getElementById("comment-bg-picker");
+  if (commentBgPicker) commentBgPicker.value = commentBoxBgColor;
+  
+  const commentOpacitySlider = document.getElementById("comment-opacity-slider");
+  if (commentOpacitySlider) commentOpacitySlider.value = commentBoxOpacity;
+  
+  const commentOpacityVal = document.getElementById("comment-opacity-val");
+  if (commentOpacityVal) commentOpacityVal.textContent = commentBoxOpacity.toFixed(2);
+  
+  const commentModal = document.getElementById("comment-modal");
+  if (commentModal) {
+    commentModal.style.display = "flex";
+    applyCommentBoxTheme();
+    setTimeout(() => {
+      commentModal.classList.add("open");
+      if (textarea) textarea.focus();
+    }, 10);
+  }
+}
+
+function closeCommentModal() {
+  const commentModal = document.getElementById("comment-modal");
+  if (commentModal) {
+    commentModal.classList.remove("open");
+    setTimeout(() => {
+      commentModal.style.display = "none";
+    }, 300);
+  }
+}
+
+function saveCommentModal() {
+  const turnInput = document.getElementById("turn");
+  if (!turnInput) return;
+  const curTurn = parseInt(turnInput.value, 10);
+  if (curTurn <= 0) return;
+  
+  const textarea = document.getElementById("comment-modal-textarea");
+  if (textarea && log[curTurn - 1]) {
+    log[curTurn - 1].comment = textarea.value;
+    
+    // 동기화: 메타데이터 창의 입력 필드도 갱신
+    const commentFormInput = document.getElementById("current-step-comment");
+    if (commentFormInput) {
+      commentFormInput.value = textarea.value;
+    }
+    
+    updateCommentBubble();
+    showToast(`${curTurn}수 코멘트가 저장되었습니다.`);
+  }
+  closeCommentModal();
+}
+
+function handleCommentModalOverlayClick(e) {
+  if (e.target.id === "comment-modal") {
+    closeCommentModal();
+  }
+}
+
+function changeCommentBgColor(color) {
+  commentBoxBgColor = color;
+  const picker = document.getElementById("comment-bg-picker");
+  if (picker) picker.value = color;
+  applyCommentBoxTheme();
+  saveCurrentConfigToSlot();
+}
+
+function changeCommentOpacity(opacity) {
+  commentBoxOpacity = parseFloat(opacity);
+  const slider = document.getElementById("comment-opacity-slider");
+  if (slider) slider.value = opacity;
+  const valDisp = document.getElementById("comment-opacity-val");
+  if (valDisp) valDisp.textContent = commentBoxOpacity.toFixed(2);
+  applyCommentBoxTheme();
+  saveCurrentConfigToSlot();
+}
+
+function applyCommentBoxTheme() {
+  const commentModalContent = document.querySelector("#comment-modal .modal-content");
+  if (commentModalContent) {
+    const rgba = hexToRgba(commentBoxBgColor, commentBoxOpacity);
+    commentModalContent.style.background = rgba;
+    commentModalContent.style.backdropFilter = "blur(12px)";
+  }
+  
+  const commentBubble = document.getElementById("comment-bubble");
+  if (commentBubble) {
+    const rgba = hexToRgba(commentBoxBgColor, commentBoxOpacity);
+    commentBubble.style.background = rgba;
+    commentBubble.style.backdropFilter = "blur(12px)";
+    commentBubble.style.border = `1px solid ${commentBoxBgColor}`;
+  }
+}
+
+
+function executeFlipBoardHorizontal() {
+  // 1. Flip initPieces
+  for (let i = 0; i < 32; i++) {
+    if (initPieces[i].x !== 0) {
+      initPieces[i].x = 10 - initPieces[i].x;
+    }
+  }
+  // 2. Reset pieces to initPieces
+  for (let i = 0; i < 32; i++) {
+    pieces[i].x = initPieces[i].x;
+    pieces[i].y = initPieces[i].y;
+  }
+  // 3. Flip log entries
+  log.forEach(entry => {
+    entry.x = 10 - entry.x;
+  });
+  // 4. Flip cursor position
+  kbCursorX = 10 - kbCursorX;
+  
+  // 5. Clear select and candidates
+  curSelect = 32;
+  clearCandiBox();
+  
+  // Mirror newGameState layouts horizontally (0 <-> 3, 1 <-> 1, 2 <-> 2)
+  const mirrorMap = { 0: 3, 1: 1, 2: 2, 3: 0 };
+  newGameState[0] = mirrorMap[newGameState[0]];
+  newGameState[1] = mirrorMap[newGameState[1]];
+  syncCharimButtonStyles();
+  
+  // 6. Redraw
+  initPositions();
+  
+  // 7. Update URL search params to match new state
+  const url = new URL(window.location.href);
+  const pCodeArr = new Array(32);
+  for (let i = 0; i < 32; i++) {
+    pCodeArr[i] = `${initPieces[i].x}${initPieces[i].y}`;
+  }
+  url.searchParams.set("p", pCodeArr.join(""));
+  
+  const logStrArr = log.map(entry => {
+    return `${entry.i}${n2Az(entry.x)}${n2Az(entry.y)}${entry.t !== 32 ? entry.t : ""}`;
+  });
+  if (logStrArr.length > 0) {
+    url.searchParams.set("log", logStrArr.join(","));
+  }
+  window.history.replaceState({}, "", url.toString());
+
+  // Update record textbox UI immediately
+  updateRecordUI();
+
+  showToast("판 좌우 반전 및 기존 수순 변환 완료");
+}
+
+function flipYCoordinate(y) {
+  // y 좌표 sequence: 1(top) -> 2 -> ... -> 9 -> 0(bottom)
+  // rowIndex = (y + 9) % 10. rowIndex 범위는 0 (top) ~ 9 (bottom)
+  const r = (y + 9) % 10;
+  const flippedR = 9 - r;
+  return (flippedR + 1) % 10;
+}
+
+function logPieceCenters(phaseName) {
+  const boardSvg = document.getElementById("janggi-svg");
+  if (!boardSvg) return;
+  if (typeof boardSvg.getBoundingClientRect !== 'function') return;
+  const svgRect = boardSvg.getBoundingClientRect();
+  console.log(`=== [${phaseName}] Piece Centers ===`);
+  for (let i = 0; i < 32; i++) {
+    if (pieces[i].x !== 0 && pieces[i].e && typeof pieces[i].e.getBoundingClientRect === 'function') {
+      const rect = pieces[i].e.getBoundingClientRect();
+      const cx = (rect.left - svgRect.left + rect.width / 2).toFixed(2);
+      const cy = (rect.top - svgRect.top + rect.height / 2).toFixed(2);
+      console.log(`Piece ${i} (${pieces[i].e.id}): x=${pieces[i].x}, y=${pieces[i].y} => Physical Center: (${cx}, ${cy})`);
+    }
+  }
+}
+
+function flipBoardVertical() {
+  const boardSvg = document.getElementById("janggi-svg");
+  if (!boardSvg || boardAnimating) return;
+  
+  boardAnimating = true;
+  
+  logPieceCenters("0ms Start");
+  
+  setTimeout(() => {
+    logPieceCenters("4000ms Post-Animation Check");
+  }, 4000);
+  
+  const startPositions = [];
+  for (let i = 0; i < 32; i++) {
+    startPositions[i] = { x: pieces[i].x, y: pieces[i].y };
+  }
+  const oldKbCursorX = kbCursorX;
+  const oldKbCursorY = kbCursorY;
+  
+  // Stage 1: Board spins (0ms -> 500ms)
+  boardSvg.style.transformOrigin = `${boardWidth / 2}px ${boardHeight / 2}px`;
+  boardSvg.classList.add("rotate-180-anim");
+  
+  setTimeout(() => {
+    logPieceCenters("500ms Phase 1 Complete (Board rotated 180deg)");
+    
+    // Stage 2: Pieces rotate 180deg in place (500ms -> 1000ms)
+    rotateActive = true;
+    
+    for (let i = 0; i < 32; i++) {
+      if (pieces[i].x !== 0 && startPositions[i].x !== 0) {
+        const startPos = startPositions[i];
+        const ratio = (i === 0 || i === 16) ? sizeKing : ((i === 1 || i === 2 || i === 17 || i === 18 || i === 3 || i === 4 || i === 19 || i === 20 || i === 5 || i === 6 || i === 21 || i === 22 || i === 7 || i === 8 || i === 23 || i === 24) ? sizeMiddle : sizeSmall);
+        const sizeVal = unitSize * ratio;
+        const ax = getAxis(startPos.x, startPos.y).x - sizeVal / 2;
+        const ay = getAxis(startPos.x, startPos.y).y - sizeVal / 2;
+        
+        pieces[i].e.style.transition = "none";
+        pieces[i].e.style.transformOrigin = `${sizeVal / 2}px ${sizeVal / 2}px`;
+        pieces[i].e.style.transform = `translate(${ax}px, ${ay}px) rotate(0deg)`;
+        pieces[i].e.classList.add("smooth-move-anim");
+      }
+    }
+    
+    const cursor = document.getElementById("kb-cursor");
+    if (cursor && kbCursorActive) {
+      const sizeVal = unitSize * 0.85;
+      const ax = getAxis(oldKbCursorX, oldKbCursorY).x - sizeVal / 2;
+      const ay = getAxis(oldKbCursorX, oldKbCursorY).y - sizeVal / 2;
+      
+      cursor.style.transition = "none";
+      cursor.style.transformOrigin = `${sizeVal / 2}px ${sizeVal / 2}px`;
+      cursor.style.transform = `translate(${ax}px, ${ay}px) rotate(0deg)`;
+      cursor.classList.add("smooth-move-anim");
+    }
+    
+    document.body.offsetHeight; // Force reflow
+    
+    // Trigger Stage 2: Rotate 180deg in place
+    for (let i = 0; i < 32; i++) {
+      if (pieces[i].x !== 0 && startPositions[i].x !== 0) {
+        const startPos = startPositions[i];
+        const ratio = (i === 0 || i === 16) ? sizeKing : ((i === 1 || i === 2 || i === 17 || i === 18 || i === 3 || i === 4 || i === 19 || i === 20 || i === 5 || i === 6 || i === 21 || i === 22 || i === 7 || i === 8 || i === 23 || i === 24) ? sizeMiddle : sizeSmall);
+        const sizeVal = unitSize * ratio;
+        const ax = getAxis(startPos.x, startPos.y).x - sizeVal / 2;
+        const ay = getAxis(startPos.x, startPos.y).y - sizeVal / 2;
+        
+        pieces[i].e.style.transition = "";
+        pieces[i].e.style.transform = `translate(${ax}px, ${ay}px) rotate(-180deg)`;
+      }
+    }
+    
+    if (cursor && kbCursorActive) {
+      const sizeVal = unitSize * 0.85;
+      const ax = getAxis(oldKbCursorX, oldKbCursorY).x - sizeVal / 2;
+      const ay = getAxis(oldKbCursorX, oldKbCursorY).y - sizeVal / 2;
+      
+      cursor.style.transition = "";
+      cursor.style.transform = `translate(${ax}px, ${ay}px) rotate(-180deg)`;
+    }
+    
+    setTimeout(() => {
+      logPieceCenters("1000ms Phase 2 Complete (Pieces counter-rotated)");
+      
+      // Stage 3: Pieces slide to target positions (1000ms -> 1500ms)
+      for (let i = 0; i < 32; i++) {
+        if (pieces[i].x !== 0 && startPositions[i].x !== 0) {
+          const startPos = startPositions[i];
+          const finalLogicalPos = {
+            x: 10 - startPos.x,
+            y: flipYCoordinate(startPos.y)
+          };
+          const axisStart = getAxis(startPos.x, startPos.y);
+          const axisEnd = getAxis(finalLogicalPos.x, finalLogicalPos.y);
+          const ratio = (i === 0 || i === 16) ? sizeKing : ((i === 1 || i === 2 || i === 17 || i === 18 || i === 3 || i === 4 || i === 19 || i === 20 || i === 5 || i === 6 || i === 21 || i === 22 || i === 7 || i === 8 || i === 23 || i === 24) ? sizeMiddle : sizeSmall);
+          const sizeVal = unitSize * ratio;
+          const ax = axisStart.x - sizeVal / 2;
+          const ay = axisStart.y - sizeVal / 2;
+          
+          const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
+          const dy = (boardHeight - axisEnd.y - axisStart.y) / 2;
+          
+          pieces[i].e.style.transform = `translate(${ax + 2 * dx}px, ${ay + 2 * dy}px) rotate(-180deg)`;
+        }
+      }
+      
+      if (cursor && kbCursorActive) {
+        const sizeVal = unitSize * 0.85;
+        const axisStart = getAxis(oldKbCursorX, oldKbCursorY);
+        const axisEnd = getAxis(10 - oldKbCursorX, flipYCoordinate(oldKbCursorY));
+        const ax = axisStart.x - sizeVal / 2;
+        const ay = axisStart.y - sizeVal / 2;
+        
+        const dx = (boardWidth - axisEnd.x - axisStart.x) / 2;
+        const dy = (boardHeight - axisEnd.y - axisStart.y) / 2;
+        
+        cursor.style.transform = `translate(${ax + 2 * dx}px, ${ay + 2 * dy}px) rotate(-180deg)`;
+      }
+      
+      setTimeout(() => {
+        logPieceCenters("1500ms Phase 3 Complete (Pieces slid to destination)");
+        
+        executeFlipBoardVertical();
+        
+        boardSvg.classList.remove("rotate-180-anim");
+        boardSvg.style.transformOrigin = "";
+        for (let i = 0; i < 32; i++) {
+          pieces[i].e.style.transformOrigin = "";
+          pieces[i].e.style.transform = "";
+          pieces[i].e.classList.remove("smooth-move-anim");
+        }
+        if (cursor) {
+          cursor.style.transformOrigin = "";
+          cursor.style.transform = "";
+          cursor.classList.remove("smooth-move-anim");
+        }
+        rotateActive = false;
+        
+        initPositions();
+        if (kbCursorActive) updateKeyboardCursor();
+        
+        logPieceCenters("1500ms+ Final Redraw Complete");
+        
+        boardAnimating = false;
+        
+        setTimeout(() => {
+          logPieceCenters("2000ms Settled State Check");
+        }, 500);
+      }, 500); // Phase 3 duration
+      
+    }, 500); // Phase 2 duration
+    
+  }, 500); // Phase 1 duration
+}
+
+function executeFlipBoardVertical() {
+  // 1. Flip and swap initPieces Y coordinates and X coordinates (0-15 <-> 16-31)
+  for (let i = 0; i < 16; i++) {
+    const p1 = initPieces[i];
+    const p2 = initPieces[i + 16];
+    
+    const y1Flipped = (p1.x !== 0 || p1.y !== 0) ? flipYCoordinate(p1.y) : p1.y;
+    const y2Flipped = (p2.x !== 0 || p2.y !== 0) ? flipYCoordinate(p2.y) : p2.y;
+    
+    const tempX = p1.x;
+    const tempY = y1Flipped;
+    
+    p1.x = p2.x;
+    p1.y = y2Flipped;
+    
+    p2.x = tempX;
+    p2.y = tempY;
+  }
+  // 2. Reset pieces to initPieces
+  for (let i = 0; i < 32; i++) {
+    pieces[i].x = initPieces[i].x;
+    pieces[i].y = initPieces[i].y;
+  }
+  // 3. Flip and swap log entries
+  log.forEach(entry => {
+    entry.y = flipYCoordinate(entry.y);
+    entry.i = (entry.i + 16) % 32;
+    if (entry.t !== 32) {
+      entry.t = (entry.t + 16) % 32;
+    }
+  });
+  // 4. Flip cursor position
+  kbCursorY = flipYCoordinate(kbCursorY);
+  
+  // 5. Clear select and candidates
+  curSelect = 32;
+  clearCandiBox();
+  
+  // Swap newGameState layouts vertically (bottom <-> top)
+  const tempLayout = newGameState[0];
+  newGameState[0] = newGameState[1];
+  newGameState[1] = tempLayout;
+  
+  // Mirror newGameState layouts horizontally (0 <-> 3, 1 <-> 1, 2 <-> 2)
+  const mirrorMap = { 0: 3, 1: 1, 2: 2, 3: 0 };
+  newGameState[0] = mirrorMap[newGameState[0]];
+  newGameState[1] = mirrorMap[newGameState[1]];
+  
+  syncCharimButtonStyles();
+  
+  // 6. Toggle iAmCho (the human plays the other team now, bottom side)
+  iAmCho = !iAmCho;
+  changeNation(iAmCho);
+  
+  // 7. AI takes the top side
+  if (aiMode !== 0) {
+    aiMode = 1;
+    localStorage.setItem("aiMode", aiMode);
+    const aiModeSelect = document.getElementById("ai-mode-select");
+    if (aiModeSelect) aiModeSelect.value = aiMode;
+  }
+  
+  // 8. Now apply the horizontal flip (automatically trigger [ horizontal flip effect)
+  // Flip X coords of initPieces
+  for (let i = 0; i < 32; i++) {
+    if (initPieces[i].x !== 0) {
+      initPieces[i].x = 10 - initPieces[i].x;
+    }
+  }
+  // Reset pieces to initPieces again
+  for (let i = 0; i < 32; i++) {
+    pieces[i].x = initPieces[i].x;
+    pieces[i].y = initPieces[i].y;
+  }
+  // Flip log entries X coords
+  log.forEach(entry => {
+    entry.x = 10 - entry.x;
+  });
+  // Flip cursor X
+  kbCursorX = 10 - kbCursorX;
+
+  // 9. Redraw
+  initPositions();
+  
+  // 10. Update URL search params to match new state
+  const url = new URL(window.location.href);
+  const pCodeArr = new Array(32);
+  for (let i = 0; i < 32; i++) {
+    pCodeArr[i] = `${initPieces[i].x}${initPieces[i].y}`;
+  }
+  url.searchParams.set("p", pCodeArr.join(""));
+  url.searchParams.set("cho", iAmCho ? "Y" : "N");
+  
+  const logStrArr = log.map(entry => {
+    return `${entry.i}${n2Az(entry.x)}${n2Az(entry.y)}${entry.t !== 32 ? entry.t : ""}`;
+  });
+  if (logStrArr.length > 0) {
+    url.searchParams.set("log", logStrArr.join(","));
+  }
+  window.history.replaceState({}, "", url.toString());
+
+  // Update record textbox UI immediately
+  updateRecordUI();
+
+  showToast("판 180도 회전 및 기존 수순 변환 완료 (AI 위쪽 자동 할당)");
+
+  // 11. Run AI if it's now the AI's turn
+  checkAndRunAI();
+}
+
+function toggleOpponentAI() {
+  if (aiMode !== 0) {
+    aiMode = 0;
+    showToast("상대 AI 모드 꺼짐");
+  } else {
+    aiMode = 1;
+    showToast("상대 AI 모드 켜짐 (AI가 위쪽에서 플레이)");
+  }
+  localStorage.setItem("aiMode", aiMode);
+  saveCurrentConfigToSlot();
+  
+  const aiModeSelect = document.getElementById("ai-mode-select");
+  if (aiModeSelect) aiModeSelect.value = aiMode;
+  
+  checkAndRunAI(true);
+}
+
+function requestAIHint() {
+  const turnEl = document.getElementById("turn");
+  if (!turnEl) return;
+  const curTurn = parseInt(turnEl.value, 10);
+  const isChoTurn = (curTurn % 2 === 0);
+  const isMyTurn = (isChoTurn === iAmCho);
+  
+  if (!isMyTurn) {
+    showToast("내 턴이 아닙니다. (훈수는 내 턴에만 가능)");
+    return;
+  }
+  
+  const myTeam = iAmCho ? "cho" : "han";
+  const bestMove = getBestAIMove(myTeam);
+  if (bestMove) {
+    showToast("AI 훈수 착수!");
+    move(bestMove.i, bestMove.x, bestMove.y);
+  } else {
+    showToast("추천할 수 있는 합법적인 수가 없습니다.");
+  }
+}
+
+function changeCommentDuration(val) {
+  commentDisplayDuration = parseInt(val, 10);
+  if (isNaN(commentDisplayDuration) || commentDisplayDuration < 0) {
+    commentDisplayDuration = 0;
+  }
+  const input = document.getElementById("comment-duration-input");
+  if (input) input.value = commentDisplayDuration;
+  saveCurrentConfigToSlot();
+  
+  updateCommentBubble();
+  showToast(`코멘트 표시 시간이 ${commentDisplayDuration === 0 ? "무제한" : commentDisplayDuration + "초"}으로 설정되었습니다.`);
+}
+
+function hideCommentBubble() {
+  const bubble = document.getElementById("comment-bubble");
+  if (bubble) bubble.style.display = "none";
+  if (commentBubbleTimeout) {
+    clearTimeout(commentBubbleTimeout);
+    commentBubbleTimeout = null;
+  }
+}
+
 // Bind to window to prevent module scoping issues
 window.rotateScorePanel = rotateScorePanel;
 window.setScoreSlide = setScoreSlide;
@@ -3370,5 +4880,78 @@ window.updateCurrentStepComment = updateCurrentStepComment;
 window.updateCommentBubble = updateCommentBubble;
 window.updateScoreboardSettings = updateScoreboardSettings;
 window.toggleMetadataCategory = toggleMetadataCategory;
+window.toggleSettingCategory = toggleSettingCategory;
+window.toggleAutoplay = toggleAutoplay;
+window.goToStart = goToStart;
+window.goToEnd = goToEnd;
+window.changeAutoplaySpeed = changeAutoplaySpeed;
+window.changeAutoplayUseAnim = changeAutoplayUseAnim;
+window.changeModalBgColor = changeModalBgColor;
+window.changeModalOpacity = changeModalOpacity;
+window.applyShortcutModalTheme = applyShortcutModalTheme;
+window.openShortcutModal = openShortcutModal;
+window.closeShortcutModal = closeShortcutModal;
+window.handleModalOverlayClick = handleModalOverlayClick;
+window.resetDefaultShortcuts = resetDefaultShortcuts;
+window.openCommentModal = openCommentModal;
+window.closeCommentModal = closeCommentModal;
+window.saveCommentModal = saveCommentModal;
+window.handleCommentModalOverlayClick = handleCommentModalOverlayClick;
+window.changeCommentBgColor = changeCommentBgColor;
+window.changeCommentOpacity = changeCommentOpacity;
+window.applyCommentBoxTheme = applyCommentBoxTheme;
+window.flipBoardHorizontal = flipBoardHorizontal;
+window.flipBoardVertical = flipBoardVertical;
+window.toggleOpponentAI = toggleOpponentAI;
+window.requestAIHint = requestAIHint;
+window.changeCommentDuration = changeCommentDuration;
+window.hideCommentBubble = hideCommentBubble;
+
+function normalizeLayoutCode(code, flipped) {
+  if (!flipped || !code || code.length !== 64) return code;
+  let coords = [];
+  for (let i = 0; i < 64; i += 2) {
+    coords.push({
+      x: parseInt(code[i], 10),
+      y: parseInt(code[i + 1], 10)
+    });
+  }
+  let normCoords = new Array(32);
+  for (let i = 0; i < 16; i++) {
+    const c1 = coords[i];
+    const c2 = coords[i + 16];
+    const y1Flipped = (c1.x !== 0 || c1.y !== 0) ? flipYCoordinate(c1.y) : c1.y;
+    const y2Flipped = (c2.x !== 0 || c2.y !== 0) ? flipYCoordinate(c2.y) : c2.y;
+    normCoords[i] = { x: c2.x, y: y2Flipped };
+    normCoords[i + 16] = { x: c1.x, y: y1Flipped };
+  }
+  for (let i = 0; i < 32; i++) {
+    if (normCoords[i].x !== 0) {
+      normCoords[i].x = 10 - normCoords[i].x;
+    }
+  }
+  let result = "";
+  for (let i = 0; i < 32; i++) {
+    result += `${normCoords[i].x}${normCoords[i].y}`;
+  }
+  return result;
+}
+
+function getStartingLayoutCode() {
+  let choIdx, hanIdx;
+  if (iAmCho) {
+    choIdx = newGameState[0];
+    hanIdx = newGameState[1];
+  } else {
+    // Flipped state: bottom team is Han (type is newGameState[0]), top team is Cho (type is newGameState[1]).
+    // But standard starting layout maps index 0 of knownStart to Cho, index 1 to Han.
+    // So Cho's standard index is newGameState[1], Han's standard index is newGameState[0].
+    choIdx = newGameState[1];
+    hanIdx = newGameState[0];
+  }
+  
+  let stdCode = knownStart[0][choIdx] + knownStart[1][hanIdx];
+  return normalizeLayoutCode(stdCode, !iAmCho);
+}
 
 initGame();
