@@ -1638,8 +1638,26 @@ window.SiteModules.Navigation = (function () {
   }
 
   function getPageKey(path) {
-    const cleanPath = path.startsWith('/') ? path.substring(1) : path;
-    const parts = cleanPath.replace('.html', '').split('/');
+    if (!path) return "@home";
+
+    // 1. 쿼리 파라미터 분리 제거
+    let cleanPath = path.split('?')[0];
+
+    // 2. 앞뒤 슬래시 정리 및 확장자 제거
+    if (cleanPath.startsWith('/')) cleanPath = cleanPath.substring(1);
+    if (cleanPath.endsWith('/')) cleanPath = cleanPath.substring(0, cleanPath.length - 1);
+    cleanPath = cleanPath.replace(/\.html?$/i, '');
+
+    // 3. 파일명이 'index' 인 경우 소프로젝트 범주로 취합하기 위해 떼어냄
+    const parts = cleanPath.split('/');
+    if (parts.length > 0 && parts[parts.length - 1].toLowerCase() === 'index') {
+      parts.pop();
+    }
+
+    if (parts.length === 0 || (parts.length === 1 && parts[0] === '')) {
+      return '@home';
+    }
+
     return '@' + parts.join('>');
   }
 
