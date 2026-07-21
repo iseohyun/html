@@ -6,7 +6,7 @@
       "[개선] 작은 프로젝트 > 베지어 시뮬레이터 : 표준 모듈화 아키텍처 개편 및 index.html 이관, 쿼리 리로드 깜빡임 제거, 해시 주소 보존형 실시간 URL 동기화, 좌표 눈금자(Ruler) 및 드래그 십자 가이드라인(Guideline) 제공, 제어점 추가 상한선 해제 (v1.0.3)",
       "[개선] 공통 모듈 : 주소창 변수 공유 페이지의 QnA 건의사항 수집 시 가변 쿼리(?p=...) 및 index 파일명을 제거하고 정규화된 문서 키(@small-project>Bezier 등)로 통합 적재하도록 getPageKey 알고리즘 개선 (v1.0.5)",
       "[개선] 공통 모듈 : hierarchy.json 상의 파일명이 누락된 단말/소프로젝트 노드에 대해 index.html을 디폴트로 보완 쿼리하게끔 파서 리팩토링 및 hierarchy.json 내의 중복 index.html 선언 일괄 소거 (v1.0.6)",
-      "[개선] 공통 모듈 : 수기 제곱근 및 유클리드 호제법 페이지의 SPA 렉시컬 스코프 격리(stepsData ReferenceError), 전역 let/const 및 GridInput 클래스 재선언으로 인한 SyntaxError 충돌 방어(EuclideanGridInput/SqrtGridInput 분리 격리), 페이지 전환 시 ResizeObserver/스크롤/리사이즈 이벤트 누수 일괄 클린업 구현 (v1.0.9)"
+      "[개선] 공통 모듈 : 수기 제곱근 및 유클리드 호제법 페이지의 SPA 렉시컬 스코프 격리(stepsData ReferenceError), 전역 let/const 및 GridInput 클래스 재선언으로 인한 SyntaxError 충돌 방어(EuclideanGridInput/SqrtGridInput 분리 격리), 페이지 전환 시 ResizeObserver/스크롤/리스너 누수 방지 및 이전 잔존 전역 함수(init 등) 일괄 소거 클린업 필터 장착 (v1.1.0)"
     ]
   },
   {
