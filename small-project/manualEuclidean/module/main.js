@@ -326,6 +326,8 @@ function initApp() {
       positionTooltip();
     });
     resizeObserver.observe(gridContainer);
+    window.activeResizeObservers = window.activeResizeObservers || [];
+    window.activeResizeObservers.push(resizeObserver);
   }
 
   // Bind settings reset all

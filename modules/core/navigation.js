@@ -606,6 +606,20 @@ window.SiteModules.Navigation = (function () {
     const article = document.querySelector("article");
     if (!article) return;
 
+    // SPA 페이지 전환 시 잔존하는 ResizeObserver 및 윈도우 스냅 리스너 일괄 청소
+    if (window.activeResizeObservers) {
+      window.activeResizeObservers.forEach(obs => {
+        try { obs.disconnect(); } catch (e) {}
+      });
+      window.activeResizeObservers = [];
+    }
+    if (window.activeWindowListeners) {
+      window.activeWindowListeners.forEach(item => {
+        try { window.removeEventListener(item.type, item.fn); } catch (e) {}
+      });
+      window.activeWindowListeners = [];
+    }
+
     try {
       const response = await fetch(urlPath);
       if (!response.ok) {

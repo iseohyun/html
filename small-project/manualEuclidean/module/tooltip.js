@@ -230,7 +230,7 @@ function guide() {
   const closeBtn = document.getElementById("tooltip-close-btn");
   if (prevBtn) prevBtn.disabled = (stateHistory.length <= 1);
 
-  const totalSteps = window.actions ? window.actions.length : stepsData.length;
+  const totalSteps = window.actions ? window.actions.length : (window.stepsData || stepsData).length;
   const isLastStep = (cur_step === totalSteps) || isFin;
   if (isLastStep) {
     if (nextBtn) nextBtn.classList.add("hidden");
@@ -260,8 +260,8 @@ function guide() {
 
 function positionTooltip() {
   const stepObj = (cur_step === 0)
-    ? stepsData[0]
-    : ((window.actions && window.actions[cur_step - 1]) ? window.actions[cur_step - 1] : stepsData[cur_step]);
+    ? (window.stepsData || stepsData)[0]
+    : ((window.actions && window.actions[cur_step - 1]) ? window.actions[cur_step - 1] : (window.stepsData || stepsData)[cur_step]);
   if (!stepObj) return;
 
   const targetCells = [];
