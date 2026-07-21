@@ -2,6 +2,9 @@
 ## Scope
 /small-project/manualEuclidean/**
 
+### [v1.0.7] - 2026-07-22
+- **GridInput 클래스 재선언 SyntaxError 해결**: 서로 다른 생성자 스펙을 가지는 `class GridInput`이 SPA 라우팅 간 중복 해석되어 SyntaxError를 유발하는 문제를 차단하기 위해, 글로벌 영역에 `EuclideanGridInput`으로 고유하게 선언 등록한 뒤 내부적으로 `GridInput`으로 바인딩하여 렉시컬 격리를 완성했습니다.
+
 ### [v1.0.6] - 2026-07-22
 - **전역 let/const 변수 var 치환 패치**: SPA 리로드 없이 페이지를 반복 전환해 진입할 때, 전역 렉시컬 스코프 변수(`max_line`, `inputs`, `V`, `stepsData` 등)가 중복 선언되어 브라우저 구문 오류(`SyntaxError: Identifier has already been declared`)를 일으키는 문제를 해결하기 위해, 모든 전역 let/const 선언을 var로 변환했습니다.
 
