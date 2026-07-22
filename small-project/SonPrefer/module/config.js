@@ -4,7 +4,7 @@
  */
 
 // UI DOM 요소 선택자 정의
-const SELECTORS = {
+var SELECTORS = {
   btnRun: '#btn-run',
   loadingSpinner: '#loading-spinner',
   loadingPercent: '#loading-percent',
@@ -30,7 +30,7 @@ const SELECTORS = {
 };
 
 // 차트 관련 상수 정의
-const CHART_CONFIG = {
+var CHART_CONFIG = {
   barWidth: 50,
   chartHeight: 300, // 그리드 기준 기본 높이
   animationIntervalMs: 10,
@@ -40,7 +40,7 @@ const CHART_CONFIG = {
 };
 
 // 시뮬레이션 및 애니메이션의 런타임 상태 객체
-const state = {
+var state = {
   // 시뮬레이션 누적 데이터
   simulationData: {
     sonPrefer: { male: 105, female: 100, totalBirths: 205, birthRate: 1.95 },

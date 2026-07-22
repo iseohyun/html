@@ -5,7 +5,7 @@
  */
 
 // 인라인 웹 워커 소스코드 정의 (파일 경로 404 방지용 Blob 이식)
-const SIMULATION_WORKER_CODE = `
+var SIMULATION_WORKER_CODE = `
 self.onmessage = function(e) {
   const { householdsCount, sexRatio } = e.data;
 
@@ -72,8 +72,8 @@ self.onmessage = function(e) {
 `;
 
 // Web Worker 및 Blob URL 인스턴스 홀더
-let simulationWorker = null;
-let activeWorkerUrl = null;
+var simulationWorker = null;
+var activeWorkerUrl = null;
 
 function initApp() {
   console.log('[Main] initApp() called. Document readyState:', document.readyState);
