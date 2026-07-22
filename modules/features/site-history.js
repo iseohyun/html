@@ -427,7 +427,8 @@ window.SiteModules.UpdateLog = (function() {
 
   // 계층 경로 찾기 함수
   function findPath(hierarchy, title, currentPath = "") {
-    const titles = title.split('>');
+    const cleanTitle = title.replace(/\s*\(\s*v\d+(?:\.\d+)*\s*\)/gi, "");
+    const titles = cleanTitle.split('>');
     let path = currentPath;
 
     for (const currentTitle of titles) {
