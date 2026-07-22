@@ -3,6 +3,9 @@
 ## Scope
 /small-project/Bezier/**
 
+### [v1.0.7] - 2026-07-22
+- **전역 let/const 변수 var 치환**: SPA 전환 시 `state`, `SELECTORS` 전역 상수가 재선언되면서 구문 오류(`SyntaxError`)를 내던 문제를 해결하기 위해, 모든 전역 let/const 선언을 var로 변환했습니다.
+
 ### [v1.0.6] - 2026-07-22
 - **index.html 파일명 생략 지원 및 hierarchy.json 정형화**: 사이드바 메뉴 및 사이트맵 계층 데이터를 담은 `hierarchy.json` 파싱 모듈들을 개편하여, `파일명` 속성이 기재되지 않은 단말/소프로젝트 항목들에 대해 자동으로 `index.html`을 참고하여 링크를 완성하도록 패치했습니다. 이와 동시에 `hierarchy.json` 데이터에서 불필요한 `"파일명": "index.html"` 중복 선언 줄들을 일괄 제거하여 구조적 가독성과 유지보수성을 끌어올렸습니다.
 

@@ -2,6 +2,9 @@
 ## Scope
 /small-project/manualEuclidean/**
 
+### [v1.0.8] - 2026-07-22
+- **전역 let/const 변수 var 치환 최종화**: `let resizeObserver`, `let phaseCEquations`, `let actions`, `const EXAMPLES` 등 잔존하던 모든 전역 렉시컬 변수를 var로 완벽히 교체하여 SPA 전환 구문 오류를 해소했습니다.
+
 ### [v1.0.7] - 2026-07-22
 - **GridInput 클래스 재선언 SyntaxError 해결**: 서로 다른 생성자 스펙을 가지는 `class GridInput`이 SPA 라우팅 간 중복 해석되어 SyntaxError를 유발하는 문제를 차단하기 위해, 글로벌 영역에 `EuclideanGridInput`으로 고유하게 선언 등록한 뒤 내부적으로 `GridInput`으로 바인딩하여 렉시컬 격리를 완성했습니다.
 
