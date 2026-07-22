@@ -2,6 +2,9 @@
 ## Scope
 /small-project/manualSqrt/**
 
+### [v1.2.4] - 2026-07-22
+- **전역 let/const 변수 var 치환 최종화**: 툴팁 및 연산 모듈 내에 잔존하던 `let isHidden` 등의 블록 변수를 var로 변경하여 SPA 환경의 구문 오류를 원천 박멸했습니다.
+
 ### [v1.2.3] - 2026-07-22
 - **GridInput 클래스 재선언 SyntaxError 해결**: 서로 다른 생성자 스펙을 가지는 `class GridInput`이 SPA 라우팅 간 중복 해석되어 SyntaxError를 유발하는 문제를 차단하기 위해, 글로벌 영역에 `SqrtGridInput`으로 고유하게 선언 등록한 뒤 내부적으로 `GridInput`으로 바인딩하여 렉시컬 격리를 완성했습니다. 또한 config.js 내부의 나머지 let/const 변수들을 var로 추가 개편했습니다.
 

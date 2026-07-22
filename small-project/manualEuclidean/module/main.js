@@ -309,7 +309,7 @@ function triggerRandomStart() {
 window.triggerRandomStart = triggerRandomStart;
 
 // Window resizing adjustments
-let resizeObserver;
+var resizeObserver;
 function initApp() {
   rebuildGrid();
 
