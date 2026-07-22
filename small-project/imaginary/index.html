@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="keywords" content="iseohyun, 복소평면, imaginary">
+  <meta name="author" content="iseohyun">
+  <title>복소평면 - iseohyun</title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+  <link rel="stylesheet" href="imaginary.css">
+</head>
+<body>
+  <div class="imaginary-container">
+    <!-- 에러 콘솔 탑재 (SPA 런타임 오류 실시간 투사용) -->
+    <div id="error-console" style="color: #ef4444; background: #fef2f2; border: 1px solid #fee2e2; padding: 12px; margin-bottom: 20px; border-radius: 8px; font-family: monospace; display: none; font-size: 0.9rem; line-height: 1.4;"></div>
+    <script>
+      window.onerror = function(message, source, lineno, colno, error) {
+        var consoleDiv = document.getElementById("error-console");
+        if (consoleDiv) {
+          consoleDiv.style.display = "block";
+          consoleDiv.innerHTML += `<div><strong>JS Error:</strong> ${message} <br><small>at ${source}:${lineno}:${colno}</small></div>`;
+        }
+        return false;
+      };
+    </script>
+
+    <article>
+      <div class="control-box">
+        <button id="play" style="width:5em">play</button>
+        Timer : <input id="t-value" type="range" min="0" max="1000" value="0">
+      </div>
+
+      <svg xmlns="http://www.w3.org/2000/svg" height="550px" width="100%">
+        <defs>
+          <marker id="ah1" markerWidth="10" markerHeight="10" viewBox="0 0 20 10" orient="auto">
+            <path d="M9 0L0 4 0 -4 9 0z" />
+          </marker>
+          <pattern id="Pat01" width="10" height="10" patternUnits="userSpaceOnUse">
+            <rect width="20" height="20" fill="#FFF" stroke="#eee" stroke-width="1" />
+          </pattern>
+        </defs>
+
+        <rect id="ground" x="0" y="0" fill="url(#Pat01)" />
+
+        <!-- 동심원 레이어 -->
+        <circle id="unit-circle0" r="100" fill="none" stroke="#eee" cx="0" cy="0" />
+        <circle id="unit-circle1" r="100" fill="none" stroke="#eee" cx="0" cy="0" />
+        <circle id="unit-circle2" r="100" fill="none" stroke="#eee" cx="0" cy="0" />
+        <circle id="unit-circle3" r="100" fill="none" stroke="#eee" cx="0" cy="0" />
+        <circle id="unit-circle4" r="100" fill="none" stroke="#ccc" cx="0" cy="0" />
+        <circle id="unit-circle5" r="100" fill="none" stroke="#eee" cx="0" cy="0" />
+        <circle id="unit-circle6" r="100" fill="none" stroke="#eee" cx="0" cy="0" />
+        <circle id="unit-circle7" r="100" fill="none" stroke="#eee" cx="0" cy="0" />
+        <circle id="unit-circle8" r="100" fill="none" stroke="#eee" cx="0" cy="0" />
+        <circle id="unit-circle9" r="100" fill="none" stroke="#ccc" cx="0" cy="0" />
+        <circle id="unit-circle10" r="100" fill="none" stroke="#eee" cx="0" cy="0" />
+        <circle id="unit-circle11" r="100" fill="none" stroke="#eee" cx="0" cy="0" />
+        <circle id="unit-circle12" r="100" fill="none" stroke="#eee" cx="0" cy="0" />
+        <circle id="unit-circle13" r="100" fill="none" stroke="#eee" cx="0" cy="0" />
+        <circle id="unit-circle14" r="100" fill="none" stroke="#ccc" cx="0" cy="0" />
+        <circle id="unit-circle15" r="100" fill="none" stroke="#eee" cx="0" cy="0" />
+
+        <!-- Phase 1: 닮음비 삼각형 및 각도 덧셈 꼬리물기 호 레이어 -->
+        <polygon id="triangle-base" class="triangle-base" />
+        <polygon id="triangle-result" class="triangle-result" />
+        <path id="chain-arc-path" class="chain-arc-path" fill="none" />
+
+        <!-- 보조 가이드 선 -->
+        <path id="control-path" stroke="#E8C48E" fill="none" />
+        <path id="angle-path" stroke="#E8C48E" fill="none" />
+        <path id="animate-path" stroke="red" fill="none" />
+        
+        <!-- 좌표축 선 -->
+        <path id="axis-x" fill="none" stroke="black" stroke-width="2" marker-end="url(#ah1)" />
+        <path id="axis-y" fill="none" stroke="black" stroke-width="2" marker-end="url(#ah1)" />
+
+        <circle id="cur-position" r="4" fill="red" cx="20" cy="20" />
+
+        <!-- 드래그 보조 정렬 십자 가이드라인 -->
+        <line id="guide-h" class="drag-guide-line" x1="0" y1="0" x2="100%" y2="0" />
+        <line id="guide-v" class="drag-guide-line" x1="0" y1="0" x2="0" y2="100%" />
+      </svg>
+    </article>
+  </div>
+
+  <!-- 의존성 순서대로 스크립트 모듈 로딩 -->
+  <script src="module/config.js"></script>
+  <script src="module/simulation.js"></script>
+  <script src="module/chart.js"></script>
+  <script src="module/main.js"></script>
+</body>
+</html>
