@@ -726,7 +726,12 @@ window.SiteModules.Navigation = (function () {
           };
         }
       } else {
-        newScript.textContent = oldScript.textContent;
+        // 일반 인라인 스크립트의 경우, const/let 재선언 SyntaxError를 방지하기 위해 IIFE로 래핑하여 실행
+        if (scriptType !== "module") {
+          newScript.textContent = `(function(){\n${oldScript.textContent}\n})();`;
+        } else {
+          newScript.textContent = oldScript.textContent;
+        }
         document.body.appendChild(newScript);
         // type=module 스크립트는 append 후에도 DOM에 남겨야 실행되므로 remove() 생략
         if (scriptType !== "module") newScript.remove();
