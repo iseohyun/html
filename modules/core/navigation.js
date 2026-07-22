@@ -626,7 +626,9 @@ window.SiteModules.Navigation = (function () {
       "cur_step", "cur_line", "language", "isFin", "isGreating", "stateHistory", "state",
       "EuclideanGridInput", "SqrtGridInput", "GridInput", "V", "titleText", "sentences",
       "activeCells", "clearGridRow", "highlightActiveStep", "nextStep", "prevStep", "initKeybindings",
-      "triggerRandomStart", "resetToStart"
+      "triggerRandomStart", "resetToStart",
+      "initChart", "redrawChart", "startChartAnimation", "drawBars", "updateChartRealtime",
+      "triggerMathRendering", "setupDualInputBindings", "handleRunSimulation", "cleanupActiveWorker", "updateResultUI"
     ];
     globalsToClean.forEach(key => {
       try { delete window[key]; } catch(e) {}
