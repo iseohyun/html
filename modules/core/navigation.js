@@ -696,7 +696,13 @@ window.SiteModules.Navigation = (function () {
         return;
       }
 
-      if (src && document.querySelector(`script[src="${src}"]`)) {
+      // 소프로젝트 하위의 페이지 종속 스크립트들은 재진입 시 항상 새로 실행하도록 기존 캐시 태그 노드 제거
+      if (src && (src.includes("/small-project/") || src.includes("/modules/features/"))) {
+        const existingScript = document.querySelector(`script[src="${src}"]`);
+        if (existingScript) {
+          existingScript.remove();
+        }
+      } else if (src && document.querySelector(`script[src="${src}"]`)) {
         return; // 이미 로드된 스크립트 실행 생략
       }
 
