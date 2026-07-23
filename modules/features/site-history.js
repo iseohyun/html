@@ -229,7 +229,12 @@ window.SiteModules.UpdateLog = (function() {
         .filter(update => {
           const uDate = parseDateString(update.date);
           const inRange = uDate >= startDate && uDate <= endDate;
-          const matchKeyword = keywords === "" || update.content.some(content => content.includes(keywords));
+          const items = update.updates || update.content || [];
+          const matchKeyword = keywords === "" || items.some(item => {
+            if (typeof item === 'string') return item.includes(keywords);
+            const str = `${item.type} ${item.projectName} ${item.summary || ''} ${item.version || ''}`;
+            return str.includes(keywords);
+          });
           return inRange && matchKeyword;
         })
         .sort((a, b) => parseDateString(b.date) - parseDateString(a.date));
@@ -247,11 +252,19 @@ window.SiteModules.UpdateLog = (function() {
 
         // data-tags 설정
         let tags = [];
-        update.content.forEach(content => {
-          if (content.includes("[신규]")) tags.push("new");
-          if (content.includes("[개선]")) tags.push("update");
-          if (content.includes("[bugfix]")) tags.push("bugfix");
-          if (content.includes("[동영상]")) tags.push("youtube");
+        const items = update.updates || update.content || [];
+        items.forEach(item => {
+          if (typeof item === 'string') {
+            if (item.includes("[신규]")) tags.push("new");
+            if (item.includes("[개선]")) tags.push("update");
+            if (item.includes("[bugfix]")) tags.push("bugfix");
+            if (item.includes("[동영상]")) tags.push("youtube");
+          } else {
+            if (item.type === "Added") tags.push("new");
+            if (item.type === "Changed") tags.push("update");
+            if (item.type === "Fixed") tags.push("bugfix");
+            if (item.type === "Removed") tags.push("removed");
+          }
         });
         listItem.setAttribute("data-tags", tags.join(" "));
 
@@ -268,11 +281,22 @@ window.SiteModules.UpdateLog = (function() {
           const ul = document.createElement("ul");
           ul.className = "recent-visit-list";
 
-          update.content.forEach(origContent => {
+          items.forEach(item => {
             const li = document.createElement("li");
             li.className = "recent-visit-item";
             
-            const formatted = formatSidebarContent(origContent, hierarchy);
+            let formatted;
+            if (typeof item === 'string') {
+              formatted = formatSidebarContent(item, hierarchy);
+            } else {
+              const tagLabel = item.type === "Added" ? "[신규]" : (item.type === "Fixed" ? "[bugfix]" : (item.type === "Removed" ? "[삭제]" : "[개선]"));
+              const ver = item.version ? ` (v${item.version})` : "";
+              const title = item.projectName + ver;
+              const path = item.projectPath || findPath(hierarchy, item.projectName);
+              const linkHtml = path ? `<a href='${path}'>${title}</a>` : title;
+              const summaryHtml = item.summary ? `: ${item.summary}` : "";
+              formatted = `${tagLabel} ${linkHtml}${summaryHtml}`;
+            }
             
             const linkWrapper = document.createElement("div");
             linkWrapper.className = "recent-visit-link-wrapper";
@@ -299,72 +323,25 @@ window.SiteModules.UpdateLog = (function() {
 
           const updateDiv = document.createElement("div");
 
-          let lastTag = "";
-          update.content.forEach(origContent => {
-            let content = origContent;
-
-            const match = content.match(/^(\[[^\]]+\])/);
-            if (match) {
-              lastTag = match[1];
+          items.forEach(item => {
+            let contentSpan = document.createElement("span");
+            if (typeof item === 'string') {
+              let content = item;
+              if (content.startsWith("[신규]")) contentSpan.className = "new";
+              else if (content.startsWith("[bugfix]")) contentSpan.className = "bugfix";
+              else if (content.startsWith("[개선]")) contentSpan.className = "modify";
+              contentSpan.className += " content";
+              contentSpan.innerHTML = formatSidebarContent(content, hierarchy);
+            } else {
+              const tagLabel = item.type === "Added" ? "[신규]" : (item.type === "Fixed" ? "[bugfix]" : (item.type === "Removed" ? "[삭제]" : "[개선]"));
+              contentSpan.className = item.type === "Added" ? "new content" : (item.type === "Fixed" ? "bugfix content" : "modify content");
+              const ver = item.version ? ` (v${item.version})` : "";
+              const title = item.projectName + ver;
+              const path = item.projectPath || findPath(hierarchy, item.projectName);
+              const linkHtml = path ? `<a href='${path}'>${title}</a>` : title;
+              const summaryHtml = item.summary ? `: ${item.summary}` : "";
+              contentSpan.innerHTML = `${tagLabel} ${linkHtml}${summaryHtml}`;
             }
-
-            const contentSpan = document.createElement("span");
-
-            if (content.startsWith("[신규]")) {
-              let endIndex = content.indexOf(":");
-              if (endIndex === -1) {
-                endIndex = content.length;
-              }
-              const title = content.substring(4, endIndex).trim();
-              const path = findPath(hierarchy, title);
-
-              if (path) {
-                let text = "[신규] <a href='" + path + "'>" + title + "</a>";
-                if (endIndex !== content.length) {
-                  text += ": " + content.substring(endIndex + 1).trim();
-                }
-                content = text;
-              }
-              contentSpan.className = "new";
-            } else if (content.startsWith("[동영상]")) {
-              contentSpan.className = "youtube";
-            } else if (content.startsWith("[bugfix]")) {
-              let endIndex = content.indexOf(":");
-              if (endIndex === -1) {
-                endIndex = content.length;
-              }
-              const title = content.substring(8, endIndex).trim();
-              const path = findPath(hierarchy, title);
-
-              if (path) {
-                let text = "[bugfix] <a href='" + path + "'>" + title + "</a>";
-                if (endIndex !== content.length) {
-                  text += ": " + content.substring(endIndex + 1).trim();
-                }
-                content = text;
-              }
-              contentSpan.className = "bugfix";
-            } else if (content.startsWith("[개선]")) {
-              let endIndex = content.indexOf(":");
-              if (endIndex === -1) {
-                endIndex = content.length;
-              }
-              const title = content.substring(4, endIndex).trim();
-              const path = findPath(hierarchy, title);
-
-              if (path) {
-                let text = "[개선] <a href='" + path + "'>" + title + "</a>";
-                if (endIndex !== content.length) {
-                  text += ": " + content.substring(endIndex + 1).trim();
-                }
-                content = text;
-              }
-
-              contentSpan.className = "modify";
-            }
-
-            contentSpan.className += " content";
-            contentSpan.innerHTML = content;
             updateDiv.appendChild(contentSpan);
           });
 
