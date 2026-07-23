@@ -12,7 +12,7 @@ An open-source interactive web application platform featuring educational conten
 .
 ├── index.html               # Main SPA portal entry point
 ├── hierarchy.json           # Unified navigation tree & category mapping
-├── update.json              # Structured project update logs
+├── changelog.json          # Structured project change history (Keep a Changelog)
 ├── CHANGELOG.md             # Standardized version history
 ├── LICENSE                  # Open source license
 │

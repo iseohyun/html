@@ -180,9 +180,10 @@ window.SiteModules.UpdateLog = (function() {
           <span class="filter-label">분류 선택</span>
           <div class="tag-btn-group">
             <button class="filter-btn" data-filter="tag-all">전체</button>
-            <button class="filter-btn" data-filter="tag-new">신규</button>
-            <button class="filter-btn" data-filter="tag-update">개선</button>
-            <button class="filter-btn" data-filter="tag-bugfix">Bugfix</button>
+            <button class="filter-btn" data-filter="tag-added">추가</button>
+            <button class="filter-btn" data-filter="tag-changed">수정</button>
+            <button class="filter-btn" data-filter="tag-fixed">개선</button>
+            <button class="filter-btn" data-filter="tag-removed">삭제</button>
           </div>
         </div>
       `;
@@ -210,7 +211,7 @@ window.SiteModules.UpdateLog = (function() {
 
     try {
       // JSON 데이터 가져오기 (async/await 사용)
-      const updatesResponse = await fetch("/update.json");
+      const updatesResponse = await fetch("/changelog.json");
       const updates = await updatesResponse.json();
 
       const hierarchyResponse = await fetch("/hierarchy.json");
@@ -255,14 +256,14 @@ window.SiteModules.UpdateLog = (function() {
         const items = update.updates || update.content || [];
         items.forEach(item => {
           if (typeof item === 'string') {
-            if (item.includes("[신규]")) tags.push("new");
-            if (item.includes("[개선]")) tags.push("update");
-            if (item.includes("[bugfix]")) tags.push("bugfix");
-            if (item.includes("[동영상]")) tags.push("youtube");
+            if (item.includes("[신규]") || item.includes("[추가]")) tags.push("added");
+            if (item.includes("[개선]") || item.includes("[수정]")) tags.push("changed");
+            if (item.includes("[bugfix]")) tags.push("fixed");
+            if (item.includes("[삭제]")) tags.push("removed");
           } else {
-            if (item.type === "Added") tags.push("new");
-            if (item.type === "Changed") tags.push("update");
-            if (item.type === "Fixed") tags.push("bugfix");
+            if (item.type === "Added") tags.push("added");
+            if (item.type === "Changed") tags.push("changed");
+            if (item.type === "Fixed") tags.push("fixed");
             if (item.type === "Removed") tags.push("removed");
           }
         });
@@ -289,7 +290,7 @@ window.SiteModules.UpdateLog = (function() {
             if (typeof item === 'string') {
               formatted = formatSidebarContent(item, hierarchy);
             } else {
-              const tagLabel = item.type === "Added" ? "[신규]" : (item.type === "Fixed" ? "[bugfix]" : (item.type === "Removed" ? "[삭제]" : "[개선]"));
+              const tagLabel = item.type === "Added" ? "[추가]" : (item.type === "Changed" ? "[수정]" : (item.type === "Fixed" ? "[개선]" : "[삭제]"));
               const ver = item.version ? ` (v${item.version})` : "";
               const title = item.projectName + ver;
               const path = item.projectPath || findPath(hierarchy, item.projectName);
@@ -327,14 +328,15 @@ window.SiteModules.UpdateLog = (function() {
             let contentSpan = document.createElement("span");
             if (typeof item === 'string') {
               let content = item;
-              if (content.startsWith("[신규]")) contentSpan.className = "new";
-              else if (content.startsWith("[bugfix]")) contentSpan.className = "bugfix";
-              else if (content.startsWith("[개선]")) contentSpan.className = "modify";
+              if (content.startsWith("[신규]") || content.startsWith("[추가]")) contentSpan.className = "added";
+              else if (content.startsWith("[bugfix]") || content.startsWith("[개선]")) contentSpan.className = "fixed";
+              else if (content.startsWith("[수정]")) contentSpan.className = "changed";
+              else if (content.startsWith("[삭제]")) contentSpan.className = "removed";
               contentSpan.className += " content";
               contentSpan.innerHTML = formatSidebarContent(content, hierarchy);
             } else {
-              const tagLabel = item.type === "Added" ? "[신규]" : (item.type === "Fixed" ? "[bugfix]" : (item.type === "Removed" ? "[삭제]" : "[개선]"));
-              contentSpan.className = item.type === "Added" ? "new content" : (item.type === "Fixed" ? "bugfix content" : "modify content");
+              const tagLabel = item.type === "Added" ? "[추가]" : (item.type === "Changed" ? "[수정]" : (item.type === "Fixed" ? "[개선]" : "[삭제]"));
+              contentSpan.className = item.type === "Added" ? "added content" : (item.type === "Changed" ? "changed content" : (item.type === "Fixed" ? "fixed content" : "removed content"));
               const ver = item.version ? ` (v${item.version})` : "";
               const title = item.projectName + ver;
               const path = item.projectPath || findPath(hierarchy, item.projectName);
