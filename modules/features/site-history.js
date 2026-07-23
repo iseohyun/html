@@ -103,9 +103,10 @@ window.SiteModules.UpdateLog = (function() {
         if (activeTag === 'all') {
           matchesTag = true;
         } else {
-          if (activeTag === 'new' && span.classList.contains('new')) matchesTag = true;
-          if (activeTag === 'update' && (span.classList.contains('update') || span.classList.contains('modify'))) matchesTag = true;
-          if (activeTag === 'bugfix' && span.classList.contains('bugfix')) matchesTag = true;
+          if (activeTag === 'added' && (span.classList.contains('added') || span.classList.contains('new'))) matchesTag = true;
+          if (activeTag === 'changed' && (span.classList.contains('changed') || span.classList.contains('modify') || span.classList.contains('update'))) matchesTag = true;
+          if (activeTag === 'fixed' && (span.classList.contains('fixed') || span.classList.contains('bugfix'))) matchesTag = true;
+          if (activeTag === 'removed' && span.classList.contains('removed')) matchesTag = true;
         }
 
         if (matchesTag) {
@@ -180,10 +181,10 @@ window.SiteModules.UpdateLog = (function() {
           <span class="filter-label">분류 선택</span>
           <div class="tag-btn-group">
             <button class="filter-btn" data-filter="tag-all">전체</button>
-            <button class="filter-btn" data-filter="tag-added">추가</button>
-            <button class="filter-btn" data-filter="tag-changed">수정</button>
-            <button class="filter-btn" data-filter="tag-fixed">개선</button>
-            <button class="filter-btn" data-filter="tag-removed">삭제</button>
+            <button class="filter-btn" data-filter="tag-added">✨ 추가</button>
+            <button class="filter-btn" data-filter="tag-changed">📝 수정</button>
+            <button class="filter-btn" data-filter="tag-fixed">🛠️ 개선</button>
+            <button class="filter-btn" data-filter="tag-removed">🗑️ 삭제</button>
           </div>
         </div>
       `;
@@ -290,13 +291,17 @@ window.SiteModules.UpdateLog = (function() {
             if (typeof item === 'string') {
               formatted = formatSidebarContent(item, hierarchy);
             } else {
-              const tagLabel = item.type === "Added" ? "[추가]" : (item.type === "Changed" ? "[수정]" : (item.type === "Fixed" ? "[개선]" : "[삭제]"));
+              const iconMap = { Added: "✨", Changed: "📝", Fixed: "🛠️", Removed: "🗑️" };
+              const labelMap = { Added: "추가", Changed: "수정", Fixed: "개선", Removed: "삭제" };
+              const icon = iconMap[item.type] || "📝";
+              const label = labelMap[item.type] || "수정";
+              const tagBadge = `<span class="changelog-badge ${item.type.toLowerCase()}" title="${label}">${icon} ${label}</span>`;
               const ver = item.version ? ` (v${item.version})` : "";
               const title = item.projectName + ver;
               const path = item.projectPath || findPath(hierarchy, item.projectName);
               const linkHtml = path ? `<a href='${path}'>${title}</a>` : title;
               const summaryHtml = item.summary ? `: ${item.summary}` : "";
-              formatted = `${tagLabel} ${linkHtml}${summaryHtml}`;
+              formatted = `${tagBadge} ${linkHtml}${summaryHtml}`;
             }
             
             const linkWrapper = document.createElement("div");
@@ -335,14 +340,18 @@ window.SiteModules.UpdateLog = (function() {
               contentSpan.className += " content";
               contentSpan.innerHTML = formatSidebarContent(content, hierarchy);
             } else {
-              const tagLabel = item.type === "Added" ? "[추가]" : (item.type === "Changed" ? "[수정]" : (item.type === "Fixed" ? "[개선]" : "[삭제]"));
-              contentSpan.className = item.type === "Added" ? "added content" : (item.type === "Changed" ? "changed content" : (item.type === "Fixed" ? "fixed content" : "removed content"));
+              const iconMap = { Added: "✨", Changed: "📝", Fixed: "🛠️", Removed: "🗑️" };
+              const labelMap = { Added: "추가", Changed: "수정", Fixed: "개선", Removed: "삭제" };
+              const icon = iconMap[item.type] || "📝";
+              const label = labelMap[item.type] || "수정";
+              const tagBadge = `<span class="changelog-badge ${item.type.toLowerCase()}" title="${label}">${icon} ${label}</span>`;
+              contentSpan.className = `${item.type.toLowerCase()} content`;
               const ver = item.version ? ` (v${item.version})` : "";
               const title = item.projectName + ver;
               const path = item.projectPath || findPath(hierarchy, item.projectName);
               const linkHtml = path ? `<a href='${path}'>${title}</a>` : title;
               const summaryHtml = item.summary ? `: ${item.summary}` : "";
-              contentSpan.innerHTML = `${tagLabel} ${linkHtml}${summaryHtml}`;
+              contentSpan.innerHTML = `${tagBadge} ${linkHtml}${summaryHtml}`;
             }
             updateDiv.appendChild(contentSpan);
           });
