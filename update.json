@@ -6,13 +6,15 @@
         "type": "Changed",
         "projectName": "남아선호사상 시뮬레이션",
         "version": "1.0.9",
-        "summary": "남아선호사상이 성비에 미치는 영향<br> - 대조군 교체(1가구 1자녀 → 2자녀)<br> -  디자인 변경(슬라이더 연동, Latex수식 표기, 숫자표기)<br> - 구조 개선으로 아주 큰 시뮬레이션 가능"
+        "summary": "남아선호사상이 성비에 미치는 영향<br> - 대조군 교체(1가구 1자녀 → 2자녀)<br> -  디자인 변경(슬라이더 연동, Latex수식 표기, 숫자표기)<br> - 구조 개선으로 아주 큰 시뮬레이션 가능",
+        "projectPath": "/small-project/SonPrefer/"
       },
       {
         "type": "Changed",
         "projectName": "베지어 시뮬레이터",
         "version": "1.0.3",
-        "summary": "- 좌표 눈금자(Ruler) 및 드래그 십자 가이드라인(Guideline) 제공<br> -  제어점 추가 상한선 해제"
+        "summary": "- 좌표 눈금자(Ruler) 및 드래그 십자 가이드라인(Guideline) 제공<br> -  제어점 추가 상한선 해제",
+        "projectPath": "/small-project/Bezier/"
       },
       {
         "type": "Fixed",
@@ -35,13 +37,15 @@
         "type": "Changed",
         "projectName": "웹 장기",
         "version": "1.5.3",
-        "summary": "- UI변경<br> - 구조개선<br> -  기보 저장기능 고도화(각종 메타데이터, 코멘트 지원)<br> -  단축키 지원<br> -  코멘트 편집기<br> -  점수판(스코어, 시간, 대국자 순차 표시), 낮은수준 인공지능 지원<br> -  키보드 이동 지원(선택방법지원), 자동재생 지원<br> -  외통수 판독<br> -  장기판 다양한 세팅(모양, 크기, 색)<br> -  좌표표시 on/off(장기협회기준)<br> -  상차림UI개선<br> -  기타 마이너 버그 제거"
+        "summary": "- UI변경<br> - 구조개선<br> -  기보 저장기능 고도화(각종 메타데이터, 코멘트 지원)<br> -  단축키 지원<br> -  코멘트 편집기<br> -  점수판(스코어, 시간, 대국자 순차 표시), 낮은수준 인공지능 지원<br> -  키보드 이동 지원(선택방법지원), 자동재생 지원<br> -  외통수 판독<br> -  장기판 다양한 세팅(모양, 크기, 색)<br> -  좌표표시 on/off(장기협회기준)<br> -  상차림UI개선<br> -  기타 마이너 버그 제거",
+        "projectPath": "/small-project/janggi/"
       },
       {
         "type": "Changed",
         "projectName": "수기로 유클리드 호제법",
         "version": "1.0.4",
-        "summary": "베주 항등식의 연산 과정을 시각화하는 웹 도구<br> -  디자인 개선<br> -  단축키 지원<br> -  테스트 기능 추가"
+        "summary": "베주 항등식의 연산 과정을 시각화하는 웹 도구<br> -  디자인 개선<br> -  단축키 지원<br> -  테스트 기능 추가",
+        "projectPath": "/small-project/manualEuclidean/"
       }
     ]
   },
@@ -52,7 +56,8 @@
         "type": "Changed",
         "projectName": "수기로 제곱근 구하기",
         "version": "1.2.0",
-        "summary": "-   디자인 개선<br> -  설명 업데이트<br> -  단축키 지원<br> -  퀴즈 추가"
+        "summary": "-   디자인 개선<br> -  설명 업데이트<br> -  단축키 지원<br> -  퀴즈 추가",
+        "projectPath": "/small-project/manualSqrt/"
       }
     ]
   },
@@ -62,7 +67,8 @@
       {
         "type": "Changed",
         "projectName": "카카오톡 시뮬레이터",
-        "summary": "카카오톡 대화 내보내기를 통해 받은 데이터를 재생하는 웹 프로그램"
+        "summary": "카카오톡 대화 내보내기를 통해 받은 데이터를 재생하는 웹 프로그램",
+        "projectPath": "/small-project/KakaoTalk/"
       }
     ]
   },
@@ -72,7 +78,8 @@
       {
         "type": "Changed",
         "projectName": "로또 시뮬레이터",
-        "summary": "실제 동행복권의 데이터로 시뮬, 여러 슬롯을 통해 시나리오별 결과 저장"
+        "summary": "실제 동행복권의 데이터로 시뮬, 여러 슬롯을 통해 시나리오별 결과 저장",
+        "projectPath": "/small-project/lotto/"
       }
     ]
   },
@@ -169,7 +176,8 @@
       {
         "type": "Added",
         "projectName": "일본어 글자 암기",
-        "summary": "글자의 소리를 들려주고, 이를 빠르게 맞추는 웹 프로그램"
+        "summary": "글자의 소리를 들려주고, 이를 빠르게 맞추는 웹 프로그램",
+        "projectPath": "/small-project/KanaLoop/"
       }
     ]
   },
@@ -206,7 +214,8 @@
       {
         "type": "Added",
         "projectName": "카카오톡 시뮬레이터",
-        "summary": "text입력을 카카오 대화방 형식의 svg파일로 만들어주는 페이지"
+        "summary": "text입력을 카카오 대화방 형식의 svg파일로 만들어주는 페이지",
+        "projectPath": "/small-project/KakaoTalk/"
       }
     ]
   },
@@ -403,12 +412,12 @@
       {
         "type": "Added",
         "projectName": "환경설정하기",
-        "projectPath": "/coding/Python/setup.html"
+        "projectPath": "/coding/java/setting.html"
       },
       {
         "type": "Added",
         "projectName": "시작하기",
-        "projectPath": "/coding/Python/start.html"
+        "projectPath": "/web-tech/html/domain.html"
       },
       {
         "type": "Added",
@@ -581,7 +590,8 @@
       {
         "type": "Added",
         "projectName": "남아선호사상 시뮬레이션",
-        "summary": "남아 선호사상이 인구비율에 미치는 영향을 시뮬레이션 합니다."
+        "summary": "남아 선호사상이 인구비율에 미치는 영향을 시뮬레이션 합니다.",
+        "projectPath": "/small-project/SonPrefer/"
       }
     ]
   },
@@ -590,7 +600,8 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "웹 장기"
+        "projectName": "웹 장기",
+        "projectPath": "/small-project/janggi/"
       }
     ]
   },
@@ -600,11 +611,13 @@
       {
         "type": "Added",
         "projectName": "베지어 시뮬레이터",
-        "summary": "베지어 곡선이 그려지는 과정을 애니메이션으로 보여줍니다."
+        "summary": "베지어 곡선이 그려지는 과정을 애니메이션으로 보여줍니다.",
+        "projectPath": "/small-project/Bezier/"
       },
       {
         "type": "Added",
-        "projectName": "복소평면 시뮬레이터"
+        "projectName": "복소평면 시뮬레이터",
+        "projectPath": "/small-project/imaginary/"
       }
     ]
   },
@@ -630,11 +643,12 @@
       {
         "type": "Added",
         "projectName": "폰트",
-        "projectPath": "/web-tech/CSS/font.html"
+        "projectPath": "/basicStudy/engineering/font/font.html"
       },
       {
         "type": "Added",
-        "projectName": "수기로 유클리드 호제법"
+        "projectName": "수기로 유클리드 호제법",
+        "projectPath": "/small-project/manualEuclidean/"
       }
     ]
   },
@@ -674,7 +688,7 @@
       {
         "type": "Changed",
         "projectName": "팁",
-        "projectPath": "/web-tech/Canvas/canvas6.html",
+        "projectPath": "/web-tech/html/tips.html",
         "summary": "clac, flex-grow"
       }
     ]
@@ -685,12 +699,13 @@
       {
         "type": "Added",
         "projectName": "수식입력기",
-        "summary": "latex 사용방법"
+        "summary": "latex 사용방법",
+        "projectPath": "/web-tech/LaTex/"
       },
       {
         "type": "Changed",
         "projectName": "팁",
-        "projectPath": "/web-tech/Canvas/canvas6.html",
+        "projectPath": "/web-tech/html/tips.html",
         "summary": "Casvas 스틸컷 다운로드 방법 추가"
       },
       {
@@ -713,7 +728,7 @@
       {
         "type": "Changed",
         "projectName": "팁",
-        "projectPath": "/web-tech/Canvas/canvas6.html",
+        "projectPath": "/web-tech/html/tips.html",
         "summary": "jQuery 사용법, css수정 및 참고 방법"
       }
     ]
@@ -747,7 +762,7 @@
       {
         "type": "Added",
         "projectName": "애니메이션",
-        "projectPath": "/web-tech/Canvas/canvas5.html"
+        "projectPath": "/web-tech/CSS/animation.html"
       }
     ]
   },
@@ -784,7 +799,7 @@
       {
         "type": "Added",
         "projectName": "기초문법",
-        "projectPath": "/coding/java/syntax.html"
+        "projectPath": "/web-tech/html/syntax.html"
       }
     ]
   },
@@ -804,7 +819,7 @@
       {
         "type": "Added",
         "projectName": "애니메이션",
-        "projectPath": "/web-tech/Canvas/canvas5.html"
+        "projectPath": "/web-tech/CSS/animation.html"
       }
     ]
   }
