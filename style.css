@@ -1981,3 +1981,41 @@ article a:hover {
   background-color: #f1f3f4;
   color: #d93025;
 }
+
+/* Changelog Badge Styles */
+.changelog-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 0.78em;
+  font-weight: 600;
+  line-height: 1.2;
+  margin-right: 6px;
+  user-select: none;
+}
+
+.changelog-badge.added {
+  background-color: #e6f4ea;
+  color: #137333;
+  border: 1px solid #ceebe1;
+}
+
+.changelog-badge.changed {
+  background-color: #e8f0fe;
+  color: #1a73e8;
+  border: 1px solid #d2e3fc;
+}
+
+.changelog-badge.fixed {
+  background-color: #fef7e0;
+  color: #b06000;
+  border: 1px solid #fce8b2;
+}
+
+.changelog-badge.removed {
+  background-color: #fce8e6;
+  color: #c5221f;
+  border: 1px solid #fad2cf;
+}
