@@ -12,7 +12,7 @@
 .
 ├── index.html               # 메인 SPA 포털 엔트리 포인트
 ├── hierarchy.json           # 통합 메뉴 트리 및 카테고리 매핑 구조
-├── update.json              # 프로젝트 업데이트 이력 데이터
+├── changelog.json          # 프로젝트 변경 이력 데이터 (Keep a Changelog)
 ├── CHANGELOG.md             # 표준 버전 변경 이력 (Keep a Changelog)
 ├── LICENSE                  # 오픈소스 라이선스
 │
