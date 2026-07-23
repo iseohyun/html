@@ -4,29 +4,25 @@
     "updates": [
       {
         "type": "Changed",
-        "projectName": "작은 프로젝트 > 남아선호사상 시뮬레이션",
-        "projectPath": "",
+        "projectName": "남아선호사상 시뮬레이션",
         "version": "1.0.9",
         "summary": "남아선호사상이 성비에 미치는 영향<br> - 대조군 교체(1가구 1자녀 → 2자녀)<br> -  디자인 변경(슬라이더 연동, Latex수식 표기, 숫자표기)<br> - 구조 개선으로 아주 큰 시뮬레이션 가능"
       },
       {
         "type": "Changed",
-        "projectName": "작은 프로젝트 > 베지어 시뮬레이터",
-        "projectPath": "",
+        "projectName": "베지어 시뮬레이터",
         "version": "1.0.3",
         "summary": "- 좌표 눈금자(Ruler) 및 드래그 십자 가이드라인(Guideline) 제공<br> -  제어점 추가 상한선 해제"
       },
       {
         "type": "Fixed",
         "projectName": "공통 모듈",
-        "projectPath": "",
         "version": "1.1.3",
         "summary": "소프로젝트 간 무작위 이동 시 발생하는 SPA 렉시컬 충돌 및 메모리 누수 방지<br> - 전역 let/const 및 클래스를 var/window 브릿지로 치환하여 SyntaxError 원천 차단<br> - 인라인 스크립트를 즉시 실행 함수(IIFE)로 감싸는 렉시컬 샌드박싱 도입<br> - 페이지 이탈 시 ResizeObserver 및 윈도우 리스너 누수 방지 클린업 연동<br> - 이전 잔존 전역 함수(init 등) 소거 필터 구축 및 스크립트 강제 재평가(Re-evaluation)로 렌더링 동결 버그 해결"
       },
       {
         "type": "Changed",
         "projectName": "공통 모듈",
-        "projectPath": "",
         "version": "1.1.3",
         "summary": "업데이트 로그 버전 정보 무시 처리<br> - 업데이트 내역 프로젝트명 뒤에 버전 괄호 (vX.Y.Z)가 명세되더라도, 바로가기 경로 탐색(findPath) 시 버전명을 안전하게 무시/제거 매칭하도록 정제 규칙 탑재"
       }
@@ -37,15 +33,13 @@
     "updates": [
       {
         "type": "Changed",
-        "projectName": "작은 프로젝트 > 웹 장기",
-        "projectPath": "",
+        "projectName": "웹 장기",
         "version": "1.5.3",
         "summary": "- UI변경<br> - 구조개선<br> -  기보 저장기능 고도화(각종 메타데이터, 코멘트 지원)<br> -  단축키 지원<br> -  코멘트 편집기<br> -  점수판(스코어, 시간, 대국자 순차 표시), 낮은수준 인공지능 지원<br> -  키보드 이동 지원(선택방법지원), 자동재생 지원<br> -  외통수 판독<br> -  장기판 다양한 세팅(모양, 크기, 색)<br> -  좌표표시 on/off(장기협회기준)<br> -  상차림UI개선<br> -  기타 마이너 버그 제거"
       },
       {
         "type": "Changed",
-        "projectName": "작은 프로젝트 > 수기로 유클리드 호제법",
-        "projectPath": "",
+        "projectName": "수기로 유클리드 호제법",
         "version": "1.0.4",
         "summary": "베주 항등식의 연산 과정을 시각화하는 웹 도구<br> -  디자인 개선<br> -  단축키 지원<br> -  테스트 기능 추가"
       }
@@ -56,8 +50,7 @@
     "updates": [
       {
         "type": "Changed",
-        "projectName": "작은 프로젝트 > 수기로 제곱근 구하기",
-        "projectPath": "",
+        "projectName": "수기로 제곱근 구하기",
         "version": "1.2.0",
         "summary": "-   디자인 개선<br> -  설명 업데이트<br> -  단축키 지원<br> -  퀴즈 추가"
       }
@@ -68,8 +61,7 @@
     "updates": [
       {
         "type": "Changed",
-        "projectName": "작은 프로젝트 > 카카오톡 시뮬레이터",
-        "projectPath": "",
+        "projectName": "카카오톡 시뮬레이터",
         "summary": "카카오톡 대화 내보내기를 통해 받은 데이터를 재생하는 웹 프로그램"
       }
     ]
@@ -79,8 +71,7 @@
     "updates": [
       {
         "type": "Changed",
-        "projectName": "작은 프로젝트 > 로또 시뮬레이터",
-        "projectPath": "",
+        "projectName": "로또 시뮬레이터",
         "summary": "실제 동행복권의 데이터로 시뮬, 여러 슬롯을 통해 시나리오별 결과 저장"
       }
     ]
@@ -90,7 +81,7 @@
     "updates": [
       {
         "type": "Changed",
-        "projectName": "작은 프로젝트 > 플로우 차트",
+        "projectName": "플로우 차트",
         "projectPath": "/small-project/FlowChart/FlowChart.html",
         "summary": "코드를 분석해서 플로우차트를 그리는 js모듈"
       }
@@ -101,7 +92,7 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "작은 프로젝트 > 색상 파레트 추출기",
+        "projectName": "색상 파레트 추출기",
         "projectPath": "/small-project/UniPalette/UniPalette.html",
         "summary": "다양한 알고리즘을 바탕으로 색상환에서 N개의 색상을 균일한 간격으로 추출하는 웹 프로그램"
       }
@@ -112,7 +103,7 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "작은 프로젝트 > 초고속 무손실 영상 분할기",
+        "projectName": "초고속 무손실 영상 분할기",
         "projectPath": "/small-project/mp4-trim/mp4-trim.html",
         "summary": "고화질 영상도 빠르게 분할하는 파이썬 Standalone 프로그램"
       }
@@ -123,7 +114,7 @@
     "updates": [
       {
         "type": "Fixed",
-        "projectName": "작은 프로젝트 > 유튜브 광고 자동 건너뛰기",
+        "projectName": "유튜브 광고 자동 건너뛰기",
         "projectPath": "/small-project/youtube_skip/youtube_skip.html",
         "summary": "기존 배속모드에서 YouTube경고 팝업이 생김(정책위반). 정속, 정책 준수의 방향으로 진행하도록 변경(v1.2.0 beta)"
       }
@@ -135,18 +126,15 @@
       {
         "type": "Changed",
         "projectName": "홈 화면 개선",
-        "projectPath": "",
         "summary": "List삭제, History 필터기능"
       },
       {
         "type": "Added",
-        "projectName": "홈 페이지 검색기능(전체검색, Tag검색, 제목검색)",
-        "projectPath": ""
+        "projectName": "홈 페이지 검색기능(전체검색, Tag검색, 제목검색)"
       },
       {
         "type": "Added",
-        "projectName": "홈 페이지 방문기록 관리(서버저장)",
-        "projectPath": ""
+        "projectName": "홈 페이지 방문기록 관리(서버저장)"
       }
     ]
   },
@@ -155,14 +143,13 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "작은 프로젝트 > 유튜브 광고 자동 건너뛰기",
+        "projectName": "유튜브 광고 자동 건너뛰기",
         "projectPath": "/small-project/youtube_skip/youtube_skip.html",
         "summary": "크롬 확장 프로그램"
       },
       {
         "type": "Changed",
-        "projectName": "모든 페이지 하단에 QnA폼 삽입. help(❓)에서 모든 QnA확인 가능",
-        "projectPath": ""
+        "projectName": "모든 페이지 하단에 QnA폼 삽입. help(❓)에서 모든 QnA확인 가능"
       }
     ]
   },
@@ -172,7 +159,6 @@
       {
         "type": "Changed",
         "projectName": "Alt",
-        "projectPath": "",
         "summary": "단축키 보이기 / 1 ~ 5 : 각 메뉴 열기/닫기"
       }
     ]
@@ -182,8 +168,7 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "작은 프로젝트 > 일본어 글자 암기",
-        "projectPath": "",
+        "projectName": "일본어 글자 암기",
         "summary": "글자의 소리를 들려주고, 이를 빠르게 맞추는 웹 프로그램"
       }
     ]
@@ -193,14 +178,13 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "작은 프로젝트 > 플로우 차트 > 플로우 차트",
+        "projectName": "플로우 차트",
         "projectPath": "/small-project/FlowChart/FlowChart.html",
         "summary": "코드를 플로우 차트로 그려주는 페이지"
       },
       {
         "type": "Added",
-        "projectName": "작은 프로젝트 > 플로우 차트 > 개발자 노트",
-        "projectPath": "",
+        "projectName": "개발자 노트",
         "summary": "코드 구성 설명"
       }
     ]
@@ -210,7 +194,7 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "작은 프로젝트 > 신년계획",
+        "projectName": "신년계획",
         "projectPath": "/small-project/newyear/chart.html",
         "summary": "신년 목표를 설정하고, 목표 달성을 그래프로 그려주는 페이지"
       }
@@ -221,8 +205,7 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "작은 프로젝트 > 카카오톡 시뮬레이터",
-        "projectPath": "",
+        "projectName": "카카오톡 시뮬레이터",
         "summary": "text입력을 카카오 대화방 형식의 svg파일로 만들어주는 페이지"
       }
     ]
@@ -232,19 +215,19 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "기초학문 > 기초공학 > git > 구조",
+        "projectName": "구조",
         "projectPath": "/coding/tools/git/structure.html",
         "summary": "object관리 비결, 조회 방법등 소개"
       },
       {
         "type": "Added",
-        "projectName": "기초학문 > 기초공학 > git > 협업",
+        "projectName": "협업",
         "projectPath": "/coding/tools/git/branch.html",
         "summary": "branch전략, merge시나리오 소개"
       },
       {
         "type": "Added",
-        "projectName": "기초학문 > 기초공학 > git > 문제 해결",
+        "projectName": "문제 해결",
         "projectPath": "/coding/tools/git/trouble.html",
         "summary": "사용 중 갈등상황 제시와 해결방법 소개"
       }
@@ -255,18 +238,15 @@
     "updates": [
       {
         "type": "Fixed",
-        "projectName": "링크색 통일(#44F)",
-        "projectPath": ""
+        "projectName": "링크색 통일(#44F)"
       },
       {
         "type": "Changed",
-        "projectName": "좌상단 interface page 추가(_blank), info page iframe",
-        "projectPath": ""
+        "projectName": "좌상단 interface page 추가(_blank), info page iframe"
       },
       {
         "type": "Fixed",
-        "projectName": "update 링크에러 개선(update.json 오류)",
-        "projectPath": ""
+        "projectName": "update 링크에러 개선(update.json 오류)"
       }
     ]
   },
@@ -275,28 +255,23 @@
     "updates": [
       {
         "type": "Fixed",
-        "projectName": "문서 제목과 목차의 문서의 제목을 일치",
-        "projectPath": ""
+        "projectName": "문서 제목과 목차의 문서의 제목을 일치"
       },
       {
         "type": "Fixed",
-        "projectName": "board를 닫을 때, site 아무곳이나 클릭하면 닫히도록 설정",
-        "projectPath": ""
+        "projectName": "board를 닫을 때, site 아무곳이나 클릭하면 닫히도록 설정"
       },
       {
         "type": "Changed",
-        "projectName": "header에서 title을 누르면 site-map이 열리도록 설정",
-        "projectPath": ""
+        "projectName": "header에서 title을 누르면 site-map이 열리도록 설정"
       },
       {
         "type": "Fixed",
-        "projectName": "board에서 site-map과 content를 toggle하는 아이콘 부여(↻)",
-        "projectPath": ""
+        "projectName": "board에서 site-map과 content를 toggle하는 아이콘 부여(↻)"
       },
       {
         "type": "Fixed",
-        "projectName": "document.title을 수동으로 작성해야 했던 문제(일부 불일치)",
-        "projectPath": ""
+        "projectName": "document.title을 수동으로 작성해야 했던 문제(일부 불일치)"
       }
     ]
   },
@@ -305,25 +280,21 @@
     "updates": [
       {
         "type": "Changed",
-        "projectName": "업데이트 소식 노출",
-        "projectPath": ""
+        "projectName": "업데이트 소식 노출"
       },
       {
         "type": "Changed",
         "projectName": "iseohyun.com(대문)",
-        "projectPath": "",
         "summary": "최근 10개 노출"
       },
       {
         "type": "Changed",
         "projectName": "info페이지",
-        "projectPath": "",
         "summary": "2023-01-01부터 노출"
       },
       {
         "type": "Changed",
         "projectName": "info페이지",
-        "projectPath": "",
         "summary": "기간별 검색, 키워드 검색, 카테고리별 필터 기능"
       }
     ]
@@ -333,45 +304,37 @@
     "updates": [
       {
         "type": "Changed",
-        "projectName": "iseohyun.com 리뉴얼",
-        "projectPath": ""
+        "projectName": "iseohyun.com 리뉴얼"
       },
       {
         "type": "Changed",
         "projectName": "칼럼폴더가 비대해지는 문제",
-        "projectPath": "",
         "summary": "칼럼, 작은 프로젝트, 기초공학으로 분류"
       },
       {
         "type": "Changed",
-        "projectName": "목차 보이기 토글(페이지 아무곳에서 더블클릭)",
-        "projectPath": ""
+        "projectName": "목차 보이기 토글(페이지 아무곳에서 더블클릭)"
       },
       {
         "type": "Changed",
         "projectName": "목차 토글",
-        "projectPath": "",
         "summary": "전체 목차 <-> 문서 목차(목차에서 문서명 클릭시, 예: 페이지 이름이 '기초문법'이라면, '기초문법'클릭)"
       },
       {
         "type": "Changed",
-        "projectName": "헤더(머릿말)에서 이전 문서, 다음 문서 링크 추가",
-        "projectPath": ""
+        "projectName": "헤더(머릿말)에서 이전 문서, 다음 문서 링크 추가"
       },
       {
         "type": "Changed",
-        "projectName": "code highlight을 2번 로딩하는 문제 개선",
-        "projectPath": ""
+        "projectName": "code highlight을 2번 로딩하는 문제 개선"
       },
       {
         "type": "Changed",
-        "projectName": "문단(p) 들여쓰기에 사이띄기가 있던 문제 수정",
-        "projectPath": ""
+        "projectName": "문단(p) 들여쓰기에 사이띄기가 있던 문제 수정"
       },
       {
         "type": "Changed",
-        "projectName": "Git예시가 ..-example에서 ..-tutorial로 변경",
-        "projectPath": ""
+        "projectName": "Git예시가 ..-example에서 ..-tutorial로 변경"
       }
     ]
   },
@@ -380,13 +343,13 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "기초학문 > 기초공학 > git > 기초 사용법",
+        "projectName": "기초 사용법",
         "projectPath": "/coding/tools/git/init.html",
         "summary": "Git의 컨셉, 간단한 사용방법 소개"
       },
       {
         "type": "Added",
-        "projectName": "기초학문 > 기초공학 > git > 서버와 클라이언트",
+        "projectName": "서버와 클라이언트",
         "projectPath": "/coding/tools/git/clone.html",
         "summary": "Git 업로드/다운로드, Github 사용 방법"
       }
@@ -397,7 +360,7 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "칼럼 > 홀덤 > 확률과 전술",
+        "projectName": "확률과 전술",
         "projectPath": "/column/holdem/winning-strategy.html",
         "summary": "홀덤 승률 계산 코딩 소개"
       }
@@ -408,7 +371,7 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "칼럼 > 홀덤 > 기본규칙",
+        "projectName": "기본규칙",
         "projectPath": "/column/holdem/holdem.html",
         "summary": "홀덤 용어정리, 핸드랭킹 소개"
       }
@@ -420,7 +383,6 @@
       {
         "type": "Changed",
         "projectName": "<a href='https",
-        "projectPath": "",
         "summary": "//www.youtube.com/watch?v=GfJZ5bzvUPY'> 코딩 > python > 시작하기</a>"
       }
     ]
@@ -431,7 +393,6 @@
       {
         "type": "Changed",
         "projectName": "<a href='https",
-        "projectPath": "",
         "summary": "//www.youtube.com/watch?v=wbN2wQdO3zY'> 코딩 > python > 환경설정하기</a>"
       }
     ]
@@ -441,27 +402,27 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "코딩 > Python > 환경설정하기",
+        "projectName": "환경설정하기",
         "projectPath": "/coding/Python/setup.html"
       },
       {
         "type": "Added",
-        "projectName": "코딩 > Python > 시작하기",
+        "projectName": "시작하기",
         "projectPath": "/coding/Python/start.html"
       },
       {
         "type": "Added",
-        "projectName": "코딩 > Python > 로직구성",
+        "projectName": "로직구성",
         "projectPath": "/coding/Python/logic.html"
       },
       {
         "type": "Added",
-        "projectName": "코딩 > Python > 예외",
+        "projectName": "예외",
         "projectPath": "/coding/Python/exception.html"
       },
       {
         "type": "Added",
-        "projectName": "코딩 > Python > 객체",
+        "projectName": "객체",
         "projectPath": "/coding/Python/object.html",
         "summary": "총 5강[완]"
       }
@@ -473,7 +434,6 @@
       {
         "type": "Changed",
         "projectName": "상단메뉴에 \"예제코드 보이기/감추기\"버튼이 활성화(예제코드가 있는 문서에 한함, 예",
-        "projectPath": "",
         "summary": "문서화 > Javascript > 기초문법 )"
       }
     ]
@@ -483,13 +443,12 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "기초학문 > 기초공학 > VScode > 에밋",
+        "projectName": "에밋",
         "projectPath": "/coding/tools/vscode/emmet.html"
       },
       {
         "type": "Changed",
-        "projectName": "quote, blockquote, code블럭에 hover이벤트시 \"COPY\"레이블이 표시되고 클릭하면 클립보드에 복사됨",
-        "projectPath": ""
+        "projectName": "quote, blockquote, code블럭에 hover이벤트시 \"COPY\"레이블이 표시되고 클릭하면 클립보드에 복사됨"
       }
     ]
   },
@@ -498,12 +457,11 @@
     "updates": [
       {
         "type": "Changed",
-        "projectName": "매 페이지 우측 상단, 최근 수정 날짜 업데이트",
-        "projectPath": ""
+        "projectName": "매 페이지 우측 상단, 최근 수정 날짜 업데이트"
       },
       {
         "type": "Added",
-        "projectName": "기초학문 > 기초공학 > VScode > VScode시작하기",
+        "projectName": "VScode시작하기",
         "projectPath": "/coding/tools/vscode/start.html"
       }
     ]
@@ -513,13 +471,11 @@
     "updates": [
       {
         "type": "Changed",
-        "projectName": "iseohyun.com 리뉴얼",
-        "projectPath": ""
+        "projectName": "iseohyun.com 리뉴얼"
       },
       {
         "type": "Changed",
-        "projectName": "폴더 구조 개선, 디자인 개선",
-        "projectPath": ""
+        "projectName": "폴더 구조 개선, 디자인 개선"
       }
     ]
   },
@@ -528,7 +484,7 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "코딩 > Java > GUI 프로그래밍",
+        "projectName": "GUI 프로그래밍",
         "projectPath": "/coding/java/window.html",
         "summary": "Java 기초 6강 [완]"
       }
@@ -539,19 +495,17 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "코딩 > Java > 라이브러리",
+        "projectName": "라이브러리",
         "projectPath": "/coding/java/library.html",
         "summary": "표준 라이브러리 메서드 예제 및 설명"
       },
       {
         "type": "Changed",
-        "projectName": "기존 Java 강의노트 링크 및 형식 변경",
-        "projectPath": ""
+        "projectName": "기존 Java 강의노트 링크 및 형식 변경"
       },
       {
         "type": "Changed",
-        "projectName": "코딩 언어별(C, Java, Python) 환경 재현 영상 업로드",
-        "projectPath": ""
+        "projectName": "코딩 언어별(C, Java, Python) 환경 재현 영상 업로드"
       }
     ]
   },
@@ -560,17 +514,17 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "코딩 > C > 클래스, 템플릿",
+        "projectName": "클래스, 템플릿",
         "projectPath": "/coding/C/class.html"
       },
       {
         "type": "Added",
-        "projectName": "코딩 > C > 예외처리, 네임스페이스 외",
+        "projectName": "예외처리, 네임스페이스 외",
         "projectPath": "/coding/C/exception.html"
       },
       {
         "type": "Added",
-        "projectName": "코딩 > C > 윈도우 프로그래밍",
+        "projectName": "윈도우 프로그래밍",
         "projectPath": "/coding/C/windows.html"
       }
     ]
@@ -580,7 +534,7 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "코딩 > C > C예약어",
+        "projectName": "C예약어",
         "projectPath": "/coding/C/reserved.html"
       }
     ]
@@ -590,7 +544,7 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "코딩 > C > 포인터, 구조체",
+        "projectName": "포인터, 구조체",
         "projectPath": "/coding/C/pointer.html"
       }
     ]
@@ -600,7 +554,7 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "코딩 > C > 함수",
+        "projectName": "함수",
         "projectPath": "/coding/C/function.html"
       }
     ]
@@ -610,13 +564,13 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "칼럼 > 숫자 접두어",
+        "projectName": "숫자 접두어",
         "projectPath": "/column/prefix/prefix.html",
         "summary": "그리수, 라틴 숫자 접두어와 달력의 유래 설명"
       },
       {
         "type": "Added",
-        "projectName": "코딩 > C > 제어문",
+        "projectName": "제어문",
         "projectPath": "/coding/C/control.html"
       }
     ]
@@ -626,8 +580,7 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "작은 프로젝트 > 남아선호사상 시뮬레이션",
-        "projectPath": "",
+        "projectName": "남아선호사상 시뮬레이션",
         "summary": "남아 선호사상이 인구비율에 미치는 영향을 시뮬레이션 합니다."
       }
     ]
@@ -637,8 +590,7 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "작은 프로젝트 > 웹 장기",
-        "projectPath": ""
+        "projectName": "웹 장기"
       }
     ]
   },
@@ -647,14 +599,12 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "작은 프로젝트 > 베지어 시뮬레이터",
-        "projectPath": "",
+        "projectName": "베지어 시뮬레이터",
         "summary": "베지어 곡선이 그려지는 과정을 애니메이션으로 보여줍니다."
       },
       {
         "type": "Added",
-        "projectName": "작은 프로젝트 > 복소평면 시뮬레이터",
-        "projectPath": ""
+        "projectName": "복소평면 시뮬레이터"
       }
     ]
   },
@@ -663,14 +613,13 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "작은 프로젝트 > 퀴즈",
+        "projectName": "퀴즈",
         "projectPath": "/small-project/quiz/board.html",
         "summary": "나머지 문제 자동 출제 밎 자동 풀이(Ongoing prject, 현재 비활성화)"
       },
       {
         "type": "Added",
         "projectName": "자동출제",
-        "projectPath": "",
         "summary": "출제 패턴을 기억하고 상수를 조정하여 답을 도출합니다."
       }
     ]
@@ -680,13 +629,12 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "칼럼 > 글자 > 폰트",
+        "projectName": "폰트",
         "projectPath": "/web-tech/CSS/font.html"
       },
       {
         "type": "Added",
-        "projectName": "작은 프로젝트 > 수기로 유클리드 호제법",
-        "projectPath": ""
+        "projectName": "수기로 유클리드 호제법"
       }
     ]
   },
@@ -695,17 +643,17 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "기초학문 > 기초수학 > 삼각함수 > sin법칙",
+        "projectName": "sin법칙",
         "projectPath": "/basicStudy/math/sin/law_sin.html"
       },
       {
         "type": "Added",
-        "projectName": "기초학문 > 기초수학 > 삼각함수 > cos법칙",
+        "projectName": "cos법칙",
         "projectPath": "/basicStudy/math/sin/law_cos.html"
       },
       {
         "type": "Added",
-        "projectName": "기초학문 > 기초수학 > 삼각함수 > sin 반각 배각 법칙",
+        "projectName": "sin 반각 배각 법칙",
         "projectPath": "/basicStudy/math/sin/sin addition.html"
       }
     ]
@@ -715,7 +663,7 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "칼럼 > 베지어 곡선",
+        "projectName": "베지어 곡선",
         "projectPath": "/basicStudy/engineering/bezier/bezier.html"
       }
     ]
@@ -725,7 +673,7 @@
     "updates": [
       {
         "type": "Changed",
-        "projectName": "문서화 > CSS > 팁",
+        "projectName": "팁",
         "projectPath": "/web-tech/Canvas/canvas6.html",
         "summary": "clac, flex-grow"
       }
@@ -736,20 +684,18 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "문서화 > 수식입력기",
-        "projectPath": "",
+        "projectName": "수식입력기",
         "summary": "latex 사용방법"
       },
       {
         "type": "Changed",
-        "projectName": "문서화 > 캔버스 > 팁",
+        "projectName": "팁",
         "projectPath": "/web-tech/Canvas/canvas6.html",
         "summary": "Casvas 스틸컷 다운로드 방법 추가"
       },
       {
         "type": "Changed",
-        "projectName": "CSS font특성 및 온라인 폰트를 추가, Snap추가",
-        "projectPath": ""
+        "projectName": "CSS font특성 및 온라인 폰트를 추가, Snap추가"
       }
     ]
   },
@@ -758,17 +704,15 @@
     "updates": [
       {
         "type": "Changed",
-        "projectName": "google analysis 모든 페이지 삽입",
-        "projectPath": ""
+        "projectName": "google analysis 모든 페이지 삽입"
       },
       {
         "type": "Fixed",
-        "projectName": "2중 폴더 구조에서 헤더가 비정삭적으로 동작하는 문제",
-        "projectPath": ""
+        "projectName": "2중 폴더 구조에서 헤더가 비정삭적으로 동작하는 문제"
       },
       {
         "type": "Changed",
-        "projectName": "문서화 > Javascript > 팁",
+        "projectName": "팁",
         "projectPath": "/web-tech/Canvas/canvas6.html",
         "summary": "jQuery 사용법, css수정 및 참고 방법"
       }
@@ -779,25 +723,21 @@
     "updates": [
       {
         "type": "Changed",
-        "projectName": "google analysis를 이용한 page view추가",
-        "projectPath": ""
+        "projectName": "google analysis를 이용한 page view추가"
       },
       {
         "type": "Changed",
         "projectName": "info page",
-        "projectPath": "",
         "summary": "사이트 소개, 업데이트 소식, 저작권 방침"
       },
       {
         "type": "Changed",
         "projectName": "헤더 생성",
-        "projectPath": "",
         "summary": "스크롤 올리면 등장, 내리면 숨김"
       },
       {
         "type": "Changed",
-        "projectName": "방명록 삭제",
-        "projectPath": ""
+        "projectName": "방명록 삭제"
       }
     ]
   },
@@ -806,7 +746,7 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "문서화 > SVG > 애니메이션",
+        "projectName": "애니메이션",
         "projectPath": "/web-tech/Canvas/canvas5.html"
       }
     ]
@@ -816,18 +756,15 @@
     "updates": [
       {
         "type": "Changed",
-        "projectName": "검색 기능 추가,",
-        "projectPath": ""
+        "projectName": "검색 기능 추가,"
       },
       {
         "type": "Changed",
-        "projectName": "javascript 함수 페이지를 '함수'와 '변수'로 분리",
-        "projectPath": ""
+        "projectName": "javascript 함수 페이지를 '함수'와 '변수'로 분리"
       },
       {
         "type": "Fixed",
-        "projectName": "cache-control추가",
-        "projectPath": ""
+        "projectName": "cache-control추가"
       }
     ]
   },
@@ -836,7 +773,7 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "문서화 > Javascript > 객체 접근",
+        "projectName": "객체 접근",
         "projectPath": "/web-tech/Javascript/elements.html"
       }
     ]
@@ -846,7 +783,7 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "문서화 > Javascript > 기초문법",
+        "projectName": "기초문법",
         "projectPath": "/coding/java/syntax.html"
       }
     ]
@@ -856,7 +793,7 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "문서화 > CSS > 다양한 효과",
+        "projectName": "다양한 효과",
         "projectPath": "/web-tech/CSS/gallery.html"
       }
     ]
@@ -866,7 +803,7 @@
     "updates": [
       {
         "type": "Added",
-        "projectName": "문서화 > CSS > 애니메이션",
+        "projectName": "애니메이션",
         "projectPath": "/web-tech/Canvas/canvas5.html"
       }
     ]
