@@ -196,6 +196,7 @@
         "summary": "코드 구성 설명"
       }
     ]
+  },
   {
     "date": "2025-1-4",
     "updates": [
@@ -612,12 +613,6 @@
   {
     "date": "2023-3-19",
     "updates": [
-      {
-        "type": "Added",
-        "projectName": "퀴즈",
-        "projectPath": "/small-project/quiz/board.html",
-        "summary": "나머지 문제 자동 출제 밎 자동 풀이(Ongoing prject, 현재 비활성화)"
-      },
       {
         "type": "Added",
         "projectName": "자동출제",
