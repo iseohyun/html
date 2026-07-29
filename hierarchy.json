@@ -396,23 +396,6 @@
             "주제": "정규표현식",
             "디렉토리": "regularExpress/",
             "파일명": "regularExpress.html"
-          },
-          {
-            "주제": "File Format",
-            "디렉토리": "fileformat/",
-            "display": "hidden",
-            "목록": [
-              {
-                "주제": "표준문서",
-                "디렉토리": "",
-                "파일명": "standard.html"
-              },
-              {
-                "주제": "json",
-                "디렉토리": "",
-                "파일명": "json.html"
-              }
-            ]
           }
         ]
       }
@@ -793,12 +776,6 @@
         ]
       },
       {
-        "주제": "수학 역사",
-        "디렉토리": "mathStory/",
-        "파일명": "mathStory.html",
-        "display": "hidden"
-      },
-      {
         "주제": "수영",
         "디렉토리": "swimming/",
         "목록": [
@@ -887,44 +864,9 @@
         "디렉토리": "SonPrefer/"
       },
       {
-        "주제": "빙고",
-        "디렉토리": "Bingo/",
-        "파일명": "Bingo.html"
-      },
-      {
         "주제": "유튜브 광고 자동 건너뛰기",
         "디렉토리": "youtube_skip/",
         "파일명": "youtube_skip.html"
-      },
-      {
-        "주제": "선물꾸러미",
-        "디렉토리": "giftlist/",
-        "파일명": "giftlist.html",
-        "display": "hidden"
-      },
-      {
-        "주제": "계산기",
-        "디렉토리": "Calc1/",
-        "파일명": "calc.html",
-        "display": "hidden"
-      },
-      {
-        "주제": "숫자 맞추기",
-        "디렉토리": "GuessNumber/",
-        "파일명": "GuessNumber.html",
-        "display": "hidden"
-      },
-      {
-        "주제": "음악맞추기",
-        "디렉토리": "guessMusic/",
-        "파일명": "guessMusic.html",
-        "display": "hidden"
-      },
-      {
-        "주제": "퀴즈",
-        "디렉토리": "quiz/",
-        "파일명": "board.html",
-        "display": "hidden"
       }
     ]
   }
