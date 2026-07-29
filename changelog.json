@@ -89,7 +89,7 @@
       {
         "type": "Changed",
         "projectName": "플로우 차트",
-        "projectPath": "/small-project/FlowChart/FlowChart.html",
+        "projectPath": "/small-project/FlowChart/index.html",
         "summary": "코드를 분석해서 플로우차트를 그리는 js모듈"
       }
     ]
@@ -100,7 +100,7 @@
       {
         "type": "Added",
         "projectName": "색상 파레트 추출기",
-        "projectPath": "/small-project/UniPalette/UniPalette.html",
+        "projectPath": "/small-project/UniPalette/index.html",
         "summary": "다양한 알고리즘을 바탕으로 색상환에서 N개의 색상을 균일한 간격으로 추출하는 웹 프로그램"
       }
     ]
@@ -111,7 +111,7 @@
       {
         "type": "Added",
         "projectName": "초고속 무손실 영상 분할기",
-        "projectPath": "/small-project/mp4-trim/mp4-trim.html",
+        "projectPath": "/small-project/mp4-trim/index.html",
         "summary": "고화질 영상도 빠르게 분할하는 파이썬 Standalone 프로그램"
       }
     ]
@@ -122,7 +122,7 @@
       {
         "type": "Fixed",
         "projectName": "유튜브 광고 자동 건너뛰기",
-        "projectPath": "/small-project/youtube_skip/youtube_skip.html",
+        "projectPath": "/small-project/youtube_skip/index.html",
         "summary": "기존 배속모드에서 YouTube경고 팝업이 생김(정책위반). 정속, 정책 준수의 방향으로 진행하도록 변경(v1.2.0 beta)"
       }
     ]
@@ -151,7 +151,7 @@
       {
         "type": "Added",
         "projectName": "유튜브 광고 자동 건너뛰기",
-        "projectPath": "/small-project/youtube_skip/youtube_skip.html",
+        "projectPath": "/small-project/youtube_skip/index.html",
         "summary": "크롬 확장 프로그램"
       },
       {
@@ -187,7 +187,7 @@
       {
         "type": "Added",
         "projectName": "플로우 차트",
-        "projectPath": "/small-project/FlowChart/FlowChart.html",
+        "projectPath": "/small-project/FlowChart/index.html",
         "summary": "코드를 플로우 차트로 그려주는 페이지"
       },
       {
