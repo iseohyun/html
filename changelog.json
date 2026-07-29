@@ -196,18 +196,6 @@
         "summary": "코드 구성 설명"
       }
     ]
-  },
-  {
-    "date": "2025-1-5",
-    "updates": [
-      {
-        "type": "Added",
-        "projectName": "신년계획",
-        "projectPath": "/small-project/newyear/chart.html",
-        "summary": "신년 목표를 설정하고, 목표 달성을 그래프로 그려주는 페이지"
-      }
-    ]
-  },
   {
     "date": "2025-1-4",
     "updates": [
