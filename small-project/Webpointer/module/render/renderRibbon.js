@@ -302,55 +302,33 @@
         return '<option value="' + fName + '" ' + isSel + '>' + fName + '</option>';
       }).join('');
 
+      var isBoldActive = (curFontWeight === 'bold' || parseInt(curFontWeight, 10) >= 600);
+      var isItalicActive = (curFontStyle === 'italic' || curFontStyle === 'oblique');
+
+      var boldBtnHtml =
+        '<button class="tool-btn ' + (isBoldActive ? 'active' : '') + '" onclick="toggleTextBold()" onmousedown="startHoldWeight(event, this)" onmouseup="endHoldWeight()" onmouseleave="endHoldWeight()" style="width:34px; height:34px; font-weight:bold; font-size:1.1rem; font-family:serif;">' +
+          'B' +
+          '<span class="tooltip-text">글자 두께 (클릭: Bold, 길게누르기: 100~900)</span>' +
+        '</button>';
+
+      var italicBtnHtml =
+        '<button class="tool-btn ' + (isItalicActive ? 'active' : '') + '" onclick="toggleTextItalic()" onmousedown="startHoldStyle(event, this)" onmouseup="endHoldStyle()" onmouseleave="endHoldStyle()" style="width:34px; height:34px; font-style:italic; font-size:1.1rem; font-family:serif;">' +
+          'I' +
+          '<span class="tooltip-text">글자 기울임 (클릭: Italic, 길게누르기: 옵션)</span>' +
+        '</button>';
+
       var fontOptionsHtml =
         '<div style="display:flex; flex-direction:row; align-items:center; gap:8px;">' +
           '<div style="display:flex; flex-direction:column; gap:4px;">' +
             '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
-              '<select onfocus="fetchLocalSystemFonts()" onchange="setTextFontFamily(this.value)" style="max-width:140px; padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px;">' +
+              '<select onfocus="fetchLocalSystemFonts()" onchange="setTextFontFamily(this.value)" style="max-width:130px; padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px;">' +
                 fontOptionsStr +
               '</select>' +
-            '</div>' +
-            '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
-              '<label style="font-size:0.75rem; color:#475569; font-weight:600;">크기:</label>' +
               '<input type="number" min="8" max="200" value="' + curFontSize + '" oninput="setTextFontSize(this.value)" onchange="setTextFontSize(this.value)" style="width:45px; padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px; text-align:center;">' +
-              '<select onchange="setTextFontSize(this.value)" style="padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px;">' +
-                '<option value="12" ' + (curFontSize==12?'selected':'') + '>12</option>' +
-                '<option value="14" ' + (curFontSize==14?'selected':'') + '>14</option>' +
-                '<option value="16" ' + (curFontSize==16?'selected':'') + '>16</option>' +
-                '<option value="18" ' + (curFontSize==18?'selected':'') + '>18</option>' +
-                '<option value="20" ' + (curFontSize==20?'selected':'') + '>20</option>' +
-                '<option value="24" ' + (curFontSize==24?'selected':'') + '>24</option>' +
-                '<option value="28" ' + (curFontSize==28?'selected':'') + '>28</option>' +
-                '<option value="32" ' + (curFontSize==32?'selected':'') + '>32</option>' +
-                '<option value="36" ' + (curFontSize==36?'selected':'') + '>36</option>' +
-                '<option value="48" ' + (curFontSize==48?'selected':'') + '>48</option>' +
-                '<option value="72" ' + (curFontSize==72?'selected':'') + '>72</option>' +
-              '</select>' +
-            '</div>' +
-          '</div>' +
-          '<div style="width:1px; height:48px; background:#cbd5e1; margin:0 4px;"></div>' +
-          '<div style="display:flex; flex-direction:column; gap:4px;">' +
-            '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
-              '<label style="font-size:0.75rem; color:#475569; font-weight:600;">두께:</label>' +
-              '<select onchange="setTextFontWeight(this.value)" style="padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px;">' +
-                '<option value="100" ' + (curFontWeight=='100'?'selected':'') + '>100 (Thin)</option>' +
-                '<option value="200" ' + (curFontWeight=='200'?'selected':'') + '>200 (Extra Light)</option>' +
-                '<option value="300" ' + (curFontWeight=='300'?'selected':'') + '>300 (Light)</option>' +
-                '<option value="400" ' + (curFontWeight=='400' || curFontWeight=='normal'?'selected':'') + '>400 (Normal)</option>' +
-                '<option value="500" ' + (curFontWeight=='500'?'selected':'') + '>500 (Medium)</option>' +
-                '<option value="600" ' + (curFontWeight=='600'?'selected':'') + '>600 (Semi Bold)</option>' +
-                '<option value="700" ' + (curFontWeight=='700' || curFontWeight=='bold'?'selected':'') + '>700 (Bold)</option>' +
-                '<option value="800" ' + (curFontWeight=='800'?'selected':'') + '>800 (Extra Bold)</option>' +
-                '<option value="900" ' + (curFontWeight=='900'?'selected':'') + '>900 (Black)</option>' +
-              '</select>' +
             '</div>' +
             '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
-              '<label style="font-size:0.75rem; color:#475569; font-weight:600;">기울임:</label>' +
-              '<select onchange="setTextFontStyle(this.value)" style="padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px;">' +
-                '<option value="normal" ' + (curFontStyle==='normal'?'selected':'') + '>Normal (보통)</option>' +
-                '<option value="italic" ' + (curFontStyle==='italic'?'selected':'') + '>Italic (이탤릭)</option>' +
-                '<option value="oblique" ' + (curFontStyle==='oblique'?'selected':'') + '>Oblique (사선)</option>' +
-              '</select>' +
+              boldBtnHtml +
+              italicBtnHtml +
             '</div>' +
           '</div>' +
           '<div style="width:1px; height:48px; background:#cbd5e1; margin:0 4px;"></div>' +

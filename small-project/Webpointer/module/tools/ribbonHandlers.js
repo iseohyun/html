@@ -259,6 +259,134 @@
     });
   }
 
+  var holdTimer = null;
+
+  function toggleTextBold() {
+    if (state.holdTriggered) {
+      state.holdTriggered = false;
+      return;
+    }
+    var current = cfg.fontWeight || 'normal';
+    var isBold = (current === 'bold' || parseInt(current, 10) >= 600);
+    var nextWeight = isBold ? 'normal' : 'bold';
+    setTextFontWeight(nextWeight);
+  }
+
+  function toggleTextItalic() {
+    if (state.holdTriggered) {
+      state.holdTriggered = false;
+      return;
+    }
+    var current = cfg.fontStyle || 'normal';
+    var isItalic = (current === 'italic' || current === 'oblique');
+    var nextStyle = isItalic ? 'normal' : 'italic';
+    setTextFontStyle(nextStyle);
+  }
+
+  function startHoldWeight(e, btnEl) {
+    state.holdTriggered = false;
+    clearTimeout(holdTimer);
+    holdTimer = setTimeout(function() {
+      state.holdTriggered = true;
+      showWeightSelectPopup(btnEl);
+    }, 400);
+  }
+
+  function endHoldWeight() {
+    clearTimeout(holdTimer);
+  }
+
+  function showWeightSelectPopup(btnEl) {
+    var old = document.getElementById('weightPopupSelect');
+    if (old) old.remove();
+
+    var sel = document.createElement('select');
+    sel.id = 'weightPopupSelect';
+    sel.style.cssText = 'position:fixed; z-index:99999; font-size:0.78rem; padding:4px; border:1px solid #0284c7; border-radius:4px; background:#ffffff; box-shadow:0 4px 12px rgba(0,0,0,0.15); outline:none;';
+    var rect = btnEl.getBoundingClientRect();
+    sel.style.left = rect.left + 'px';
+    sel.style.top = (rect.bottom + 2) + 'px';
+
+    var weights = [
+      { v: '100', l: '100 (Thin)' },
+      { v: '200', l: '200 (Extra Light)' },
+      { v: '300', l: '300 (Light)' },
+      { v: '400', l: '400 (Normal)' },
+      { v: '500', l: '500 (Medium)' },
+      { v: '600', l: '600 (Semi Bold)' },
+      { v: '700', l: '700 (Bold)' },
+      { v: '800', l: '800 (Extra Bold)' },
+      { v: '900', l: '900 (Black)' }
+    ];
+
+    var cur = cfg.fontWeight || '400';
+    sel.innerHTML = weights.map(function(w) {
+      var selected = (cur == w.v || (cur === 'bold' && w.v === '700') || (cur === 'normal' && w.v === '400')) ? 'selected' : '';
+      return '<option value="' + w.v + '" ' + selected + '>' + w.l + '</option>';
+    }).join('');
+
+    sel.onchange = function() {
+      setTextFontWeight(sel.value);
+      sel.remove();
+    };
+
+    sel.onblur = function() {
+      setTimeout(function() { if (sel.parentElement) sel.remove(); }, 150);
+    };
+
+    document.body.appendChild(sel);
+    sel.focus();
+  }
+
+  function startHoldStyle(e, btnEl) {
+    state.holdTriggered = false;
+    clearTimeout(holdTimer);
+    holdTimer = setTimeout(function() {
+      state.holdTriggered = true;
+      showStyleSelectPopup(btnEl);
+    }, 400);
+  }
+
+  function endHoldStyle() {
+    clearTimeout(holdTimer);
+  }
+
+  function showStyleSelectPopup(btnEl) {
+    var old = document.getElementById('stylePopupSelect');
+    if (old) old.remove();
+
+    var sel = document.createElement('select');
+    sel.id = 'stylePopupSelect';
+    sel.style.cssText = 'position:fixed; z-index:99999; font-size:0.78rem; padding:4px; border:1px solid #0284c7; border-radius:4px; background:#ffffff; box-shadow:0 4px 12px rgba(0,0,0,0.15); outline:none;';
+    var rect = btnEl.getBoundingClientRect();
+    sel.style.left = rect.left + 'px';
+    sel.style.top = (rect.bottom + 2) + 'px';
+
+    var styles = [
+      { v: 'normal', l: 'Normal (보통)' },
+      { v: 'italic', l: 'Italic (이탤릭)' },
+      { v: 'oblique', l: 'Oblique (사선)' }
+    ];
+
+    var cur = cfg.fontStyle || 'normal';
+    sel.innerHTML = styles.map(function(s) {
+      var selected = (cur === s.v) ? 'selected' : '';
+      return '<option value="' + s.v + '" ' + selected + '>' + s.l + '</option>';
+    }).join('');
+
+    sel.onchange = function() {
+      setTextFontStyle(sel.value);
+      sel.remove();
+    };
+
+    sel.onblur = function() {
+      setTimeout(function() { if (sel.parentElement) sel.remove(); }, 150);
+    };
+
+    document.body.appendChild(sel);
+    sel.focus();
+  }
+
   async function fetchLocalSystemFonts() {
     if ('queryLocalFonts' in window) {
       try {
@@ -291,6 +419,12 @@
   window.setTextFontStyle = setTextFontStyle;
   window.setTextLineHeight = setTextLineHeight;
   window.fetchLocalSystemFonts = fetchLocalSystemFonts;
+  window.toggleTextBold = toggleTextBold;
+  window.toggleTextItalic = toggleTextItalic;
+  window.startHoldWeight = startHoldWeight;
+  window.endHoldWeight = endHoldWeight;
+  window.startHoldStyle = startHoldStyle;
+  window.endHoldStyle = endHoldStyle;
   window.setTool = setTool;
   window.setStrokeColor = setStrokeColor;
   window.setFillColor = setFillColor;
@@ -331,6 +465,12 @@
     setTextFontWeight: setTextFontWeight,
     setTextFontStyle: setTextFontStyle,
     setTextLineHeight: setTextLineHeight,
-    fetchLocalSystemFonts: fetchLocalSystemFonts
+    fetchLocalSystemFonts: fetchLocalSystemFonts,
+    toggleTextBold: toggleTextBold,
+    toggleTextItalic: toggleTextItalic,
+    startHoldWeight: startHoldWeight,
+    endHoldWeight: endHoldWeight,
+    startHoldStyle: startHoldStyle,
+    endHoldStyle: endHoldStyle
   };
 })(window);
