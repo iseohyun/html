@@ -41,7 +41,7 @@
       else if (param > 1) { xx = x2; yy = y2; }
       else { xx = x1 + param * C; yy = y1 + param * D; }
       return Math.hypot(px - xx, py - yy);
-    } else if (obj.type === 'rect' || obj.type === 'rounded') {
+    } else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'image') {
       var rx = a.x, ry = a.y, rw = a.width, rh = a.height;
       if (px >= rx && px <= rx + rw && py >= ry && py <= ry + rh) return 0;
       var dx = Math.max(rx - px, 0, px - (rx + rw));

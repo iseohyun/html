@@ -97,7 +97,7 @@
     } else if (obj.type === 'line') {
       minX = Math.min(a.x1, a.x2); maxX = Math.max(a.x1, a.x2);
       minY = Math.min(a.y1, a.y2); maxY = Math.max(a.y1, a.y2);
-    } else if (obj.type === 'rect' || obj.type === 'rounded') {
+    } else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'image') {
       minX = a.x; maxX = a.x + a.width;
       minY = a.y; maxY = a.y + a.height;
     } else if (obj.type === 'text') {
@@ -152,7 +152,7 @@
     } else if (obj.type === 'line') {
       a.x1 += deltaX; a.y1 += deltaY;
       a.x2 += deltaX; a.y2 += deltaY;
-    } else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'text') {
+    } else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'text' || obj.type === 'image') {
       a.x += deltaX; a.y += deltaY;
     } else if (obj.type === 'bez2' || obj.type === 'bez3') {
       if (a.points && a.points.length > 0) {
@@ -210,7 +210,7 @@
       var pL2 = rotatePoint(a.x2, a.y2, deg);
       a.x1 = pL1.x; a.y1 = pL1.y;
       a.x2 = pL2.x; a.y2 = pL2.y;
-    } else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'text') {
+    } else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'text' || obj.type === 'image') {
       var rectCenter = { x: a.x + (a.width || 80) / 2, y: a.y + (a.height || 24) / 2 };
       var pRectC = rotatePoint(rectCenter.x, rectCenter.y, deg);
       var oldW = a.width || 80;
@@ -255,7 +255,7 @@
     if (dir === 'H') {
       if (obj.type === 'point' || obj.type === 'ellipse' || obj.type === 'arc') a.cx = 2 * cx - a.cx;
       else if (obj.type === 'line') { a.x1 = 2 * cx - a.x1; a.x2 = 2 * cx - a.x2; }
-      else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'text') a.x = 2 * cx - (a.x + (a.width || 80));
+      else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'text' || obj.type === 'image') a.x = 2 * cx - (a.x + (a.width || 80));
       else if (obj.type === 'bez2' || obj.type === 'bez3') {
         if (a.points) a.points.forEach(function(pt) { pt.px = 2 * cx - pt.px; });
         if (a.firstCtrl) a.firstCtrl.cx = 2 * cx - a.firstCtrl.cx;
@@ -267,7 +267,7 @@
     } else if (dir === 'V') {
       if (obj.type === 'point' || obj.type === 'ellipse' || obj.type === 'arc') a.cy = 2 * cy - a.cy;
       else if (obj.type === 'line') { a.y1 = 2 * cy - a.y1; a.y2 = 2 * cy - a.y2; }
-      else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'text') a.y = 2 * cy - (a.y + (a.height || 24));
+      else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'text' || obj.type === 'image') a.y = 2 * cy - (a.y + (a.height || 24));
       else if (obj.type === 'bez2' || obj.type === 'bez3') {
         if (a.points) a.points.forEach(function(pt) { pt.py = 2 * cy - pt.py; });
         if (a.firstCtrl) a.firstCtrl.cy = 2 * cy - a.firstCtrl.cy;

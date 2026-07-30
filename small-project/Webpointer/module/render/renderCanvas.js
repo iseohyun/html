@@ -16,13 +16,20 @@
       obj.el.setAttribute('y1', a.y1);
       obj.el.setAttribute('x2', a.x2);
       obj.el.setAttribute('y2', a.y2);
-    } else if (obj.type === 'rect' || obj.type === 'rounded') {
+    } else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'image') {
       obj.el.setAttribute('x', a.x);
       obj.el.setAttribute('y', a.y);
-      obj.el.setAttribute('width', Math.max(1, a.width));
-      obj.el.setAttribute('height', Math.max(1, a.height));
+      obj.el.setAttribute('width', Math.max(1, a.width || 100));
+      obj.el.setAttribute('height', Math.max(1, a.height || 100));
       if (obj.type === 'rounded') {
         obj.el.setAttribute('rx', a.rx !== undefined ? a.rx : 15);
+      }
+      if (obj.type === 'image' && a.href) {
+        obj.el.setAttribute('href', a.href);
+        obj.el.setAttributeNS('http://www.w3.org/1999/xlink', 'href', a.href);
+        if (a.preserveAspectRatio) {
+          obj.el.setAttribute('preserveAspectRatio', a.preserveAspectRatio);
+        }
       }
     } else if (obj.type === 'ellipse') {
       obj.el.setAttribute('cx', a.cx);
@@ -373,7 +380,7 @@
         maxX = Math.max(maxX, a.x1, a.x2);
         minY = Math.min(minY, a.y1, a.y2);
         maxY = Math.max(maxY, a.y1, a.y2);
-      } else if (obj.type === 'rect' || obj.type === 'rounded') {
+      } else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'image') {
         minX = Math.min(minX, a.x);
         maxX = Math.max(maxX, a.x + a.width);
         minY = Math.min(minY, a.y);

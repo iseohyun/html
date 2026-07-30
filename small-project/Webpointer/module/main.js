@@ -355,7 +355,7 @@
             a.y1 = initialAttrs.y1 + deltaPy;
             a.x2 = initialAttrs.x2 + deltaPx;
             a.y2 = initialAttrs.y2 + deltaPy;
-          } else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'text') {
+          } else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'text' || obj.type === 'image') {
             a.x = initialAttrs.x + deltaPx;
             a.y = initialAttrs.y + deltaPy;
           } else if (obj.type === 'bez2' || obj.type === 'bez3') {
