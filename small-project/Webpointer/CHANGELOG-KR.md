@@ -2,6 +2,22 @@
 
 Webpointer 벡터 CAD 에디터의 주요 업데이트 및 버그 수정 이력 문서입니다.
 
+## [v0.7.0] - 2026-07-31
+### 주요 변경 및 개선 사항 (SMIL 애니메이션 사양 8단계 & 캔버스 세로 높이 리사이즈)
+- **SMIL SVG 애니메이션 사양 8단계 전면 구현 (Animation Ribbon Suite)**:
+  - **1. 대상 및 변환 타입**: `targetId` 선택 객체 표시 및 `fill`, `stroke`, `stroke-width`, `opacity`, `transform:translate/scale/rotate`, `d` 변환 타입 선택.
+  - **2. 목표 값 & 경로**: `from`, `to`, 다중 중간값 `values` 입력.
+  - **3. 트리거 & 재생 시간**: `begin` (`0s`, `click`, `mouseover`, `mouseleave`, `anim1.end` 연쇄), `dur` (1회 시간), `repeatCount` (무한/회수).
+  - **4. 제한 & 종료 조건**: `max` (절대 시간 상한선), `restart` (`always`, `whenNotActive`, `never`), `end` (강제 종료 조건).
+  - **5. 다중 트랙 중첩 관리**: 단일 객체에 다수의 애니메이션 트랙 병렬/직렬 생성 및 전체 트랙 제거 기능.
+- **캔버스 종횡비 자동 확장 & 하단 세로 리사이즈 핸들 바**:
+  - `성경요약.svg` 등 세로형 파일 불러오기 시 원본 SVG 종횡비에 100% 맞춰 세로 높이 자동 연장.
+  - 캔버스 최하단에 `═══ 캔버스 세로 높이 조절 ═══` 마우스 드래그 손잡이 바 탑재.
+- **`손/팬 이동 도구 (Pan Tool)` 1행 1열 탑재**:
+  - `삽입` > `도형` 리본 1행 1열에 `Pan` 도구 탑재, 마우스 드래그로 캔버스 화면 상하좌우 실시간 이동/팬 지원.
+- **개체 순서 아이콘 4종 디자인 업데이트**:
+  - `bringToFront`, `bringForward`, `sendBackward`, `sendToBack` 아이콘을 순백색(#ffffff) 종이 및 오렌지 강조 종이 겹침 그래픽으로 교체.
+
 ## [v0.6.0] - 2026-07-31
 ### 주요 변경 및 개선 사항 (Milestone 6 ~ 17 전 기능 완결)
 - **Phase 2 & Phase 3 마일스톤 100% 달성**:
