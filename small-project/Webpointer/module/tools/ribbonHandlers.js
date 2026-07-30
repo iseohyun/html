@@ -1617,6 +1617,15 @@
   window.cycleTextAutoFitMode = cycleTextAutoFitMode;
   window.applyAutoFitToGroup = applyAutoFitToGroup;
 
+  function toggleCropMode() {
+    state.isCropModeActive = !state.isCropModeActive;
+    if (window.WebpointerRender) {
+      if (window.WebpointerRender.renderUI) window.WebpointerRender.renderUI();
+      if (window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+    }
+  }
+  window.toggleCropMode = toggleCropMode;
+
   window.WebpointerHandlers = {
     setTool: setTool,
     toggleColorPalettePopover: toggleColorPalettePopover,
@@ -1668,6 +1677,7 @@
     startHoldWeight: startHoldWeight,
     endHoldWeight: endHoldWeight,
     startHoldStyle: startHoldStyle,
-    endHoldStyle: endHoldStyle
+    endHoldStyle: endHoldStyle,
+    toggleCropMode: toggleCropMode
   };
 })(window);

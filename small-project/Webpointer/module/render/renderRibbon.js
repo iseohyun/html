@@ -2,6 +2,7 @@
   'use strict';
 
   var cfg = window.WebpointerConfig;
+  var state = window.WebpointerState;
 
   var default24Colors = [
     "#660000", "#660000", "#086600", "#006627", "#002e66", "#000080", "#3a0066", "#660031",
@@ -271,10 +272,18 @@
           '</div>' +
         '</div>';
 
+      var cropBtnHtml = '<button class="tool-btn ' + (state.isCropModeActive ? 'active' : '') + '" onclick="toggleCropMode()" style="width:34px; height:34px;">' + (icons.crop || '✂️') + '<span class="tooltip-text">자르기 (마우스 드래그로 자르기 영역 조절)</span></button>';
+
+      var editContent =
+        '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
+          cropBtnHtml +
+        '</div>';
+
       ribbonBar.innerHTML =
         buildCategoryHtml('style_line', '선 및 색상', lineGridHtml) +
         buildCategoryHtml('style_lineEnds', '선 끝', lineEndsContent) +
-        buildCategoryHtml('style_capJoin', '마감', capJoinContent);
+        buildCategoryHtml('style_capJoin', '마감', capJoinContent) +
+        buildCategoryHtml('style_edit', '편집', editContent);
     } else if (cfg.currentTab === 'text') {
       var curFontFamily = cfg.fontFamily || 'sans-serif';
       var curFontSize = cfg.fontSize || 20;

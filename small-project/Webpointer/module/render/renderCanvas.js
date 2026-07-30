@@ -257,6 +257,53 @@
     obj.el.setAttribute('stroke-linecap', strokeCap);
     obj.el.setAttribute('stroke-linejoin', strokeJoin);
 
+    // Non-destructive Clip-path Cropping
+    var mainSvg = document.getElementById('mainSvg');
+    if (mainSvg) {
+      var clipId = 'crop_clip_' + obj.id;
+      var existingClip = document.getElementById(clipId);
+      var cL = a.cropLeft || 0, cT = a.cropTop || 0, cR = a.cropRight || 0, cB = a.cropBottom || 0;
+      var hasCrop = a.crop || (cL > 0 || cT > 0 || cR > 0 || cB > 0);
+      if (hasCrop) {
+        var defs = mainSvg.querySelector('defs');
+        if (!defs) {
+          defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+          defs.setAttribute('id', 'svgDefs');
+          mainSvg.insertBefore(defs, mainSvg.firstChild);
+        }
+        if (!existingClip) {
+          existingClip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+          existingClip.setAttribute('id', clipId);
+          defs.appendChild(existingClip);
+        }
+        var cx = a.x || 0, cy = a.y || 0, cw = a.width || a.w || 100, ch = a.height || a.h || 100;
+        var cL = a.cropLeft || 0, cT = a.cropTop || 0, cR = a.cropRight || 0, cB = a.cropBottom || 0;
+        if (a.crop) {
+          cx = a.crop.x; cy = a.crop.y; cw = a.crop.w; ch = a.crop.h;
+        } else {
+          cx = (a.x || 0) + (cw * cL);
+          cy = (a.y || 0) + (ch * cT);
+          cw = cw * (1 - cL - cR);
+          ch = ch * (1 - cT - cB);
+        }
+        var rectChild = existingClip.querySelector('rect');
+        if (!rectChild) {
+          rectChild = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          existingClip.appendChild(rectChild);
+        }
+        rectChild.setAttribute('x', cx);
+        rectChild.setAttribute('y', cy);
+        rectChild.setAttribute('width', Math.max(1, cw));
+        rectChild.setAttribute('height', Math.max(1, ch));
+        obj.el.setAttribute('clip-path', 'url(#' + clipId + ')');
+      } else {
+        if (existingClip && existingClip.parentNode) {
+          existingClip.parentNode.removeChild(existingClip);
+        }
+        obj.el.removeAttribute('clip-path');
+      }
+    }
+
     if (cfg.currentTool === 'select') {
       if (cfg.selectedIds.has(obj.id)) {
         obj.el.style.cursor = 'move';
@@ -375,6 +422,59 @@
       boxRect.setAttribute('pointer-events', 'stroke');
       boxRect.style.cursor = 'move';
       uiGroup.appendChild(boxRect);
+    }
+
+    // Render Active Crop Overlay & 4 Side Drag Handles
+    var state = window.WebpointerState || {};
+    if (state.isCropModeActive && cfg.selectedIds.size === 1) {
+      var cropId = Array.from(cfg.selectedIds)[0];
+      var cropObj = cfg.objectsMap.get(cropId);
+      if (cropObj) {
+        var bounds = window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(cropObj) : null;
+        if (bounds) {
+          var bX = bounds.minX;
+          var bY = bounds.minY;
+          var bW = Math.max(1, bounds.maxX - bounds.minX);
+          var bH = Math.max(1, bounds.maxY - bounds.minY);
+
+          var cL = cropObj.attrs.cropLeft || 0;
+          var cT = cropObj.attrs.cropTop || 0;
+          var cR = cropObj.attrs.cropRight || 0;
+          var cB = cropObj.attrs.cropBottom || 0;
+
+          var cX = bX + bW * cL;
+          var cY = bY + bH * cT;
+          var cW = Math.max(1, bW * (1 - cL - cR));
+          var cH = Math.max(1, bH * (1 - cT - cB));
+
+          function createDimRect(rx, ry, rw, rh) {
+            if (rw <= 0 || rh <= 0) return;
+            var dimEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            dimEl.setAttribute('x', rx); dimEl.setAttribute('y', ry);
+            dimEl.setAttribute('width', rw); dimEl.setAttribute('height', rh);
+            dimEl.setAttribute('fill', 'rgba(15, 23, 42, 0.45)');
+            dimEl.setAttribute('pointer-events', 'none');
+            uiGroup.appendChild(dimEl);
+          }
+
+          createDimRect(bX, bY, bW, cY - bY);
+          createDimRect(bX, cY + cH, bW, (bY + bH) - (cY + cH));
+          createDimRect(bX, cY, cX - bX, cH);
+          createDimRect(cX + cW, cY, (bX + bW) - (cX + cW), cH);
+
+          var cropBorder = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          cropBorder.setAttribute('x', cX); cropBorder.setAttribute('y', cY);
+          cropBorder.setAttribute('width', cW); cropBorder.setAttribute('height', cH);
+          cropBorder.setAttribute('fill', 'none'); cropBorder.setAttribute('stroke', '#0284c7');
+          cropBorder.setAttribute('stroke-width', '2');
+          uiGroup.appendChild(cropBorder);
+
+          createHandleNode(cX + cW / 2, cY, cropObj.id, 'crop_top', 1, true);
+          createHandleNode(cX + cW / 2, cY + cH, cropObj.id, 'crop_bottom', 2, true);
+          createHandleNode(cX, cY + cH / 2, cropObj.id, 'crop_left', 3, true);
+          createHandleNode(cX + cW, cY + cH / 2, cropObj.id, 'crop_right', 4, true);
+        }
+      }
     }
 
     cfg.selectedIds.forEach(function(id) {

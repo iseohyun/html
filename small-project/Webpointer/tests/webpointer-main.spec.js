@@ -354,4 +354,81 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
 
     expect(pageErrors).toEqual([]);
   });
+
+  test('TC16: Non-Destructive Image & Shape Cropping (ClipPath)', async ({ page }) => {
+    // Switch to Picture Format Tab ("그림 서식")
+    await page.click('.tab-btn:has-text("그림 서식")');
+
+    // Programmatically create a rect object and select it
+    const rectObjId = await page.evaluate(() => {
+      var obj = window.WebpointerObjects.createSvgObject('rect', { stepX: 5, stepY: 5 }, { stepX: 15, stepY: 15 });
+      if (obj) {
+        window.WebpointerConfig.selectedIds.clear();
+        window.WebpointerConfig.selectedIds.add(obj.id);
+        window.WebpointerRender.renderUI();
+        window.WebpointerRender.renderRibbon();
+        return obj.id;
+      }
+      return null;
+    });
+    expect(rectObjId).not.toBeNull();
+
+    // Toggle Crop Mode
+    await page.evaluate(() => window.toggleCropMode());
+    const isCropActive = await page.evaluate(() => window.WebpointerState.isCropModeActive);
+    expect(isCropActive).toBe(true);
+
+    // Apply crop attributes (10% left, 20% top, 15% right, 25% bottom)
+    await page.evaluate((id) => {
+      var obj = window.WebpointerConfig.objectsMap.get(id);
+      if (obj) {
+        obj.attrs.cropLeft = 0.1;
+        obj.attrs.cropTop = 0.2;
+        obj.attrs.cropRight = 0.15;
+        obj.attrs.cropBottom = 0.25;
+        window.WebpointerRender.updateElementAttributes(obj);
+        window.WebpointerRender.renderUI();
+      }
+    }, rectObjId);
+
+    // Verify clip-path attribute is created and attached to element
+    const clipAttr = await page.evaluate((id) => {
+      var obj = window.WebpointerConfig.objectsMap.get(id);
+      return obj && obj.el ? obj.el.getAttribute('clip-path') : null;
+    }, rectObjId);
+    expect(clipAttr).toContain('url(#crop_clip_' + rectObjId + ')');
+
+    // Deactivate crop mode (exiting crop handles UI)
+    await page.evaluate(() => window.toggleCropMode());
+    const isCropActiveAfter = await page.evaluate(() => window.WebpointerState.isCropModeActive);
+    expect(isCropActiveAfter).toBe(false);
+
+    // Verify clip-path remains non-destructively attached
+    const clipAttrAfter = await page.evaluate((id) => {
+      var obj = window.WebpointerConfig.objectsMap.get(id);
+      return obj && obj.el ? obj.el.getAttribute('clip-path') : null;
+    }, rectObjId);
+    expect(clipAttrAfter).toContain('url(#crop_clip_' + rectObjId + ')');
+
+    // Reset crop attributes and verify clip-path is safely removed
+    await page.evaluate((id) => {
+      var obj = window.WebpointerConfig.objectsMap.get(id);
+      if (obj) {
+        obj.attrs.cropLeft = 0;
+        obj.attrs.cropTop = 0;
+        obj.attrs.cropRight = 0;
+        obj.attrs.cropBottom = 0;
+        window.WebpointerRender.updateElementAttributes(obj);
+        window.WebpointerRender.renderUI();
+      }
+    }, rectObjId);
+
+    const clipAttrReset = await page.evaluate((id) => {
+      var obj = window.WebpointerConfig.objectsMap.get(id);
+      return obj && obj.el ? obj.el.getAttribute('clip-path') : null;
+    }, rectObjId);
+    expect(clipAttrReset).toBeNull();
+
+    expect(pageErrors).toEqual([]);
+  });
 });

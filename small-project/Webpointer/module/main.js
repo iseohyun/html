@@ -308,6 +308,28 @@
           a.ctrls3[idx] = a.ctrls3[idx] || {};
           a.ctrls3[idx].c2 = { x: coords.px, y: coords.py };
           a.pathD = bezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3);
+        } else if (hType === 'crop_top' || hType === 'crop_bottom' || hType === 'crop_left' || hType === 'crop_right') {
+          var bounds = window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(obj) : null;
+          if (bounds) {
+            var bX = bounds.minX;
+            var bY = bounds.minY;
+            var bW = Math.max(1, bounds.maxX - bounds.minX);
+            var bH = Math.max(1, bounds.maxY - bounds.minY);
+
+            if (hType === 'crop_top') {
+              var newCropTop = (coords.py - bY) / bH;
+              a.cropTop = Math.max(0, Math.min(0.9 - (a.cropBottom || 0), newCropTop));
+            } else if (hType === 'crop_bottom') {
+              var newCropBottom = (bY + bH - coords.py) / bH;
+              a.cropBottom = Math.max(0, Math.min(0.9 - (a.cropTop || 0), newCropBottom));
+            } else if (hType === 'crop_left') {
+              var newCropLeft = (coords.px - bX) / bW;
+              a.cropLeft = Math.max(0, Math.min(0.9 - (a.cropRight || 0), newCropLeft));
+            } else if (hType === 'crop_right') {
+              var newCropRight = (bX + bW - coords.px) / bW;
+              a.cropRight = Math.max(0, Math.min(0.9 - (a.cropLeft || 0), newCropRight));
+            }
+          }
         }
 
         render.updateElementAttributes(obj);
