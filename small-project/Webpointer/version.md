@@ -1,5 +1,17 @@
 # Webpointer Project Version History
 
+## [0.4.0] - 2026-07-30
+### Added & Updated
+- Picture Format Category Reordering & New Cap/Join Category:
+  - Reordered categories under Picture Format (`style`) tab to: **`색` $\rightarrow$ `선` $\rightarrow$ `선 끝` $\rightarrow$ `마감`**.
+  - Added new **`마감` (Cap & Join)** category featuring:
+    - Magnified Cap options (`strokeCap`): `butt` (평평함), `round` (둥글게), `square` (돌출 사각형) with red endpoint dot and guideline.
+    - Magnified Join options (`strokeJoin`): `miter` (뾰족함), `round` (둥글게), `bevel` (깎임) with red corner vertex highlight.
+- Collapsible Category Layout & Vertical Text Orientation:
+  - Added category title click toggle (`toggleCategoryCollapse`) to expand/collapse ribbon categories.
+  - Styled collapsed state into a slim 32px vertical card with `writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(0deg);` for top-to-bottom right-side-up text reading.
+  - Enforced strict `125px` max-height constraint preventing any ribbon height expansion when collapsed.
+
 ## [0.3.6] - 2026-07-30
 ### Fixed
 - Completed Line Category (`선`) Dash Style & Pattern Management Fixes:
