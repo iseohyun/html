@@ -1,13 +1,19 @@
 # Webpointer Project Version History
 
+## [0.1.2] - 2026-07-30
+### Added
+- Completed Ellipse / Circle (타원/원) 4-handle interactive editing system:
+  - Center handle (White fill `#ffffff`, Black border `#000000`): Moves entire shape.
+  - Horizontal width handle (White fill `#ffffff`, Black border `#000000`): Adjusts `rx`.
+  - Vertical height handle (White fill `#ffffff`, Black border `#000000`): Adjusts `ry`.
+  - Rotation handle (Yellow fill `#facc15`, Black border `#000000`): Controls `transform="rotate(angle, cx, cy)"`.
+- Changed default shape fill color to transparent (`fill: 'none'`) for all vector shapes.
+
 ## [0.1.1] - 2026-07-30
 ### Added
 - Completed Point (점) insertion tool implementation with 10px diameter (`r = 5px`) and `#041e49` default color.
 - Default Canvas background set to pure white (`#ffffff`) with subtle gray grid lines (`#e2e8f0`).
 - Point selection highlight ring overlay and interactive center handle node.
-
-### Fixed
-- Fixed SPA lifecycle initialization in `module/main.js` so canvas mouse events bind immediately upon page load without waiting for `DOMContentLoaded`.
 
 ## [0.1.0] - 2026-07-30
 ### Added

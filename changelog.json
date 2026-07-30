@@ -6,7 +6,7 @@
         "type": "Added",
         "projectName": "Webpointer",
         "projectPath": "/small-project/Webpointer/index.html",
-        "summary": "v0.1.1: 점(Point) 도형 삽입(지름 10px, #041e49), 흰색 배경 캔버스 및 SPA 수명주기 이벤트 바인딩 완성"
+        "summary": "v0.1.2: 타원/원 조종점 4종 (중심, 가로, 세로, 회전각) & 투명 채우기 기본값 완료"
       }
     ]
   },

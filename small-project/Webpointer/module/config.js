@@ -12,12 +12,12 @@
 
     // Dynamic State Variables & User Defaults
     currentTab: 'insert',
-    currentTool: 'point', // Set default active tool to 'point'
+    currentTool: 'ellipse', // Set active tool to 'ellipse' / 'point'
     gridSnapEnabled: true,
     canvasBgColor: '#ffffff', // Default White Canvas
 
     strokeColor: '#041e49',   // Default Shape Color (#041e49)
-    fillColor: '#041e49',     // Default Shape Fill Color (#041e49)
+    fillColor: 'none',        // Default Fill: Transparent ('none')
     strokeWidth: 2,
     pointRadius: 5,           // Default Point Diameter 10px (radius = 5px)
 

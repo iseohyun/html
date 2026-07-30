@@ -63,7 +63,6 @@
 
     if (type === 'point') {
       el = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-      // Point radius = 5px (10px diameter), color = #041e49
       attrs = { cx: px1, cy: py1, r: cfg.pointRadius || 5, stepX: stepStart.stepX, stepY: stepStart.stepY };
     } else if (type === 'line') {
       el = document.createElementNS('http://www.w3.org/2000/svg', 'line');
@@ -82,7 +81,7 @@
       var cy = (py1 + py2) / 2;
       var rxEl = Math.max(10, Math.abs(px2 - px1) / 2);
       var ryEl = Math.max(10, Math.abs(py2 - py1) / 2);
-      attrs = { cx: cx, cy: cy, rx: rxEl, ry: ryEl, stepCx: Math.round((stepStart.stepX + stepEnd.stepX) / 2), stepCy: Math.round((stepStart.stepY + stepEnd.stepY) / 2), stepRx: Math.abs(stepEnd.stepX - stepStart.stepX) / 2, stepRy: Math.abs(stepEnd.stepY - stepStart.stepY) / 2 };
+      attrs = { cx: cx, cy: cy, rx: rxEl, ry: ryEl, angle: 0, stepCx: Math.round((stepStart.stepX + stepEnd.stepX) / 2), stepCy: Math.round((stepStart.stepY + stepEnd.stepY) / 2), stepRx: Math.abs(stepEnd.stepX - stepStart.stepX) / 2, stepRy: Math.abs(stepEnd.stepY - stepStart.stepY) / 2 };
     } else if (type === 'bez2') {
       el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       var midX = (px1 + px2) / 2;
@@ -102,7 +101,7 @@
 
     el.setAttribute('id', id);
     el.setAttribute('stroke', cfg.strokeColor || '#041e49');
-    el.setAttribute('fill', type === 'line' || type === 'bez2' || type === 'bez3' || type === 'arc' ? 'none' : (cfg.fillColor || '#041e49'));
+    el.setAttribute('fill', cfg.fillColor || 'none'); // Default fill is transparent 'none'
     el.setAttribute('stroke-width', cfg.strokeWidth || 2);
 
     if (cfg.startMarker !== 'none') el.setAttribute('marker-start', 'url(#marker-start-' + cfg.startMarker + ')');
@@ -116,7 +115,7 @@
     return objData;
   }
 
-  // Bind Global Handlers to Window Object (Exposed for Inline Event Handlers)
+  // Bind Global Window Scope Handlers
   window.switchTab = function(tab) {
     cfg.currentTab = tab;
     document.querySelectorAll('.tab-btn').forEach(function(btn) { btn.classList.remove('active'); });
@@ -231,9 +230,7 @@
       var obj = cfg.objectsMap.get(id);
       if (!obj) return;
       obj.el.setAttribute('stroke', cfg.strokeColor);
-      if (obj.type !== 'line' && obj.type !== 'bez2' && obj.type !== 'bez3' && obj.type !== 'arc') {
-        obj.el.setAttribute('fill', cfg.fillColor);
-      }
+      obj.el.setAttribute('fill', cfg.fillColor);
       obj.el.setAttribute('stroke-width', cfg.strokeWidth);
       if (cfg.startMarker !== 'none') obj.el.setAttribute('marker-start', 'url(#marker-start-' + cfg.startMarker + ')');
       else obj.el.removeAttribute('marker-start');
@@ -248,14 +245,13 @@
     render.updateSvgDefs();
   };
 
-  // Immediate App Initialization Function (Fixes SPA Navigation Delay)
+  // Immediate App Initialization Function
   function initApp() {
     var mainSvg = document.getElementById('mainSvg');
     var statRaw = document.getElementById('statRaw');
     var statStep = document.getElementById('statStep');
     if (!mainSvg) return;
 
-    // Prevent attaching duplicate listeners if re-entering page
     if (mainSvg.dataset.initialized === 'true') {
       render.renderGrid();
       render.updateSvgDefs();
@@ -282,14 +278,12 @@
         }
         render.renderUI();
       } else if (cfg.currentTool === 'point') {
-        // Point Tool: Create point immediately at snapped coordinate
         state.isDrawing = false;
         cfg.selectedIds.clear();
         var pointObj = createSvgObject('point', coords, coords);
         cfg.selectedIds.add(pointObj.id);
         render.renderUI();
       } else {
-        // Drag-to-draw tools (Line, Rect, Ellipse, Arc, Bezier)
         state.isDrawing = true;
         state.drawStartStep = coords;
         cfg.selectedIds.clear();
@@ -313,6 +307,18 @@
             a.cy = coords.py;
             a.stepX = coords.stepX;
             a.stepY = coords.stepY;
+          } else if (state.activeHandleInfo.handleType === 'ellipse_center') {
+            a.cx = coords.px;
+            a.cy = coords.py;
+            a.stepCx = coords.stepX;
+            a.stepCy = coords.stepY;
+          } else if (state.activeHandleInfo.handleType === 'ellipse_width') {
+            a.rx = Math.max(5, Math.abs(coords.px - a.cx));
+          } else if (state.activeHandleInfo.handleType === 'ellipse_height') {
+            a.ry = Math.max(5, Math.abs(coords.py - a.cy));
+          } else if (state.activeHandleInfo.handleType === 'ellipse_rotate') {
+            var rad = Math.atan2(coords.py - a.cy, coords.px - a.cx);
+            a.angle = Math.round((rad * (180 / Math.PI)) + 90);
           } else if (state.activeHandleInfo.handleType === 'bez2_ctrl') {
             a.cx = coords.px;
             a.cy = coords.py;
@@ -402,7 +408,7 @@
     render.renderRibbon();
   }
 
-  // Execute immediate setup for SPA + DOMContentLoaded listener fallback
+  // Execute immediate setup
   initApp();
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initApp);

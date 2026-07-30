@@ -31,7 +31,7 @@
 
       var gridPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       gridPath.setAttribute('d', pathData);
-      gridPath.setAttribute('stroke', '#e2e8f0'); // Crisp grid lines on white canvas
+      gridPath.setAttribute('stroke', '#e2e8f0');
       gridPath.setAttribute('stroke-width', '0.8');
       gridGroup.appendChild(gridPath);
     },
@@ -218,6 +218,11 @@
         obj.el.setAttribute('cy', a.cy);
         obj.el.setAttribute('rx', a.rx);
         obj.el.setAttribute('ry', a.ry);
+        if (a.angle) {
+          obj.el.setAttribute('transform', 'rotate(' + a.angle + ' ' + a.cx + ' ' + a.cy + ')');
+        } else {
+          obj.el.removeAttribute('transform');
+        }
       } else if (obj.type === 'bez2') {
         obj.el.setAttribute('d', 'M ' + a.x1 + ' ' + a.y1 + ' Q ' + a.cx + ' ' + a.cy + ' ' + a.x2 + ' ' + a.y2);
       } else if (obj.type === 'bez3') {
@@ -227,18 +232,18 @@
       }
     },
 
-    // Render Control Handle Node
-    createHandleNode: function(x, y, objId, handleType, idx) {
+    // Render Control Handle Node (White fill with Black stroke; Yellow fill for Rotation)
+    createHandleNode: function(x, y, objId, handleType, idx, isRotation) {
       var uiGroup = document.getElementById('uiGroup');
       if (!uiGroup) return;
 
       var circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
       circle.setAttribute('cx', x);
       circle.setAttribute('cy', y);
-      circle.setAttribute('r', '6');
-      circle.setAttribute('fill', '#0284c7');
-      circle.setAttribute('stroke', '#ffffff');
-      circle.setAttribute('stroke-width', '2');
+      circle.setAttribute('r', isRotation ? '6' : '5');
+      circle.setAttribute('fill', isRotation ? '#facc15' : '#ffffff'); // Yellow for rotation, White for standard
+      circle.setAttribute('stroke', '#000000'); // Black border
+      circle.setAttribute('stroke-width', '1.5');
       circle.setAttribute('class', 'handle-node');
 
       circle.addEventListener('mousedown', function(e) {
@@ -249,7 +254,7 @@
       uiGroup.appendChild(circle);
     },
 
-    // Render Selection Bounding Overlay
+    // Render Selection Bounding Overlay & Handles
     renderUI: function() {
       var uiGroup = document.getElementById('uiGroup');
       var statSelected = document.getElementById('statSelected');
@@ -266,7 +271,7 @@
         var a = obj.attrs;
 
         if (obj.type === 'point') {
-          // Highlight ring for Point
+          // Highlight ring for Point (White center handle, Black border)
           var ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
           ring.setAttribute('cx', a.cx);
           ring.setAttribute('cy', a.cy);
@@ -276,7 +281,48 @@
           ring.setAttribute('stroke-width', '1.5');
           ring.setAttribute('stroke-dasharray', '3,3');
           uiGroup.appendChild(ring);
-          self.createHandleNode(a.cx, a.cy, id, 'point_center', 1);
+          self.createHandleNode(a.cx, a.cy, id, 'point_center', 1, false);
+        } else if (obj.type === 'ellipse') {
+          // Ellipse Handles: 1) Center (cx,cy), 2) Horizontal Width (cx+rx, cy), 3) Vertical Height (cx, cy-ry), 4) Rotation Angle (cx, cy-ry-25)
+          var angleRad = (a.angle || 0) * (Math.PI / 180);
+          
+          // Calculate rotated positions
+          function getRotatedPoint(px, py) {
+            var dx = px - a.cx;
+            var dy = py - a.cy;
+            var rxRot = dx * Math.cos(angleRad) - dy * Math.sin(angleRad);
+            var ryRot = dx * Math.sin(angleRad) + dy * Math.cos(angleRad);
+            return { x: a.cx + rxRot, y: a.cy + ryRot };
+          }
+
+          var ptCenter = { x: a.cx, y: a.cy };
+          var ptWidth  = getRotatedPoint(a.cx + a.rx, a.cy);
+          var ptHeight = getRotatedPoint(a.cx, a.cy - a.ry);
+          var ptRotate = getRotatedPoint(a.cx, a.cy - a.ry - 25);
+
+          // Rotation Stem Line (Dashed)
+          var rotStem = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          rotStem.setAttribute('x1', ptHeight.x);
+          rotStem.setAttribute('y1', ptHeight.y);
+          rotStem.setAttribute('x2', ptRotate.x);
+          rotStem.setAttribute('y2', ptRotate.y);
+          rotStem.setAttribute('stroke', '#0284c7');
+          rotStem.setAttribute('stroke-dasharray', '3,3');
+          rotStem.setAttribute('stroke-width', '1.5');
+          uiGroup.appendChild(rotStem);
+
+          // 1) Center Handle (White, Black border)
+          self.createHandleNode(ptCenter.x, ptCenter.y, id, 'ellipse_center', 1, false);
+
+          // 2) Width Handle (White, Black border)
+          self.createHandleNode(ptWidth.x, ptWidth.y, id, 'ellipse_width', 2, false);
+
+          // 3) Height Handle (White, Black border)
+          self.createHandleNode(ptHeight.x, ptHeight.y, id, 'ellipse_height', 3, false);
+
+          // 4) Rotation Handle (Yellow, Black border)
+          self.createHandleNode(ptRotate.x, ptRotate.y, id, 'ellipse_rotate', 4, true);
+
         } else if (obj.type === 'bez2') {
           var guide = document.createElementNS('http://www.w3.org/2000/svg', 'path');
           guide.setAttribute('d', 'M ' + a.x1 + ' ' + a.y1 + ' L ' + a.cx + ' ' + a.cy + ' L ' + a.x2 + ' ' + a.y2);
@@ -284,7 +330,7 @@
           guide.setAttribute('stroke-dasharray', '3,3');
           guide.setAttribute('fill', 'none');
           uiGroup.appendChild(guide);
-          self.createHandleNode(a.cx, a.cy, id, 'bez2_ctrl', 1);
+          self.createHandleNode(a.cx, a.cy, id, 'bez2_ctrl', 1, false);
         } else if (obj.type === 'bez3') {
           var guide2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
           guide2.setAttribute('d', 'M ' + a.x1 + ' ' + a.y1 + ' L ' + a.c1x + ' ' + a.c1y + ' L ' + a.c2x + ' ' + a.c2y + ' L ' + a.x2 + ' ' + a.y2);
@@ -292,14 +338,14 @@
           guide2.setAttribute('stroke-dasharray', '3,3');
           guide2.setAttribute('fill', 'none');
           uiGroup.appendChild(guide2);
-          self.createHandleNode(a.c1x, a.c1y, id, 'bez3_ctrl1', 1);
-          self.createHandleNode(a.c2x, a.c2y, id, 'bez3_ctrl2', 2);
+          self.createHandleNode(a.c1x, a.c1y, id, 'bez3_ctrl1', 1, false);
+          self.createHandleNode(a.c2x, a.c2y, id, 'bez3_ctrl2', 2, false);
         } else if (obj.type === 'line' || obj.type === 'arc') {
-          self.createHandleNode(a.x1, a.y1, id, 'start', 1);
-          self.createHandleNode(a.x2, a.y2, id, 'end', 2);
+          self.createHandleNode(a.x1, a.y1, id, 'start', 1, false);
+          self.createHandleNode(a.x2, a.y2, id, 'end', 2, false);
         } else if (obj.type === 'rect' || obj.type === 'rounded') {
-          self.createHandleNode(a.x, a.y, id, 'top_left', 1);
-          self.createHandleNode(a.x + a.width, a.y + a.height, id, 'bottom_right', 2);
+          self.createHandleNode(a.x, a.y, id, 'top_left', 1, false);
+          self.createHandleNode(a.x + a.width, a.y + a.height, id, 'bottom_right', 2, false);
         }
       });
     },
