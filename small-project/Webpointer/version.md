@@ -1,5 +1,11 @@
 # Webpointer Project Version History
 
+## [0.3.2] - 2026-07-30
+### Fixed
+- Fixed inline event handler `ReferenceError: updateSvgDefs is not defined` when changing stroke color.
+- Added global style handler functions (`setStrokeColor`, `setFillColor`, `setStrokeWidth`, `setStartMarker`, `setEndMarker`).
+- Enabled real-time (`oninput` + `onchange`) color updates so shape stroke and fill colors update dynamically as color picker is adjusted.
+
 ## [0.3.1] - 2026-07-30
 ### Added
 - Completed Rotation & Flip (회전 및 대칭) Transformation System under Insert Ribbon Tab:
