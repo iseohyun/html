@@ -1296,6 +1296,266 @@
     }
   }
 
+  // =========================================================================
+  // History Manager (Undo / Redo with Ctrl+Z & Ctrl+Y)
+  // =========================================================================
+  var undoStack = [];
+  var redoStack = [];
+  var isRestoringHistory = false;
+
+  function captureSnapshot() {
+    var objs = [];
+    cfg.objectsMap.forEach(function(obj) {
+      objs.push({
+        id: obj.id,
+        type: obj.type,
+        attrs: JSON.parse(JSON.stringify(obj.attrs))
+      });
+    });
+    return JSON.stringify({
+      canvas: {
+        width: cfg.SVG_WIDTH || 960,
+        height: cfg.SVG_HEIGHT || 540,
+        bgColor: cfg.canvasBgColor || '#ffffff',
+        gridSnapEnabled: !!cfg.gridSnapEnabled,
+        gridStepSize: cfg.gridStepSize || 24
+      },
+      objects: objs
+    });
+  }
+
+  function pushHistoryState() {
+    if (isRestoringHistory) return;
+    var snap = captureSnapshot();
+    if (undoStack.length > 0 && undoStack[undoStack.length - 1] === snap) return;
+    undoStack.push(snap);
+    if (undoStack.length > 50) undoStack.shift();
+    redoStack = [];
+  }
+
+  function restoreSnapshot(jsonStr) {
+    if (!jsonStr) return;
+    isRestoringHistory = true;
+    try {
+      var data = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
+      if (data.canvas) {
+        cfg.SVG_WIDTH = data.canvas.width || 960;
+        cfg.SVG_HEIGHT = data.canvas.height || 540;
+        cfg.canvasBgColor = data.canvas.bgColor || '#ffffff';
+        cfg.gridSnapEnabled = !!data.canvas.gridSnapEnabled;
+        cfg.gridStepSize = data.canvas.gridStepSize || 24;
+
+        var mainSvg = document.getElementById('mainSvg');
+        if (mainSvg) {
+          mainSvg.setAttribute('viewBox', '0 0 ' + cfg.SVG_WIDTH + ' ' + cfg.SVG_HEIGHT);
+          mainSvg.style.backgroundColor = cfg.canvasBgColor;
+        }
+      }
+
+      cfg.objectsMap.forEach(function(obj) {
+        if (obj.el && obj.el.parentNode) {
+          obj.el.parentNode.removeChild(obj.el);
+        }
+        if (obj.underlineEl && obj.underlineEl.parentNode) {
+          obj.underlineEl.parentNode.removeChild(obj.underlineEl);
+        }
+      });
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
+      var objectsGroup = document.getElementById('objectsGroup');
+      if (data.objects && Array.isArray(data.objects)) {
+        var maxIdNum = 0;
+        data.objects.forEach(function(oData) {
+          if (!oData || !oData.type) return;
+          var idNum = parseInt((oData.id || '').replace('obj_', ''), 10);
+          if (!isNaN(idNum) && idNum > maxIdNum) maxIdNum = idNum;
+
+          var tag = 'rect';
+          if (oData.type === 'point' || oData.type === 'circle') tag = 'circle';
+          else if (oData.type === 'line') tag = 'line';
+          else if (oData.type === 'ellipse') tag = 'ellipse';
+          else if (oData.type === 'arc' || oData.type === 'bez2' || oData.type === 'bez3') tag = 'path';
+          else if (oData.type === 'text') tag = 'text';
+
+          var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+          el.setAttribute('id', oData.id);
+          if (objectsGroup) objectsGroup.appendChild(el);
+
+          var newObj = {
+            id: oData.id,
+            type: oData.type,
+            el: el,
+            attrs: oData.attrs || {}
+          };
+          cfg.objectsMap.set(oData.id, newObj);
+          if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.updateElementAttributes) {
+            window.WebpointerRenderCanvas.updateElementAttributes(newObj);
+          }
+        });
+        if (maxIdNum > 0) cfg.nextId = maxIdNum + 1;
+      }
+
+      if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.renderUI) {
+        window.WebpointerRenderCanvas.renderUI();
+      }
+      if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.renderGrid) {
+        window.WebpointerRenderCanvas.renderGrid();
+      }
+      if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+        window.WebpointerRender.renderRibbon();
+      }
+    } catch(e) {
+      console.error('[Webpointer] Error restoring state:', e);
+    }
+    isRestoringHistory = false;
+  }
+
+  function undo() {
+    if (undoStack.length <= 1) {
+      if (undoStack.length === 1) {
+        var current = undoStack.pop();
+        redoStack.push(current);
+        restoreSnapshot(JSON.parse(JSON.stringify({ canvas: { width: cfg.SVG_WIDTH, height: cfg.SVG_HEIGHT, bgColor: cfg.canvasBgColor, gridSnapEnabled: cfg.gridSnapEnabled, gridStepSize: cfg.gridStepSize }, objects: [] })));
+      }
+      return;
+    }
+    var currentSnap = undoStack.pop();
+    redoStack.push(currentSnap);
+    var prevSnap = undoStack[undoStack.length - 1];
+    restoreSnapshot(prevSnap);
+  }
+
+  function redo() {
+    if (redoStack.length === 0) return;
+    var nextSnap = redoStack.pop();
+    undoStack.push(nextSnap);
+    restoreSnapshot(nextSnap);
+  }
+
+  window.addEventListener('keydown', function(e) {
+    var isCtrl = e.ctrlKey || e.metaKey;
+    if (!isCtrl) return;
+    var activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+    if (activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select') return;
+
+    if (e.key === 'z' || e.key === 'Z') {
+      if (e.shiftKey) {
+        e.preventDefault();
+        redo();
+      } else {
+        e.preventDefault();
+        undo();
+      }
+    } else if (e.key === 'y' || e.key === 'Y') {
+      e.preventDefault();
+      redo();
+    }
+  });
+
+  // Initial snapshot after load
+  setTimeout(function() {
+    if (undoStack.length === 0) {
+      pushHistoryState();
+    }
+  }, 300);
+
+  // =========================================================================
+  // File Operations (불러오기, 저장하기(웹에 저장), 다운로드)
+  // =========================================================================
+  function openFile() {
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json,.webpointer,.svg';
+    input.onchange = function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        var content = ev.target.result;
+        try {
+          if (file.name.endsWith('.svg')) {
+            alert('SVG 파일이 선택되었습니다. 프로젝트 JSON 파일 불러오기를 시도합니다.');
+          } else {
+            pushHistoryState();
+            restoreSnapshot(content);
+            pushHistoryState();
+            alert('파일을 성공적으로 불러왔습니다!');
+          }
+        } catch(err) {
+          alert('파일을 읽는 중 오류가 발생했습니다: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  }
+
+  function saveFileToWeb() {
+    try {
+      var snap = captureSnapshot();
+      localStorage.setItem('webpointer_saved_doc', snap);
+      alert('웹(LocalStorage)에 성공적으로 저장되었습니다!');
+    } catch(e) {
+      alert('웹 저장 실패: ' + e.message);
+    }
+  }
+
+  function downloadFile() {
+    var pop = document.createElement('div');
+    pop.style.cssText = 'position:fixed; z-index:99999; padding:12px; border:1px solid #0284c7; border-radius:8px; background:#ffffff; box-shadow:0 8px 24px rgba(0,0,0,0.2); outline:none; font-family:sans-serif; display:flex; flex-direction:column; gap:8px; width:220px; top:50%; left:50%; transform:translate(-50%, -50%);';
+    pop.innerHTML =
+      '<div style="font-size:0.9rem; font-weight:700; color:#0f172a; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">파일 다운로드 선택</div>' +
+      '<button id="dlJsonBtn" style="padding:6px 10px; font-size:0.82rem; font-weight:600; background:#0284c7; color:#ffffff; border:none; border-radius:4px; cursor:pointer;">프로젝트 저장 (.json)</button>' +
+      '<button id="dlSvgBtn" style="padding:6px 10px; font-size:0.82rem; font-weight:600; background:#059669; color:#ffffff; border:none; border-radius:4px; cursor:pointer;">SVG 벡터 이미지 (.svg)</button>' +
+      '<button id="dlCancelBtn" style="padding:4px 8px; font-size:0.78rem; background:#cbd5e1; color:#0f172a; border:none; border-radius:4px; cursor:pointer; margin-top:4px;">취소</button>';
+
+    document.body.appendChild(pop);
+
+    function closePop() {
+      if (pop && pop.parentNode) pop.parentNode.removeChild(pop);
+    }
+
+    document.getElementById('dlJsonBtn').onclick = function() {
+      closePop();
+      var snap = captureSnapshot();
+      var blob = new Blob([snap], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'webpointer_project_' + Date.now() + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    document.getElementById('dlSvgBtn').onclick = function() {
+      closePop();
+      var mainSvg = document.getElementById('mainSvg');
+      if (!mainSvg) return;
+      var clone = mainSvg.cloneNode(true);
+      var uiG = clone.querySelector('#uiGroup');
+      if (uiG) uiG.parentNode.removeChild(uiG);
+      var serializer = new XMLSerializer();
+      var svgStr = '<?xml version="1.0" encoding="UTF-8"?>\n' + serializer.serializeToString(clone);
+      var blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'webpointer_drawing_' + Date.now() + '.svg';
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    document.getElementById('dlCancelBtn').onclick = closePop;
+  }
+
+  window.pushHistoryState = pushHistoryState;
+  window.undo = undo;
+  window.redo = redo;
+  window.openFile = openFile;
+  window.saveFileToWeb = saveFileToWeb;
+  window.downloadFile = downloadFile;
+
   window.toggleGridSnap = toggleGridSnap;
   window.setGridDensity = setGridDensity;
   window.setGridStepSize = setGridStepSize;

@@ -385,7 +385,12 @@
           }
           render.updateElementAttributes(obj);
         }
+      }
 
+      if (state.isDrawingNewObject || state.isDraggingHandle || state.isDraggingObject) {
+        if (window.pushHistoryState) window.pushHistoryState();
+      }
+      if (state.isDrawingNewObject) {
         state.isDrawingNewObject = false;
         state.activeNewObj = null;
       }

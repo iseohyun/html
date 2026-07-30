@@ -43,7 +43,28 @@
     var self = this;
     var icons = window.WebpointerIcons || {};
 
-    if (cfg.currentTab === 'insert') {
+    if (cfg.currentTab === 'file') {
+      var openFileBtn = '<button class="tool-btn" onclick="openFile()" style="width:38px; height:38px;"><span class="alt-badge">O</span>' + (icons.openFile || '') + '<span class="tooltip-text">파일 불러오기 (.json / .webpointer)</span></button>';
+      var saveWebBtn  = '<button class="tool-btn" onclick="saveFileToWeb()" style="width:38px; height:38px;"><span class="alt-badge">S</span>' + (icons.saveFile || '') + '<span class="tooltip-text">파일 저장하기 (웹 LocalStorage)</span></button>';
+      var downloadBtn = '<button class="tool-btn" onclick="downloadFile()" style="width:38px; height:38px;"><span class="alt-badge">D</span>' + (icons.downloadFile || '') + '<span class="tooltip-text">파일 다운로드 (.json 프로젝트 / .svg 이미지)</span></button>';
+
+      var fileOpsContent =
+        '<div style="display:flex; flex-direction:row; gap:6px; align-items:center;">' +
+          openFileBtn + saveWebBtn + downloadBtn +
+        '</div>';
+
+      var undoBtn = '<button class="tool-btn" onclick="undo()" style="width:38px; height:38px;"><span class="alt-badge">Ctrl+Z</span>' + (icons.undo || '') + '<span class="tooltip-text">뒤로가기 (Ctrl + Z)</span></button>';
+      var redoBtn = '<button class="tool-btn" onclick="redo()" style="width:38px; height:38px;"><span class="alt-badge">Ctrl+Y</span>' + (icons.redo || '') + '<span class="tooltip-text">앞으로가기 (Ctrl + Y / Ctrl+Shift+Z)</span></button>';
+
+      var historyContent =
+        '<div style="display:flex; flex-direction:row; gap:6px; align-items:center;">' +
+          undoBtn + redoBtn +
+        '</div>';
+
+      ribbonBar.innerHTML =
+        buildCategoryHtml('file_ops', '파일 입출력', fileOpsContent) +
+        buildCategoryHtml('file_history', '작업 히스토리', historyContent);
+    } else if (cfg.currentTab === 'insert') {
       var shapeTools = [
         '<button class="tool-btn ' + (cfg.currentTool==='select'?'active':'') + '" onclick="setTool(\'select\')"><span class="alt-badge">V</span>' + (icons.select || '') + '<span class="tooltip-text">선택 도구 (V)</span></button>',
         '<button class="tool-btn ' + (cfg.currentTool==='text'?'active':'') + '" onclick="setTool(\'text\')"><span class="alt-badge">T</span>' + (icons.addText || '') + '<span class="tooltip-text">텍스트 상자 도구 (T)</span></button>',
