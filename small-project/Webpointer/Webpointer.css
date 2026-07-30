@@ -96,9 +96,9 @@
   align-items: stretch !important;
   flex-wrap: nowrap !important;
   gap: 0 !important;
-  overflow-x: auto !important;
+  overflow: visible !important;
   position: relative !important;
-  z-index: 5 !important;
+  z-index: 100 !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
   margin: 0 !important;
 }
@@ -114,6 +114,7 @@
   position: relative !important;
   height: 100% !important;
   flex-shrink: 0 !important;
+  overflow: visible !important;
 }
 
 .webpointer-app .ribbon-category:last-child {
@@ -234,6 +235,7 @@
   background-color: #e2e8f0 !important;
   border-color: #0284c7 !important;
   color: #0284c7 !important;
+  z-index: 1000 !important;
 }
 
 .webpointer-app .tool-btn.active {
@@ -272,8 +274,18 @@
   white-space: nowrap !important;
   border-radius: 4px !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
-  z-index: 300 !important;
+  z-index: 99999 !important;
   pointer-events: none !important;
+}
+
+/* Tooltip direction for bottom row items: position ABOVE the button */
+.webpointer-app .category-grid > div:nth-child(3n) .tool-btn .tooltip-text,
+.webpointer-app .category-content > div:last-child .tool-btn .tooltip-text,
+.webpointer-app .tooltip-top .tooltip-text {
+  top: auto !important;
+  bottom: 100% !important;
+  margin-top: 0 !important;
+  margin-bottom: 6px !important;
 }
 
 .webpointer-app .tool-btn:hover .tooltip-text,
