@@ -577,6 +577,10 @@
     el.setAttribute('fill', cfg.fillColor || 'none');
     el.setAttribute('stroke-width', cfg.strokeWidth || 2);
 
+    if (cfg.strokeDashStyle === 'dashed' && cfg.strokeDashArray) {
+      el.setAttribute('stroke-dasharray', cfg.strokeDashArray);
+    }
+
     if (cfg.startMarker !== 'none') el.setAttribute('marker-start', 'url(#marker-start-' + cfg.startMarker + ')');
     if (cfg.endMarker !== 'none') el.setAttribute('marker-end', 'url(#marker-end-' + cfg.endMarker + ')');
 
@@ -952,17 +956,20 @@
   };
 
   window.setStrokeDashStyle = function(style) {
+    console.log('[Webpointer Debug] setStrokeDashStyle called:', style);
     cfg.strokeDashStyle = style;
     window.applyStyleToSelected();
     render.renderRibbon();
   };
 
   window.setStrokeDashArray = function(pattern) {
+    console.log('[Webpointer Debug] setStrokeDashArray called:', pattern);
     cfg.strokeDashArray = pattern;
     window.applyStyleToSelected();
   };
 
   window.applyStyleToSelected = function() {
+    console.log('[Webpointer Debug] applyStyleToSelected - selectedIds:', Array.from(cfg.selectedIds || []), 'strokeDashStyle:', cfg.strokeDashStyle, 'strokeDashArray:', cfg.strokeDashArray);
     cfg.selectedIds.forEach(function(id) {
       var obj = cfg.objectsMap.get(id);
       if (!obj) return;
@@ -978,8 +985,10 @@
       obj.el.setAttribute('stroke-width', cfg.strokeWidth);
 
       if (cfg.strokeDashStyle === 'dashed' && cfg.strokeDashArray) {
+        console.log('[Webpointer Debug] Setting stroke-dasharray on element #' + id + ' to:', cfg.strokeDashArray);
         obj.el.setAttribute('stroke-dasharray', cfg.strokeDashArray);
       } else {
+        console.log('[Webpointer Debug] Removing stroke-dasharray from element #' + id);
         obj.el.removeAttribute('stroke-dasharray');
       }
 
