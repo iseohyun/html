@@ -430,6 +430,17 @@
       render.renderRibbon();
     });
 
+    mainSvg.addEventListener('wheel', function(e) {
+      e.preventDefault();
+      var zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+      var curZoom = cfg.zoomLevel || 1.0;
+      var newZoom = Math.min(5.0, Math.max(0.2, curZoom * zoomFactor));
+      cfg.zoomLevel = newZoom;
+
+      mainSvg.style.transformOrigin = e.offsetX + 'px ' + e.offsetY + 'px';
+      mainSvg.style.transform = 'scale(' + newZoom + ')';
+    }, { passive: false });
+
     mainSvg.addEventListener('dblclick', function(e) {
       var targetObj = e.target.closest('text, tspan');
       if (targetObj) {
@@ -456,6 +467,17 @@
       var handlers = getHandlers();
 
       if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+        return;
+      }
+
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'a' || e.key === 'A')) {
+        e.preventDefault();
+        cfg.selectedIds.clear();
+        cfg.objectsMap.forEach(function(obj) {
+          cfg.selectedIds.add(obj.id);
+        });
+        if (render && render.renderUI) render.renderUI();
+        if (render && render.renderRibbon) render.renderRibbon();
         return;
       }
 

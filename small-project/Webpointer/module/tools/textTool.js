@@ -441,12 +441,61 @@
     }
   }
 
+  function updateShapeTextAlignment(shapeObj, textObj, hAlign, vAlign) {
+    if (!shapeObj || !textObj) return;
+    var bounds = window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(shapeObj) : null;
+    if (!bounds) {
+      var a = shapeObj.attrs || {};
+      bounds = {
+        minX: a.x !== undefined ? a.x : 0,
+        minY: a.y !== undefined ? a.y : 0,
+        maxX: (a.x !== undefined ? a.x : 0) + (a.width || 100),
+        maxY: (a.y !== undefined ? a.y : 0) + (a.height || 100)
+      };
+    }
+
+    var fontSize = parseInt(textObj.attrs ? textObj.attrs.fontSize || cfg.fontSize || 20 : 20, 10);
+    var h = hAlign || (textObj.attrs ? textObj.attrs.textAnchor : 'middle') || 'middle';
+    var v = vAlign || (textObj.attrs ? textObj.attrs.verticalAlign : 'middle') || 'middle';
+
+    var newX = (bounds.minX + bounds.maxX) / 2;
+    if (h === 'start' || h === 'left') {
+      newX = bounds.minX + 12;
+    } else if (h === 'end' || h === 'right') {
+      newX = bounds.maxX - 12;
+    }
+
+    var newY = (bounds.minY + bounds.maxY) / 2 + (fontSize * 0.35);
+    if (v === 'top') {
+      newY = bounds.minY + fontSize + 8;
+    } else if (v === 'bottom') {
+      newY = bounds.maxY - 8;
+    }
+
+    var anchor = (h === 'left') ? 'start' : ((h === 'right') ? 'end' : h);
+
+    if (textObj.attrs) {
+      textObj.attrs.x = Math.round(newX);
+      textObj.attrs.y = Math.round(newY);
+      textObj.attrs.textAnchor = anchor;
+      textObj.attrs.verticalAlign = v;
+    }
+
+    if (textObj.el) {
+      textObj.el.setAttribute('x', Math.round(newX));
+      textObj.el.setAttribute('y', Math.round(newY));
+      textObj.el.setAttribute('text-anchor', anchor);
+    }
+  }
+
   window.addTextObject = addTextObject;
+  window.updateShapeTextAlignment = updateShapeTextAlignment;
 
   window.WebpointerTextTool = {
     addTextObject: addTextObject,
     startDirectCanvasTyping: startDirectCanvasTyping,
     finishDirectCanvasTyping: finishDirectCanvasTyping,
-    getShapeTextInsertionPoint: getShapeTextInsertionPoint
+    getShapeTextInsertionPoint: getShapeTextInsertionPoint,
+    updateShapeTextAlignment: updateShapeTextAlignment
   };
 })(window);

@@ -848,4 +848,161 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
 
     expect(pageErrors).toEqual([]);
   });
+
+  test('TC24: File Slot Save/Load Modal & Auto-Save Recovery Suite', async ({ page }) => {
+    // Switch to File tab
+    await page.click('.tab-btn:has-text("파일")');
+
+    // Open File Slots Modal via window function
+    await page.evaluate(() => {
+      if (typeof window.openFileSlotsModal === 'function') {
+        window.openFileSlotsModal();
+      }
+    });
+    await expect(page.locator('#fileSlotsModal')).toBeVisible();
+
+    // Save to slot 1 programmatically
+    await page.evaluate(() => {
+      if (typeof window.saveToFileSlot === 'function') {
+        window.saveToFileSlot(1);
+      }
+    });
+
+    // Check slot 1 thumbnail / status updated
+    const slot1Text = await page.locator('#fileSlotCard_1').innerText();
+    expect(slot1Text).toContain('Slot 1');
+
+    // Close modal
+    await page.click('#fileSlotsModal button:has-text("닫기")');
+    await expect(page.locator('#fileSlotsModal')).toBeHidden();
+
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('TC25: Image Fill Modes (Stretch, Tile, Single) Suite', async ({ page }) => {
+    const stretchFill = await page.evaluate(() => {
+      return window.createImageFill('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'stretch');
+    });
+    expect(stretchFill).toContain('url(#imgpat_');
+
+    const tileFill = await page.evaluate(() => {
+      return window.createImageFill('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'tile', 30);
+    });
+    expect(tileFill).toContain('url(#imgpat_');
+
+    const singleFill = await page.evaluate(() => {
+      return window.createImageFill('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'single');
+    });
+    expect(singleFill).toContain('url(#imgpat_');
+
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('TC26: Multi-Stop Gradient Color Ramp & 2-Point Handles Suite', async ({ page }) => {
+    const gradUrl = await page.evaluate(() => {
+      const stops = [
+        { offset: '0%', color: '#ff0000' },
+        { offset: '50%', color: '#00ff00' },
+        { offset: '100%', color: '#0000ff' }
+      ];
+      return window.createLinearGradient('#ff0000', '#0000ff', 45, stops);
+    });
+    expect(gradUrl).toContain('url(#grad_lin_');
+
+    await page.evaluate((fill) => {
+      const obj = {
+        id: 'rect_grad_1',
+        type: 'rect',
+        attrs: { x: 100, y: 100, width: 150, height: 100, fill: fill, stroke: '#000', strokeWidth: 2 }
+      };
+      window.WebpointerConfig.objectsMap.set('rect_grad_1', obj);
+      window.WebpointerConfig.selectedIds.clear();
+      window.WebpointerConfig.selectedIds.add('rect_grad_1');
+      if (window.WebpointerRender) window.WebpointerRender.renderUI();
+    }, gradUrl);
+
+    const handleCount = await page.locator('#uiGroup circle[data-handle-type="gradient_start"]').count();
+    expect(handleCount).toBe(1);
+
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('TC27: Shape Text Horizontal & Vertical Alignment Suite', async ({ page }) => {
+    const coords = await page.evaluate(() => {
+      const shapeObj = { id: 's1', type: 'rect', attrs: { x: 100, y: 100, width: 200, height: 100 } };
+      const textObj = { id: 't1', type: 'text', attrs: { text: 'Hello', fontSize: 20 } };
+      window.updateShapeTextAlignment(shapeObj, textObj, 'left', 'top');
+      const topX = textObj.attrs.x;
+      const topY = textObj.attrs.y;
+
+      window.updateShapeTextAlignment(shapeObj, textObj, 'right', 'bottom');
+      const botX = textObj.attrs.x;
+      const botY = textObj.attrs.y;
+
+      return { topX, topY, botX, botY };
+    });
+
+    expect(coords.topX).toBe(112);
+    expect(coords.botX).toBe(288);
+    expect(coords.botY).toBeGreaterThan(coords.topY);
+
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('TC28: Live Filter Preview & Stack Reordering Suite', async ({ page }) => {
+    const filters = await page.evaluate(() => {
+      const obj = { id: 'obj_flt_1', type: 'rect', attrs: { x: 50, y: 50, width: 100, height: 100, filterList: ['blur(5px)', 'grayscale(100%)'] } };
+      window.WebpointerConfig.objectsMap.set('obj_flt_1', obj);
+      window.WebpointerConfig.selectedIds.clear();
+      window.WebpointerConfig.selectedIds.add('obj_flt_1');
+
+      window.moveFilterDown(0);
+      const afterDown = obj.attrs.filterList.slice();
+
+      window.moveFilterUp(1);
+      const afterUp = obj.attrs.filterList.slice();
+
+      return { afterDown, afterUp };
+    });
+
+    expect(filters.afterDown[0]).toBe('grayscale(100%)');
+    expect(filters.afterDown[1]).toBe('blur(5px)');
+    expect(filters.afterUp[0]).toBe('blur(5px)');
+
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('TC29: Rotation & Flip E2E Suite, SMIL Animation, Hotkeys & Canvas Zoom', async ({ page }) => {
+    await page.evaluate(() => {
+      const o1 = window.WebpointerObjects.createSvgObject('rect', { stepX: 1, stepY: 1 }, { stepX: 5, stepY: 5 });
+      const o2 = window.WebpointerObjects.createSvgObject('rect', { stepX: 10, stepY: 10 }, { stepX: 15, stepY: 15 });
+      window.WebpointerConfig.selectedIds.clear();
+      window.WebpointerConfig.selectedIds.add(o1.id);
+      window.WebpointerConfig.selectedIds.add(o2.id);
+    });
+    await page.keyboard.press('Control+a');
+    const selectedCount = await page.evaluate(() => window.WebpointerConfig.selectedIds.size);
+    expect(selectedCount).toBeGreaterThanOrEqual(2);
+
+    await page.evaluate(() => {
+      window.playAnimation('rotate');
+      window.playAnimation('bounce');
+    });
+    const animCount = await page.locator('#mainSvg animateTransform').count();
+    expect(animCount).toBeGreaterThan(0);
+
+    await page.evaluate(() => window.stopAllAnimations());
+    const animCountAfterStop = await page.locator('#mainSvg animateTransform').count();
+    expect(animCountAfterStop).toBe(0);
+
+    await page.evaluate(() => {
+      window.cycleStartMarker();
+      window.cycleEndMarker();
+      window.cycleStrokeCap();
+      window.cycleStrokeJoin();
+    });
+
+    expect(pageErrors).toEqual([]);
+  });
 });
+

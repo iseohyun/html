@@ -428,6 +428,12 @@
 
       var imgTab =
         '<div class="pop-tab-content" data-tab="image" style="display:none; flex-direction:column; gap:6px; font-size:0.78rem; color:#334155;">' +
+          '<span>채우기 모드:</span>' +
+          '<select id="popImgFillMode" style="width:100%; padding:3px; font-size:0.75rem; border:1px solid #cbd5e1; border-radius:4px;">' +
+            '<option value="stretch">늘리기 (Stretch)</option>' +
+            '<option value="tile">반복 (Tile / Repeat)</option>' +
+            '<option value="single">1회만 채우기 (Single / Contain)</option>' +
+          '</select>' +
           '<span>등록된 심볼 사용:</span>' +
           '<select id="popImgSymbolSelect" style="width:100%; padding:2px; font-size:0.75rem;">' + symbolOptionsHtml + '</select>' +
           '<span>또는 이미지 파일 업로드:</span>' +
@@ -1546,6 +1552,89 @@
   // =========================================================================
   // File Operations (불러오기, 저장하기(웹에 저장), 다운로드)
   // =========================================================================
+  var pendingFileToOpen = null;
+
+  function proceedOpenFile(file) {
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      var content = ev.target.result;
+      try {
+        if (file.name.toLowerCase().endsWith('.svg')) {
+          pushHistoryState();
+          if (window.WebpointerSVGImporter) {
+            window.WebpointerSVGImporter.importSVGContent(content);
+          }
+          pushHistoryState();
+          alert('SVG 벡터 객체를 성공적으로 불러왔습니다!');
+        } else {
+          pushHistoryState();
+          restoreSnapshot(content);
+          pushHistoryState();
+          alert('파일을 성공적으로 불러왔습니다!');
+        }
+      } catch(err) {
+        alert('파일을 읽는 중 오류가 발생했습니다: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function openSlotSelectionModal() {
+    var modal = document.getElementById('slotSelectionModal');
+    if (!modal) {
+      if (pendingFileToOpen) proceedOpenFile(pendingFileToOpen);
+      return;
+    }
+    var btnContainer = document.getElementById('slotSelectionButtons');
+    if (btnContainer) {
+      var html = '';
+      [1, 2, 3].forEach(function(slotNum) {
+        var raw = localStorage.getItem('webpointer_slot_' + slotNum);
+        var label = 'Slot ' + slotNum + '에 캔버스 저장 후 파일 열기';
+        if (raw) {
+          try {
+            var data = JSON.parse(raw);
+            label += ' (기존 ' + (data.objects ? data.objects.length : 0) + '개 객체 덮어쓰기)';
+          } catch(e){}
+        }
+        html += '<button onclick="saveAndProceedFileOpen(' + slotNum + ')" style="padding:8px 12px; font-size:0.82rem; font-weight:600; background:#0284c7; color:#fff; border:none; border-radius:6px; cursor:pointer; text-align:left;">💾 ' + label + '</button>';
+      });
+      html += '<button onclick="discardAndProceedFileOpen()" style="padding:8px 12px; font-size:0.82rem; font-weight:600; background:#ef4444; color:#fff; border:none; border-radius:6px; cursor:pointer; text-align:left; margin-top:4px;">🗑️ 현재 캔버스 폐기하고 파일 열기</button>';
+      btnContainer.innerHTML = html;
+    }
+    modal.classList.add('show');
+  }
+  window.openSlotSelectionModal = openSlotSelectionModal;
+
+  function closeSlotSelectionModal() {
+    var modal = document.getElementById('slotSelectionModal');
+    if (modal) modal.classList.remove('show');
+    pendingFileToOpen = null;
+  }
+  window.closeSlotSelectionModal = closeSlotSelectionModal;
+
+  function saveAndProceedFileOpen(slotNum) {
+    saveToFileSlot(slotNum);
+    closeSlotSelectionModal();
+    if (pendingFileToOpen) {
+      var file = pendingFileToOpen;
+      pendingFileToOpen = null;
+      proceedOpenFile(file);
+    }
+  }
+  window.saveAndProceedFileOpen = saveAndProceedFileOpen;
+
+  function discardAndProceedFileOpen() {
+    closeSlotSelectionModal();
+    if (pendingFileToOpen) {
+      var file = pendingFileToOpen;
+      pendingFileToOpen = null;
+      proceedOpenFile(file);
+    }
+  }
+  window.discardAndProceedFileOpen = discardAndProceedFileOpen;
+
   function openFile() {
     var input = document.createElement('input');
     input.type = 'file';
@@ -1553,28 +1642,12 @@
     input.onchange = function(e) {
       var file = e.target.files[0];
       if (!file) return;
-      var reader = new FileReader();
-      reader.onload = function(ev) {
-        var content = ev.target.result;
-        try {
-          if (file.name.toLowerCase().endsWith('.svg')) {
-            pushHistoryState();
-            if (window.WebpointerSVGImporter) {
-              window.WebpointerSVGImporter.importSVGContent(content);
-            }
-            pushHistoryState();
-            alert('SVG 벡터 객체를 성공적으로 불러왔습니다!');
-          } else {
-            pushHistoryState();
-            restoreSnapshot(content);
-            pushHistoryState();
-            alert('파일을 성공적으로 불러왔습니다!');
-          }
-        } catch(err) {
-          alert('파일을 읽는 중 오류가 발생했습니다: ' + err.message);
-        }
-      };
-      reader.readAsText(file);
+      if (cfg.objects && cfg.objects.length > 0) {
+        pendingFileToOpen = file;
+        openSlotSelectionModal();
+      } else {
+        proceedOpenFile(file);
+      }
     };
     input.click();
   }
@@ -1668,6 +1741,111 @@
     var modal = document.getElementById('detailedSettingsModal');
     if (modal) modal.classList.remove('show');
   }
+
+  function generateCanvasThumbnailSvg() {
+    try {
+      var svgEl = document.getElementById('mainSvg') || document.getElementById('webpointerSvgCanvas');
+      if (!svgEl) return '';
+      var clone = svgEl.cloneNode(true);
+      var uiGroup = clone.querySelector('#uiGroup');
+      if (uiGroup) uiGroup.parentNode.removeChild(uiGroup);
+      var gridGroup = clone.querySelector('#gridGroup');
+      if (gridGroup) gridGroup.parentNode.removeChild(gridGroup);
+      var serializer = new XMLSerializer();
+      var str = serializer.serializeToString(clone);
+      return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(str);
+    } catch(e) {
+      return '';
+    }
+  }
+
+  function renderFileSlotsList() {
+    var container = document.getElementById('fileSlotsContainer');
+    if (!container) return;
+    var html = '';
+    [1, 2, 3].forEach(function(slotNum) {
+      var raw = localStorage.getItem('webpointer_slot_' + slotNum);
+      var slotData = null;
+      var timeStr = '비어있음';
+      var countStr = '0개 객체';
+      var thumbHtml = '<div style="height:48px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:0.75rem; color:#94a3b8;">미리보기 없음</div>';
+      var isSaved = false;
+
+      if (raw) {
+        try {
+          slotData = JSON.parse(raw);
+          isSaved = true;
+          if (slotData.timestamp) timeStr = new Date(slotData.timestamp).toLocaleString();
+          if (slotData.objects) countStr = slotData.objects.length + '개 객체';
+          if (slotData.thumbnail) {
+            thumbHtml = '<img src="' + slotData.thumbnail + '" style="height:48px; width:100%; object-fit:contain; background:#ffffff; border:1px solid #e2e8f0; border-radius:4px;" />';
+          }
+        } catch(e){}
+      }
+      html +=
+        '<div id="fileSlotCard_' + slotNum + '" style="border:1px solid #cbd5e1; border-radius:8px; padding:10px; background:#ffffff; display:flex; flex-direction:column; gap:6px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">' +
+          '<div style="font-size:0.9rem; font-weight:700; color:#0f172a; border-bottom:1px solid #f1f5f9; padding-bottom:4px; display:flex; justify-content:space-between; align-items:center;">' +
+            '<span>💾 Slot ' + slotNum + ' ' + (isSaved ? '<span style="font-size:0.7rem; color:#059669; font-weight:600;">(저장됨)</span>' : '') + '</span>' +
+            '<span style="font-size:0.75rem; font-weight:400; color:#64748b;">' + countStr + '</span>' +
+          '</div>' +
+          thumbHtml +
+          '<div style="font-size:0.75rem; color:#64748b; margin-top:2px; height:24px; word-break:break-all; overflow:hidden;">저장 시각: ' + timeStr + '</div>' +
+          '<div style="display:flex; gap:4px; margin-top:4px;">' +
+            '<button onclick="saveToFileSlot(' + slotNum + ')" style="flex:1; padding:4px 6px; font-size:0.78rem; font-weight:600; background:#0284c7; color:#fff; border:none; border-radius:4px; cursor:pointer;">저장하기</button>' +
+            '<button onclick="loadFromFileSlot(' + slotNum + ')" ' + (!slotData ? 'disabled style="opacity:0.5; cursor:not-allowed;' : 'style="') + 'flex:1; padding:4px 6px; font-size:0.78rem; font-weight:600; background:#059669; color:#fff; border:none; border-radius:4px; cursor:pointer;">불러오기</button>' +
+          '</div>' +
+        '</div>';
+    });
+    container.innerHTML = html;
+  }
+
+  function openFileSlotsModal() {
+    var modal = document.getElementById('fileSlotsModal');
+    if (modal) {
+      renderFileSlotsList();
+      modal.classList.add('show');
+    }
+  }
+  window.openFileSlotsModal = openFileSlotsModal;
+
+  function closeFileSlotsModal() {
+    var modal = document.getElementById('fileSlotsModal');
+    if (modal) modal.classList.remove('show');
+  }
+  window.closeFileSlotsModal = closeFileSlotsModal;
+
+  function saveToFileSlot(slotNum) {
+    try {
+      var snapStr = captureSnapshot();
+      var parsed = JSON.parse(snapStr);
+      parsed.timestamp = Date.now();
+      parsed.thumbnail = generateCanvasThumbnailSvg();
+      parsed.snapStr = snapStr;
+      localStorage.setItem('webpointer_slot_' + slotNum, JSON.stringify(parsed));
+      renderFileSlotsList();
+      alert('Slot ' + slotNum + '에 저장되었습니다.');
+    } catch(e) {
+      alert('Slot 저장 실패: ' + e.message);
+    }
+  }
+  window.saveToFileSlot = saveToFileSlot;
+
+  function loadFromFileSlot(slotNum) {
+    try {
+      var raw = localStorage.getItem('webpointer_slot_' + slotNum);
+      if (!raw) return;
+      var parsed = JSON.parse(raw);
+      restoreSnapshot(parsed.snapStr || raw);
+      closeFileSlotsModal();
+      alert('Slot ' + slotNum + '에서 불러왔습니다.');
+    } catch(e) {
+      alert('Slot 불러오기 실패: ' + e.message);
+    }
+  }
+  window.loadFromFileSlot = loadFromFileSlot;
+  window.renderFileSlotsList = renderFileSlotsList;
+
+
 
   function applyDetailedSettings() {
     var proxInput = document.getElementById('settingProximityThreshold');
@@ -1818,10 +1996,10 @@
     return defs;
   }
 
-  function createLinearGradient(color1, color2, angleDeg) {
+  function createLinearGradient(color1, color2, angleDeg, stopsArray) {
     var defs = ensureSvgDefs();
     if (!defs) return 'none';
-    var id = 'grad_lin_' + Date.now();
+    var id = 'grad_lin_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
     var rad = ((angleDeg || 90) * Math.PI) / 180;
     var x1 = Math.round(50 - Math.cos(rad) * 50) + '%';
     var y1 = Math.round(50 - Math.sin(rad) * 50) + '%';
@@ -1835,25 +2013,34 @@
     grad.setAttribute('x2', x2);
     grad.setAttribute('y2', y2);
 
-    var stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
-    stop1.setAttribute('offset', '0%');
-    stop1.setAttribute('stop-color', color1);
+    if (stopsArray && Array.isArray(stopsArray) && stopsArray.length > 0) {
+      stopsArray.forEach(function(st) {
+        var s = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+        s.setAttribute('offset', typeof st.offset === 'number' ? st.offset + '%' : (st.offset || '0%'));
+        s.setAttribute('stop-color', st.color || '#000000');
+        grad.appendChild(s);
+      });
+    } else {
+      var stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+      stop1.setAttribute('offset', '0%');
+      stop1.setAttribute('stop-color', color1 || '#38bdf8');
 
-    var stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
-    stop2.setAttribute('offset', '100%');
-    stop2.setAttribute('stop-color', color2);
+      var stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+      stop2.setAttribute('offset', '100%');
+      stop2.setAttribute('stop-color', color2 || '#0369a1');
 
-    grad.appendChild(stop1);
-    grad.appendChild(stop2);
+      grad.appendChild(stop1);
+      grad.appendChild(stop2);
+    }
     defs.appendChild(grad);
 
     return 'url(#' + id + ')';
   }
 
-  function createRadialGradient(color1, color2) {
+  function createRadialGradient(color1, color2, stopsArray) {
     var defs = ensureSvgDefs();
     if (!defs) return 'none';
-    var id = 'grad_rad_' + Date.now();
+    var id = 'grad_rad_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
 
     var grad = document.createElementNS('http://www.w3.org/2000/svg', 'radialGradient');
     grad.setAttribute('id', id);
@@ -1861,16 +2048,25 @@
     grad.setAttribute('cy', '50%');
     grad.setAttribute('r', '50%');
 
-    var stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
-    stop1.setAttribute('offset', '0%');
-    stop1.setAttribute('stop-color', color1);
+    if (stopsArray && Array.isArray(stopsArray) && stopsArray.length > 0) {
+      stopsArray.forEach(function(st) {
+        var s = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+        s.setAttribute('offset', typeof st.offset === 'number' ? st.offset + '%' : (st.offset || '0%'));
+        s.setAttribute('stop-color', st.color || '#000000');
+        grad.appendChild(s);
+      });
+    } else {
+      var stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+      stop1.setAttribute('offset', '0%');
+      stop1.setAttribute('stop-color', color1 || '#38bdf8');
 
-    var stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
-    stop2.setAttribute('offset', '100%');
-    stop2.setAttribute('stop-color', color2);
+      var stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+      stop2.setAttribute('offset', '100%');
+      stop2.setAttribute('stop-color', color2 || '#0369a1');
 
-    grad.appendChild(stop1);
-    grad.appendChild(stop2);
+      grad.appendChild(stop1);
+      grad.appendChild(stop2);
+    }
     defs.appendChild(grad);
 
     return 'url(#' + id + ')';
@@ -1923,24 +2119,48 @@
     return 'url(#' + id + ')';
   }
 
-  function createImageFill(imgUrl, width, height) {
+  function createImageFill(imgUrl, mode, scale) {
     var defs = ensureSvgDefs();
     if (!defs) return 'none';
-    var id = 'imgpat_' + Date.now();
-    var w = width || 60;
-    var h = height || 60;
+    var id = 'imgpat_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+    var fillMode = mode || 'stretch';
+    var patternScale = scale || 40;
 
     var pat = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
     pat.setAttribute('id', id);
-    pat.setAttribute('width', w);
-    pat.setAttribute('height', h);
-    pat.setAttribute('patternUnits', 'userSpaceOnUse');
 
     var img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
     img.setAttribute('href', imgUrl);
-    img.setAttribute('width', w);
-    img.setAttribute('height', h);
-    img.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+
+    if (fillMode === 'stretch') {
+      pat.setAttribute('patternUnits', 'objectBoundingBox');
+      pat.setAttribute('width', '1');
+      pat.setAttribute('height', '1');
+      img.setAttribute('width', '100%');
+      img.setAttribute('height', '100%');
+      img.setAttribute('preserveAspectRatio', 'none');
+    } else if (fillMode === 'tile') {
+      pat.setAttribute('patternUnits', 'userSpaceOnUse');
+      pat.setAttribute('width', patternScale);
+      pat.setAttribute('height', patternScale);
+      img.setAttribute('width', patternScale);
+      img.setAttribute('height', patternScale);
+      img.setAttribute('preserveAspectRatio', 'none');
+    } else if (fillMode === 'single') {
+      pat.setAttribute('patternUnits', 'objectBoundingBox');
+      pat.setAttribute('width', '1');
+      pat.setAttribute('height', '1');
+      img.setAttribute('width', '100%');
+      img.setAttribute('height', '100%');
+      img.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    } else {
+      pat.setAttribute('patternUnits', 'userSpaceOnUse');
+      pat.setAttribute('width', '60');
+      pat.setAttribute('height', '60');
+      img.setAttribute('width', '60');
+      img.setAttribute('height', '60');
+      img.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+    }
 
     pat.appendChild(img);
     defs.appendChild(pat);
@@ -1988,11 +2208,13 @@
   function applyImageFillFromPopover(targetMode) {
     var select = document.getElementById('popImgSymbolSelect');
     var fileInput = document.getElementById('popImgFileInput');
+    var modeSelect = document.getElementById('popImgFillMode');
+    var fillMode = modeSelect ? modeSelect.value : 'stretch';
 
     if (fileInput && fileInput.files && fileInput.files[0]) {
       var reader = new FileReader();
       reader.onload = function(e) {
-        var fillUrl = createImageFill(e.target.result);
+        var fillUrl = createImageFill(e.target.result, fillMode);
         selectColorFromPopover(targetMode, fillUrl);
       };
       reader.readAsDataURL(fileInput.files[0]);
@@ -2000,7 +2222,7 @@
       var symId = select.value;
       var sym = (cfg.symbolRegistry || []).find(function(s) { return s.id === symId; });
       if (sym) {
-        var fillUrl = createImageFill(sym.data || sym.thumb);
+        var fillUrl = createImageFill(sym.data || sym.thumb, fillMode);
         selectColorFromPopover(targetMode, fillUrl);
       }
     }
@@ -2043,13 +2265,13 @@
           '<span>계수 범위:</span>' +
           '<span id="popFilterValDisp" style="font-weight:700; color:#0284c7;">3px</span>' +
         '</div>' +
-        '<input type="range" id="popFilterRange" min="0" max="30" value="3" step="1" oninput="document.getElementById(\'popFilterValDisp\').innerText = this.value + (window.filterUnit || \'px\')">' +
+        '<input type="range" id="popFilterRange" min="0" max="30" value="3" step="1" oninput="livePreviewFilter()">' +
       '</div>' +
       '<div style="display:flex; gap:6px;">' +
         '<button onclick="addFilterFromPopover()" style="flex:1; padding:4px; background:#0284c7; color:#fff; border:none; border-radius:4px; font-size:0.75rem; font-weight:600; cursor:pointer;">➕ 필터 추가</button>' +
         '<button onclick="clearAllFiltersFromPopover()" style="padding:4px 8px; background:#ef4444; color:#fff; border:none; border-radius:4px; font-size:0.75rem; cursor:pointer;">🧹 전체 삭제</button>' +
       '</div>' +
-      '<div id="popFilterStackList" style="display:flex; flex-wrap:wrap; gap:4px; max-height:80px; overflow-y:auto; font-size:0.72rem; padding:4px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px;">' +
+      '<div id="popFilterStackList" style="display:flex; flex-direction:column; gap:4px; max-height:100px; overflow-y:auto; font-size:0.72rem; padding:4px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px;">' +
       '</div>';
 
     popover.innerHTML = html;
@@ -2068,6 +2290,72 @@
       document.addEventListener('mousedown', onOutsideClick);
     }, 50);
   }
+
+  function livePreviewFilter() {
+    var select = document.getElementById('popFilterType');
+    var range = document.getElementById('popFilterRange');
+    var disp = document.getElementById('popFilterValDisp');
+    if (!select || !range) return;
+    if (disp) disp.innerText = range.value + (window.filterUnit || 'px');
+
+    var type = select.value;
+    var val = range.value;
+    var unit = window.filterUnit || 'px';
+    var filterExpr = (type === 'drop-shadow') ? 'drop-shadow(' + val + 'px ' + val + 'px ' + (parseInt(val, 10) + 2) + 'px rgba(0,0,0,0.5))' : type + '(' + val + unit + ')';
+
+    var targets = getSelectedObjectsForFilter();
+    targets.forEach(function(obj) {
+      if (!obj.attrs) obj.attrs = {};
+      var baseList = (obj.attrs.filterList || []).slice();
+      var previewList = baseList.concat([filterExpr]);
+      obj.attrs.filter = previewList.join(' ');
+      if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.updateElementAttributes) {
+        window.WebpointerRenderCanvas.updateElementAttributes(obj);
+      }
+    });
+  }
+  window.livePreviewFilter = livePreviewFilter;
+
+  function moveFilterUp(idx) {
+    if (idx <= 0) return;
+    var targets = getSelectedObjectsForFilter();
+    targets.forEach(function(obj) {
+      if (obj.attrs && obj.attrs.filterList && obj.attrs.filterList.length > idx) {
+        var temp = obj.attrs.filterList[idx];
+        obj.attrs.filterList[idx] = obj.attrs.filterList[idx - 1];
+        obj.attrs.filterList[idx - 1] = temp;
+        obj.attrs.filter = obj.attrs.filterList.join(' ');
+        if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.updateElementAttributes) {
+          window.WebpointerRenderCanvas.updateElementAttributes(obj);
+        }
+        if (window.WebpointerRender && window.WebpointerRender.renderCanvas) {
+          window.WebpointerRender.renderCanvas();
+        }
+      }
+    });
+    renderFilterStackListInPopover();
+  }
+  window.moveFilterUp = moveFilterUp;
+
+  function moveFilterDown(idx) {
+    var targets = getSelectedObjectsForFilter();
+    targets.forEach(function(obj) {
+      if (obj.attrs && obj.attrs.filterList && idx < obj.attrs.filterList.length - 1) {
+        var temp = obj.attrs.filterList[idx];
+        obj.attrs.filterList[idx] = obj.attrs.filterList[idx + 1];
+        obj.attrs.filterList[idx + 1] = temp;
+        obj.attrs.filter = obj.attrs.filterList.join(' ');
+        if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.updateElementAttributes) {
+          window.WebpointerRenderCanvas.updateElementAttributes(obj);
+        }
+        if (window.WebpointerRender && window.WebpointerRender.renderCanvas) {
+          window.WebpointerRender.renderCanvas();
+        }
+      }
+    });
+    renderFilterStackListInPopover();
+  }
+  window.moveFilterDown = moveFilterDown;
 
   function updateFilterRangeConfig() {
     var select = document.getElementById('popFilterType');
@@ -2135,10 +2423,14 @@
     var tagsHtml = '';
     for (var i = 0; i < filters.length; i++) {
       tagsHtml +=
-        '<span style="display:inline-flex; align-items:center; gap:2px; background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; border:1px solid #bae6fd;">' +
-          filters[i] +
-          '<button onclick="removeFilterAtIndexFromPopover(' + i + ')" style="background:none; border:none; color:#ef4444; font-weight:bold; cursor:pointer; font-size:0.75rem; padding:0 2px;">×</button>' +
-        '</span>';
+        '<div style="display:flex; align-items:center; justify-space-between; background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; border:1px solid #bae6fd;">' +
+          '<span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + filters[i] + '</span>' +
+          '<div style="display:flex; gap:2px; margin-left:4px;">' +
+            '<button onclick="moveFilterUp(' + i + ')" style="background:none; border:none; color:#0284c7; font-weight:bold; cursor:pointer; font-size:0.7rem; padding:0 2px;">▲</button>' +
+            '<button onclick="moveFilterDown(' + i + ')" style="background:none; border:none; color:#0284c7; font-weight:bold; cursor:pointer; font-size:0.7rem; padding:0 2px;">▼</button>' +
+            '<button onclick="removeFilterAtIndexFromPopover(' + i + ')" style="background:none; border:none; color:#ef4444; font-weight:bold; cursor:pointer; font-size:0.75rem; padding:0 2px;">×</button>' +
+          '</div>' +
+        '</div>';
     }
     listContainer.innerHTML = tagsHtml;
   }
@@ -2351,6 +2643,15 @@
   window.removeSymbolClipFromSelected = removeSymbolClipFromSelected;
   window.openSymbolManagerModal = openSymbolManagerModal;
   window.closeSymbolManagerModal = closeSymbolManagerModal;
+  window.openFileSlotsModal = openFileSlotsModal;
+  window.closeFileSlotsModal = closeFileSlotsModal;
+  window.saveToFileSlot = saveToFileSlot;
+  window.loadFromFileSlot = loadFromFileSlot;
+  window.renderFileSlotsList = renderFileSlotsList;
+  window.openSlotSelectionModal = openSlotSelectionModal;
+  window.closeSlotSelectionModal = closeSlotSelectionModal;
+  window.saveAndProceedFileOpen = saveAndProceedFileOpen;
+  window.discardAndProceedFileOpen = discardAndProceedFileOpen;
   window.importSymbolFromFile = importSymbolFromFile;
   window.deleteSymbol = deleteSymbol;
   window.renderSymbolList = renderSymbolList;
@@ -2373,6 +2674,15 @@
     saveState: saveState,
     undo: undo,
     redo: redo,
+    openFileSlotsModal: openFileSlotsModal,
+    closeFileSlotsModal: closeFileSlotsModal,
+    saveToFileSlot: saveToFileSlot,
+    loadFromFileSlot: loadFromFileSlot,
+    renderFileSlotsList: renderFileSlotsList,
+    openSlotSelectionModal: openSlotSelectionModal,
+    closeSlotSelectionModal: closeSlotSelectionModal,
+    saveAndProceedFileOpen: saveAndProceedFileOpen,
+    discardAndProceedFileOpen: discardAndProceedFileOpen,
     toggleColorPalettePopover: toggleColorPalettePopover,
     selectColorFromPopover: selectColorFromPopover,
     applyStyleToSelected: applyStyleToSelected,
@@ -2584,4 +2894,152 @@
 
     return { x: resultX, y: resultY, lines: guides, guides: guides };
   }
+
+  function cycleStartMarker() {
+    var cur = cfg.startMarker || 'none';
+    var next = 'none';
+    if (cur === 'none') next = 'arrow';
+    else if (cur === 'arrow') next = 'circle';
+    else if (cur === 'circle') next = 'diamond';
+    else next = 'none';
+    setStartMarker(next);
+  }
+  window.cycleStartMarker = cycleStartMarker;
+
+  function cycleEndMarker() {
+    var cur = cfg.endMarker || 'none';
+    var next = 'none';
+    if (cur === 'none') next = 'arrow';
+    else if (cur === 'arrow') next = 'circle';
+    else if (cur === 'circle') next = 'diamond';
+    else next = 'none';
+    setEndMarker(next);
+  }
+  window.cycleEndMarker = cycleEndMarker;
+
+  function cycleStrokeCap() {
+    var cur = cfg.strokeCap || 'butt';
+    var next = 'butt';
+    if (cur === 'butt') next = 'round';
+    else if (cur === 'round') next = 'square';
+    else next = 'butt';
+    setStrokeCap(next);
+  }
+  window.cycleStrokeCap = cycleStrokeCap;
+  function cycleStrokeJoin() {
+    var cur = cfg.strokeJoin || 'miter';
+    var next = 'miter';
+    if (cur === 'miter') next = 'round';
+    else if (cur === 'round') next = 'bevel';
+    else next = 'miter';
+    setStrokeJoin(next);
+  }
+  window.cycleStrokeJoin = cycleStrokeJoin;
+
+  function playAnimation(type) {
+    var targets = getSelectedObjectsForFilter();
+    targets.forEach(function(obj) {
+      if (!obj.el) {
+        obj.el = document.getElementById(obj.id);
+      }
+      if (!obj.el) return;
+      var el = obj.el;
+      var anims = el.querySelectorAll('animate, animateTransform, animateMotion');
+      anims.forEach(function(a) { a.remove(); });
+
+      if (type === 'draw') {
+        var len = 1000;
+        try { if (el.getTotalLength) len = Math.ceil(el.getTotalLength()); } catch(e){}
+        el.setAttribute('stroke-dasharray', len);
+        var anim = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+        anim.setAttribute('attributeName', 'stroke-dashoffset');
+        anim.setAttribute('from', len);
+        anim.setAttribute('to', 0);
+        anim.setAttribute('dur', '2s');
+        anim.setAttribute('repeatCount', 'indefinite');
+        el.appendChild(anim);
+      } else if (type === 'fade') {
+        var anim = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+        anim.setAttribute('attributeName', 'opacity');
+        anim.setAttribute('values', '0;1;0');
+        anim.setAttribute('dur', '2s');
+        anim.setAttribute('repeatCount', 'indefinite');
+        el.appendChild(anim);
+      } else if (type === 'rotate') {
+        var anim = document.createElementNS('http://www.w3.org/2000/svg', 'animateTransform');
+        anim.setAttribute('attributeName', 'transform');
+        anim.setAttribute('type', 'rotate');
+        anim.setAttribute('from', '0 100 100');
+        anim.setAttribute('to', '360 100 100');
+        anim.setAttribute('dur', '3s');
+        anim.setAttribute('repeatCount', 'indefinite');
+        el.appendChild(anim);
+      } else if (type === 'pulse') {
+        var anim = document.createElementNS('http://www.w3.org/2000/svg', 'animateTransform');
+        anim.setAttribute('attributeName', 'transform');
+        anim.setAttribute('type', 'scale');
+        anim.setAttribute('values', '1;1.2;1');
+        anim.setAttribute('dur', '1.5s');
+        anim.setAttribute('repeatCount', 'indefinite');
+        el.appendChild(anim);
+      } else if (type === 'bounce') {
+        var anim = document.createElementNS('http://www.w3.org/2000/svg', 'animateTransform');
+        anim.setAttribute('attributeName', 'transform');
+        anim.setAttribute('type', 'translate');
+        anim.setAttribute('values', '0 0; 0 -20; 0 0');
+        anim.setAttribute('dur', '1s');
+        anim.setAttribute('repeatCount', 'indefinite');
+        el.appendChild(anim);
+      } else if (type === 'color') {
+        var anim = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+        anim.setAttribute('attributeName', 'stroke');
+        anim.setAttribute('values', '#041e49;#ef4444;#0284c7;#041e49');
+        anim.setAttribute('dur', '3s');
+        anim.setAttribute('repeatCount', 'indefinite');
+        el.appendChild(anim);
+      } else if (type === 'dash') {
+        el.setAttribute('stroke-dasharray', '10,10');
+        var anim = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+        anim.setAttribute('attributeName', 'stroke-dashoffset');
+        anim.setAttribute('from', '0');
+        anim.setAttribute('to', '40');
+        anim.setAttribute('dur', '1s');
+        anim.setAttribute('repeatCount', 'indefinite');
+        el.appendChild(anim);
+      } else if (type === 'zoom') {
+        var anim = document.createElementNS('http://www.w3.org/2000/svg', 'animateTransform');
+        anim.setAttribute('attributeName', 'transform');
+        anim.setAttribute('type', 'scale');
+        anim.setAttribute('from', '0.2');
+        anim.setAttribute('to', '1');
+        anim.setAttribute('dur', '1s');
+        anim.setAttribute('fill', 'freeze');
+        el.appendChild(anim);
+      } else if (type === 'shake') {
+        var anim = document.createElementNS('http://www.w3.org/2000/svg', 'animateTransform');
+        anim.setAttribute('attributeName', 'transform');
+        anim.setAttribute('type', 'translate');
+        anim.setAttribute('values', '0 0; -10 0; 10 0; -10 0; 0 0');
+        anim.setAttribute('dur', '0.5s');
+        anim.setAttribute('repeatCount', 'indefinite');
+        el.appendChild(anim);
+      } else if (type === 'glow') {
+        var anim = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+        anim.setAttribute('attributeName', 'opacity');
+        anim.setAttribute('values', '0.4;1;0.4');
+        anim.setAttribute('dur', '1s');
+        anim.setAttribute('repeatCount', 'indefinite');
+        el.appendChild(anim);
+      }
+    });
+  }
+  window.playAnimation = playAnimation;
+
+  function stopAllAnimations() {
+    var mainSvg = document.getElementById('mainSvg');
+    if (!mainSvg) return;
+    var anims = mainSvg.querySelectorAll('animate, animateTransform, animateMotion');
+    anims.forEach(function(a) { a.remove(); });
+  }
+  window.stopAllAnimations = stopAllAnimations;
 })(window);

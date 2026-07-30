@@ -46,13 +46,14 @@
 
     if (cfg.currentTab === 'file') {
       var openFileBtn  = '<button class="tool-btn" onclick="openFile()" style="width:38px; height:38px;"><span class="alt-badge">O</span>' + (icons.openFile || '') + '<span class="tooltip-text">파일 불러오기 (.json / .webpointer / .svg)</span></button>';
+      var slotsBtn     = '<button class="tool-btn" onclick="openFileSlotsModal()" style="width:38px; height:38px;"><span class="alt-badge">L</span>' + (icons.shapes || '') + '<span class="tooltip-text">자동 저장 슬롯 관리 (Slot 1, 2, 3)</span></button>';
       var saveWebBtn   = '<button class="tool-btn" onclick="saveFileToWeb()" style="width:38px; height:38px;"><span class="alt-badge">S</span>' + (icons.saveFile || '') + '<span class="tooltip-text">파일 저장하기 (웹 LocalStorage)</span></button>';
       var downloadBtn  = '<button class="tool-btn" onclick="downloadFile()" style="width:38px; height:38px;"><span class="alt-badge">D</span>' + (icons.downloadFile || '') + '<span class="tooltip-text">파일 다운로드 (.json 프로젝트 / .svg 이미지)</span></button>';
       var symbolMgrBtn = '<button class="tool-btn" onclick="openSymbolManagerModal()" style="width:38px; height:38px;"><span class="alt-badge">M</span>' + (icons.shapes || '') + '<span class="tooltip-text">심볼 관리자 (Symbol Manager)</span></button>';
 
       var fileOpsContent =
         '<div style="display:flex; flex-direction:row; gap:6px; align-items:center;">' +
-          openFileBtn + saveWebBtn + downloadBtn + symbolMgrBtn +
+          openFileBtn + slotsBtn + saveWebBtn + downloadBtn + symbolMgrBtn +
         '</div>';
 
       var undoBtn = '<button class="tool-btn" onclick="undo()" style="width:38px; height:38px;"><span class="alt-badge">Ctrl+Z</span>' + (icons.undo || '') + '<span class="tooltip-text">뒤로가기 (Ctrl + Z)</span></button>';
@@ -207,45 +208,34 @@
             strokeBtnHtml + fillBtnHtml +
             widthInputHtml + dashedLineBtn +
           '</div>' +
-          alphaRangeHtml +
         '</div>';
 
       var curStartMarker = cfg.startMarker || 'none';
       var curEndMarker   = cfg.endMarker || 'none';
 
-      var startNone = '<button class="tool-btn ' + (curStartMarker==='none'?'active':'') + '" onclick="setStartMarker(\'none\')" style="width:34px; height:34px;">' + (icons.startNone || '') + '<span class="tooltip-text">시작 모양: 없음</span></button>';
-      var startArrow = '<button class="tool-btn ' + (curStartMarker==='arrow'?'active':'') + '" onclick="setStartMarker(\'arrow\')" style="width:34px; height:34px;">' + (icons.startArrow || '') + '<span class="tooltip-text">시작 모양: 화살표 (왼쪽)</span></button>';
-      var startCircle = '<button class="tool-btn ' + (curStartMarker==='circle'?'active':'') + '" onclick="setStartMarker(\'circle\')" style="width:34px; height:34px;">' + (icons.startCircle || '') + '<span class="tooltip-text">시작 모양: 원 (왼쪽)</span></button>';
-      var startDiamond = '<button class="tool-btn ' + (curStartMarker==='diamond'?'active':'') + '" onclick="setStartMarker(\'diamond\')" style="width:34px; height:34px;">' + (icons.startDiamond || '') + '<span class="tooltip-text">시작 모양: 다이아몬드 (왼쪽)</span></button>';
-
+      var startCycleBtn = '<button class="tool-btn active" onclick="cycleStartMarker()" style="width:34px; height:34px;">' + (icons['start' + (curStartMarker.charAt(0).toUpperCase() + curStartMarker.slice(1))] || icons.startNone || '▶') + '<span class="tooltip-text">시작 마커 토글: ' + curStartMarker + ' (클릭 시 순환: 없음/화살표/원/다이아몬드)</span></button>';
       var isStartSolid = (cfg.startMarkerFillStyle || 'solid') === 'solid';
       var startFillToggleBtn = '<button class="tool-btn ' + (isStartSolid ? 'active' : '') + '" onclick="toggleStartMarkerFillStyle()" style="width:34px; height:34px;">' + (isStartSolid ? (icons.startSolid || '') : (icons.startHollow || '')) + '<span class="tooltip-text">시작 마커 채우기 (클릭 토글: 꽉찬/빈모양)</span></button>';
-
       var startScalePlus = '<button class="tool-btn" onclick="scaleMarker(\'start\', 1.25)" style="width:34px; height:34px;"><span class="alt-badge">+</span>' + (icons.markerPlus || '') + '<span class="tooltip-text">시작 마커 크기 키우기 (+)</span></button>';
       var startScaleMinus = '<button class="tool-btn" onclick="scaleMarker(\'start\', 0.8)" style="width:34px; height:34px;"><span class="alt-badge">-</span>' + (icons.markerMinus || '') + '<span class="tooltip-text">시작 마커 크기 줄이기 (-)</span></button>';
 
-      var endNone = '<button class="tool-btn ' + (curEndMarker==='none'?'active':'') + '" onclick="setEndMarker(\'none\')" style="width:34px; height:34px;">' + (icons.endNone || '') + '<span class="tooltip-text">끝 모양: 없음</span></button>';
-      var endArrow = '<button class="tool-btn ' + (curEndMarker==='arrow'?'active':'') + '" onclick="setEndMarker(\'arrow\')" style="width:34px; height:34px;">' + (icons.endArrow || '') + '<span class="tooltip-text">끝 모양: 화살표 (오른쪽)</span></button>';
-      var endCircle = '<button class="tool-btn ' + (curEndMarker==='circle'?'active':'') + '" onclick="setEndMarker(\'circle\')" style="width:34px; height:34px;">' + (icons.endCircle || '') + '<span class="tooltip-text">끝 모양: 원 (오른쪽)</span></button>';
-      var endDiamond = '<button class="tool-btn ' + (curEndMarker==='diamond'?'active':'') + '" onclick="setEndMarker(\'diamond\')" style="width:34px; height:34px;">' + (icons.endDiamond || '') + '<span class="tooltip-text">끝 모양: 다이아몬드 (오른쪽)</span></button>';
-
+      var endCycleBtn = '<button class="tool-btn active" onclick="cycleEndMarker()" style="width:34px; height:34px;">' + (icons['end' + (curEndMarker.charAt(0).toUpperCase() + curEndMarker.slice(1))] || icons.endNone || '◀') + '<span class="tooltip-text">끝 마커 토글: ' + curEndMarker + ' (클릭 시 순환: 없음/화살표/원/다이아몬드)</span></button>';
       var isEndSolid = (cfg.endMarkerFillStyle || 'solid') === 'solid';
       var endFillToggleBtn = '<button class="tool-btn ' + (isEndSolid ? 'active' : '') + '" onclick="toggleEndMarkerFillStyle()" style="width:34px; height:34px;">' + (isEndSolid ? (icons.endSolid || '') : (icons.endHollow || '')) + '<span class="tooltip-text">끝 마커 채우기 (클릭 토글: 꽉찬/빈모양)</span></button>';
-
       var endScalePlus = '<button class="tool-btn" onclick="scaleMarker(\'end\', 1.25)" style="width:34px; height:34px;"><span class="alt-badge">+</span>' + (icons.markerPlus || '') + '<span class="tooltip-text">끝 마커 크기 키우기 (+)</span></button>';
       var endScaleMinus = '<button class="tool-btn" onclick="scaleMarker(\'end\', 0.8)" style="width:34px; height:34px;"><span class="alt-badge">-</span>' + (icons.markerMinus || '') + '<span class="tooltip-text">끝 마커 크기 줄이기 (-)</span></button>';
 
       var lineEndsContent =
         '<div style="display:flex; flex-direction:column; gap:4px; justify-content:center;">' +
           '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
-            '<div style="display:flex; flex-direction:row; gap:2px;">' + startNone + startArrow + startCircle + startDiamond + '</div>' +
+            startCycleBtn +
             '<div style="width:1px; height:28px; background:#cbd5e1; margin:0 3px;"></div>' +
             startFillToggleBtn +
             '<div style="width:1px; height:28px; background:#cbd5e1; margin:0 3px;"></div>' +
             '<div style="display:flex; flex-direction:row; gap:2px;">' + startScalePlus + startScaleMinus + '</div>' +
           '</div>' +
           '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
-            '<div style="display:flex; flex-direction:row; gap:2px;">' + endNone + endArrow + endCircle + endDiamond + '</div>' +
+            endCycleBtn +
             '<div style="width:1px; height:28px; background:#cbd5e1; margin:0 3px;"></div>' +
             endFillToggleBtn +
             '<div style="width:1px; height:28px; background:#cbd5e1; margin:0 3px;"></div>' +
@@ -256,46 +246,34 @@
       var curCap = cfg.strokeCap || 'butt';
       var curJoin = cfg.strokeJoin || 'miter';
 
-      var capButtBtn = '<button class="tool-btn ' + (curCap==='butt'?'active':'') + '" onclick="setStrokeCap(\'butt\')" style="width:34px; height:34px;">' + (icons.capButt || '') + '<span class="tooltip-text">선 마감: 평평함 (Butt - 중심점에서 딱 끎)</span></button>';
-      var capRoundBtn = '<button class="tool-btn ' + (curCap==='round'?'active':'') + '" onclick="setStrokeCap(\'round\')" style="width:34px; height:34px;">' + (icons.capRound || '') + '<span class="tooltip-text">선 마감: 둥글게 (Round - 중심점 밖 둥근 돌출)</span></button>';
-      var capSquareBtn = '<button class="tool-btn ' + (curCap==='square'?'active':'') + '" onclick="setStrokeCap(\'square\')" style="width:34px; height:34px;">' + (icons.capSquare || '') + '<span class="tooltip-text">선 마감: 사각형 (Square - 중심점 밖 직각 돌출)</span></button>';
-
-      var joinMiterBtn = '<button class="tool-btn ' + (curJoin==='miter'?'active':'') + '" onclick="setStrokeJoin(\'miter\')" style="width:34px; height:34px;">' + (icons.joinMiter || '') + '<span class="tooltip-text">모서리 마감: 뾰족함 (Miter - 날카로운 모서리)</span></button>';
-      var joinRoundBtn = '<button class="tool-btn ' + (curJoin==='round'?'active':'') + '" onclick="setStrokeJoin(\'round\')" style="width:34px; height:34px;">' + (icons.joinRound || '') + '<span class="tooltip-text">모서리 마감: 둥글게 (Round - 부드러운 곡선 모서리)</span></button>';
-      var joinBevelBtn = '<button class="tool-btn ' + (curJoin==='bevel'?'active':'') + '" onclick="setStrokeJoin(\'bevel\')" style="width:34px; height:34px;">' + (icons.joinBevel || '') + '<span class="tooltip-text">모서리 마감: 깎임 (Bevel - 깎인 평평한 모서리)</span></button>';
+      var capCycleBtn = '<button class="tool-btn active" onclick="cycleStrokeCap()" style="width:34px; height:34px;">' + (icons['cap' + (curCap.charAt(0).toUpperCase() + curCap.slice(1))] || '—') + '<span class="tooltip-text">선 마감 토글: ' + curCap + ' (클릭 시 순환: butt/round/square)</span></button>';
+      var joinCycleBtn = '<button class="tool-btn active" onclick="cycleStrokeJoin()" style="width:34px; height:34px;">' + (icons['join' + (curJoin.charAt(0).toUpperCase() + curJoin.slice(1))] || '┌') + '<span class="tooltip-text">모서리 마감 토글: ' + curJoin + ' (클릭 시 순환: miter/round/bevel)</span></button>';
 
       var capJoinContent =
         '<div style="display:flex; flex-direction:column; gap:4px; justify-content:center;">' +
           '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
             '<span style="font-size:0.75rem; color:#475569; font-weight:600; min-width:32px;">끝:</span>' +
-            '<div style="display:flex; flex-direction:row; gap:3px;">' + capButtBtn + capRoundBtn + capSquareBtn + '</div>' +
+            capCycleBtn +
           '</div>' +
           '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
             '<span style="font-size:0.75rem; color:#475569; font-weight:600; min-width:32px;">꺾임:</span>' +
-            '<div style="display:flex; flex-direction:row; gap:3px;">' + joinMiterBtn + joinRoundBtn + joinBevelBtn + '</div>' +
+            joinCycleBtn +
           '</div>' +
         '</div>';
 
       var cropBtnHtml = '<button class="tool-btn ' + (state.isCropModeActive ? 'active' : '') + '" onclick="toggleCropMode()" style="width:34px; height:34px;">' + (icons.crop || '✂️') + '<span class="tooltip-text">자르기 (마우스 드래그로 자르기 영역 조절)</span></button>';
       var clipSymbolBtnHtml = '<button class="tool-btn" onclick="openSymbolClipPopover(this)" style="width:34px; height:34px;">🔪<span class="tooltip-text">오리기: 심볼 사용 (등록된 심볼 모양으로 비파괴 쿠키커터 오리기)</span></button>';
+      var filterBtnHtml = '<button class="tool-btn" onclick="openFilterPopover(this)" style="width:34px; height:34px;">🪄<span class="tooltip-text">필터 효과 설정 (blur, brightness, contrast, drop-shadow 등 중복 선택 가능)</span></button>';
 
       var editContent =
         '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
-          cropBtnHtml + clipSymbolBtnHtml +
-        '</div>';
-
-      var filterBtnHtml = '<button class="tool-btn" onclick="openFilterPopover(this)" style="width:34px; height:34px;">🪄<span class="tooltip-text">필터 효과 설정 (blur, brightness, contrast, drop-shadow 등 중복 선택 가능)</span></button>';
-
-      var filterContent =
-        '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
-          filterBtnHtml +
+          cropBtnHtml + clipSymbolBtnHtml + filterBtnHtml +
         '</div>';
 
       ribbonBar.innerHTML =
         buildCategoryHtml('style_line', '선 및 색상', lineGridHtml) +
         buildCategoryHtml('style_lineEnds', '선 끝', lineEndsContent) +
         buildCategoryHtml('style_capJoin', '마감', capJoinContent) +
-        buildCategoryHtml('style_filter', '필터', filterContent) +
         buildCategoryHtml('style_edit', '편집', editContent);
     } else if (cfg.currentTab === 'text') {
       var curFontFamily = cfg.fontFamily || 'sans-serif';
@@ -429,22 +407,16 @@
       var strokeColor = cfg.textStrokeColor || cfg.strokeColor || 'none';
       var fillColor   = cfg.textFillColor || cfg.fillColor || '#041e49';
       var strokeWidth = cfg.textStrokeWidth !== undefined ? cfg.textStrokeWidth : 1;
-      var stepVal     = 1 / (cfg.alphaStepCount || 5);
-      var curAlpha    = cfg.opacity !== undefined ? cfg.opacity : 1;
-      var alphaPct    = Math.round(curAlpha * 100);
 
       var textFillBtnHtml   = '<button class="tool-btn" onclick="toggleColorPalettePopover(this, \'text_fill\')" style="width:34px; height:34px; position:relative;"><span class="alt-badge">F</span>' + (icons.targetFill || '') + '<span style="position:absolute; bottom:2px; left:4px; right:4px; height:4px; background:' + (fillColor==='none'?'transparent':fillColor) + '; border-radius:2px;"></span><span class="tooltip-text">글자 채우기 색상 (fill)</span></button>';
       var textStrokeBtnHtml = '<button class="tool-btn" onclick="toggleColorPalettePopover(this, \'text_stroke\')" style="width:34px; height:34px; position:relative;"><span class="alt-badge">S</span>' + (icons.targetStroke || '') + '<span style="position:absolute; bottom:2px; left:4px; right:4px; height:4px; background:' + (strokeColor==='none'?'transparent':strokeColor) + '; border-radius:2px;"></span><span class="tooltip-text">글자 테두리 색상 (stroke)</span></button>';
       var strokeWidthInputHtml = '<input type="number" min="0" max="50" value="' + strokeWidth + '" oninput="setTextStrokeWidth(this.value)" onchange="setTextStrokeWidth(this.value)" style="width:34px; height:34px; box-sizing:border-box; padding:2px; font-size:0.85rem; font-weight:700; border:1px solid #cbd5e1; border-radius:6px; text-align:center; outline:none; background:#ffffff; color:#0f172a;" title="글자 테두리 두께 (px)">';
+      var textFilterBtnHtml = '<button class="tool-btn" onclick="openFilterPopover(this)" style="width:34px; height:34px;">🪄<span class="tooltip-text">필터 효과 설정 (blur, brightness, contrast 등)</span></button>';
 
       var textColorContent =
         '<div style="display:flex; flex-direction:column; gap:4px; justify-content:center;">' +
           '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
-            textFillBtnHtml + textStrokeBtnHtml + strokeWidthInputHtml +
-          '</div>' +
-          '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
-            '<span style="font-size:0.75rem; font-weight:700; color:#475569; white-space:nowrap;">a: ' + alphaPct + '%</span>' +
-            '<input type="range" min="0" max="1" step="' + stepVal + '" value="' + curAlpha + '" oninput="setElementOpacity(this.value)" style="width:70px; cursor:pointer;" title="투명도(Alpha)">' +
+            textFillBtnHtml + textStrokeBtnHtml + strokeWidthInputHtml + textFilterBtnHtml +
           '</div>' +
         '</div>';
 
@@ -493,11 +465,21 @@
         buildCategoryHtml('text_underline', '밑줄', underlineCategoryContent);
     } else if (cfg.currentTab === 'anim') {
       var animContent =
-        '<div class="category-grid" style="grid-template-columns: 34px 34px;">' +
-          '<button class="tool-btn" onclick="playAnimation(\'draw\')"><span class="alt-badge">P</span>' + (icons.animDraw || '') + '<span class="tooltip-text">선 그리기 애니메이션</span></button>' +
-          '<button class="tool-btn" onclick="playAnimation(\'fade\')"><span class="alt-badge">F</span>' + (icons.animFade || '') + '<span class="tooltip-text">페이드 나타나기</span></button>' +
+        '<div class="category-grid" style="grid-template-columns: repeat(6, 34px); gap:4px;">' +
+          '<button class="tool-btn" onclick="playAnimation(\'draw\')"><span class="alt-badge">1</span>✍️<span class="tooltip-text">선 그리기 (draw)</span></button>' +
+          '<button class="tool-btn" onclick="playAnimation(\'fade\')"><span class="alt-badge">2</span>👻<span class="tooltip-text">페이드 (fade)</span></button>' +
+          '<button class="tool-btn" onclick="playAnimation(\'rotate\')"><span class="alt-badge">3</span>🔄<span class="tooltip-text">회전 (rotate)</span></button>' +
+          '<button class="tool-btn" onclick="playAnimation(\'pulse\')"><span class="alt-badge">4</span>💓<span class="tooltip-text">맥박 (pulse)</span></button>' +
+          '<button class="tool-btn" onclick="playAnimation(\'bounce\')"><span class="alt-badge">5</span>🏀<span class="tooltip-text">바운스 (bounce)</span></button>' +
+          '<button class="tool-btn" onclick="playAnimation(\'color\')"><span class="alt-badge">6</span>🎨<span class="tooltip-text">색상 변화 (color)</span></button>' +
+          '<button class="tool-btn" onclick="playAnimation(\'morph\')"><span class="alt-badge">7</span>🦎<span class="tooltip-text">변형 (morph)</span></button>' +
+          '<button class="tool-btn" onclick="playAnimation(\'dash\')"><span class="alt-badge">8</span>🐜<span class="tooltip-text">대시 흐름 (dash)</span></button>' +
+          '<button class="tool-btn" onclick="playAnimation(\'zoom\')"><span class="alt-badge">9</span>🔍<span class="tooltip-text">줌인 (zoom)</span></button>' +
+          '<button class="tool-btn" onclick="playAnimation(\'shake\')"><span class="alt-badge">10</span>🫨<span class="tooltip-text">흔들기 (shake)</span></button>' +
+          '<button class="tool-btn" onclick="playAnimation(\'glow\')"><span class="alt-badge">11</span>✨<span class="tooltip-text">발광 (glow)</span></button>' +
+          '<button class="tool-btn" onclick="stopAllAnimations()" style="color:#ef4444; font-weight:bold;">⏹️<span class="tooltip-text">애니메이션 정지 (stop)</span></button>' +
         '</div>';
-      ribbonBar.innerHTML = buildCategoryHtml('anim_preview', '애니메이션 미리보기', animContent);
+      ribbonBar.innerHTML = buildCategoryHtml('anim_preview', 'SVG SMIL 애니메이션 수트 (11종)', animContent);
     }
   }
 

@@ -536,6 +536,28 @@
         createHandleNode(a.x + a.width, a.y + a.height, id, 'bottom_right', 2, false);
         createHandleNode(a.x + cornerRx, a.y, id, 'corner_rx', 3, true);
       }
+
+      if (obj.attrs && obj.attrs.fill && typeof obj.attrs.fill === 'string' && obj.attrs.fill.indexOf('url(#grad_') !== -1) {
+        var gMinX = a.x !== undefined ? a.x : (a.cx !== undefined ? a.cx - (a.rx || 30) : 100);
+        var gMinY = a.y !== undefined ? a.y : (a.cy !== undefined ? a.cy - (a.ry || 30) : 100);
+        var gW = a.width || (a.rx ? a.rx * 2 : 80);
+        var gH = a.height || (a.ry ? a.ry * 2 : 80);
+
+        var gStartX = gMinX;
+        var gStartY = gMinY + gH / 2;
+        var gEndX = gMinX + gW;
+        var gEndY = gMinY + gH / 2;
+
+        var gStem = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        gStem.setAttribute('x1', gStartX); gStem.setAttribute('y1', gStartY);
+        gStem.setAttribute('x2', gEndX); gStem.setAttribute('y2', gEndY);
+        gStem.setAttribute('stroke', '#eab308'); gStem.setAttribute('stroke-dasharray', '4,4');
+        gStem.setAttribute('stroke-width', '2');
+        uiGroup.appendChild(gStem);
+
+        createHandleNode(gStartX, gStartY, id, 'gradient_start', 10, true);
+        createHandleNode(gEndX, gEndY, id, 'gradient_end', 11, true);
+      }
     });
   }
 
