@@ -1,5 +1,19 @@
 # Webpointer Project Version History
 
+## [0.5.3] - 2026-07-30
+### Added & Improved
+- Text Ribbon Tab, Alignment & Custom SVG Underline Upgrades:
+  - **Grouped Text Alignment**: Grouped text aligns relative to parent shape bounding box ($minX, cx, maxX$ and $minY, cy, maxY$).
+  - **Single Cycling Alignment Buttons**:
+    - Combined 4 horizontal alignments (Left $\rightarrow$ Center $\rightarrow$ Right $\rightarrow$ Justify) into 1 single 4-way cycle button.
+    - Combined 3 vertical alignments (Top $\rightarrow$ Middle $\rightarrow$ Bottom) into 1 single 3-way cycle button.
+  - **3-Way Text Auto-Fit Mode Toggle**: Added `cycleTextAutoFitMode` toggle (텍스트에 맞춤: 도형 확대 / 도형에 맞춤: 글자 축소 / 안 맞춤).
+  - **Color Category 2-Row Layout & Alpha Range**:
+    - Row 1: `fill` + `stroke` + `strokeWidth` input.
+    - Row 2: `a: XX%` label + Alpha range slider with long-press (>400ms) direct percentage input popup.
+  - **Settings Category Relocation**: Grouped grid, snap, proximity distance, default shape size, and alpha step count inside the `설정` category in the `보기` (`view`) tab.
+  - **Custom SVG Underline Path Renderer**: Real-time rendering for underline color, distance, thickness, and 6 styles (Solid, Dashed, Dotted, Double, Wavy, None) with 2-row unitless layout.
+
 ## [0.5.2] - 2026-07-30
 ### Added & Improved
 - Shape-Text Auto-Grouping & Format Isolation:
