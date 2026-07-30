@@ -956,16 +956,43 @@
   // UniPalette Custom Color Swatch Modal Handlers
   window.openPaletteModal = function() {
     var modal = document.getElementById('paletteModal');
-    if (modal) {
-      modal.classList.add('show');
-      var textarea = document.getElementById('paletteTextarea');
-      if (textarea) textarea.focus();
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'paletteModal';
+      modal.className = 'palette-modal-backdrop';
+      modal.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.75); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:9999; opacity:0; pointer-events:none; transition:opacity 0.2s ease;';
+      modal.innerHTML = 
+        '<div class="palette-modal-card" style="background:#ffffff; color:#0f172a; border-radius:12px; width:90%; max-width:520px; padding:24px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.3); display:flex; flex-direction:column; gap:14px;">' +
+          '<div class="palette-modal-header" style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">' +
+            '<div class="palette-modal-title" style="font-size:1.1rem; font-weight:700; color:#0284c7; display:flex; align-items:center; gap:8px;">🎨 기본 색상 가져오기 (UniPalette 연동)</div>' +
+          '</div>' +
+          '<div class="palette-modal-desc" style="font-size:0.85rem; color:#64748b; line-height:1.4;">' +
+            'UniPalette에서 클립보드로 복사한 코드(예: <code>const colorPalette = ["#2AA314", ...];</code>)를 아래 상자에 붙여넣고 [변경]을 클릭하세요. (최대 24개까지 순차 등록됩니다)' +
+          '</div>' +
+          '<textarea class="palette-modal-textarea" id="paletteTextarea" style="width:100%; height:130px; padding:10px; font-family:monospace; font-size:0.82rem; border:1px solid #cbd5e1; border-radius:8px; outline:none; resize:vertical; color:#0f172a; background:#f8fafc;" placeholder=\'const colorPalette = [\n  "#2AA314", "#14A36A", "#1471A3", "#2314A3", "#8E14A3", "#A3144D", "#A34614", "#95A314"\n];\'></textarea>' +
+          '<div class="palette-modal-actions" style="display:flex; justify-content:flex-end; gap:10px; margin-top:4px;">' +
+            '<button class="palette-modal-btn secondary" onclick="closePaletteModal()" style="padding:8px 18px; font-size:0.85rem; font-weight:600; border-radius:6px; cursor:pointer; border:none; background:#e2e8f0; color:#475569;">취소</button>' +
+            '<button class="palette-modal-btn primary" onclick="applyImportedPalette()" style="padding:8px 18px; font-size:0.85rem; font-weight:600; border-radius:6px; cursor:pointer; border:none; background:#0284c7; color:#ffffff;">변경</button>' +
+          '</div>' +
+        '</div>';
+      document.body.appendChild(modal);
+    }
+    
+    modal.style.opacity = '1';
+    modal.style.pointerEvents = 'auto';
+    modal.classList.add('show');
+    var textarea = document.getElementById('paletteTextarea');
+    if (textarea) {
+      textarea.value = '';
+      textarea.focus();
     }
   };
 
   window.closePaletteModal = function() {
     var modal = document.getElementById('paletteModal');
     if (modal) {
+      modal.style.opacity = '0';
+      modal.style.pointerEvents = 'none';
       modal.classList.remove('show');
     }
   };

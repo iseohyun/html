@@ -246,11 +246,11 @@
         var isStrokeActive = targetMode === 'stroke';
         var isFillActive = targetMode === 'fill';
 
-        // 1x2 Radio Target Selection Buttons (Stroke Icon: gray bg + red border; Fill Icon: gray border + red fill)
+        // 1x2 Radio Target Selection Buttons (Left Side: Stroke Icon / Fill Icon)
         var strokeBtnHtml = '<button class="tool-btn ' + (isStrokeActive ? 'active' : '') + '" onclick="setActiveColorTarget(\'stroke\')" style="width:34px; height:34px;"><span class="alt-badge">S</span><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" fill="#e2e8f0" stroke="#ef4444" stroke-width="3" rx="2"/></svg><span class="tooltip-text">테두리 색상 선택 (Active)</span></button>';
         var fillBtnHtml   = '<button class="tool-btn ' + (isFillActive ? 'active' : '') + '" onclick="setActiveColorTarget(\'fill\')" style="width:34px; height:34px;"><span class="alt-badge">F</span><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" fill="#ef4444" stroke="#cbd5e1" stroke-width="1.5" rx="2"/></svg><span class="tooltip-text">채우기 색상 선택 (Active)</span></button>';
 
-        // 1x2 UniPalette Import/Open Buttons
+        // 1x2 UniPalette Action Buttons (Right Side of Palette Grid)
         var openPaletteBtnHtml   = '<button class="tool-btn" onclick="window.open(\'https://iseohyun.github.io/UniPalette/\', \'_blank\')" style="width:34px; height:34px;"><span class="alt-badge">O</span><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg><span class="tooltip-text">기본색상 정하기 (UniPalette 새탭)</span></button>';
         var importPaletteBtnHtml = '<button class="tool-btn" onclick="openPaletteModal()" style="width:34px; height:34px;"><span class="alt-badge">I</span><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span class="tooltip-text">기본색상 가져오기 (코드 붙여넣기)</span></button>';
 
@@ -258,12 +258,12 @@
           // === 1. 색 Category (Color) ===
           '<div class="ribbon-category">' +
             '<div style="display:flex; flex-direction:row; align-items:center; gap:8px;">' +
-              // 1x2 Radio Mode Target Selector
+              // Left: 1x2 Radio Mode Target Selector
               '<div style="display:flex; flex-direction:column; gap:4px;">' + strokeBtnHtml + fillBtnHtml + '</div>' +
-              // 1x2 UniPalette Action Buttons
-              '<div style="display:flex; flex-direction:column; gap:4px;">' + openPaletteBtnHtml + importPaletteBtnHtml + '</div>' +
-              // 9x3 Seamless Swatch Grid
+              // Middle: 9x3 Seamless Swatch Grid
               swatchGridHtml +
+              // Right: 1x2 UniPalette Action Buttons
+              '<div style="display:flex; flex-direction:column; gap:4px;">' + openPaletteBtnHtml + importPaletteBtnHtml + '</div>' +
             '</div>' +
             '<div class="category-title">색</div>' +
           '</div>' +
