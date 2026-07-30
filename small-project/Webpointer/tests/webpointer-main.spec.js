@@ -662,4 +662,60 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
 
     expect(pageErrors).toEqual([]);
   });
+
+  test('TC21: Symbol Cookie-Cutter Clipping Suite', async ({ page }) => {
+    const pageErrors = [];
+    page.on('pageerror', (err) => pageErrors.push(err.message));
+
+    // Create a target rectangle object via createSvgObject
+    const rectObjId = await page.evaluate(() => {
+      const obj = window.WebpointerObjects.createSvgObject('rect', { stepX: 10, stepY: 10 }, { stepX: 30, stepY: 25 });
+      if (obj) {
+        window.WebpointerConfig.selectedIds.clear();
+        window.WebpointerConfig.selectedIds.add(obj.id);
+        window.WebpointerRender.renderUI();
+        return obj.id;
+      }
+      return null;
+    });
+    expect(rectObjId).not.toBeNull();
+
+    // Open Symbol Clip Popover
+    await page.evaluate(() => window.openSymbolClipPopover());
+    await expect(page.locator('#symbolClipPopover')).toBeVisible();
+
+    // Verify default symbols (Star, Heart, Circle, Hexagon) are rendered in grid
+    const symbolGrid = page.locator('#popSymbolClipGrid');
+    await expect(symbolGrid).toContainText('별 (Star)');
+    await expect(symbolGrid).toContainText('하트 (Heart)');
+
+    // Apply Star symbol cookie-cutter clipping
+    await page.evaluate(() => window.applySymbolClip('sym_def_star'));
+    await expect(page.locator('#symbolClipPopover')).toBeHidden();
+
+    // Verify clip-path attribute is set on object SVG element
+    const clipAttr = await page.evaluate((id) => {
+      const obj = window.WebpointerConfig.objectsMap.get(id);
+      return obj && obj.el ? obj.el.getAttribute('clip-path') : null;
+    }, rectObjId);
+    expect(clipAttr).toContain('url(#sym_clip_' + rectObjId + ')');
+
+    // Verify defs clipPath contains scaling transform and path data
+    const clipPathDefHtml = await page.evaluate((id) => {
+      const clipEl = document.getElementById('sym_clip_' + id);
+      return clipEl ? clipEl.innerHTML : '';
+    }, rectObjId);
+    expect(clipPathDefHtml).toContain('transform="translate(20 20) scale(');
+    expect(clipPathDefHtml).toContain('d="M 25 2 L 32 17');
+
+    // Remove symbol clip
+    await page.evaluate(() => window.removeSymbolClipFromSelected());
+    const clipAttrAfterRemoval = await page.evaluate((id) => {
+      const obj = window.WebpointerConfig.objectsMap.get(id);
+      return obj && obj.el ? obj.el.getAttribute('clip-path') : null;
+    }, rectObjId);
+    expect(clipAttrAfterRemoval).toBeNull();
+
+    expect(pageErrors).toEqual([]);
+  });
 });

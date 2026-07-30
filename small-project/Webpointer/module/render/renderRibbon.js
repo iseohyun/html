@@ -274,10 +274,11 @@
         '</div>';
 
       var cropBtnHtml = '<button class="tool-btn ' + (state.isCropModeActive ? 'active' : '') + '" onclick="toggleCropMode()" style="width:34px; height:34px;">' + (icons.crop || '✂️') + '<span class="tooltip-text">자르기 (마우스 드래그로 자르기 영역 조절)</span></button>';
+      var clipSymbolBtnHtml = '<button class="tool-btn" onclick="openSymbolClipPopover(this)" style="width:34px; height:34px;">🔪<span class="tooltip-text">오리기: 심볼 사용 (등록된 심볼 모양으로 비파괴 쿠키커터 오리기)</span></button>';
 
       var editContent =
         '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
-          cropBtnHtml +
+          cropBtnHtml + clipSymbolBtnHtml +
         '</div>';
 
       var filterBtnHtml = '<button class="tool-btn" onclick="openFilterPopover(this)" style="width:34px; height:34px;">🪄<span class="tooltip-text">필터 효과 설정 (blur, brightness, contrast, drop-shadow 등 중복 선택 가능)</span></button>';

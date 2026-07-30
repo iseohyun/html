@@ -2184,11 +2184,145 @@
     renderFilterStackListInPopover();
   }
 
+  function openSymbolClipPopover(anchorBtn) {
+    var popover = document.getElementById('symbolClipPopover');
+    if (!popover) return;
+
+    if (popover.style.display === 'flex' || popover.style.display === 'block') {
+      popover.style.display = 'none';
+      return;
+    }
+
+    if (anchorBtn) {
+      var rect = anchorBtn.getBoundingClientRect();
+      popover.style.position = 'fixed';
+      popover.style.top = (rect.bottom + 6) + 'px';
+      popover.style.left = Math.min(rect.left, window.innerWidth - 330) + 'px';
+      popover.style.zIndex = '99999';
+    }
+
+    renderSymbolClipListInPopover();
+    popover.style.display = 'block';
+  }
+
+  function closeSymbolClipPopover() {
+    var popover = document.getElementById('symbolClipPopover');
+    if (popover) popover.style.display = 'none';
+  }
+
+  function renderSymbolClipListInPopover() {
+    var grid = document.getElementById('popSymbolClipGrid');
+    if (!grid) return;
+
+    var symbols = cfg.symbolRegistry || [];
+    if (symbols.length === 0) {
+      symbols = [
+        { id: 'sym_def_star', name: '별 (Star)', data: 'M 25 2 L 32 17 L 48 19 L 36 31 L 40 47 L 25 39 L 10 47 L 14 31 L 2 19 L 18 17 Z' },
+        { id: 'sym_def_heart', name: '하트 (Heart)', data: 'M 25 10 C 25 3, 10 3, 10 16 C 10 28, 25 38, 25 44 C 25 38, 40 28, 40 16 C 40 3, 25 3, 25 10 Z' },
+        { id: 'sym_def_circle', name: '원 (Circle)', data: 'M 25 5 A 20 20 0 1 0 25 45 A 20 20 0 1 0 25 5 Z' },
+        { id: 'sym_def_hexagon', name: '육각형 (Hexagon)', data: 'M 25 2 L 46 14 L 46 36 L 25 48 L 4 36 L 4 14 Z' }
+      ];
+    }
+
+    var html = symbols.map(function(sym) {
+      var d = sym.data || '';
+      var svgPreview = '<svg width="36" height="36" viewBox="0 0 50 50"><path d="' + d + '" fill="#0284c7" stroke="#0369a1" stroke-width="2"/></svg>';
+      return '<div onclick="WebpointerHandlers.applySymbolClip(\'' + sym.id + '\')" style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:6px; background:#ffffff; border:1px solid #e2e8f0; border-radius:6px; cursor:pointer; text-align:center; transition:all 0.15s ease;" onmouseover="this.style.borderColor=\'#0284c7\';this.style.background=\'#f0f9ff\'" onmouseout="this.style.borderColor=\'#e2e8f0\';this.style.background=\'#ffffff\'" title="' + sym.name + '">' +
+               svgPreview +
+               '<span style="font-size:0.7rem; color:#334155; max-width:70px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-top:4px;">' + sym.name + '</span>' +
+             '</div>';
+    }).join('');
+
+    grid.innerHTML = html;
+  }
+
+  function applySymbolClip(symbolId) {
+    var symbols = cfg.symbolRegistry || [];
+    var defaultSymbols = [
+      { id: 'sym_def_star', name: '별 (Star)', data: 'M 25 2 L 32 17 L 48 19 L 36 31 L 40 47 L 25 39 L 10 47 L 14 31 L 2 19 L 18 17 Z' },
+      { id: 'sym_def_heart', name: '하트 (Heart)', data: 'M 25 10 C 25 3, 10 3, 10 16 C 10 28, 25 38, 25 44 C 25 38, 40 28, 40 16 C 40 3, 25 3, 25 10 Z' },
+      { id: 'sym_def_circle', name: '원 (Circle)', data: 'M 25 5 A 20 20 0 1 0 25 45 A 20 20 0 1 0 25 5 Z' },
+      { id: 'sym_def_hexagon', name: '육각형 (Hexagon)', data: 'M 25 2 L 46 14 L 46 36 L 25 48 L 4 36 L 4 14 Z' }
+    ];
+
+    var sym = symbols.find(function(s) { return s.id === symbolId; }) || defaultSymbols.find(function(s) { return s.id === symbolId; }) || defaultSymbols[0];
+    if (!sym) return;
+
+    var targets = getSelectedObjectsForFilter();
+    var mainSvg = document.getElementById('mainSvg');
+    if (!mainSvg) return;
+    var defs = mainSvg.querySelector('defs');
+    if (!defs) {
+      defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      defs.setAttribute('id', 'svgDefs');
+      mainSvg.insertBefore(defs, mainSvg.firstChild);
+    }
+
+    targets.forEach(function(obj) {
+      if (!obj.attrs) obj.attrs = {};
+      var clipId = 'sym_clip_' + obj.id;
+      var clipEl = document.getElementById(clipId);
+      if (!clipEl) {
+        clipEl = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+        clipEl.setAttribute('id', clipId);
+        defs.appendChild(clipEl);
+      }
+
+      var ox = obj.attrs.x || obj.attrs.cx || 0;
+      var oy = obj.attrs.y || obj.attrs.cy || 0;
+      var ow = obj.attrs.width || (obj.attrs.r ? obj.attrs.r * 2 : 100);
+      var oh = obj.attrs.height || (obj.attrs.r ? obj.attrs.r * 2 : 100);
+
+      var scaleX = ow / 50;
+      var scaleY = oh / 50;
+      var transformStr = 'translate(' + ox + ' ' + oy + ') scale(' + scaleX + ' ' + scaleY + ')';
+
+      clipEl.innerHTML = '<path d="' + (sym.data || '') + '" transform="' + transformStr + '"/>';
+
+      obj.attrs.symbolClip = symbolId;
+      obj.attrs.clipPath = 'url(#' + clipId + ')';
+
+      if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.updateElementAttributes) {
+        window.WebpointerRenderCanvas.updateElementAttributes(obj);
+      }
+      if (window.WebpointerRender && window.WebpointerRender.renderCanvas) {
+        window.WebpointerRender.renderCanvas();
+      }
+    });
+
+    closeSymbolClipPopover();
+  }
+
+  function removeSymbolClipFromSelected() {
+    var targets = getSelectedObjectsForFilter();
+    targets.forEach(function(obj) {
+      if (obj.attrs) {
+        delete obj.attrs.symbolClip;
+        delete obj.attrs.clipPath;
+        var clipId = 'sym_clip_' + obj.id;
+        var clipEl = document.getElementById(clipId);
+        if (clipEl && clipEl.parentNode) clipEl.parentNode.removeChild(clipEl);
+
+        if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.updateElementAttributes) {
+          window.WebpointerRenderCanvas.updateElementAttributes(obj);
+        }
+        if (window.WebpointerRender && window.WebpointerRender.renderCanvas) {
+          window.WebpointerRender.renderCanvas();
+        }
+      }
+    });
+    closeSymbolClipPopover();
+  }
+
   window.openFilterPopover = openFilterPopover;
   window.updateFilterRangeConfig = updateFilterRangeConfig;
   window.addFilterFromPopover = addFilterFromPopover;
   window.removeFilterAtIndexFromPopover = removeFilterAtIndexFromPopover;
   window.clearAllFiltersFromPopover = clearAllFiltersFromPopover;
+  window.openSymbolClipPopover = openSymbolClipPopover;
+  window.closeSymbolClipPopover = closeSymbolClipPopover;
+  window.applySymbolClip = applySymbolClip;
+  window.removeSymbolClipFromSelected = removeSymbolClipFromSelected;
   window.openSymbolManagerModal = openSymbolManagerModal;
   window.closeSymbolManagerModal = closeSymbolManagerModal;
   window.importSymbolFromFile = importSymbolFromFile;
@@ -2258,7 +2392,10 @@
     toggleCropMode: toggleCropMode,
     openFilterPopover: openFilterPopover,
     addFilterFromPopover: addFilterFromPopover,
-    clearAllFiltersFromPopover: clearAllFiltersFromPopover,
+    openSymbolClipPopover: openSymbolClipPopover,
+    closeSymbolClipPopover: closeSymbolClipPopover,
+    applySymbolClip: applySymbolClip,
+    removeSymbolClipFromSelected: removeSymbolClipFromSelected,
     openSymbolManagerModal: openSymbolManagerModal,
     closeSymbolManagerModal: closeSymbolManagerModal,
     importSymbolFromFile: importSymbolFromFile,

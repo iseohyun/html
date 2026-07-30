@@ -306,6 +306,10 @@
         rectChild.setAttribute('width', Math.max(1, cw));
         rectChild.setAttribute('height', Math.max(1, ch));
         obj.el.setAttribute('clip-path', 'url(#' + clipId + ')');
+      } else if (a.clipPath || a.symbolClip) {
+        var symClipId = 'sym_clip_' + obj.id;
+        var clipUrl = a.clipPath || ('url(#' + symClipId + ')');
+        obj.el.setAttribute('clip-path', clipUrl);
       } else {
         if (existingClip && existingClip.parentNode) {
           existingClip.parentNode.removeChild(existingClip);
