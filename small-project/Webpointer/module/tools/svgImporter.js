@@ -253,19 +253,23 @@
         }
       }
 
-      var targetW = cfg.SVG_WIDTH || 960;
-      var targetH = cfg.SVG_HEIGHT || 540;
+      if (!svgW || isNaN(svgW)) svgW = 960;
+      if (!svgH || isNaN(svgH)) svgH = 540;
 
-      if (!svgW || isNaN(svgW)) svgW = targetW;
-      if (!svgH || isNaN(svgH)) svgH = targetH;
-
-      var aspectHeight = Math.round(targetW * (svgH / svgW));
-      targetH = aspectHeight;
-
-      cfg.SVG_WIDTH = targetW;
-      cfg.SVG_HEIGHT = targetH;
+      cfg.SVG_WIDTH = svgW;
+      cfg.SVG_HEIGHT = svgH;
       mainSvg.setAttribute('viewBox', '0 0 ' + svgW + ' ' + svgH);
-      mainSvg.style.height = targetH + 'px';
+      mainSvg.style.height = 'auto';
+
+      var svgWrapper = document.getElementById('svgWrapper');
+      if (svgWrapper) {
+        if (svgW < svgH) {
+          // Portrait (tall) graphic: constrain wrapper max-width to comfortable reading size (e.g. 640px)
+          svgWrapper.style.maxWidth = Math.min(640, Math.round(960 * (svgW / svgH))) + 'px';
+        } else {
+          svgWrapper.style.maxWidth = '960px';
+        }
+      }
     }
 
     if (window.WebpointerRender) {

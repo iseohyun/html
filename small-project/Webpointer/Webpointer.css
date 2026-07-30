@@ -321,15 +321,18 @@ body.show-alt-keybinds .webpointer-app .alt-badge {
 .webpointer-app .svg-wrapper {
   position: relative !important;
   width: 100% !important;
+  max-width: 960px !important;
+  margin: 0 auto !important;
   background: #020617 !important;
   border: 1px solid #334155 !important;
   border-radius: 8px !important;
-  overflow: visible !important;
+  overflow: hidden !important;
   box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 4px 12px rgba(0, 0, 0, 0.5) !important;
 }
 
 .webpointer-app svg#mainSvg {
   width: 100% !important;
+  height: auto !important;
   display: block !important;
 }
 
