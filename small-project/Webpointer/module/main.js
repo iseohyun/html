@@ -589,7 +589,7 @@
     render.updateDomTree();
   };
 
-  // Precise Alignment Function (Align Left, Right, Top, Bottom, H-Center, V-Center)
+  // Precise Alignment Function (Align Left, Right, Top, Bottom, H-Center (Leftmost-based), V-Center (Topmost-based))
   window.alignSelected = function(type) {
     if (cfg.selectedIds.size === 0) return;
 
@@ -608,9 +608,10 @@
 
     if (topUnitsMap.size < 2) return;
 
-    // Calculate bounds per unit and overall selection bounds
+    // Calculate bounds per unit and determine reference units
     var unitInfoList = [];
     var overallMinX = Infinity, overallMinY = Infinity, overallMaxX = -Infinity, overallMaxY = -Infinity;
+    var leftmostUnit = null, topmostUnit = null;
 
     topUnitsMap.forEach(function(objectsInUnit, unitKey) {
       var uMinX = Infinity, uMinY = Infinity, uMaxX = -Infinity, uMaxY = -Infinity;
@@ -622,12 +623,7 @@
         uMaxY = Math.max(uMaxY, b.maxY);
       });
 
-      overallMinX = Math.min(overallMinX, uMinX);
-      overallMaxX = Math.max(overallMaxX, uMaxX);
-      overallMinY = Math.min(overallMinY, uMinY);
-      overallMaxY = Math.max(overallMaxY, uMaxY);
-
-      unitInfoList.push({
+      var info = {
         objects: objectsInUnit,
         minX: uMinX,
         maxX: uMaxX,
@@ -635,11 +631,31 @@
         maxY: uMaxY,
         centerX: (uMinX + uMaxX) / 2,
         centerY: (uMinY + uMaxY) / 2
-      });
+      };
+
+      if (uMinX < overallMinX) {
+        overallMinX = uMinX;
+        leftmostUnit = info;
+      }
+      if (uMaxX > overallMaxX) {
+        overallMaxX = uMaxX;
+      }
+      if (uMinY < overallMinY) {
+        overallMinY = uMinY;
+        topmostUnit = info;
+      }
+      if (uMaxY > overallMaxY) {
+        overallMaxY = uMaxY;
+      }
+
+      unitInfoList.push(info);
     });
 
-    var overallCenterX = (overallMinX + overallMaxX) / 2;
-    var overallCenterY = (overallMinY + overallMaxY) / 2;
+    // Reference values based on spec:
+    // H-Center: Reference is the horizontal center of the LEFTMOST unit
+    // V-Center: Reference is the vertical center of the TOPMOST unit
+    var refHCenterX = leftmostUnit ? leftmostUnit.centerX : (overallMinX + overallMaxX) / 2;
+    var refVCenterY = topmostUnit ? topmostUnit.centerY : (overallMinY + overallMaxY) / 2;
 
     // Apply alignment delta to each top-level unit
     unitInfoList.forEach(function(info) {
@@ -649,13 +665,13 @@
       } else if (type === 'right') {
         deltaX = overallMaxX - info.maxX;
       } else if (type === 'hcenter') {
-        deltaX = overallCenterX - info.centerX;
+        deltaX = refHCenterX - info.centerX;
       } else if (type === 'top') {
         deltaY = overallMinY - info.minY;
       } else if (type === 'bottom') {
         deltaY = overallMaxY - info.maxY;
       } else if (type === 'vcenter') {
-        deltaY = overallCenterY - info.centerY;
+        deltaY = refVCenterY - info.centerY;
       }
 
       info.objects.forEach(function(obj) {
