@@ -26,9 +26,11 @@
 
     startMarker: 'none',
     startMarkerScale: 1,
+    startMarkerFillStyle: 'solid', // 'solid' vs 'hollow'
+
     endMarker: 'none',
     endMarkerScale: 1,
-    markerFillStyle: 'solid',  // 'solid' (꽉찬 모양) vs 'hollow' (빈 모양 / 테두리만)
+    endMarkerFillStyle: 'solid',   // 'solid' vs 'hollow'
 
     // Default 24 UniPalette Color Swatch Preset Memory
     customPalette: [

@@ -957,8 +957,23 @@
     render.renderRibbon();
   };
 
+  window.setStartMarkerFillStyle = function(style) {
+    cfg.startMarkerFillStyle = style;
+    window.updateSvgDefs();
+    window.applyStyleToSelected();
+    render.renderRibbon();
+  };
+
+  window.setEndMarkerFillStyle = function(style) {
+    cfg.endMarkerFillStyle = style;
+    window.updateSvgDefs();
+    window.applyStyleToSelected();
+    render.renderRibbon();
+  };
+
   window.setMarkerFillStyle = function(style) {
-    cfg.markerFillStyle = style;
+    cfg.startMarkerFillStyle = style;
+    cfg.endMarkerFillStyle = style;
     window.updateSvgDefs();
     window.applyStyleToSelected();
     render.renderRibbon();

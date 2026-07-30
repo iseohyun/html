@@ -75,8 +75,6 @@
       if (!svgDefs) return;
       svgDefs.innerHTML = '';
 
-      var fillStyle = cfg.markerFillStyle || 'solid';
-
       ['arrow', 'circle', 'diamond'].forEach(function(type) {
         ['start', 'end'].forEach(function(pos) {
           var markerId = 'marker-' + pos + '-' + type;
@@ -89,6 +87,8 @@
           marker.setAttribute('markerWidth', (6 * scale).toString());
           marker.setAttribute('markerHeight', (6 * scale).toString());
           marker.setAttribute('orient', 'auto');
+
+          var fillStyle = pos === 'start' ? (cfg.startMarkerFillStyle || 'solid') : (cfg.endMarkerFillStyle || 'solid');
 
           var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
           if (fillStyle === 'hollow') {
@@ -262,30 +262,35 @@
         var openPaletteBtnHtml   = '<button class="tool-btn" onclick="window.open(\'https://iseohyun.github.io/UniPalette/\', \'_blank\')" style="width:34px; height:34px;"><span class="alt-badge">O</span><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg><span class="tooltip-text">기본색상 정하기 (UniPalette 새탭)</span></button>';
         var importPaletteBtnHtml = '<button class="tool-btn" onclick="openPaletteModal()" style="width:34px; height:34px;"><span class="alt-badge">I</span><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span class="tooltip-text">기본색상 가져오기 (코드 붙여넣기)</span></button>';
 
-        // === 2. 선 끝 Category (Line Ends Icons & Options) ===
+        // === 2. 선 끝 Category (Row 1: Start Marker Options (Top) / Row 2: End Marker Options (Bottom)) ===
         var curStartMarker = cfg.startMarker || 'none';
         var curEndMarker   = cfg.endMarker || 'none';
-        var curFillStyle   = cfg.markerFillStyle || 'solid';
+        var curStartFill   = cfg.startMarkerFillStyle || 'solid';
+        var curEndFill     = cfg.endMarkerFillStyle || 'solid';
 
-        // Start Marker Buttons (Right-facing →)
+        // --- ROW 1: 시작 모양 옵션 (Left-facing Icons ←) ---
         var startNone = '<button class="tool-btn ' + (curStartMarker==='none'?'active':'') + '" onclick="setStartMarker(\'none\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="4" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="2"/><line x1="4" y1="7" x2="4" y2="17" stroke="currentColor" stroke-width="2"/></svg><span class="tooltip-text">시작 모양: 없음</span></button>';
-        var startArrow = '<button class="tool-btn ' + (curStartMarker==='arrow'?'active':'') + '" onclick="setStartMarker(\'arrow\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="16" y2="12" stroke="currentColor" stroke-width="2"/><path d="M14 6l6 6-6 6z" fill="currentColor"/></svg><span class="tooltip-text">시작 모양: 화살표 (오른쪽)</span></button>';
-        var startCircle = '<button class="tool-btn ' + (curStartMarker==='circle'?'active':'') + '" onclick="setStartMarker(\'circle\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="15" y2="12" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="12" r="4" fill="currentColor"/></svg><span class="tooltip-text">시작 모양: 원 (오른쪽)</span></button>';
-        var startDiamond = '<button class="tool-btn ' + (curStartMarker==='diamond'?'active':'') + '" onclick="setStartMarker(\'diamond\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="15" y2="12" stroke="currentColor" stroke-width="2"/><path d="M18 7l4 5-4 5-4-5z" fill="currentColor"/></svg><span class="tooltip-text">시작 모양: 다이아몬드 (오른쪽)</span></button>';
+        var startArrow = '<button class="tool-btn ' + (curStartMarker==='arrow'?'active':'') + '" onclick="setStartMarker(\'arrow\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="21" y1="12" x2="8" y2="12" stroke="currentColor" stroke-width="2"/><path d="M10 6L4 12l6 6z" fill="currentColor"/></svg><span class="tooltip-text">시작 모양: 화살표 (왼쪽)</span></button>';
+        var startCircle = '<button class="tool-btn ' + (curStartMarker==='circle'?'active':'') + '" onclick="setStartMarker(\'circle\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="2"/><circle cx="6" cy="12" r="4" fill="currentColor"/></svg><span class="tooltip-text">시작 모양: 원 (왼쪽)</span></button>';
+        var startDiamond = '<button class="tool-btn ' + (curStartMarker==='diamond'?'active':'') + '" onclick="setStartMarker(\'diamond\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="2"/><path d="M6 7l4 5-4 5-4-5z" fill="currentColor"/></svg><span class="tooltip-text">시작 모양: 다이아몬드 (왼쪽)</span></button>';
 
-        // End Marker Buttons (Left-facing ←)
+        var startSolidBtn = '<button class="tool-btn ' + (curStartFill==='solid'?'active':'') + '" onclick="setStartMarkerFillStyle(\'solid\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><path d="M14 5L4 12l10 7z" fill="currentColor"/><line x1="14" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"/></svg><span class="tooltip-text">시작 마커: 꽉찬 모양</span></button>';
+        var startHollowBtn = '<button class="tool-btn ' + (curStartFill==='hollow'?'active':'') + '" onclick="setStartMarkerFillStyle(\'hollow\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><path d="M14 5L4 12l10 7z" fill="#ffffff" stroke="currentColor" stroke-width="2"/><line x1="14" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"/></svg><span class="tooltip-text">시작 마커: 빈 모양 (테두리만)</span></button>';
+
+        var startScalePlus = '<button class="tool-btn" onclick="scaleMarker(\'start\', 1.25)" style="width:34px; height:34px;"><span class="alt-badge">+</span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5"/></svg><span class="tooltip-text">시작 마커 크기 키우기 (+)</span></button>';
+        var startScaleMinus = '<button class="tool-btn" onclick="scaleMarker(\'start\', 0.8)" style="width:34px; height:34px;"><span class="alt-badge">-</span><svg viewBox="0 0 24 24"><path d="M5 12h14" stroke="currentColor" stroke-width="2.5"/></svg><span class="tooltip-text">시작 마커 크기 줄이기 (-)</span></button>';
+
+        // --- ROW 2: 끝 모양 옵션 (Right-facing Icons →) ---
         var endNone = '<button class="tool-btn ' + (curEndMarker==='none'?'active':'') + '" onclick="setEndMarker(\'none\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="4" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="2"/><line x1="20" y1="7" x2="20" y2="17" stroke="currentColor" stroke-width="2"/></svg><span class="tooltip-text">끝 모양: 없음</span></button>';
-        var endArrow = '<button class="tool-btn ' + (curEndMarker==='arrow'?'active':'') + '" onclick="setEndMarker(\'arrow\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="21" y1="12" x2="8" y2="12" stroke="currentColor" stroke-width="2"/><path d="M10 6L4 12l6 6z" fill="currentColor"/></svg><span class="tooltip-text">끝 모양: 화살표 (왼쪽)</span></button>';
-        var endCircle = '<button class="tool-btn ' + (curEndMarker==='circle'?'active':'') + '" onclick="setEndMarker(\'circle\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="2"/><circle cx="6" cy="12" r="4" fill="currentColor"/></svg><span class="tooltip-text">끝 모양: 원 (왼쪽)</span></button>';
-        var endDiamond = '<button class="tool-btn ' + (curEndMarker==='diamond'?'active':'') + '" onclick="setEndMarker(\'diamond\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="2"/><path d="M6 7l4 5-4 5-4-5z" fill="currentColor"/></svg><span class="tooltip-text">끝 모양: 다이아몬드 (왼쪽)</span></button>';
+        var endArrow = '<button class="tool-btn ' + (curEndMarker==='arrow'?'active':'') + '" onclick="setEndMarker(\'arrow\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="16" y2="12" stroke="currentColor" stroke-width="2"/><path d="M14 6l6 6-6 6z" fill="currentColor"/></svg><span class="tooltip-text">끝 모양: 화살표 (오른쪽)</span></button>';
+        var endCircle = '<button class="tool-btn ' + (curEndMarker==='circle'?'active':'') + '" onclick="setEndMarker(\'circle\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="15" y2="12" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="12" r="4" fill="currentColor"/></svg><span class="tooltip-text">끝 모양: 원 (오른쪽)</span></button>';
+        var endDiamond = '<button class="tool-btn ' + (curEndMarker==='diamond'?'active':'') + '" onclick="setEndMarker(\'diamond\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="15" y2="12" stroke="currentColor" stroke-width="2"/><path d="M18 7l4 5-4 5-4-5z" fill="currentColor"/></svg><span class="tooltip-text">끝 모양: 다이아몬드 (오른쪽)</span></button>';
 
-        // Fill Type Buttons (Solid vs Hollow)
-        var solidBtn = '<button class="tool-btn ' + (curFillStyle==='solid'?'active':'') + '" onclick="setMarkerFillStyle(\'solid\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><path d="M10 5l10 7-10 7z" fill="currentColor"/><line x1="2" y1="12" x2="10" y2="12" stroke="currentColor" stroke-width="2"/></svg><span class="tooltip-text">마커 스타일: 꽉찬 모양</span></button>';
-        var hollowBtn = '<button class="tool-btn ' + (curFillStyle==='hollow'?'active':'') + '" onclick="setMarkerFillStyle(\'hollow\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><path d="M10 5l10 7-10 7z" fill="#ffffff" stroke="currentColor" stroke-width="2"/><line x1="2" y1="12" x2="10" y2="12" stroke="currentColor" stroke-width="2"/></svg><span class="tooltip-text">마커 스타일: 빈 모양 (테두리만)</span></button>';
+        var endSolidBtn = '<button class="tool-btn ' + (curEndFill==='solid'?'active':'') + '" onclick="setEndMarkerFillStyle(\'solid\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><path d="M10 5l10 7-10 7z" fill="currentColor"/><line x1="2" y1="12" x2="10" y2="12" stroke="currentColor" stroke-width="2"/></svg><span class="tooltip-text">끝 마커: 꽉찬 모양</span></button>';
+        var endHollowBtn = '<button class="tool-btn ' + (curEndFill==='hollow'?'active':'') + '" onclick="setEndMarkerFillStyle(\'hollow\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><path d="M10 5l10 7-10 7z" fill="#ffffff" stroke="currentColor" stroke-width="2"/><line x1="2" y1="12" x2="10" y2="12" stroke="currentColor" stroke-width="2"/></svg><span class="tooltip-text">끝 마커: 빈 모양 (테두리만)</span></button>';
 
-        // Scale Buttons (+ / -)
-        var scalePlus = '<button class="tool-btn" onclick="scaleMarker(\'both\', 1.25)" style="width:34px; height:34px;"><span class="alt-badge">+</span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5"/></svg><span class="tooltip-text">마커 크기 키우기 (+)</span></button>';
-        var scaleMinus = '<button class="tool-btn" onclick="scaleMarker(\'both\', 0.8)" style="width:34px; height:34px;"><span class="alt-badge">-</span><svg viewBox="0 0 24 24"><path d="M5 12h14" stroke="currentColor" stroke-width="2.5"/></svg><span class="tooltip-text">마커 크기 줄이기 (-)</span></button>';
+        var endScalePlus = '<button class="tool-btn" onclick="scaleMarker(\'end\', 1.25)" style="width:34px; height:34px;"><span class="alt-badge">+</span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5"/></svg><span class="tooltip-text">끝 마커 크기 키우기 (+)</span></button>';
+        var endScaleMinus = '<button class="tool-btn" onclick="scaleMarker(\'end\', 0.8)" style="width:34px; height:34px;"><span class="alt-badge">-</span><svg viewBox="0 0 24 24"><path d="M5 12h14" stroke="currentColor" stroke-width="2.5"/></svg><span class="tooltip-text">끝 마커 크기 줄이기 (-)</span></button>';
 
         ribbonBar.innerHTML = 
           // === 1. 색 Category (Color) ===
@@ -301,21 +306,25 @@
             '<div class="category-title">색</div>' +
           '</div>' +
 
-          // === 2. 선 끝 Category (Line Ends) ===
+          // === 2. 선 끝 Category (Row 1: 시작모양 | 채우기 | +/-   Row 2: 끝모양 | 채우기 | +/-) ===
           '<div class="ribbon-category">' +
-            '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
-              // Start Markers 2x2 Grid (Right-facing →)
-              '<div style="display:grid; grid-template-columns:repeat(2, 34px); gap:4px;">' + startNone + startArrow + startCircle + startDiamond + '</div>' +
-              // End Markers 2x2 Grid (Left-facing ←)
-              '<div style="display:grid; grid-template-columns:repeat(2, 34px); gap:4px;">' + endNone + endArrow + endCircle + endDiamond + '</div>' +
-              // Divider |
-              '<div style="width:1px; height:72px; background:#cbd5e1; margin:0 4px;"></div>' +
-              // Fill Style 1x2 Column (Solid vs Hollow)
-              '<div style="display:flex; flex-direction:column; gap:4px;">' + solidBtn + hollowBtn + '</div>' +
-              // Divider |
-              '<div style="width:1px; height:72px; background:#cbd5e1; margin:0 4px;"></div>' +
-              // Scale 1x2 Column (+ / -)
-              '<div style="display:flex; flex-direction:column; gap:4px;">' + scalePlus + scaleMinus + '</div>' +
+            '<div style="display:flex; flex-direction:column; gap:4px; justify-content:center;">' +
+              // Row 1: 시작 모양 옵션들 (Left-facing Icons ←)
+              '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
+                '<div style="display:flex; flex-direction:row; gap:2px;">' + startNone + startArrow + startCircle + startDiamond + '</div>' +
+                '<div style="width:1px; height:28px; background:#cbd5e1; margin:0 3px;"></div>' +
+                '<div style="display:flex; flex-direction:row; gap:2px;">' + startSolidBtn + startHollowBtn + '</div>' +
+                '<div style="width:1px; height:28px; background:#cbd5e1; margin:0 3px;"></div>' +
+                '<div style="display:flex; flex-direction:row; gap:2px;">' + startScalePlus + startScaleMinus + '</div>' +
+              '</div>' +
+              // Row 2: 끝 모양 옵션들 (Right-facing Icons →)
+              '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
+                '<div style="display:flex; flex-direction:row; gap:2px;">' + endNone + endArrow + endCircle + endDiamond + '</div>' +
+                '<div style="width:1px; height:28px; background:#cbd5e1; margin:0 3px;"></div>' +
+                '<div style="display:flex; flex-direction:row; gap:2px;">' + endSolidBtn + endHollowBtn + '</div>' +
+                '<div style="width:1px; height:28px; background:#cbd5e1; margin:0 3px;"></div>' +
+                '<div style="display:flex; flex-direction:row; gap:2px;">' + endScalePlus + endScaleMinus + '</div>' +
+              '</div>' +
             '</div>' +
             '<div class="category-title">선 끝</div>' +
           '</div>' +
