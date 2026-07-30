@@ -509,4 +509,84 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
 
     expect(pageErrors).toEqual([]);
   });
+
+  test('TC19: Extended Fill Color Palette (Linear/Radial Gradient, Pattern, Image Fill)', async ({ page }) => {
+    // Draw a rectangle
+    const canvas = page.locator('#mainSvg');
+    const box = await canvas.boundingBox();
+    const startX = box.x + 200;
+    const startY = box.y + 200;
+
+    await page.evaluate(() => {
+      if (window.WebpointerHandlers) window.WebpointerHandlers.setTool('rect');
+    });
+
+    await page.mouse.move(startX, startY);
+    await page.mouse.down();
+    await page.mouse.move(startX + 150, startY + 100);
+    await page.mouse.up();
+
+    // Verify rectangle created
+    const rectCount = await page.evaluate(() => {
+      let count = 0;
+      window.WebpointerConfig.objectsMap.forEach(obj => {
+        if (obj.type === 'rect') count++;
+      });
+      return count;
+    });
+    expect(rectCount).toBe(1);
+
+    // Create Linear Gradient fill
+    const linGradUrl = await page.evaluate(() => {
+      return window.WebpointerHandlers.createLinearGradient('#38bdf8', '#0369a1', 90);
+    });
+    expect(linGradUrl).toContain('url(#grad_lin_');
+
+    // Apply linear gradient fill to selected rectangle
+    await page.evaluate((fillVal) => {
+      window.WebpointerHandlers.setFillColor(fillVal);
+    }, linGradUrl);
+
+    // Check DOM element fill attribute
+    const fillAttr = await page.evaluate(() => {
+      const rectEl = document.querySelector('#objectsGroup rect');
+      return rectEl ? rectEl.getAttribute('fill') : null;
+    });
+    expect(fillAttr).toBe(linGradUrl);
+
+    // Create Pattern Fill (dots)
+    const patUrl = await page.evaluate(() => {
+      return window.WebpointerHandlers.createPatternFill('dots', '#0ea5e9', 16);
+    });
+    expect(patUrl).toContain('url(#pat_dots_');
+
+    await page.evaluate((fillVal) => {
+      window.WebpointerHandlers.setFillColor(fillVal);
+    }, patUrl);
+
+    const patFillAttr = await page.evaluate(() => {
+      const rectEl = document.querySelector('#objectsGroup rect');
+      return rectEl ? rectEl.getAttribute('fill') : null;
+    });
+    expect(patFillAttr).toBe(patUrl);
+
+    // Create Image Fill
+    const imgUrl = await page.evaluate(() => {
+      const sampleData = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+      return window.WebpointerHandlers.createImageFill(sampleData, 50, 50);
+    });
+    expect(imgUrl).toContain('url(#imgpat_');
+
+    await page.evaluate((fillVal) => {
+      window.WebpointerHandlers.setFillColor(fillVal);
+    }, imgUrl);
+
+    const imgFillAttr = await page.evaluate(() => {
+      const rectEl = document.querySelector('#objectsGroup rect');
+      return rectEl ? rectEl.getAttribute('fill') : null;
+    });
+    expect(imgFillAttr).toBe(imgUrl);
+
+    expect(pageErrors).toEqual([]);
+  });
 });

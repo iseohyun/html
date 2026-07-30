@@ -338,11 +338,13 @@
     var popover = document.createElement('div');
     popover.id = 'colorPalettePopover';
     popover.dataset.targetMode = targetMode;
-    popover.style.cssText = 'position:fixed; z-index:99999; padding:6px; border:1px solid #0284c7; border-radius:6px; background:#ffffff; box-shadow:0 6px 16px rgba(0,0,0,0.18); outline:none;';
+    popover.style.cssText = 'position:fixed; z-index:99999; padding:8px; border:1px solid #0284c7; border-radius:8px; background:#ffffff; box-shadow:0 8px 24px rgba(0,0,0,0.2); outline:none; font-family:sans-serif; width:250px;';
 
     var rect = btnEl.getBoundingClientRect();
-    popover.style.left = Math.max(10, Math.min(window.innerWidth - 245, rect.left)) + 'px';
+    popover.style.left = Math.max(10, Math.min(window.innerWidth - 260, rect.left)) + 'px';
     popover.style.top = (rect.bottom + 4) + 'px';
+
+    var isFillMode = (targetMode === 'fill' || targetMode === 'text_fill');
 
     var userColors = (cfg.customPalette || cfg.paletteColors || []).slice();
     while (userColors.length < 24) {
@@ -371,7 +373,74 @@
     }
     swatchGridHtml += '</div>';
 
-    popover.innerHTML = swatchGridHtml;
+    var finalHtml = '';
+
+    if (isFillMode) {
+      var tabsHeader =
+        '<div style="display:flex; gap:2px; margin-bottom:8px; border-bottom:1px solid #cbd5e1; padding-bottom:4px; font-size:0.75rem;">' +
+          '<button class="pop-tab" style="flex:1; padding:3px; background:#0284c7; color:#ffffff; font-weight:700; border:none; border-radius:4px; cursor:pointer;" onclick="switchPopoverTab(this, \'swatch\')">단색</button>' +
+          '<button class="pop-tab" style="flex:1; padding:3px; background:#f1f5f9; color:#475569; font-weight:500; border:none; border-radius:4px; cursor:pointer;" onclick="switchPopoverTab(this, \'gradient\')">그라디언트</button>' +
+          '<button class="pop-tab" style="flex:1; padding:3px; background:#f1f5f9; color:#475569; font-weight:500; border:none; border-radius:4px; cursor:pointer;" onclick="switchPopoverTab(this, \'pattern\')">패턴</button>' +
+          '<button class="pop-tab" style="flex:1; padding:3px; background:#f1f5f9; color:#475569; font-weight:500; border:none; border-radius:4px; cursor:pointer;" onclick="switchPopoverTab(this, \'image\')">그림</button>' +
+        '</div>';
+
+      var swatchTab = '<div class="pop-tab-content" data-tab="swatch" style="display:flex; flex-direction:column;">' + swatchGridHtml + '</div>';
+
+      var gradTab =
+        '<div class="pop-tab-content" data-tab="gradient" style="display:none; flex-direction:column; gap:6px; font-size:0.78rem; color:#334155;">' +
+          '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+            '<span>유형:</span>' +
+            '<select id="popGradType" style="padding:2px; font-size:0.75rem;"><option value="linear">직선 (Linear)</option><option value="radial">원형 (Radial)</option></select>' +
+          '</div>' +
+          '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+            '<span>시작/끝 색상:</span>' +
+            '<div style="display:flex; gap:4px;"><input type="color" id="popGradStart" value="#38bdf8"><input type="color" id="popGradEnd" value="#0369a1"></div>' +
+          '</div>' +
+          '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+            '<span>각도:</span>' +
+            '<input type="number" id="popGradAngle" value="90" style="width:55px; padding:2px; font-size:0.75rem; text-align:center;">' +
+          '</div>' +
+          '<button onclick="applyGradientFromPopover(\'' + targetMode + '\')" style="margin-top:4px; padding:4px; background:#0284c7; color:#fff; border:none; border-radius:4px; font-size:0.78rem; font-weight:600; cursor:pointer;">그라디언트 적용</button>' +
+        '</div>';
+
+      var patTab =
+        '<div class="pop-tab-content" data-tab="pattern" style="display:none; flex-direction:column; gap:6px; font-size:0.78rem; color:#334155;">' +
+          '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+            '<span>패턴 종류:</span>' +
+            '<select id="popPatType" style="padding:2px; font-size:0.75rem;"><option value="dots">점 (Dots)</option><option value="grid">격자 (Grid)</option><option value="diagonal">사선 (Diagonal)</option><option value="stripes">줄무늬 (Stripes)</option></select>' +
+          '</div>' +
+          '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+            '<span>패턴 색상:</span>' +
+            '<input type="color" id="popPatColor" value="#0284c7">' +
+          '</div>' +
+          '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+            '<span>크기 (px):</span>' +
+            '<input type="number" id="popPatSize" value="16" style="width:55px; padding:2px; font-size:0.75rem; text-align:center;">' +
+          '</div>' +
+          '<button onclick="applyPatternFromPopover(\'' + targetMode + '\')" style="margin-top:4px; padding:4px; background:#0284c7; color:#fff; border:none; border-radius:4px; font-size:0.78rem; font-weight:600; cursor:pointer;">패턴 적용</button>' +
+        '</div>';
+
+      var symbols = cfg.symbolRegistry || [];
+      var symbolOptionsHtml = '<option value="">심볼 선택 (선택사항)</option>';
+      for (var s = 0; s < symbols.length; s++) {
+        symbolOptionsHtml += '<option value="' + symbols[s].id + '">' + symbols[s].name + '</option>';
+      }
+
+      var imgTab =
+        '<div class="pop-tab-content" data-tab="image" style="display:none; flex-direction:column; gap:6px; font-size:0.78rem; color:#334155;">' +
+          '<span>등록된 심볼 사용:</span>' +
+          '<select id="popImgSymbolSelect" style="width:100%; padding:2px; font-size:0.75rem;">' + symbolOptionsHtml + '</select>' +
+          '<span>또는 이미지 파일 업로드:</span>' +
+          '<input type="file" id="popImgFileInput" accept="image/*" style="font-size:0.72rem;">' +
+          '<button onclick="applyImageFillFromPopover(\'' + targetMode + '\')" style="margin-top:4px; padding:4px; background:#0284c7; color:#fff; border:none; border-radius:4px; font-size:0.78rem; font-weight:600; cursor:pointer;">그림 채우기 적용</button>' +
+        '</div>';
+
+      finalHtml = tabsHeader + swatchTab + gradTab + patTab + imgTab;
+    } else {
+      finalHtml = swatchGridHtml;
+    }
+
+    popover.innerHTML = finalHtml;
     document.body.appendChild(popover);
 
     function onOutsideClick(evt) {
@@ -1711,11 +1780,219 @@
     renderSymbolList();
   }
 
+  function ensureSvgDefs() {
+    var mainSvg = document.getElementById('mainSvg');
+    if (!mainSvg) return null;
+    var defs = mainSvg.querySelector('defs');
+    if (!defs) {
+      defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      defs.setAttribute('id', 'svgDefs');
+      mainSvg.insertBefore(defs, mainSvg.firstChild);
+    }
+    return defs;
+  }
+
+  function createLinearGradient(color1, color2, angleDeg) {
+    var defs = ensureSvgDefs();
+    if (!defs) return 'none';
+    var id = 'grad_lin_' + Date.now();
+    var rad = ((angleDeg || 90) * Math.PI) / 180;
+    var x1 = Math.round(50 - Math.cos(rad) * 50) + '%';
+    var y1 = Math.round(50 - Math.sin(rad) * 50) + '%';
+    var x2 = Math.round(50 + Math.cos(rad) * 50) + '%';
+    var y2 = Math.round(50 + Math.sin(rad) * 50) + '%';
+
+    var grad = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+    grad.setAttribute('id', id);
+    grad.setAttribute('x1', x1);
+    grad.setAttribute('y1', y1);
+    grad.setAttribute('x2', x2);
+    grad.setAttribute('y2', y2);
+
+    var stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+    stop1.setAttribute('offset', '0%');
+    stop1.setAttribute('stop-color', color1);
+
+    var stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+    stop2.setAttribute('offset', '100%');
+    stop2.setAttribute('stop-color', color2);
+
+    grad.appendChild(stop1);
+    grad.appendChild(stop2);
+    defs.appendChild(grad);
+
+    return 'url(#' + id + ')';
+  }
+
+  function createRadialGradient(color1, color2) {
+    var defs = ensureSvgDefs();
+    if (!defs) return 'none';
+    var id = 'grad_rad_' + Date.now();
+
+    var grad = document.createElementNS('http://www.w3.org/2000/svg', 'radialGradient');
+    grad.setAttribute('id', id);
+    grad.setAttribute('cx', '50%');
+    grad.setAttribute('cy', '50%');
+    grad.setAttribute('r', '50%');
+
+    var stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+    stop1.setAttribute('offset', '0%');
+    stop1.setAttribute('stop-color', color1);
+
+    var stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+    stop2.setAttribute('offset', '100%');
+    stop2.setAttribute('stop-color', color2);
+
+    grad.appendChild(stop1);
+    grad.appendChild(stop2);
+    defs.appendChild(grad);
+
+    return 'url(#' + id + ')';
+  }
+
+  function createPatternFill(type, color, size) {
+    var defs = ensureSvgDefs();
+    if (!defs) return 'none';
+    var id = 'pat_' + type + '_' + Date.now();
+    var pSize = parseInt(size, 10) || 16;
+
+    var pat = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
+    pat.setAttribute('id', id);
+    pat.setAttribute('width', pSize);
+    pat.setAttribute('height', pSize);
+    pat.setAttribute('patternUnits', 'userSpaceOnUse');
+
+    if (type === 'dots') {
+      var circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', pSize / 2);
+      circle.setAttribute('cy', pSize / 2);
+      circle.setAttribute('r', Math.max(1, pSize / 4));
+      circle.setAttribute('fill', color || '#0ea5e9');
+      pat.appendChild(circle);
+    } else if (type === 'grid') {
+      var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', 'M ' + pSize + ' 0 L 0 0 0 ' + pSize);
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke', color || '#0ea5e9');
+      path.setAttribute('stroke-width', '1.5');
+      pat.appendChild(path);
+    } else if (type === 'diagonal') {
+      var pathD = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      pathD.setAttribute('d', 'M 0 ' + pSize + ' L ' + pSize + ' 0 M -' + (pSize/4) + ' ' + (pSize/4) + ' L ' + (pSize/4) + ' -' + (pSize/4) + ' M ' + (pSize*3/4) + ' ' + (pSize*5/4) + ' L ' + (pSize*5/4) + ' ' + (pSize*3/4));
+      pathD.setAttribute('fill', 'none');
+      pathD.setAttribute('stroke', color || '#0ea5e9');
+      pathD.setAttribute('stroke-width', '1.5');
+      pat.appendChild(pathD);
+    } else if (type === 'stripes') {
+      var rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      rect.setAttribute('x', '0');
+      rect.setAttribute('y', '0');
+      rect.setAttribute('width', pSize / 2);
+      rect.setAttribute('height', pSize);
+      rect.setAttribute('fill', color || '#0ea5e9');
+      pat.appendChild(rect);
+    }
+
+    defs.appendChild(pat);
+    return 'url(#' + id + ')';
+  }
+
+  function createImageFill(imgUrl, width, height) {
+    var defs = ensureSvgDefs();
+    if (!defs) return 'none';
+    var id = 'imgpat_' + Date.now();
+    var w = width || 60;
+    var h = height || 60;
+
+    var pat = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
+    pat.setAttribute('id', id);
+    pat.setAttribute('width', w);
+    pat.setAttribute('height', h);
+    pat.setAttribute('patternUnits', 'userSpaceOnUse');
+
+    var img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+    img.setAttribute('href', imgUrl);
+    img.setAttribute('width', w);
+    img.setAttribute('height', h);
+    img.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+
+    pat.appendChild(img);
+    defs.appendChild(pat);
+    return 'url(#' + id + ')';
+  }
+
+  function switchPopoverTab(tabBtn, tabName) {
+    var popover = document.getElementById('colorPalettePopover');
+    if (!popover) return;
+    popover.querySelectorAll('.pop-tab').forEach(function(b) {
+      b.style.background = '#f1f5f9';
+      b.style.color = '#475569';
+      b.style.fontWeight = '500';
+    });
+    tabBtn.style.background = '#0284c7';
+    tabBtn.style.color = '#ffffff';
+    tabBtn.style.fontWeight = '700';
+
+    popover.querySelectorAll('.pop-tab-content').forEach(function(c) {
+      c.style.display = 'none';
+    });
+    var target = popover.querySelector('.pop-tab-content[data-tab="' + tabName + '"]');
+    if (target) target.style.display = 'flex';
+  }
+
+  function applyGradientFromPopover(targetMode) {
+    var startCol = document.getElementById('popGradStart') ? document.getElementById('popGradStart').value : '#38bdf8';
+    var endCol = document.getElementById('popGradEnd') ? document.getElementById('popGradEnd').value : '#0369a1';
+    var type = document.getElementById('popGradType') ? document.getElementById('popGradType').value : 'linear';
+    var angle = document.getElementById('popGradAngle') ? parseInt(document.getElementById('popGradAngle').value, 10) : 90;
+
+    var fillUrl = (type === 'radial') ? createRadialGradient(startCol, endCol) : createLinearGradient(startCol, endCol, angle);
+    selectColorFromPopover(targetMode, fillUrl);
+  }
+
+  function applyPatternFromPopover(targetMode) {
+    var type = document.getElementById('popPatType') ? document.getElementById('popPatType').value : 'dots';
+    var col = document.getElementById('popPatColor') ? document.getElementById('popPatColor').value : '#0284c7';
+    var size = document.getElementById('popPatSize') ? parseInt(document.getElementById('popPatSize').value, 10) : 16;
+
+    var fillUrl = createPatternFill(type, col, size);
+    selectColorFromPopover(targetMode, fillUrl);
+  }
+
+  function applyImageFillFromPopover(targetMode) {
+    var select = document.getElementById('popImgSymbolSelect');
+    var fileInput = document.getElementById('popImgFileInput');
+
+    if (fileInput && fileInput.files && fileInput.files[0]) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var fillUrl = createImageFill(e.target.result);
+        selectColorFromPopover(targetMode, fillUrl);
+      };
+      reader.readAsDataURL(fileInput.files[0]);
+    } else if (select && select.value) {
+      var symId = select.value;
+      var sym = (cfg.symbolRegistry || []).find(function(s) { return s.id === symId; });
+      if (sym) {
+        var fillUrl = createImageFill(sym.data || sym.thumb);
+        selectColorFromPopover(targetMode, fillUrl);
+      }
+    }
+  }
+
   window.openSymbolManagerModal = openSymbolManagerModal;
   window.closeSymbolManagerModal = closeSymbolManagerModal;
   window.importSymbolFromFile = importSymbolFromFile;
   window.deleteSymbol = deleteSymbol;
   window.renderSymbolList = renderSymbolList;
+  window.switchPopoverTab = switchPopoverTab;
+  window.applyGradientFromPopover = applyGradientFromPopover;
+  window.applyPatternFromPopover = applyPatternFromPopover;
+  window.applyImageFillFromPopover = applyImageFillFromPopover;
+  window.createLinearGradient = createLinearGradient;
+  window.createRadialGradient = createRadialGradient;
+  window.createPatternFill = createPatternFill;
+  window.createImageFill = createImageFill;
 
   window.WebpointerHandlers = {
     setTool: setTool,
@@ -1774,6 +2051,10 @@
     closeSymbolManagerModal: closeSymbolManagerModal,
     importSymbolFromFile: importSymbolFromFile,
     deleteSymbol: deleteSymbol,
-    renderSymbolList: renderSymbolList
+    renderSymbolList: renderSymbolList,
+    createLinearGradient: createLinearGradient,
+    createRadialGradient: createRadialGradient,
+    createPatternFill: createPatternFill,
+    createImageFill: createImageFill
   };
 })(window);
