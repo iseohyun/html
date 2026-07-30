@@ -6,7 +6,7 @@
         "type": "Added",
         "projectName": "Webpointer",
         "projectPath": "/small-project/Webpointer/index.html",
-        "summary": "v0.1.6: 허공 클릭 시 10px 근접 객체 자동 선택/해제, 선택 대상 전체 점선 포괄 사각형 및 보기 탭 선택 거리 옵션 신설"
+        "summary": "v0.1.7: 근접 자동 선택, 포괄 점선 박스 오버레이 및 보기 탭 선택 거리 옵션 검증 완료 및 정식 반영"
       }
     ]
   },
