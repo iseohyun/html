@@ -251,12 +251,89 @@
         obj.attrs.fontSize = cfg.fontSize;
         obj.attrs.fontWeight = cfg.fontWeight;
         obj.attrs.fontStyle = cfg.fontStyle;
+        obj.attrs.textDecoration = cfg.textDecoration || 'none';
+        obj.attrs.textAnchor = cfg.textAnchor || 'start';
         obj.attrs.lineHeight = cfg.lineHeight;
         if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
           window.WebpointerRender.updateElementAttributes(obj);
         }
       }
     });
+  }
+
+  function toggleTextStrikethrough() {
+    var cur = cfg.textDecoration || 'none';
+    cfg.textDecoration = (cur === 'line-through') ? 'none' : 'line-through';
+    applyTextStyleToSelected();
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+  }
+
+  function setTextAnchor(anchor) {
+    cfg.textAnchor = anchor;
+    applyTextStyleToSelected();
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+  }
+
+  function toggleTextLineHeight() {
+    if (state.holdTriggered) {
+      state.holdTriggered = false;
+      return;
+    }
+    var cur = cfg.lineHeight || 1.2;
+    var nextLH = (cur == 1.2) ? 1.5 : 1.2;
+    setTextLineHeight(nextLH);
+  }
+
+  function startHoldLineHeight(e, btnEl) {
+    state.holdTriggered = false;
+    clearTimeout(holdTimer);
+    holdTimer = setTimeout(function() {
+      state.holdTriggered = true;
+      showLineHeightPopup(btnEl);
+    }, 400);
+  }
+
+  function endHoldLineHeight() {
+    clearTimeout(holdTimer);
+  }
+
+  function showLineHeightPopup(btnEl) {
+    var old = document.getElementById('lineHeightPopupSelect');
+    if (old) old.remove();
+
+    var sel = document.createElement('select');
+    sel.id = 'lineHeightPopupSelect';
+    sel.style.cssText = 'position:fixed; z-index:99999; font-size:0.78rem; padding:4px; border:1px solid #0284c7; border-radius:4px; background:#ffffff; box-shadow:0 4px 12px rgba(0,0,0,0.15); outline:none;';
+    var rect = btnEl.getBoundingClientRect();
+    sel.style.left = rect.left + 'px';
+    sel.style.top = (rect.bottom + 2) + 'px';
+
+    var heights = [
+      { v: '1', l: '1.0 (좁게)' },
+      { v: '1.2', l: '1.2 (기본)' },
+      { v: '1.5', l: '1.5 (보통)' },
+      { v: '2', l: '2.0 (넓게)' },
+      { v: '2.5', l: '2.5' },
+      { v: '3', l: '3.0' }
+    ];
+
+    var cur = cfg.lineHeight || 1.2;
+    sel.innerHTML = heights.map(function(h) {
+      var selected = (cur == h.v) ? 'selected' : '';
+      return '<option value="' + h.v + '" ' + selected + '>' + h.l + '</option>';
+    }).join('');
+
+    sel.onchange = function() {
+      setTextLineHeight(sel.value);
+      sel.remove();
+    };
+
+    sel.onblur = function() {
+      setTimeout(function() { if (sel.parentElement) sel.remove(); }, 150);
+    };
+
+    document.body.appendChild(sel);
+    sel.focus();
   }
 
   var holdTimer = null;
@@ -418,6 +495,11 @@
   window.setTextFontWeight = setTextFontWeight;
   window.setTextFontStyle = setTextFontStyle;
   window.setTextLineHeight = setTextLineHeight;
+  window.toggleTextStrikethrough = toggleTextStrikethrough;
+  window.setTextAnchor = setTextAnchor;
+  window.toggleTextLineHeight = toggleTextLineHeight;
+  window.startHoldLineHeight = startHoldLineHeight;
+  window.endHoldLineHeight = endHoldLineHeight;
   window.fetchLocalSystemFonts = fetchLocalSystemFonts;
   window.toggleTextBold = toggleTextBold;
   window.toggleTextItalic = toggleTextItalic;
@@ -465,6 +547,11 @@
     setTextFontWeight: setTextFontWeight,
     setTextFontStyle: setTextFontStyle,
     setTextLineHeight: setTextLineHeight,
+    toggleTextStrikethrough: toggleTextStrikethrough,
+    setTextAnchor: setTextAnchor,
+    toggleTextLineHeight: toggleTextLineHeight,
+    startHoldLineHeight: startHoldLineHeight,
+    endHoldLineHeight: endHoldLineHeight,
     fetchLocalSystemFonts: fetchLocalSystemFonts,
     toggleTextBold: toggleTextBold,
     toggleTextItalic: toggleTextItalic,

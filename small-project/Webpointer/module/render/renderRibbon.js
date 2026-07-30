@@ -46,6 +46,7 @@
     if (cfg.currentTab === 'insert') {
       var shapeTools = [
         '<button class="tool-btn ' + (cfg.currentTool==='select'?'active':'') + '" onclick="setTool(\'select\')"><span class="alt-badge">V</span>' + (icons.select || '') + '<span class="tooltip-text">선택 도구 (V)</span></button>',
+        '<button class="tool-btn ' + (cfg.currentTool==='text'?'active':'') + '" onclick="setTool(\'text\')"><span class="alt-badge">T</span>' + (icons.addText || '') + '<span class="tooltip-text">텍스트 상자 도구 (T)</span></button>',
         '<button class="tool-btn ' + (cfg.currentTool==='point'?'active':'') + '" onclick="setTool(\'point\')"><span class="alt-badge">P</span>' + (icons.point || '') + '<span class="tooltip-text">점 도구 (P)</span></button>',
         '<button class="tool-btn ' + (cfg.currentTool==='line'?'active':'') + '" onclick="setTool(\'line\')"><span class="alt-badge">L</span>' + (icons.line || '') + '<span class="tooltip-text">직선 도구 (L)</span></button>',
         '<button class="tool-btn ' + (cfg.currentTool==='rect'?'active':'') + '" onclick="setTool(\'rect\')"><span class="alt-badge">R</span>' + (icons.rect || '') + '<span class="tooltip-text">직사각형 도구 (R)</span></button>',
@@ -279,16 +280,11 @@
         buildCategoryHtml('style_lineEnds', '선 끝', lineEndsContent) +
         buildCategoryHtml('style_capJoin', '마감', capJoinContent);
     } else if (cfg.currentTab === 'text') {
-      var textAddContent =
-        '<div class="category-grid" style="grid-template-columns: 34px;">' +
-          '<button class="tool-btn" onclick="addTextObject()"><span class="alt-badge">T</span>' + (icons.addText || '') + '<span class="tooltip-text">텍스트 상자 추가</span></button>' +
-        '</div>';
-
       var curFontFamily = cfg.fontFamily || 'sans-serif';
       var curFontSize = cfg.fontSize || 20;
       var curFontWeight = cfg.fontWeight || 'normal';
       var curFontStyle = cfg.fontStyle || 'normal';
-      var curLineHeight = cfg.lineHeight || 1.2;
+      var curTextAnchor = cfg.textAnchor || 'start';
 
       var systemFonts = cfg.systemFonts || [
         "맑은 고딕", "나눔고딕", "나눔명조", "굴림", "돋움", "바탕", "궁서",
@@ -304,6 +300,7 @@
 
       var isBoldActive = (curFontWeight === 'bold' || parseInt(curFontWeight, 10) >= 600);
       var isItalicActive = (curFontStyle === 'italic' || curFontStyle === 'oblique');
+      var isStrikethroughActive = (cfg.textDecoration === 'line-through');
 
       var boldBtnHtml =
         '<button class="tool-btn ' + (isBoldActive ? 'active' : '') + '" onclick="toggleTextBold()" onmousedown="startHoldWeight(event, this)" onmouseup="endHoldWeight()" onmouseleave="endHoldWeight()" style="width:34px; height:34px; font-weight:bold; font-size:1.1rem; font-family:serif;">' +
@@ -317,6 +314,42 @@
           '<span class="tooltip-text">글자 기울임 (클릭: Italic, 길게누르기: 옵션)</span>' +
         '</button>';
 
+      var strikethroughBtnHtml =
+        '<button class="tool-btn ' + (isStrikethroughActive ? 'active' : '') + '" onclick="toggleTextStrikethrough()" style="width:34px; height:34px;">' +
+          (icons.strikethrough || 'S') +
+          '<span class="tooltip-text">취소선</span>' +
+        '</button>';
+
+      var lineHeightBtnHtml =
+        '<button class="tool-btn" onclick="toggleTextLineHeight()" onmousedown="startHoldLineHeight(event, this)" onmouseup="endHoldLineHeight()" onmouseleave="endHoldLineHeight()" style="width:34px; height:34px;">' +
+          (icons.lineHeight || '↕') +
+          '<span class="tooltip-text">줄간격 (클릭: 1.2/1.5 토글, 길게누르기: 선택)</span>' +
+        '</button>';
+
+      var alignLeftBtnHtml =
+        '<button class="tool-btn ' + (curTextAnchor==='start'?'active':'') + '" onclick="setTextAnchor(\'start\')" style="width:34px; height:34px;">' +
+          (icons.alignTextLeft || '') +
+          '<span class="tooltip-text">왼쪽 맞춤</span>' +
+        '</button>';
+
+      var alignCenterBtnHtml =
+        '<button class="tool-btn ' + (curTextAnchor==='middle'?'active':'') + '" onclick="setTextAnchor(\'middle\')" style="width:34px; height:34px;">' +
+          (icons.alignTextCenter || '') +
+          '<span class="tooltip-text">가운데 맞춤</span>' +
+        '</button>';
+
+      var alignRightBtnHtml =
+        '<button class="tool-btn ' + (curTextAnchor==='end'?'active':'') + '" onclick="setTextAnchor(\'end\')" style="width:34px; height:34px;">' +
+          (icons.alignTextRight || '') +
+          '<span class="tooltip-text">오른쪽 맞춤</span>' +
+        '</button>';
+
+      var alignJustifyBtnHtml =
+        '<button class="tool-btn" onclick="setTextAnchor(\'start\')" style="width:34px; height:34px;">' +
+          (icons.alignTextJustify || '') +
+          '<span class="tooltip-text">양쪽 맞춤</span>' +
+        '</button>';
+
       var fontOptionsHtml =
         '<div style="display:flex; flex-direction:row; align-items:center; gap:8px;">' +
           '<div style="display:flex; flex-direction:column; gap:4px;">' +
@@ -325,22 +358,18 @@
                 fontOptionsStr +
               '</select>' +
               '<input type="number" min="8" max="200" value="' + curFontSize + '" oninput="setTextFontSize(this.value)" onchange="setTextFontSize(this.value)" style="width:45px; padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px; text-align:center;">' +
+              '<div style="width:1px; height:24px; background:#cbd5e1; margin:0 2px;"></div>' +
+              lineHeightBtnHtml +
+              strikethroughBtnHtml +
             '</div>' +
             '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
               boldBtnHtml +
               italicBtnHtml +
-            '</div>' +
-          '</div>' +
-          '<div style="width:1px; height:48px; background:#cbd5e1; margin:0 4px;"></div>' +
-          '<div style="display:flex; flex-direction:column; gap:4px;">' +
-            '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
-              '<label style="font-size:0.75rem; color:#475569; font-weight:600;">줄간격:</label>' +
-              '<select onchange="setTextLineHeight(this.value)" style="padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px;">' +
-                '<option value="1" ' + (curLineHeight==1?'selected':'') + '>1 (좁게)</option>' +
-                '<option value="1.2" ' + (curLineHeight==1.2?'selected':'') + '>1.2 (기본)</option>' +
-                '<option value="1.5" ' + (curLineHeight==1.5?'selected':'') + '>1.5 (보통)</option>' +
-                '<option value="2" ' + (curLineHeight==2?'selected':'') + '>2 (넓게)</option>' +
-              '</select>' +
+              '<div style="width:1px; height:24px; background:#cbd5e1; margin:0 2px;"></div>' +
+              alignLeftBtnHtml +
+              alignCenterBtnHtml +
+              alignRightBtnHtml +
+              alignJustifyBtnHtml +
             '</div>' +
           '</div>' +
         '</div>';
@@ -386,7 +415,6 @@
         '</div>';
 
       ribbonBar.innerHTML =
-        buildCategoryHtml('text_add', '텍스트 추가', textAddContent) +
         buildCategoryHtml('text_font', '글꼴', fontOptionsHtml) +
         buildCategoryHtml('text_color', '색', textColorContent);
     } else if (cfg.currentTab === 'anim') {

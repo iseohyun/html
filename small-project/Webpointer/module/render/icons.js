@@ -57,7 +57,13 @@
     joinBevel: '<svg viewBox="0 0 24 24" style="width:26px; height:26px;"><path d="M 3 21 L 12 5 L 21 21" fill="none" stroke="currentColor" stroke-width="8" stroke-linejoin="bevel" stroke-linecap="butt"/><circle cx="12" cy="8" r="2.5" fill="#ef4444" stroke="#ffffff" stroke-width="0.8"/></svg>',
     addText: '<svg viewBox="0 0 24 24"><path d="M4 7V4h16v3M12 4v16M9 20h6"/></svg>',
     animDraw: '<svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>',
-    animFade: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-dasharray="4,4"/></svg>'
+    animFade: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-dasharray="4,4"/></svg>',
+    strikethrough: '<svg viewBox="0 0 24 24"><path d="M17.5 10.5c.3-3-2-5.5-5.5-5.5-3.5 0-5.5 2-5.5 4.5 0 1.8 1.1 3 3 3.5M4 12h16M7 16.5c.5 2.5 3 3.5 5.5 3.5 3.5 0 5.5-2 5.5-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    alignTextLeft: '<svg viewBox="0 0 24 24"><path d="M3 6h18M3 10h12M3 14h18M3 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    alignTextCenter: '<svg viewBox="0 0 24 24"><path d="M3 6h18M6 10h12M3 14h18M7 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    alignTextRight: '<svg viewBox="0 0 24 24"><path d="M3 6h18M9 10h12M3 14h18M11 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    alignTextJustify: '<svg viewBox="0 0 24 24"><path d="M3 6h18M3 10h18M3 14h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    lineHeight: '<svg viewBox="0 0 24 24"><path d="M6 4v16M3 7l3-3 3 3M3 17l3 3 3-3M12 6h9M12 12h9M12 18h9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
   };
 
   window.WebpointerIcons = WebpointerIcons;
