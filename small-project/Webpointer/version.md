@@ -1,15 +1,16 @@
 # Webpointer Project Version History
 
+## [0.1.5] - 2026-07-30
+### Added
+- Completed Object Body Drag-Move functionality:
+  - All vector objects (Point, Line, Rectangle, Rounded Rect, Ellipse, Arc, 2-nd & 3-rd Order Bezier Curves) can be dragged and translated by clicking any non-handle area on their body while selected.
+  - Controls, control handle nodes, and selection overlays update dynamically in real time during drag move.
+- Updated [`IMPLEMENTATION.md`](file:///c:/git/html/small-project/Webpointer/IMPLEMENTATION.md) Section 2.1 detailing the Object Drag-Move System specification.
+
 ## [0.1.4] - 2026-07-30
 ### Added
-- Completed Bezier curve (2-nd & 3-rd order) control handle styling:
-  - Start / End handles: White fill `#ffffff`, Black border `#000000`.
-  - Intermediate Control Point handles (중간점): **Yellow fill `#facc15`, Black border `#000000`**.
-- Completed Rounded Rectangle (둥근 사각형) corner curve handle system:
-  - Top-Left / Bottom-Right handles: White fill `#ffffff`, Black border `#000000`.
-  - Corner Curve handle (굴곡각): **Yellow fill `#facc15`, Black border `#000000`** positioned at **`(x + rx, y)`** where the curve ends on the top edge of the top-left corner.
-  - Dragging the Corner Curve handle along the top edge dynamically adjusts corner radius `rx`.
-- Updated [`IMPLEMENTATION.md`](file:///c:/git/html/small-project/Webpointer/IMPLEMENTATION.md) with exact specifications for Bezier intermediate control handles and Rounded Rectangle corner curve handle.
+- Completed Bezier curve control handle styling (Yellow intermediate control handles).
+- Completed Rounded Rectangle corner curve handle system (Yellow handle at `(x + rx, y)`).
 
 ## [0.1.3] - 2026-07-30
 ### Added

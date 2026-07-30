@@ -10,8 +10,11 @@
     isDrawing: false,
     isMarquee: false,
     isDraggingHandle: false,
+    isDraggingObject: false,
     activeHandleInfo: null,
     drawStartStep: null,
+    dragStartCoords: null,
+    initialObjAttrsMap: new Map(), // Stores original object attributes at start of drag
     activeTempObj: null
   };
   window.WebpointerState = state;
@@ -278,11 +281,25 @@
 
       if (state.isDraggingHandle) return;
 
+      var targetObj = e.target.closest('circle, line, rect, ellipse, path');
+
       if (cfg.currentTool === 'select') {
-        var targetObj = e.target.closest('circle, line, rect, ellipse, path');
         if (targetObj && cfg.objectsMap.has(targetObj.id)) {
-          if (!e.ctrlKey) cfg.selectedIds.clear();
+          if (!e.ctrlKey && !cfg.selectedIds.has(targetObj.id)) {
+            cfg.selectedIds.clear();
+          }
           cfg.selectedIds.add(targetObj.id);
+          
+          // Initiate Object Drag Move
+          state.isDraggingObject = true;
+          state.dragStartCoords = coords;
+          state.initialObjAttrsMap.clear();
+          cfg.selectedIds.forEach(function(id) {
+            var obj = cfg.objectsMap.get(id);
+            if (obj) {
+              state.initialObjAttrsMap.set(id, JSON.parse(JSON.stringify(obj.attrs)));
+            }
+          });
         } else {
           if (!e.ctrlKey) cfg.selectedIds.clear();
           state.isMarquee = true;
@@ -295,11 +312,24 @@
         cfg.selectedIds.add(pointObj.id);
         render.renderUI();
       } else {
-        state.isDrawing = true;
-        state.drawStartStep = coords;
-        cfg.selectedIds.clear();
-        state.activeTempObj = createSvgObject(cfg.currentTool, coords, coords);
-        cfg.selectedIds.add(state.activeTempObj.id);
+        // If clicking on an existing selected object body with a drawing tool active, select and drag it instead of drawing over
+        if (targetObj && cfg.objectsMap.has(targetObj.id) && cfg.selectedIds.has(targetObj.id)) {
+          state.isDraggingObject = true;
+          state.dragStartCoords = coords;
+          state.initialObjAttrsMap.clear();
+          cfg.selectedIds.forEach(function(id) {
+            var obj = cfg.objectsMap.get(id);
+            if (obj) {
+              state.initialObjAttrsMap.set(id, JSON.parse(JSON.stringify(obj.attrs)));
+            }
+          });
+        } else {
+          state.isDrawing = true;
+          state.drawStartStep = coords;
+          cfg.selectedIds.clear();
+          state.activeTempObj = createSvgObject(cfg.currentTool, coords, coords);
+          cfg.selectedIds.add(state.activeTempObj.id);
+        }
         render.renderUI();
       }
     });
@@ -309,6 +339,7 @@
       if (statRaw) statRaw.textContent = '(' + coords.rawX + ', ' + coords.rawY + ')';
       if (statStep) statStep.textContent = 'Step (' + coords.stepX + ', ' + coords.stepY + ')';
 
+      // 1. Handle Node Dragging
       if (state.isDraggingHandle && state.activeHandleInfo) {
         var obj = cfg.objectsMap.get(state.activeHandleInfo.objId);
         if (obj) {
@@ -349,7 +380,6 @@
             a.width = Math.max(10, coords.px - a.x);
             a.height = Math.max(10, coords.py - a.y);
           } else if (state.activeHandleInfo.handleType === 'corner_rx') {
-            // Dragging corner radius handle along top edge: adjusts rx between 0 and width/2
             a.rx = Math.max(0, Math.min(Math.round(a.width / 2), coords.px - a.x));
           } else if (state.activeHandleInfo.handleType === 'start') {
             a.x1 = coords.px; a.y1 = coords.py;
@@ -362,6 +392,52 @@
         return;
       }
 
+      // 2. Object Body Drag Move (Dragging selected objects by non-handle area)
+      if (state.isDraggingObject && state.dragStartCoords) {
+        var deltaPx = coords.px - state.dragStartCoords.px;
+        var deltaPy = coords.py - state.dragStartCoords.py;
+
+        cfg.selectedIds.forEach(function(id) {
+          var obj = cfg.objectsMap.get(id);
+          var initialAttrs = state.initialObjAttrsMap.get(id);
+          if (!obj || !initialAttrs) return;
+          var a = obj.attrs;
+
+          if (obj.type === 'point' || obj.type === 'ellipse' || obj.type === 'arc') {
+            a.cx = initialAttrs.cx + deltaPx;
+            a.cy = initialAttrs.cy + deltaPy;
+          } else if (obj.type === 'line') {
+            a.x1 = initialAttrs.x1 + deltaPx;
+            a.y1 = initialAttrs.y1 + deltaPy;
+            a.x2 = initialAttrs.x2 + deltaPx;
+            a.y2 = initialAttrs.y2 + deltaPy;
+          } else if (obj.type === 'rect' || obj.type === 'rounded') {
+            a.x = initialAttrs.x + deltaPx;
+            a.y = initialAttrs.y + deltaPy;
+          } else if (obj.type === 'bez2') {
+            a.x1 = initialAttrs.x1 + deltaPx;
+            a.y1 = initialAttrs.y1 + deltaPy;
+            a.x2 = initialAttrs.x2 + deltaPx;
+            a.y2 = initialAttrs.y2 + deltaPy;
+            a.cx = initialAttrs.cx + deltaPx;
+            a.cy = initialAttrs.cy + deltaPy;
+          } else if (obj.type === 'bez3') {
+            a.x1 = initialAttrs.x1 + deltaPx;
+            a.y1 = initialAttrs.y1 + deltaPy;
+            a.x2 = initialAttrs.x2 + deltaPx;
+            a.y2 = initialAttrs.y2 + deltaPy;
+            a.c1x = initialAttrs.c1x + deltaPx;
+            a.c1y = initialAttrs.c1y + deltaPy;
+            a.c2x = initialAttrs.c2x + deltaPx;
+            a.c2y = initialAttrs.c2y + deltaPy;
+          }
+          render.updateElementAttributes(obj);
+        });
+        render.renderUI();
+        return;
+      }
+
+      // 3. New Shape Drawing Drag
       if (state.isDrawing && state.activeTempObj && state.drawStartStep) {
         var px1 = (state.drawStartStep.stepX / cfg.STEPS_X) * cfg.SVG_WIDTH;
         var py1 = (state.drawStartStep.stepY / cfg.STEPS_Y) * cfg.SVG_HEIGHT;
@@ -411,7 +487,10 @@
       state.isDrawing = false;
       state.isMarquee = false;
       state.isDraggingHandle = false;
+      state.isDraggingObject = false;
       state.activeHandleInfo = null;
+      state.dragStartCoords = null;
+      state.initialObjAttrsMap.clear();
       state.activeTempObj = null;
     });
 
