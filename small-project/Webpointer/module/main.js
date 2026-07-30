@@ -589,7 +589,7 @@
     render.updateDomTree();
   };
 
-  // Precise Alignment Function (Align Left, Right, Top, Bottom, H-Center (Leftmost-based), V-Center (Topmost-based))
+  // Precise Alignment Function (Align Left, Right, Top, Bottom, H-Center, V-Center, H-Distribute, V-Distribute)
   window.alignSelected = function(type) {
     if (cfg.selectedIds.size === 0) return;
 
@@ -606,7 +606,14 @@
       topUnitsMap.get(unitKey).push(obj);
     });
 
-    if (topUnitsMap.size < 2) return;
+    // Enforce unit count requirements:
+    // Equal spacing (hdistribute, vdistribute) requires >= 3 units
+    // Regular alignment (left, right, hcenter, top, bottom, vcenter) requires >= 2 units
+    if (type === 'hdistribute' || type === 'vdistribute') {
+      if (topUnitsMap.size < 3) return;
+    } else {
+      if (topUnitsMap.size < 2) return;
+    }
 
     // Calculate bounds per unit and determine reference units
     var unitInfoList = [];
@@ -629,6 +636,8 @@
         maxX: uMaxX,
         minY: uMinY,
         maxY: uMaxY,
+        width: uMaxX - uMinX,
+        height: uMaxY - uMinY,
         centerX: (uMinX + uMaxX) / 2,
         centerY: (uMinY + uMaxY) / 2
       };
@@ -651,33 +660,81 @@
       unitInfoList.push(info);
     });
 
-    // Reference values based on spec:
-    // H-Center: Reference is the horizontal center of the LEFTMOST unit
-    // V-Center: Reference is the vertical center of the TOPMOST unit
-    var refHCenterX = leftmostUnit ? leftmostUnit.centerX : (overallMinX + overallMaxX) / 2;
-    var refVCenterY = topmostUnit ? topmostUnit.centerY : (overallMinY + overallMaxY) / 2;
+    if (type === 'hdistribute') {
+      // Horizontal Equal Spacing: Sort units by minX ascending
+      unitInfoList.sort(function(a, b) { return a.minX - b.minX; });
+      var nH = unitInfoList.length;
+      var totalSpanH = unitInfoList[nH - 1].maxX - unitInfoList[0].minX;
+      var totalWidthsH = 0;
+      unitInfoList.forEach(function(info) { totalWidthsH += info.width; });
+      var freeGapH = totalSpanH - totalWidthsH;
+      var gapH = freeGapH / (nH - 1);
 
-    // Apply alignment delta to each top-level unit
-    unitInfoList.forEach(function(info) {
-      var deltaX = 0, deltaY = 0;
-      if (type === 'left') {
-        deltaX = overallMinX - info.minX;
-      } else if (type === 'right') {
-        deltaX = overallMaxX - info.maxX;
-      } else if (type === 'hcenter') {
-        deltaX = refHCenterX - info.centerX;
-      } else if (type === 'top') {
-        deltaY = overallMinY - info.minY;
-      } else if (type === 'bottom') {
-        deltaY = overallMaxY - info.maxY;
-      } else if (type === 'vcenter') {
-        deltaY = refVCenterY - info.centerY;
-      }
-
-      info.objects.forEach(function(obj) {
-        shiftObject(obj, deltaX, deltaY);
+      var currX = unitInfoList[0].minX;
+      unitInfoList.forEach(function(info, idx) {
+        if (idx > 0) {
+          var targetX = currX + gapH;
+          var deltaX = targetX - info.minX;
+          info.objects.forEach(function(obj) {
+            shiftObject(obj, deltaX, 0);
+          });
+          currX = targetX + info.width;
+        } else {
+          currX = info.minX + info.width;
+        }
       });
-    });
+    } else if (type === 'vdistribute') {
+      // Vertical Equal Spacing: Sort units by minY ascending
+      unitInfoList.sort(function(a, b) { return a.minY - b.minY; });
+      var nV = unitInfoList.length;
+      var totalSpanV = unitInfoList[nV - 1].maxY - unitInfoList[0].minY;
+      var totalHeightsV = 0;
+      unitInfoList.forEach(function(info) { totalHeightsV += info.height; });
+      var freeGapV = totalSpanV - totalHeightsV;
+      var gapV = freeGapV / (nV - 1);
+
+      var currY = unitInfoList[0].minY;
+      unitInfoList.forEach(function(info, idx) {
+        if (idx > 0) {
+          var targetY = currY + gapV;
+          var deltaY = targetY - info.minY;
+          info.objects.forEach(function(obj) {
+            shiftObject(obj, 0, deltaY);
+          });
+          currY = targetY + info.height;
+        } else {
+          currY = info.minY + info.height;
+        }
+      });
+    } else {
+      // Reference values based on spec:
+      // H-Center: Reference is the horizontal center of the LEFTMOST unit
+      // V-Center: Reference is the vertical center of the TOPMOST unit
+      var refHCenterX = leftmostUnit ? leftmostUnit.centerX : (overallMinX + overallMaxX) / 2;
+      var refVCenterY = topmostUnit ? topmostUnit.centerY : (overallMinY + overallMaxY) / 2;
+
+      // Apply alignment delta to each top-level unit
+      unitInfoList.forEach(function(info) {
+        var deltaX = 0, deltaY = 0;
+        if (type === 'left') {
+          deltaX = overallMinX - info.minX;
+        } else if (type === 'right') {
+          deltaX = overallMaxX - info.maxX;
+        } else if (type === 'hcenter') {
+          deltaX = refHCenterX - info.centerX;
+        } else if (type === 'top') {
+          deltaY = overallMinY - info.minY;
+        } else if (type === 'bottom') {
+          deltaY = overallMaxY - info.maxY;
+        } else if (type === 'vcenter') {
+          deltaY = refVCenterY - info.centerY;
+        }
+
+        info.objects.forEach(function(obj) {
+          shiftObject(obj, deltaX, deltaY);
+        });
+      });
+    }
 
     render.renderUI();
   };

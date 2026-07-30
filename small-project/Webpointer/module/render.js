@@ -158,6 +158,8 @@
         });
 
         var canGroup = topLevelUnits.size >= 2;
+        var canAlign2 = topLevelUnits.size >= 2;
+        var canAlign3 = topLevelUnits.size >= 3;
 
         var groupTools = [
           '<button class="tool-btn ' + (canGroup ? '' : 'disabled') + '" ' + (canGroup ? 'onclick="groupSelected()"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">G</span><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" stroke-dasharray="3,3"/><rect x="6" y="6" width="6" height="6"/><rect x="12" y="12" width="6" height="6"/></svg><span class="tooltip-text">' + (canGroup ? '그룹화 (<g>)' : '그룹화 (독립 단위 2개 이상 선택 필요)') + '</span></button>',
@@ -165,19 +167,21 @@
         ];
 
         var alignTools = [
-          '<button class="tool-btn" onclick="alignSelected(\'left\')"><span class="alt-badge">A</span><svg viewBox="0 0 24 24"><line x1="4" y1="3" x2="4" y2="21"/><rect x="8" y="6" width="12" height="4"/><rect x="8" y="14" width="8" height="4"/></svg><span class="tooltip-text">왼쪽 정렬</span></button>',
-          '<button class="tool-btn" onclick="alignSelected(\'hcenter\')"><span class="alt-badge">S</span><svg viewBox="0 0 24 24"><line x1="12" y1="3" x2="12" y2="21"/><rect x="6" y="6" width="12" height="4"/><rect x="8" y="14" width="8" height="4"/></svg><span class="tooltip-text">수평 중앙 정렬</span></button>',
-          '<button class="tool-btn" onclick="alignSelected(\'right\')"><span class="alt-badge">D</span><svg viewBox="0 0 24 24"><line x1="20" y1="3" x2="20" y2="21"/><rect x="4" y="6" width="12" height="4"/><rect x="8" y="14" width="8" height="4"/></svg><span class="tooltip-text">오른쪽 정렬</span></button>',
-          '<button class="tool-btn" onclick="alignSelected(\'top\')"><span class="alt-badge">Z</span><svg viewBox="0 0 24 24"><line x1="3" y1="4" x2="21" y2="4"/><rect x="6" y="8" width="4" height="12"/><rect x="14" y="8" width="4" height="8"/></svg><span class="tooltip-text">위 정렬</span></button>',
-          '<button class="tool-btn" onclick="alignSelected(\'vcenter\')"><span class="alt-badge">X</span><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><rect x="6" y="6" width="4" height="12"/><rect x="14" y="8" width="4" height="8"/></svg><span class="tooltip-text">수직 중앙 정렬</span></button>',
-          '<button class="tool-btn" onclick="alignSelected(\'bottom\')"><span class="alt-badge">C</span><svg viewBox="0 0 24 24"><line x1="3" y1="20" x2="21" y2="20"/><rect x="6" y="4" width="4" height="12"/><rect x="14" y="8" width="4" height="8"/></svg><span class="tooltip-text">아래 정렬</span></button>'
+          '<button class="tool-btn ' + (canAlign2 ? '' : 'disabled') + '" ' + (canAlign2 ? 'onclick="alignSelected(\'left\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">A</span><svg viewBox="0 0 24 24"><line x1="4" y1="3" x2="4" y2="21"/><rect x="8" y="6" width="12" height="4"/><rect x="8" y="14" width="8" height="4"/></svg><span class="tooltip-text">' + (canAlign2 ? '왼쪽 정렬' : '왼쪽 정렬 (2개 이상 선택 필요)') + '</span></button>',
+          '<button class="tool-btn ' + (canAlign2 ? '' : 'disabled') + '" ' + (canAlign2 ? 'onclick="alignSelected(\'hcenter\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">S</span><svg viewBox="0 0 24 24"><line x1="12" y1="3" x2="12" y2="21"/><rect x="6" y="6" width="12" height="4"/><rect x="8" y="14" width="8" height="4"/></svg><span class="tooltip-text">' + (canAlign2 ? '수평 중앙 정렬 (가장 왼쪽 항목 중심 기준)' : '수평 중앙 정렬 (2개 이상 선택 필요)') + '</span></button>',
+          '<button class="tool-btn ' + (canAlign2 ? '' : 'disabled') + '" ' + (canAlign2 ? 'onclick="alignSelected(\'right\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">D</span><svg viewBox="0 0 24 24"><line x1="20" y1="3" x2="20" y2="21"/><rect x="4" y="6" width="12" height="4"/><rect x="8" y="14" width="8" height="4"/></svg><span class="tooltip-text">' + (canAlign2 ? '오른쪽 정렬' : '오른쪽 정렬 (2개 이상 선택 필요)') + '</span></button>',
+          '<button class="tool-btn ' + (canAlign2 ? '' : 'disabled') + '" ' + (canAlign2 ? 'onclick="alignSelected(\'top\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">Z</span><svg viewBox="0 0 24 24"><line x1="3" y1="4" x2="21" y2="4"/><rect x="6" y="8" width="4" height="12"/><rect x="14" y="8" width="4" height="8"/></svg><span class="tooltip-text">' + (canAlign2 ? '위 정렬' : '위 정렬 (2개 이상 선택 필요)') + '</span></button>',
+          '<button class="tool-btn ' + (canAlign2 ? '' : 'disabled') + '" ' + (canAlign2 ? 'onclick="alignSelected(\'vcenter\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">X</span><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><rect x="6" y="6" width="4" height="12"/><rect x="14" y="8" width="4" height="8"/></svg><span class="tooltip-text">' + (canAlign2 ? '수직 중앙 정렬 (가장 위 항목 중심 기준)' : '수직 중앙 정렬 (2개 이상 선택 필요)') + '</span></button>',
+          '<button class="tool-btn ' + (canAlign2 ? '' : 'disabled') + '" ' + (canAlign2 ? 'onclick="alignSelected(\'bottom\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">C</span><svg viewBox="0 0 24 24"><line x1="3" y1="20" x2="21" y2="20"/><rect x="6" y="4" width="4" height="12"/><rect x="14" y="8" width="4" height="8"/></svg><span class="tooltip-text">' + (canAlign2 ? '아래 정렬' : '아래 정렬 (2개 이상 선택 필요)') + '</span></button>',
+          '<button class="tool-btn ' + (canAlign3 ? '' : 'disabled') + '" ' + (canAlign3 ? 'onclick="alignSelected(\'hdistribute\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">H</span><svg viewBox="0 0 24 24"><line x1="3" y1="4" x2="3" y2="20"/><line x1="21" y1="4" x2="21" y2="20"/><rect x="7" y="7" width="4" height="10"/><rect x="13" y="7" width="4" height="10"/></svg><span class="tooltip-text">' + (canAlign3 ? '가로 동일 간격' : '가로 동일 간격 (독립 단위 3개 이상 선택 필요)') + '</span></button>',
+          '<button class="tool-btn ' + (canAlign3 ? '' : 'disabled') + '" ' + (canAlign3 ? 'onclick="alignSelected(\'vdistribute\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">V</span><svg viewBox="0 0 24 24"><line x1="4" y1="3" x2="20" y2="3"/><line x1="4" y1="21" x2="20" y2="21"/><rect x="7" y="7" width="10" height="4"/><rect x="7" y="13" width="10" height="4"/></svg><span class="tooltip-text">' + (canAlign3 ? '세로 동일 간격' : '세로 동일 간격 (독립 단위 3개 이상 선택 필요)') + '</span></button>'
         ];
 
         ribbonBar.innerHTML = 
           '<div class="ribbon-category">' + self.build3RowGridHtml(shapeTools) + '<div class="category-title">도형 삽입</div></div>' +
           '<div class="ribbon-category">' + self.build3RowGridHtml(layerTools) + '<div class="category-title">레이어 순서</div></div>' +
           '<div class="ribbon-category">' + self.build3RowGridHtml(groupTools) + '<div class="category-title">그룹화</div></div>' +
-          '<div class="ribbon-category">' + self.build3RowGridHtml(alignTools) + '<div class="category-title">정렬</div></div>';
+          '<div class="ribbon-category">' + self.build3RowGridHtml(alignTools) + '<div class="category-title">정렬 및 간격</div></div>';
       } else if (cfg.currentTab === 'view') {
         var proxVal = cfg.proximityThreshold !== undefined ? cfg.proximityThreshold : 30;
         var szVal = cfg.defaultShapeSize !== undefined ? cfg.defaultShapeSize : 100;
