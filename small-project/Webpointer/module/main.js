@@ -484,6 +484,52 @@
       mainSvg.style.transform = 'scale(' + newZoom + ')';
     }, { passive: false });
 
+    var resizeHandle = document.getElementById('canvasResizeHandle');
+    if (resizeHandle) {
+      var isResizingCanvas = false;
+      var startY = 0;
+      var startH = 0;
+
+      resizeHandle.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        isResizingCanvas = true;
+        startY = e.clientY;
+        startH = cfg.SVG_HEIGHT || 540;
+        document.body.style.cursor = 'ns-resize';
+      });
+
+      window.addEventListener('mousemove', function(e) {
+        if (!isResizingCanvas) return;
+        var dy = e.clientY - startY;
+        var newH = Math.max(200, Math.min(5000, Math.round(startH + dy)));
+        cfg.SVG_HEIGHT = newH;
+
+        var viewBoxAttr = mainSvg.getAttribute('viewBox');
+        if (viewBoxAttr) {
+          var vbParts = viewBoxAttr.trim().split(/[\s,]+/).map(Number);
+          if (vbParts.length === 4) {
+            mainSvg.setAttribute('viewBox', vbParts[0] + ' ' + vbParts[1] + ' ' + vbParts[2] + ' ' + newH);
+          } else {
+            mainSvg.setAttribute('viewBox', '0 0 ' + (cfg.SVG_WIDTH || 960) + ' ' + newH);
+          }
+        } else {
+          mainSvg.setAttribute('viewBox', '0 0 ' + (cfg.SVG_WIDTH || 960) + ' ' + newH);
+        }
+
+        mainSvg.style.height = newH + 'px';
+        if (render.renderGrid) render.renderGrid();
+        if (render.renderUI) render.renderUI();
+      });
+
+      window.addEventListener('mouseup', function() {
+        if (isResizingCanvas) {
+          isResizingCanvas = false;
+          document.body.style.cursor = 'default';
+          if (window.pushHistoryState) window.pushHistoryState();
+        }
+      });
+    }
+
     mainSvg.addEventListener('dblclick', function(e) {
       var targetObj = e.target.closest('text, tspan');
       if (targetObj) {

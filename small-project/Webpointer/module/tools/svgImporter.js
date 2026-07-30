@@ -260,9 +260,7 @@
       if (!svgH || isNaN(svgH)) svgH = targetH;
 
       var aspectHeight = Math.round(targetW * (svgH / svgW));
-      if (aspectHeight > targetH) {
-        targetH = aspectHeight;
-      }
+      targetH = aspectHeight;
 
       cfg.SVG_WIDTH = targetW;
       cfg.SVG_HEIGHT = targetH;
