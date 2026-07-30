@@ -978,15 +978,27 @@
     cfg.strokeDashStyle = style;
     if (!cfg.strokeDashArray) cfg.strokeDashArray = '6,6';
 
-    if (cfg.selectedIds.size === 0 && cfg.objectsMap.size > 0) {
+    var targets = [];
+    if (cfg.selectedIds.size > 0) {
+      targets = Array.from(cfg.selectedIds);
+    } else if (cfg.objectsMap.size > 0) {
       var lastId = Array.from(cfg.objectsMap.keys()).pop();
       if (lastId) {
         cfg.selectedIds.add(lastId);
-        render.renderUI();
+        targets = [lastId];
       }
     }
 
-    window.applyStyleToSelected();
+    targets.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (obj && obj.attrs) {
+        obj.attrs.strokeDashStyle = cfg.strokeDashStyle;
+        obj.attrs.strokeDashArray = cfg.strokeDashArray;
+        render.updateElementAttributes(obj);
+      }
+    });
+
+    render.renderUI();
     render.renderRibbon();
   };
 
@@ -997,15 +1009,27 @@
       cfg.strokeDashStyle = 'dashed';
     }
 
-    if (cfg.selectedIds.size === 0 && cfg.objectsMap.size > 0) {
+    var targets = [];
+    if (cfg.selectedIds.size > 0) {
+      targets = Array.from(cfg.selectedIds);
+    } else if (cfg.objectsMap.size > 0) {
       var lastId = Array.from(cfg.objectsMap.keys()).pop();
       if (lastId) {
         cfg.selectedIds.add(lastId);
-        render.renderUI();
+        targets = [lastId];
       }
     }
 
-    window.applyStyleToSelected();
+    targets.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (obj && obj.attrs) {
+        obj.attrs.strokeDashStyle = cfg.strokeDashStyle;
+        obj.attrs.strokeDashArray = cfg.strokeDashArray;
+        render.updateElementAttributes(obj);
+      }
+    });
+
+    render.renderUI();
   };
 
   window.applyStyleToSelected = function() {
