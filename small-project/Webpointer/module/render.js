@@ -75,6 +75,8 @@
       if (!svgDefs) return;
       svgDefs.innerHTML = '';
 
+      var fillStyle = cfg.markerFillStyle || 'solid';
+
       ['arrow', 'circle', 'diamond'].forEach(function(type) {
         ['start', 'end'].forEach(function(pos) {
           var markerId = 'marker-' + pos + '-' + type;
@@ -89,7 +91,14 @@
           marker.setAttribute('orient', 'auto');
 
           var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-          path.setAttribute('fill', cfg.strokeColor || '#041e49');
+          if (fillStyle === 'hollow') {
+            path.setAttribute('fill', '#ffffff');
+            path.setAttribute('stroke', cfg.strokeColor || '#041e49');
+            path.setAttribute('stroke-width', '1.5');
+          } else {
+            path.setAttribute('fill', cfg.strokeColor || '#041e49');
+            path.setAttribute('stroke', 'none');
+          }
 
           if (type === 'arrow') {
             path.setAttribute('d', pos === 'start' ? 'M 10 0 L 0 5 L 10 10 Z' : 'M 0 0 L 10 5 L 0 10 Z');
@@ -147,7 +156,6 @@
           '<button class="tool-btn" onclick="arrangeOrder(\'front\')"><span class="alt-badge">R</span><svg viewBox="0 0 24 24"><rect x="4" y="4" width="10" height="10"/><rect x="10" y="10" width="10" height="10" fill="rgba(4,30,73,0.3)"/></svg><span class="tooltip-text">맨앞으로</span></button>'
         ];
 
-        // Root Outermost Group Element counts as 1 single top-level unit!
         var topLevelUnits = new Set();
         var canUngroup = false;
 
@@ -254,6 +262,31 @@
         var openPaletteBtnHtml   = '<button class="tool-btn" onclick="window.open(\'https://iseohyun.github.io/UniPalette/\', \'_blank\')" style="width:34px; height:34px;"><span class="alt-badge">O</span><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg><span class="tooltip-text">기본색상 정하기 (UniPalette 새탭)</span></button>';
         var importPaletteBtnHtml = '<button class="tool-btn" onclick="openPaletteModal()" style="width:34px; height:34px;"><span class="alt-badge">I</span><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span class="tooltip-text">기본색상 가져오기 (코드 붙여넣기)</span></button>';
 
+        // === 2. 선 끝 Category (Line Ends Icons & Options) ===
+        var curStartMarker = cfg.startMarker || 'none';
+        var curEndMarker   = cfg.endMarker || 'none';
+        var curFillStyle   = cfg.markerFillStyle || 'solid';
+
+        // Start Marker Buttons (Right-facing →)
+        var startNone = '<button class="tool-btn ' + (curStartMarker==='none'?'active':'') + '" onclick="setStartMarker(\'none\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="4" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="2"/><line x1="4" y1="7" x2="4" y2="17" stroke="currentColor" stroke-width="2"/></svg><span class="tooltip-text">시작 모양: 없음</span></button>';
+        var startArrow = '<button class="tool-btn ' + (curStartMarker==='arrow'?'active':'') + '" onclick="setStartMarker(\'arrow\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="16" y2="12" stroke="currentColor" stroke-width="2"/><path d="M14 6l6 6-6 6z" fill="currentColor"/></svg><span class="tooltip-text">시작 모양: 화살표 (오른쪽)</span></button>';
+        var startCircle = '<button class="tool-btn ' + (curStartMarker==='circle'?'active':'') + '" onclick="setStartMarker(\'circle\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="15" y2="12" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="12" r="4" fill="currentColor"/></svg><span class="tooltip-text">시작 모양: 원 (오른쪽)</span></button>';
+        var startDiamond = '<button class="tool-btn ' + (curStartMarker==='diamond'?'active':'') + '" onclick="setStartMarker(\'diamond\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="15" y2="12" stroke="currentColor" stroke-width="2"/><path d="M18 7l4 5-4 5-4-5z" fill="currentColor"/></svg><span class="tooltip-text">시작 모양: 다이아몬드 (오른쪽)</span></button>';
+
+        // End Marker Buttons (Left-facing ←)
+        var endNone = '<button class="tool-btn ' + (curEndMarker==='none'?'active':'') + '" onclick="setEndMarker(\'none\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="4" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="2"/><line x1="20" y1="7" x2="20" y2="17" stroke="currentColor" stroke-width="2"/></svg><span class="tooltip-text">끝 모양: 없음</span></button>';
+        var endArrow = '<button class="tool-btn ' + (curEndMarker==='arrow'?'active':'') + '" onclick="setEndMarker(\'arrow\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="21" y1="12" x2="8" y2="12" stroke="currentColor" stroke-width="2"/><path d="M10 6L4 12l6 6z" fill="currentColor"/></svg><span class="tooltip-text">끝 모양: 화살표 (왼쪽)</span></button>';
+        var endCircle = '<button class="tool-btn ' + (curEndMarker==='circle'?'active':'') + '" onclick="setEndMarker(\'circle\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="2"/><circle cx="6" cy="12" r="4" fill="currentColor"/></svg><span class="tooltip-text">끝 모양: 원 (왼쪽)</span></button>';
+        var endDiamond = '<button class="tool-btn ' + (curEndMarker==='diamond'?'active':'') + '" onclick="setEndMarker(\'diamond\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="2"/><path d="M6 7l4 5-4 5-4-5z" fill="currentColor"/></svg><span class="tooltip-text">끝 모양: 다이아몬드 (왼쪽)</span></button>';
+
+        // Fill Type Buttons (Solid vs Hollow)
+        var solidBtn = '<button class="tool-btn ' + (curFillStyle==='solid'?'active':'') + '" onclick="setMarkerFillStyle(\'solid\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><path d="M10 5l10 7-10 7z" fill="currentColor"/><line x1="2" y1="12" x2="10" y2="12" stroke="currentColor" stroke-width="2"/></svg><span class="tooltip-text">마커 스타일: 꽉찬 모양</span></button>';
+        var hollowBtn = '<button class="tool-btn ' + (curFillStyle==='hollow'?'active':'') + '" onclick="setMarkerFillStyle(\'hollow\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><path d="M10 5l10 7-10 7z" fill="#ffffff" stroke="currentColor" stroke-width="2"/><line x1="2" y1="12" x2="10" y2="12" stroke="currentColor" stroke-width="2"/></svg><span class="tooltip-text">마커 스타일: 빈 모양 (테두리만)</span></button>';
+
+        // Scale Buttons (+ / -)
+        var scalePlus = '<button class="tool-btn" onclick="scaleMarker(\'both\', 1.25)" style="width:34px; height:34px;"><span class="alt-badge">+</span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5"/></svg><span class="tooltip-text">마커 크기 키우기 (+)</span></button>';
+        var scaleMinus = '<button class="tool-btn" onclick="scaleMarker(\'both\', 0.8)" style="width:34px; height:34px;"><span class="alt-badge">-</span><svg viewBox="0 0 24 24"><path d="M5 12h14" stroke="currentColor" stroke-width="2.5"/></svg><span class="tooltip-text">마커 크기 줄이기 (-)</span></button>';
+
         ribbonBar.innerHTML = 
           // === 1. 색 Category (Color) ===
           '<div class="ribbon-category">' +
@@ -268,16 +301,29 @@
             '<div class="category-title">색</div>' +
           '</div>' +
 
-          // === 2. 선 Category (Line - Future Dev) ===
+          // === 2. 선 끝 Category (Line Ends) ===
           '<div class="ribbon-category">' +
-            '<div class="category-grid" style="grid-template-columns: auto 34px 34px;">' +
-              '<div class="ribbon-control-item" style="grid-row: 1;"><label>선 두께:</label><input type="number" min="1" max="20" value="' + cfg.strokeWidth + '" oninput="setStrokeWidth(this.value)" onchange="setStrokeWidth(this.value)" style="width:55px;"></div>' +
-              '<div class="ribbon-control-item" style="grid-row: 2;"><label>시작 모양:</label><select onchange="setStartMarker(this.value)"><option value="none" ' + (cfg.startMarker==='none'?'selected':'') + '>없음</option><option value="arrow" ' + (cfg.startMarker==='arrow'?'selected':'') + '>화살표</option><option value="circle" ' + (cfg.startMarker==='circle'?'selected':'') + '>동그라미</option><option value="diamond" ' + (cfg.startMarker==='diamond'?'selected':'') + '>다이아몬드</option></select></div>' +
-              '<button class="tool-btn" onclick="scaleMarker(\'start\', 1.25)" style="grid-row: 2; grid-column:2;"><span class="alt-badge">+</span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span class="tooltip-text">시작모양 키우기</span></button>' +
-              '<button class="tool-btn" onclick="scaleMarker(\'start\', 0.8)" style="grid-row: 2; grid-column:3;"><span class="alt-badge">-</span><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg><span class="tooltip-text">시작모양 줄이기</span></button>' +
-              '<div class="ribbon-control-item" style="grid-row: 3;"><label>끝 모양:</label><select onchange="setEndMarker(this.value)"><option value="none" ' + (cfg.endMarker==='none'?'selected':'') + '>없음</option><option value="arrow" ' + (cfg.endMarker==='arrow'?'selected':'') + '>화살표</option><option value="circle" ' + (cfg.endMarker==='circle'?'selected':'') + '>동그라미</option><option value="diamond" ' + (cfg.endMarker==='diamond'?'selected':'') + '>다이아몬드</option></select></div>' +
-              '<button class="tool-btn" onclick="scaleMarker(\'end\', 1.25)" style="grid-row: 3; grid-column:2;"><span class="alt-badge">+</span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span class="tooltip-text">끝모양 키우기</span></button>' +
-              '<button class="tool-btn" onclick="scaleMarker(\'end\', 0.8)" style="grid-row: 3; grid-column:3;"><span class="alt-badge">-</span><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg><span class="tooltip-text">끝모양 줄이기</span></button>' +
+            '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
+              // Start Markers 2x2 Grid (Right-facing →)
+              '<div style="display:grid; grid-template-columns:repeat(2, 34px); gap:4px;">' + startNone + startArrow + startCircle + startDiamond + '</div>' +
+              // End Markers 2x2 Grid (Left-facing ←)
+              '<div style="display:grid; grid-template-columns:repeat(2, 34px); gap:4px;">' + endNone + endArrow + endCircle + endDiamond + '</div>' +
+              // Divider |
+              '<div style="width:1px; height:72px; background:#cbd5e1; margin:0 4px;"></div>' +
+              // Fill Style 1x2 Column (Solid vs Hollow)
+              '<div style="display:flex; flex-direction:column; gap:4px;">' + solidBtn + hollowBtn + '</div>' +
+              // Divider |
+              '<div style="width:1px; height:72px; background:#cbd5e1; margin:0 4px;"></div>' +
+              // Scale 1x2 Column (+ / -)
+              '<div style="display:flex; flex-direction:column; gap:4px;">' + scalePlus + scaleMinus + '</div>' +
+            '</div>' +
+            '<div class="category-title">선 끝</div>' +
+          '</div>' +
+
+          // === 3. 선 Category (Line Thickness & Future Props) ===
+          '<div class="ribbon-category">' +
+            '<div class="category-grid" style="grid-template-columns: auto;">' +
+              '<div class="ribbon-control-item"><label>선 두께:</label><input type="number" min="1" max="20" value="' + cfg.strokeWidth + '" oninput="setStrokeWidth(this.value)" onchange="setStrokeWidth(this.value)" style="width:55px;"></div>' +
             '</div>' +
             '<div class="category-title">선</div>' +
           '</div>';
@@ -583,12 +629,10 @@
 
         } else if (obj.type === 'bez3') {
           if (a.points && a.points.length > 0) {
-            // 1. Render All Vertex Handles (White)
             a.points.forEach(function(pt, idx) {
               self.createHandleNode(pt.px, pt.py, id, 'bez_vertex', idx, false);
             });
 
-            // 2. Render Control Handles for ALL segments of bez3 (3차 베지어 대칭 핸들 동기화)
             if (a.points.length >= 2) {
               a.ctrls3 = a.ctrls3 || [];
               var gD3 = '';
@@ -615,7 +659,6 @@
                 var ctrl1 = a.ctrls3[seg].c1;
                 var ctrl2 = a.ctrls3[seg].c2;
 
-                // Render Yellow Handles for both c1 and c2
                 self.createHandleNode(ctrl1.x, ctrl1.y, id, 'bez3_c1', seg, true);
                 self.createHandleNode(ctrl2.x, ctrl2.y, id, 'bez3_c2', seg, true);
 

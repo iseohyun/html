@@ -945,12 +945,23 @@
 
   window.setStartMarker = function(val) {
     cfg.startMarker = val;
+    window.updateSvgDefs();
     window.applyStyleToSelected();
+    render.renderRibbon();
   };
 
   window.setEndMarker = function(val) {
     cfg.endMarker = val;
+    window.updateSvgDefs();
     window.applyStyleToSelected();
+    render.renderRibbon();
+  };
+
+  window.setMarkerFillStyle = function(style) {
+    cfg.markerFillStyle = style;
+    window.updateSvgDefs();
+    window.applyStyleToSelected();
+    render.renderRibbon();
   };
 
   // UniPalette Custom Color Swatch Modal Handlers
@@ -1060,9 +1071,16 @@
   };
 
   window.scaleMarker = function(pos, factor) {
-    if (pos === 'start') cfg.startMarkerScale *= factor;
-    else cfg.endMarkerScale *= factor;
+    if (pos === 'both') {
+      cfg.startMarkerScale *= factor;
+      cfg.endMarkerScale *= factor;
+    } else if (pos === 'start') {
+      cfg.startMarkerScale *= factor;
+    } else {
+      cfg.endMarkerScale *= factor;
+    }
     render.updateSvgDefs();
+    render.renderRibbon();
   };
 
   // Immediate App Initialization Function
