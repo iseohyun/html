@@ -381,30 +381,80 @@
             '<div class="category-title">선 끝</div>' +
           '</div>' +
 
-          // === 3. 선 Category (Line Thickness +/-, Solid/Dashed, Dash Array Input Text) ===
-          '<div class="ribbon-category">' +
-            '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
-              // 1. Line Thickness Controls (Input Number + / - Buttons)
-              '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
-                '<label style="font-size:0.8rem; color:#475569; font-weight:600;">선 두께:</label>' +
-                '<input type="number" min="1" max="50" value="' + cfg.strokeWidth + '" oninput="setStrokeWidth(this.value)" onchange="setStrokeWidth(this.value)" style="width:45px; padding:3px 5px; font-size:0.82rem; border:1px solid #cbd5e1; border-radius:4px; text-align:center;">' +
-                '<button class="tool-btn" onclick="adjustStrokeWidth(1)" style="width:28px; height:28px;"><span class="alt-badge">+</span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5"/></svg><span class="tooltip-text">선 두께 키우기 (+1)</span></button>' +
-                '<button class="tool-btn" onclick="adjustStrokeWidth(-1)" style="width:28px; height:28px;"><span class="alt-badge">-</span><svg viewBox="0 0 24 24"><path d="M5 12h14" stroke="currentColor" stroke-width="2.5"/></svg><span class="tooltip-text">선 두께 줄이기 (-1)</span></button>' +
+          // === 3. 선 Category (Line Thickness Column, Line Style 1x2, Custom Dash Array Input below label) ===
+          var isDashed = curDashStyle === 'dashed';
+          ribbonBar.innerHTML = 
+            // === 1. 색 Category (Color) ===
+            '<div class="ribbon-category">' +
+              '<div style="display:flex; flex-direction:row; align-items:center; gap:8px;">' +
+                // Left: 1x2 Radio Mode Target Selector
+                '<div style="display:flex; flex-direction:column; gap:4px;">' + strokeBtnHtml + fillBtnHtml + '</div>' +
+                // Middle: 9x3 Seamless Swatch Grid
+                swatchGridHtml +
+                // Right: 1x2 UniPalette Action Buttons
+                '<div style="display:flex; flex-direction:column; gap:4px;">' + openPaletteBtnHtml + importPaletteBtnHtml + '</div>' +
               '</div>' +
-              // Divider |
-              '<div style="width:1px; height:34px; background:#cbd5e1; margin:0 4px;"></div>' +
-              // 2. Line Style Buttons (Solid vs Dashed)
-              '<div style="display:flex; flex-direction:row; gap:3px;">' + solidLineBtn + dashedLineBtn + '</div>' +
-              // Divider |
-              '<div style="width:1px; height:34px; background:#cbd5e1; margin:0 4px;"></div>' +
-              // 3. Custom Dash Pattern Input Text
-              '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
-                '<label style="font-size:0.8rem; color:#475569; font-weight:600;">점선 패턴:</label>' +
-                '<input type="text" value="' + curDashArray + '" placeholder="6,6" oninput="setStrokeDashArray(this.value)" style="width:65px; padding:3px 6px; font-size:0.82rem; border:1px solid #cbd5e1; border-radius:4px; font-family:monospace;">' +
-              '</div>' +
+              '<div class="category-title">색</div>' +
             '</div>' +
-            '<div class="category-title">선</div>' +
-          '</div>';
+
+            // === 2. 선 끝 Category (Row 1: 시작모양 | 채우기 | +/-   Row 2: 끝모양 | 채우기 | +/-) ===
+            '<div class="ribbon-category">' +
+              '<div style="display:flex; flex-direction:column; gap:4px; justify-content:center;">' +
+                // Row 1: 시작 모양 옵션들 (Left-facing Icons ←)
+                '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
+                  '<div style="display:flex; flex-direction:row; gap:2px;">' + startNone + startArrow + startCircle + startDiamond + '</div>' +
+                  '<div style="width:1px; height:28px; background:#cbd5e1; margin:0 3px;"></div>' +
+                  '<div style="display:flex; flex-direction:row; gap:2px;">' + startSolidBtn + startHollowBtn + '</div>' +
+                  '<div style="width:1px; height:28px; background:#cbd5e1; margin:0 3px;"></div>' +
+                  '<div style="display:flex; flex-direction:row; gap:2px;">' + startScalePlus + startScaleMinus + '</div>' +
+                '</div>' +
+                // Row 2: 끝 모양 옵션들 (Right-facing Icons →)
+                '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
+                  '<div style="display:flex; flex-direction:row; gap:2px;">' + endNone + endArrow + endCircle + endDiamond + '</div>' +
+                  '<div style="width:1px; height:28px; background:#cbd5e1; margin:0 3px;"></div>' +
+                  '<div style="display:flex; flex-direction:row; gap:2px;">' + endSolidBtn + endHollowBtn + '</div>' +
+                  '<div style="width:1px; height:28px; background:#cbd5e1; margin:0 3px;"></div>' +
+                  '<div style="display:flex; flex-direction:row; gap:2px;">' + endScalePlus + endScaleMinus + '</div>' +
+                '</div>' +
+                '</div>' +
+              '<div class="category-title">선 끝</div>' +
+            '</div>' +
+
+            // === 3. 선 Category (Line Thickness Column, Line Style 1x2, Custom Dash Array Input below label) ===
+            '<div class="ribbon-category">' +
+              '<div style="display:flex; flex-direction:row; align-items:center; gap:8px;">' +
+                // 1. Line Thickness Column (Top: Label + Input Number, Bottom: +/- Buttons)
+                '<div style="display:flex; flex-direction:column; align-items:center; gap:4px;">' +
+                  '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
+                    '<label style="font-size:0.78rem; color:#475569; font-weight:600;">선 두께:</label>' +
+                    '<input type="number" min="1" max="50" value="' + cfg.strokeWidth + '" oninput="setStrokeWidth(this.value)" onchange="setStrokeWidth(this.value)" style="width:42px; padding:2px 4px; font-size:0.8rem; border:1px solid #cbd5e1; border-radius:4px; text-align:center;">' +
+                  '</div>' +
+                  '<div style="display:flex; flex-direction:row; gap:4px;">' +
+                    '<button class="tool-btn" onclick="adjustStrokeWidth(1)" style="width:28px; height:24px;"><span class="alt-badge">+</span><svg viewBox="0 0 24 24" style="width:14px; height:14px;"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5"/></svg><span class="tooltip-text">선 두께 키우기 (+1)</span></button>' +
+                    '<button class="tool-btn" onclick="adjustStrokeWidth(-1)" style="width:28px; height:24px;"><span class="alt-badge">-</span><svg viewBox="0 0 24 24" style="width:14px; height:14px;"><path d="M5 12h14" stroke="currentColor" stroke-width="2.5"/></svg><span class="tooltip-text">선 두께 줄이기 (-1)</span></button>' +
+                  '</div>' +
+                '</div>' +
+
+                // Divider |
+                '<div style="width:1px; height:48px; background:#cbd5e1; margin:0 4px;"></div>' +
+
+                // 2. Line Style (1x2 Horizontal Layout: Solid / Dashed)
+                '<div style="display:flex; flex-direction:column; align-items:center; gap:4px;">' +
+                  '<label style="font-size:0.78rem; color:#475569; font-weight:600;">선 종류:</label>' +
+                  '<div style="display:flex; flex-direction:row; gap:4px;">' + solidLineBtn + dashedLineBtn + '</div>' +
+                '</div>' +
+
+                // Divider |
+                '<div style="width:1px; height:48px; background:#cbd5e1; margin:0 4px;"></div>' +
+
+                // 3. Custom Dash Pattern Input Text (Top: Label, Bottom: Input Text; Active only when dashed)
+                '<div style="display:flex; flex-direction:column; align-items:center; gap:4px; ' + (isDashed ? '' : 'opacity:0.4; pointer-events:none;') + '">' +
+                  '<label style="font-size:0.78rem; color:#475569; font-weight:600;">점선 패턴:</label>' +
+                  '<input type="text" value="' + curDashArray + '" placeholder="6,6" ' + (isDashed ? '' : 'disabled') + ' oninput="setStrokeDashArray(this.value)" style="width:65px; padding:2px 4px; font-size:0.8rem; border:1px solid #cbd5e1; border-radius:4px; font-family:monospace; text-align:center;">' +
+                '</div>' +
+              '</div>' +
+              '<div class="category-title">선</div>' +
+            '</div>';
       } else if (cfg.currentTab === 'text') {
         ribbonBar.innerHTML = 
           '<div class="ribbon-category">' +
