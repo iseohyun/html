@@ -26,31 +26,42 @@
     }
   }
 
+  function getAllGroupMembers(selectedIds) {
+    var memberMap = new Map();
+
+    function addObj(obj) {
+      if (!obj || memberMap.has(obj.id)) return;
+      memberMap.set(obj.id, obj);
+      if (obj.parentId) {
+        cfg.objectsMap.forEach(function(o) {
+          if (o.parentId === obj.parentId && !memberMap.has(o.id)) {
+            addObj(o);
+          }
+        });
+      }
+    }
+
+    (selectedIds || new Set()).forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (obj) addObj(obj);
+    });
+
+    return Array.from(memberMap.values());
+  }
+
   function applyStyleToSelected() {
     var objectsGroup = document.getElementById('objectsGroup');
+    var members = getAllGroupMembers(cfg.selectedIds);
     var targetShapes = [];
     var standaloneTexts = [];
 
-    cfg.selectedIds.forEach(function(id) {
-      var obj = cfg.objectsMap.get(id);
-      if (!obj) return;
-
-      var members = [obj];
-      if (obj.parentId) {
-        members = [];
-        cfg.objectsMap.forEach(function(o) {
-          if (o.parentId === obj.parentId) members.push(o);
-        });
+    var hasShapeInGroup = members.some(function(m) { return m.type !== 'text'; });
+    members.forEach(function(m) {
+      if (m.type !== 'text') {
+        if (targetShapes.indexOf(m) === -1) targetShapes.push(m);
+      } else if (!hasShapeInGroup) {
+        if (standaloneTexts.indexOf(m) === -1) standaloneTexts.push(m);
       }
-
-      var hasShapeInGroup = members.some(function(m) { return m.type !== 'text'; });
-      members.forEach(function(m) {
-        if (m.type !== 'text') {
-          if (targetShapes.indexOf(m) === -1) targetShapes.push(m);
-        } else if (!hasShapeInGroup) {
-          if (standaloneTexts.indexOf(m) === -1) standaloneTexts.push(m);
-        }
-      });
     });
 
     targetShapes.forEach(function(obj) {
@@ -159,25 +170,18 @@
 
   function setStartMarker(val) {
     cfg.startMarker = val;
-    if (window.WebpointerRender && window.WebpointerRender.updateSvgDefs) window.WebpointerRender.updateSvgDefs();
     applyStyleToSelected();
     if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
   }
 
   function setEndMarker(val) {
     cfg.endMarker = val;
-    if (window.WebpointerRender && window.WebpointerRender.updateSvgDefs) window.WebpointerRender.updateSvgDefs();
     applyStyleToSelected();
     if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
   }
 
-  function toggleCategoryCollapse(catKey) {
-    if (!cfg.collapsedCategories) cfg.collapsedCategories = new Set();
-    if (cfg.collapsedCategories.has(catKey)) {
-      cfg.collapsedCategories.delete(catKey);
-    } else {
-      cfg.collapsedCategories.add(catKey);
-    }
+  function toggleCategoryCollapse(catId) {
+    cfg.collapsedCategories[catId] = !cfg.collapsedCategories[catId];
     if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
   }
 
@@ -257,20 +261,8 @@
   function applyPaletteColor(hex) {
     if (cfg.currentTab === 'text') {
       var target = cfg.activeTextColorTarget || 'text';
-      var textObjs = [];
-      cfg.selectedIds.forEach(function(id) {
-        var obj = cfg.objectsMap.get(id);
-        if (!obj) return;
-        if (obj.type === 'text') {
-          if (textObjs.indexOf(obj) === -1) textObjs.push(obj);
-        } else if (obj.parentId) {
-          cfg.objectsMap.forEach(function(o) {
-            if (o.parentId === obj.parentId && o.type === 'text') {
-              if (textObjs.indexOf(o) === -1) textObjs.push(o);
-            }
-          });
-        }
-      });
+      var members = getAllGroupMembers(cfg.selectedIds);
+      var textObjs = members.filter(function(m) { return m.type === 'text'; });
 
       textObjs.forEach(function(obj) {
         if (obj && obj.attrs) {
@@ -327,20 +319,8 @@
   }
 
   function applyTextStyleToSelected() {
-    var textObjs = [];
-    cfg.selectedIds.forEach(function(id) {
-      var obj = cfg.objectsMap.get(id);
-      if (!obj) return;
-      if (obj.type === 'text') {
-        if (textObjs.indexOf(obj) === -1) textObjs.push(obj);
-      } else if (obj.parentId) {
-        cfg.objectsMap.forEach(function(o) {
-          if (o.parentId === obj.parentId && o.type === 'text') {
-            if (textObjs.indexOf(o) === -1) textObjs.push(o);
-          }
-        });
-      }
-    });
+    var members = getAllGroupMembers(cfg.selectedIds);
+    var textObjs = members.filter(function(m) { return m.type === 'text'; });
 
     textObjs.forEach(function(obj) {
       if (obj && obj.attrs) {
@@ -367,9 +347,11 @@
 
   function setTextAnchor(newAnchor) {
     cfg.textAnchor = newAnchor;
-    cfg.selectedIds.forEach(function(id) {
-      var obj = cfg.objectsMap.get(id);
-      if (obj && obj.type === 'text' && obj.attrs) {
+    var members = getAllGroupMembers(cfg.selectedIds);
+    var textObjs = members.filter(function(m) { return m.type === 'text'; });
+
+    textObjs.forEach(function(obj) {
+      if (obj && obj.attrs) {
         var oldAnchor = obj.attrs.textAnchor || 'start';
         if (oldAnchor !== newAnchor) {
           var currX = obj.attrs.x || 0;
