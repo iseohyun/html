@@ -1,5 +1,12 @@
 # Webpointer Project Version History
 
+## [0.3.4] - 2026-07-30
+### Added & Updated
+- Updated default 24 color palette preset to custom user palette:
+  `["#660000", "#660000", "#086600", "#006627", "#002E66", "#000080", "#3A0066", "#660031", "#E44D1B", "#C27800", "#669900", "#00A879", "#009DD1", "#4182FB", "#A760E2", "#D94594", "#FF976B", "#FFBB00", "#AAE43F", "#00F5C0", "#00EAFF", "#85CAFF", "#EC99FF", "#FF8FDA"]`
+- Fixed UniPalette action buttons placement to the right of the 9x3 palette grid in the `색` category.
+- Enhanced modal popup logic so `openPaletteModal()` dynamically creates the `<textarea>` modal overlay if missing, guaranteeing 100% reliable popup execution.
+
 ## [0.3.3] - 2026-07-30
 ### Added
 - Completed Style Ribbon Interface Redesign under Picture Format (`style`) Tab:
@@ -37,7 +44,7 @@
   - Align H-Center uses the horizontal center of the **leftmost selected unit** as the reference axis.
   - Align V-Center uses the vertical center of the **topmost selected unit** as the reference axis.
   - Full support for top-level group unit boundary calculations and shift operations.
-- Updated [`IMPLEMENTATION.md`](file:///c:/git/html/small-project/Webpointer/IMPLEMENTATION.md) Section 4 with complete alignment specifications.
+- Updated [`IMPLEMENTATION.md`](file:///c:/git/html/small-project/Webpointer/SECTION_4.md) Section 4 with complete alignment specifications.
 
 ## [0.2.1] - 2026-07-30
 ### Added

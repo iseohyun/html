@@ -29,10 +29,11 @@
     endMarker: 'none',
     endMarkerScale: 1,
 
-    // Custom UniPalette Color Swatch Memory (Max 32 colors)
+    // Default 24 UniPalette Color Swatch Preset Memory
     customPalette: [
-      '#2aa314', '#14a36a', '#1471a3', '#2314a3',
-      '#8e14a3', '#a3144d', '#a34614', '#95a314'
+      "#660000", "#660000", "#086600", "#006627", "#002e66", "#000080", "#3a0066", "#660031",
+      "#e44d1b", "#c27800", "#669900", "#00a879", "#009dd1", "#4182fb", "#a760e2", "#d94594",
+      "#ff976b", "#ffbb00", "#aae43f", "#00f5c0", "#00eaff", "#85caff", "#ec99ff", "#ff8fda"
     ],
     activeColorTarget: 'stroke', // 'stroke' or 'fill'
 
