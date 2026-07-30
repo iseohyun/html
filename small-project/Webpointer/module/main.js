@@ -442,6 +442,18 @@
         }
       }
 
+      if (cfg.selectedIds.size === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        var selId2 = Array.from(cfg.selectedIds)[0];
+        var selObj2 = cfg.objectsMap.get(selId2);
+        if (selObj2 && selObj2.type !== 'text') {
+          if (e.key.length === 1 && !['Escape', 'Tab', 'CapsLock'].includes(e.key)) {
+            var pt = textTool.getShapeTextInsertionPoint(selObj2);
+            textTool.startDirectCanvasTyping(pt.px, pt.py, null, pt.anchor);
+            return;
+          }
+        }
+      }
+
       if (e.key === 'Alt') {
         document.body.classList.add('alt-pressed');
       }

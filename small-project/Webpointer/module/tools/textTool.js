@@ -4,8 +4,51 @@
   var cfg = window.WebpointerConfig;
   var state = window.WebpointerState;
 
+  function getShapeTextInsertionPoint(shapeObj) {
+    var fontSize = parseInt(cfg.fontSize || 20, 10);
+    var type = shapeObj.type;
+    var a = shapeObj.attrs || {};
+
+    if (type === 'rect' || type === 'rounded') {
+      return {
+        px: (a.x !== undefined ? a.x : 0) + 10,
+        py: (a.y !== undefined ? a.y : 0) + fontSize + 4,
+        anchor: 'start'
+      };
+    }
+
+    var bounds = window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(shapeObj) : null;
+    var cx = 0, cy = 0;
+    if (type === 'ellipse' || type === 'arc' || type === 'point') {
+      cx = a.cx !== undefined ? a.cx : (bounds ? (bounds.minX + bounds.maxX) / 2 : 0);
+      cy = a.cy !== undefined ? a.cy : (bounds ? (bounds.minY + bounds.maxY) / 2 : 0);
+    } else if (bounds) {
+      cx = (bounds.minX + bounds.maxX) / 2;
+      cy = (bounds.minY + bounds.maxY) / 2;
+    } else {
+      cx = a.x1 || 0;
+      cy = a.y1 || 0;
+    }
+
+    return {
+      px: Math.round(cx),
+      py: Math.round(cy + (fontSize * 0.35)),
+      anchor: 'middle'
+    };
+  }
+
   function addTextObject() {
-    console.log('[Webpointer Debug] addTextObject called - switching to text tool mode');
+    console.log('[Webpointer Debug] addTextObject called');
+    if (cfg.selectedIds && cfg.selectedIds.size === 1) {
+      var selId = Array.from(cfg.selectedIds)[0];
+      var shapeObj = cfg.objectsMap.get(selId);
+      if (shapeObj && shapeObj.type !== 'text') {
+        var pt = getShapeTextInsertionPoint(shapeObj);
+        startDirectCanvasTyping(pt.px, pt.py, null, pt.anchor);
+        return;
+      }
+    }
+
     if (window.WebpointerHandlers && window.WebpointerHandlers.setTool) {
       window.WebpointerHandlers.setTool('text');
     } else {
@@ -18,7 +61,7 @@
     }
   }
 
-  function startDirectCanvasTyping(px, py, targetObj) {
+  function startDirectCanvasTyping(px, py, targetObj, customAnchor) {
     finishDirectCanvasTyping();
 
     var mainSvg = document.getElementById('mainSvg');
@@ -34,13 +77,15 @@
     } else {
       var id = 'obj_' + (cfg.nextId++);
       var el = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      var tAnchor = customAnchor || cfg.textAnchor || 'start';
 
       el.setAttribute('id', id);
       el.setAttribute('x', px);
       el.setAttribute('y', py);
       el.setAttribute('fill', textColor);
-      el.setAttribute('font-size', '20');
-      el.setAttribute('font-family', 'sans-serif');
+      el.setAttribute('font-size', cfg.fontSize || 20);
+      el.setAttribute('font-family', cfg.fontFamily || 'sans-serif');
+      el.setAttribute('text-anchor', tAnchor);
       el.setAttribute('dominant-baseline', 'alphabetic');
 
       var attrs = {
@@ -48,7 +93,9 @@
         y: py,
         text: '',
         fill: textColor,
-        fontSize: 20
+        fontSize: cfg.fontSize || 20,
+        fontFamily: cfg.fontFamily || 'sans-serif',
+        textAnchor: tAnchor
       };
 
       targetSvgObj = { id: id, type: 'text', parentId: null, attrs: attrs, el: el };
@@ -204,6 +251,7 @@
   window.WebpointerTextTool = {
     addTextObject: addTextObject,
     startDirectCanvasTyping: startDirectCanvasTyping,
-    finishDirectCanvasTyping: finishDirectCanvasTyping
+    finishDirectCanvasTyping: finishDirectCanvasTyping,
+    getShapeTextInsertionPoint: getShapeTextInsertionPoint
   };
 })(window);
