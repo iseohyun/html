@@ -19,8 +19,8 @@
 
     // Continuous Multi-Click Bezier Mode State
     isMultiBezierActive: false,
-    bezierPoints: [],        // [{px, py, stepX, stepY}]
-    activeBezierObjs: []     // Created segment object IDs
+    bezierPoints: [],        // Confirmed vertex points: [{px, py, stepX, stepY}]
+    activeBezierObj: null    // Single SVG <path> object
   };
   window.WebpointerState = state;
 
@@ -58,6 +58,40 @@
     };
   }
 
+  // Build Continuous Bezier SVG Path Data String ("M 50 150 Q 125 50, 200 150 T 350 150 T 500 150")
+  function buildContinuousBezierPathD(points, floatingPt, toolType) {
+    var pts = points.slice();
+    if (floatingPt) pts.push(floatingPt);
+    if (pts.length === 0) return '';
+    if (pts.length === 1) return 'M ' + pts[0].px + ' ' + pts[0].py;
+
+    var P0 = pts[0];
+    var P1 = pts[1];
+
+    if (toolType === 'bez2') {
+      var cx = Math.round((P0.px + P1.px) / 2);
+      var cy = Math.min(P0.py, P1.py) - 100;
+      var d = 'M ' + P0.px + ' ' + P0.py + ' Q ' + cx + ' ' + cy + ', ' + P1.px + ' ' + P1.py;
+      for (var i = 2; i < pts.length; i++) {
+        d += ' T ' + pts[i].px + ' ' + pts[i].py;
+      }
+      return d;
+    } else if (toolType === 'bez3') {
+      var c1x = P0.px;
+      var c1y = Math.round((P0.py + P1.py) / 2 - 50);
+      var c2x = P1.px;
+      var c2y = Math.round((P0.py + P1.py) / 2 - 50);
+      var d3 = 'M ' + P0.px + ' ' + P0.py + ' C ' + c1x + ' ' + c1y + ', ' + c2x + ' ' + c2y + ', ' + P1.px + ' ' + P1.py;
+      for (var j = 2; j < pts.length; j++) {
+        var mc1x = Math.round((pts[j-1].px + pts[j].px) / 2);
+        var mc1y = pts[j-1].py;
+        d3 += ' S ' + mc1x + ' ' + mc1y + ', ' + pts[j].px + ' ' + pts[j].py;
+      }
+      return d3;
+    }
+    return '';
+  }
+
   // Calculate Distance from Point (px, py) to an Object
   function getDistanceToObj(px, py, obj) {
     var a = obj.attrs;
@@ -86,15 +120,22 @@
       var dyR = Math.max(ry1 - py, 0, py - ry2);
       return Math.sqrt(dxR * dxR + dyR * dyR);
     } else if (obj.type === 'bez2' || obj.type === 'bez3') {
-      var pts = [ {x: a.x1, y: a.y1}, {x: a.x2, y: a.y2} ];
-      if (a.cx !== undefined) pts.push({x: a.cx, y: a.cy});
-      if (a.c1x !== undefined) pts.push({x: a.c1x, y: a.c1y});
-      if (a.c2x !== undefined) pts.push({x: a.c2x, y: a.c2y});
       var minD = Infinity;
-      pts.forEach(function(pt) {
-        var d = Math.sqrt((px - pt.x) * (px - pt.x) + (py - pt.y) * (py - pt.y));
-        if (d < minD) minD = d;
-      });
+      if (a.points && a.points.length > 0) {
+        a.points.forEach(function(pt) {
+          var d = Math.sqrt((px - pt.px) * (px - pt.px) + (py - pt.py) * (py - pt.py));
+          if (d < minD) minD = d;
+        });
+      } else {
+        var pts = [ {x: a.x1, y: a.y1}, {x: a.x2, y: a.y2} ];
+        if (a.cx !== undefined) pts.push({x: a.cx, y: a.cy});
+        if (a.c1x !== undefined) pts.push({x: a.c1x, y: a.c1y});
+        if (a.c2x !== undefined) pts.push({x: a.c2x, y: a.c2y});
+        pts.forEach(function(pt) {
+          var d = Math.sqrt((px - pt.x) * (px - pt.x) + (py - pt.y) * (py - pt.y));
+          if (d < minD) minD = d;
+        });
+      }
       return minD;
     }
     return Infinity;
@@ -168,16 +209,9 @@
         endAngle: initialEndAngle,
         angle: 0
       };
-    } else if (type === 'bez2') {
+    } else if (type === 'bez2' || type === 'bez3') {
       el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      attrs = { x1: px1, y1: py1, cx: px1, cy: py2, x2: px2, y2: py2 };
-    } else if (type === 'bez3') {
-      el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      var c1x = px1;
-      var c1y = (py1 + py2) / 2;
-      var c2x = (px1 + px2) / 2;
-      var c2y = py2;
-      attrs = { x1: px1, y1: py1, c1x: c1x, c1y: c1y, c2x: c2x, c2y: c2y, x2: px2, y2: py2 };
+      attrs = { pathD: 'M ' + px1 + ' ' + py1, points: [{px: px1, py: py1, stepX: stepStart.stepX, stepY: stepStart.stepY}] };
     }
 
     el.setAttribute('id', id);
@@ -200,15 +234,27 @@
   function finishMultiBezier() {
     if (!state.isMultiBezierActive) return;
 
-    if (state.activeTempObj) {
-      state.activeTempObj.el.remove();
-      cfg.objectsMap.delete(state.activeTempObj.id);
-      cfg.selectedIds.delete(state.activeTempObj.id);
+    if (state.activeBezierObj) {
+      // Remove trailing unconfirmed preview segment from pathD
+      var finalD = buildContinuousBezierPathD(state.bezierPoints, null, cfg.currentTool);
+      state.activeBezierObj.attrs.pathD = finalD;
+      state.activeBezierObj.attrs.points = state.bezierPoints.slice();
+
+      if (state.bezierPoints.length >= 2) {
+        var p0 = state.bezierPoints[0], p1 = state.bezierPoints[1];
+        if (cfg.currentTool === 'bez2') {
+          state.activeBezierObj.attrs.firstCtrl = {
+            cx: Math.round((p0.px + p1.px) / 2),
+            cy: Math.min(p0.py, p1.py) - 100
+          };
+        }
+      }
+      render.updateElementAttributes(state.activeBezierObj);
     }
 
     state.isMultiBezierActive = false;
     state.bezierPoints = [];
-    state.activeBezierObjs = [];
+    state.activeBezierObj = null;
     state.isDrawing = false;
     state.activeTempObj = null;
 
@@ -386,28 +432,21 @@
       var targetObj = e.target.closest('circle, line, rect, ellipse, path');
 
       if (cfg.currentTool === 'bez2' || cfg.currentTool === 'bez3') {
-        // Continuous Multi-Click Bezier Mode
+        // Continuous Multi-Click Bezier Mode (Creates SINGLE SVG <path>)
         if (!state.isMultiBezierActive) {
-          // 1. Initial Click: Set Start Point
+          // 1. First Click: Create SINGLE SVG path and set 1st point
           state.isMultiBezierActive = true;
           state.bezierPoints = [coords];
-          state.activeBezierObjs = [];
-          state.isDrawing = true;
-          state.drawStartStep = coords;
-          state.activeTempObj = createSvgObject(cfg.currentTool, coords, coords);
-          cfg.selectedIds.add(state.activeTempObj.id);
+          cfg.selectedIds.clear();
+          state.activeBezierObj = createSvgObject(cfg.currentTool, coords, coords);
+          cfg.selectedIds.add(state.activeBezierObj.id);
         } else {
-          // 2. Subsequent Click: Finalize current segment to clicked point, start next segment from clicked point
-          var lastPt = state.bezierPoints[state.bezierPoints.length - 1];
-          if (state.activeTempObj) {
-            // Commit current segment
-            state.activeBezierObjs.push(state.activeTempObj.id);
-          }
+          // 2. Subsequent Clicks: Add confirmed point to bezierPoints array
           state.bezierPoints.push(coords);
-          // Create new preview segment starting from coords
-          state.drawStartStep = coords;
-          state.activeTempObj = createSvgObject(cfg.currentTool, coords, coords);
-          cfg.selectedIds.add(state.activeTempObj.id);
+          var pathD = buildContinuousBezierPathD(state.bezierPoints, null, cfg.currentTool);
+          state.activeBezierObj.attrs.pathD = pathD;
+          state.activeBezierObj.attrs.points = state.bezierPoints.slice();
+          render.updateElementAttributes(state.activeBezierObj);
         }
         render.renderUI();
         return;
@@ -513,6 +552,14 @@
             a.endAngle = Math.round(radE * (180 / Math.PI)) - (a.angle || 0);
           } else if (state.activeHandleInfo.handleType === 'bez2_ctrl') {
             a.cx = coords.px; a.cy = coords.py;
+            if (a.firstCtrl) { a.firstCtrl.cx = coords.px; a.firstCtrl.cy = coords.py; }
+          } else if (state.activeHandleInfo.handleType === 'bez_vertex') {
+            var idx = state.activeHandleInfo.idx;
+            if (a.points && a.points[idx]) {
+              a.points[idx].px = coords.px;
+              a.points[idx].py = coords.py;
+              a.pathD = buildContinuousBezierPathD(a.points, null, obj.type);
+            }
           } else if (state.activeHandleInfo.handleType === 'bez3_ctrl1') {
             a.c1x = coords.px; a.c1y = coords.py;
           } else if (state.activeHandleInfo.handleType === 'bez3_ctrl2') {
@@ -562,22 +609,24 @@
           } else if (obj.type === 'rect' || obj.type === 'rounded') {
             a.x = initialAttrs.x + deltaPx;
             a.y = initialAttrs.y + deltaPy;
-          } else if (obj.type === 'bez2') {
-            a.x1 = initialAttrs.x1 + deltaPx;
-            a.y1 = initialAttrs.y1 + deltaPy;
-            a.x2 = initialAttrs.x2 + deltaPx;
-            a.y2 = initialAttrs.y2 + deltaPy;
-            a.cx = initialAttrs.cx + deltaPx;
-            a.cy = initialAttrs.cy + deltaPy;
-          } else if (obj.type === 'bez3') {
-            a.x1 = initialAttrs.x1 + deltaPx;
-            a.y1 = initialAttrs.y1 + deltaPy;
-            a.x2 = initialAttrs.x2 + deltaPx;
-            a.y2 = initialAttrs.y2 + deltaPy;
-            a.c1x = initialAttrs.c1x + deltaPx;
-            a.c1y = initialAttrs.c1y + deltaPy;
-            a.c2x = initialAttrs.c2x + deltaPx;
-            a.c2y = initialAttrs.c2y + deltaPy;
+          } else if (obj.type === 'bez2' || obj.type === 'bez3') {
+            if (initialAttrs.points && initialAttrs.points.length > 0) {
+              a.points = initialAttrs.points.map(function(pt) {
+                return { px: pt.px + deltaPx, py: pt.py + deltaPy, stepX: pt.stepX, stepY: pt.stepY };
+              });
+              if (initialAttrs.firstCtrl) {
+                a.firstCtrl = { cx: initialAttrs.firstCtrl.cx + deltaPx, cy: initialAttrs.firstCtrl.cy + deltaPy };
+              }
+              a.pathD = buildContinuousBezierPathD(a.points, null, obj.type);
+            } else {
+              a.x1 = initialAttrs.x1 + deltaPx;
+              a.y1 = initialAttrs.y1 + deltaPy;
+              a.x2 = initialAttrs.x2 + deltaPx;
+              a.y2 = initialAttrs.y2 + deltaPy;
+              if (a.cx !== undefined) { a.cx = initialAttrs.cx + deltaPx; a.cy = initialAttrs.cy + deltaPy; }
+              if (a.c1x !== undefined) { a.c1x = initialAttrs.c1x + deltaPx; a.c1y = initialAttrs.c1y + deltaPy; }
+              if (a.c2x !== undefined) { a.c2x = initialAttrs.c2x + deltaPx; a.c2y = initialAttrs.c2y + deltaPy; }
+            }
           }
           render.updateElementAttributes(obj);
         });
@@ -585,7 +634,16 @@
         return;
       }
 
-      // 3. New Shape Drawing Drag (Real-time Preview)
+      // 3. Continuous Multi-Click Bezier Real-time Mousemove Preview
+      if (state.isMultiBezierActive && state.activeBezierObj) {
+        var previewD = buildContinuousBezierPathD(state.bezierPoints, coords, cfg.currentTool);
+        state.activeBezierObj.attrs.pathD = previewD;
+        render.updateElementAttributes(state.activeBezierObj);
+        render.renderUI();
+        return;
+      }
+
+      // 4. New Shape Drawing Drag (Real-time Preview for other shapes)
       if (state.isDrawing && state.activeTempObj && state.drawStartStep) {
         var px1 = (state.drawStartStep.stepX / cfg.STEPS_X) * cfg.SVG_WIDTH;
         var py1 = (state.drawStartStep.stepY / cfg.STEPS_Y) * cfg.SVG_HEIGHT;
@@ -613,22 +671,6 @@
           aTemp.cy = (py1 + py2) / 2;
           aTemp.rx = Math.max(5, Math.abs(px2 - px1) / 2);
           aTemp.ry = Math.max(5, Math.abs(py2 - py1) / 2);
-        } else if (state.activeTempObj.type === 'bez2') {
-          // 1차 베지어 (bez2): Start (px1, py1), End (px2, py2), Control Point (px1, py2) [start X, end Y]
-          aTemp.x2 = px2;
-          aTemp.y2 = py2;
-          aTemp.cx = px1;
-          aTemp.cy = py2;
-        } else if (state.activeTempObj.type === 'bez3') {
-          // 2차 베지어 (bez3): Start (px1, py1), End (px2, py2), Virtual center V = (px1, py2)
-          // Control 1 = Midpoint(Start, V) = (px1, (py1+py2)/2)
-          // Control 2 = Midpoint(V, End) = ((px1+px2)/2, py2)
-          aTemp.x2 = px2;
-          aTemp.y2 = py2;
-          aTemp.c1x = px1;
-          aTemp.c1y = (py1 + py2) / 2;
-          aTemp.c2x = (px1 + px2) / 2;
-          aTemp.c2y = py2;
         }
         render.updateElementAttributes(state.activeTempObj);
         render.renderUI();
@@ -636,10 +678,7 @@
     });
 
     mainSvg.addEventListener('mouseup', function(e) {
-      if (state.isMultiBezierActive) {
-        // Multi-Bezier mode manages segments via continuous clicks (mousedown); mouseup does not auto-exit
-        return;
-      }
+      if (state.isMultiBezierActive) return;
 
       var coords = getStepCoords(e);
       if (state.isDrawing && state.activeTempObj && state.drawStartStep) {
@@ -665,15 +704,6 @@
             a.rx = sz / 2; a.ry = sz / 2;
             a.startAngle = -90; // 12 o'clock
             a.endAngle = 0;    // 3 o'clock
-          } else if (state.activeTempObj.type === 'bez2') {
-            a.x1 = startPx; a.y1 = startPy;
-            a.x2 = startPx + sz; a.y2 = startPy;
-            a.cx = startPx; a.cy = startPy + sz;
-          } else if (state.activeTempObj.type === 'bez3') {
-            a.x1 = startPx; a.y1 = startPy;
-            a.x2 = startPx + sz; a.y2 = startPy;
-            a.c1x = startPx; a.c1y = startPy + sz / 2;
-            a.c2x = startPx + sz / 2; a.c2y = startPy + sz;
           } else if (state.activeTempObj.type === 'rounded') {
             a.x = startPx; a.y = startPy;
             a.width = sz; a.height = sz;
@@ -702,7 +732,7 @@
       if (e.key === 'Alt') {
         document.body.classList.add('show-alt-keybinds');
       } else if (e.key === 'Escape') {
-        // Esc Key: Finish/Cancel Multi-Bezier or active drawing and switch to Select Tool
+        // Esc Key: Finish Multi-Bezier or cancel active drawing and switch to Select Tool
         if (state.isMultiBezierActive) {
           finishMultiBezier();
         } else if (state.isDrawing && state.activeTempObj) {

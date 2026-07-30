@@ -6,7 +6,7 @@
         "type": "Added",
         "projectName": "Webpointer",
         "projectPath": "/small-project/Webpointer/index.html",
-        "summary": "v0.1.9: 베지어 곡선 연속 다중 클릭 입력 방식 및 실시간 다음 좌표 미리보기/Esc 완료 기능 구축"
+        "summary": "v0.2.0: 베지어 곡선 연속 입력 시 M..Q..T 구문 단일 SVG <path> d 속성(M 50 150 Q 125 50, 200 150 T 350 150 T 500 150) 정밀 표준 생성 시스템 완성"
       }
     ]
   },

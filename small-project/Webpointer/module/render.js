@@ -115,8 +115,8 @@
           self.makeToolHtml('rect', '사각형', '4', '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="1"/></svg>'),
           self.makeToolHtml('ellipse', '타원', '5', '<svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="9" ry="6"/></svg>'),
           self.makeToolHtml('arc', '호 (Arc)', '6', '<svg viewBox="0 0 24 24"><path d="M 4 18 A 9 9 0 0 1 20 18"/></svg>'),
-          self.makeToolHtml('bez2', '1차 베지어 (Q-Bezier)', '7', '<svg viewBox="0 0 24 24"><path d="M 3 18 Q 12 3 21 18"/><circle cx="12" cy="3" r="2" fill="currentColor"/></svg>'),
-          self.makeToolHtml('bez3', '2차 베지어 (C-Bezier)', '8', '<svg viewBox="0 0 24 24"><path d="M 3 18 C 7 3, 17 3, 21 18"/><circle cx="7" cy="3" r="2" fill="currentColor"/><circle cx="17" cy="3" r="2" fill="currentColor"/></svg>'),
+          self.makeToolHtml('bez2', '1차 베지어 (Q-Bezier M..Q..T)', '7', '<svg viewBox="0 0 24 24"><path d="M 3 18 Q 12 3 21 18"/><circle cx="12" cy="3" r="2" fill="currentColor"/></svg>'),
+          self.makeToolHtml('bez3', '2차 베지어 (C-Bezier M..C..S)', '8', '<svg viewBox="0 0 24 24"><path d="M 3 18 C 7 3, 17 3, 21 18"/><circle cx="7" cy="3" r="2" fill="currentColor"/><circle cx="17" cy="3" r="2" fill="currentColor"/></svg>'),
           self.makeToolHtml('rounded', '둥근 사각형', '9', '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="5"/></svg>')
         ];
 
@@ -254,10 +254,14 @@
         var d = 'M ' + p1.x + ' ' + p1.y +
                 ' A ' + a.rx + ' ' + a.ry + ' ' + rot + ' ' + largeArcFlag + ' 1 ' + p2.x + ' ' + p2.y;
         obj.el.setAttribute('d', d);
-      } else if (obj.type === 'bez2') {
-        obj.el.setAttribute('d', 'M ' + a.x1 + ' ' + a.y1 + ' Q ' + a.cx + ' ' + a.cy + ' ' + a.x2 + ' ' + a.y2);
-      } else if (obj.type === 'bez3') {
-        obj.el.setAttribute('d', 'M ' + a.x1 + ' ' + a.y1 + ' C ' + a.c1x + ' ' + a.c1y + ', ' + a.c2x + ' ' + a.c2y + ', ' + a.x2 + ' ' + a.y2);
+      } else if (obj.type === 'bez2' || obj.type === 'bez3') {
+        if (a.pathD) {
+          obj.el.setAttribute('d', a.pathD);
+        } else if (obj.type === 'bez2') {
+          obj.el.setAttribute('d', 'M ' + a.x1 + ' ' + a.y1 + ' Q ' + a.cx + ' ' + a.cy + ' ' + a.x2 + ' ' + a.y2);
+        } else if (obj.type === 'bez3') {
+          obj.el.setAttribute('d', 'M ' + a.x1 + ' ' + a.y1 + ' C ' + a.c1x + ' ' + a.c1y + ', ' + a.c2x + ' ' + a.c2y + ', ' + a.x2 + ' ' + a.y2);
+        }
       }
     },
 
@@ -322,16 +326,20 @@
           maxX = Math.max(maxX, a.cx + a.rx);
           minY = Math.min(minY, a.cy - a.ry);
           maxY = Math.max(maxY, a.cy + a.ry);
-        } else if (obj.type === 'bez2') {
-          minX = Math.min(minX, a.x1, a.x2, a.cx);
-          maxX = Math.max(maxX, a.x1, a.x2, a.cx);
-          minY = Math.min(minY, a.y1, a.y2, a.cy);
-          maxY = Math.max(maxY, a.y1, a.y2, a.cy);
-        } else if (obj.type === 'bez3') {
-          minX = Math.min(minX, a.x1, a.x2, a.c1x, a.c2x);
-          maxX = Math.max(maxX, a.x1, a.x2, a.c1x, a.c2x);
-          minY = Math.min(minY, a.y1, a.y2, a.c1y, a.c2y);
-          maxY = Math.max(maxY, a.y1, a.y2, a.c1y, a.c2y);
+        } else if (obj.type === 'bez2' || obj.type === 'bez3') {
+          if (a.points && a.points.length > 0) {
+            a.points.forEach(function(pt) {
+              minX = Math.min(minX, pt.px);
+              maxX = Math.max(maxX, pt.px);
+              minY = Math.min(minY, pt.py);
+              maxY = Math.max(maxY, pt.py);
+            });
+          } else {
+            minX = Math.min(minX, a.x1, a.x2, a.cx !== undefined ? a.cx : a.x1);
+            maxX = Math.max(maxX, a.x1, a.x2, a.cx !== undefined ? a.cx : a.x1);
+            minY = Math.min(minY, a.y1, a.y2, a.cy !== undefined ? a.cy : a.y1);
+            maxY = Math.max(maxY, a.y1, a.y2, a.cy !== undefined ? a.cy : a.y1);
+          }
         }
       });
 
@@ -427,29 +435,46 @@
           self.createHandleNode(ptEndAng.x, ptEndAng.y, id, 'arc_end_angle', 6, false);
 
         } else if (obj.type === 'bez2') {
-          var guide = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-          guide.setAttribute('d', 'M ' + a.x1 + ' ' + a.y1 + ' L ' + a.cx + ' ' + a.cy + ' L ' + a.x2 + ' ' + a.y2);
-          guide.setAttribute('stroke', '#0284c7');
-          guide.setAttribute('stroke-dasharray', '3,3');
-          guide.setAttribute('fill', 'none');
-          uiGroup.appendChild(guide);
+          if (a.points && a.points.length > 0) {
+            a.points.forEach(function(pt, idx) {
+              self.createHandleNode(pt.px, pt.py, id, 'bez_vertex', idx, false);
+            });
+            if (a.firstCtrl) {
+              self.createHandleNode(a.firstCtrl.cx, a.firstCtrl.cy, id, 'bez2_ctrl', 99, true);
+            }
+          } else {
+            var guide = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            guide.setAttribute('d', 'M ' + a.x1 + ' ' + a.y1 + ' L ' + a.cx + ' ' + a.cy + ' L ' + a.x2 + ' ' + a.y2);
+            guide.setAttribute('stroke', '#0284c7');
+            guide.setAttribute('stroke-dasharray', '3,3');
+            guide.setAttribute('fill', 'none');
+            uiGroup.appendChild(guide);
 
-          self.createHandleNode(a.x1, a.y1, id, 'start', 1, false);
-          self.createHandleNode(a.x2, a.y2, id, 'end', 2, false);
-          self.createHandleNode(a.cx, a.cy, id, 'bez2_ctrl', 3, true);
+            self.createHandleNode(a.x1, a.y1, id, 'start', 1, false);
+            self.createHandleNode(a.x2, a.y2, id, 'end', 2, false);
+            self.createHandleNode(a.cx, a.cy, id, 'bez2_ctrl', 3, true);
+          }
 
         } else if (obj.type === 'bez3') {
-          var guide2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-          guide2.setAttribute('d', 'M ' + a.x1 + ' ' + a.y1 + ' L ' + a.c1x + ' ' + a.c1y + ' L ' + a.c2x + ' ' + a.c2y + ' L ' + a.x2 + ' ' + a.y2);
-          guide2.setAttribute('stroke', '#0284c7');
-          guide2.setAttribute('stroke-dasharray', '3,3');
-          guide2.setAttribute('fill', 'none');
-          uiGroup.appendChild(guide2);
+          if (a.points && a.points.length > 0) {
+            a.points.forEach(function(pt, idx) {
+              self.createHandleNode(pt.px, pt.py, id, 'bez_vertex', idx, false);
+            });
+            if (a.c1x !== undefined) self.createHandleNode(a.c1x, a.c1y, id, 'bez3_ctrl1', 98, true);
+            if (a.c2x !== undefined) self.createHandleNode(a.c2x, a.c2y, id, 'bez3_ctrl2', 99, true);
+          } else {
+            var guide2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            guide2.setAttribute('d', 'M ' + a.x1 + ' ' + a.y1 + ' L ' + a.c1x + ' ' + a.c1y + ' L ' + a.c2x + ' ' + a.c2y + ' L ' + a.x2 + ' ' + a.y2);
+            guide2.setAttribute('stroke', '#0284c7');
+            guide2.setAttribute('stroke-dasharray', '3,3');
+            guide2.setAttribute('fill', 'none');
+            uiGroup.appendChild(guide2);
 
-          self.createHandleNode(a.x1, a.y1, id, 'start', 1, false);
-          self.createHandleNode(a.x2, a.y2, id, 'end', 2, false);
-          self.createHandleNode(a.c1x, a.c1y, id, 'bez3_ctrl1', 3, true);
-          self.createHandleNode(a.c2x, a.c2y, id, 'bez3_ctrl2', 4, true);
+            self.createHandleNode(a.x1, a.y1, id, 'start', 1, false);
+            self.createHandleNode(a.x2, a.y2, id, 'end', 2, false);
+            self.createHandleNode(a.c1x, a.c1y, id, 'bez3_ctrl1', 3, true);
+            self.createHandleNode(a.c2x, a.c2y, id, 'bez3_ctrl2', 4, true);
+          }
 
         } else if (obj.type === 'line') {
           self.createHandleNode(a.x1, a.y1, id, 'start', 1, false);

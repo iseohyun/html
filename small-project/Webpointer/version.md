@@ -1,19 +1,21 @@
 # Webpointer Project Version History
 
+## [0.2.0] - 2026-07-30
+### Added
+- Standardized Continuous Bezier Curve SVG Path Generation:
+  - Generates a SINGLE SVG `<path>` element with exact standard SVG path `d` attribute formatting (`M x0 y0 Q cx cy, x1 y1 T x2 y2 T x3 y3 ...`).
+  - Example: `d="M 50 150 Q 125 50, 200 150 T 350 150 T 500 150"` upon entering points (50, 150), (200, 150), (350, 150), (500, 150) and pressing `Esc`.
+- Rendered individual vertex node handles and control point handle for continuous Bezier paths.
+- Updated [`IMPLEMENTATION.md`](file:///c:/git/html/small-project/Webpointer/IMPLEMENTATION.md) Section 2.2 with exact continuous SVG Path `d` attribute specification.
+
 ## [0.1.9] - 2026-07-30
 ### Added
-- Completed Continuous Multi-Click Bezier Curve Input System:
-  - First click sets initial Start Point.
-  - Moving the mouse renders a real-time preview to current mouse cursor position.
-  - Clicking again commits current segment and prepares the next segment starting from the new vertex point.
-  - Pressing `Esc` finishes the continuous Bezier curve and switches tool to Select Tool.
-- Updated [`IMPLEMENTATION.md`](file:///c:/git/html/small-project/Webpointer/IMPLEMENTATION.md) Section 2.2 with Continuous Multi-Click Bezier Input specification.
+- Completed Continuous Multi-Click Bezier Curve Input System.
 
 ## [0.1.8] - 2026-07-30
 ### Added
 - Completed automatic tool return to Select Tool after shape creation.
 - Implemented Short Click Default Shape Presets ($100\,\text{px}$).
-- Added Default Shape Size setting in View Menu.
 
 ## [0.1.7] - 2026-07-30
 ### Added
