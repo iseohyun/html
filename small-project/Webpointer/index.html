@@ -211,7 +211,7 @@
   </article>
 
   <!-- Palette Import Modal Backdrop -->
-  <div class="palette-modal-backdrop" id="paletteModal">
+  <div class="palette-modal-backdrop" id="paletteModal" onclick="if(event.target===this)closePaletteModal()">
     <div class="palette-modal-card">
       <div class="palette-modal-header">
         <div class="palette-modal-title">🎨 기본 색상 가져오기 (UniPalette 연동)</div>
@@ -228,7 +228,7 @@
   </div>
 
   <!-- Shortcut Guidance Modal Backdrop -->
-  <div class="palette-modal-backdrop" id="shortcutModal">
+  <div class="palette-modal-backdrop" id="shortcutModal" onclick="if(event.target===this)closeShortcutModal()">
     <div class="palette-modal-card" style="max-width: 560px;">
       <div class="palette-modal-header">
         <div class="palette-modal-title">⌨️ Webpointer 단축키 안내</div>
@@ -264,7 +264,7 @@
   </div>
 
   <!-- Detailed Settings Modal Backdrop -->
-  <div class="palette-modal-backdrop" id="detailedSettingsModal">
+  <div class="palette-modal-backdrop" id="detailedSettingsModal" onclick="if(event.target===this)closeDetailedSettingsModal()">
     <div class="palette-modal-card" style="max-width: 440px;">
       <div class="palette-modal-header">
         <div class="palette-modal-title">⚙️ Webpointer 세부 설정</div>
