@@ -251,6 +251,18 @@
       obj.el.removeAttribute('opacity');
     }
 
+    if (a.fillOpacity !== undefined && parseFloat(a.fillOpacity) < 1) {
+      obj.el.setAttribute('fill-opacity', a.fillOpacity);
+    } else {
+      obj.el.removeAttribute('fill-opacity');
+    }
+
+    if (a.strokeOpacity !== undefined && parseFloat(a.strokeOpacity) < 1) {
+      obj.el.setAttribute('stroke-opacity', a.strokeOpacity);
+    } else {
+      obj.el.removeAttribute('stroke-opacity');
+    }
+
     var dashStyle = a.strokeDashStyle || 'solid';
     var dashArray = a.strokeDashArray || '6,6';
     if (dashStyle === 'dashed' && dashArray) {

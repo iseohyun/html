@@ -121,6 +121,8 @@
       var stroke = getInheritedStyle(node, 'stroke', 'none');
       var strokeWidth = parseFloat(getInheritedStyle(node, 'stroke-width', '1'));
       var opacity = parseFloat(getInheritedStyle(node, 'opacity', '1'));
+      var fillOpacity = parseFloat(getInheritedStyle(node, 'fill-opacity', '1'));
+      var strokeOpacity = parseFloat(getInheritedStyle(node, 'stroke-opacity', '1'));
 
       var id = 'obj_' + (cfg.nextId++);
       var type = null;
@@ -128,7 +130,9 @@
         fill: fill,
         stroke: stroke,
         strokeWidth: isNaN(strokeWidth) ? 1 : strokeWidth,
-        opacity: isNaN(opacity) ? 1 : opacity
+        opacity: isNaN(opacity) ? 1 : opacity,
+        fillOpacity: isNaN(fillOpacity) ? 1 : fillOpacity,
+        strokeOpacity: isNaN(strokeOpacity) ? 1 : strokeOpacity
       };
 
       var el = null;
