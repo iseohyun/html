@@ -1,5 +1,17 @@
 # Webpointer Project Version History
 
+## [0.5.1] - 2026-07-30
+### Added & Improved
+- Text Tool Ribbon & Canvas Editing Enhancements:
+  - Moved **`텍스트 상자 추가` (Add Text Box)** to the **`도형 삽입` (`insert_shapes`)** category.
+  - Reorganized **`글꼴`** category into 3 distinct rows:
+    - **Row 1**: `font-family` dropdown + `font-size` number input
+    - **Row 2**: `Bold` (`B`) + `Italic` (`I`) + `Strikethrough` (`strikethrough`) + `Line Height` (`line_height` toggle & long-press popover)
+    - **Row 3**: `Left` + `Center` + `Right` + `Both` text alignment buttons
+  - Computed text alignment within its bounding box $[X_{\text{left}}, X_{\text{right}}]$, keeping text flush inside its box bounds when toggling alignment.
+  - Added double-click, `F2` key, and text tool click on existing text to enter inline edit mode.
+  - Restored short-distance click handling for default shape dimensions on single clicks.
+
 ## [0.5.0] - 2026-07-30
 ### Added & Improved
 - Text Ribbon Tab Major Formatting Enhancement:
