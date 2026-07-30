@@ -15,7 +15,12 @@
     drawStartStep: null,
     dragStartCoords: null,
     initialObjAttrsMap: new Map(),
-    activeTempObj: null
+    activeTempObj: null,
+
+    // Continuous Multi-Click Bezier Mode State
+    isMultiBezierActive: false,
+    bezierPoints: [],        // [{px, py, stepX, stepY}]
+    activeBezierObjs: []     // Created segment object IDs
   };
   window.WebpointerState = state;
 
@@ -191,8 +196,30 @@
     return objData;
   }
 
+  // Finish Multi-Click Bezier Mode
+  function finishMultiBezier() {
+    if (!state.isMultiBezierActive) return;
+
+    if (state.activeTempObj) {
+      state.activeTempObj.el.remove();
+      cfg.objectsMap.delete(state.activeTempObj.id);
+      cfg.selectedIds.delete(state.activeTempObj.id);
+    }
+
+    state.isMultiBezierActive = false;
+    state.bezierPoints = [];
+    state.activeBezierObjs = [];
+    state.isDrawing = false;
+    state.activeTempObj = null;
+
+    cfg.currentTool = 'select';
+    render.renderRibbon();
+    render.renderUI();
+  }
+
   // Bind Global Window Scope Handlers
   window.switchTab = function(tab) {
+    if (state.isMultiBezierActive) finishMultiBezier();
     cfg.currentTab = tab;
     document.querySelectorAll('.tab-btn').forEach(function(btn) { btn.classList.remove('active'); });
     if (window.event && window.event.target) {
@@ -205,6 +232,9 @@
   };
 
   window.setTool = function(tool) {
+    if (state.isMultiBezierActive && tool !== 'bez2' && tool !== 'bez3') {
+      finishMultiBezier();
+    }
     cfg.currentTool = tool;
     render.renderRibbon();
   };
@@ -355,6 +385,34 @@
 
       var targetObj = e.target.closest('circle, line, rect, ellipse, path');
 
+      if (cfg.currentTool === 'bez2' || cfg.currentTool === 'bez3') {
+        // Continuous Multi-Click Bezier Mode
+        if (!state.isMultiBezierActive) {
+          // 1. Initial Click: Set Start Point
+          state.isMultiBezierActive = true;
+          state.bezierPoints = [coords];
+          state.activeBezierObjs = [];
+          state.isDrawing = true;
+          state.drawStartStep = coords;
+          state.activeTempObj = createSvgObject(cfg.currentTool, coords, coords);
+          cfg.selectedIds.add(state.activeTempObj.id);
+        } else {
+          // 2. Subsequent Click: Finalize current segment to clicked point, start next segment from clicked point
+          var lastPt = state.bezierPoints[state.bezierPoints.length - 1];
+          if (state.activeTempObj) {
+            // Commit current segment
+            state.activeBezierObjs.push(state.activeTempObj.id);
+          }
+          state.bezierPoints.push(coords);
+          // Create new preview segment starting from coords
+          state.drawStartStep = coords;
+          state.activeTempObj = createSvgObject(cfg.currentTool, coords, coords);
+          cfg.selectedIds.add(state.activeTempObj.id);
+        }
+        render.renderUI();
+        return;
+      }
+
       if (cfg.currentTool === 'select') {
         if (targetObj && cfg.objectsMap.has(targetObj.id)) {
           if (!e.ctrlKey && !cfg.selectedIds.has(targetObj.id)) {
@@ -400,7 +458,6 @@
         var pointObj = createSvgObject('point', coords, coords);
         cfg.selectedIds.add(pointObj.id);
         render.renderUI();
-        // Switch back to select tool after creation
         cfg.currentTool = 'select';
         render.renderRibbon();
       } else {
@@ -579,6 +636,11 @@
     });
 
     mainSvg.addEventListener('mouseup', function(e) {
+      if (state.isMultiBezierActive) {
+        // Multi-Bezier mode manages segments via continuous clicks (mousedown); mouseup does not auto-exit
+        return;
+      }
+
       var coords = getStepCoords(e);
       if (state.isDrawing && state.activeTempObj && state.drawStartStep) {
         var startPx = (state.drawStartStep.stepX / cfg.STEPS_X) * cfg.SVG_WIDTH;
@@ -640,17 +702,19 @@
       if (e.key === 'Alt') {
         document.body.classList.add('show-alt-keybinds');
       } else if (e.key === 'Escape') {
-        // Esc Key Cancels Active Drawing & Switches to Select Tool
-        if (state.isDrawing && state.activeTempObj) {
+        // Esc Key: Finish/Cancel Multi-Bezier or active drawing and switch to Select Tool
+        if (state.isMultiBezierActive) {
+          finishMultiBezier();
+        } else if (state.isDrawing && state.activeTempObj) {
           state.activeTempObj.el.remove();
           cfg.objectsMap.delete(state.activeTempObj.id);
           cfg.selectedIds.delete(state.activeTempObj.id);
           state.isDrawing = false;
           state.activeTempObj = null;
+          cfg.currentTool = 'select';
+          render.renderRibbon();
+          render.renderUI();
         }
-        cfg.currentTool = 'select';
-        render.renderRibbon();
-        render.renderUI();
       }
     });
 
