@@ -472,6 +472,9 @@
             if (obj && obj.el && obj.el.parentNode) {
               obj.el.parentNode.removeChild(obj.el);
             }
+            if (obj && obj.underlineEl && obj.underlineEl.parentNode) {
+              obj.underlineEl.parentNode.removeChild(obj.underlineEl);
+            }
             cfg.objectsMap.delete(id);
           });
           cfg.selectedIds.clear();

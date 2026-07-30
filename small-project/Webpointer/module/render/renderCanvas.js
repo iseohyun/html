@@ -155,9 +155,10 @@
           var uEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
           uEl.setAttribute('class', 'custom-text-underline');
           obj.underlineEl = uEl;
-          if (obj.el && obj.el.parentNode) {
-            obj.el.parentNode.appendChild(uEl);
-          }
+        }
+        var objectsGroup = document.getElementById('objectsGroup');
+        if (objectsGroup && (!obj.underlineEl.parentNode || obj.underlineEl.parentNode !== objectsGroup)) {
+          objectsGroup.appendChild(obj.underlineEl);
         }
 
         var fontSizeNum = parseInt(fSize, 10);

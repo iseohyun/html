@@ -1365,6 +1365,12 @@
       cfg.selectedIds.clear();
 
       var objectsGroup = document.getElementById('objectsGroup');
+      if (objectsGroup) {
+        var orphans = objectsGroup.querySelectorAll('.custom-text-underline');
+        orphans.forEach(function(el) {
+          if (el.parentNode) el.parentNode.removeChild(el);
+        });
+      }
       if (data.objects && Array.isArray(data.objects)) {
         var maxIdNum = 0;
         data.objects.forEach(function(oData) {

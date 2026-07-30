@@ -416,6 +416,9 @@
         if (state.typingSvgObj.el && state.typingSvgObj.el.parentNode) {
           state.typingSvgObj.el.parentNode.removeChild(state.typingSvgObj.el);
         }
+        if (state.typingSvgObj.underlineEl && state.typingSvgObj.underlineEl.parentNode) {
+          state.typingSvgObj.underlineEl.parentNode.removeChild(state.typingSvgObj.underlineEl);
+        }
         cfg.objectsMap.delete(state.typingSvgObj.id);
         cfg.selectedIds.delete(state.typingSvgObj.id);
       } else {
