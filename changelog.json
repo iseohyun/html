@@ -6,7 +6,7 @@
         "type": "Added",
         "projectName": "Webpointer",
         "projectPath": "/small-project/Webpointer/index.html",
-        "summary": "v0.2.0: 베지어 곡선 연속 입력 시 M..Q..T 구문 단일 SVG <path> d 속성(M 50 150 Q 125 50, 200 150 T 350 150 T 500 150) 정밀 표준 생성 시스템 완성"
+        "summary": "v0.2.1: 연속 베지어 곡선 모든 중간 제어점 노란색 핸들 표시 및 선택 도구 손가락(pointer)/이동(move) 마우스 커서 스타일 적용"
       }
     ]
   },
