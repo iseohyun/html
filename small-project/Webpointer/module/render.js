@@ -489,9 +489,9 @@
         }
       }
 
-      // Sync Stroke Dash Array & Style
-      var dashStyle = (a.strokeDashStyle === 'dashed' || cfg.strokeDashStyle === 'dashed') ? 'dashed' : 'solid';
-      var dashArray = a.strokeDashArray || cfg.strokeDashArray || '6,6';
+      // Sync Stroke Dash Array & Style from Object Attributes
+      var dashStyle = a.strokeDashStyle || 'solid';
+      var dashArray = a.strokeDashArray || '6,6';
       if (dashStyle === 'dashed' && dashArray) {
         obj.el.setAttribute('stroke-dasharray', dashArray);
       } else {

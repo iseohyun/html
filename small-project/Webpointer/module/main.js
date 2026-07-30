@@ -976,6 +976,7 @@
   window.setStrokeDashStyle = function(style) {
     console.log('[Webpointer Debug] setStrokeDashStyle called:', style);
     cfg.strokeDashStyle = style;
+    if (!cfg.strokeDashArray) cfg.strokeDashArray = '6,6';
     window.applyStyleToSelected();
     render.renderRibbon();
   };
@@ -999,7 +1000,7 @@
         obj.attrs.fill = cfg.fillColor;
         obj.attrs.strokeWidth = cfg.strokeWidth;
         obj.attrs.strokeDashStyle = cfg.strokeDashStyle;
-        obj.attrs.strokeDashArray = cfg.strokeDashArray;
+        obj.attrs.strokeDashArray = cfg.strokeDashArray || '6,6';
       }
       obj.el.setAttribute('stroke', cfg.strokeColor);
       obj.el.setAttribute('fill', cfg.fillColor);
