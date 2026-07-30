@@ -12,7 +12,7 @@
 
     // Dynamic State Variables & User Defaults
     currentTab: 'insert',
-    currentTool: 'ellipse', // Set active tool to 'ellipse' / 'point'
+    currentTool: 'select',
     gridSnapEnabled: true,
     canvasBgColor: '#ffffff', // Default White Canvas
 
@@ -20,6 +20,8 @@
     fillColor: 'none',        // Default Fill: Transparent ('none')
     strokeWidth: 2,
     pointRadius: 5,           // Default Point Diameter 10px (radius = 5px)
+
+    proximityThreshold: 10,   // Default 10px Proximity selection threshold for empty canvas clicks
 
     startMarker: 'none',
     startMarkerScale: 1,

@@ -147,13 +147,15 @@
           '<div class="ribbon-category">' + self.build3RowGridHtml(groupTools) + '<div class="category-title">그룹화</div></div>' +
           '<div class="ribbon-category">' + self.build3RowGridHtml(alignTools) + '<div class="category-title">정렬</div></div>';
       } else if (cfg.currentTab === 'view') {
+        var proxVal = cfg.proximityThreshold !== undefined ? cfg.proximityThreshold : 10;
         ribbonBar.innerHTML = 
           '<div class="ribbon-category">' +
             '<div class="category-grid" style="grid-template-columns: auto;">' +
               '<div class="ribbon-control-item"><label>격자 보이기:</label><input type="checkbox" id="chkGridToggle" ' + (cfg.gridSnapEnabled ? 'checked' : '') + ' onchange="toggleGridSnap(this.checked)"></div>' +
               '<div class="ribbon-control-item"><label>격자 크기:</label><select onchange="setGridDensity(this.value)"><option value="480x270" selected>481×271 Step (16:9 표준)</option><option value="240x135">241×136 Step (조밀하게)</option><option value="120x67">121×68 Step (성기게)</option></select></div>' +
+              '<div class="ribbon-control-item"><label>근접 선택 거리:</label><select onchange="setProximityThreshold(this.value)"><option value="10" ' + (proxVal===10?'selected':'') + '>10px (기본값)</option><option value="20" ' + (proxVal===20?'selected':'') + '>20px</option><option value="30" ' + (proxVal===30?'selected':'') + '>30px</option><option value="0" ' + (proxVal===0?'selected':'') + '>0px (해제 - 정확한 클릭)</option></select></div>' +
             '</div>' +
-            '<div class="category-title">격자 및 스냅 설정</div>' +
+            '<div class="category-title">격자 및 스냅/선택 설정</div>' +
           '</div>' +
           '<div class="ribbon-category">' +
             '<div class="category-grid" style="grid-template-columns: auto;">' +
@@ -257,7 +259,7 @@
       }
     },
 
-    // Render Control Handle Node (isSpecial Yellow fill for control/rotation/curve handles)
+    // Render Control Handle Node
     createHandleNode: function(x, y, objId, handleType, idx, isSpecial) {
       var uiGroup = document.getElementById('uiGroup');
       if (!uiGroup) return;
@@ -266,7 +268,7 @@
       circle.setAttribute('cx', x);
       circle.setAttribute('cy', y);
       circle.setAttribute('r', isSpecial ? '6' : '5');
-      circle.setAttribute('fill', isSpecial ? '#facc15' : '#ffffff'); // Yellow for special/ctrl/rotation, White for standard
+      circle.setAttribute('fill', isSpecial ? '#facc15' : '#ffffff');
       circle.setAttribute('stroke', '#000000');
       circle.setAttribute('stroke-width', '1.5');
       circle.setAttribute('class', 'handle-node');
@@ -290,21 +292,69 @@
       if (cfg.selectedIds.size === 0) return;
 
       var self = this;
+      var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+      // 1. Calculate Overall Selection Bounding Box
       cfg.selectedIds.forEach(function(id) {
         var obj = cfg.objectsMap.get(id);
         if (!obj) return;
         var a = obj.attrs;
 
         if (obj.type === 'point') {
-          var ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-          ring.setAttribute('cx', a.cx);
-          ring.setAttribute('cy', a.cy);
-          ring.setAttribute('r', (a.r || 5) + 4);
-          ring.setAttribute('fill', 'none');
-          ring.setAttribute('stroke', '#0284c7');
-          ring.setAttribute('stroke-width', '1.5');
-          ring.setAttribute('stroke-dasharray', '3,3');
-          uiGroup.appendChild(ring);
+          minX = Math.min(minX, a.cx - (a.r || 5));
+          maxX = Math.max(maxX, a.cx + (a.r || 5));
+          minY = Math.min(minY, a.cy - (a.r || 5));
+          maxY = Math.max(maxY, a.cy + (a.r || 5));
+        } else if (obj.type === 'line') {
+          minX = Math.min(minX, a.x1, a.x2);
+          maxX = Math.max(maxX, a.x1, a.x2);
+          minY = Math.min(minY, a.y1, a.y2);
+          maxY = Math.max(maxY, a.y1, a.y2);
+        } else if (obj.type === 'rect' || obj.type === 'rounded') {
+          minX = Math.min(minX, a.x);
+          maxX = Math.max(maxX, a.x + a.width);
+          minY = Math.min(minY, a.y);
+          maxY = Math.max(maxY, a.y + a.height);
+        } else if (obj.type === 'ellipse' || obj.type === 'arc') {
+          minX = Math.min(minX, a.cx - a.rx);
+          maxX = Math.max(maxX, a.cx + a.rx);
+          minY = Math.min(minY, a.cy - a.ry);
+          maxY = Math.max(maxY, a.cy + a.ry);
+        } else if (obj.type === 'bez2') {
+          minX = Math.min(minX, a.x1, a.x2, a.cx);
+          maxX = Math.max(maxX, a.x1, a.x2, a.cx);
+          minY = Math.min(minY, a.y1, a.y2, a.cy);
+          maxY = Math.max(maxY, a.y1, a.y2, a.cy);
+        } else if (obj.type === 'bez3') {
+          minX = Math.min(minX, a.x1, a.x2, a.c1x, a.c2x);
+          maxX = Math.max(maxX, a.x1, a.x2, a.c1x, a.c2x);
+          minY = Math.min(minY, a.y1, a.y2, a.c1y, a.c2y);
+          maxY = Math.max(maxY, a.y1, a.y2, a.c1y, a.c2y);
+        }
+      });
+
+      // Render Dashed Enclosing Bounding Box Overlay for Selection (Single & Multi-Selection)
+      if (minX !== Infinity) {
+        var pad = 6;
+        var boxRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        boxRect.setAttribute('x', minX - pad);
+        boxRect.setAttribute('y', minY - pad);
+        boxRect.setAttribute('width', (maxX - minX) + pad * 2);
+        boxRect.setAttribute('height', (maxY - minY) + pad * 2);
+        boxRect.setAttribute('fill', 'none');
+        boxRect.setAttribute('stroke', '#0284c7');
+        boxRect.setAttribute('stroke-width', '1.2');
+        boxRect.setAttribute('stroke-dasharray', '4,4');
+        uiGroup.appendChild(boxRect);
+      }
+
+      // 2. Render Individual Shape Handles
+      cfg.selectedIds.forEach(function(id) {
+        var obj = cfg.objectsMap.get(id);
+        if (!obj) return;
+        var a = obj.attrs;
+
+        if (obj.type === 'point') {
           self.createHandleNode(a.cx, a.cy, id, 'point_center', 1, false);
         } else if (obj.type === 'ellipse') {
           var angleRad = (a.angle || 0) * (Math.PI / 180);
@@ -376,7 +426,6 @@
           self.createHandleNode(ptEndAng.x, ptEndAng.y, id, 'arc_end_angle', 6, false);
 
         } else if (obj.type === 'bez2') {
-          // 2nd Order Bezier Handles: Start (White), End (White), Control Point (Yellow)
           var guide = document.createElementNS('http://www.w3.org/2000/svg', 'path');
           guide.setAttribute('d', 'M ' + a.x1 + ' ' + a.y1 + ' L ' + a.cx + ' ' + a.cy + ' L ' + a.x2 + ' ' + a.y2);
           guide.setAttribute('stroke', '#0284c7');
@@ -386,10 +435,9 @@
 
           self.createHandleNode(a.x1, a.y1, id, 'start', 1, false);
           self.createHandleNode(a.x2, a.y2, id, 'end', 2, false);
-          self.createHandleNode(a.cx, a.cy, id, 'bez2_ctrl', 3, true); // Control point is Yellow (#facc15)
+          self.createHandleNode(a.cx, a.cy, id, 'bez2_ctrl', 3, true);
 
         } else if (obj.type === 'bez3') {
-          // 3rd Order Bezier Handles: Start (White), End (White), Control Point 1 (Yellow), Control Point 2 (Yellow)
           var guide2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
           guide2.setAttribute('d', 'M ' + a.x1 + ' ' + a.y1 + ' L ' + a.c1x + ' ' + a.c1y + ' L ' + a.c2x + ' ' + a.c2y + ' L ' + a.x2 + ' ' + a.y2);
           guide2.setAttribute('stroke', '#0284c7');
@@ -399,8 +447,8 @@
 
           self.createHandleNode(a.x1, a.y1, id, 'start', 1, false);
           self.createHandleNode(a.x2, a.y2, id, 'end', 2, false);
-          self.createHandleNode(a.c1x, a.c1y, id, 'bez3_ctrl1', 3, true); // Control point 1 is Yellow (#facc15)
-          self.createHandleNode(a.c2x, a.c2y, id, 'bez3_ctrl2', 4, true); // Control point 2 is Yellow (#facc15)
+          self.createHandleNode(a.c1x, a.c1y, id, 'bez3_ctrl1', 3, true);
+          self.createHandleNode(a.c2x, a.c2y, id, 'bez3_ctrl2', 4, true);
 
         } else if (obj.type === 'line') {
           self.createHandleNode(a.x1, a.y1, id, 'start', 1, false);
@@ -411,11 +459,10 @@
           self.createHandleNode(a.x + a.width, a.y + a.height, id, 'bottom_right', 2, false);
 
         } else if (obj.type === 'rounded') {
-          // Rounded Rect Handles: Top-Left (White), Bottom-Right (White), Corner Radius (Yellow at x + rx, y)
           var cornerRx = a.rx !== undefined ? a.rx : 15;
           self.createHandleNode(a.x, a.y, id, 'top_left', 1, false);
           self.createHandleNode(a.x + a.width, a.y + a.height, id, 'bottom_right', 2, false);
-          self.createHandleNode(a.x + cornerRx, a.y, id, 'corner_rx', 3, true); // Corner Curve Handle at top edge (Yellow #facc15)
+          self.createHandleNode(a.x + cornerRx, a.y, id, 'corner_rx', 3, true);
         }
       });
     },

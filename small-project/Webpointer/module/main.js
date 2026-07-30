@@ -14,7 +14,7 @@
     activeHandleInfo: null,
     drawStartStep: null,
     dragStartCoords: null,
-    initialObjAttrsMap: new Map(), // Stores original object attributes at start of drag
+    initialObjAttrsMap: new Map(),
     activeTempObj: null
   };
   window.WebpointerState = state;
@@ -51,6 +51,70 @@
       px: px,
       py: py
     };
+  }
+
+  // Calculate Distance from Point (px, py) to an Object
+  function getDistanceToObj(px, py, obj) {
+    var a = obj.attrs;
+    if (obj.type === 'point' || obj.type === 'ellipse' || obj.type === 'arc') {
+      var dx = px - a.cx;
+      var dy = py - a.cy;
+      var distToCenter = Math.sqrt(dx * dx + dy * dy);
+      if (obj.type === 'point') return distToCenter;
+      var avgR = ((a.rx || 10) + (a.ry || 10)) / 2;
+      return Math.abs(distToCenter - avgR);
+    } else if (obj.type === 'line') {
+      var x1 = a.x1, y1 = a.y1, x2 = a.x2, y2 = a.y2;
+      var A = px - x1, B = py - y1, C = x2 - x1, D = y2 - y1;
+      var dot = A * C + B * D;
+      var len_sq = C * C + D * D;
+      var param = len_sq !== 0 ? dot / len_sq : -1;
+      var xx, yy;
+      if (param < 0) { xx = x1; yy = y1; }
+      else if (param > 1) { xx = x2; yy = y2; }
+      else { xx = x1 + param * C; yy = y1 + param * D; }
+      var dxL = px - xx, dyL = py - yy;
+      return Math.sqrt(dxL * dxL + dyL * dyL);
+    } else if (obj.type === 'rect' || obj.type === 'rounded') {
+      var rx1 = a.x, ry1 = a.y, rx2 = a.x + a.width, ry2 = a.y + a.height;
+      var dxR = Math.max(rx1 - px, 0, px - rx2);
+      var dyR = Math.max(ry1 - py, 0, py - ry2);
+      return Math.sqrt(dxR * dxR + dyR * dyR);
+    } else if (obj.type === 'bez2' || obj.type === 'bez3') {
+      var pts = [ {x: a.x1, y: a.y1}, {x: a.x2, y: a.y2} ];
+      if (a.cx !== undefined) pts.push({x: a.cx, y: a.cy});
+      if (a.c1x !== undefined) pts.push({x: a.c1x, y: a.c1y});
+      if (a.c2x !== undefined) pts.push({x: a.c2x, y: a.c2y});
+      var minD = Infinity;
+      pts.forEach(function(pt) {
+        var d = Math.sqrt((px - pt.x) * (px - pt.x) + (py - pt.y) * (py - pt.y));
+        if (d < minD) minD = d;
+      });
+      return minD;
+    }
+    return Infinity;
+  }
+
+  // Find Nearest Object to Click Position (px, py)
+  function findNearestObject(px, py) {
+    var threshold = cfg.proximityThreshold !== undefined ? cfg.proximityThreshold : 10;
+    if (threshold <= 0) return null;
+
+    var nearestObj = null;
+    var minDistance = Infinity;
+
+    cfg.objectsMap.forEach(function(obj) {
+      var d = getDistanceToObj(px, py, obj);
+      if (d < minDistance) {
+        minDistance = d;
+        nearestObj = obj;
+      }
+    });
+
+    if (nearestObj && minDistance <= threshold) {
+      return nearestObj;
+    }
+    return null;
   }
 
   // Create SVG Object Data Struct
@@ -157,6 +221,11 @@
     cfg.STEPS_X = parts[0];
     cfg.STEPS_Y = parts[1];
     render.renderGrid();
+  };
+
+  window.setProximityThreshold = function(val) {
+    cfg.proximityThreshold = parseInt(val, 10);
+    render.renderRibbon();
   };
 
   window.setCanvasRatio = function(val) {
@@ -285,12 +354,12 @@
 
       if (cfg.currentTool === 'select') {
         if (targetObj && cfg.objectsMap.has(targetObj.id)) {
+          // Direct Click on Object Element
           if (!e.ctrlKey && !cfg.selectedIds.has(targetObj.id)) {
             cfg.selectedIds.clear();
           }
           cfg.selectedIds.add(targetObj.id);
-          
-          // Initiate Object Drag Move
+
           state.isDraggingObject = true;
           state.dragStartCoords = coords;
           state.initialObjAttrsMap.clear();
@@ -301,8 +370,28 @@
             }
           });
         } else {
-          if (!e.ctrlKey) cfg.selectedIds.clear();
-          state.isMarquee = true;
+          // Click on Empty Canvas: Proximity Check
+          var nearestObj = findNearestObject(coords.px, coords.py);
+          if (nearestObj) {
+            if (!e.ctrlKey && !cfg.selectedIds.has(nearestObj.id)) {
+              cfg.selectedIds.clear();
+            }
+            cfg.selectedIds.add(nearestObj.id);
+
+            state.isDraggingObject = true;
+            state.dragStartCoords = coords;
+            state.initialObjAttrsMap.clear();
+            cfg.selectedIds.forEach(function(id) {
+              var obj = cfg.objectsMap.get(id);
+              if (obj) {
+                state.initialObjAttrsMap.set(id, JSON.parse(JSON.stringify(obj.attrs)));
+              }
+            });
+          } else {
+            // No object within proximityThreshold (default 10px): Deselect current selection
+            if (!e.ctrlKey) cfg.selectedIds.clear();
+            state.isMarquee = true;
+          }
         }
         render.renderUI();
       } else if (cfg.currentTool === 'point') {
@@ -312,7 +401,6 @@
         cfg.selectedIds.add(pointObj.id);
         render.renderUI();
       } else {
-        // If clicking on an existing selected object body with a drawing tool active, select and drag it instead of drawing over
         if (targetObj && cfg.objectsMap.has(targetObj.id) && cfg.selectedIds.has(targetObj.id)) {
           state.isDraggingObject = true;
           state.dragStartCoords = coords;
@@ -392,7 +480,7 @@
         return;
       }
 
-      // 2. Object Body Drag Move (Dragging selected objects by non-handle area)
+      // 2. Object Body Drag Move
       if (state.isDraggingObject && state.dragStartCoords) {
         var deltaPx = coords.px - state.dragStartCoords.px;
         var deltaPy = coords.py - state.dragStartCoords.py;
