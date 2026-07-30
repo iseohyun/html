@@ -127,9 +127,17 @@
           '<button class="tool-btn" onclick="arrangeOrder(\'front\')"><span class="alt-badge">R</span><svg viewBox="0 0 24 24"><rect x="4" y="4" width="10" height="10"/><rect x="10" y="10" width="10" height="10" fill="rgba(4,30,73,0.3)"/></svg><span class="tooltip-text">맨앞으로</span></button>'
         ];
 
+        // Conditional Activation: Group button (>=2 selected), Ungroup button (at least 1 grouped item selected)
+        var canGroup = cfg.selectedIds.size >= 2;
+        var canUngroup = false;
+        cfg.selectedIds.forEach(function(id) {
+          var obj = cfg.objectsMap.get(id);
+          if (obj && obj.parentId) canUngroup = true;
+        });
+
         var groupTools = [
-          '<button class="tool-btn" onclick="groupSelected()"><span class="alt-badge">G</span><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" stroke-dasharray="3,3"/><rect x="6" y="6" width="6" height="6"/><rect x="12" y="12" width="6" height="6"/></svg><span class="tooltip-text">그룹화 (&lt;g&gt;)</span></button>',
-          '<button class="tool-btn" onclick="ungroupSelected()"><span class="alt-badge">U</span><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" stroke-dasharray="2,2"/><rect x="13" y="13" width="8" height="8" stroke-dasharray="2,2"/></svg><span class="tooltip-text">그룹 해제</span></button>'
+          '<button class="tool-btn ' + (canGroup ? '' : 'disabled') + '" ' + (canGroup ? 'onclick="groupSelected()"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">G</span><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" stroke-dasharray="3,3"/><rect x="6" y="6" width="6" height="6"/><rect x="12" y="12" width="6" height="6"/></svg><span class="tooltip-text">' + (canGroup ? '그룹화 (<g>)' : '그룹화 (2개 이상 선택 필요)') + '</span></button>',
+          '<button class="tool-btn ' + (canUngroup ? '' : 'disabled') + '" ' + (canUngroup ? 'onclick="ungroupSelected()"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">U</span><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" stroke-dasharray="2,2"/><rect x="13" y="13" width="8" height="8" stroke-dasharray="2,2"/></svg><span class="tooltip-text">' + (canUngroup ? '그룹 해제' : '그룹 해제 (그룹 객체 선택 필요)') + '</span></button>'
         ];
 
         var alignTools = [
@@ -588,6 +596,7 @@
           if (!e.ctrlKey) cfg.selectedIds.clear();
           cfg.selectedIds.add(id);
           self.renderUI();
+          self.renderRibbon();
           self.updateDomTree();
         };
         domTree.appendChild(item);

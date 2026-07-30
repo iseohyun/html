@@ -58,6 +58,23 @@
     };
   }
 
+  // Helper: Select Object with Group Expansion
+  function selectObjectWithGroup(objId, isCtrl) {
+    if (!isCtrl) cfg.selectedIds.clear();
+    var obj = cfg.objectsMap.get(objId);
+    if (!obj) return;
+
+    if (obj.parentId) {
+      cfg.objectsMap.forEach(function(o, id) {
+        if (o.parentId === obj.parentId) {
+          cfg.selectedIds.add(id);
+        }
+      });
+    } else {
+      cfg.selectedIds.add(objId);
+    }
+  }
+
   // Build Continuous Bezier SVG Path Data String ("M 50 150 Q 125 50, 200 150 T 350 150 T 500 150")
   function buildContinuousBezierPathD(points, floatingPt, toolType, firstCtrl, customC1, customC2, ctrls3Array) {
     var pts = points.slice();
@@ -374,6 +391,7 @@
     if (objectsGroup) objectsGroup.appendChild(groupEl);
     render.updateDomTree();
     render.renderUI();
+    render.renderRibbon();
   };
 
   window.ungroupSelected = function() {
@@ -391,6 +409,7 @@
     });
     render.updateDomTree();
     render.renderUI();
+    render.renderRibbon();
   };
 
   window.arrangeOrder = function(action) {
@@ -480,15 +499,13 @@
           render.updateElementAttributes(state.activeBezierObj);
         }
         render.renderUI();
+        render.renderRibbon();
         return;
       }
 
       if (cfg.currentTool === 'select') {
         if (targetObj && cfg.objectsMap.has(targetObj.id)) {
-          if (!e.ctrlKey && !cfg.selectedIds.has(targetObj.id)) {
-            cfg.selectedIds.clear();
-          }
-          cfg.selectedIds.add(targetObj.id);
+          selectObjectWithGroup(targetObj.id, e.ctrlKey);
 
           state.isDraggingObject = true;
           state.dragStartCoords = coords;
@@ -502,10 +519,7 @@
         } else {
           var nearestObj = findNearestObject(coords.px, coords.py);
           if (nearestObj) {
-            if (!e.ctrlKey && !cfg.selectedIds.has(nearestObj.id)) {
-              cfg.selectedIds.clear();
-            }
-            cfg.selectedIds.add(nearestObj.id);
+            selectObjectWithGroup(nearestObj.id, e.ctrlKey);
 
             state.isDraggingObject = true;
             state.dragStartCoords = coords;
@@ -522,6 +536,7 @@
           }
         }
         render.renderUI();
+        render.renderRibbon();
       } else if (cfg.currentTool === 'point') {
         state.isDrawing = false;
         cfg.selectedIds.clear();
@@ -549,6 +564,7 @@
           cfg.selectedIds.add(state.activeTempObj.id);
         }
         render.renderUI();
+        render.renderRibbon();
       }
     });
 
