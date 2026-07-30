@@ -1,15 +1,15 @@
 # Webpointer Project Version History
 
+## [0.1.7] - 2026-07-30
+### Added
+- Verified Proximity Selection, Dashed Selection Bounding Box Overlay, and View Menu Proximity Distance setting.
+- Completed standard v0.1.7 release checkpoint.
+
 ## [0.1.6] - 2026-07-30
 ### Added
-- Completed Proximity Nearest Object Selection system:
-  - Clicking empty canvas with Select tool calculates distance to all objects.
-  - Automatically selects closest object if within `proximityThreshold` (default 10px).
-  - Clears current selection if click point is farther than 10px.
-- Added **Proximity Snap Distance (근접 선택 거리)** setting in View Menu (`보기` 탭): Options for `10px (Default)`, `20px`, `30px`, and `0px (Disable - Exact Click Only)`.
-- Implemented **Dashed Enclosing Bounding Box Overlay**:
-  - Renders a unified dashed rectangle (`stroke-dasharray: 4,4`, `#0284c7`) surrounding all selected object(s) in both single and multi-selection modes.
-- Updated [`IMPLEMENTATION.md`](file:///c:/git/html/small-project/Webpointer/IMPLEMENTATION.md) with Proximity Selection, Enclosing Bounding Box, and View Menu Proximity Distance specifications.
+- Completed Proximity Nearest Object Selection system (10px default threshold).
+- Added **Proximity Snap Distance (근접 선택 거리)** setting in View Menu (`보기` 탭).
+- Implemented **Dashed Enclosing Bounding Box Overlay** for single and multi-selection modes.
 
 ## [0.1.5] - 2026-07-30
 ### Added
