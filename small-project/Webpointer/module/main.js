@@ -953,6 +953,61 @@
     window.applyStyleToSelected();
   };
 
+  // UniPalette Custom Color Swatch Modal Handlers
+  window.openPaletteModal = function() {
+    var modal = document.getElementById('paletteModal');
+    if (modal) {
+      modal.classList.add('show');
+      var textarea = document.getElementById('paletteTextarea');
+      if (textarea) textarea.focus();
+    }
+  };
+
+  window.closePaletteModal = function() {
+    var modal = document.getElementById('paletteModal');
+    if (modal) {
+      modal.classList.remove('show');
+    }
+  };
+
+  window.applyImportedPalette = function() {
+    var textarea = document.getElementById('paletteTextarea');
+    if (!textarea) return;
+    var rawText = textarea.value.trim();
+    if (!rawText) {
+      window.closePaletteModal();
+      return;
+    }
+
+    // Parse hex colors from UniPalette JS output array string (Max 32 colors)
+    var regex = /#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b/g;
+    var matches = rawText.match(regex);
+
+    if (matches && matches.length > 0) {
+      var extractedColors = [];
+      matches.forEach(function(hex) {
+        if (extractedColors.length < 32) {
+          extractedColors.push(hex.toLowerCase());
+        }
+      });
+
+      cfg.customPalette = extractedColors;
+      render.renderRibbon();
+    }
+
+    window.closePaletteModal();
+  };
+
+  window.applyPaletteColor = function(hexColor) {
+    var target = cfg.activeColorTarget || 'stroke';
+    if (target === 'stroke') {
+      window.setStrokeColor(hexColor);
+    } else {
+      window.setFillColor(hexColor);
+    }
+    render.renderRibbon();
+  };
+
   window.applyStyleToSelected = function() {
     cfg.selectedIds.forEach(function(id) {
       var obj = cfg.objectsMap.get(id);

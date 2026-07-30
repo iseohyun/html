@@ -29,6 +29,13 @@
     endMarker: 'none',
     endMarkerScale: 1,
 
+    // Custom UniPalette Color Swatch Memory (Max 32 colors)
+    customPalette: [
+      '#2aa314', '#14a36a', '#1471a3', '#2314a3',
+      '#8e14a3', '#a3144d', '#a34614', '#95a314'
+    ],
+    activeColorTarget: 'stroke', // 'stroke' or 'fill'
+
     // Selection & Manipulation Memory
     selectedIds: new Set(),
     objectsMap: new Map(),

@@ -212,6 +212,14 @@
             '<div class="category-title">캔버스 화면 설정</div>' +
           '</div>';
       } else if (cfg.currentTab === 'style') {
+        var swatches = cfg.customPalette || [];
+        var swatchChipsHtml = '';
+        swatches.slice(0, 32).forEach(function(colorHex) {
+          swatchChipsHtml += '<div class="palette-swatch-chip" style="width:14px; height:14px; min-width:14px; min-height:14px; border-radius:3px; background:' + colorHex + '; border:1px solid #cbd5e1; cursor:pointer;" onclick="applyPaletteColor(\'' + colorHex + '\')" title="' + colorHex + '"></div>';
+        });
+
+        var targetOption = cfg.activeColorTarget || 'stroke';
+
         ribbonBar.innerHTML = 
           '<div class="ribbon-category">' +
             '<div class="category-grid" style="grid-template-columns: auto;">' +
@@ -220,6 +228,15 @@
               '<div class="ribbon-control-item"><label>선 두께:</label><input type="number" min="1" max="20" value="' + cfg.strokeWidth + '" oninput="setStrokeWidth(this.value)" onchange="setStrokeWidth(this.value)" style="width:55px;"></div>' +
             '</div>' +
             '<div class="category-title">기본 스타일</div>' +
+          '</div>' +
+          '<div class="ribbon-category">' +
+            '<div class="category-grid" style="grid-template-columns: 34px 34px 135px; gap:6px; align-items:center;">' +
+              '<button class="tool-btn" onclick="window.open(\'https://iseohyun.github.io/UniPalette/\', \'_blank\')" style="grid-row:1/span 2;"><span class="alt-badge">O</span><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg><span class="tooltip-text">기본색상 정하기 (UniPalette 새탭)</span></button>' +
+              '<button class="tool-btn" onclick="openPaletteModal()" style="grid-row:1/span 2;"><span class="alt-badge">I</span><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span class="tooltip-text">기본색상 가져오기 (코드 붙여넣기)</span></button>' +
+              '<div style="grid-column:3; grid-row:1/span 3; display:grid; grid-template-columns: repeat(8, 14px); gap:3px; max-height:85px; overflow-y:auto; align-content:center;">' + swatchChipsHtml + '</div>' +
+              '<div class="ribbon-control-item" style="grid-row:3; grid-column:1/span 2; justify-content:center;"><select onchange="cfg.activeColorTarget=this.value;" style="font-size:0.75rem; padding:2px 4px; width:72px;"><option value="stroke" ' + (targetOption==='stroke'?'selected':'') + '>테두리색</option><option value="fill" ' + (targetOption==='fill'?'selected':'') + '>채우기색</option></select></div>' +
+            '</div>' +
+            '<div class="category-title">팔레트 및 기본 색상</div>' +
           '</div>' +
           '<div class="ribbon-category">' +
             '<div class="category-grid" style="grid-template-columns: auto 34px 34px;">' +
