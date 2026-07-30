@@ -1306,6 +1306,20 @@
     }
   }
 
+  function toggleSnapping(enabled) {
+    cfg.enableSnapping = !!enabled;
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+      window.WebpointerRender.renderRibbon();
+    }
+  }
+
+  function setSnappingThreshold(val) {
+    var v = parseInt(val, 10);
+    if (!isNaN(v) && v >= 1) {
+      cfg.snappingThreshold = v;
+    }
+  }
+
   function setGridDensity(val) {
     cfg.gridDensity = val;
     if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.renderGrid) {
@@ -1639,9 +1653,13 @@
       var proxInput = document.getElementById('settingProximityThreshold');
       var sizeInput = document.getElementById('settingDefaultShapeSize');
       var stepInput = document.getElementById('settingAlphaStepCount');
+      var snapEnableInput = document.getElementById('settingEnableSnapping');
+      var snapThreshInput = document.getElementById('settingSnappingThreshold');
       if (proxInput) proxInput.value = cfg.proximityThreshold !== undefined ? cfg.proximityThreshold : 12;
       if (sizeInput) sizeInput.value = cfg.defaultShapeSize || 100;
       if (stepInput) stepInput.value = cfg.alphaStepCount || 5;
+      if (snapEnableInput) snapEnableInput.checked = cfg.enableSnapping !== undefined ? cfg.enableSnapping : true;
+      if (snapThreshInput) snapThreshInput.value = cfg.snappingThreshold || 12;
       modal.classList.add('show');
     }
   }
@@ -1655,10 +1673,15 @@
     var proxInput = document.getElementById('settingProximityThreshold');
     var sizeInput = document.getElementById('settingDefaultShapeSize');
     var stepInput = document.getElementById('settingAlphaStepCount');
+    var snapEnableInput = document.getElementById('settingEnableSnapping');
+    var snapThreshInput = document.getElementById('settingSnappingThreshold');
     if (proxInput && proxInput.value !== '') setProximityThreshold(proxInput.value);
     if (sizeInput && sizeInput.value !== '') setDefaultShapeSize(sizeInput.value);
     if (stepInput && stepInput.value !== '') setAlphaStepCount(stepInput.value);
+    if (snapEnableInput) cfg.enableSnapping = snapEnableInput.checked;
+    if (snapThreshInput && snapThreshInput.value !== '') cfg.snappingThreshold = parseInt(snapThreshInput.value, 10) || 12;
     closeDetailedSettingsModal();
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
   }
 
   window.openShortcutModal = openShortcutModal;
@@ -1668,6 +1691,7 @@
   window.applyDetailedSettings = applyDetailedSettings;
 
   window.pushHistoryState = pushHistoryState;
+  window.saveState = pushHistoryState;
   window.undo = undo;
   window.redo = redo;
   window.openFile = openFile;
@@ -1675,6 +1699,8 @@
   window.downloadFile = downloadFile;
 
   window.toggleGridSnap = toggleGridSnap;
+  window.toggleSnapping = toggleSnapping;
+  window.setSnappingThreshold = setSnappingThreshold;
   window.setGridDensity = setGridDensity;
   window.setGridStepSize = setGridStepSize;
   window.setProximityThreshold = setProximityThreshold;
@@ -2336,9 +2362,17 @@
   window.createRadialGradient = createRadialGradient;
   window.createPatternFill = createPatternFill;
   window.createImageFill = createImageFill;
+  window.calculateSmartSnaps = calculateSmartSnaps;
+  window.alignSelectedObjects = alignSelectedObjects;
+  window.alignObjects = alignSelectedObjects;
+  window.distributeObjects = distributeObjects;
 
   window.WebpointerHandlers = {
     setTool: setTool,
+    restoreSnapshot: restoreSnapshot,
+    saveState: saveState,
+    undo: undo,
+    redo: redo,
     toggleColorPalettePopover: toggleColorPalettePopover,
     selectColorFromPopover: selectColorFromPopover,
     applyStyleToSelected: applyStyleToSelected,
@@ -2404,6 +2438,137 @@
     createLinearGradient: createLinearGradient,
     createRadialGradient: createRadialGradient,
     createPatternFill: createPatternFill,
-    createImageFill: createImageFill
+    createImageFill: createImageFill,
+    calculateSmartSnaps: calculateSmartSnaps,
+    alignSelectedObjects: alignSelectedObjects,
+    alignObjects: alignSelectedObjects,
+    distributeObjects: distributeObjects
   };
+
+  function alignSelectedObjects(type) {
+    var selected = [];
+    cfg.selectedIds.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (obj) selected.push(obj);
+    });
+    if (selected.length === 0) return;
+
+    var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    selected.forEach(function(obj) {
+      var x = obj.x || 0;
+      var y = obj.y || 0;
+      var w = obj.width || 0;
+      var h = obj.height || 0;
+      if (x < minX) minX = x;
+      if (x + w > maxX) maxX = x + w;
+      if (y < minY) minY = y;
+      if (y + h > maxY) maxY = y + h;
+    });
+
+    var centerX = (minX + maxX) / 2;
+    var centerY = (minY + maxY) / 2;
+
+    selected.forEach(function(obj) {
+      var w = obj.width || 0;
+      var h = obj.height || 0;
+      if (type === 'left') obj.x = minX;
+      else if (type === 'center') obj.x = centerX - w / 2;
+      else if (type === 'right') obj.x = maxX - w;
+      else if (type === 'top') obj.y = minY;
+      else if (type === 'middle') obj.y = centerY - h / 2;
+      else if (type === 'bottom') obj.y = maxY - h;
+
+      if (window.WebpointerRender) window.WebpointerRender.updateElementAttributes(obj);
+    });
+
+    if (window.WebpointerRender) window.WebpointerRender.renderUI();
+    if (window.pushSnapshot) window.pushSnapshot();
+  }
+
+  function distributeObjects(axis) {
+    var selected = [];
+    cfg.selectedIds.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (obj) selected.push(obj);
+    });
+    if (selected.length < 3) return;
+
+    if (axis === 'horizontal') {
+      selected.sort(function(a, b) { return (a.x || 0) - (b.x || 0); });
+      var minX = selected[0].x || 0;
+      var maxX = selected[selected.length - 1].x || 0;
+      var step = (maxX - minX) / (selected.length - 1);
+      for (var i = 1; i < selected.length - 1; i++) {
+        selected[i].x = minX + step * i;
+        if (window.WebpointerRender) window.WebpointerRender.updateElementAttributes(selected[i]);
+      }
+    } else if (axis === 'vertical') {
+      selected.sort(function(a, b) { return (a.y || 0) - (b.y || 0); });
+      var minY = selected[0].y || 0;
+      var maxY = selected[selected.length - 1].y || 0;
+      var step = (maxY - minY) / (selected.length - 1);
+      for (var i = 1; i < selected.length - 1; i++) {
+        selected[i].y = minY + step * i;
+        if (window.WebpointerRender) window.WebpointerRender.updateElementAttributes(selected[i]);
+      }
+    }
+
+    if (window.WebpointerRender) window.WebpointerRender.renderUI();
+    if (window.pushSnapshot) window.pushSnapshot();
+  }
+
+  function calculateSmartSnaps(dragObj, newX, newY) {
+    var threshold = cfg.snappingThreshold !== undefined ? cfg.snappingThreshold : 12;
+    var resultX = newX;
+    var resultY = newY;
+    var guides = [];
+    if (!cfg.objectsMap || cfg.snappingEnabled === false) return { x: resultX, y: resultY, lines: guides, guides: guides };
+
+    var w = dragObj.width || 0;
+    var h = dragObj.height || 0;
+    var left = newX;
+    var centerX = newX + w / 2;
+    var right = newX + w;
+    var top = newY;
+    var centerY = newY + h / 2;
+    var bottom = newY + h;
+
+    cfg.objectsMap.forEach(function(other) {
+      if (other.id === dragObj.id) return;
+      var ow = other.width || 0;
+      var oh = other.height || 0;
+      var oLeft = other.x || 0;
+      var oCenterX = oLeft + ow / 2;
+      var oRight = oLeft + ow;
+      var oTop = other.y || 0;
+      var oCenterY = oTop + oh / 2;
+      var oBottom = oTop + oh;
+
+      // X Snapping
+      if (Math.abs(left - oLeft) <= threshold) {
+        resultX = oLeft;
+        guides.push({ type: 'v', x1: oLeft, y1: 0, x2: oLeft, y2: 2000, color: '#ec4899' });
+      } else if (Math.abs(centerX - oCenterX) <= threshold) {
+        resultX = oCenterX - w / 2;
+        guides.push({ type: 'v', x1: oCenterX, y1: 0, x2: oCenterX, y2: 2000, color: '#ec4899' });
+      } else if (Math.abs(right - oRight) <= threshold) {
+        resultX = oRight - w;
+        guides.push({ type: 'v', x1: oRight, y1: 0, x2: oRight, y2: 2000, color: '#ec4899' });
+      }
+
+      // Y Snapping
+      if (Math.abs(top - oTop) <= threshold) {
+        resultY = oTop;
+        guides.push({ type: 'h', x1: 0, y1: oTop, x2: 2000, y2: oTop, color: '#ec4899' });
+      } else if (Math.abs(centerY - oCenterY) <= threshold) {
+        resultY = oCenterY - h / 2;
+        guides.push({ type: 'h', x1: 0, y1: oCenterY, x2: 2000, y2: oCenterY, color: '#ec4899' });
+      } else if (Math.abs(bottom - oBottom) <= threshold) {
+        resultY = oBottom - h;
+        guides.push({ type: 'h', x1: 0, y1: oBottom, x2: 2000, y2: oBottom, color: '#ec4899' });
+      }
+    });
+
+    return { x: resultX, y: resultY, lines: guides, guides: guides };
+  }
 })(window);

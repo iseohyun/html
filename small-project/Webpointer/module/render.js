@@ -45,6 +45,26 @@
       if (window.WebpointerRenderRibbon) {
         window.WebpointerRenderRibbon.renderRibbon();
       }
+    },
+    renderSnapGuides: function(lines) {
+      if (window.WebpointerRenderCanvas) {
+        window.WebpointerRenderCanvas.renderSnapGuides(lines);
+      }
+    },
+    clearSnapGuides: function() {
+      if (window.WebpointerRenderCanvas) {
+        window.WebpointerRenderCanvas.clearSnapGuides();
+      }
+    },
+    renderAllObjects: function() {
+      if (window.WebpointerRenderCanvas) {
+        window.WebpointerRenderCanvas.renderAllObjects();
+      }
+    },
+    renderCanvas: function() {
+      if (window.WebpointerRenderCanvas) {
+        window.WebpointerRenderCanvas.renderCanvas();
+      }
     }
   };
 

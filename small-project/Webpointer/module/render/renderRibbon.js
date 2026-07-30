@@ -145,8 +145,11 @@
         '<div style="display:flex; flex-direction:column; gap:4px; justify-content:center;">' +
           '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
             '<span style="font-size:0.78rem; font-weight:600; color:#475569;">격자</span>' +
-            '<input type="checkbox" id="chkGridToggle" ' + (cfg.gridSnapEnabled ? 'checked' : '') + ' onchange="toggleGridSnap(this.checked)" style="width:16px; height:16px; cursor:pointer;">' +
-            '<input type="number" min="5" max="200" value="' + stepPx + '" oninput="setGridStepSize(this.value)" onchange="setGridStepSize(this.value)" style="width:55px; padding:2px 4px; font-size:0.8rem; border:1px solid #cbd5e1; border-radius:4px; text-align:center;" title="격자 크기 (px)">' +
+            '<input type="checkbox" id="chkGridToggle" ' + (cfg.gridSnapEnabled ? 'checked' : '') + ' onchange="toggleGridSnap(this.checked)" style="width:16px; height:16px; cursor:pointer;" title="격자 스냅">' +
+            '<input type="number" min="5" max="200" value="' + stepPx + '" oninput="setGridStepSize(this.value)" onchange="setGridStepSize(this.value)" style="width:45px; padding:2px 4px; font-size:0.8rem; border:1px solid #cbd5e1; border-radius:4px; text-align:center;" title="격자 크기 (px)">' +
+            '<span style="font-size:0.78rem; font-weight:600; color:#475569; margin-left:4px;">자석</span>' +
+            '<input type="checkbox" id="chkSnapToggle" ' + (cfg.enableSnapping !== false ? 'checked' : '') + ' onchange="toggleSnapping(this.checked)" style="width:16px; height:16px; cursor:pointer;" title="객체 자동 맞춤 자석 스냅">' +
+            '<input type="number" min="1" max="50" value="' + (cfg.snappingThreshold || 6) + '" oninput="setSnappingThreshold(this.value)" onchange="setSnappingThreshold(this.value)" style="width:40px; padding:2px 4px; font-size:0.8rem; border:1px solid #cbd5e1; border-radius:4px; text-align:center;" title="자석 거리 (px)">' +
           '</div>' +
           '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
             '<select onchange="setCanvasRatio(this.value)" style="width:130px; padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px;" title="캔버스 크기">' +

@@ -14,6 +14,8 @@
     currentTab: 'insert',
     currentTool: 'select',
     gridSnapEnabled: true,
+    enableSnapping: true,     // Default Magnetic snapping ON
+    snappingThreshold: 12,    // Default 12px Snapping threshold
     canvasBgColor: '#ffffff', // Default White Canvas
 
     strokeColor: '#041e49',   // Default Shape Color (#041e49)

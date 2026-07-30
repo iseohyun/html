@@ -718,4 +718,135 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
 
     expect(pageErrors).toEqual([]);
   });
+
+  test('TC22: Smart Alignment Snap Guides & Snapping', async ({ page }) => {
+    const pageErrors = [];
+    page.on('pageerror', (err) => pageErrors.push(err.message));
+
+    // 1. Create Object A (Rect at 100, 100, size 100x100)
+    const objA = await page.evaluate(() => {
+      const obj = {
+        id: 'obj_snap_a',
+        type: 'rect',
+        x: 100,
+        y: 100,
+        width: 100,
+        height: 100,
+        stroke: '#000000',
+        fill: '#cbd5e1'
+      };
+      window.WebpointerConfig.objectsMap.set(obj.id, obj);
+      window.WebpointerRender.renderCanvas();
+      return obj.id;
+    });
+    expect(objA).toBe('obj_snap_a');
+
+    // 2. Create Object B (Rect at 300, 300, size 100x100)
+    const objB = await page.evaluate(() => {
+      const obj = {
+        id: 'obj_snap_b',
+        type: 'rect',
+        x: 300,
+        y: 300,
+        width: 100,
+        height: 100,
+        stroke: '#000000',
+        fill: '#f87171'
+      };
+      window.WebpointerConfig.objectsMap.set(obj.id, obj);
+      window.WebpointerRender.renderCanvas();
+      return obj.id;
+    });
+    expect(objB).toBe('obj_snap_b');
+
+    // 3. Test calculation of snap guides when dragging B near X alignment with A (e.g. X=103, Y=300)
+    const snapResult = await page.evaluate((targetId) => {
+      const obj = window.WebpointerConfig.objectsMap.get(targetId);
+      const snap = window.WebpointerHandlers.calculateSmartSnaps(obj, 103, 300);
+      return snap;
+    }, objB);
+
+    // X should snap to 100 (matching Object A left edge)
+    expect(snapResult.x).toBe(100);
+    expect(snapResult.lines.length).toBeGreaterThan(0);
+    expect(snapResult.lines[0].type).toBe('v');
+
+    // 4. Test guide lines rendering into #snapGuidesGroup
+    await page.evaluate((lines) => {
+      window.WebpointerRender.renderSnapGuides(lines);
+    }, snapResult.lines);
+
+    const guideLinesCount = await page.evaluate(() => {
+      const grp = document.getElementById('snapGuidesGroup');
+      return grp ? grp.querySelectorAll('line').length : 0;
+    });
+    expect(guideLinesCount).toBeGreaterThan(0);
+
+    // 5. Test clearing snap guides
+    await page.evaluate(() => {
+      window.WebpointerRender.clearSnapGuides();
+    });
+
+    const guideLinesCountAfterClear = await page.evaluate(() => {
+      const grp = document.getElementById('snapGuidesGroup');
+      return grp ? grp.querySelectorAll('line').length : 0;
+    });
+    expect(guideLinesCountAfterClear).toBe(0);
+
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('TC23: Object Alignment & Distribution Tools', async ({ page }) => {
+    const pageErrors = [];
+    page.on('pageerror', (err) => pageErrors.push(err.message));
+
+    // Create 3 rectangles at different positions
+    await page.evaluate(() => {
+      const o1 = { id: 'align_1', type: 'rect', x: 50, y: 100, width: 60, height: 60, stroke: '#000', fill: '#fff' };
+      const o2 = { id: 'align_2', type: 'rect', x: 200, y: 150, width: 60, height: 60, stroke: '#000', fill: '#fff' };
+      const o3 = { id: 'align_3', type: 'rect', x: 500, y: 200, width: 60, height: 60, stroke: '#000', fill: '#fff' };
+      window.WebpointerConfig.objectsMap.set(o1.id, o1);
+      window.WebpointerConfig.objectsMap.set(o2.id, o2);
+      window.WebpointerConfig.objectsMap.set(o3.id, o3);
+      window.WebpointerConfig.selectedIds.clear();
+      window.WebpointerConfig.selectedIds.add(o1.id);
+      window.WebpointerConfig.selectedIds.add(o2.id);
+      window.WebpointerConfig.selectedIds.add(o3.id);
+      window.WebpointerRender.renderCanvas();
+    });
+
+    // Test Align Left (All align to min X = 50)
+    await page.evaluate(() => window.alignSelectedObjects('left'));
+    const xPositionsAfterLeft = await page.evaluate(() => {
+      return [
+        window.WebpointerConfig.objectsMap.get('align_1').x,
+        window.WebpointerConfig.objectsMap.get('align_2').x,
+        window.WebpointerConfig.objectsMap.get('align_3').x
+      ];
+    });
+    expect(xPositionsAfterLeft).toEqual([50, 50, 50]);
+
+    // Test Distribute Horizontal Spacing
+    await page.evaluate(() => {
+      const o1 = window.WebpointerConfig.objectsMap.get('align_1');
+      const o2 = window.WebpointerConfig.objectsMap.get('align_2');
+      const o3 = window.WebpointerConfig.objectsMap.get('align_3');
+      o1.x = 0;
+      o2.x = 100;
+      o3.x = 600;
+      window.WebpointerHandlers.distributeObjects('horizontal');
+    });
+
+    const xPositionsAfterDistribute = await page.evaluate(() => {
+      return [
+        window.WebpointerConfig.objectsMap.get('align_1').x,
+        window.WebpointerConfig.objectsMap.get('align_2').x,
+        window.WebpointerConfig.objectsMap.get('align_3').x
+      ];
+    });
+    // With x: 0 (width 60), 600 (width 60), o2 should be centered evenly at (600 - 0) / 2 = 300
+    expect(xPositionsAfterDistribute[1]).toBe(300);
+
+    expect(pageErrors).toEqual([]);
+  });
 });

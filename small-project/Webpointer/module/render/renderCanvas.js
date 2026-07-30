@@ -643,12 +643,47 @@
 
   function updateDomTree() {}
 
+  function renderCanvas() {
+    if (!cfg.objectsMap) return;
+    cfg.objectsMap.forEach(function(obj) {
+      updateElementAttributes(obj);
+    });
+  }
+
+  function renderSnapGuides(lines) {
+    var group = document.getElementById('snapGuidesGroup');
+    if (!group) return;
+    group.innerHTML = '';
+    if (!lines || !lines.length) return;
+    lines.forEach(function(l) {
+      var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', l.x1);
+      line.setAttribute('y1', l.y1);
+      line.setAttribute('x2', l.x2);
+      line.setAttribute('y2', l.y2);
+      line.setAttribute('stroke', l.color || '#ec4899');
+      line.setAttribute('stroke-width', '1');
+      line.setAttribute('stroke-dasharray', '4 4');
+      line.setAttribute('pointer-events', 'none');
+      group.appendChild(line);
+    });
+  }
+
+  function clearSnapGuides() {
+    var group = document.getElementById('snapGuidesGroup');
+    if (group) group.innerHTML = '';
+  }
+
   window.WebpointerRenderCanvas = {
     updateElementAttributes: updateElementAttributes,
     createHandleNode: createHandleNode,
     renderUI: renderUI,
     renderGrid: renderGrid,
     updateSvgDefs: updateSvgDefs,
-    updateDomTree: updateDomTree
+    updateDomTree: updateDomTree,
+    renderCanvas: renderCanvas,
+    renderAllObjects: renderCanvas,
+    renderSnapGuides: renderSnapGuides,
+    clearSnapGuides: clearSnapGuides
   };
 })(window);
