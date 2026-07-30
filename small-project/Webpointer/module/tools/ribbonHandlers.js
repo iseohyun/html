@@ -181,46 +181,59 @@
 
   function showDashArraySelectPopup(btnEl) {
     var old = document.getElementById('dashArrayPopupSelect');
-    if (old) old.remove();
+    if (old && old.parentNode) old.parentNode.removeChild(old);
 
     var popup = document.createElement('div');
     popup.id = 'dashArrayPopupSelect';
-    popup.style.cssText = 'position:fixed; z-index:99999; padding:8px; border:1px solid #0284c7; border-radius:6px; background:#ffffff; box-shadow:0 6px 16px rgba(0,0,0,0.18); outline:none; font-family:sans-serif; display:flex; flex-direction:column; gap:6px; min-width:140px;';
+    popup.style.cssText = 'position:fixed; z-index:99999; padding:6px; border:1px solid #0284c7; border-radius:6px; background:#ffffff; box-shadow:0 6px 16px rgba(0,0,0,0.18); outline:none; font-family:sans-serif; display:flex; flex-direction:column; gap:4px; width:110px;';
     var rect = btnEl.getBoundingClientRect();
-    popup.style.left = rect.left + 'px';
+    popup.style.left = Math.max(10, rect.left) + 'px';
     popup.style.top = (rect.bottom + 4) + 'px';
 
     var cur = cfg.strokeDashArray || '6,6';
     popup.innerHTML =
-      '<div style="font-size:0.75rem; font-weight:700; color:#0f172a;">점선 패턴 입력</div>' +
-      '<input type="text" id="dashArrayInput" value="' + cur + '" style="width:100%; padding:4px 6px; font-size:0.8rem; border:1px solid #cbd5e1; border-radius:4px; font-family:monospace;" placeholder="6,6">' +
-      '<div style="font-size:0.7rem; color:#64748b;">프리셋 선택:</div>' +
-      '<div style="display:flex; flex-wrap:wrap; gap:4px;">' +
-        '<button style="padding:2px 6px; font-size:0.75rem; border:1px solid #cbd5e1; border-radius:3px; background:#f8fafc; cursor:pointer;" onclick="setStrokeDashArray(\'6,6\'); var p=document.getElementById(\'dashArrayPopupSelect\'); if(p) p.remove();">6,6</button>' +
-        '<button style="padding:2px 6px; font-size:0.75rem; border:1px solid #cbd5e1; border-radius:3px; background:#f8fafc; cursor:pointer;" onclick="setStrokeDashArray(\'10,4\'); var p=document.getElementById(\'dashArrayPopupSelect\'); if(p) p.remove();">10,4</button>' +
-        '<button style="padding:2px 6px; font-size:0.75rem; border:1px solid #cbd5e1; border-radius:3px; background:#f8fafc; cursor:pointer;" onclick="setStrokeDashArray(\'2,4\'); var p=document.getElementById(\'dashArrayPopupSelect\'); if(p) p.remove();">2,4</button>' +
-        '<button style="padding:2px 6px; font-size:0.75rem; border:1px solid #cbd5e1; border-radius:3px; background:#f8fafc; cursor:pointer;" onclick="setStrokeDashArray(\'12,3,3,3\'); var p=document.getElementById(\'dashArrayPopupSelect\'); if(p) p.remove();">12,3,3,3</button>' +
-      '</div>';
+      '<div style="font-size:0.75rem; font-weight:700; color:#0f172a;">점선 패턴</div>' +
+      '<input type="text" id="dashArrayInput" value="' + cur + '" style="width:100%; box-sizing:border-box; padding:4px 6px; font-size:0.8rem; border:1px solid #cbd5e1; border-radius:4px; font-family:monospace; text-align:center;" placeholder="6,6">';
 
     document.body.appendChild(popup);
     var inputEl = document.getElementById('dashArrayInput');
+
+    function closePopup() {
+      var p = document.getElementById('dashArrayPopupSelect');
+      if (p && p.parentNode) p.parentNode.removeChild(p);
+    }
+
     if (inputEl) {
       inputEl.focus();
-      inputEl.onchange = function() {
-        setStrokeDashArray(inputEl.value);
-        if (popup.parentNode) popup.parentNode.removeChild(popup);
-      };
+      inputEl.select();
+
       inputEl.onkeydown = function(ev) {
         if (ev.key === 'Enter') {
-          setStrokeDashArray(inputEl.value);
-          if (popup.parentNode) popup.parentNode.removeChild(popup);
+          ev.preventDefault();
+          var val = inputEl.value.trim() || '6,6';
+          closePopup();
+          setStrokeDashArray(val);
+        } else if (ev.key === 'Escape') {
+          closePopup();
         }
+      };
+
+      inputEl.onblur = function() {
+        setTimeout(function() {
+          var val = inputEl ? inputEl.value.trim() : '';
+          if (val) {
+            closePopup();
+            setStrokeDashArray(val);
+          } else {
+            closePopup();
+          }
+        }, 100);
       };
     }
 
     function onOutsideClick(evt) {
       if (popup && !popup.contains(evt.target) && !btnEl.contains(evt.target)) {
-        if (popup.parentNode) popup.parentNode.removeChild(popup);
+        closePopup();
         document.removeEventListener('mousedown', onOutsideClick);
       }
     }
