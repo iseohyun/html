@@ -118,6 +118,8 @@
       if (selObj && selObj.attrs) {
         if (selObj.attrs.strokeDashStyle) cfg.strokeDashStyle = selObj.attrs.strokeDashStyle;
         if (selObj.attrs.strokeDashArray) cfg.strokeDashArray = selObj.attrs.strokeDashArray;
+        if (selObj.attrs.strokeCap) cfg.strokeCap = selObj.attrs.strokeCap;
+        if (selObj.attrs.strokeJoin) cfg.strokeJoin = selObj.attrs.strokeJoin;
         if (selObj.attrs.strokeWidth) cfg.strokeWidth = selObj.attrs.strokeWidth;
         if (selObj.attrs.stroke) cfg.strokeColor = selObj.attrs.stroke;
         if (selObj.attrs.fill) cfg.fillColor = selObj.attrs.fill;
@@ -589,11 +591,15 @@
     attrs.strokeWidth = cfg.strokeWidth || 2;
     attrs.strokeDashStyle = cfg.strokeDashStyle || 'solid';
     attrs.strokeDashArray = cfg.strokeDashArray || '6,6';
+    attrs.strokeCap = cfg.strokeCap || 'butt';
+    attrs.strokeJoin = cfg.strokeJoin || 'miter';
 
     el.setAttribute('id', id);
     el.setAttribute('stroke', cfg.strokeColor || '#041e49');
     el.setAttribute('fill', cfg.fillColor || 'none');
     el.setAttribute('stroke-width', cfg.strokeWidth || 2);
+    el.setAttribute('stroke-linecap', attrs.strokeCap);
+    el.setAttribute('stroke-linejoin', attrs.strokeJoin);
 
     if (cfg.strokeDashStyle === 'dashed' && cfg.strokeDashArray) {
       el.setAttribute('stroke-dasharray', cfg.strokeDashArray);
@@ -1032,6 +1038,70 @@
     render.renderUI();
   };
 
+  window.setStrokeCap = function(val) {
+    console.log('[Webpointer Debug] setStrokeCap called:', val);
+    cfg.strokeCap = val;
+
+    var targets = [];
+    if (cfg.selectedIds.size > 0) {
+      targets = Array.from(cfg.selectedIds);
+    } else if (cfg.objectsMap.size > 0) {
+      var lastId = Array.from(cfg.objectsMap.keys()).pop();
+      if (lastId) {
+        cfg.selectedIds.add(lastId);
+        targets = [lastId];
+      }
+    }
+
+    targets.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (obj && obj.attrs) {
+        obj.attrs.strokeCap = cfg.strokeCap;
+        render.updateElementAttributes(obj);
+      }
+    });
+
+    render.renderUI();
+    render.renderRibbon();
+  };
+
+  window.setStrokeJoin = function(val) {
+    console.log('[Webpointer Debug] setStrokeJoin called:', val);
+    cfg.strokeJoin = val;
+
+    var targets = [];
+    if (cfg.selectedIds.size > 0) {
+      targets = Array.from(cfg.selectedIds);
+    } else if (cfg.objectsMap.size > 0) {
+      var lastId = Array.from(cfg.objectsMap.keys()).pop();
+      if (lastId) {
+        cfg.selectedIds.add(lastId);
+        targets = [lastId];
+      }
+    }
+
+    targets.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (obj && obj.attrs) {
+        obj.attrs.strokeJoin = cfg.strokeJoin;
+        render.updateElementAttributes(obj);
+      }
+    });
+
+    render.renderUI();
+    render.renderRibbon();
+  };
+
+  window.toggleCategoryCollapse = function(catKey) {
+    if (!cfg.collapsedCategories) cfg.collapsedCategories = new Set();
+    if (cfg.collapsedCategories.has(catKey)) {
+      cfg.collapsedCategories.delete(catKey);
+    } else {
+      cfg.collapsedCategories.add(catKey);
+    }
+    render.renderRibbon();
+  };
+
   window.applyStyleToSelected = function() {
     console.log('[Webpointer Debug] applyStyleToSelected - selectedIds:', Array.from(cfg.selectedIds || []), 'strokeDashStyle:', cfg.strokeDashStyle, 'strokeDashArray:', cfg.strokeDashArray);
     cfg.selectedIds.forEach(function(id) {
@@ -1043,10 +1113,14 @@
         obj.attrs.strokeWidth = cfg.strokeWidth;
         obj.attrs.strokeDashStyle = cfg.strokeDashStyle;
         obj.attrs.strokeDashArray = cfg.strokeDashArray || '6,6';
+        obj.attrs.strokeCap = cfg.strokeCap || 'butt';
+        obj.attrs.strokeJoin = cfg.strokeJoin || 'miter';
       }
       obj.el.setAttribute('stroke', cfg.strokeColor);
       obj.el.setAttribute('fill', cfg.fillColor);
       obj.el.setAttribute('stroke-width', cfg.strokeWidth);
+      obj.el.setAttribute('stroke-linecap', cfg.strokeCap || 'butt');
+      obj.el.setAttribute('stroke-linejoin', cfg.strokeJoin || 'miter');
 
       if (cfg.strokeDashStyle === 'dashed' && cfg.strokeDashArray) {
         console.log('[Webpointer Debug] Setting stroke-dasharray on element #' + id + ' to:', cfg.strokeDashArray);

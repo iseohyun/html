@@ -21,7 +21,11 @@
     strokeWidth: 2,
     strokeDashStyle: 'solid',  // 'solid' (실선) vs 'dashed' (점선)
     strokeDashArray: '6,6',    // Default custom dash pattern ('6,6')
+    strokeCap: 'butt',         // 'butt' (평평함), 'round' (둥글게), 'square' (돌출)
+    strokeJoin: 'miter',       // 'miter' (뾰족함), 'round' (둥글게), 'bevel' (깎임)
     pointRadius: 5,           // Default Point Diameter 10px (radius = 5px)
+
+    collapsedCategories: new Set(), // Set of collapsed category keys ('style_color', etc.)
 
     proximityThreshold: 30,   // Default 30px Proximity selection threshold
     defaultShapeSize: 100,    // Default 100px shape size for short clicks (<= 10px drag)
