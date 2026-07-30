@@ -859,6 +859,11 @@
   window.setEndMarkerFillStyle = setEndMarkerFillStyle;
   window.toggleEndMarkerFillStyle = toggleEndMarkerFillStyle;
   window.scaleMarker = scaleMarker;
+  window.toggleCategoryCollapse = toggleCategoryCollapse;
+  window.openPaletteModal = openPaletteModal;
+  window.closePaletteModal = closePaletteModal;
+  window.importPaletteFromText = importPaletteFromText;
+  window.applyStyleToSelected = applyStyleToSelected;
 
   window.WebpointerHandlers = {
     setTool: setTool,
