@@ -44,10 +44,22 @@
   function getInheritedStyle(node, attrName, defaultValue) {
     var val = node.getAttribute(attrName);
     if (val !== null && val !== '') return val;
+
+    var styleAttr = node.getAttribute('style');
+    if (styleAttr) {
+      var match = new RegExp('(?:^|;)\\s*' + attrName + '\\s*:\\s*([^;]+)').exec(styleAttr);
+      if (match) return match[1].trim();
+    }
+
     var current = node.parentElement;
     while (current && current.nodeName !== 'svg') {
       var parentVal = current.getAttribute(attrName);
       if (parentVal !== null && parentVal !== '') return parentVal;
+      var parentStyle = current.getAttribute('style');
+      if (parentStyle) {
+        var pMatch = new RegExp('(?:^|;)\\s*' + attrName + '\\s*:\\s*([^;]+)').exec(parentStyle);
+        if (pMatch) return pMatch[1].trim();
+      }
       current = current.parentElement;
     }
     return defaultValue;
@@ -87,6 +99,17 @@
       var transformAttr = node.getAttribute('transform');
       var nodeMatrix = combineTransforms(currentMatrix, transformAttr);
 
+      if (nodeName === 'use') {
+        var targetId = (node.getAttribute('href') || node.getAttribute('xlink:href') || '').replace('#', '');
+        if (targetId) {
+          var refEl = doc.getElementById(targetId);
+          if (refEl) {
+            traverseNode(refEl, nodeMatrix);
+            return;
+          }
+        }
+      }
+
       if (nodeName === 'svg' || nodeName === 'g') {
         for (var i = 0; i < node.childNodes.length; i++) {
           traverseNode(node.childNodes[i], nodeMatrix);
@@ -94,7 +117,7 @@
         return;
       }
 
-      var fill = getInheritedStyle(node, 'fill', 'none');
+      var fill = getInheritedStyle(node, 'fill', nodeName === 'text' ? '#000000' : 'none');
       var stroke = getInheritedStyle(node, 'stroke', 'none');
       var strokeWidth = parseFloat(getInheritedStyle(node, 'stroke-width', '1'));
       var opacity = parseFloat(getInheritedStyle(node, 'opacity', '1'));
@@ -113,23 +136,31 @@
       if (nodeName === 'rect') {
         type = 'rect';
         el = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        attrs.x = parseFloat(node.getAttribute('x') || 0);
-        attrs.y = parseFloat(node.getAttribute('y') || 0);
+        var rX = node.getAttribute('x');
+        var rY = node.getAttribute('y');
+        attrs.x = rX !== null ? parseFloat(rX) : (nodeMatrix ? nodeMatrix[4] : 0);
+        attrs.y = rY !== null ? parseFloat(rY) : (nodeMatrix ? nodeMatrix[5] : 0);
+        if (rX === null && rY === null && nodeMatrix) {
+          nodeMatrix = [nodeMatrix[0], nodeMatrix[1], nodeMatrix[2], nodeMatrix[3], 0, 0];
+        }
         attrs.width = parseFloat(node.getAttribute('width') || 0);
         attrs.height = parseFloat(node.getAttribute('height') || 0);
         attrs.rx = parseFloat(node.getAttribute('rx') || 0);
       } else if (nodeName === 'circle' || nodeName === 'ellipse') {
         type = 'ellipse';
         el = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+        var rawCx = node.getAttribute('cx');
+        var rawCy = node.getAttribute('cy');
+        attrs.cx = rawCx !== null ? parseFloat(rawCx) : (nodeMatrix ? nodeMatrix[4] : 0);
+        attrs.cy = rawCy !== null ? parseFloat(rawCy) : (nodeMatrix ? nodeMatrix[5] : 0);
+        if (rawCx === null && rawCy === null && nodeMatrix) {
+          nodeMatrix = [nodeMatrix[0], nodeMatrix[1], nodeMatrix[2], nodeMatrix[3], 0, 0];
+        }
         if (nodeName === 'circle') {
           var r = parseFloat(node.getAttribute('r') || 0);
-          attrs.cx = parseFloat(node.getAttribute('cx') || 0);
-          attrs.cy = parseFloat(node.getAttribute('cy') || 0);
           attrs.rx = r;
           attrs.ry = r;
         } else {
-          attrs.cx = parseFloat(node.getAttribute('cx') || 0);
-          attrs.cy = parseFloat(node.getAttribute('cy') || 0);
           attrs.rx = parseFloat(node.getAttribute('rx') || 0);
           attrs.ry = parseFloat(node.getAttribute('ry') || 0);
         }
@@ -149,8 +180,13 @@
         el = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         var textStr = node.textContent || '';
         attrs.text = textStr.trim();
-        attrs.x = parseFloat(node.getAttribute('x') || 0);
-        attrs.y = parseFloat(node.getAttribute('y') || 0);
+        var rawTX = node.getAttribute('x');
+        var rawTY = node.getAttribute('y');
+        attrs.x = rawTX !== null ? parseFloat(rawTX) : (nodeMatrix ? nodeMatrix[4] : 0);
+        attrs.y = rawTY !== null ? parseFloat(rawTY) : (nodeMatrix ? nodeMatrix[5] : 0);
+        if (rawTX === null && rawTY === null && nodeMatrix) {
+          nodeMatrix = [nodeMatrix[0], nodeMatrix[1], nodeMatrix[2], nodeMatrix[3], 0, 0];
+        }
         attrs.fontSize = parseFloat(node.getAttribute('font-size') || getInheritedStyle(node, 'font-size', '16'));
         attrs.fontFamily = node.getAttribute('font-family') || getInheritedStyle(node, 'font-family', 'sans-serif');
         attrs.fontWeight = node.getAttribute('font-weight') || getInheritedStyle(node, 'font-weight', 'normal');
