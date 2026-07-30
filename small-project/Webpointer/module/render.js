@@ -115,8 +115,8 @@
           self.makeToolHtml('rect', '사각형', '4', '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="1"/></svg>'),
           self.makeToolHtml('ellipse', '타원', '5', '<svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="9" ry="6"/></svg>'),
           self.makeToolHtml('arc', '호 (Arc)', '6', '<svg viewBox="0 0 24 24"><path d="M 4 18 A 9 9 0 0 1 20 18"/></svg>'),
-          self.makeToolHtml('bez2', '1차 베지어 (Q-Bezier)', '7', '<svg viewBox="0 0 24 24"><path d="M 3 18 Q 12 3 21 18"/><circle cx="12" cy="3" r="2" fill="currentColor"/></svg>'),
-          self.makeToolHtml('bez3', '2차 베지어 (C-Bezier)', '8', '<svg viewBox="0 0 24 24"><path d="M 3 18 C 7 3, 17 3, 21 18"/><circle cx="7" cy="3" r="2" fill="currentColor"/><circle cx="17" cy="3" r="2" fill="currentColor"/></svg>'),
+          self.makeToolHtml('bez2', '2차 베지어 (Quadratic Bezier)', '7', '<svg viewBox="0 0 24 24"><path d="M 3 18 Q 12 3 21 18"/><circle cx="12" cy="3" r="2" fill="currentColor"/></svg>'),
+          self.makeToolHtml('bez3', '3차 베지어 (Cubic Bezier)', '8', '<svg viewBox="0 0 24 24"><path d="M 3 18 C 7 3, 17 3, 21 18"/><circle cx="7" cy="3" r="2" fill="currentColor"/><circle cx="17" cy="3" r="2" fill="currentColor"/></svg>'),
           self.makeToolHtml('rounded', '둥근 사각형', '9', '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="5"/></svg>')
         ];
 
@@ -499,37 +499,41 @@
               self.createHandleNode(pt.px, pt.py, id, 'bez_vertex', idx, false);
             });
 
-            // 2. Render Control Handles for ALL segments of bez3 (2 handles per segment: Auto/Reflected & Manual)
+            // 2. Render Control Handles for ALL segments of bez3 (3차 베지어 대칭 핸들 동기화)
             if (a.points.length >= 2) {
-              var B0 = a.points[0];
-              var B1 = a.points[1];
-              var b1x = a.c1x !== undefined ? a.c1x : B0.px;
-              var b1y = a.c1y !== undefined ? a.c1y : Math.round((B0.py + B1.py) / 2 - 50);
-              var b2x = a.c2x !== undefined ? a.c2x : B1.px;
-              var b2y = a.c2y !== undefined ? a.c2y : Math.round((B0.py + B1.py) / 2 - 50);
+              a.ctrls3 = a.ctrls3 || [];
+              var gD3 = '';
 
-              // Segment 1 Control Handles (Yellow)
-              self.createHandleNode(b1x, b1y, id, 'bez3_ctrl1', 1, true);
-              self.createHandleNode(b2x, b2y, id, 'bez3_ctrl2', 1, true);
+              for (var seg = 0; seg < a.points.length - 1; seg++) {
+                var pStart = a.points[seg];
+                var pEnd = a.points[seg + 1];
 
-              var gD3 = 'M ' + B0.px + ' ' + B0.py + ' L ' + b1x + ' ' + b1y + ' L ' + b2x + ' ' + b2y + ' L ' + B1.px + ' ' + B1.py;
+                if (!a.ctrls3[seg]) {
+                  if (seg === 0) {
+                    a.ctrls3[seg] = {
+                      c1: { x: pStart.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) },
+                      c2: { x: pEnd.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) }
+                    };
+                  } else {
+                    var prevC2 = a.ctrls3[seg - 1].c2;
+                    a.ctrls3[seg] = {
+                      c1: { x: 2 * pStart.px - prevC2.x, y: 2 * pStart.py - prevC2.y },
+                      c2: { x: pEnd.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) }
+                    };
+                  }
+                }
 
-              var prevC2 = { x: b2x, y: b2y };
-              for (var sIdx = 2; sIdx < a.points.length; sIdx++) {
-                var vPrev = a.points[sIdx - 1];
-                var vCurr = a.points[sIdx];
-                // Handle 1 (Auto / Reflected from prevC2 across vPrev)
-                var autoC1x = 2 * vPrev.px - prevC2.x;
-                var autoC1y = 2 * vPrev.py - prevC2.y;
-                // Handle 2 (Manual / Midpoint or stored)
-                var manC2x = Math.round((vPrev.px + vCurr.px) / 2);
-                var manC2y = vPrev.py;
+                var ctrl1 = a.ctrls3[seg].c1;
+                var ctrl2 = a.ctrls3[seg].c2;
 
-                self.createHandleNode(autoC1x, autoC1y, id, 'bez3_auto_refl', sIdx, true);
-                self.createHandleNode(manC2x, manC2y, id, 'bez3_manual_ctrl2', sIdx, true);
+                // Render Yellow Handles for both c1 and c2
+                self.createHandleNode(ctrl1.x, ctrl1.y, id, 'bez3_c1', seg, true);
+                self.createHandleNode(ctrl2.x, ctrl2.y, id, 'bez3_c2', seg, true);
 
-                gD3 += ' L ' + autoC1x + ' ' + autoC1y + ' L ' + manC2x + ' ' + manC2y + ' L ' + vCurr.px + ' ' + vCurr.py;
-                prevC2 = { x: manC2x, y: manC2y };
+                if (seg === 0) {
+                  gD3 += 'M ' + pStart.px + ' ' + pStart.py;
+                }
+                gD3 += ' L ' + ctrl1.x + ' ' + ctrl1.y + ' L ' + ctrl2.x + ' ' + ctrl2.y + ' L ' + pEnd.px + ' ' + pEnd.py;
               }
 
               var guideLine3 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
