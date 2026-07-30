@@ -279,11 +279,133 @@
         buildCategoryHtml('style_lineEnds', '선 끝', lineEndsContent) +
         buildCategoryHtml('style_capJoin', '마감', capJoinContent);
     } else if (cfg.currentTab === 'text') {
-      var textContent =
+      var textAddContent =
         '<div class="category-grid" style="grid-template-columns: 34px;">' +
           '<button class="tool-btn" onclick="addTextObject()"><span class="alt-badge">T</span>' + (icons.addText || '') + '<span class="tooltip-text">텍스트 상자 추가</span></button>' +
         '</div>';
-      ribbonBar.innerHTML = buildCategoryHtml('text_font', '글 서식', textContent);
+
+      var curFontFamily = cfg.fontFamily || 'sans-serif';
+      var curFontSize = cfg.fontSize || 20;
+      var curFontWeight = cfg.fontWeight || 'normal';
+      var curFontStyle = cfg.fontStyle || 'normal';
+      var curLineHeight = cfg.lineHeight || 1.2;
+
+      var fontOptionsHtml =
+        '<div style="display:flex; flex-direction:row; align-items:center; gap:8px;">' +
+          '<div style="display:flex; flex-direction:column; gap:4px;">' +
+            '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
+              '<label style="font-size:0.75rem; color:#475569; font-weight:600;">글꼴:</label>' +
+              '<select onchange="setTextFontFamily(this.value)" style="padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px;">' +
+                '<option value="sans-serif" ' + (curFontFamily==='sans-serif'?'selected':'') + '>Sans-Serif (고딕)</option>' +
+                '<option value="serif" ' + (curFontFamily==='serif'?'selected':'') + '>Serif (명조)</option>' +
+                '<option value="monospace" ' + (curFontFamily==='monospace'?'selected':'') + '>Monospace (고정폭)</option>' +
+                '<option value="Inter" ' + (curFontFamily==='Inter'?'selected':'') + '>Inter</option>' +
+                '<option value="Roboto" ' + (curFontFamily==='Roboto'?'selected':'') + '>Roboto</option>' +
+                '<option value="Courier New" ' + (curFontFamily==='Courier New'?'selected':'') + '>Courier New</option>' +
+                '<option value="Georgia" ' + (curFontFamily==='Georgia'?'selected':'') + '>Georgia</option>' +
+              '</select>' +
+            '</div>' +
+            '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
+              '<label style="font-size:0.75rem; color:#475569; font-weight:600;">크기:</label>' +
+              '<input type="number" min="8" max="200" value="' + curFontSize + '" oninput="setTextFontSize(this.value)" onchange="setTextFontSize(this.value)" style="width:45px; padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px; text-align:center;">' +
+              '<select onchange="setTextFontSize(this.value)" style="padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px;">' +
+                '<option value="12" ' + (curFontSize==12?'selected':'') + '>12</option>' +
+                '<option value="14" ' + (curFontSize==14?'selected':'') + '>14</option>' +
+                '<option value="16" ' + (curFontSize==16?'selected':'') + '>16</option>' +
+                '<option value="18" ' + (curFontSize==18?'selected':'') + '>18</option>' +
+                '<option value="20" ' + (curFontSize==20?'selected':'') + '>20</option>' +
+                '<option value="24" ' + (curFontSize==24?'selected':'') + '>24</option>' +
+                '<option value="28" ' + (curFontSize==28?'selected':'') + '>28</option>' +
+                '<option value="32" ' + (curFontSize==32?'selected':'') + '>32</option>' +
+                '<option value="36" ' + (curFontSize==36?'selected':'') + '>36</option>' +
+                '<option value="48" ' + (curFontSize==48?'selected':'') + '>48</option>' +
+                '<option value="72" ' + (curFontSize==72?'selected':'') + '>72</option>' +
+              '</select>' +
+            '</div>' +
+          '</div>' +
+          '<div style="width:1px; height:48px; background:#cbd5e1; margin:0 4px;"></div>' +
+          '<div style="display:flex; flex-direction:column; gap:4px;">' +
+            '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
+              '<label style="font-size:0.75rem; color:#475569; font-weight:600;">두께:</label>' +
+              '<select onchange="setTextFontWeight(this.value)" style="padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px;">' +
+                '<option value="100" ' + (curFontWeight=='100'?'selected':'') + '>100 (Thin)</option>' +
+                '<option value="200" ' + (curFontWeight=='200'?'selected':'') + '>200 (Extra Light)</option>' +
+                '<option value="300" ' + (curFontWeight=='300'?'selected':'') + '>300 (Light)</option>' +
+                '<option value="400" ' + (curFontWeight=='400' || curFontWeight=='normal'?'selected':'') + '>400 (Normal)</option>' +
+                '<option value="500" ' + (curFontWeight=='500'?'selected':'') + '>500 (Medium)</option>' +
+                '<option value="600" ' + (curFontWeight=='600'?'selected':'') + '>600 (Semi Bold)</option>' +
+                '<option value="700" ' + (curFontWeight=='700' || curFontWeight=='bold'?'selected':'') + '>700 (Bold)</option>' +
+                '<option value="800" ' + (curFontWeight=='800'?'selected':'') + '>800 (Extra Bold)</option>' +
+                '<option value="900" ' + (curFontWeight=='900'?'selected':'') + '>900 (Black)</option>' +
+              '</select>' +
+            '</div>' +
+            '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
+              '<label style="font-size:0.75rem; color:#475569; font-weight:600;">기울임:</label>' +
+              '<select onchange="setTextFontStyle(this.value)" style="padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px;">' +
+                '<option value="normal" ' + (curFontStyle==='normal'?'selected':'') + '>Normal (보통)</option>' +
+                '<option value="italic" ' + (curFontStyle==='italic'?'selected':'') + '>Italic (이탤릭)</option>' +
+                '<option value="oblique" ' + (curFontStyle==='oblique'?'selected':'') + '>Oblique (사선)</option>' +
+              '</select>' +
+            '</div>' +
+          '</div>' +
+          '<div style="width:1px; height:48px; background:#cbd5e1; margin:0 4px;"></div>' +
+          '<div style="display:flex; flex-direction:column; gap:4px;">' +
+            '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
+              '<label style="font-size:0.75rem; color:#475569; font-weight:600;">줄간격:</label>' +
+              '<select onchange="setTextLineHeight(this.value)" style="padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px;">' +
+                '<option value="1" ' + (curLineHeight==1?'selected':'') + '>1 (좁게)</option>' +
+                '<option value="1.2" ' + (curLineHeight==1.2?'selected':'') + '>1.2 (기본)</option>' +
+                '<option value="1.5" ' + (curLineHeight==1.5?'selected':'') + '>1.5 (보통)</option>' +
+                '<option value="2" ' + (curLineHeight==2?'selected':'') + '>2 (넓게)</option>' +
+              '</select>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+
+      // Swatch grid for Text Colors
+      var userColors = (cfg.customPalette || []).slice();
+      while (userColors.length < 24) {
+        userColors.push(default24Colors[userColors.length % default24Colors.length]);
+      }
+
+      var textColorSwatchGrid = '<div style="display:grid; grid-template-columns:repeat(9, 24px); grid-template-rows:repeat(3, 24px); gap:0; border:1px solid #cbd5e1; border-radius:4px; overflow:hidden; margin:0; padding:0;">';
+      var userIdx = 0;
+
+      for (var slot = 1; slot <= 27; slot++) {
+        if (slot === 9) {
+          textColorSwatchGrid += '<div style="width:24px; height:24px; box-sizing:border-box; border:1px solid rgba(0,0,0,0.08); background:#ffffff; cursor:pointer;" onclick="applyPaletteColor(\'#ffffff\')" title="흰색 (#ffffff)"></div>';
+        } else if (slot === 18) {
+          textColorSwatchGrid += '<div style="width:24px; height:24px; box-sizing:border-box; border:1px solid rgba(0,0,0,0.08); background:#000000; cursor:pointer;" onclick="applyPaletteColor(\'#000000\')" title="검정색 (#000000)"></div>';
+        } else if (slot === 27) {
+          textColorSwatchGrid += '<div style="width:24px; height:24px; box-sizing:border-box; border:1px solid rgba(0,0,0,0.08); background:#ffffff; cursor:pointer; position:relative;" onclick="applyPaletteColor(\'none\')" title="투명색 (none)"><svg viewBox="0 0 24 24" style="width:100%; height:100%; display:block;"><line x1="0" y1="24" x2="24" y2="0" stroke="#ef4444" stroke-width="2.5"/></svg></div>';
+        } else {
+          var hex = userColors[userIdx++] || '#041e49';
+          textColorSwatchGrid += '<div style="width:24px; height:24px; box-sizing:border-box; border:1px solid rgba(0,0,0,0.08); background:' + hex + '; cursor:pointer;" onclick="applyPaletteColor(\'' + hex + '\')" title="' + hex + '"></div>';
+        }
+      }
+      textColorSwatchGrid += '</div>';
+
+      var textTargetMode = cfg.activeTextColorTarget || 'text';
+      var isTextActive = textTargetMode === 'text';
+      var isBgActive = textTargetMode === 'bg';
+
+      var textColorBtnHtml = '<button class="tool-btn ' + (isTextActive ? 'active' : '') + '" onclick="setActiveTextColorTarget(\'text\')" style="width:34px; height:34px;"><span class="alt-badge">T</span>' + (icons.targetStroke || '') + '<span class="tooltip-text">글자색 선택 (Active)</span></button>';
+      var textBgBtnHtml   = '<button class="tool-btn ' + (isBgActive ? 'active' : '') + '" onclick="setActiveTextColorTarget(\'bg\')" style="width:34px; height:34px;"><span class="alt-badge">B</span>' + (icons.targetFill || '') + '<span class="tooltip-text">배경색(하이라이트) 선택 (Active)</span></button>';
+
+      var openPaletteBtnHtml   = '<button class="tool-btn" onclick="window.open(\'https://iseohyun.github.io/UniPalette/\', \'_blank\')" style="width:34px; height:34px;"><span class="alt-badge">O</span>' + (icons.openPalette || '') + '<span class="tooltip-text">기본색상 정하기 (UniPalette 새탭)</span></button>';
+      var importPaletteBtnHtml = '<button class="tool-btn" onclick="openPaletteModal()" style="width:34px; height:34px;"><span class="alt-badge">I</span>' + (icons.importPalette || '') + '<span class="tooltip-text">기본색상 가져오기 (코드 붙여넣기)</span></button>';
+
+      var textColorContent =
+        '<div style="display:flex; flex-direction:row; align-items:center; gap:8px;">' +
+          '<div style="display:flex; flex-direction:column; gap:4px;">' + textColorBtnHtml + textBgBtnHtml + '</div>' +
+          textColorSwatchGrid +
+          '<div style="display:flex; flex-direction:column; gap:4px;">' + openPaletteBtnHtml + importPaletteBtnHtml + '</div>' +
+        '</div>';
+
+      ribbonBar.innerHTML =
+        buildCategoryHtml('text_add', '텍스트 추가', textAddContent) +
+        buildCategoryHtml('text_font', '글꼴', fontOptionsHtml) +
+        buildCategoryHtml('text_color', '색', textColorContent);
     } else if (cfg.currentTab === 'anim') {
       var animContent =
         '<div class="category-grid" style="grid-template-columns: 34px 34px;">' +

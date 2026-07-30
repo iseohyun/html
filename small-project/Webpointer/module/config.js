@@ -44,7 +44,15 @@
       "#e44d1b", "#c27800", "#669900", "#00a879", "#009dd1", "#4182fb", "#a760e2", "#d94594",
       "#ff976b", "#ffbb00", "#aae43f", "#00f5c0", "#00eaff", "#85caff", "#ec99ff", "#ff8fda"
     ],
-    activeColorTarget: 'stroke', // 'stroke' or 'fill'
+    activeColorTarget: 'stroke', // 'stroke' vs 'fill' for Picture Format tab
+
+    // Text Formatting Defaults
+    fontFamily: 'sans-serif',
+    fontSize: 20,
+    fontWeight: 'normal',
+    fontStyle: 'normal',
+    lineHeight: 1.2,
+    activeTextColorTarget: 'text', // 'text' (글자색) vs 'bg' (배경색/하이라이트)
 
     // Selection & Manipulation Memory
     selectedIds: new Set(),

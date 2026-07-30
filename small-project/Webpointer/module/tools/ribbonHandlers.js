@@ -175,8 +175,100 @@
     }
   }
 
+  function setActiveColorTarget(target) {
+    cfg.activeColorTarget = target;
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+  }
+
+  function setActiveTextColorTarget(target) {
+    cfg.activeTextColorTarget = target;
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+  }
+
+  function applyPaletteColor(hex) {
+    if (cfg.currentTab === 'text') {
+      var target = cfg.activeTextColorTarget || 'text';
+      cfg.selectedIds.forEach(function(id) {
+        var obj = cfg.objectsMap.get(id);
+        if (obj && obj.type === 'text' && obj.attrs) {
+          if (target === 'text') {
+            obj.attrs.fill = hex;
+          } else {
+            obj.attrs.bgColor = hex;
+          }
+          if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+            window.WebpointerRender.updateElementAttributes(obj);
+          }
+        }
+      });
+      if (target === 'text') cfg.strokeColor = hex;
+    } else {
+      var mode = cfg.activeColorTarget || 'stroke';
+      if (mode === 'stroke') {
+        setStrokeColor(hex);
+      } else {
+        setFillColor(hex);
+      }
+    }
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+  }
+
+  function setTextFontFamily(val) {
+    cfg.fontFamily = val;
+    applyTextStyleToSelected();
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+  }
+
+  function setTextFontSize(val) {
+    cfg.fontSize = parseInt(val, 10) || 20;
+    applyTextStyleToSelected();
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+  }
+
+  function setTextFontWeight(val) {
+    cfg.fontWeight = val;
+    applyTextStyleToSelected();
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+  }
+
+  function setTextFontStyle(val) {
+    cfg.fontStyle = val;
+    applyTextStyleToSelected();
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+  }
+
+  function setTextLineHeight(val) {
+    cfg.lineHeight = parseFloat(val) || 1.2;
+    applyTextStyleToSelected();
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+  }
+
+  function applyTextStyleToSelected() {
+    cfg.selectedIds.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (obj && obj.type === 'text' && obj.attrs) {
+        obj.attrs.fontFamily = cfg.fontFamily;
+        obj.attrs.fontSize = cfg.fontSize;
+        obj.attrs.fontWeight = cfg.fontWeight;
+        obj.attrs.fontStyle = cfg.fontStyle;
+        obj.attrs.lineHeight = cfg.lineHeight;
+        if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+          window.WebpointerRender.updateElementAttributes(obj);
+        }
+      }
+    });
+  }
+
   window.switchTab = switchTab;
   window.applyImportedPalette = importPaletteFromText;
+  window.applyPaletteColor = applyPaletteColor;
+  window.setActiveColorTarget = setActiveColorTarget;
+  window.setActiveTextColorTarget = setActiveTextColorTarget;
+  window.setTextFontFamily = setTextFontFamily;
+  window.setTextFontSize = setTextFontSize;
+  window.setTextFontWeight = setTextFontWeight;
+  window.setTextFontStyle = setTextFontStyle;
+  window.setTextLineHeight = setTextLineHeight;
   window.setTool = setTool;
   window.setStrokeColor = setStrokeColor;
   window.setFillColor = setFillColor;
@@ -208,6 +300,14 @@
     toggleCategoryCollapse: toggleCategoryCollapse,
     openPaletteModal: openPaletteModal,
     closePaletteModal: closePaletteModal,
-    importPaletteFromText: importPaletteFromText
+    importPaletteFromText: importPaletteFromText,
+    applyPaletteColor: applyPaletteColor,
+    setActiveColorTarget: setActiveColorTarget,
+    setActiveTextColorTarget: setActiveTextColorTarget,
+    setTextFontFamily: setTextFontFamily,
+    setTextFontSize: setTextFontSize,
+    setTextFontWeight: setTextFontWeight,
+    setTextFontStyle: setTextFontStyle,
+    setTextLineHeight: setTextLineHeight
   };
 })(window);

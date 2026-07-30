@@ -74,24 +74,32 @@
     } else if (obj.type === 'text') {
       obj.el.setAttribute('x', a.x);
       obj.el.setAttribute('y', a.y);
-      if (a.fontSize !== undefined) obj.el.setAttribute('font-size', a.fontSize);
-      if (a.fill) obj.el.setAttribute('fill', a.fill);
-      obj.el.setAttribute('font-family', 'sans-serif');
+      var fSize = a.fontSize !== undefined ? a.fontSize : (cfg.fontSize || 20);
+      var fFamily = a.fontFamily || cfg.fontFamily || 'sans-serif';
+      var fWeight = a.fontWeight || cfg.fontWeight || 'normal';
+      var fStyle = a.fontStyle || cfg.fontStyle || 'normal';
+      var lHeight = a.lineHeight !== undefined ? a.lineHeight : (cfg.lineHeight || 1.2);
+
+      obj.el.setAttribute('font-size', fSize);
+      obj.el.setAttribute('font-family', fFamily);
+      obj.el.setAttribute('font-weight', fWeight);
+      obj.el.setAttribute('font-style', fStyle);
       obj.el.setAttribute('dominant-baseline', 'alphabetic');
+      if (a.fill) obj.el.setAttribute('fill', a.fill);
 
       var lines = (a.text || '').split('\n');
       obj.el.innerHTML = '';
       if (lines.length <= 1) {
         obj.el.textContent = a.text || '';
       } else {
-        var fontSize = parseInt(a.fontSize || 20, 10);
+        var fontSizeNum = parseInt(fSize, 10);
         lines.forEach(function(lineStr, idx) {
           var tspan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
           tspan.setAttribute('x', a.x);
           if (idx === 0) {
             tspan.setAttribute('dy', 0);
           } else {
-            tspan.setAttribute('dy', (fontSize * 1.2) + 'px');
+            tspan.setAttribute('dy', (fontSizeNum * lHeight) + 'px');
           }
           tspan.textContent = lineStr || '\u200B';
           obj.el.appendChild(tspan);
