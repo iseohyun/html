@@ -134,6 +134,13 @@
       if (a.strokeWidth !== undefined) obj.el.setAttribute('stroke-width', a.strokeWidth);
     }
 
+    var op = a.opacity !== undefined ? a.opacity : (cfg.opacity !== undefined ? cfg.opacity : 1);
+    if (op < 1) {
+      obj.el.setAttribute('opacity', op);
+    } else {
+      obj.el.removeAttribute('opacity');
+    }
+
     var dashStyle = a.strokeDashStyle || 'solid';
     var dashArray = a.strokeDashArray || '6,6';
     if (dashStyle === 'dashed' && dashArray) {

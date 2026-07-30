@@ -118,13 +118,15 @@
     } else if (cfg.currentTab === 'view') {
       var proxVal = cfg.proximityThreshold !== undefined ? cfg.proximityThreshold : 30;
       var szVal = cfg.defaultShapeSize !== undefined ? cfg.defaultShapeSize : 100;
+      var stepCnt = cfg.alphaStepCount !== undefined ? cfg.alphaStepCount : 5;
 
       var gridSettingsHtml =
         '<div class="category-grid" style="grid-template-columns: auto;">' +
           '<div class="ribbon-control-item"><label>격자 보이기:</label><input type="checkbox" id="chkGridToggle" ' + (cfg.gridSnapEnabled ? 'checked' : '') + ' onchange="toggleGridSnap(this.checked)"></div>' +
           '<div class="ribbon-control-item"><label>격자 크기:</label><select onchange="setGridDensity(this.value)"><option value="480x270" selected>481×271 Step (16:9 표준)</option><option value="240x135">241×136 Step (조밀하게)</option><option value="120x67">121×68 Step (성기게)</option></select></div>' +
-          '<div class="ribbon-control-item"><label>근접 선택 거리:</label><select onchange="setProximityThreshold(this.value)"><option value="30" ' + (proxVal===30?'selected':'') + '>30px (기본값)</option><option value="10" ' + (proxVal===10?'selected':'') + '>10px</option><option value="20" ' + (proxVal===20?'selected':'') + '>20px</option><option value="0" ' + (proxVal===0?'selected':'') + '>0px (해제 - 정확한 클릭)</option></select></div>' +
+          '<div class="ribbon-control-item"><label>근접 선택 거리:</label><select onchange="setProximityThreshold(this.value)"><option value="30" ' + (proxVal===30?'selected':'') + '>30px (기본값)</option><option value="20" ' + (proxVal===20?'selected':'') + '>20px</option><option value="10" ' + (proxVal===10?'selected':'') + '>10px</option><option value="0" ' + (proxVal===0?'selected':'') + '>0px (해제 - 정확한 클릭)</option></select></div>' +
           '<div class="ribbon-control-item"><label>기본 도형 크기:</label><select onchange="setDefaultShapeSize(this.value)"><option value="100" ' + (szVal===100?'selected':'') + '>100px (기본값)</option><option value="150" ' + (szVal===150?'selected':'') + '>150px</option><option value="200" ' + (szVal===200?'selected':'') + '>200px</option><option value="50" ' + (szVal===50?'selected':'') + '>50px</option></select></div>' +
+          '<div class="ribbon-control-item"><label>투명도 조절 단계:</label><select onchange="setAlphaStepCount(this.value)"><option value="5" ' + (stepCnt===5?'selected':'') + '>5단계 (0.2 단위)</option><option value="10" ' + (stepCnt===10?'selected':'') + '>10단계 (0.1 단위)</option><option value="20" ' + (stepCnt===20?'selected':'') + '>20단계 (0.05 단위)</option><option value="100" ' + (stepCnt===100?'selected':'') + '>100단계 (세밀하게 1%)</option></select></div>' +
         '</div>';
 
       var canvasSettingsHtml =
@@ -142,7 +144,7 @@
         '</div>';
 
       ribbonBar.innerHTML =
-        buildCategoryHtml('view_grid', '격자 및 스냅/선택/기본크기 설정', gridSettingsHtml) +
+        buildCategoryHtml('view_grid', '설정', gridSettingsHtml) +
         buildCategoryHtml('view_canvas', '캔버스 화면 설정', canvasSettingsHtml) +
         buildCategoryHtml('view_theme', '테마', themeSettingsHtml);
     } else if (cfg.currentTab === 'style') {
@@ -154,10 +156,22 @@
       var isDashed = cfg.strokeDashStyle === 'dashed';
       var dashedLineBtn = '<button class="tool-btn ' + (isDashed ? 'active' : '') + '" onclick="toggleStrokeDashStyle()" onmousedown="startHoldDashArray(event, this)" onmouseup="endHoldDashArray()" onmouseleave="endHoldDashArray()" style="width:34px; height:34px;">' + (icons.lineDashed || '') + '<span class="tooltip-text">선 모양: 점선 (클릭 토글 / 길게 눌러 패턴 설정)</span></button>';
 
+      var stepVal = 1 / (cfg.alphaStepCount || 5);
+      var curAlpha = cfg.opacity !== undefined ? cfg.opacity : 1;
+
+      var alphaRangeHtml =
+        '<div style="display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px; height:72px; padding:0 4px; border-left:1px solid #cbd5e1;">' +
+          '<span style="font-size:0.72rem; font-weight:700; color:#475569;">투명도 (' + Math.round(curAlpha * 100) + '%)</span>' +
+          '<input type="range" min="0" max="1" step="' + stepVal + '" value="' + curAlpha + '" oninput="setElementOpacity(this.value)" onmousedown="startHoldAlphaInput(event, this)" onmouseup="endHoldAlphaInput()" onmouseleave="endHoldAlphaInput()" style="width:72px; cursor:pointer;" title="투명도(Alpha) 슬라이더 (길게 눌러 수치 직접 입력)">' +
+        '</div>';
+
       var lineGridHtml =
-        '<div style="display:grid; grid-template-columns:34px 34px; grid-template-rows:34px 34px; gap:4px;">' +
-          strokeBtnHtml + fillBtnHtml +
-          widthInputHtml + dashedLineBtn +
+        '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
+          '<div style="display:grid; grid-template-columns:34px 34px; grid-template-rows:34px 34px; gap:4px;">' +
+            strokeBtnHtml + fillBtnHtml +
+            widthInputHtml + dashedLineBtn +
+          '</div>' +
+          alphaRangeHtml +
         '</div>';
 
       var curStartMarker = cfg.startMarker || 'none';
@@ -227,7 +241,7 @@
         '</div>';
 
       ribbonBar.innerHTML =
-        buildCategoryHtml('style_line', '선', lineGridHtml) +
+        buildCategoryHtml('style_line', '선 및 색상', lineGridHtml) +
         buildCategoryHtml('style_lineEnds', '선 끝', lineEndsContent) +
         buildCategoryHtml('style_capJoin', '마감', capJoinContent);
     } else if (cfg.currentTab === 'text') {
@@ -362,9 +376,15 @@
       var textFillBtnHtml   = '<button class="tool-btn" onclick="toggleColorPalettePopover(this, \'text_fill\')" style="width:34px; height:34px; position:relative;">' + (icons.targetFill || '') + '<span style="position:absolute; bottom:2px; left:4px; right:4px; height:4px; background:' + (fillColor==='none'?'transparent':fillColor) + '; border-radius:2px;"></span><span class="tooltip-text">글자 채우기 색상 (fill) (클릭하여 팔레트 열기)</span></button>';
       var strokeWidthInputHtml = '<input type="number" min="0" max="50" value="' + strokeWidth + '" oninput="setTextStrokeWidth(this.value)" onchange="setTextStrokeWidth(this.value)" style="width:34px; height:34px; box-sizing:border-box; padding:2px; font-size:0.85rem; font-weight:700; border:1px solid #cbd5e1; border-radius:6px; text-align:center; outline:none; background:#ffffff; color:#0f172a;" title="글자 테두리 두께 (px)">';
 
+      var textAlphaRangeHtml =
+        '<div style="display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px; height:72px; padding:0 4px; border-left:1px solid #cbd5e1;">' +
+          '<span style="font-size:0.72rem; font-weight:700; color:#475569;">투명도 (' + Math.round(curAlpha * 100) + '%)</span>' +
+          '<input type="range" min="0" max="1" step="' + stepVal + '" value="' + curAlpha + '" oninput="setElementOpacity(this.value)" onmousedown="startHoldAlphaInput(event, this)" onmouseup="endHoldAlphaInput()" onmouseleave="endHoldAlphaInput()" style="width:72px; cursor:pointer;" title="투명도(Alpha) 슬라이더 (길게 눌러 수치 직접 입력)">' +
+        '</div>';
+
       var textColorContent =
         '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
-          textStrokeBtnHtml + textFillBtnHtml + strokeWidthInputHtml +
+          textStrokeBtnHtml + textFillBtnHtml + strokeWidthInputHtml + textAlphaRangeHtml +
         '</div>';
 
       ribbonBar.innerHTML =

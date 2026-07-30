@@ -468,6 +468,101 @@
     if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
   }
 
+  function setElementOpacity(val) {
+    var num = parseFloat(val);
+    if (isNaN(num)) num = 1;
+    num = Math.max(0, Math.min(1, num));
+    cfg.opacity = num;
+
+    var members = getAllGroupMembers(cfg.selectedIds);
+    members.forEach(function(obj) {
+      if (obj && obj.attrs) {
+        obj.attrs.opacity = num;
+        if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+          window.WebpointerRender.updateElementAttributes(obj);
+        }
+      }
+    });
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+      window.WebpointerRender.renderRibbon();
+    }
+  }
+
+  function setAlphaStepCount(val) {
+    var count = parseInt(val, 10);
+    cfg.alphaStepCount = (isNaN(count) || count <= 0) ? 5 : count;
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+      window.WebpointerRender.renderRibbon();
+    }
+  }
+
+  function startHoldAlphaInput(e, btnEl) {
+    state.holdTriggered = false;
+    clearTimeout(holdTimer);
+    holdTimer = setTimeout(function() {
+      state.holdTriggered = true;
+      showAlphaInputPopup(btnEl);
+    }, 400);
+  }
+
+  function endHoldAlphaInput() {
+    clearTimeout(holdTimer);
+  }
+
+  function showAlphaInputPopup(btnEl) {
+    var old = document.getElementById('alphaPopupSelect');
+    if (old && old.parentNode) old.parentNode.removeChild(old);
+
+    var popup = document.createElement('div');
+    popup.id = 'alphaPopupSelect';
+    popup.style.cssText = 'position:fixed; z-index:99999; padding:6px; border:1px solid #0284c7; border-radius:6px; background:#ffffff; box-shadow:0 6px 16px rgba(0,0,0,0.18); outline:none; font-family:sans-serif; display:flex; flex-direction:column; gap:4px; width:120px;';
+    var rect = btnEl.getBoundingClientRect();
+    popup.style.left = Math.max(10, rect.left) + 'px';
+    popup.style.top = (rect.bottom + 4) + 'px';
+
+    var curPct = Math.round((cfg.opacity !== undefined ? cfg.opacity : 1) * 100);
+    popup.innerHTML =
+      '<div style="font-size:0.75rem; font-weight:700; color:#0f172a;">투명도 (0~100%)</div>' +
+      '<input type="number" id="alphaNumberInput" min="0" max="100" value="' + curPct + '" style="width:100%; box-sizing:border-box; padding:4px 6px; font-size:0.8rem; border:1px solid #cbd5e1; border-radius:4px; text-align:center;" placeholder="100">';
+
+    document.body.appendChild(popup);
+    var inputEl = document.getElementById('alphaNumberInput');
+
+    function closePopup() {
+      var p = document.getElementById('alphaPopupSelect');
+      if (p && p.parentNode) p.parentNode.removeChild(p);
+    }
+
+    if (inputEl) {
+      inputEl.focus();
+      inputEl.select();
+
+      inputEl.onkeydown = function(ev) {
+        if (ev.key === 'Enter') {
+          ev.preventDefault();
+          var val = parseInt(inputEl.value, 10);
+          if (isNaN(val)) val = 100;
+          closePopup();
+          setElementOpacity(val / 100);
+        } else if (ev.key === 'Escape') {
+          closePopup();
+        }
+      };
+
+      inputEl.onblur = function() {
+        setTimeout(function() {
+          var val = inputEl ? parseInt(inputEl.value, 10) : NaN;
+          if (!isNaN(val)) {
+            closePopup();
+            setElementOpacity(val / 100);
+          } else {
+            closePopup();
+          }
+        }, 100);
+      };
+    }
+  }
+
   function openPaletteModal() {
     var modal = document.getElementById('paletteModal');
     if (!modal) {
@@ -944,6 +1039,10 @@
   window.setTextStrokeWidth = setTextStrokeWidth;
   window.toggleTextWritingMode = toggleTextWritingMode;
   window.setTextVerticalAlign = setTextVerticalAlign;
+  window.setElementOpacity = setElementOpacity;
+  window.setAlphaStepCount = setAlphaStepCount;
+  window.startHoldAlphaInput = startHoldAlphaInput;
+  window.endHoldAlphaInput = endHoldAlphaInput;
 
   window.WebpointerHandlers = {
     setTool: setTool,
