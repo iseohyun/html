@@ -143,6 +143,12 @@
     if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
   }
 
+  function adjustStrokeWidth(delta) {
+    var cur = cfg.strokeWidth || 2;
+    var nextW = Math.max(1, Math.min(50, cur + delta));
+    setStrokeWidth(nextW);
+  }
+
   function setStrokeDashStyle(style) {
     cfg.strokeDashStyle = style;
     applyStyleToSelected();
@@ -176,6 +182,28 @@
 
   function setEndMarker(val) {
     cfg.endMarker = val;
+    applyStyleToSelected();
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+  }
+
+  function setStartMarkerFillStyle(style) {
+    cfg.startMarkerFillStyle = style;
+    applyStyleToSelected();
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+  }
+
+  function setEndMarkerFillStyle(style) {
+    cfg.endMarkerFillStyle = style;
+    applyStyleToSelected();
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+  }
+
+  function scaleMarker(type, factor) {
+    if (type === 'start') {
+      cfg.startMarkerScale = Math.max(0.2, Math.min(5.0, (cfg.startMarkerScale || 1.0) * factor));
+    } else {
+      cfg.endMarkerScale = Math.max(0.2, Math.min(5.0, (cfg.endMarkerScale || 1.0) * factor));
+    }
     applyStyleToSelected();
     if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
   }
@@ -723,6 +751,10 @@
   window.setStrokeJoin = setStrokeJoin;
   window.setStartMarker = setStartMarker;
   window.setEndMarker = setEndMarker;
+  window.adjustStrokeWidth = adjustStrokeWidth;
+  window.setStartMarkerFillStyle = setStartMarkerFillStyle;
+  window.setEndMarkerFillStyle = setEndMarkerFillStyle;
+  window.scaleMarker = scaleMarker;
   window.toggleCategoryCollapse = toggleCategoryCollapse;
   window.applyStyleToSelected = applyStyleToSelected;
   window.openPaletteModal = openPaletteModal;
@@ -740,12 +772,16 @@
     setStrokeColor: setStrokeColor,
     setFillColor: setFillColor,
     setStrokeWidth: setStrokeWidth,
+    adjustStrokeWidth: adjustStrokeWidth,
     setStrokeDashStyle: setStrokeDashStyle,
     setStrokeDashArray: setStrokeDashArray,
     setStrokeCap: setStrokeCap,
     setStrokeJoin: setStrokeJoin,
     setStartMarker: setStartMarker,
     setEndMarker: setEndMarker,
+    setStartMarkerFillStyle: setStartMarkerFillStyle,
+    setEndMarkerFillStyle: setEndMarkerFillStyle,
+    scaleMarker: scaleMarker,
     toggleCategoryCollapse: toggleCategoryCollapse,
     openPaletteModal: openPaletteModal,
     closePaletteModal: closePaletteModal,
