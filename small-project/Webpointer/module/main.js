@@ -58,15 +58,29 @@
     };
   }
 
-  // Helper: Select Object with Group Expansion
+  // Get Outermost <g> Element for DOM Element
+  function getOutermostGroupEl(el) {
+    if (!el) return null;
+    var objectsGroup = document.getElementById('objectsGroup');
+    var current = el.parentElement;
+    var topG = null;
+    while (current && current !== objectsGroup && current.tagName && current.tagName.toLowerCase() === 'g') {
+      topG = current;
+      current = current.parentElement;
+    }
+    return topG;
+  }
+
+  // Helper: Select Object with Hierarchical Group Expansion
   function selectObjectWithGroup(objId, isCtrl) {
     if (!isCtrl) cfg.selectedIds.clear();
     var obj = cfg.objectsMap.get(objId);
     if (!obj) return;
 
-    if (obj.parentId) {
+    var outerG = getOutermostGroupEl(obj.el);
+    if (outerG) {
       cfg.objectsMap.forEach(function(o, id) {
-        if (o.parentId === obj.parentId) {
+        if (outerG.contains(o.el)) {
           cfg.selectedIds.add(id);
         }
       });
@@ -374,39 +388,98 @@
     render.renderGrid();
   };
 
+  // Multi-Level Hierarchical Grouping
   window.groupSelected = function() {
-    if (cfg.selectedIds.size < 2) return;
     var objectsGroup = document.getElementById('objectsGroup');
-    var gId = 'g_' + (cfg.nextId++);
-    var groupEl = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    groupEl.setAttribute('id', gId);
+    if (!objectsGroup) return;
 
+    var topUnits = new Set();
     cfg.selectedIds.forEach(function(id) {
       var obj = cfg.objectsMap.get(id);
       if (obj) {
-        obj.parentId = gId;
-        groupEl.appendChild(obj.el);
+        var outerG = getOutermostGroupEl(obj.el);
+        topUnits.add(outerG ? outerG : obj.el);
       }
     });
-    if (objectsGroup) objectsGroup.appendChild(groupEl);
+
+    if (topUnits.size < 2) return;
+
+    var gId = 'g_' + (cfg.nextId++);
+    var newGroupEl = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    newGroupEl.setAttribute('id', gId);
+
+    topUnits.forEach(function(unitEl) {
+      newGroupEl.appendChild(unitEl);
+    });
+
+    objectsGroup.appendChild(newGroupEl);
+
+    // Update parentId attributes for member shapes
+    cfg.selectedIds.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (obj) {
+        var directP = obj.el.parentElement;
+        obj.parentId = (directP && directP !== objectsGroup && directP.id) ? directP.id : gId;
+      }
+    });
+
     render.updateDomTree();
     render.renderUI();
     render.renderRibbon();
   };
 
+  // Single 1-Level Down Hierarchical Ungrouping
   window.ungroupSelected = function() {
     var objectsGroup = document.getElementById('objectsGroup');
+    if (!objectsGroup) return;
+
+    var outerGroupsToUnpack = new Set();
     cfg.selectedIds.forEach(function(id) {
       var obj = cfg.objectsMap.get(id);
-      if (obj && obj.parentId) {
-        var parentGroup = document.getElementById(obj.parentId);
-        if (parentGroup && objectsGroup) {
-          objectsGroup.appendChild(obj.el);
-          if (parentGroup.children.length === 0) parentGroup.remove();
-        }
+      if (obj) {
+        var outerG = getOutermostGroupEl(obj.el);
+        if (outerG) outerGroupsToUnpack.add(outerG);
+      }
+    });
+
+    if (outerGroupsToUnpack.size === 0) return;
+
+    var newlySelectedIds = new Set();
+
+    outerGroupsToUnpack.forEach(function(outerG) {
+      var children = Array.from(outerG.children);
+      children.forEach(function(childEl) {
+        // Move child out 1 level to outerG's parent
+        outerG.parentElement.insertBefore(childEl, outerG);
+      });
+      outerG.remove();
+    });
+
+    // Refresh parentId for all objects and re-select newly unpacked items
+    cfg.objectsMap.forEach(function(obj, id) {
+      var p = obj.el.parentElement;
+      if (p && p !== objectsGroup && p.id) {
+        obj.parentId = p.id;
+      } else {
         obj.parentId = null;
       }
     });
+
+    cfg.selectedIds.clear();
+    outerGroupsToUnpack.forEach(function(outerG) {
+      // Re-select all elements that were in outerG
+      cfg.objectsMap.forEach(function(obj, id) {
+        var curOuter = getOutermostGroupEl(obj.el);
+        if (!curOuter) {
+          // If now a top-level shape, select it
+          cfg.selectedIds.add(id);
+        } else {
+          // If still inside a sub-group, select its new outermost group members
+          cfg.selectedIds.add(id);
+        }
+      });
+    });
+
     render.updateDomTree();
     render.renderUI();
     render.renderRibbon();
