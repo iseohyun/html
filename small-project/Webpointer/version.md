@@ -1,5 +1,13 @@
 # Webpointer Project Version History
 
+## [0.4.3] - 2026-07-30
+### Fixed & Improved
+- Text Selection Bounding Box Accuracy & Handle Removal:
+  - Removed unnecessary handle dots (`handleNode`) for text objects, preventing coordinate corruption when dragging.
+  - Linked selection bounding box (`boxRect`) directly to SVG engine `getBBox()` (`x, y, width, height`), achieving 100% flush accuracy around rendered text.
+  - Enabled smooth text object dragging directly by clicking and moving the selection bounding box outline.
+  - Fixed caret position calculation on empty `tspan` lines (`\u200B`), preventing caret jumping to `(0, 0)`.
+
 ## [0.4.2] - 2026-07-30
 ### Added & Improved
 - Direct In-Canvas Text Typing Mode:
