@@ -1,137 +1,163 @@
-# Webpointer Vector CAD Simulator - Technical Implementation Specification
+# Webpointer Vector CAD Simulator - Master Technical Implementation Specification
 
-## 1. 개요 및 시스템 기본 스펙 (Canvas System Architecture)
+> [!IMPORTANT]
+> This document is the master technical design specification for the Webpointer Web Application. It contains complete, exhaustive documentation for all features, architecture, ribbon tabs, keyboard shortcuts, 8-step SMIL SVG animation suite, picture filter engine, shape/text formatting engines, SVG file import/export parsers, and the E2E Playwright verification suite. Anyone reading this single document will know 100% of Webpointer's capabilities.
 
-### 1.1 캔버스 비율 및 스냅 격자 (16:9 Aspect Ratio & 481×271 Step Grid)
-* **캔버스 해상도**: 기본 $960 \times 540\,\text{px}$ (16:9 비율)
-* **스냅 격자 (Step Grid System)**:
-  * 가로 축: $0 \le Step_X \le 480$ (총 481개 정밀 스냅 스텝 포인트)
-  * 세로 축: $0 \le Step_Y \le 270$ (총 271개 정밀 스냅 스텝 포인트)
-  * 좌표 변환 연산:
+---
+
+## 1. System Architecture
+
+### 1.1 Canvas System & Aspect Ratio Math
+* **Default Canvas Resolution**: 16:9 ($960 \times 540\,\text{px}$)
+* **Snap Step Grid System (481×271 Step Grid)**:
+  * Horizontal Axis: $0 \le Step_X \le 480$ (481 precision snap step points)
+  * Vertical Axis: $0 \le Step_Y \le 270$ (271 precision snap step points)
+  * Coordinate Transformation Formulas:
     $$Pixel_X = \frac{Step_X}{480} \times 960, \quad Pixel_Y = \frac{Step_Y}{270} \times 540$$
-* **기본 캔버스 스타일**:
-  * 배경색: **순백색 하얀색 (`#ffffff`)**
-  * 격자선: 시인성 확보용 크리스프 연회색 (`#e2e8f0`, 두께 `0.8px`)
+* **Canvas Aspect Ratio Auto-Height & Bottom Height Resize Handle**:
+  * External portrait SVG imports (e.g. `성경요약.svg`, `720x1280`) auto-match `viewBox` 1:1 and auto-extend canvas height.
+  * Bottom drag resize handle bar (`#canvasResizeHandle`) enables interactive height adjustment.
 
-### 1.2 기본 도형 스타일 (Default Styling Tokens)
-* **테두리 기본 색상 (Stroke)**: `#041e49`
-* **채우기 기본 색상 (Fill)**: **투명 (`none`)**
-* **기본 테두리 두께 (Stroke Width)**: `2px`
-* **근접 선택 기본 거리 (Proximity Threshold)**: **`30px` (기본값)**
-* **기본 도형 크기 (Default Shape Size)**: **`100px` (기본값)**
-
----
-
-## 2. 도형별 인터페이스 및 선택/조종점 시스템 명세 (Selection & Control Handle Specs)
-
-### 2.1 마우스 커서 상태 스타일 명세 (Mouse Cursor States)
-* **선택 도구(`select`) 모드**:
-  * **선택 가능 상태 (Hover over Unselected Object)**: 마우스 커서 **`pointer` (손가락 모양)**
-  * **선택/이동 가능 상태 (Hover over Selected Object / Object Dragging)**: 마우스 커서 **`move` (이동 화살표 십자가 모양)**
-  * **조종점 핸들 Hover**: 마우스 커서 **`grab`**
-  * **캔버스 빈 영역**: 마우스 커서 **`default` (기본 화살표)**
-* **도형 드로잉 모드 (Draw Tool)**:
-  * 캔버스 영역 마우스 커서 **`crosshair` (십자가)**
+### 1.2 Browser Module Architecture (`module/`)
+* `module/main.js`: Global event capture, hotkeys, mouse zooming, Pan tool drag, and entry point.
+* `module/core/objects.js`: SVG object data model creation, bounding box calculations, rotation/flip transforms.
+* `module/core/selection.js`: Single/multi/group selection, marquee selection drag, proximity distance detection.
+* `module/core/bezier.js`: 2nd/3rd-order Bezier curve mathematics and control handle reflection logic.
+* `module/tools/textTool.js`: Direct in-canvas text typing and blinking caret bar (`.blinking-caret`).
+* `module/tools/ribbonHandlers.js`: Style mutations, filter stack, SMIL animation engine, file slots, save/load.
+* `module/tools/svgImporter.js`: Native SVG file importer, `fill-opacity`/`stroke-opacity` extraction, object wiping, viewBox auto-fit.
+* `module/render/icons.js`: 50+ SVG tool icon dictionary (`WebpointerIcons`).
+* `module/render/renderRibbon.js`: MS Office 5-tab ribbon UI DOM and global tooltip manager.
+* `module/render/renderCanvas.js`: SVG DOM elements, selection bounds, handle dots, and snap guides real-time rendering.
 
 ---
 
-### 2.2 연속 다중 클릭 베지어 곡선 입력 및 중간 제어점 노란색 핸들 규격
-* **단일 SVG `<path>` 통합 경로**: 연속으로 클릭되는 베지어 좌표들은 단일 SVG `<path>` 요소의 `d` 속성에 `M ... Q ... T ...` 또는 `M ... C ... S ...` 문법으로 연속 연결됩니다.
-* **2차(Quadratic) / 3차(Cubic) 베지어 대칭 핸들 조작**:
-  * 2차 베지어(`bez2`): $Q$ 제어점 및 $T$ 대칭 반사 제어점에 노란색 핸들 노드 제공.
-  * 3차 베지어(`bez3`): $C_1, C_2$ 제어점 및 대칭 반사 제어점들 간 양방향 점연동(Smooth C1 Continuity) 지원.
+## 2. Top Menu Tabs & Ribbon Controls Specification
+
+### 2.1 `File` (`파일`) Tab
+* **`Open File` (`openFile`)**: Read local `.json`, `.webpointer`, `.svg` files with dirty canvas confirmation defense dialog.
+* **`Save File to Web` (`saveFileToWeb`)**: 3-slot rotating local storage auto-save (`webpointer_slot_1, 2, 3`) with thumbnail preview modal.
+* **`Download File` (`downloadFile`)**: Export `.webpointer` project JSON and vector `.svg` files.
+* **`Undo` (`Ctrl + Z`) & `Redo` (`Ctrl + Y` / `Ctrl + Shift + Z`)**: State history stack restoration.
+
+### 2.2 `Insert` (`삽입`) Tab
+* **Shape Tools (`shapeTools`)**:
+  1. **`Pan Tool` (Row 1 Col 1)**: Real-time mouse drag canvas panning (`Alt + H`).
+  2. **`Select`**: Click and marquee box selection.
+  3. **`Point`**: Single precision point creation.
+  4. **`Line`**: 2-point line creation.
+  5. **`Rectangle`**: Rectangle creation.
+  6. **`Ellipse`**: 4-handle ellipse creation.
+  7. **`Arc`**: 6-handle arc creation with start/end angles.
+  8. **`Bez2`**: 1-control-point quadratic Bezier curve.
+  9. **`Bez3`**: 2-control-point cubic Bezier curve.
+  10. **`Text`**: Direct in-canvas text box insertion.
+* **Layer Order (`layerTools`)**:
+  * **`Bring to Front` (`bringToFront`: `Shift + ]`)**: White paper sheets below, gold paper on top.
+  * **`Bring Forward` (`bringForward`: `]`)**: White paper below, gold paper on top.
+  * **`Send Backward` (`sendBackward`: `[`)**: White paper on top, gold paper below.
+  * **`Send to Back` (`sendToBack`: `Shift + [`)**: White paper sheets on top, gold paper at bottom.
+* **Object Grouping (`groupTools`)**:
+  * **`Group` (`Ctrl + G`)**: Group selected units into nested `<g>`.
+  * **`Ungroup` (`Ctrl + Shift + G`)**: Unpack 1 outer layer of group hierarchy.
+* **Object Alignment & Transformation (`alignTools` & `transformTools`)**:
+  * 6-way geometric alignment (Left, Right, Top, Bottom, H-Center, V-Center) and 2-way distribution spacing.
+  * 4-way flip & rotate: `flipH`, `flipV`, `rotate90`, `rotateNeg90`.
+  * **`Selection Window` (`openSymbolModal`)**: Symbol Manager thumbnail modal.
+
+### 2.3 `Picture Format` (`style`) Tab
+* **Color Category**:
+  * 27-slot UniPalette swatch grid, 1x2 stroke/fill target radio selector.
+  * 3 Image Fill Modes: **Stretch**, **Tile (repeat)**, **Single (contain)**.
+  * **Multi-Stop Gradient Editor**: Linear/radial gradient ramp editor with 2-point canvas handles.
+* **Line Category**: Stroke width input, `Dashed` line toggle and custom pattern modal.
+* **Line Ends Category**: Start/End markers (arrow, circle, diamond) with solid/hollow fill toggles (`cycleStartMarker`, `cycleEndMarker`).
+* **Cap & Join Category**:
+  * **Stroke Cap Toggle (`cycleStrokeCap`)**: `butt`, `round`, `square`.
+  * **Stroke Join Toggle (`cycleStrokeJoin`)**: `miter`, `round`, `bevel`.
+* **Picture Filter Effects**:
+  * Stacked filter popover (brightness, contrast, blur, saturate, grayscale, sepia, hue-rotate, invert, drop-shadow, non-destructive ClipPath crop).
+  * Filter stack reordering (▲/▼) and live slider preview.
+
+### 2.4 `Text Format` (`text`) Tab
+* **Font Category**: `font-family`, `font-size` (+/- hotkeys), `Bold`, `Italic`, `Strikethrough`, `Line-Height`.
+* **Text Alignment**: Single 4-way horizontal alignment cycle button (Left $\rightarrow$ Center $\rightarrow$ Right $\rightarrow$ Justify) and single 3-way vertical alignment cycle button (Top $\rightarrow$ Middle $\rightarrow$ Bottom).
+* **Shape Text Auto-Fit**: 3-way mode toggle (Expand shape / Shrink text / Off).
+* **Custom SVG Underline Renderer**: 6 underline styles (Solid, Dashed, Dotted, Double, Wavy, None) with thickness/offset controls.
+
+### 2.5 `Animation` (`anim`) Tab (SMIL SVG Animation Suite)
+* **8-Step SMIL Animation Parameter Suite**:
+  1. **Target Selection**: Selected object `targetId` real-time display.
+  2. **Attribute Type**: `fill`, `stroke`, `stroke-width`, `opacity`, `transform:translate`, `transform:scale`, `transform:rotate`, `d`.
+  3. **Values & Coordinates**: Start value (`from`), Target value (`to`), Multi-step values (`values="v1;v2;v3"`).
+  4. **Trigger (`begin`)**: `0s` (auto), `click`, `mouseover`, `mouseleave`, `anim1.end` (chain sequence).
+  5. **Duration (`dur`)**: 1-cycle duration (e.g. `2s`).
+  6. **Repeat Count (`repeatCount`)**: `indefinite`, `1`, `2`, `3`, `5`.
+  7. **Limits & Restart**: `max` (absolute max time limit, e.g. `5s`), `restart` (`always`, `whenNotActive`, `never`).
+  8. **End Condition (`end`)**: Forced termination trigger (e.g. `mouseleave`, `10s`).
+* **Multi-Track Stacking & Preset Manager**:
+  * **[➕ Add SMIL Track]**: Add multiple parallel/serial animation tags to a single object.
+  * **[🗑️ Clear All Tracks]**: Remove all animation tags from selected object.
+  * **11 Quick Presets & Stop**: Draw, Fade, Rotate, Pulse, Bounce, Color, Morph, Dash, Zoom, Shake, Glow.
+
+### 2.6 `Settings` (`view`) Tab (Right-Aligned)
+* **Grid Controls**: Grid visibility checkbox and grid step size input (px).
+* **Snapping & Proximity Distance**: Snap toggle and proximity selection distance (`proximityThreshold`, default `30px`).
+* **Default Shape Size**: Base creation size (`100px`).
 
 ---
 
-### 2.3 근접 객체 자동 선택 & 선택 해제 시스템 (Proximity Nearest Object Selection)
-* **허공 클릭 시 자동 근접 선택**: 선택 도구(`select`) 상태에서 허공(빈 캔버스) 클릭 시, 캔버스 상의 모든 객체와 클릭 지점 간의 최소 거리 $D_{\min}$을 실시간 연산합니다.
-* **거리 판정 로직**:
-  * $D_{\min} \le \text{proximityThreshold}$ (기본값 **`30px`**) 이내인 경우: **가장 가까운 객체를 자동 선택**
-  * $D_{\min} > \text{proximityThreshold}$ 이거나 `0px` 설정인 경우: **현재 선택된 도형을 즉시 선택 해제 (Selection Clear)**
+## 3. Keyboard Shortcuts
+
+| **Shortcut** | **Description** |
+| :--- | :--- |
+| **`Ctrl + Z`** | Undo |
+| **`Ctrl + Y` / `Ctrl + Shift + Z`** | Redo |
+| **`Ctrl + A`** | Select All Objects on Canvas |
+| **`Ctrl + G`** | Group Selected Objects |
+| **`Ctrl + Shift + G`** | Ungroup 1 Level of Group Hierarchy |
+| **`Alt + H`** | Activate Pan Tool |
+| **`Shift + ]`** | Bring to Front |
+| **`]`** | Bring Forward |
+| **`[`** | Send Backward |
+| **`Shift + [`** | Send to Back |
+| **`+` / `-`** | Increase / Decrease Font Size of Selected Text |
+| **`F2` / Double-Click** | Canvas Inline Text Editing |
+| **`Esc`** | Finish Text Edit / Deselect |
+| **Mouse Wheel Scroll** | Zoom Canvas In / Out |
 
 ---
 
-### 2.4 Ctrl 키 조합 다중 선택 및 부분 선택 해제 (Ctrl + Click Selection Toggle)
-* **Ctrl + 선택 안 된 객체/그룹 클릭**: 해당 객체(또는 속한 그룹 전체)를 선택 목록에 추가 (Toggle ON)
-* **Ctrl + 이미 선택된 객체/그룹 클릭**: 해당 객체(또는 속한 그룹 전체)를 **선택 목록에서 단독 제외 (Toggle OFF / 선택 해제)**
+## 4. Playwright E2E Test Suite (`test-results/TC.csv`)
 
----
+Running `node run_tests.js` executes all 29 E2E test cases and writes real-time benchmark results to `test-results/TC.csv`:
 
-### 2.5 선택 영역 점선 사각형 포괄 오버레이 (Dashed Selection Bounding Box Overlay)
-* **포괄 바운딩 박스 오버레이**: 단일 선택 및 Ctrl 다중 선택 시, 선택된 모든 대상들의 최소/최대 좌표를 포괄하는 **파란색 점선 사각형 오버레이 (`stroke-dasharray: 4,4`, `#0284c7`, 여백 6px)**를 실시간 렌더링합니다.
-
----
-
-### 2.6 객체 바디 드래그 이동 (Object Drag-Move System)
-* **객체 이동 동작**: 모든 벡터 객체는 선택된 상태에서 **조종점 핸들이 아닌 객체 몸체(Body) 영역을 드래그하면 객체 전체가 실시간 이동**됩니다.
-
----
-
-## 3. 계층적 중첩 그룹화 & 1단계 차례 해제 시스템 명세 (Hierarchical Grouping Specs)
-
-### 3.1 독립 단위(Top-Level Unit) 계산 및 리본 아이콘 조건부 활성화
-* **독립 단위(Top-level Unit) 정의**: SVG `<g>` 루트 조상 요소를 1개의 독립 단위로 계산 (`getOutermostGroupEl`).
-* **그룹화 버튼 (`G`) 활성화 조건**:
-  * 선택된 독립 단위가 **2개 이상**일 때만 그룹화 아이콘 활성화.
-  * 단일 그룹 1개만 선택된 경우 독립 단위가 1개이므로 그룹화 아이콘 **비활성화**.
-  * 중첩 그룹 2개 이상 또는 그룹 1개 + 일반 도형 1개 선택 시 **활성화**.
-* **그룹 해제 버튼 (`U`) 활성화 조건**:
-  * 선택된 대상 중 그룹에 속한 요소가 1개라도 포함되어 있으면 **활성화**.
-
-### 3.2 단계별(1-Level Down) 계층적 그룹 해제
-* **중첩 그룹 구조 (`<g>` 내 `<g>`)**:
-  * 그룹화 실행 시 최상위 `<g>` 요소를 새로 생성하여 자식 요소/하위 그룹을 내포.
-* **1단계 차례 해제**:
-  * 최상위 그룹 해제 실행 시, 바로 아래 1단계 자식(하위 그룹 또는 일반 도형)들만 풀려나오며, 하위 그룹 내부의 그룹 구조는 유지됨.
-
----
-
-## 4. 정밀 기하학적 정렬 및 동일 간격 시스템 명세 (Precision Alignment & Equal Spacing Specs)
-
-### 4.1 8종 정렬 및 간격 기준선 정의 (`alignSelected`)
-* **선택 요구 사항**:
-  * 일반 정렬 6종 (왼쪽, 오른쪽, 위, 아래, 가로중앙, 세로중앙): 독립 단위 **2개 이상** 선택 시 활성화.
-  * 동일 간격 정렬 2종 (가로 동일 간격, 세로 동일 간격): 독립 단위 **3개 이상** 선택 시 활성화.
-* **왼쪽 정렬 (`left`)**: 전체 선택 대상 중 가장 왼쪽 X 좌표인 $X_{\min}$ 기준선 정렬.
-* **오른쪽 정렬 (`right`)**: 전체 선택 대상 중 가장 오른쪽 X 좌표인 $X_{\max}$ 기준선 정렬.
-* **위 정렬 (`top`)**: 전체 선택 대상 중 가장 상단 Y 좌표인 $Y_{\min}$ 기준선 정렬.
-* **아래 정렬 (`bottom`)**: 전체 선택 대상 중 가장 하단 Y 좌표인 $Y_{\max}$ 기준선 정렬.
-* **가로 중심 정렬 (`hcenter`)**: **가장 왼쪽에 위치한 독립 단위(`leftmostUnit`)의 가로 중심축($X_{\text{ref}}$) 기준 정렬**.
-* **세로 중심 정렬 (`vcenter`)**: **가장 위에 위치한 독립 단위(`topmostUnit`)의 세로 중심축($Y_{\text{ref}}$) 기준 정렬**.
-* **가로 동일 간격 (`hdistribute`)**: 선택된 3개 이상의 대상을 X 좌표 순으로 정렬 후, 최좌단과 최우단 사이의 순수 여백을 등분하여 **객체 간 가로 여백 간격(Space Gap)이 완벽히 동일**해지도록 자동 배치.
-* **세로 동일 간격 (`vdistribute`)**: 선택된 3개 이상의 대상을 Y 좌표 순으로 정렬 후, 최상단과 최하단 사이의 순수 여백을 등분하여 **객체 간 세로 여백 간격이 완벽히 동일**해지도록 자동 배치.
-
----
-
-## 5. 회전 및 대칭 변환 시스템 명세 (Rotation & Flip Specs)
-
-### 5.1 4종 변형 도구 규격 (`transformSelected`)
-* **선택 요구 사항**: 객체 1개 이상 선택 시 활성화 (`selectedIds.size >= 1`).
-* **변환 중심축 ($C_x, C_y$)**: 선택된 전체 대상의 바운딩 박스 중심 좌표 $((X_{\min} + X_{\max})/2, (Y_{\min} + Y_{\max})/2)$.
-* **좌우 대칭 (`flipH`)**: $X' = 2 \cdot C_x - X$ 축 반사 연산.
-* **상하 대칭 (`flipV`)**: $Y' = 2 \cdot C_y - Y$ 축 반사 연산.
-* **90도 회전 (`rotate90`)**: 중심축 $(C_x, C_y)$ 기준 시계방향 $90^\circ$ 회전 연산.
-* **-90도 회전 (`rotateNeg90`)**: 중심축 $(C_x, C_y)$ 기준 반시계방향 $90^\circ$ 회전 연산.
-
----
-
-## 6. 조종점 핸들 외형 및 UI 디자인 표준 (Handle UI Standards)
-
-| 핸들 유형 | Fill 색상 | Stroke 색상 | Stroke 두께 | 반지름 ($r$) |
-| :--- | :--- | :--- | :--- | :--- |
-| **일반 조종점** (시작, 끝, 중심, 지름, 각도, 상단/하단) | `#ffffff` (하얀색) | `#000000` (검은색) | `1.5px` | `5px` |
-| **특수/제어/회전/굴곡 조종점** (베지어 중간점, 회전각, 둥근사각 굴곡각) | `#facc15` (노란색) | `#000000` (검은색) | `1.5px` | `6px` |
-
----
-
-## 7. MS 리본 레이아웃 및 SPA 라우팅 명세
-
-1. **메뉴바 (Menu Bar)**: `width: 100%` 회색 배경 (`#e2e8f0`), 선택 탭 흰색 배경 (`#ffffff`) 및 리본 일체형 융합
-2. **리본바 (Ribbon Bar)**: `width: 100%` 흰색 배경 (`#ffffff`), 3행 아이콘 Grid 및 최하단 중앙 카테고리 제목
-3. **보기 탭 설정**:
-   * 격자 보이기 (체크박스)
-   * 격자 크기 ($481\times 271$, $241\times 136$, $121\times 68$)
-   * **근접 선택 거리** (`30px 기본값`, `10px`, `20px`, `0px 해제`)
-   * **기본 도형 크기** (`100px 기본값`, `150px`, `200px`, `50px`)
-   * 캔버스 크기 (16:9 960x540, 1280x720, 4:3 800x600, 1:1 600x600)
-   * 캔버스 색상 선택기
+- `TC01`: App initialization & no console errors
+- `TC02`: Draw rectangle and add text element
+- `TC03`: Single cycling buttons & underline format
+- `TC04`: Undo/Redo history stack
+- `TC05`: Settings tab & grid background persistence
+- `TC06`: Visual snapshot baseline
+- `TC07`: Full shape drawing suite (Point, Line, Ellipse, Arc, Bezier)
+- `TC08`: Picture formatting suite
+- `TC09`: Detailed text formatting suite
+- `TC10`: Proximity selection distance & nearest object detection
+- `TC11`: Web LocalStorage save & file modal
+- `TC12`: Animation tab & preset previews
+- `TC13`: Shortcut guidance modal popup
+- `TC14`: Detailed settings modal & apply proximity threshold
+- `TC15`: Text selection font size hotkeys (+/-)
+- `TC16`: Non-destructive ClipPath cropping
+- `TC17`: Native SVG file import & parser diagnostics
+- `TC18`: Symbol Manager modal & registry operations
+- `TC19`: Extended fill color palette
+- `TC20`: Picture filter effects suite
+- `TC21`: Symbol cookie-cutter clipping
+- `TC22`: Smart alignment snap guides & snapping
+- `TC23`: Object alignment & distribution tools
+- `TC24`: 3-slot auto-save & file import defense
+- `TC25`: Image fill modes (Stretch, Tile, Single)
+- `TC26`: Multi-stop gradient & 2-point handles
+- `TC27`: Shape text in-box alignment computation
+- `TC28`: Live filter preview & stack reordering
+- `TC29`: Rotation & flip suite, SMIL animation, hotkeys & canvas zoom
