@@ -1,5 +1,13 @@
 # Webpointer Project Version History
 
+## [0.3.6] - 2026-07-30
+### Fixed
+- Completed Line Category (`선`) Dash Style & Pattern Management Fixes:
+  - Fixed 4 dashed line symptoms (instant application, pattern parameter sync, real-time pattern input typing, and drag style preservation).
+  - Implemented direct attribute mutation (`obj.attrs.strokeDashStyle`, `obj.attrs.strokeDashArray`) for existing shapes on canvas.
+  - Enabled continuous real-time dash pattern typing in ribbon input box, auto-targeting selected or latest created objects.
+  - Removed UI ribbon state override in `renderRibbon()`, ensuring `dashed` and `solid` buttons stay active reliably without auto-reverting.
+
 ## [0.3.5] - 2026-07-30
 ### Added & Updated
 - Completed Line Ends (`선 끝`) Category Redesign & Icon Alignment:
