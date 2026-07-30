@@ -869,6 +869,8 @@
   window.toggleEndMarkerFillStyle = toggleEndMarkerFillStyle;
   window.scaleMarker = scaleMarker;
   window.toggleCategoryCollapse = toggleCategoryCollapse;
+  window.toggleColorPalettePopover = toggleColorPalettePopover;
+  window.selectColorFromPopover = selectColorFromPopover;
   window.openPaletteModal = openPaletteModal;
   window.closePaletteModal = closePaletteModal;
   window.importPaletteFromText = importPaletteFromText;
