@@ -987,6 +987,8 @@
       else obj.el.removeAttribute('marker-start');
       if (cfg.endMarker !== 'none') obj.el.setAttribute('marker-end', 'url(#marker-end-' + cfg.endMarker + ')');
       else obj.el.removeAttribute('marker-end');
+
+      window.WebpointerRender.updateElementAttributes(obj);
     });
   };
 

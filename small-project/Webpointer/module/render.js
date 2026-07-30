@@ -36,8 +36,26 @@
     "#ff976b", "#ffbb00", "#aae43f", "#00f5c0", "#00eaff", "#85caff", "#ec99ff", "#ff8fda"
   ];
 
+  function computeLineTrimmedCoords(x1, y1, x2, y2, offsetStart, offsetEnd) {
+    var dx = x2 - x1;
+    var dy = y2 - y1;
+    var len = Math.sqrt(dx * dx + dy * dy);
+    if (len < 1e-4) return { x1: x1, y1: y1, x2: x2, y2: y2 };
+
+    var ux = dx / len;
+    var uy = dy / len;
+
+    var nx1 = x1 + (offsetStart || 0) * ux;
+    var ny1 = y1 + (offsetStart || 0) * uy;
+    var nx2 = x2 - (offsetEnd || 0) * ux;
+    var ny2 = y2 - (offsetEnd || 0) * uy;
+
+    return { x1: nx1, y1: ny1, x2: nx2, y2: ny2 };
+  }
+
   var WebpointerRender = {
     getArcPoint: getArcPoint,
+    computeLineTrimmedCoords: computeLineTrimmedCoords,
 
     // Render Step Grid Lines for White Canvas
     renderGrid: function() {
@@ -410,10 +428,19 @@
         obj.el.setAttribute('cy', a.cy);
         obj.el.setAttribute('r', a.r || cfg.pointRadius || 5);
       } else if (obj.type === 'line') {
-        obj.el.setAttribute('x1', a.x1);
-        obj.el.setAttribute('y1', a.y1);
-        obj.el.setAttribute('x2', a.x2);
-        obj.el.setAttribute('y2', a.y2);
+        var startM = a.startMarker || cfg.startMarker || 'none';
+        var endM   = a.endMarker || cfg.endMarker || 'none';
+        var startStyle = a.startMarkerFillStyle || cfg.startMarkerFillStyle || 'solid';
+        var endStyle   = a.endMarkerFillStyle || cfg.endMarkerFillStyle || 'solid';
+
+        var offStart = (startM !== 'none' && startStyle === 'hollow') ? (6 * (a.startMarkerScale || cfg.startMarkerScale || 1)) : 0;
+        var offEnd   = (endM !== 'none' && endStyle === 'hollow') ? (6 * (a.endMarkerScale || cfg.endMarkerScale || 1)) : 0;
+
+        var trimmed = computeLineTrimmedCoords(a.x1, a.y1, a.x2, a.y2, offStart, offEnd);
+        obj.el.setAttribute('x1', trimmed.x1);
+        obj.el.setAttribute('y1', trimmed.y1);
+        obj.el.setAttribute('x2', trimmed.x2);
+        obj.el.setAttribute('y2', trimmed.y2);
       } else if (obj.type === 'rect' || obj.type === 'rounded') {
         obj.el.setAttribute('x', a.x);
         obj.el.setAttribute('y', a.y);
