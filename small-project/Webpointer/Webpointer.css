@@ -216,7 +216,7 @@
 .webpointer-app .ribbon-category.collapsed .title-text {
   writing-mode: vertical-rl !important;
   text-orientation: mixed !important;
-  transform: rotate(180deg) !important;
+  transform: rotate(0deg) !important;
   white-space: nowrap !important;
   max-height: 88px !important;
   overflow: hidden !important;
