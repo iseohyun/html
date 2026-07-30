@@ -584,6 +584,12 @@
       attrs = { pathD: 'M ' + px1 + ' ' + py1, points: [{px: px1, py: py1, stepX: stepStart.stepX, stepY: stepStart.stepY}], ctrls3: [] };
     }
 
+    attrs.stroke = cfg.strokeColor || '#041e49';
+    attrs.fill = cfg.fillColor || 'none';
+    attrs.strokeWidth = cfg.strokeWidth || 2;
+    attrs.strokeDashStyle = cfg.strokeDashStyle || 'solid';
+    attrs.strokeDashArray = cfg.strokeDashArray || '6,6';
+
     el.setAttribute('id', id);
     el.setAttribute('stroke', cfg.strokeColor || '#041e49');
     el.setAttribute('fill', cfg.fillColor || 'none');

@@ -489,6 +489,15 @@
         }
       }
 
+      // Sync Stroke Dash Array & Style
+      var dashStyle = a.strokeDashStyle || cfg.strokeDashStyle || 'solid';
+      var dashArray = a.strokeDashArray || cfg.strokeDashArray || '6,6';
+      if (dashStyle === 'dashed' && dashArray) {
+        obj.el.setAttribute('stroke-dasharray', dashArray);
+      } else {
+        obj.el.removeAttribute('stroke-dasharray');
+      }
+
       // Dynamic Mouse Cursor Styles
       if (cfg.currentTool === 'select') {
         if (cfg.selectedIds.has(obj.id)) {
