@@ -159,6 +159,24 @@
     closePaletteModal();
   }
 
+  function switchTab(tabKey) {
+    cfg.currentTab = tabKey;
+    var menuBar = document.querySelector('.menu-bar');
+    if (menuBar) {
+      menuBar.querySelectorAll('.tab-btn').forEach(function(btn) {
+        btn.classList.remove('active');
+        if (btn.getAttribute('onclick') && btn.getAttribute('onclick').indexOf("'" + tabKey + "'") !== -1) {
+          btn.classList.add('active');
+        }
+      });
+    }
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+      window.WebpointerRender.renderRibbon();
+    }
+  }
+
+  window.switchTab = switchTab;
+  window.applyImportedPalette = importPaletteFromText;
   window.setTool = setTool;
   window.setStrokeColor = setStrokeColor;
   window.setFillColor = setFillColor;
