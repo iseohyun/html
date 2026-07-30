@@ -83,7 +83,6 @@
       var ryEl = Math.max(10, Math.abs(py2 - py1) / 2);
       attrs = { cx: cx, cy: cy, rx: rxEl, ry: ryEl, angle: 0, stepCx: Math.round((stepStart.stepX + stepEnd.stepX) / 2), stepCy: Math.round((stepStart.stepY + stepEnd.stepY) / 2), stepRx: Math.abs(stepEnd.stepX - stepStart.stepX) / 2, stepRy: Math.abs(stepEnd.stepY - stepStart.stepY) / 2 };
     } else if (type === 'arc') {
-      // Arc starting point is Center (px1, py1), End point is Radius (px2, py2)
       el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       var rxArc = Math.max(10, Math.abs(px2 - px1));
       var ryArc = Math.max(10, Math.abs(py2 - py1));
@@ -93,7 +92,7 @@
         cy: py1,
         rx: rxArc,
         ry: ryArc,
-        startAngle: -90, // Starts at 12 o'clock (-90 deg)
+        startAngle: -90,
         endAngle: initialEndAngle,
         angle: 0
       };
@@ -328,11 +327,9 @@
             var rad = Math.atan2(coords.py - a.cy, coords.px - a.cx);
             a.angle = Math.round((rad * (180 / Math.PI)) + 90);
           } else if (state.activeHandleInfo.handleType === 'arc_start_angle') {
-            // Dragging Start Angle Handle: computes angle without changing rx/ry
             var radS = Math.atan2(coords.py - a.cy, coords.px - a.cx);
             a.startAngle = Math.round(radS * (180 / Math.PI)) - (a.angle || 0);
           } else if (state.activeHandleInfo.handleType === 'arc_end_angle') {
-            // Dragging End Angle Handle: computes angle without changing rx/ry
             var radE = Math.atan2(coords.py - a.cy, coords.px - a.cx);
             a.endAngle = Math.round(radE * (180 / Math.PI)) - (a.angle || 0);
           } else if (state.activeHandleInfo.handleType === 'bez2_ctrl') {
@@ -341,13 +338,23 @@
             a.c1x = coords.px; a.c1y = coords.py;
           } else if (state.activeHandleInfo.handleType === 'bez3_ctrl2') {
             a.c2x = coords.px; a.c2y = coords.py;
+          } else if (state.activeHandleInfo.handleType === 'top_left') {
+            var oldRight = a.x + a.width;
+            var oldBottom = a.y + a.height;
+            a.x = Math.min(oldRight - 10, coords.px);
+            a.y = Math.min(oldBottom - 10, coords.py);
+            a.width = oldRight - a.x;
+            a.height = oldBottom - a.y;
+          } else if (state.activeHandleInfo.handleType === 'bottom_right') {
+            a.width = Math.max(10, coords.px - a.x);
+            a.height = Math.max(10, coords.py - a.y);
+          } else if (state.activeHandleInfo.handleType === 'corner_rx') {
+            // Dragging corner radius handle along top edge: adjusts rx between 0 and width/2
+            a.rx = Math.max(0, Math.min(Math.round(a.width / 2), coords.px - a.x));
           } else if (state.activeHandleInfo.handleType === 'start') {
             a.x1 = coords.px; a.y1 = coords.py;
           } else if (state.activeHandleInfo.handleType === 'end') {
             a.x2 = coords.px; a.y2 = coords.py;
-          } else if (state.activeHandleInfo.handleType === 'bottom_right') {
-            a.width = Math.max(10, coords.px - a.x);
-            a.height = Math.max(10, coords.py - a.y);
           }
           render.updateElementAttributes(obj);
           render.renderUI();
@@ -366,12 +373,11 @@
           aTemp.x2 = px2;
           aTemp.y2 = py2;
         } else if (state.activeTempObj.type === 'arc') {
-          // Drawing arc: start point is Center (px1, py1), current point determines radius & end angle
           aTemp.cx = px1;
           aTemp.cy = py1;
           aTemp.rx = Math.max(10, Math.abs(px2 - px1));
           aTemp.ry = Math.max(10, Math.abs(py2 - py1));
-          aTemp.startAngle = -90; // Starts at 12 o'clock (-90 deg)
+          aTemp.startAngle = -90;
           aTemp.endAngle = Math.round(Math.atan2(py2 - py1, px2 - px1) * (180 / Math.PI));
         } else if (state.activeTempObj.type === 'rect' || state.activeTempObj.type === 'rounded') {
           aTemp.x = Math.min(px1, px2);

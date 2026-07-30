@@ -225,7 +225,7 @@
         obj.el.setAttribute('y', a.y);
         obj.el.setAttribute('width', a.width);
         obj.el.setAttribute('height', a.height);
-        if (a.rx) obj.el.setAttribute('rx', a.rx);
+        if (a.rx !== undefined) obj.el.setAttribute('rx', a.rx);
       } else if (obj.type === 'ellipse') {
         obj.el.setAttribute('cx', a.cx);
         obj.el.setAttribute('cy', a.cy);
@@ -237,7 +237,6 @@
           obj.el.removeAttribute('transform');
         }
       } else if (obj.type === 'arc') {
-        // Arc path generation from startAngle to endAngle with radii rx, ry
         var sAng = a.startAngle !== undefined ? a.startAngle : -90;
         var eAng = a.endAngle !== undefined ? a.endAngle : 0;
         var rot = a.angle || 0;
@@ -258,16 +257,16 @@
       }
     },
 
-    // Render Control Handle Node (White fill with Black stroke; Yellow fill for Rotation)
-    createHandleNode: function(x, y, objId, handleType, idx, isRotation) {
+    // Render Control Handle Node (isSpecial Yellow fill for control/rotation/curve handles)
+    createHandleNode: function(x, y, objId, handleType, idx, isSpecial) {
       var uiGroup = document.getElementById('uiGroup');
       if (!uiGroup) return;
 
       var circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
       circle.setAttribute('cx', x);
       circle.setAttribute('cy', y);
-      circle.setAttribute('r', isRotation ? '6' : '5');
-      circle.setAttribute('fill', isRotation ? '#facc15' : '#ffffff'); // Yellow for rotation, White for standard
+      circle.setAttribute('r', isSpecial ? '6' : '5');
+      circle.setAttribute('fill', isSpecial ? '#facc15' : '#ffffff'); // Yellow for special/ctrl/rotation, White for standard
       circle.setAttribute('stroke', '#000000');
       circle.setAttribute('stroke-width', '1.5');
       circle.setAttribute('class', 'handle-node');
@@ -339,7 +338,6 @@
           self.createHandleNode(ptRotate.x, ptRotate.y, id, 'ellipse_rotate', 4, true);
 
         } else if (obj.type === 'arc') {
-          // Arc Handles: 1) Center (cx,cy), 2) Horizontal radius rx, 3) Vertical radius ry, 4) Rotation angle, 5) Start Angle, 6) End Angle
           var rotArc = a.angle || 0;
           var sAng = a.startAngle !== undefined ? a.startAngle : -90;
           var eAng = a.endAngle !== undefined ? a.endAngle : 0;
@@ -352,7 +350,6 @@
           var ptStartAng = getArcPoint(a.cx, a.cy, a.rx, a.ry, sAng, rotArc);
           var ptEndAng   = getArcPoint(a.cx, a.cy, a.rx, a.ry, eAng, rotArc);
 
-          // Center-to-start and Center-to-end radial guide lines
           var lineStart = document.createElementNS('http://www.w3.org/2000/svg', 'line');
           lineStart.setAttribute('x1', a.cx); lineStart.setAttribute('y1', a.cy);
           lineStart.setAttribute('x2', ptStartAng.x); lineStart.setAttribute('y2', ptStartAng.y);
@@ -365,54 +362,60 @@
           lineEnd.setAttribute('stroke', '#38bdf8'); lineEnd.setAttribute('stroke-dasharray', '2,2');
           uiGroup.appendChild(lineEnd);
 
-          // Rotation Stem Line
           var stemArc = document.createElementNS('http://www.w3.org/2000/svg', 'line');
           stemArc.setAttribute('x1', ptHeightArc.x); stemArc.setAttribute('y1', ptHeightArc.y);
           stemArc.setAttribute('x2', ptRotateArc.x); stemArc.setAttribute('y2', ptRotateArc.y);
           stemArc.setAttribute('stroke', '#0284c7'); stemArc.setAttribute('stroke-dasharray', '3,3');
           uiGroup.appendChild(stemArc);
 
-          // 1) Center Handle (White/Black)
           self.createHandleNode(ptCenterArc.x, ptCenterArc.y, id, 'arc_center', 1, false);
-
-          // 2) Width Radius Handle (White/Black)
           self.createHandleNode(ptWidthArc.x, ptWidthArc.y, id, 'arc_rx', 2, false);
-
-          // 3) Height Radius Handle (White/Black)
           self.createHandleNode(ptHeightArc.x, ptHeightArc.y, id, 'arc_ry', 3, false);
-
-          // 4) Rotation Handle (Yellow/Black)
           self.createHandleNode(ptRotateArc.x, ptRotateArc.y, id, 'arc_rotate', 4, true);
-
-          // 5) Start Angle Handle (White/Black)
           self.createHandleNode(ptStartAng.x, ptStartAng.y, id, 'arc_start_angle', 5, false);
-
-          // 6) End Angle Handle (White/Black)
           self.createHandleNode(ptEndAng.x, ptEndAng.y, id, 'arc_end_angle', 6, false);
 
         } else if (obj.type === 'bez2') {
+          // 2nd Order Bezier Handles: Start (White), End (White), Control Point (Yellow)
           var guide = document.createElementNS('http://www.w3.org/2000/svg', 'path');
           guide.setAttribute('d', 'M ' + a.x1 + ' ' + a.y1 + ' L ' + a.cx + ' ' + a.cy + ' L ' + a.x2 + ' ' + a.y2);
           guide.setAttribute('stroke', '#0284c7');
           guide.setAttribute('stroke-dasharray', '3,3');
           guide.setAttribute('fill', 'none');
           uiGroup.appendChild(guide);
-          self.createHandleNode(a.cx, a.cy, id, 'bez2_ctrl', 1, false);
+
+          self.createHandleNode(a.x1, a.y1, id, 'start', 1, false);
+          self.createHandleNode(a.x2, a.y2, id, 'end', 2, false);
+          self.createHandleNode(a.cx, a.cy, id, 'bez2_ctrl', 3, true); // Control point is Yellow (#facc15)
+
         } else if (obj.type === 'bez3') {
+          // 3rd Order Bezier Handles: Start (White), End (White), Control Point 1 (Yellow), Control Point 2 (Yellow)
           var guide2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
           guide2.setAttribute('d', 'M ' + a.x1 + ' ' + a.y1 + ' L ' + a.c1x + ' ' + a.c1y + ' L ' + a.c2x + ' ' + a.c2y + ' L ' + a.x2 + ' ' + a.y2);
           guide2.setAttribute('stroke', '#0284c7');
           guide2.setAttribute('stroke-dasharray', '3,3');
           guide2.setAttribute('fill', 'none');
           uiGroup.appendChild(guide2);
-          self.createHandleNode(a.c1x, a.c1y, id, 'bez3_ctrl1', 1, false);
-          self.createHandleNode(a.c2x, a.c2y, id, 'bez3_ctrl2', 2, false);
+
+          self.createHandleNode(a.x1, a.y1, id, 'start', 1, false);
+          self.createHandleNode(a.x2, a.y2, id, 'end', 2, false);
+          self.createHandleNode(a.c1x, a.c1y, id, 'bez3_ctrl1', 3, true); // Control point 1 is Yellow (#facc15)
+          self.createHandleNode(a.c2x, a.c2y, id, 'bez3_ctrl2', 4, true); // Control point 2 is Yellow (#facc15)
+
         } else if (obj.type === 'line') {
           self.createHandleNode(a.x1, a.y1, id, 'start', 1, false);
           self.createHandleNode(a.x2, a.y2, id, 'end', 2, false);
-        } else if (obj.type === 'rect' || obj.type === 'rounded') {
+
+        } else if (obj.type === 'rect') {
           self.createHandleNode(a.x, a.y, id, 'top_left', 1, false);
           self.createHandleNode(a.x + a.width, a.y + a.height, id, 'bottom_right', 2, false);
+
+        } else if (obj.type === 'rounded') {
+          // Rounded Rect Handles: Top-Left (White), Bottom-Right (White), Corner Radius (Yellow at x + rx, y)
+          var cornerRx = a.rx !== undefined ? a.rx : 15;
+          self.createHandleNode(a.x, a.y, id, 'top_left', 1, false);
+          self.createHandleNode(a.x + a.width, a.y + a.height, id, 'bottom_right', 2, false);
+          self.createHandleNode(a.x + cornerRx, a.y, id, 'corner_rx', 3, true); // Corner Curve Handle at top edge (Yellow #facc15)
         }
       });
     },
