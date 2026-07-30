@@ -115,8 +115,8 @@
           self.makeToolHtml('rect', '사각형', '4', '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="1"/></svg>'),
           self.makeToolHtml('ellipse', '타원', '5', '<svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="9" ry="6"/></svg>'),
           self.makeToolHtml('arc', '호 (Arc)', '6', '<svg viewBox="0 0 24 24"><path d="M 4 18 A 9 9 0 0 1 20 18"/></svg>'),
-          self.makeToolHtml('bez2', '1차 베지어 (Q-Bezier M..Q..T)', '7', '<svg viewBox="0 0 24 24"><path d="M 3 18 Q 12 3 21 18"/><circle cx="12" cy="3" r="2" fill="currentColor"/></svg>'),
-          self.makeToolHtml('bez3', '2차 베지어 (C-Bezier M..C..S)', '8', '<svg viewBox="0 0 24 24"><path d="M 3 18 C 7 3, 17 3, 21 18"/><circle cx="7" cy="3" r="2" fill="currentColor"/><circle cx="17" cy="3" r="2" fill="currentColor"/></svg>'),
+          self.makeToolHtml('bez2', '1차 베지어 (Q-Bezier)', '7', '<svg viewBox="0 0 24 24"><path d="M 3 18 Q 12 3 21 18"/><circle cx="12" cy="3" r="2" fill="currentColor"/></svg>'),
+          self.makeToolHtml('bez3', '2차 베지어 (C-Bezier)', '8', '<svg viewBox="0 0 24 24"><path d="M 3 18 C 7 3, 17 3, 21 18"/><circle cx="7" cy="3" r="2" fill="currentColor"/><circle cx="17" cy="3" r="2" fill="currentColor"/></svg>'),
           self.makeToolHtml('rounded', '둥근 사각형', '9', '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="5"/></svg>')
         ];
 
@@ -212,7 +212,7 @@
       }
     },
 
-    // Update SVG Element Attributes
+    // Update SVG Element Attributes & Cursors
     updateElementAttributes: function(obj) {
       var a = obj.attrs;
       if (obj.type === 'point') {
@@ -263,6 +263,17 @@
           obj.el.setAttribute('d', 'M ' + a.x1 + ' ' + a.y1 + ' C ' + a.c1x + ' ' + a.c1y + ', ' + a.c2x + ' ' + a.c2y + ', ' + a.x2 + ' ' + a.y2);
         }
       }
+
+      // Dynamic Mouse Cursor Styles
+      if (cfg.currentTool === 'select') {
+        if (cfg.selectedIds.has(obj.id)) {
+          obj.el.style.cursor = 'move';
+        } else {
+          obj.el.style.cursor = 'pointer';
+        }
+      } else {
+        obj.el.style.cursor = 'crosshair';
+      }
     },
 
     // Render Control Handle Node
@@ -278,6 +289,7 @@
       circle.setAttribute('stroke', '#000000');
       circle.setAttribute('stroke-width', '1.5');
       circle.setAttribute('class', 'handle-node');
+      circle.style.cursor = 'grab';
 
       circle.addEventListener('mousedown', function(e) {
         e.stopPropagation();
@@ -291,9 +303,19 @@
     renderUI: function() {
       var uiGroup = document.getElementById('uiGroup');
       var statSelected = document.getElementById('statSelected');
+      var mainSvg = document.getElementById('mainSvg');
       if (!uiGroup) return;
       uiGroup.innerHTML = '';
       if (statSelected) statSelected.textContent = cfg.selectedIds.size + '개';
+
+      // Update Main SVG Cursor
+      if (mainSvg) {
+        if (cfg.currentTool === 'select') {
+          mainSvg.style.cursor = 'default';
+        } else {
+          mainSvg.style.cursor = 'crosshair';
+        }
+      }
 
       if (cfg.selectedIds.size === 0) return;
 
@@ -436,11 +458,39 @@
 
         } else if (obj.type === 'bez2') {
           if (a.points && a.points.length > 0) {
+            // Render All Vertex Points (White)
             a.points.forEach(function(pt, idx) {
               self.createHandleNode(pt.px, pt.py, id, 'bez_vertex', idx, false);
             });
-            if (a.firstCtrl) {
-              self.createHandleNode(a.firstCtrl.cx, a.firstCtrl.cy, id, 'bez2_ctrl', 99, true);
+            // Render All Intermediate Control Points (Yellow)
+            if (a.points.length >= 2) {
+              var P0 = a.points[0];
+              var P1 = a.points[1];
+              var c1x = a.firstCtrl ? a.firstCtrl.cx : Math.round((P0.px + P1.px) / 2);
+              var c1y = a.firstCtrl ? a.firstCtrl.cy : (Math.min(P0.py, P1.py) - 100);
+
+              // 1st Control Handle (Yellow)
+              self.createHandleNode(c1x, c1y, id, 'bez2_ctrl', 0, true);
+
+              var guideLine = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+              var gD = 'M ' + P0.px + ' ' + P0.py + ' L ' + c1x + ' ' + c1y + ' L ' + P1.px + ' ' + P1.py;
+
+              var prevC = { x: c1x, y: c1y };
+              for (var k = 2; k < a.points.length; k++) {
+                var prevP = a.points[k-1];
+                var currP = a.points[k];
+                var reflX = 2 * prevP.px - prevC.x;
+                var reflY = 2 * prevP.py - prevC.y;
+                self.createHandleNode(reflX, reflY, id, 'bez2_ctrl_refl', k-1, true);
+                gD += ' L ' + reflX + ' ' + reflY + ' L ' + currP.px + ' ' + currP.py;
+                prevC = { x: reflX, y: reflY };
+              }
+
+              guideLine.setAttribute('d', gD);
+              guideLine.setAttribute('stroke', '#0284c7');
+              guideLine.setAttribute('stroke-dasharray', '3,3');
+              guideLine.setAttribute('fill', 'none');
+              uiGroup.appendChild(guideLine);
             }
           } else {
             var guide = document.createElementNS('http://www.w3.org/2000/svg', 'path');
