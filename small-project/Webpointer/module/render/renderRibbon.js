@@ -301,6 +301,32 @@
           '<span class="tooltip-text">양쪽 맞춤</span>' +
         '</button>';
 
+      var isVertical = (cfg.textWritingMode === 'vertical-rl' || cfg.textWritingMode === 'vertical');
+      var textDirectionBtnHtml =
+        '<button class="tool-btn ' + (isVertical ? 'active' : '') + '" onclick="toggleTextWritingMode()" style="width:34px; height:34px;">' +
+          (icons.textDirection || 'T↓') +
+          '<span class="tooltip-text">텍스트 방향 (클릭 토글: 가로/세로)</span>' +
+        '</button>';
+
+      var curVertAlign = cfg.textDominantBaseline || 'alphabetic';
+      var alignVertTopBtnHtml =
+        '<button class="tool-btn ' + (curVertAlign === 'hanging' ? 'active' : '') + '" onclick="setTextVerticalAlign(\'hanging\')" style="width:34px; height:34px;">' +
+          (icons.alignVertTop || '↑') +
+          '<span class="tooltip-text">위쪽 맞춤</span>' +
+        '</button>';
+
+      var alignVertMiddleBtnHtml =
+        '<button class="tool-btn ' + (curVertAlign === 'central' || curVertAlign === 'middle' ? 'active' : '') + '" onclick="setTextVerticalAlign(\'central\')" style="width:34px; height:34px;">' +
+          (icons.alignVertMiddle || '−') +
+          '<span class="tooltip-text">중앙 맞춤</span>' +
+        '</button>';
+
+      var alignVertBottomBtnHtml =
+        '<button class="tool-btn ' + (curVertAlign === 'alphabetic' || curVertAlign === 'bottom' ? 'active' : '') + '" onclick="setTextVerticalAlign(\'alphabetic\')" style="width:34px; height:34px;">' +
+          (icons.alignVertBottom || '↓') +
+          '<span class="tooltip-text">아래 맞춤</span>' +
+        '</button>';
+
       var fontOptionsHtml =
         '<div style="display:flex; flex-direction:column; gap:3px;">' +
           '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
@@ -314,21 +340,31 @@
             italicBtnHtml +
             strikethroughBtnHtml +
             lineHeightBtnHtml +
+            textDirectionBtnHtml +
           '</div>' +
           '<div style="display:flex; flex-direction:row; align-items:center; gap:3px;">' +
             alignLeftBtnHtml +
             alignCenterBtnHtml +
             alignRightBtnHtml +
             alignJustifyBtnHtml +
+            '<div style="width:1px; height:24px; background:#cbd5e1; margin:0 2px;"></div>' +
+            alignVertTopBtnHtml +
+            alignVertMiddleBtnHtml +
+            alignVertBottomBtnHtml +
           '</div>' +
         '</div>';
 
-      var textColorBtnHtml = '<button class="tool-btn" onclick="toggleColorPalettePopover(this, \'text\')" style="width:34px; height:34px; position:relative;"><span class="alt-badge">T</span>' + (icons.targetStroke || '') + '<span style="position:absolute; bottom:2px; left:4px; right:4px; height:4px; background:' + (cfg.strokeColor==='none'?'transparent':cfg.strokeColor) + '; border-radius:2px;"></span><span class="tooltip-text">글자색 (클릭하여 팔레트 열기)</span></button>';
-      var textBgBtnHtml   = '<button class="tool-btn" onclick="toggleColorPalettePopover(this, \'bg\')" style="width:34px; height:34px; position:relative;"><span class="alt-badge">B</span>' + (icons.targetFill || '') + '<span class="tooltip-text">배경색(하이라이트) (클릭하여 팔레트 열기)</span></button>';
+      var strokeColor = cfg.textStrokeColor || cfg.strokeColor || 'none';
+      var fillColor   = cfg.textFillColor || cfg.fillColor || '#041e49';
+      var strokeWidth = cfg.textStrokeWidth !== undefined ? cfg.textStrokeWidth : 1;
+
+      var textStrokeBtnHtml = '<button class="tool-btn" onclick="toggleColorPalettePopover(this, \'text_stroke\')" style="width:34px; height:34px; position:relative;">' + (icons.targetStroke || '') + '<span style="position:absolute; bottom:2px; left:4px; right:4px; height:4px; background:' + (strokeColor==='none'?'transparent':strokeColor) + '; border-radius:2px;"></span><span class="tooltip-text">글자 테두리 색상 (stroke) (클릭하여 팔레트 열기)</span></button>';
+      var textFillBtnHtml   = '<button class="tool-btn" onclick="toggleColorPalettePopover(this, \'text_fill\')" style="width:34px; height:34px; position:relative;">' + (icons.targetFill || '') + '<span style="position:absolute; bottom:2px; left:4px; right:4px; height:4px; background:' + (fillColor==='none'?'transparent':fillColor) + '; border-radius:2px;"></span><span class="tooltip-text">글자 채우기 색상 (fill) (클릭하여 팔레트 열기)</span></button>';
+      var strokeWidthInputHtml = '<input type="number" min="0" max="50" value="' + strokeWidth + '" oninput="setTextStrokeWidth(this.value)" onchange="setTextStrokeWidth(this.value)" style="width:34px; height:34px; box-sizing:border-box; padding:2px; font-size:0.85rem; font-weight:700; border:1px solid #cbd5e1; border-radius:6px; text-align:center; outline:none; background:#ffffff; color:#0f172a;" title="글자 테두리 두께 (px)">';
 
       var textColorContent =
         '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
-          textColorBtnHtml + textBgBtnHtml +
+          textStrokeBtnHtml + textFillBtnHtml + strokeWidthInputHtml +
         '</div>';
 
       ribbonBar.innerHTML =

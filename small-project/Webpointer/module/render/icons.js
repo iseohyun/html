@@ -63,7 +63,11 @@
     alignTextCenter: '<svg viewBox="0 0 24 24"><path d="M3 6h18M6 10h12M3 14h18M7 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
     alignTextRight: '<svg viewBox="0 0 24 24"><path d="M3 6h18M9 10h12M3 14h18M11 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
     alignTextJustify: '<svg viewBox="0 0 24 24"><path d="M3 6h18M3 10h18M3 14h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
-    lineHeight: '<svg viewBox="0 0 24 24"><path d="M6 4v16M3 7l3-3 3 3M3 17l3 3 3-3M12 6h9M12 12h9M12 18h9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    lineHeight: '<svg viewBox="0 0 24 24"><path d="M6 4v16M3 7l3-3 3 3M3 17l3 3 3-3M12 6h9M12 12h9M12 18h9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    textDirection: '<svg viewBox="0 0 24 24"><path d="M12 3v15M8 14l4 4 4-4M5 7h14M5 11h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>',
+    alignVertTop: '<svg viewBox="0 0 24 24"><path d="M3 4h18M7 8v12M17 8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    alignVertMiddle: '<svg viewBox="0 0 24 24"><path d="M3 12h18M7 6v12M17 8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    alignVertBottom: '<svg viewBox="0 0 24 24"><path d="M3 20h18M7 4v12M17 8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
   };
 
   window.WebpointerIcons = WebpointerIcons;

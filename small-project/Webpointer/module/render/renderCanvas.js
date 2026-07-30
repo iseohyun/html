@@ -82,14 +82,31 @@
       var tAnchor = a.textAnchor || cfg.textAnchor || 'start';
       var lHeight = a.lineHeight !== undefined ? a.lineHeight : (cfg.lineHeight || 1.2);
 
+      var dBase = a.dominantBaseline || cfg.textDominantBaseline || 'alphabetic';
+      var wMode = a.writingMode || cfg.textWritingMode || 'horizontal-tb';
+
       obj.el.setAttribute('font-size', fSize);
       obj.el.setAttribute('font-family', fFamily);
       obj.el.setAttribute('font-weight', fWeight);
       obj.el.setAttribute('font-style', fStyle);
       obj.el.setAttribute('text-decoration', tDeco);
       obj.el.setAttribute('text-anchor', tAnchor);
-      obj.el.setAttribute('dominant-baseline', 'alphabetic');
-      if (a.fill) obj.el.setAttribute('fill', a.fill);
+      obj.el.setAttribute('dominant-baseline', dBase);
+      obj.el.setAttribute('writing-mode', wMode);
+
+      if (a.fill) {
+        obj.el.setAttribute('fill', a.fill);
+      } else {
+        obj.el.setAttribute('fill', cfg.fillColor && cfg.fillColor !== 'none' ? cfg.fillColor : '#041e49');
+      }
+
+      if (a.stroke && a.stroke !== 'none') {
+        obj.el.setAttribute('stroke', a.stroke);
+        obj.el.setAttribute('stroke-width', a.strokeWidth !== undefined ? a.strokeWidth : (cfg.textStrokeWidth || 1));
+      } else {
+        obj.el.removeAttribute('stroke');
+        obj.el.removeAttribute('stroke-width');
+      }
 
       var lines = (a.text || '').split('\n');
       obj.el.innerHTML = '';

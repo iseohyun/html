@@ -390,16 +390,82 @@
       setStrokeColor(hex);
     } else if (targetMode === 'fill') {
       setFillColor(hex);
-    } else if (targetMode === 'text') {
-      cfg.activeTextColorTarget = 'text';
-      applyPaletteColor(hex);
-    } else if (targetMode === 'bg') {
-      cfg.activeTextColorTarget = 'bg';
-      applyPaletteColor(hex);
+    } else if (targetMode === 'text_stroke' || targetMode === 'text') {
+      cfg.textStrokeColor = hex;
+      var members = getAllGroupMembers(cfg.selectedIds);
+      var textObjs = members.filter(function(m) { return m.type === 'text'; });
+      textObjs.forEach(function(obj) {
+        if (obj && obj.attrs) {
+          obj.attrs.stroke = hex;
+          if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+            window.WebpointerRender.updateElementAttributes(obj);
+          }
+        }
+      });
+    } else if (targetMode === 'text_fill' || targetMode === 'bg') {
+      cfg.textFillColor = hex;
+      var members = getAllGroupMembers(cfg.selectedIds);
+      var textObjs = members.filter(function(m) { return m.type === 'text'; });
+      textObjs.forEach(function(obj) {
+        if (obj && obj.attrs) {
+          obj.attrs.fill = hex;
+          if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+            window.WebpointerRender.updateElementAttributes(obj);
+          }
+        }
+      });
     }
 
     var popover = document.getElementById('colorPalettePopover');
     if (popover && popover.parentNode) popover.parentNode.removeChild(popover);
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+  }
+
+  function setTextStrokeWidth(val) {
+    var num = parseInt(val, 10);
+    cfg.textStrokeWidth = isNaN(num) ? 1 : num;
+    var members = getAllGroupMembers(cfg.selectedIds);
+    var textObjs = members.filter(function(m) { return m.type === 'text'; });
+    textObjs.forEach(function(obj) {
+      if (obj && obj.attrs) {
+        obj.attrs.strokeWidth = cfg.textStrokeWidth;
+        if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+          window.WebpointerRender.updateElementAttributes(obj);
+        }
+      }
+    });
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+  }
+
+  function toggleTextWritingMode() {
+    var cur = cfg.textWritingMode || 'horizontal-tb';
+    cfg.textWritingMode = (cur === 'vertical-rl' || cur === 'vertical') ? 'horizontal-tb' : 'vertical-rl';
+    var members = getAllGroupMembers(cfg.selectedIds);
+    var textObjs = members.filter(function(m) { return m.type === 'text'; });
+    textObjs.forEach(function(obj) {
+      if (obj && obj.attrs) {
+        obj.attrs.writingMode = cfg.textWritingMode;
+        if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+          window.WebpointerRender.updateElementAttributes(obj);
+        }
+      }
+    });
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+  }
+
+  function setTextVerticalAlign(val) {
+    cfg.textDominantBaseline = val;
+    var members = getAllGroupMembers(cfg.selectedIds);
+    var textObjs = members.filter(function(m) { return m.type === 'text'; });
+    textObjs.forEach(function(obj) {
+      if (obj && obj.attrs) {
+        obj.attrs.dominantBaseline = val;
+        if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+          window.WebpointerRender.updateElementAttributes(obj);
+        }
+      }
+    });
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
   }
 
   function openPaletteModal() {
@@ -875,6 +941,9 @@
   window.closePaletteModal = closePaletteModal;
   window.importPaletteFromText = importPaletteFromText;
   window.applyStyleToSelected = applyStyleToSelected;
+  window.setTextStrokeWidth = setTextStrokeWidth;
+  window.toggleTextWritingMode = toggleTextWritingMode;
+  window.setTextVerticalAlign = setTextVerticalAlign;
 
   window.WebpointerHandlers = {
     setTool: setTool,
