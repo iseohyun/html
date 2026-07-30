@@ -677,25 +677,32 @@
             maxY = Math.max(maxY, a.y1, a.y2, a.cy !== undefined ? a.cy : a.y1);
           }
         } else if (obj.type === 'text') {
-          var tW = 80, tH = 24;
+          var hasBBox = false;
           try {
             if (obj.el) {
               var bb = obj.el.getBBox();
-              if (bb && bb.width > 0) {
-                tW = bb.width;
-                tH = bb.height;
+              if (bb && bb.width > 0 && bb.height > 0) {
+                minX = Math.min(minX, bb.x);
+                maxX = Math.max(maxX, bb.x + bb.width);
+                minY = Math.min(minY, bb.y);
+                maxY = Math.max(maxY, bb.y + bb.height);
+                hasBBox = true;
               }
             }
           } catch(e) {}
-          minX = Math.min(minX, a.x);
-          maxX = Math.max(maxX, a.x + tW);
-          minY = Math.min(minY, a.y - (tH * 0.85));
-          maxY = Math.max(maxY, a.y + (tH * 0.15));
+          if (!hasBBox) {
+            var fontSize = parseInt(a.fontSize || 20, 10);
+            var approxW = (a.text || '').length * (fontSize * 0.55);
+            minX = Math.min(minX, a.x);
+            maxX = Math.max(maxX, a.x + approxW);
+            minY = Math.min(minY, a.y - fontSize);
+            maxY = Math.max(maxY, a.y + 4);
+          }
         }
       });
 
       if (minX !== Infinity) {
-        var pad = 6;
+        var pad = 4;
         var boxRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
         boxRect.setAttribute('x', minX - pad);
         boxRect.setAttribute('y', minY - pad);
@@ -908,8 +915,6 @@
           self.createHandleNode(a.x, a.y, id, 'top_left', 1, false);
           self.createHandleNode(a.x + a.width, a.y + a.height, id, 'bottom_right', 2, false);
           self.createHandleNode(a.x + cornerRx, a.y, id, 'corner_rx', 3, true);
-        } else if (obj.type === 'text') {
-          self.createHandleNode(a.x, a.y, id, 'top_left', 1, false);
         }
       });
     },

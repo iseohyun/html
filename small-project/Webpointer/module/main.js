@@ -285,15 +285,23 @@
       minX = a.x; maxX = a.x + a.width;
       minY = a.y; maxY = a.y + a.height;
     } else if (obj.type === 'text') {
-      var w = 80, h = 24;
+      var hasBBox = false;
       try {
         if (obj.el) {
           var bb = obj.el.getBBox();
-          if (bb && bb.width > 0) { w = bb.width; h = bb.height; }
+          if (bb && bb.width > 0 && bb.height > 0) {
+            minX = bb.x; maxX = bb.x + bb.width;
+            minY = bb.y; maxY = bb.y + bb.height;
+            hasBBox = true;
+          }
         }
       } catch(e) {}
-      minX = a.x; maxX = a.x + w;
-      minY = a.y - h; maxY = a.y;
+      if (!hasBBox) {
+        var fontSize = parseInt(a.fontSize || 20, 10);
+        var approxW = (a.text || '').length * (fontSize * 0.55);
+        minX = a.x; maxX = a.x + approxW;
+        minY = a.y - fontSize; maxY = a.y + 4;
+      }
     } else if (obj.type === 'ellipse' || obj.type === 'arc') {
       minX = a.cx - a.rx; maxX = a.cx + a.rx;
       minY = a.cy - a.ry; maxY = a.cy + a.ry;
