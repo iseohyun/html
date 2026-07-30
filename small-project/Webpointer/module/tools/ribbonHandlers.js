@@ -155,6 +155,78 @@
     if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
   }
 
+  function toggleStrokeDashStyle() {
+    if (state.holdTriggered) {
+      state.holdTriggered = false;
+      return;
+    }
+    var cur = cfg.strokeDashStyle || 'solid';
+    cfg.strokeDashStyle = (cur === 'dashed') ? 'solid' : 'dashed';
+    applyStyleToSelected();
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+  }
+
+  function startHoldDashArray(e, btnEl) {
+    state.holdTriggered = false;
+    clearTimeout(holdTimer);
+    holdTimer = setTimeout(function() {
+      state.holdTriggered = true;
+      showDashArraySelectPopup(btnEl);
+    }, 400);
+  }
+
+  function endHoldDashArray() {
+    clearTimeout(holdTimer);
+  }
+
+  function showDashArraySelectPopup(btnEl) {
+    var old = document.getElementById('dashArrayPopupSelect');
+    if (old) old.remove();
+
+    var popup = document.createElement('div');
+    popup.id = 'dashArrayPopupSelect';
+    popup.style.cssText = 'position:fixed; z-index:99999; padding:8px; border:1px solid #0284c7; border-radius:6px; background:#ffffff; box-shadow:0 6px 16px rgba(0,0,0,0.18); outline:none; font-family:sans-serif; display:flex; flex-direction:column; gap:6px; min-width:140px;';
+    var rect = btnEl.getBoundingClientRect();
+    popup.style.left = rect.left + 'px';
+    popup.style.top = (rect.bottom + 4) + 'px';
+
+    var cur = cfg.strokeDashArray || '6,6';
+    popup.innerHTML =
+      '<div style="font-size:0.75rem; font-weight:700; color:#0f172a;">점선 패턴 입력</div>' +
+      '<input type="text" id="dashArrayInput" value="' + cur + '" style="width:100%; padding:4px 6px; font-size:0.8rem; border:1px solid #cbd5e1; border-radius:4px; font-family:monospace;" placeholder="6,6">' +
+      '<div style="font-size:0.7rem; color:#64748b;">프리셋 선택:</div>' +
+      '<div style="display:flex; flex-wrap:wrap; gap:4px;">' +
+        '<button style="padding:2px 6px; font-size:0.75rem; border:1px solid #cbd5e1; border-radius:3px; background:#f8fafc; cursor:pointer;" onclick="setStrokeDashArray(\'6,6\'); var p=document.getElementById(\'dashArrayPopupSelect\'); if(p) p.remove();">6,6</button>' +
+        '<button style="padding:2px 6px; font-size:0.75rem; border:1px solid #cbd5e1; border-radius:3px; background:#f8fafc; cursor:pointer;" onclick="setStrokeDashArray(\'10,4\'); var p=document.getElementById(\'dashArrayPopupSelect\'); if(p) p.remove();">10,4</button>' +
+        '<button style="padding:2px 6px; font-size:0.75rem; border:1px solid #cbd5e1; border-radius:3px; background:#f8fafc; cursor:pointer;" onclick="setStrokeDashArray(\'2,4\'); var p=document.getElementById(\'dashArrayPopupSelect\'); if(p) p.remove();">2,4</button>' +
+        '<button style="padding:2px 6px; font-size:0.75rem; border:1px solid #cbd5e1; border-radius:3px; background:#f8fafc; cursor:pointer;" onclick="setStrokeDashArray(\'12,3,3,3\'); var p=document.getElementById(\'dashArrayPopupSelect\'); if(p) p.remove();">12,3,3,3</button>' +
+      '</div>';
+
+    document.body.appendChild(popup);
+    var inputEl = document.getElementById('dashArrayInput');
+    if (inputEl) {
+      inputEl.focus();
+      inputEl.onchange = function() {
+        setStrokeDashArray(inputEl.value);
+        if (popup.parentNode) popup.parentNode.removeChild(popup);
+      };
+      inputEl.onkeydown = function(ev) {
+        if (ev.key === 'Enter') {
+          setStrokeDashArray(inputEl.value);
+          if (popup.parentNode) popup.parentNode.removeChild(popup);
+        }
+      };
+    }
+
+    function onOutsideClick(evt) {
+      if (popup && !popup.contains(evt.target) && !btnEl.contains(evt.target)) {
+        if (popup.parentNode) popup.parentNode.removeChild(popup);
+        document.removeEventListener('mousedown', onOutsideClick);
+      }
+    }
+    setTimeout(function() { document.addEventListener('mousedown', onOutsideClick); }, 50);
+  }
+
   function setStrokeDashArray(arrStr) {
     cfg.strokeDashArray = arrStr;
     cfg.strokeDashStyle = 'dashed';
@@ -192,8 +264,22 @@
     if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
   }
 
+  function toggleStartMarkerFillStyle() {
+    var cur = cfg.startMarkerFillStyle || 'solid';
+    cfg.startMarkerFillStyle = (cur === 'solid') ? 'hollow' : 'solid';
+    applyStyleToSelected();
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+  }
+
   function setEndMarkerFillStyle(style) {
     cfg.endMarkerFillStyle = style;
+    applyStyleToSelected();
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+  }
+
+  function toggleEndMarkerFillStyle() {
+    var cur = cfg.endMarkerFillStyle || 'solid';
+    cfg.endMarkerFillStyle = (cur === 'solid') ? 'hollow' : 'solid';
     applyStyleToSelected();
     if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
   }
@@ -746,6 +832,9 @@
   window.setFillColor = setFillColor;
   window.setStrokeWidth = setStrokeWidth;
   window.setStrokeDashStyle = setStrokeDashStyle;
+  window.toggleStrokeDashStyle = toggleStrokeDashStyle;
+  window.startHoldDashArray = startHoldDashArray;
+  window.endHoldDashArray = endHoldDashArray;
   window.setStrokeDashArray = setStrokeDashArray;
   window.setStrokeCap = setStrokeCap;
   window.setStrokeJoin = setStrokeJoin;
@@ -753,16 +842,10 @@
   window.setEndMarker = setEndMarker;
   window.adjustStrokeWidth = adjustStrokeWidth;
   window.setStartMarkerFillStyle = setStartMarkerFillStyle;
+  window.toggleStartMarkerFillStyle = toggleStartMarkerFillStyle;
   window.setEndMarkerFillStyle = setEndMarkerFillStyle;
+  window.toggleEndMarkerFillStyle = toggleEndMarkerFillStyle;
   window.scaleMarker = scaleMarker;
-  window.toggleCategoryCollapse = toggleCategoryCollapse;
-  window.applyStyleToSelected = applyStyleToSelected;
-  window.openPaletteModal = openPaletteModal;
-  window.closePaletteModal = closePaletteModal;
-  window.importPaletteFromText = importPaletteFromText;
-
-  window.toggleColorPalettePopover = toggleColorPalettePopover;
-  window.selectColorFromPopover = selectColorFromPopover;
 
   window.WebpointerHandlers = {
     setTool: setTool,
@@ -774,13 +857,18 @@
     setStrokeWidth: setStrokeWidth,
     adjustStrokeWidth: adjustStrokeWidth,
     setStrokeDashStyle: setStrokeDashStyle,
+    toggleStrokeDashStyle: toggleStrokeDashStyle,
+    startHoldDashArray: startHoldDashArray,
+    endHoldDashArray: endHoldDashArray,
     setStrokeDashArray: setStrokeDashArray,
     setStrokeCap: setStrokeCap,
     setStrokeJoin: setStrokeJoin,
     setStartMarker: setStartMarker,
     setEndMarker: setEndMarker,
     setStartMarkerFillStyle: setStartMarkerFillStyle,
+    toggleStartMarkerFillStyle: toggleStartMarkerFillStyle,
     setEndMarkerFillStyle: setEndMarkerFillStyle,
+    toggleEndMarkerFillStyle: toggleEndMarkerFillStyle,
     scaleMarker: scaleMarker,
     toggleCategoryCollapse: toggleCategoryCollapse,
     openPaletteModal: openPaletteModal,

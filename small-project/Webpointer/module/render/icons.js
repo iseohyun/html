@@ -34,7 +34,7 @@
     openPalette: '<svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>',
     importPalette: '<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
     lineSolid: '<svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="3"/></svg>',
-    lineDashed: '<svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="3" stroke-dasharray="4,3"/></svg>',
+    lineDashed: '<svg viewBox="0 0 24 24"><line x1="2" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="3.5" stroke-dasharray="5,4.5" stroke-linecap="round"/></svg>',
     markerPlus: '<svg viewBox="0 0 24 24" style="width:14px; height:14px;"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5"/></svg>',
     markerMinus: '<svg viewBox="0 0 24 24" style="width:14px; height:14px;"><path d="M5 12h14" stroke="currentColor" stroke-width="2.5"/></svg>',
     startNone: '<svg viewBox="0 0 24 24"><line x1="4" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="2"/><line x1="4" y1="7" x2="4" y2="17" stroke="currentColor" stroke-width="2"/></svg>',

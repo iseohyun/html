@@ -149,53 +149,27 @@
       var strokeBtnHtml = '<button class="tool-btn" onclick="toggleColorPalettePopover(this, \'stroke\')" style="width:34px; height:34px; position:relative;">' + (icons.targetStroke || '') + '<span style="position:absolute; bottom:2px; left:4px; right:4px; height:4px; background:' + (cfg.strokeColor==='none'?'transparent':cfg.strokeColor) + '; border-radius:2px;"></span><span class="tooltip-text">선 색상 (클릭하여 팔레트 열기)</span></button>';
       var fillBtnHtml   = '<button class="tool-btn" onclick="toggleColorPalettePopover(this, \'fill\')" style="width:34px; height:34px; position:relative;">' + (icons.targetFill || '') + '<span style="position:absolute; bottom:2px; left:4px; right:4px; height:4px; background:' + (cfg.fillColor==='none'?'transparent':cfg.fillColor) + '; border-radius:2px;"></span><span class="tooltip-text">면 채우기 색상 (클릭하여 팔레트 열기)</span></button>';
 
-      var colorContent =
-        '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
+      var widthInputHtml = '<input type="number" min="1" max="50" value="' + cfg.strokeWidth + '" oninput="setStrokeWidth(this.value)" onchange="setStrokeWidth(this.value)" style="width:34px; height:34px; box-sizing:border-box; padding:2px; font-size:0.85rem; font-weight:700; border:1px solid #cbd5e1; border-radius:6px; text-align:center; outline:none; background:#ffffff; color:#0f172a;" title="선 두께 (px)">';
+
+      var isDashed = cfg.strokeDashStyle === 'dashed';
+      var dashedLineBtn = '<button class="tool-btn ' + (isDashed ? 'active' : '') + '" onclick="toggleStrokeDashStyle()" onmousedown="startHoldDashArray(event, this)" onmouseup="endHoldDashArray()" onmouseleave="endHoldDashArray()" style="width:34px; height:34px;">' + (icons.lineDashed || '') + '<span class="tooltip-text">선 모양: 점선 (클릭 토글 / 길게 눌러 패턴 설정)</span></button>';
+
+      var lineGridHtml =
+        '<div style="display:grid; grid-template-columns:34px 34px; grid-template-rows:34px 34px; gap:4px;">' +
           strokeBtnHtml + fillBtnHtml +
-        '</div>';
-
-      var curDashStyle = cfg.strokeDashStyle || 'solid';
-      var curDashArray = cfg.strokeDashArray || '6,6';
-
-      var solidLineBtn = '<button class="tool-btn ' + (curDashStyle==='solid'?'active':'') + '" onclick="setStrokeDashStyle(\'solid\')" style="width:34px; height:34px;">' + (icons.lineSolid || '') + '<span class="tooltip-text">선 모양: 실선</span></button>';
-      var dashedLineBtn = '<button class="tool-btn ' + (curDashStyle==='dashed'?'active':'') + '" onclick="setStrokeDashStyle(\'dashed\')" style="width:34px; height:34px;">' + (icons.lineDashed || '') + '<span class="tooltip-text">선 모양: 점선</span></button>';
-
-      var lineContent =
-        '<div style="display:flex; flex-direction:row; align-items:center; gap:8px;">' +
-          '<div style="display:flex; flex-direction:column; align-items:center; gap:4px;">' +
-            '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
-              '<label style="font-size:0.78rem; color:#475569; font-weight:600;">선 두께:</label>' +
-              '<input type="number" min="1" max="50" value="' + cfg.strokeWidth + '" oninput="setStrokeWidth(this.value)" onchange="setStrokeWidth(this.value)" style="width:42px; padding:2px 4px; font-size:0.8rem; border:1px solid #cbd5e1; border-radius:4px; text-align:center;">' +
-            '</div>' +
-            '<div style="display:flex; flex-direction:row; gap:4px;">' +
-              '<button class="tool-btn" onclick="adjustStrokeWidth(1)" style="width:28px; height:24px;"><span class="alt-badge">+</span>' + (icons.markerPlus || '') + '<span class="tooltip-text">선 두께 키우기 (+1)</span></button>' +
-              '<button class="tool-btn" onclick="adjustStrokeWidth(-1)" style="width:28px; height:24px;"><span class="alt-badge">-</span>' + (icons.markerMinus || '') + '<span class="tooltip-text">선 두께 줄이기 (-1)</span></button>' +
-            '</div>' +
-          '</div>' +
-          '<div style="width:1px; height:48px; background:#cbd5e1; margin:0 4px;"></div>' +
-          '<div style="display:flex; flex-direction:column; align-items:center; gap:4px;">' +
-            '<label style="font-size:0.78rem; color:#475569; font-weight:600;">선 종류:</label>' +
-            '<div style="display:flex; flex-direction:row; gap:4px;">' + solidLineBtn + dashedLineBtn + '</div>' +
-          '</div>' +
-          '<div style="width:1px; height:48px; background:#cbd5e1; margin:0 4px;"></div>' +
-          '<div style="display:flex; flex-direction:column; align-items:center; gap:4px;">' +
-            '<label style="font-size:0.78rem; color:#475569; font-weight:600;">점선 패턴:</label>' +
-            '<input type="text" value="' + curDashArray + '" placeholder="6,6" oninput="setStrokeDashArray(this.value)" style="width:65px; padding:2px 4px; font-size:0.8rem; border:1px solid #cbd5e1; border-radius:4px; font-family:monospace; text-align:center;">' +
-          '</div>' +
+          widthInputHtml + dashedLineBtn +
         '</div>';
 
       var curStartMarker = cfg.startMarker || 'none';
       var curEndMarker   = cfg.endMarker || 'none';
-      var curStartFill   = cfg.startMarkerFillStyle || 'solid';
-      var curEndFill     = cfg.endMarkerFillStyle || 'solid';
 
       var startNone = '<button class="tool-btn ' + (curStartMarker==='none'?'active':'') + '" onclick="setStartMarker(\'none\')" style="width:34px; height:34px;">' + (icons.startNone || '') + '<span class="tooltip-text">시작 모양: 없음</span></button>';
       var startArrow = '<button class="tool-btn ' + (curStartMarker==='arrow'?'active':'') + '" onclick="setStartMarker(\'arrow\')" style="width:34px; height:34px;">' + (icons.startArrow || '') + '<span class="tooltip-text">시작 모양: 화살표 (왼쪽)</span></button>';
       var startCircle = '<button class="tool-btn ' + (curStartMarker==='circle'?'active':'') + '" onclick="setStartMarker(\'circle\')" style="width:34px; height:34px;">' + (icons.startCircle || '') + '<span class="tooltip-text">시작 모양: 원 (왼쪽)</span></button>';
       var startDiamond = '<button class="tool-btn ' + (curStartMarker==='diamond'?'active':'') + '" onclick="setStartMarker(\'diamond\')" style="width:34px; height:34px;">' + (icons.startDiamond || '') + '<span class="tooltip-text">시작 모양: 다이아몬드 (왼쪽)</span></button>';
 
-      var startSolidBtn = '<button class="tool-btn ' + (curStartFill==='solid'?'active':'') + '" onclick="setStartMarkerFillStyle(\'solid\')" style="width:34px; height:34px;">' + (icons.startSolid || '') + '<span class="tooltip-text">시작 마커: 꽉찬 모양</span></button>';
-      var startHollowBtn = '<button class="tool-btn ' + (curStartFill==='hollow'?'active':'') + '" onclick="setStartMarkerFillStyle(\'hollow\')" style="width:34px; height:34px;">' + (icons.startHollow || '') + '<span class="tooltip-text">시작 마커: 빈 모양 (테두리만)</span></button>';
+      var isStartSolid = (cfg.startMarkerFillStyle || 'solid') === 'solid';
+      var startFillToggleBtn = '<button class="tool-btn ' + (isStartSolid ? 'active' : '') + '" onclick="toggleStartMarkerFillStyle()" style="width:34px; height:34px;">' + (isStartSolid ? (icons.startSolid || '') : (icons.startHollow || '')) + '<span class="tooltip-text">시작 마커 채우기 (클릭 토글: 꽉찬/빈모양)</span></button>';
 
       var startScalePlus = '<button class="tool-btn" onclick="scaleMarker(\'start\', 1.25)" style="width:34px; height:34px;"><span class="alt-badge">+</span>' + (icons.markerPlus || '') + '<span class="tooltip-text">시작 마커 크기 키우기 (+)</span></button>';
       var startScaleMinus = '<button class="tool-btn" onclick="scaleMarker(\'start\', 0.8)" style="width:34px; height:34px;"><span class="alt-badge">-</span>' + (icons.markerMinus || '') + '<span class="tooltip-text">시작 마커 크기 줄이기 (-)</span></button>';
@@ -205,8 +179,8 @@
       var endCircle = '<button class="tool-btn ' + (curEndMarker==='circle'?'active':'') + '" onclick="setEndMarker(\'circle\')" style="width:34px; height:34px;">' + (icons.endCircle || '') + '<span class="tooltip-text">끝 모양: 원 (오른쪽)</span></button>';
       var endDiamond = '<button class="tool-btn ' + (curEndMarker==='diamond'?'active':'') + '" onclick="setEndMarker(\'diamond\')" style="width:34px; height:34px;">' + (icons.endDiamond || '') + '<span class="tooltip-text">끝 모양: 다이아몬드 (오른쪽)</span></button>';
 
-      var endSolidBtn = '<button class="tool-btn ' + (curEndFill==='solid'?'active':'') + '" onclick="setEndMarkerFillStyle(\'solid\')" style="width:34px; height:34px;">' + (icons.endSolid || '') + '<span class="tooltip-text">끝 마커: 꽉찬 모양</span></button>';
-      var endHollowBtn = '<button class="tool-btn ' + (curEndFill==='hollow'?'active':'') + '" onclick="setEndMarkerFillStyle(\'hollow\')" style="width:34px; height:34px;">' + (icons.endHollow || '') + '<span class="tooltip-text">끝 마커: 빈 모양 (테두리만)</span></button>';
+      var isEndSolid = (cfg.endMarkerFillStyle || 'solid') === 'solid';
+      var endFillToggleBtn = '<button class="tool-btn ' + (isEndSolid ? 'active' : '') + '" onclick="toggleEndMarkerFillStyle()" style="width:34px; height:34px;">' + (isEndSolid ? (icons.endSolid || '') : (icons.endHollow || '')) + '<span class="tooltip-text">끝 마커 채우기 (클릭 토글: 꽉찬/빈모양)</span></button>';
 
       var endScalePlus = '<button class="tool-btn" onclick="scaleMarker(\'end\', 1.25)" style="width:34px; height:34px;"><span class="alt-badge">+</span>' + (icons.markerPlus || '') + '<span class="tooltip-text">끝 마커 크기 키우기 (+)</span></button>';
       var endScaleMinus = '<button class="tool-btn" onclick="scaleMarker(\'end\', 0.8)" style="width:34px; height:34px;"><span class="alt-badge">-</span>' + (icons.markerMinus || '') + '<span class="tooltip-text">끝 마커 크기 줄이기 (-)</span></button>';
@@ -216,14 +190,14 @@
           '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
             '<div style="display:flex; flex-direction:row; gap:2px;">' + startNone + startArrow + startCircle + startDiamond + '</div>' +
             '<div style="width:1px; height:28px; background:#cbd5e1; margin:0 3px;"></div>' +
-            '<div style="display:flex; flex-direction:row; gap:2px;">' + startSolidBtn + startHollowBtn + '</div>' +
+            startFillToggleBtn +
             '<div style="width:1px; height:28px; background:#cbd5e1; margin:0 3px;"></div>' +
             '<div style="display:flex; flex-direction:row; gap:2px;">' + startScalePlus + startScaleMinus + '</div>' +
           '</div>' +
           '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
             '<div style="display:flex; flex-direction:row; gap:2px;">' + endNone + endArrow + endCircle + endDiamond + '</div>' +
             '<div style="width:1px; height:28px; background:#cbd5e1; margin:0 3px;"></div>' +
-            '<div style="display:flex; flex-direction:row; gap:2px;">' + endSolidBtn + endHollowBtn + '</div>' +
+            endFillToggleBtn +
             '<div style="width:1px; height:28px; background:#cbd5e1; margin:0 3px;"></div>' +
             '<div style="display:flex; flex-direction:row; gap:2px;">' + endScalePlus + endScaleMinus + '</div>' +
           '</div>' +
@@ -253,8 +227,7 @@
         '</div>';
 
       ribbonBar.innerHTML =
-        buildCategoryHtml('style_color', '색', colorContent) +
-        buildCategoryHtml('style_line', '선', lineContent) +
+        buildCategoryHtml('style_line', '선', lineGridHtml) +
         buildCategoryHtml('style_lineEnds', '선 끝', lineEndsContent) +
         buildCategoryHtml('style_capJoin', '마감', capJoinContent);
     } else if (cfg.currentTab === 'text') {
