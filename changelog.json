@@ -6,7 +6,7 @@
         "type": "Added",
         "projectName": "Webpointer",
         "projectPath": "/small-project/Webpointer/index.html",
-        "summary": "16:9 비율 및 481×271 Step 근사 스냅(Grid Snap) 캔버스 시뮬레이터 신설"
+        "summary": "v0.1.0: 16:9 비율 481×271 Step 스냅 캔버스 & MS 리본 메뉴 (삽입, 보기, 그림 서식, 마커, 베지어 조종점) 벡터 CAD 시뮬레이터 신설"
       }
     ]
   },
