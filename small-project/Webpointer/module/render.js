@@ -87,7 +87,7 @@
       gridGroup.appendChild(gridPath);
     },
 
-    // Update SVG Defs for Markers (100% Transparent fill="none" for hollow, edge refX connections prevent line penetration)
+    // Update SVG Defs for Markers (refX=5 centers marker on line endpoints, canvas bg mask hides line stroke inside hollow markers)
     updateSvgDefs: function() {
       var svgDefs = document.getElementById('svgDefs');
       if (!svgDefs) return;
@@ -101,18 +101,10 @@
           marker.setAttribute('markerUnits', 'userSpaceOnUse'); // Absolute canvas pixels - fixed size!
           marker.setAttribute('viewBox', '0 0 10 10');
 
-          var fillStyle = pos === 'start' ? (cfg.startMarkerFillStyle || 'solid') : (cfg.endMarkerFillStyle || 'solid');
-
-          // Reference Point (refX) Calculation:
-          // For Arrow: Start refX=1.5, End refX=8.5
-          // For Circle & Diamond:
-          //   - If Hollow: Start refX=0, End refX=10 so marker center (5,5) aligns 100% PERFECTLY with control handle node (P1, P2)!
-          //   - If Solid: refX=5
+          // Reference Point: refX=5 centers Circle & Diamond 100% PERFECTLY on line endpoints & handle nodes!
           var refX = '5';
           if (type === 'arrow') {
             refX = pos === 'start' ? '1.5' : '8.5';
-          } else if (fillStyle === 'hollow') {
-            refX = pos === 'start' ? '0' : '10';
           } else {
             refX = '5';
           }
@@ -126,6 +118,8 @@
           marker.setAttribute('markerHeight', markerSize.toString());
           marker.setAttribute('orient', 'auto');
 
+          var fillStyle = pos === 'start' ? (cfg.startMarkerFillStyle || 'solid') : (cfg.endMarkerFillStyle || 'solid');
+
           var pathD = '';
           if (type === 'arrow') {
             pathD = pos === 'start' ? 'M 9 1.5 L 1.5 5 L 9 8.5 Z' : 'M 1 1.5 L 8.5 5 L 1 8.5 Z';
@@ -135,19 +129,30 @@
             pathD = 'M 5 1 L 9 5 L 5 9 L 1 5 Z';
           }
 
-          var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-          path.setAttribute('d', pathD);
-
           if (fillStyle === 'hollow') {
-            path.setAttribute('fill', 'none'); // 100% True Transparent!
-            path.setAttribute('stroke', cfg.strokeColor || '#041e49');
-            path.setAttribute('stroke-width', '1.5');
+            // Layer 1: Background Masking Fill (Canvas Bg Color) to cover line stroke inside marker
+            var bgMask = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            bgMask.setAttribute('d', pathD);
+            bgMask.setAttribute('fill', cfg.canvasBgColor || '#ffffff');
+            bgMask.setAttribute('stroke', 'none');
+            marker.appendChild(bgMask);
+
+            // Layer 2: Outlined Stroke
+            var strokePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            strokePath.setAttribute('d', pathD);
+            strokePath.setAttribute('fill', 'none');
+            strokePath.setAttribute('stroke', cfg.strokeColor || '#041e49');
+            strokePath.setAttribute('stroke-width', '1.5');
+            marker.appendChild(strokePath);
           } else {
-            path.setAttribute('fill', cfg.strokeColor || '#041e49');
-            path.setAttribute('stroke', 'none');
+            // Solid Filled Marker
+            var solidPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            solidPath.setAttribute('d', pathD);
+            solidPath.setAttribute('fill', cfg.strokeColor || '#041e49');
+            solidPath.setAttribute('stroke', 'none');
+            marker.appendChild(solidPath);
           }
 
-          marker.appendChild(path);
           svgDefs.appendChild(marker);
         });
       });
@@ -428,19 +433,10 @@
         obj.el.setAttribute('cy', a.cy);
         obj.el.setAttribute('r', a.r || cfg.pointRadius || 5);
       } else if (obj.type === 'line') {
-        var startM = a.startMarker || cfg.startMarker || 'none';
-        var endM   = a.endMarker || cfg.endMarker || 'none';
-        var startStyle = a.startMarkerFillStyle || cfg.startMarkerFillStyle || 'solid';
-        var endStyle   = a.endMarkerFillStyle || cfg.endMarkerFillStyle || 'solid';
-
-        var offStart = (startM !== 'none' && startStyle === 'hollow') ? (6 * (a.startMarkerScale || cfg.startMarkerScale || 1)) : 0;
-        var offEnd   = (endM !== 'none' && endStyle === 'hollow') ? (6 * (a.endMarkerScale || cfg.endMarkerScale || 1)) : 0;
-
-        var trimmed = computeLineTrimmedCoords(a.x1, a.y1, a.x2, a.y2, offStart, offEnd);
-        obj.el.setAttribute('x1', trimmed.x1);
-        obj.el.setAttribute('y1', trimmed.y1);
-        obj.el.setAttribute('x2', trimmed.x2);
-        obj.el.setAttribute('y2', trimmed.y2);
+        obj.el.setAttribute('x1', a.x1);
+        obj.el.setAttribute('y1', a.y1);
+        obj.el.setAttribute('x2', a.x2);
+        obj.el.setAttribute('y2', a.y2);
       } else if (obj.type === 'rect' || obj.type === 'rounded') {
         obj.el.setAttribute('x', a.x);
         obj.el.setAttribute('y', a.y);
