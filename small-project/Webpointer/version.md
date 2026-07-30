@@ -1,5 +1,11 @@
 # Webpointer Project Version History
 
+## [0.5.0] - 2026-07-30
+### Added & Improved
+- Text Ribbon Tab Major Formatting Enhancement:
+  - Added **`글꼴` (Font)** category with controls for `font-family`, `font-size` (input + dropdown), `font-weight` (100~900 with aliases), `font-style` (normal/italic/oblique), and `line-height`.
+  - Added **`색` (Color)** category featuring **`글자색`** and **`배경색(하이라이트)`** target toggles with full 27-slot UniPalette swatch grid integration.
+
 ## [0.4.6] - 2026-07-30
 ### Refactored & Improved
 - SVG Icon Asset Modularization:
