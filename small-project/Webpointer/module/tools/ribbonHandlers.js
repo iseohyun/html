@@ -3030,6 +3030,82 @@
   }
   window.playAnimation = playAnimation;
 
+  function removeAllAnimationsFromSelected() {
+    var targets = getSelectedObjectsForFilter();
+    if (!targets || targets.length === 0) return;
+    targets.forEach(function(obj) {
+      if (!obj.el) obj.el = document.getElementById(obj.id);
+      if (obj.el) {
+        var anims = obj.el.querySelectorAll('animate, animateTransform, animateMotion');
+        anims.forEach(function(a) { a.remove(); });
+      }
+    });
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+      window.WebpointerRender.renderRibbon();
+    }
+  }
+  window.removeAllAnimationsFromSelected = removeAllAnimationsFromSelected;
+
+  function addCustomSmilAnimation() {
+    var targets = getSelectedObjectsForFilter();
+    if (!targets || targets.length === 0) return;
+
+    var attrType = (document.getElementById('animAttrType') || {}).value || 'fill';
+    var fromVal = (document.getElementById('animFrom') || {}).value || '';
+    var toVal = (document.getElementById('animTo') || {}).value || '';
+    var valuesVal = (document.getElementById('animValues') || {}).value || '';
+    var beginVal = (document.getElementById('animBegin') || {}).value || '0s';
+    var durVal = (document.getElementById('animDur') || {}).value || '2s';
+    var repeatVal = (document.getElementById('animRepeat') || {}).value || 'indefinite';
+    var maxVal = (document.getElementById('animMax') || {}).value || '';
+    var restartVal = (document.getElementById('animRestart') || {}).value || 'always';
+    var endVal = (document.getElementById('animEnd') || {}).value || '';
+
+    targets.forEach(function(obj) {
+      if (!obj.el) obj.el = document.getElementById(obj.id);
+      if (!obj.el) return;
+      var el = obj.el;
+
+      var tag = 'animate';
+      var isTransform = attrType.indexOf('transform:') === 0;
+      if (isTransform) {
+        tag = 'animateTransform';
+      }
+
+      var anim = document.createElementNS('http://www.w3.org/2000/svg', tag);
+      var animId = 'anim_' + (obj.id || 'obj') + '_' + Date.now().toString(36);
+      anim.setAttribute('id', animId);
+
+      if (isTransform) {
+        anim.setAttribute('attributeName', 'transform');
+        anim.setAttribute('type', attrType.split(':')[1]);
+      } else {
+        anim.setAttribute('attributeName', attrType);
+      }
+
+      if (valuesVal && valuesVal.trim() !== '') {
+        anim.setAttribute('values', valuesVal.trim());
+      } else {
+        if (fromVal && fromVal.trim() !== '') anim.setAttribute('from', fromVal.trim());
+        if (toVal && toVal.trim() !== '') anim.setAttribute('to', toVal.trim());
+      }
+
+      if (beginVal) anim.setAttribute('begin', beginVal);
+      if (durVal) anim.setAttribute('dur', durVal);
+      if (repeatVal) anim.setAttribute('repeatCount', repeatVal);
+      if (maxVal && maxVal.trim() !== '') anim.setAttribute('max', maxVal.trim());
+      if (restartVal) anim.setAttribute('restart', restartVal);
+      if (endVal && endVal.trim() !== '') anim.setAttribute('end', endVal.trim());
+
+      el.appendChild(anim);
+    });
+
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+      window.WebpointerRender.renderRibbon();
+    }
+  }
+  window.addCustomSmilAnimation = addCustomSmilAnimation;
+
   function stopAllAnimations() {
     var mainSvg = document.getElementById('mainSvg');
     if (!mainSvg) return;

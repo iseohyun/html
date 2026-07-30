@@ -465,22 +465,103 @@
         buildCategoryHtml('text_color', '색', textColorContent) +
         buildCategoryHtml('text_underline', '밑줄', underlineCategoryContent);
     } else if (cfg.currentTab === 'anim') {
-      var animContent =
-        '<div class="category-grid" style="grid-template-columns: repeat(6, 34px); gap:4px;">' +
-          '<button class="tool-btn" onclick="playAnimation(\'draw\')"><span class="alt-badge">1</span>✍️<span class="tooltip-text">선 그리기 (draw)</span></button>' +
-          '<button class="tool-btn" onclick="playAnimation(\'fade\')"><span class="alt-badge">2</span>👻<span class="tooltip-text">페이드 (fade)</span></button>' +
-          '<button class="tool-btn" onclick="playAnimation(\'rotate\')"><span class="alt-badge">3</span>🔄<span class="tooltip-text">회전 (rotate)</span></button>' +
-          '<button class="tool-btn" onclick="playAnimation(\'pulse\')"><span class="alt-badge">4</span>💓<span class="tooltip-text">맥박 (pulse)</span></button>' +
-          '<button class="tool-btn" onclick="playAnimation(\'bounce\')"><span class="alt-badge">5</span>🏀<span class="tooltip-text">바운스 (bounce)</span></button>' +
-          '<button class="tool-btn" onclick="playAnimation(\'color\')"><span class="alt-badge">6</span>🎨<span class="tooltip-text">색상 변화 (color)</span></button>' +
-          '<button class="tool-btn" onclick="playAnimation(\'morph\')"><span class="alt-badge">7</span>🦎<span class="tooltip-text">변형 (morph)</span></button>' +
-          '<button class="tool-btn" onclick="playAnimation(\'dash\')"><span class="alt-badge">8</span>🐜<span class="tooltip-text">대시 흐름 (dash)</span></button>' +
-          '<button class="tool-btn" onclick="playAnimation(\'zoom\')"><span class="alt-badge">9</span>🔍<span class="tooltip-text">줌인 (zoom)</span></button>' +
-          '<button class="tool-btn" onclick="playAnimation(\'shake\')"><span class="alt-badge">10</span>🫨<span class="tooltip-text">흔들기 (shake)</span></button>' +
-          '<button class="tool-btn" onclick="playAnimation(\'glow\')"><span class="alt-badge">11</span>✨<span class="tooltip-text">발광 (glow)</span></button>' +
-          '<button class="tool-btn" onclick="stopAllAnimations()" style="color:#ef4444; font-weight:bold;">⏹️<span class="tooltip-text">애니메이션 정지 (stop)</span></button>' +
+      var selId = cfg.selectedIds && cfg.selectedIds.size > 0 ? Array.from(cfg.selectedIds)[0] : null;
+      var targetLabel = selId ? '선택 ID: ' + selId : '개체 미선택 (캔버스에서 클릭)';
+
+      var targetAttrContent =
+        '<div style="font-size:0.75rem; font-weight:600; color:#38bdf8; margin-bottom:4px;">🎯 ' + targetLabel + '</div>' +
+        '<div style="display:flex; align-items:center; gap:4px;">' +
+          '<label style="font-size:0.72rem; color:#94a3b8;">변환 타입:</label>' +
+          '<select id="animAttrType" style="background:#0f172a; color:#f8fafc; border:1px solid #334155; border-radius:4px; padding:3px 6px; font-size:0.75rem;">' +
+            '<option value="fill">🎨 fill (색상 변경)</option>' +
+            '<option value="stroke">🖊️ stroke (선 색상)</option>' +
+            '<option value="stroke-width">📏 stroke-width (선 두께)</option>' +
+            '<option value="opacity">👻 opacity (투명도)</option>' +
+            '<option value="transform:translate">↔️ transform:translate (위치 이동)</option>' +
+            '<option value="transform:scale">🔍 transform:scale (크기 변경)</option>' +
+            '<option value="transform:rotate">🔄 transform:rotate (회전)</option>' +
+            '<option value="d">🦎 d (경로/패스 변형)</option>' +
+          '</select>' +
         '</div>';
-      ribbonBar.innerHTML = buildCategoryHtml('anim_preview', 'SVG SMIL 애니메이션 수트 (11종)', animContent);
+
+      var valuesContent =
+        '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:4px; margin-bottom:4px;">' +
+          '<input type="text" id="animFrom" placeholder="시작값 (from: 0s/0deg/#000)" style="background:#0f172a; color:#fff; border:1px solid #334155; border-radius:4px; padding:2px 4px; font-size:0.72rem;" />' +
+          '<input type="text" id="animTo" placeholder="목표값 (to: 360deg/#ef4)" style="background:#0f172a; color:#fff; border:1px solid #334155; border-radius:4px; padding:2px 4px; font-size:0.72rem;" />' +
+        '</div>' +
+        '<input type="text" id="animValues" placeholder="다중 중간값 (values: v1;v2;v3)" style="width:100%; background:#0f172a; color:#fff; border:1px solid #334155; border-radius:4px; padding:2px 4px; font-size:0.72rem;" />';
+
+      var triggerDurContent =
+        '<div style="display:flex; align-items:center; gap:4px; margin-bottom:4px;">' +
+          '<label style="font-size:0.72rem; color:#94a3b8;">트리거(begin):</label>' +
+          '<select id="animBegin" style="background:#0f172a; color:#f8fafc; border:1px solid #334155; border-radius:4px; padding:2px 4px; font-size:0.72rem;">' +
+            '<option value="0s">⚡ 0s (자동 시작)</option>' +
+            '<option value="click">🖱️ click (클릭 시)</option>' +
+            '<option value="mouseover">👆 mouseover (호버 시)</option>' +
+            '<option value="mouseleave">👈 mouseleave (아웃 시)</option>' +
+            '<option value="anim1.end">🔗 anim1.end (연쇄 실행)</option>' +
+          '</select>' +
+        '</div>' +
+        '<div style="display:flex; align-items:center; gap:4px;">' +
+          '<label style="font-size:0.72rem; color:#94a3b8;">1회시간(dur):</label>' +
+          '<input type="text" id="animDur" value="2s" style="width:45px; background:#0f172a; color:#fff; border:1px solid #334155; border-radius:4px; padding:2px; font-size:0.72rem;" />' +
+          '<label style="font-size:0.72rem; color:#94a3b8;">반복(repeat):</label>' +
+          '<select id="animRepeat" style="background:#0f172a; color:#f8fafc; border:1px solid #334155; border-radius:4px; padding:2px; font-size:0.72rem;">' +
+            '<option value="indefinite">♾️ 무한 (indefinite)</option>' +
+            '<option value="1">1회</option>' +
+            '<option value="2">2회</option>' +
+            '<option value="3">3회</option>' +
+            '<option value="5">5회</option>' +
+          '</select>' +
+        '</div>';
+
+      var maxEndContent =
+        '<div style="display:flex; align-items:center; gap:4px; margin-bottom:4px;">' +
+          '<label style="font-size:0.72rem; color:#94a3b8;">최대시간(max):</label>' +
+          '<input type="text" id="animMax" placeholder="예: 5s" style="width:50px; background:#0f172a; color:#fff; border:1px solid #334155; border-radius:4px; padding:2px; font-size:0.72rem;" />' +
+          '<label style="font-size:0.72rem; color:#94a3b8;">재시작:</label>' +
+          '<select id="animRestart" style="background:#0f172a; color:#fff; border:1px solid #334155; border-radius:4px; padding:2px; font-size:0.72rem;">' +
+            '<option value="always">always</option>' +
+            '<option value="whenNotActive">whenNotActive</option>' +
+            '<option value="never">never</option>' +
+          '</select>' +
+        '</div>' +
+        '<div style="display:flex; align-items:center; gap:4px;">' +
+          '<label style="font-size:0.72rem; color:#94a3b8;">강제종료(end):</label>' +
+          '<input type="text" id="animEnd" placeholder="mouseleave / 10s" style="width:110px; background:#0f172a; color:#fff; border:1px solid #334155; border-radius:4px; padding:2px; font-size:0.72rem;" />' +
+        '</div>';
+
+      var trackManageContent =
+        '<div style="display:flex; flex-direction:column; gap:4px;">' +
+          '<div style="display:flex; gap:4px;">' +
+            '<button class="tool-btn" onclick="addCustomSmilAnimation()" style="background:#0284c7; color:#fff; padding:4px 8px; font-weight:600;"><span class="alt-badge">➕</span>➕ 애니메이션 추가 (Add SMIL Track)</button>' +
+            '<button class="tool-btn" onclick="removeAllAnimationsFromSelected()" style="background:#ef4444; color:#fff; padding:4px 6px;">🗑️ 트랙 전체 제거</button>' +
+          '</div>' +
+          '<div style="display:flex; gap:4px; align-items:center;">' +
+            '<select onchange="if(this.value)playAnimation(this.value)" style="background:#0f172a; color:#fff; border:1px solid #334155; border-radius:4px; padding:3px 6px; font-size:0.75rem;">' +
+              '<option value="">⚡ 빠른 11종 프리셋 적용...</option>' +
+              '<option value="draw">✍️ 선 그리기 (draw)</option>' +
+              '<option value="fade">👻 페이드 (fade)</option>' +
+              '<option value="rotate">🔄 회전 (rotate)</option>' +
+              '<option value="pulse">💓 맥박 (pulse)</option>' +
+              '<option value="bounce">🏀 바운스 (bounce)</option>' +
+              '<option value="color">🎨 색상 (color)</option>' +
+              '<option value="morph">🦎 변형 (morph)</option>' +
+              '<option value="dash">🐜 대시 (dash)</option>' +
+              '<option value="zoom">🔍 줌인 (zoom)</option>' +
+              '<option value="shake">🫨 흔들기 (shake)</option>' +
+              '<option value="glow">✨ 발광 (glow)</option>' +
+            '</select>' +
+            '<button class="tool-btn" onclick="stopAllAnimations()" style="color:#ef4444; font-weight:bold;">⏹️ 정지</button>' +
+          '</div>' +
+        '</div>';
+
+      ribbonBar.innerHTML =
+        buildCategoryHtml('anim_target', '1. 대상 & 변환 타입', targetAttrContent) +
+        buildCategoryHtml('anim_values', '2. 목표 값 & 경로', valuesContent) +
+        buildCategoryHtml('anim_trigger', '3. 트리거 & 재생 시간', triggerDurContent) +
+        buildCategoryHtml('anim_limits', '4. 제한 & 종료 조건', maxEndContent) +
+        buildCategoryHtml('anim_tracks', '5. 중첩 트랙 & 프리셋', trackManageContent);
     }
   }
 
