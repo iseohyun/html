@@ -8,402 +8,395 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-color: #0f172a;
-      --panel-bg: rgba(30, 41, 59, 0.95);
-      --menu-bar-bg: #e2e8f0;
-      --tab-unselected-bg: #e2e8f0;
-      --tab-selected-bg: #ffffff;
-      --ribbon-bg: #ffffff;
-      --border-color: #cbd5e1;
-      --text-dark: #0f172a;
-      --text-muted: #64748b;
-      --accent-color: #0284c7;
-      --accent-glow: rgba(2, 132, 199, 0.25);
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background-color: var(--bg-color);
-      color: #f8fafc;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      user-select: none;
-    }
-
-    article {
-      max-width: 1200px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    /* Top Navigation Header Bar */
-    .header-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 14px;
-      background: var(--panel-bg);
-      border: 1px solid #334155;
-      border-radius: 8px;
-    }
-
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .header-left a {
-      display: flex;
-      align-items: center;
-      transition: transform 0.2s;
-    }
-
-    .header-left a:hover {
-      transform: scale(1.1);
-    }
-
-    .header-title {
-      font-size: 1.15rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, #38bdf8, #818cf8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    /* === Menu Bar (Gray Background, Width 100%) === */
-    .menu-bar {
-      width: 100%;
-      background: var(--menu-bar-bg);
-      border: 1px solid var(--border-color);
-      border-bottom: 1px solid var(--border-color);
-      border-radius: 8px 8px 0 0;
-      padding: 6px 10px 0 10px;
-      display: flex;
-      align-items: flex-end;
-      gap: 4px;
-    }
-
-    /* Menu Tab Buttons */
-    .tab-btn {
-      padding: 8px 20px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: #475569;
-      background: var(--tab-unselected-bg);
-      border: 1px solid transparent;
-      border-bottom: none;
-      border-radius: 6px 6px 0 0;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      position: relative;
-    }
-
-    .tab-btn:hover {
-      color: var(--text-dark);
-      background: #cbd5e1;
-    }
-
-    /* Selected Tab (White Background, Seamless Connection to Ribbon) */
-    .tab-btn.active {
-      color: var(--accent-color);
-      background: var(--tab-selected-bg);
-      border-color: var(--border-color);
-      border-bottom: 1px solid var(--tab-selected-bg);
-      margin-bottom: -1px;
-      z-index: 10;
-      font-weight: 700;
-      box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.05);
-    }
-
-    /* === Ribbon Bar (White Background, Width 100%) === */
-    .ribbon-bar {
-      width: 100%;
-      background: var(--ribbon-bg);
-      color: var(--text-dark);
-      border: 1px solid var(--border-color);
-      border-top: 1px solid var(--border-color);
-      border-radius: 0 0 8px 8px;
-      padding: 12px 16px;
-      min-height: 145px;
-      display: flex;
-      align-items: stretch;
-      gap: 16px;
-      overflow-x: auto;
-      position: relative;
-      z-index: 5;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    /* Category DIV (Arranged Left to Right) */
-    .ribbon-category {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding-right: 16px;
-      border-right: 1px solid #e2e8f0;
-      position: relative;
-    }
-
-    .ribbon-category:last-child {
-      border-right: none;
-    }
-
-    /* Category Items 3-Row Grid (Row 1 -> Row 2 -> Row 3 Filling Order) */
-    .category-grid {
-      display: grid;
-      grid-template-rows: repeat(3, 34px);
-      gap: 4px;
-      align-items: center;
-    }
-
-    /* Category Title (Centered at Bottom) */
-    .category-title {
-      font-size: 0.74rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-align: center;
-      margin-top: auto;
-      padding-top: 6px;
-      letter-spacing: 0.02em;
-    }
-
-    /* Uniform Tool Icon Buttons */
-    .tool-btn {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 34px;
-      height: 34px;
-      padding: 0;
-      background: #f8fafc;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
-      color: #334155;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-
-    .tool-btn:hover {
-      background: #e2e8f0;
-      border-color: var(--accent-color);
-      color: var(--accent-color);
-    }
-
-    .tool-btn.active {
-      background: var(--accent-color);
-      border-color: var(--accent-color);
-      color: #ffffff;
-      box-shadow: 0 0 6px var(--accent-glow);
-    }
-
-    /* Uniform SVG Icon Dimensions (20x20 Display) */
-    .tool-btn svg {
-      width: 20px;
-      height: 20px;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 1.8;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      pointer-events: none;
-    }
-
-    /* Stationary Tooltip (Positioned Directly Below Icon, Shown on Hover/Alt) */
-    .tool-btn .tooltip-text {
-      display: none;
-      position: absolute;
-      top: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      margin-top: 6px;
-      padding: 4px 8px;
-      background: #0f172a;
-      border: 1px solid var(--accent-color);
-      color: #ffffff;
-      font-size: 0.72rem;
-      font-weight: 500;
-      white-space: nowrap;
-      border-radius: 4px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      z-index: 300;
-      pointer-events: none;
-    }
-
-    .tool-btn:hover .tooltip-text,
-    body.show-alt-keybinds .tool-btn .tooltip-text {
-      display: block;
-    }
-
-    /* Alt Keybind Badge */
-    .alt-badge {
-      display: none;
-      position: absolute;
-      top: -4px;
-      right: -4px;
-      background: #ea4335;
-      color: white;
-      font-size: 9px;
-      font-weight: 800;
-      border-radius: 50%;
-      width: 14px;
-      height: 14px;
-      line-height: 14px;
-      text-align: center;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-      z-index: 310;
-    }
-
-    body.show-alt-keybinds .alt-badge {
-      display: block;
-    }
-
-    .ribbon-control-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.8rem;
-      height: 34px;
-    }
-
-    .ribbon-control-item label {
-      color: #475569;
-      font-size: 0.8rem;
-      font-weight: 500;
-      white-space: nowrap;
-    }
-
-    .ribbon-control-item select, 
-    .ribbon-control-item input[type="color"],
-    .ribbon-control-item input[type="number"] {
-      padding: 4px 6px;
-      background: #ffffff;
-      border: 1px solid #cbd5e1;
-      border-radius: 4px;
-      color: var(--text-dark);
-      font-size: 0.8rem;
-      outline: none;
-    }
-
-    /* Content Area: SVG Canvas & Inspector Panel */
-    .content-area {
-      display: grid;
-      grid-template-columns: 1fr 260px;
-      gap: 12px;
-    }
-
-    @media (max-width: 960px) {
-      .content-area {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .svg-wrapper {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      background: #020617;
-      border: 1px solid #334155;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 4px 12px rgba(0, 0, 0, 0.5);
-    }
-
-    svg#mainSvg {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-
-    /* Inspector Panel */
-    .inspector-panel {
-      background: var(--panel-bg);
-      border: 1px solid #334155;
-      border-radius: 8px;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      font-size: 0.85rem;
-    }
-
-    .inspector-title {
-      font-weight: 700;
-      color: #38bdf8;
-      border-bottom: 1px solid #334155;
-      padding-bottom: 6px;
-    }
-
-    .stat-row {
-      display: flex;
-      justify-content: space-between;
-      font-family: monospace;
-    }
-
-    .stat-label {
-      color: #94a3b8;
-    }
-
-    .stat-val {
-      font-weight: 600;
-      color: #38bdf8;
-    }
-
-    .tree-box {
-      background: #020617;
-      border: 1px solid #334155;
-      border-radius: 6px;
-      padding: 6px;
-      height: 180px;
-      overflow-y: auto;
-      font-family: monospace;
-      font-size: 0.75rem;
-    }
-
-    .tree-item {
-      padding: 3px 6px;
-      cursor: pointer;
-      border-radius: 3px;
-    }
-
-    .tree-item:hover {
-      background: rgba(56, 189, 248, 0.15);
-    }
-
-    .tree-item.selected {
-      background: var(--accent-glow);
-      color: #38bdf8;
-      font-weight: 700;
-    }
-
-    /* Control Handles styling */
-    .handle-node {
-      cursor: pointer;
-      transition: r 0.15s ease;
-    }
-
-    .handle-node:hover {
-      r: 6;
-      stroke-width: 2.5;
-    }
-  </style>
 </head>
 <body>
-  <article>
+  <article class="webpointer-app">
+    <!-- Embedded Scoped Style for SPA Router Compatibility -->
+    <style>
+      .webpointer-app {
+        max-width: 1200px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        color: #f8fafc;
+        user-select: none;
+      }
+
+      /* Header Bar */
+      .webpointer-app .header-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 14px;
+        background: rgba(30, 41, 59, 0.95);
+        border: 1px solid #334155;
+        border-radius: 8px;
+      }
+
+      .webpointer-app .header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .webpointer-app .header-left a {
+        display: flex;
+        align-items: center;
+        transition: transform 0.2s;
+      }
+
+      .webpointer-app .header-left a:hover {
+        transform: scale(1.1);
+      }
+
+      .webpointer-app .header-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #38bdf8, #818cf8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      /* === Menu Bar (Gray Background, Width 100%) === */
+      .webpointer-app .menu-bar {
+        width: 100% !important;
+        background-color: #e2e8f0 !important;
+        border: 1px solid #cbd5e1 !important;
+        border-bottom: 1px solid #cbd5e1 !important;
+        border-radius: 8px 8px 0 0 !important;
+        padding: 6px 10px 0 10px !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: flex-end !important;
+        gap: 4px !important;
+        margin: 0 !important;
+      }
+
+      /* Menu Tab Buttons */
+      .webpointer-app .tab-btn {
+        padding: 8px 20px !important;
+        font-size: 0.9rem !important;
+        font-weight: 600 !important;
+        color: #475569 !important;
+        background-color: #e2e8f0 !important;
+        border: 1px solid transparent !important;
+        border-bottom: none !important;
+        border-radius: 6px 6px 0 0 !important;
+        cursor: pointer !important;
+        transition: all 0.15s ease !important;
+        position: relative !important;
+        outline: none !important;
+      }
+
+      .webpointer-app .tab-btn:hover {
+        color: #0f172a !important;
+        background-color: #cbd5e1 !important;
+      }
+
+      /* Selected Active Tab (White Background, Seamless Ribbon Connection) */
+      .webpointer-app .tab-btn.active {
+        color: #0284c7 !important;
+        background-color: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        border-bottom: 1px solid #ffffff !important;
+        margin-bottom: -1px !important;
+        z-index: 10 !important;
+        font-weight: 700 !important;
+        box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.05) !important;
+      }
+
+      /* === Ribbon Bar (White Background, Width 100%, Horizontal Categories) === */
+      .webpointer-app .ribbon-bar {
+        width: 100% !important;
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        border: 1px solid #cbd5e1 !important;
+        border-top: 1px solid #cbd5e1 !important;
+        border-radius: 0 0 8px 8px !important;
+        padding: 10px 16px !important;
+        min-height: 145px !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: stretch !important;
+        flex-wrap: nowrap !important;
+        gap: 0 !important;
+        overflow-x: auto !important;
+        position: relative !important;
+        z-index: 5 !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+        margin: 0 !important;
+      }
+
+      /* Category DIV (Left to Right Alignment) */
+      .webpointer-app .ribbon-category {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        padding-right: 16px !important;
+        margin-right: 16px !important;
+        border-right: 1px solid #e2e8f0 !important;
+        position: relative !important;
+        height: 100% !important;
+        flex-shrink: 0 !important;
+      }
+
+      .webpointer-app .ribbon-category:last-child {
+        border-right: none !important;
+        padding-right: 0 !important;
+        margin-right: 0 !important;
+      }
+
+      /* Category 3-Row Grid (Fill Row 1, Row 2, Row 3 sequentially) */
+      .webpointer-app .category-grid {
+        display: grid !important;
+        grid-template-rows: repeat(3, 34px) !important;
+        gap: 4px !important;
+        align-items: center !important;
+      }
+
+      /* Category Title (Centered at Bottom) */
+      .webpointer-app .category-title {
+        font-size: 0.74rem !important;
+        font-weight: 600 !important;
+        color: #64748b !important;
+        text-align: center !important;
+        margin-top: auto !important;
+        padding-top: 6px !important;
+        letter-spacing: 0.02em !important;
+        white-space: nowrap !important;
+      }
+
+      /* Uniform Square Tool Buttons */
+      .webpointer-app .tool-btn {
+        position: relative !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
+        min-height: 34px !important;
+        max-width: 34px !important;
+        max-height: 34px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background-color: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 6px !important;
+        color: #334155 !important;
+        cursor: pointer !important;
+        transition: all 0.15s ease !important;
+        box-sizing: border-box !important;
+      }
+
+      .webpointer-app .tool-btn:hover {
+        background-color: #e2e8f0 !important;
+        border-color: #0284c7 !important;
+        color: #0284c7 !important;
+      }
+
+      .webpointer-app .tool-btn.active {
+        background-color: #0284c7 !important;
+        border-color: #0284c7 !important;
+        color: #ffffff !important;
+        box-shadow: 0 0 6px rgba(2, 132, 199, 0.4) !important;
+      }
+
+      /* Uniform SVG Icon Dimensions (20x20 Display) */
+      .webpointer-app .tool-btn svg {
+        width: 20px !important;
+        height: 20px !important;
+        fill: none !important;
+        stroke: currentColor !important;
+        stroke-width: 1.8 !important;
+        stroke-linecap: round !important;
+        stroke-linejoin: round !important;
+        pointer-events: none !important;
+      }
+
+      /* Stationary Tooltip (Positioned Directly Below Icon) */
+      .webpointer-app .tool-btn .tooltip-text {
+        display: none !important;
+        position: absolute !important;
+        top: 100% !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        margin-top: 6px !important;
+        padding: 4px 8px !important;
+        background: #0f172a !important;
+        border: 1px solid #0284c7 !important;
+        color: #ffffff !important;
+        font-size: 0.72rem !important;
+        font-weight: 500 !important;
+        white-space: nowrap !important;
+        border-radius: 4px !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+        z-index: 300 !important;
+        pointer-events: none !important;
+      }
+
+      .webpointer-app .tool-btn:hover .tooltip-text,
+      body.show-alt-keybinds .webpointer-app .tool-btn .tooltip-text {
+        display: block !important;
+      }
+
+      /* Alt Keybind Badge */
+      .webpointer-app .alt-badge {
+        display: none !important;
+        position: absolute !important;
+        top: -4px !important;
+        right: -4px !important;
+        background: #ea4335 !important;
+        color: white !important;
+        font-size: 9px !important;
+        font-weight: 800 !important;
+        border-radius: 50% !important;
+        width: 14px !important;
+        height: 14px !important;
+        line-height: 14px !important;
+        text-align: center !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important;
+        z-index: 310 !important;
+      }
+
+      body.show-alt-keybinds .webpointer-app .alt-badge {
+        display: block !important;
+      }
+
+      .webpointer-app .ribbon-control-item {
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        font-size: 0.8rem !important;
+        height: 34px !important;
+      }
+
+      .webpointer-app .ribbon-control-item label {
+        color: #475569 !important;
+        font-size: 0.8rem !important;
+        font-weight: 500 !important;
+        white-space: nowrap !important;
+      }
+
+      .webpointer-app .ribbon-control-item select, 
+      .webpointer-app .ribbon-control-item input[type="color"],
+      .webpointer-app .ribbon-control-item input[type="number"] {
+        padding: 4px 6px !important;
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 4px !important;
+        color: #0f172a !important;
+        font-size: 0.8rem !important;
+        outline: none !important;
+      }
+
+      /* Content Area: SVG Canvas & Inspector Panel */
+      .webpointer-app .content-area {
+        display: grid !important;
+        grid-template-columns: 1fr 260px !important;
+        gap: 12px !important;
+      }
+
+      @media (max-width: 960px) {
+        .webpointer-app .content-area {
+          grid-template-columns: 1fr !important;
+        }
+      }
+
+      .webpointer-app .svg-wrapper {
+        position: relative !important;
+        width: 100% !important;
+        aspect-ratio: 16 / 9 !important;
+        background: #020617 !important;
+        border: 1px solid #334155 !important;
+        border-radius: 8px !important;
+        overflow: hidden !important;
+        box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+      }
+
+      .webpointer-app svg#mainSvg {
+        width: 100% !important;
+        height: 100% !important;
+        display: block !important;
+      }
+
+      /* Inspector Panel */
+      .webpointer-app .inspector-panel {
+        background: rgba(30, 41, 59, 0.95) !important;
+        border: 1px solid #334155 !important;
+        border-radius: 8px !important;
+        padding: 12px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+        font-size: 0.85rem !important;
+      }
+
+      .webpointer-app .inspector-title {
+        font-weight: 700 !important;
+        color: #38bdf8 !important;
+        border-bottom: 1px solid #334155 !important;
+        padding-bottom: 6px !important;
+      }
+
+      .webpointer-app .stat-row {
+        display: flex !important;
+        justify-content: space-between !important;
+        font-family: monospace !important;
+      }
+
+      .webpointer-app .stat-label {
+        color: #94a3b8 !important;
+      }
+
+      .webpointer-app .stat-val {
+        font-weight: 600 !important;
+        color: #38bdf8 !important;
+      }
+
+      .webpointer-app .tree-box {
+        background: #020617 !important;
+        border: 1px solid #334155 !important;
+        border-radius: 6px !important;
+        padding: 6px !important;
+        height: 180px !important;
+        overflow-y: auto !important;
+        font-family: monospace !important;
+        font-size: 0.75rem !important;
+      }
+
+      .webpointer-app .tree-item {
+        padding: 3px 6px !important;
+        cursor: pointer !important;
+        border-radius: 3px !important;
+      }
+
+      .webpointer-app .tree-item:hover {
+        background: rgba(56, 189, 248, 0.15) !important;
+      }
+
+      .webpointer-app .tree-item.selected {
+        background: rgba(56, 189, 248, 0.3) !important;
+        color: #38bdf8 !important;
+        font-weight: 700 !important;
+      }
+
+      /* Control Handles styling */
+      .webpointer-app .handle-node {
+        cursor: pointer !important;
+        transition: r 0.15s ease !important;
+      }
+
+      .webpointer-app .handle-node:hover {
+        r: 6 !important;
+        stroke-width: 2.5 !important;
+      }
+    </style>
+
     <!-- Header Bar -->
     <div class="header-bar">
       <div class="header-left">
@@ -607,7 +600,7 @@
       });
     }
 
-    // Helper to generate Tool HTML
+    // Helper to generate Tool Button HTML
     function makeToolHtml(toolId, title, keybind, svgPath) {
       const isActive = currentTool === toolId ? 'active' : '';
       return `
@@ -619,7 +612,7 @@
       `;
     }
 
-    // Helper to format category items into exact 3-Row Grid (Row 1 -> Row 2 -> Row 3)
+    // Helper to format category items into exact 3-Row Grid (Filling Row 1, Row 2, Row 3)
     function build3RowGridHtml(itemsHtmlArray) {
       const colCount = Math.ceil(itemsHtmlArray.length / 3);
       return `<div class="category-grid" style="grid-template-columns: repeat(${colCount}, 34px);">${itemsHtmlArray.join('')}</div>`;
@@ -664,25 +657,18 @@
         ];
 
         ribbonBar.innerHTML = `
-          <!-- 도형 삽입 Category DIV -->
           <div class="ribbon-category">
             ${build3RowGridHtml(shapeTools)}
             <div class="category-title">도형 삽입</div>
           </div>
-
-          <!-- 레이어 순서 Category DIV -->
           <div class="ribbon-category">
             ${build3RowGridHtml(layerTools)}
             <div class="category-title">레이어 순서</div>
           </div>
-
-          <!-- 그룹화 Category DIV -->
           <div class="ribbon-category">
             ${build3RowGridHtml(groupTools)}
             <div class="category-title">그룹화</div>
           </div>
-
-          <!-- 정렬 Category DIV -->
           <div class="ribbon-category">
             ${build3RowGridHtml(alignTools)}
             <div class="category-title">정렬</div>
@@ -690,7 +676,6 @@
         `;
       } else if (currentTab === 'view') {
         ribbonBar.innerHTML = `
-          <!-- 격자 및 스냅 설정 Category DIV -->
           <div class="ribbon-category">
             <div class="category-grid" style="grid-template-columns: auto;">
               <div class="ribbon-control-item">
@@ -708,8 +693,6 @@
             </div>
             <div class="category-title">격자 및 스냅 설정</div>
           </div>
-
-          <!-- 캔버스 화면 설정 Category DIV -->
           <div class="ribbon-category">
             <div class="category-grid" style="grid-template-columns: auto;">
               <div class="ribbon-control-item">
@@ -731,7 +714,6 @@
         `;
       } else if (currentTab === 'style') {
         ribbonBar.innerHTML = `
-          <!-- 기본 스타일 Category DIV -->
           <div class="ribbon-category">
             <div class="category-grid" style="grid-template-columns: auto;">
               <div class="ribbon-control-item">
@@ -749,8 +731,6 @@
             </div>
             <div class="category-title">기본 스타일</div>
           </div>
-
-          <!-- 시작 모양 마커 Category DIV -->
           <div class="ribbon-category">
             <div class="category-grid" style="grid-template-columns: auto 34px 34px;">
               <div class="ribbon-control-item" style="grid-row: 1 / span 3;">
@@ -767,8 +747,6 @@
             </div>
             <div class="category-title">시작 모양 마커</div>
           </div>
-
-          <!-- 끝 모양 마커 Category DIV -->
           <div class="ribbon-category">
             <div class="category-grid" style="grid-template-columns: auto 34px 34px;">
               <div class="ribbon-control-item" style="grid-row: 1 / span 3;">
@@ -841,7 +819,7 @@
       if (window.event && window.event.target) {
         window.event.target.classList.add('active');
       } else {
-        const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tab));
+        const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(tab));
         if (activeBtn) activeBtn.classList.add('active');
       }
       renderRibbon();
@@ -1224,7 +1202,7 @@
       });
     }
 
-    // === GLOBAL SCOPE BINDINGS (Exposing for Inline HTML Event Handlers) ===
+    // === GLOBAL SCOPE BINDINGS ===
     window.switchTab = switchTab;
     window.setTool = setTool;
     window.toggleGridSnap = toggleGridSnap;
