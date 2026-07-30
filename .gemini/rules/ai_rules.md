@@ -6,8 +6,9 @@ This workspace enforces strict system-level rules. The AI assistant MUST observe
 - Always refer to and strictly follow [AI_Coding_Rules.md](file:///c:/git/html/AI_Coding_Rules.md) ("AI Requirements") for project architecture, code conventions, and Git workflows.
 
 ## 2. Git & Verification Protocol
-- **NEVER** execute `git commit` or `git push` automatically without explicit prior user review and authorization.
-- Enforce the lifecycle: **Implementation ➡️ Verification ➡️ User Approval ➡️ Commit ➡️ Push**.
+- **HALT ALL AUTOMATIC PUSH**: Do NOT perform `git push` automatically.
+- Merge to `main` and execute push ONLY when explicitly requested by the user.
+- Enforce the lifecycle: **Implementation ➡️ Verification ➡️ User Approval ➡️ Local Commit**.
 
 ## 3. Mandatory Response Summary Section
 - At the very end of **EVERY SINGLE RESPONSE**, always append the following section:

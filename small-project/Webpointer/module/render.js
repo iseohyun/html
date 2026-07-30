@@ -6,14 +6,14 @@
   var cfg = window.WebpointerConfig;
 
   var WebpointerRender = {
-    // Render 481x271 Step Grid Lines
+    // Render Step Grid Lines for White Canvas
     renderGrid: function() {
       var gridGroup = document.getElementById('gridGroup');
       var mainSvg = document.getElementById('mainSvg');
       if (!gridGroup || !mainSvg) return;
 
       gridGroup.innerHTML = '';
-      mainSvg.style.backgroundColor = cfg.canvasBgColor;
+      mainSvg.style.backgroundColor = cfg.canvasBgColor || '#ffffff';
 
       if (!cfg.gridSnapEnabled) return;
 
@@ -31,12 +31,12 @@
 
       var gridPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       gridPath.setAttribute('d', pathData);
-      gridPath.setAttribute('stroke', 'rgba(51, 65, 85, 0.4)');
-      gridPath.setAttribute('stroke-width', '0.6');
+      gridPath.setAttribute('stroke', '#e2e8f0'); // Crisp grid lines on white canvas
+      gridPath.setAttribute('stroke-width', '0.8');
       gridGroup.appendChild(gridPath);
     },
 
-    // Update SVG Defs for Arrow/Circle/Diamond Markers
+    // Update SVG Defs for Markers
     updateSvgDefs: function() {
       var svgDefs = document.getElementById('svgDefs');
       if (!svgDefs) return;
@@ -56,7 +56,7 @@
           marker.setAttribute('orient', 'auto');
 
           var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-          path.setAttribute('fill', cfg.strokeColor);
+          path.setAttribute('fill', cfg.strokeColor || '#041e49');
 
           if (type === 'arrow') {
             path.setAttribute('d', pos === 'start' ? 'M 10 0 L 0 5 L 10 10 Z' : 'M 0 0 L 10 5 L 0 10 Z');
@@ -81,7 +81,7 @@
              '</button>';
     },
 
-    // Helper: Build 3-Row Item Grid (Sequential Row 1, Row 2, Row 3 Filling)
+    // Helper: Build 3-Row Item Grid
     build3RowGridHtml: function(itemsHtmlArray) {
       var colCount = Math.ceil(itemsHtmlArray.length / 3);
       return '<div class="category-grid" style="grid-template-columns: repeat(' + colCount + ', 34px);">' + itemsHtmlArray.join('') + '</div>';
@@ -108,10 +108,10 @@
         ];
 
         var layerTools = [
-          '<button class="tool-btn" onclick="arrangeOrder(\'backward\')"><span class="alt-badge">Q</span><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12"/><rect x="4" y="4" width="12" height="12" fill="rgba(56,189,248,0.3)"/></svg><span class="tooltip-text">뒤로</span></button>',
-          '<button class="tool-btn" onclick="arrangeOrder(\'back\')"><span class="alt-badge">W</span><svg viewBox="0 0 24 24"><rect x="10" y="10" width="10" height="10"/><rect x="4" y="4" width="10" height="10" fill="rgba(56,189,248,0.3)"/></svg><span class="tooltip-text">맨뒤로</span></button>',
-          '<button class="tool-btn" onclick="arrangeOrder(\'forward\')"><span class="alt-badge">E</span><svg viewBox="0 0 24 24"><rect x="4" y="4" width="12" height="12"/><rect x="8" y="8" width="12" height="12" fill="rgba(56,189,248,0.3)"/></svg><span class="tooltip-text">앞으로</span></button>',
-          '<button class="tool-btn" onclick="arrangeOrder(\'front\')"><span class="alt-badge">R</span><svg viewBox="0 0 24 24"><rect x="4" y="4" width="10" height="10"/><rect x="10" y="10" width="10" height="10" fill="rgba(56,189,248,0.3)"/></svg><span class="tooltip-text">맨앞으로</span></button>'
+          '<button class="tool-btn" onclick="arrangeOrder(\'backward\')"><span class="alt-badge">Q</span><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12"/><rect x="4" y="4" width="12" height="12" fill="rgba(4,30,73,0.3)"/></svg><span class="tooltip-text">뒤로</span></button>',
+          '<button class="tool-btn" onclick="arrangeOrder(\'back\')"><span class="alt-badge">W</span><svg viewBox="0 0 24 24"><rect x="10" y="10" width="10" height="10"/><rect x="4" y="4" width="10" height="10" fill="rgba(4,30,73,0.3)"/></svg><span class="tooltip-text">맨뒤로</span></button>',
+          '<button class="tool-btn" onclick="arrangeOrder(\'forward\')"><span class="alt-badge">E</span><svg viewBox="0 0 24 24"><rect x="4" y="4" width="12" height="12"/><rect x="8" y="8" width="12" height="12" fill="rgba(4,30,73,0.3)"/></svg><span class="tooltip-text">앞으로</span></button>',
+          '<button class="tool-btn" onclick="arrangeOrder(\'front\')"><span class="alt-badge">R</span><svg viewBox="0 0 24 24"><rect x="4" y="4" width="10" height="10"/><rect x="10" y="10" width="10" height="10" fill="rgba(4,30,73,0.3)"/></svg><span class="tooltip-text">맨앞으로</span></button>'
         ];
 
         var groupTools = [
@@ -154,7 +154,7 @@
           '<div class="ribbon-category">' +
             '<div class="category-grid" style="grid-template-columns: auto;">' +
               '<div class="ribbon-control-item"><label>테두리 색상:</label><input type="color" value="' + cfg.strokeColor + '" onchange="strokeColor=this.value; updateSvgDefs(); applyStyleToSelected();"></div>' +
-              '<div class="ribbon-control-item"><label>채우기 색상:</label><input type="color" value="' + (cfg.fillColor.startsWith('#') ? cfg.fillColor : '#38bdf8') + '" onchange="fillColor=this.value; applyStyleToSelected();"></div>' +
+              '<div class="ribbon-control-item"><label>채우기 색상:</label><input type="color" value="' + (cfg.fillColor.startsWith('#') ? cfg.fillColor : '#041e49') + '" onchange="fillColor=this.value; applyStyleToSelected();"></div>' +
               '<div class="ribbon-control-item"><label>선 두께:</label><input type="number" min="1" max="20" value="' + cfg.strokeWidth + '" onchange="strokeWidth=parseInt(this.value); applyStyleToSelected();" style="width:55px;"></div>' +
             '</div>' +
             '<div class="category-title">기본 스타일</div>' +
@@ -195,13 +195,13 @@
       }
     },
 
-    // Update Object Element Attributes
+    // Update SVG Element Attributes
     updateElementAttributes: function(obj) {
       var a = obj.attrs;
       if (obj.type === 'point') {
         obj.el.setAttribute('cx', a.cx);
         obj.el.setAttribute('cy', a.cy);
-        obj.el.setAttribute('r', a.r || 6);
+        obj.el.setAttribute('r', a.r || cfg.pointRadius || 5);
       } else if (obj.type === 'line') {
         obj.el.setAttribute('x1', a.x1);
         obj.el.setAttribute('y1', a.y1);
@@ -227,7 +227,7 @@
       }
     },
 
-    // Render Handle Overlay Node
+    // Render Control Handle Node
     createHandleNode: function(x, y, objId, handleType, idx) {
       var uiGroup = document.getElementById('uiGroup');
       if (!uiGroup) return;
@@ -235,10 +235,10 @@
       var circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
       circle.setAttribute('cx', x);
       circle.setAttribute('cy', y);
-      circle.setAttribute('r', '5');
-      circle.setAttribute('fill', '#38bdf8');
+      circle.setAttribute('r', '6');
+      circle.setAttribute('fill', '#0284c7');
       circle.setAttribute('stroke', '#ffffff');
-      circle.setAttribute('stroke-width', '1.5');
+      circle.setAttribute('stroke-width', '2');
       circle.setAttribute('class', 'handle-node');
 
       circle.addEventListener('mousedown', function(e) {
@@ -265,10 +265,22 @@
         if (!obj) return;
         var a = obj.attrs;
 
-        if (obj.type === 'bez2') {
+        if (obj.type === 'point') {
+          // Highlight ring for Point
+          var ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          ring.setAttribute('cx', a.cx);
+          ring.setAttribute('cy', a.cy);
+          ring.setAttribute('r', (a.r || 5) + 4);
+          ring.setAttribute('fill', 'none');
+          ring.setAttribute('stroke', '#0284c7');
+          ring.setAttribute('stroke-width', '1.5');
+          ring.setAttribute('stroke-dasharray', '3,3');
+          uiGroup.appendChild(ring);
+          self.createHandleNode(a.cx, a.cy, id, 'point_center', 1);
+        } else if (obj.type === 'bez2') {
           var guide = document.createElementNS('http://www.w3.org/2000/svg', 'path');
           guide.setAttribute('d', 'M ' + a.x1 + ' ' + a.y1 + ' L ' + a.cx + ' ' + a.cy + ' L ' + a.x2 + ' ' + a.y2);
-          guide.setAttribute('stroke', '#38bdf8');
+          guide.setAttribute('stroke', '#0284c7');
           guide.setAttribute('stroke-dasharray', '3,3');
           guide.setAttribute('fill', 'none');
           uiGroup.appendChild(guide);
@@ -276,7 +288,7 @@
         } else if (obj.type === 'bez3') {
           var guide2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
           guide2.setAttribute('d', 'M ' + a.x1 + ' ' + a.y1 + ' L ' + a.c1x + ' ' + a.c1y + ' L ' + a.c2x + ' ' + a.c2y + ' L ' + a.x2 + ' ' + a.y2);
-          guide2.setAttribute('stroke', '#38bdf8');
+          guide2.setAttribute('stroke', '#0284c7');
           guide2.setAttribute('stroke-dasharray', '3,3');
           guide2.setAttribute('fill', 'none');
           uiGroup.appendChild(guide2);

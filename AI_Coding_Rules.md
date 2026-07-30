@@ -18,9 +18,9 @@
   - If the scope is ambiguous, always confirm it with the user.
 - Manage git branches using the scope name.
 - Follow the 'Implementation' ➡️ 'Verification' ➡️ 'Commit' process.
-  - Perform commits ONLY after the user has completed and approved the verification.
-- Before committing, if there are any unidentified changes, always verify with the user if they were intended. (Mandatory)
-- Push operations must only be executed if the user explicitly requests or authorizes them.
+- Push operations are halted by default. Do NOT perform git push automatically.
+- Merge to `main` and execute push ONLY when the user explicitly requests or authorizes it.
+
 
 ---
 

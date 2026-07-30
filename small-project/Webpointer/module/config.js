@@ -1,6 +1,6 @@
 /**
  * Webpointer Configuration & Global State Module
- * Encapsulates constants, state objects, and configuration maps.
+ * Encapsulates constants, state objects, and default settings.
  */
 (function() {
   var WebpointerConfig = {
@@ -10,15 +10,16 @@
     STEPS_X: 480, // 0 ~ 480 (481 points)
     STEPS_Y: 270, // 0 ~ 270 (271 points)
 
-    // Dynamic State Variables
+    // Dynamic State Variables & User Defaults
     currentTab: 'insert',
-    currentTool: 'select', // select, point, line, rect, ellipse, arc, bez2, bez3, rounded
+    currentTool: 'point', // Set default active tool to 'point'
     gridSnapEnabled: true,
-    canvasBgColor: '#020617',
+    canvasBgColor: '#ffffff', // Default White Canvas
 
-    strokeColor: '#38bdf8',
-    fillColor: 'rgba(56, 189, 248, 0.2)',
+    strokeColor: '#041e49',   // Default Shape Color (#041e49)
+    fillColor: '#041e49',     // Default Shape Fill Color (#041e49)
     strokeWidth: 2,
+    pointRadius: 5,           // Default Point Diameter 10px (radius = 5px)
 
     startMarker: 'none',
     startMarkerScale: 1,

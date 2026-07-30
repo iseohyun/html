@@ -16,9 +16,10 @@
   };
   window.WebpointerState = state;
 
-  // Step Quantization
+  // Step Quantization Calculation
   function getStepCoords(evt) {
     var mainSvg = document.getElementById('mainSvg');
+    if (!mainSvg) return { rawX: 0, rawY: 0, stepX: 0, stepY: 0, px: 0, py: 0 };
     var rect = mainSvg.getBoundingClientRect();
     var rawX = (evt.clientX - rect.left) * (cfg.SVG_WIDTH / rect.width);
     var rawY = (evt.clientY - rect.top) * (cfg.SVG_HEIGHT / rect.height);
@@ -62,7 +63,8 @@
 
     if (type === 'point') {
       el = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-      attrs = { cx: px1, cy: py1, r: 6, stepX: stepStart.stepX, stepY: stepStart.stepY };
+      // Point radius = 5px (10px diameter), color = #041e49
+      attrs = { cx: px1, cy: py1, r: cfg.pointRadius || 5, stepX: stepStart.stepX, stepY: stepStart.stepY };
     } else if (type === 'line') {
       el = document.createElementNS('http://www.w3.org/2000/svg', 'line');
       attrs = { x1: px1, y1: py1, x2: px2, y2: py2, stepX1: stepStart.stepX, stepY1: stepStart.stepY, stepX2: stepEnd.stepX, stepY2: stepEnd.stepY };
@@ -99,9 +101,9 @@
     }
 
     el.setAttribute('id', id);
-    el.setAttribute('stroke', cfg.strokeColor);
-    el.setAttribute('fill', type === 'line' || type === 'bez2' || type === 'bez3' || type === 'arc' ? 'none' : cfg.fillColor);
-    el.setAttribute('stroke-width', cfg.strokeWidth);
+    el.setAttribute('stroke', cfg.strokeColor || '#041e49');
+    el.setAttribute('fill', type === 'line' || type === 'bez2' || type === 'bez3' || type === 'arc' ? 'none' : (cfg.fillColor || '#041e49'));
+    el.setAttribute('stroke-width', cfg.strokeWidth || 2);
 
     if (cfg.startMarker !== 'none') el.setAttribute('marker-start', 'url(#marker-start-' + cfg.startMarker + ')');
     if (cfg.endMarker !== 'none') el.setAttribute('marker-end', 'url(#marker-end-' + cfg.endMarker + ')');
@@ -114,7 +116,7 @@
     return objData;
   }
 
-  // Bind Global Handlers to Window Object
+  // Bind Global Handlers to Window Object (Exposed for Inline Event Handlers)
   window.switchTab = function(tab) {
     cfg.currentTab = tab;
     document.querySelectorAll('.tab-btn').forEach(function(btn) { btn.classList.remove('active'); });
@@ -246,12 +248,21 @@
     render.updateSvgDefs();
   };
 
-  // Initialize Canvas Interactions on DOM Ready
-  document.addEventListener('DOMContentLoaded', function() {
+  // Immediate App Initialization Function (Fixes SPA Navigation Delay)
+  function initApp() {
     var mainSvg = document.getElementById('mainSvg');
     var statRaw = document.getElementById('statRaw');
     var statStep = document.getElementById('statStep');
     if (!mainSvg) return;
+
+    // Prevent attaching duplicate listeners if re-entering page
+    if (mainSvg.dataset.initialized === 'true') {
+      render.renderGrid();
+      render.updateSvgDefs();
+      render.renderRibbon();
+      return;
+    }
+    mainSvg.dataset.initialized = 'true';
 
     mainSvg.addEventListener('mousedown', function(e) {
       var coords = getStepCoords(e);
@@ -270,7 +281,15 @@
           state.isMarquee = true;
         }
         render.renderUI();
+      } else if (cfg.currentTool === 'point') {
+        // Point Tool: Create point immediately at snapped coordinate
+        state.isDrawing = false;
+        cfg.selectedIds.clear();
+        var pointObj = createSvgObject('point', coords, coords);
+        cfg.selectedIds.add(pointObj.id);
+        render.renderUI();
       } else {
+        // Drag-to-draw tools (Line, Rect, Ellipse, Arc, Bezier)
         state.isDrawing = true;
         state.drawStartStep = coords;
         cfg.selectedIds.clear();
@@ -289,7 +308,12 @@
         var obj = cfg.objectsMap.get(state.activeHandleInfo.objId);
         if (obj) {
           var a = obj.attrs;
-          if (state.activeHandleInfo.handleType === 'bez2_ctrl') {
+          if (state.activeHandleInfo.handleType === 'point_center') {
+            a.cx = coords.px;
+            a.cy = coords.py;
+            a.stepX = coords.stepX;
+            a.stepY = coords.stepY;
+          } else if (state.activeHandleInfo.handleType === 'bez2_ctrl') {
             a.cx = coords.px;
             a.cy = coords.py;
           } else if (state.activeHandleInfo.handleType === 'bez3_ctrl1') {
@@ -376,5 +400,11 @@
     render.renderGrid();
     render.updateSvgDefs();
     render.renderRibbon();
-  });
+  }
+
+  // Execute immediate setup for SPA + DOMContentLoaded listener fallback
+  initApp();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+  }
 })();
