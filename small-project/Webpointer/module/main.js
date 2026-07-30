@@ -940,6 +940,7 @@
 
   window.setStrokeWidth = function(val) {
     cfg.strokeWidth = parseInt(val, 10) || 1;
+    window.updateSvgDefs();
     window.applyStyleToSelected();
     render.renderRibbon();
   };

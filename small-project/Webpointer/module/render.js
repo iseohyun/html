@@ -69,36 +69,33 @@
       gridGroup.appendChild(gridPath);
     },
 
-    // Update SVG Defs for Markers (Inverse strokeWidth compensation keeps marker size constant at normal scale)
+    // Update SVG Defs for Markers (userSpaceOnUse ensures fixed pixel size regardless of strokeWidth, fill=none for hollow)
     updateSvgDefs: function() {
       var svgDefs = document.getElementById('svgDefs');
       if (!svgDefs) return;
       svgDefs.innerHTML = '';
-
-      var strokeW = Math.max(1, cfg.strokeWidth || 2);
 
       ['arrow', 'circle', 'diamond'].forEach(function(type) {
         ['start', 'end'].forEach(function(pos) {
           var markerId = 'marker-' + pos + '-' + type;
           var marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
           marker.setAttribute('id', markerId);
-          marker.setAttribute('markerUnits', 'strokeWidth');
+          marker.setAttribute('markerUnits', 'userSpaceOnUse'); // Absolute canvas pixels - fixed size!
           marker.setAttribute('viewBox', '0 0 10 10');
-          marker.setAttribute('refX', pos === 'start' ? '2' : '8');
+          marker.setAttribute('refX', pos === 'start' ? '1.5' : '8.5');
           marker.setAttribute('refY', '5');
 
-          var scale = pos === 'start' ? cfg.startMarkerScale : cfg.endMarkerScale;
-          // Compensate markerWidth by dividing by (strokeW / 2) so rendered size stays constant regardless of line thickness
-          var normSize = (6 * scale) / (strokeW / 2);
-          marker.setAttribute('markerWidth', normSize.toString());
-          marker.setAttribute('markerHeight', normSize.toString());
+          var scale = pos === 'start' ? (cfg.startMarkerScale || 1) : (cfg.endMarkerScale || 1);
+          var markerSize = Math.round(12 * scale);
+          marker.setAttribute('markerWidth', markerSize.toString());
+          marker.setAttribute('markerHeight', markerSize.toString());
           marker.setAttribute('orient', 'auto');
 
           var fillStyle = pos === 'start' ? (cfg.startMarkerFillStyle || 'solid') : (cfg.endMarkerFillStyle || 'solid');
 
           var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
           if (fillStyle === 'hollow') {
-            path.setAttribute('fill', '#ffffff');
+            path.setAttribute('fill', 'none'); // True transparent hollow center (no white block)!
             path.setAttribute('stroke', cfg.strokeColor || '#041e49');
             path.setAttribute('stroke-width', '1.5');
           } else {
@@ -107,11 +104,11 @@
           }
 
           if (type === 'arrow') {
-            path.setAttribute('d', pos === 'start' ? 'M 10 0 L 0 5 L 10 10 Z' : 'M 0 0 L 10 5 L 0 10 Z');
+            path.setAttribute('d', pos === 'start' ? 'M 9 1.5 L 1.5 5 L 9 8.5 Z' : 'M 1 1.5 L 8.5 5 L 1 8.5 Z');
           } else if (type === 'circle') {
             path.setAttribute('d', 'M 5 1 A 4 4 0 1 1 4.99 1 Z');
           } else if (type === 'diamond') {
-            path.setAttribute('d', 'M 5 0 L 10 5 L 5 10 L 0 5 Z');
+            path.setAttribute('d', 'M 5 1 L 9 5 L 5 9 L 1 5 Z');
           }
           marker.appendChild(path);
           svgDefs.appendChild(marker);
