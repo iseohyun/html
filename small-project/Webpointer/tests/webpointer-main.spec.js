@@ -36,7 +36,7 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
 
     const toolBtns = page.locator('.tool-btn');
     const count = await toolBtns.count();
-    console.log('[Test Log] Found tool buttons count:', count);
+    expect(count).toBeGreaterThan(0);
 
     // Click Rectangle Tool
     await page.click('.tool-btn[onclick*="rect"]');
