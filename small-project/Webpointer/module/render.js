@@ -340,14 +340,6 @@
         // === 3. 선 Category (Line Thickness Column, Line Style 1x2, Custom Dash Array Input below label) ===
         var curDashStyle = cfg.strokeDashStyle || 'solid';
         var curDashArray = cfg.strokeDashArray || '6,6';
-        if (cfg.selectedIds && cfg.selectedIds.size === 1) {
-          var selId = Array.from(cfg.selectedIds)[0];
-          var selObj = cfg.objectsMap.get(selId);
-          if (selObj && selObj.attrs) {
-            if (selObj.attrs.strokeDashStyle) curDashStyle = selObj.attrs.strokeDashStyle;
-            if (selObj.attrs.strokeDashArray) curDashArray = selObj.attrs.strokeDashArray;
-          }
-        }
         var isDashed = curDashStyle === 'dashed';
 
         var solidLineBtn = '<button class="tool-btn ' + (curDashStyle==='solid'?'active':'') + '" onclick="setStrokeDashStyle(\'solid\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="3"/></svg><span class="tooltip-text">선 모양: 실선</span></button>';
