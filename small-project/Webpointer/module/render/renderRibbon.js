@@ -291,28 +291,23 @@
           '<span class="tooltip-text">줄간격 (클릭: 1.2/1.5 토글, 길게누르기: 선택)</span>' +
         '</button>';
 
-      var alignLeftBtnHtml =
-        '<button class="tool-btn ' + (curTextAnchor==='start'?'active':'') + '" onclick="setTextAnchor(\'start\')" style="width:34px; height:34px;">' +
-          (icons.alignTextLeft || '') +
-          '<span class="tooltip-text">왼쪽 맞춤</span>' +
-        '</button>';
+      var hIconSvg = icons.alignTextLeft;
+      var hTooltipText = "왼쪽 맞춤 (클릭 시 좌/중/우/양쪽 순환)";
+      if (curTextAnchor === 'middle') {
+        hIconSvg = icons.alignTextCenter;
+        hTooltipText = "가운데 맞춤 (클릭 시 좌/중/우/양쪽 순환)";
+      } else if (curTextAnchor === 'end') {
+        hIconSvg = icons.alignTextRight;
+        hTooltipText = "오른쪽 맞춤 (클릭 시 좌/중/우/양쪽 순환)";
+      } else if (curTextAnchor === 'justify') {
+        hIconSvg = icons.alignTextJustify;
+        hTooltipText = "양쪽 맞춤 (클릭 시 좌/중/우/양쪽 순환)";
+      }
 
-      var alignCenterBtnHtml =
-        '<button class="tool-btn ' + (curTextAnchor==='middle'?'active':'') + '" onclick="setTextAnchor(\'middle\')" style="width:34px; height:34px;">' +
-          (icons.alignTextCenter || '') +
-          '<span class="tooltip-text">가운데 맞춤</span>' +
-        '</button>';
-
-      var alignRightBtnHtml =
-        '<button class="tool-btn ' + (curTextAnchor==='end'?'active':'') + '" onclick="setTextAnchor(\'end\')" style="width:34px; height:34px;">' +
-          (icons.alignTextRight || '') +
-          '<span class="tooltip-text">오른쪽 맞춤</span>' +
-        '</button>';
-
-      var alignJustifyBtnHtml =
-        '<button class="tool-btn" onclick="setTextAnchor(\'start\')" style="width:34px; height:34px;">' +
-          (icons.alignTextJustify || '') +
-          '<span class="tooltip-text">양쪽 맞춤</span>' +
+      var alignHorizCycleBtnHtml =
+        '<button class="tool-btn active" onclick="cycleTextHorizontalAlign()" style="width:34px; height:34px;">' +
+          (hIconSvg || '≡') +
+          '<span class="tooltip-text">' + hTooltipText + '</span>' +
         '</button>';
 
       var isVertical = (cfg.textWritingMode === 'vertical-rl' || cfg.textWritingMode === 'vertical');
@@ -323,20 +318,37 @@
         '</button>';
 
       var curVertAlign = cfg.textDominantBaseline || 'alphabetic';
-      var iconSvg = icons.alignVertBottom;
-      var tooltipText = "아래쪽 맞춤 (클릭 시 위/중앙/아래 순환)";
+      var vIconSvg = icons.alignVertBottom;
+      var vTooltipText = "아래쪽 맞춤 (클릭 시 위/중앙/아래 순환)";
       if (curVertAlign === 'hanging') {
-        iconSvg = icons.alignVertTop;
-        tooltipText = "위쪽 맞춤 (클릭 시 위/중앙/아래 순환)";
+        vIconSvg = icons.alignVertTop;
+        vTooltipText = "위쪽 맞춤 (클릭 시 위/중앙/아래 순환)";
       } else if (curVertAlign === 'central' || curVertAlign === 'middle') {
-        iconSvg = icons.alignVertMiddle;
-        tooltipText = "중앙 맞춤 (클릭 시 위/중앙/아래 순환)";
+        vIconSvg = icons.alignVertMiddle;
+        vTooltipText = "중앙 맞춤 (클릭 시 위/중앙/아래 순환)";
       }
 
       var alignVertCycleBtnHtml =
         '<button class="tool-btn active" onclick="cycleTextVerticalAlign()" style="width:34px; height:34px;">' +
-          (iconSvg || '↕') +
-          '<span class="tooltip-text">' + tooltipText + '</span>' +
+          (vIconSvg || '↕') +
+          '<span class="tooltip-text">' + vTooltipText + '</span>' +
+        '</button>';
+
+      var curAutoFit = cfg.textAutoFitMode || 'fitShapeToText';
+      var fitIconSvg = icons.autoFitShape;
+      var fitTooltipText = "텍스트에 맞춤 (기본): 글자가 도형을 넘어가면 도형 크기를 키움 (클릭 시 순환)";
+      if (curAutoFit === 'fitTextToShape') {
+        fitIconSvg = icons.autoFitText;
+        fitTooltipText = "도형에 맞춤: 텍스트가 도형을 넘어가면 텍스트 크기를 줄임 (클릭 시 순환)";
+      } else if (curAutoFit === 'none') {
+        fitIconSvg = icons.autoFitNone;
+        fitTooltipText = "안 맞춤: 도형이나 텍스트 크기를 변경하지 않음 (클릭 시 순환)";
+      }
+
+      var autoFitCycleBtnHtml =
+        '<button class="tool-btn active" onclick="cycleTextAutoFitMode()" style="width:34px; height:34px;">' +
+          (fitIconSvg || '⇱') +
+          '<span class="tooltip-text">' + fitTooltipText + '</span>' +
         '</button>';
 
       var fontOptionsHtml =
@@ -355,12 +367,9 @@
             textDirectionBtnHtml +
           '</div>' +
           '<div style="display:flex; flex-direction:row; align-items:center; gap:3px;">' +
-            alignLeftBtnHtml +
-            alignCenterBtnHtml +
-            alignRightBtnHtml +
-            alignJustifyBtnHtml +
-            '<div style="width:1px; height:24px; background:#cbd5e1; margin:0 2px;"></div>' +
+            alignHorizCycleBtnHtml +
             alignVertCycleBtnHtml +
+            autoFitCycleBtnHtml +
           '</div>' +
         '</div>';
 

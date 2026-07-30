@@ -569,6 +569,110 @@
     setTextVerticalAlign(nextBaseline);
   }
 
+  function cycleTextHorizontalAlign() {
+    var cur = cfg.textAnchor || 'start';
+    var nextAnchor = 'start';
+    if (cur === 'start') {
+      nextAnchor = 'middle';
+    } else if (cur === 'middle') {
+      nextAnchor = 'end';
+    } else if (cur === 'end') {
+      nextAnchor = 'justify';
+    } else {
+      nextAnchor = 'start';
+    }
+    setTextAnchor(nextAnchor);
+  }
+
+  function applyAutoFitToGroup(textObj) {
+    if (!textObj || !textObj.parentId) return;
+    var mode = textObj.attrs.autoFitMode || cfg.textAutoFitMode || 'fitShapeToText';
+    if (mode === 'none') return;
+
+    var groupMembers = [];
+    cfg.objectsMap.forEach(function(o) {
+      if (o.parentId === textObj.parentId && o.id !== textObj.id && o.type !== 'text') {
+        groupMembers.push(o);
+      }
+    });
+    if (groupMembers.length === 0) return;
+
+    var textWidth = 100, textHeight = 30;
+    try {
+      if (textObj.el) {
+        var bbox = textObj.el.getBBox();
+        textWidth = bbox.width;
+        textHeight = bbox.height;
+      }
+    } catch(e) {}
+
+    var shapeObj = groupMembers[0];
+    var sAttrs = shapeObj.attrs || {};
+
+    if (mode === 'fitShapeToText') {
+      var reqWidth = textWidth + 30;
+      var reqHeight = textHeight + 20;
+
+      if (shapeObj.type === 'rect' || shapeObj.type === 'rounded') {
+        if ((sAttrs.width || 100) < reqWidth) sAttrs.width = Math.round(reqWidth);
+        if ((sAttrs.height || 60) < reqHeight) sAttrs.height = Math.round(reqHeight);
+      } else if (shapeObj.type === 'ellipse') {
+        if ((sAttrs.rx || 50) * 2 < reqWidth) sAttrs.rx = Math.round(reqWidth / 2);
+        if ((sAttrs.ry || 30) * 2 < reqHeight) sAttrs.ry = Math.round(reqHeight / 2);
+      }
+      if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+        window.WebpointerRender.updateElementAttributes(shapeObj);
+      }
+    } else if (mode === 'fitTextToShape') {
+      var shapeWidth = sAttrs.width || (sAttrs.rx ? sAttrs.rx * 2 : 100);
+      var shapeHeight = sAttrs.height || (sAttrs.ry ? sAttrs.ry * 2 : 60);
+
+      var availW = shapeWidth - 20;
+      var availH = shapeHeight - 16;
+
+      if (textWidth > availW || textHeight > availH) {
+        var scale = Math.min(availW / textWidth, availH / textHeight);
+        if (scale < 1) {
+          var curFont = textObj.attrs.fontSize || cfg.fontSize || 20;
+          var newFont = Math.max(8, Math.floor(curFont * scale));
+          textObj.attrs.fontSize = newFont;
+          if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+            window.WebpointerRender.updateElementAttributes(textObj);
+          }
+        }
+      }
+    }
+  }
+
+  function setTextAutoFitMode(mode) {
+    cfg.textAutoFitMode = mode;
+    var members = getAllGroupMembers(cfg.selectedIds);
+    var textObjs = members.filter(function(m) { return m.type === 'text'; });
+    textObjs.forEach(function(obj) {
+      if (obj && obj.attrs) {
+        obj.attrs.autoFitMode = mode;
+        applyAutoFitToGroup(obj);
+        if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+          window.WebpointerRender.updateElementAttributes(obj);
+        }
+      }
+    });
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+  }
+
+  function cycleTextAutoFitMode() {
+    var cur = cfg.textAutoFitMode || 'fitShapeToText';
+    var nextMode = 'fitShapeToText';
+    if (cur === 'fitShapeToText') {
+      nextMode = 'fitTextToShape';
+    } else if (cur === 'fitTextToShape') {
+      nextMode = 'none';
+    } else {
+      nextMode = 'fitShapeToText';
+    }
+    setTextAutoFitMode(nextMode);
+  }
+
   function setTextUnderlineWidth(val) {
     var num = parseInt(val, 10);
     cfg.textUnderlineWidth = isNaN(num) ? 1 : num;
@@ -1178,6 +1282,10 @@
   window.setTextUnderlineOffset = setTextUnderlineOffset;
   window.setTextUnderlineWidth = setTextUnderlineWidth;
   window.cycleTextVerticalAlign = cycleTextVerticalAlign;
+  window.cycleTextHorizontalAlign = cycleTextHorizontalAlign;
+  window.setTextAutoFitMode = setTextAutoFitMode;
+  window.cycleTextAutoFitMode = cycleTextAutoFitMode;
+  window.applyAutoFitToGroup = applyAutoFitToGroup;
 
   window.WebpointerHandlers = {
     setTool: setTool,

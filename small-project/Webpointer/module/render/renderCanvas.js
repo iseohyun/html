@@ -94,7 +94,8 @@
       obj.el.setAttribute('font-family', fFamily);
       obj.el.setAttribute('font-weight', fWeight);
       obj.el.setAttribute('font-style', fStyle);
-      obj.el.setAttribute('text-anchor', tAnchor);
+      var isJustify = (tAnchor === 'justify');
+      obj.el.setAttribute('text-anchor', isJustify ? 'start' : tAnchor);
       obj.el.setAttribute('dominant-baseline', dBase);
       obj.el.setAttribute('writing-mode', wMode);
 

@@ -67,7 +67,10 @@
     textDirection: '<svg viewBox="0 0 24 24"><path d="M12 3v15M8 14l4 4 4-4M5 7h14M5 11h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>',
     alignVertTop: '<svg viewBox="0 0 24 24"><path d="M3 4h18M7 8v12M17 8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
     alignVertMiddle: '<svg viewBox="0 0 24 24"><path d="M3 12h18M7 6v12M17 8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
-    alignVertBottom: '<svg viewBox="0 0 24 24"><path d="M3 20h18M7 4v12M17 8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
+    alignVertBottom: '<svg viewBox="0 0 24 24"><path d="M3 20h18M7 4v12M17 8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    autoFitShape: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-dasharray="3,3"/><path d="M7 15V9h2a2 2 0 0 1 0 4H7" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M17 7l3-3m0 0h-4m4 0v4" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/></svg>',
+    autoFitText: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 15V9h2a2 2 0 0 1 0 4H8" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M15 15l-3-3m0 0h3m-3 0v3" stroke="#0284c7" stroke-width="2" stroke-linecap="round"/></svg>',
+    autoFitNone: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 15V9h2a2 2 0 0 1 0 4H8" stroke="currentColor" stroke-width="1.8" fill="none"/><line x1="15" y1="9" x2="19" y2="15" stroke="#94a3b8" stroke-width="2"/></svg>'
   };
 
   window.WebpointerIcons = WebpointerIcons;
