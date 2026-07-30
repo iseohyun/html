@@ -360,7 +360,7 @@
     cfg.selectedIds.forEach(function(id) {
       var obj = cfg.objectsMap.get(id);
       if (!obj) return;
-      var a = obj.attrs;
+      var a = obj.attrs || obj;
 
       if (obj.type === 'point') {
         var r = a.r || 5;

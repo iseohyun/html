@@ -723,17 +723,19 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     const pageErrors = [];
     page.on('pageerror', (err) => pageErrors.push(err.message));
 
+    // Enable snapping explicitly
+    await page.evaluate(() => {
+      window.WebpointerConfig.snappingEnabled = true;
+    });
+
     // 1. Create Object A (Rect at 100, 100, size 100x100)
     const objA = await page.evaluate(() => {
+      const el = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       const obj = {
         id: 'obj_snap_a',
         type: 'rect',
-        x: 100,
-        y: 100,
-        width: 100,
-        height: 100,
-        stroke: '#000000',
-        fill: '#cbd5e1'
+        attrs: { x: 100, y: 100, width: 100, height: 100, stroke: '#000000', fill: '#cbd5e1' },
+        el: el
       };
       window.WebpointerConfig.objectsMap.set(obj.id, obj);
       window.WebpointerRender.renderCanvas();
@@ -743,15 +745,12 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
 
     // 2. Create Object B (Rect at 300, 300, size 100x100)
     const objB = await page.evaluate(() => {
+      const el = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       const obj = {
         id: 'obj_snap_b',
         type: 'rect',
-        x: 300,
-        y: 300,
-        width: 100,
-        height: 100,
-        stroke: '#000000',
-        fill: '#f87171'
+        attrs: { x: 300, y: 300, width: 100, height: 100, stroke: '#000000', fill: '#f87171' },
+        el: el
       };
       window.WebpointerConfig.objectsMap.set(obj.id, obj);
       window.WebpointerRender.renderCanvas();
@@ -802,9 +801,9 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
 
     // Create 3 rectangles at different positions
     await page.evaluate(() => {
-      const o1 = { id: 'align_1', type: 'rect', x: 50, y: 100, width: 60, height: 60, stroke: '#000', fill: '#fff' };
-      const o2 = { id: 'align_2', type: 'rect', x: 200, y: 150, width: 60, height: 60, stroke: '#000', fill: '#fff' };
-      const o3 = { id: 'align_3', type: 'rect', x: 500, y: 200, width: 60, height: 60, stroke: '#000', fill: '#fff' };
+      const o1 = { id: 'align_1', type: 'rect', attrs: { x: 50, y: 100, width: 60, height: 60, stroke: '#000', fill: '#fff' } };
+      const o2 = { id: 'align_2', type: 'rect', attrs: { x: 200, y: 150, width: 60, height: 60, stroke: '#000', fill: '#fff' } };
+      const o3 = { id: 'align_3', type: 'rect', attrs: { x: 500, y: 200, width: 60, height: 60, stroke: '#000', fill: '#fff' } };
       window.WebpointerConfig.objectsMap.set(o1.id, o1);
       window.WebpointerConfig.objectsMap.set(o2.id, o2);
       window.WebpointerConfig.objectsMap.set(o3.id, o3);
@@ -819,9 +818,9 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     await page.evaluate(() => window.alignSelectedObjects('left'));
     const xPositionsAfterLeft = await page.evaluate(() => {
       return [
-        window.WebpointerConfig.objectsMap.get('align_1').x,
-        window.WebpointerConfig.objectsMap.get('align_2').x,
-        window.WebpointerConfig.objectsMap.get('align_3').x
+        window.WebpointerConfig.objectsMap.get('align_1').attrs.x,
+        window.WebpointerConfig.objectsMap.get('align_2').attrs.x,
+        window.WebpointerConfig.objectsMap.get('align_3').attrs.x
       ];
     });
     expect(xPositionsAfterLeft).toEqual([50, 50, 50]);
@@ -831,17 +830,17 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
       const o1 = window.WebpointerConfig.objectsMap.get('align_1');
       const o2 = window.WebpointerConfig.objectsMap.get('align_2');
       const o3 = window.WebpointerConfig.objectsMap.get('align_3');
-      o1.x = 0;
-      o2.x = 100;
-      o3.x = 600;
+      o1.attrs.x = 0;
+      o2.attrs.x = 100;
+      o3.attrs.x = 600;
       window.WebpointerHandlers.distributeObjects('horizontal');
     });
 
     const xPositionsAfterDistribute = await page.evaluate(() => {
       return [
-        window.WebpointerConfig.objectsMap.get('align_1').x,
-        window.WebpointerConfig.objectsMap.get('align_2').x,
-        window.WebpointerConfig.objectsMap.get('align_3').x
+        window.WebpointerConfig.objectsMap.get('align_1').attrs.x,
+        window.WebpointerConfig.objectsMap.get('align_2').attrs.x,
+        window.WebpointerConfig.objectsMap.get('align_3').attrs.x
       ];
     });
     // With x: 0 (width 60), 600 (width 60), o2 should be centered evenly at (600 - 0) / 2 = 300

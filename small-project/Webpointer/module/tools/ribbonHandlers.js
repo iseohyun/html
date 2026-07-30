@@ -2445,6 +2445,19 @@
     distributeObjects: distributeObjects
   };
 
+  function getObjAttr(obj, prop) {
+    if (!obj) return 0;
+    if (obj.attrs && obj.attrs[prop] !== undefined) return obj.attrs[prop];
+    return obj[prop] !== undefined ? obj[prop] : 0;
+  }
+
+  function setObjAttr(obj, prop, val) {
+    if (!obj) return;
+    obj[prop] = val;
+    if (!obj.attrs) obj.attrs = {};
+    obj.attrs[prop] = val;
+  }
+
   function alignSelectedObjects(type) {
     var selected = [];
     cfg.selectedIds.forEach(function(id) {
@@ -2455,10 +2468,10 @@
 
     var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
     selected.forEach(function(obj) {
-      var x = obj.x || 0;
-      var y = obj.y || 0;
-      var w = obj.width || 0;
-      var h = obj.height || 0;
+      var x = getObjAttr(obj, 'x');
+      var y = getObjAttr(obj, 'y');
+      var w = getObjAttr(obj, 'width');
+      var h = getObjAttr(obj, 'height');
       if (x < minX) minX = x;
       if (x + w > maxX) maxX = x + w;
       if (y < minY) minY = y;
@@ -2469,14 +2482,14 @@
     var centerY = (minY + maxY) / 2;
 
     selected.forEach(function(obj) {
-      var w = obj.width || 0;
-      var h = obj.height || 0;
-      if (type === 'left') obj.x = minX;
-      else if (type === 'center') obj.x = centerX - w / 2;
-      else if (type === 'right') obj.x = maxX - w;
-      else if (type === 'top') obj.y = minY;
-      else if (type === 'middle') obj.y = centerY - h / 2;
-      else if (type === 'bottom') obj.y = maxY - h;
+      var w = getObjAttr(obj, 'width');
+      var h = getObjAttr(obj, 'height');
+      if (type === 'left') setObjAttr(obj, 'x', minX);
+      else if (type === 'center') setObjAttr(obj, 'x', centerX - w / 2);
+      else if (type === 'right') setObjAttr(obj, 'x', maxX - w);
+      else if (type === 'top') setObjAttr(obj, 'y', minY);
+      else if (type === 'middle') setObjAttr(obj, 'y', centerY - h / 2);
+      else if (type === 'bottom') setObjAttr(obj, 'y', maxY - h);
 
       if (window.WebpointerRender) window.WebpointerRender.updateElementAttributes(obj);
     });
@@ -2494,21 +2507,21 @@
     if (selected.length < 3) return;
 
     if (axis === 'horizontal') {
-      selected.sort(function(a, b) { return (a.x || 0) - (b.x || 0); });
-      var minX = selected[0].x || 0;
-      var maxX = selected[selected.length - 1].x || 0;
+      selected.sort(function(a, b) { return getObjAttr(a, 'x') - getObjAttr(b, 'x'); });
+      var minX = getObjAttr(selected[0], 'x');
+      var maxX = getObjAttr(selected[selected.length - 1], 'x');
       var step = (maxX - minX) / (selected.length - 1);
       for (var i = 1; i < selected.length - 1; i++) {
-        selected[i].x = minX + step * i;
+        setObjAttr(selected[i], 'x', minX + step * i);
         if (window.WebpointerRender) window.WebpointerRender.updateElementAttributes(selected[i]);
       }
     } else if (axis === 'vertical') {
-      selected.sort(function(a, b) { return (a.y || 0) - (b.y || 0); });
-      var minY = selected[0].y || 0;
-      var maxY = selected[selected.length - 1].y || 0;
+      selected.sort(function(a, b) { return getObjAttr(a, 'y') - getObjAttr(b, 'y'); });
+      var minY = getObjAttr(selected[0], 'y');
+      var maxY = getObjAttr(selected[selected.length - 1], 'y');
       var step = (maxY - minY) / (selected.length - 1);
       for (var i = 1; i < selected.length - 1; i++) {
-        selected[i].y = minY + step * i;
+        setObjAttr(selected[i], 'y', minY + step * i);
         if (window.WebpointerRender) window.WebpointerRender.updateElementAttributes(selected[i]);
       }
     }
@@ -2524,8 +2537,8 @@
     var guides = [];
     if (!cfg.objectsMap || cfg.snappingEnabled === false) return { x: resultX, y: resultY, lines: guides, guides: guides };
 
-    var w = dragObj.width || 0;
-    var h = dragObj.height || 0;
+    var w = getObjAttr(dragObj, 'width');
+    var h = getObjAttr(dragObj, 'height');
     var left = newX;
     var centerX = newX + w / 2;
     var right = newX + w;
@@ -2535,12 +2548,12 @@
 
     cfg.objectsMap.forEach(function(other) {
       if (other.id === dragObj.id) return;
-      var ow = other.width || 0;
-      var oh = other.height || 0;
-      var oLeft = other.x || 0;
+      var ow = getObjAttr(other, 'width');
+      var oh = getObjAttr(other, 'height');
+      var oLeft = getObjAttr(other, 'x');
       var oCenterX = oLeft + ow / 2;
       var oRight = oLeft + ow;
-      var oTop = other.y || 0;
+      var oTop = getObjAttr(other, 'y');
       var oCenterY = oTop + oh / 2;
       var oBottom = oTop + oh;
 
