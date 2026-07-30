@@ -148,6 +148,86 @@
           obj.el.appendChild(tspan);
         });
       }
+
+      // Render Custom SVG Underline Path Element
+      if (uStyle !== 'none') {
+        if (!obj.underlineEl) {
+          var uEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          uEl.setAttribute('class', 'custom-text-underline');
+          obj.underlineEl = uEl;
+          if (obj.el && obj.el.parentNode) {
+            obj.el.parentNode.appendChild(uEl);
+          }
+        }
+
+        var fontSizeNum = parseInt(fSize, 10);
+        var strokeDash = 'none';
+        if (uStyle === 'dashed') strokeDash = '6,4';
+        else if (uStyle === 'dotted') strokeDash = '2,3';
+
+        var dPath = '';
+        lines.forEach(function(lineStr, idx) {
+          var lineY = a.y + (idx * fontSizeNum * lHeight);
+          var uY = lineY + uOffset;
+
+          var lWidth = (lineStr || '').length * fontSizeNum * 0.55;
+          try {
+            if (obj.el && obj.el.getBBox) {
+              var bb = obj.el.getBBox();
+              if (bb.width > 0) lWidth = bb.width;
+            }
+          } catch(e) {}
+
+          var x1 = a.x;
+          var x2 = a.x + lWidth;
+          if (tAnchor === 'middle') {
+            x1 = a.x - (lWidth / 2);
+            x2 = a.x + (lWidth / 2);
+          } else if (tAnchor === 'end') {
+            x1 = a.x - lWidth;
+            x2 = a.x;
+          }
+
+          if (uStyle === 'double') {
+            dPath += 'M ' + x1 + ' ' + uY + ' L ' + x2 + ' ' + uY + ' ';
+            dPath += 'M ' + x1 + ' ' + (uY + Math.max(2, uWidth + 1)) + ' L ' + x2 + ' ' + (uY + Math.max(2, uWidth + 1)) + ' ';
+          } else if (uStyle === 'wavy') {
+            dPath += 'M ' + x1 + ' ' + uY + ' ';
+            for (var wx = x1; wx < x2; wx += 6) {
+              var nextX = Math.min(x2, wx + 6);
+              var midX = (wx + nextX) / 2;
+              dPath += 'Q ' + midX + ' ' + (uY - 2.5) + ' ' + nextX + ' ' + uY + ' ';
+            }
+          } else {
+            dPath += 'M ' + x1 + ' ' + uY + ' L ' + x2 + ' ' + uY + ' ';
+          }
+        });
+
+        obj.underlineEl.setAttribute('d', dPath);
+        obj.underlineEl.setAttribute('stroke', uColor);
+        obj.underlineEl.setAttribute('stroke-width', uWidth);
+        obj.underlineEl.setAttribute('fill', 'none');
+        obj.underlineEl.setAttribute('stroke-linecap', 'round');
+        if (strokeDash !== 'none') {
+          obj.underlineEl.setAttribute('stroke-dasharray', strokeDash);
+        } else {
+          obj.underlineEl.removeAttribute('stroke-dasharray');
+        }
+
+        var opVal = a.opacity !== undefined ? a.opacity : (cfg.opacity !== undefined ? cfg.opacity : 1);
+        if (opVal < 1) {
+          obj.underlineEl.setAttribute('opacity', opVal);
+        } else {
+          obj.underlineEl.removeAttribute('opacity');
+        }
+      } else {
+        if (obj.underlineEl) {
+          if (obj.underlineEl.parentNode) {
+            obj.underlineEl.parentNode.removeChild(obj.underlineEl);
+          }
+          obj.underlineEl = null;
+        }
+      }
     }
 
     if (obj.type !== 'text') {
