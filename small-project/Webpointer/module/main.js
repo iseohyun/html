@@ -71,21 +71,45 @@
     return topG;
   }
 
-  // Helper: Select Object with Hierarchical Group Expansion
+  // Helper: Select Object with Hierarchical Group Expansion & Ctrl Toggle-Off
   function selectObjectWithGroup(objId, isCtrl) {
-    if (!isCtrl) cfg.selectedIds.clear();
     var obj = cfg.objectsMap.get(objId);
     if (!obj) return;
 
     var outerG = getOutermostGroupEl(obj.el);
+    var targetGroupMemberIds = [];
+
     if (outerG) {
       cfg.objectsMap.forEach(function(o, id) {
         if (outerG.contains(o.el)) {
-          cfg.selectedIds.add(id);
+          targetGroupMemberIds.push(id);
         }
       });
     } else {
-      cfg.selectedIds.add(objId);
+      targetGroupMemberIds.push(objId);
+    }
+
+    if (!isCtrl) {
+      cfg.selectedIds.clear();
+      targetGroupMemberIds.forEach(function(id) {
+        cfg.selectedIds.add(id);
+      });
+    } else {
+      var isAlreadySelected = targetGroupMemberIds.every(function(id) {
+        return cfg.selectedIds.has(id);
+      });
+
+      if (isAlreadySelected) {
+        // Ctrl + Click on already selected object/group -> Deselect (Toggle OFF)
+        targetGroupMemberIds.forEach(function(id) {
+          cfg.selectedIds.delete(id);
+        });
+      } else {
+        // Ctrl + Click on unselected object/group -> Add to selection (Toggle ON)
+        targetGroupMemberIds.forEach(function(id) {
+          cfg.selectedIds.add(id);
+        });
+      }
     }
   }
 
@@ -444,8 +468,6 @@
 
     if (outerGroupsToUnpack.size === 0) return;
 
-    var newlySelectedIds = new Set();
-
     outerGroupsToUnpack.forEach(function(outerG) {
       var children = Array.from(outerG.children);
       children.forEach(function(childEl) {
@@ -467,16 +489,8 @@
 
     cfg.selectedIds.clear();
     outerGroupsToUnpack.forEach(function(outerG) {
-      // Re-select all elements that were in outerG
       cfg.objectsMap.forEach(function(obj, id) {
-        var curOuter = getOutermostGroupEl(obj.el);
-        if (!curOuter) {
-          // If now a top-level shape, select it
-          cfg.selectedIds.add(id);
-        } else {
-          // If still inside a sub-group, select its new outermost group members
-          cfg.selectedIds.add(id);
-        }
+        cfg.selectedIds.add(id);
       });
     });
 
