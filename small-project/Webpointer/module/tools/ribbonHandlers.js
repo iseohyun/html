@@ -1566,15 +1566,13 @@
             window.WebpointerSVGImporter.importSVGContent(content);
           }
           pushHistoryState();
-          alert('SVG 벡터 객체를 성공적으로 불러왔습니다!');
         } else {
           pushHistoryState();
           restoreSnapshot(content);
           pushHistoryState();
-          alert('파일을 성공적으로 불러왔습니다!');
         }
       } catch(err) {
-        alert('파일을 읽는 중 오류가 발생했습니다: ' + err.message);
+        console.error('[File Open Error]', err);
       }
     };
     reader.readAsText(file);
@@ -1642,12 +1640,7 @@
     input.onchange = function(e) {
       var file = e.target.files[0];
       if (!file) return;
-      if (cfg.objects && cfg.objects.length > 0) {
-        pendingFileToOpen = file;
-        openSlotSelectionModal();
-      } else {
-        proceedOpenFile(file);
-      }
+      proceedOpenFile(file);
     };
     input.click();
   }

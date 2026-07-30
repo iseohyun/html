@@ -87,6 +87,14 @@
       return false;
     }
 
+    // Requirement 2: Wipe all existing objects on file import
+    cfg.objectsMap.clear();
+    cfg.selectedIds.clear();
+    var objectsGroup = document.getElementById('objectsGroup');
+    if (objectsGroup) objectsGroup.innerHTML = '';
+    var uiGroup = document.getElementById('uiGroup');
+    if (uiGroup) uiGroup.innerHTML = '';
+
     var importedCount = 0;
     var unsupportedElements = [];
 
@@ -230,7 +238,7 @@
       traverseNode(svgEl.childNodes[j], null);
     }
 
-    // Auto-adjust canvas viewBox & dimensions to fit imported SVG graphic cleanly
+    // Requirement 3: Auto-fit width 100% and resize canvas height if graphic is taller
     var mainSvg = document.getElementById('mainSvg');
     if (mainSvg) {
       var viewBoxAttr = svgEl.getAttribute('viewBox');
@@ -238,17 +246,28 @@
       var svgH = parseFloat(svgEl.getAttribute('height'));
 
       if (viewBoxAttr) {
-        mainSvg.setAttribute('viewBox', viewBoxAttr);
         var vbParts = viewBoxAttr.trim().split(/[\s,]+/).map(Number);
-        if (vbParts.length === 4) {
-          cfg.SVG_WIDTH = vbParts[2];
-          cfg.SVG_HEIGHT = vbParts[3];
+        if (vbParts.length === 4 && vbParts[2] > 0 && vbParts[3] > 0) {
+          svgW = vbParts[2];
+          svgH = vbParts[3];
         }
-      } else if (!isNaN(svgW) && !isNaN(svgH) && svgW > 0 && svgH > 0) {
-        mainSvg.setAttribute('viewBox', '0 0 ' + svgW + ' ' + svgH);
-        cfg.SVG_WIDTH = svgW;
-        cfg.SVG_HEIGHT = svgH;
       }
+
+      var targetW = cfg.SVG_WIDTH || 960;
+      var targetH = cfg.SVG_HEIGHT || 540;
+
+      if (!svgW || isNaN(svgW)) svgW = targetW;
+      if (!svgH || isNaN(svgH)) svgH = targetH;
+
+      var aspectHeight = Math.round(targetW * (svgH / svgW));
+      if (aspectHeight > targetH) {
+        targetH = aspectHeight;
+      }
+
+      cfg.SVG_WIDTH = targetW;
+      cfg.SVG_HEIGHT = targetH;
+      mainSvg.setAttribute('viewBox', '0 0 ' + svgW + ' ' + svgH);
+      mainSvg.style.height = targetH + 'px';
     }
 
     if (window.WebpointerRender) {
