@@ -1,5 +1,17 @@
 # Webpointer Project Version History
 
+## [0.3.3] - 2026-07-30
+### Added
+- Completed Style Ribbon Interface Redesign under Picture Format (`style`) Tab:
+  - Added new category **`색` (Color Category)**:
+    - 1×2 Radio Target Selector: Stroke Icon (gray bg + red border) & Fill Icon (gray border + red fill).
+    - 1×2 UniPalette Action Buttons: `기본색상 정하기` (opens UniPalette in new tab) & `기본색상 가져오기` (opens JS code import modal).
+    - 9×3 Seamless (27-slot) Color Palette Grid with `gap: 0`, `margin: 0`, `padding: 0`.
+    - Mandatory Fixed Palette Slots: Slot 9 = White (`#ffffff`), Slot 18 = Black (`#000000`), Slot 27 = Transparent (`none` with red diagonal slash).
+    - User/UniPalette Swatch Slots: Slots 1~8, 10~17, 19~26 (up to 24 user colors).
+  - Added new category **`선` (Line Category)** for stroke width and marker controls.
+- Updated [`IMPLEMENTATION.md`](file:///c:/git/html/small-project/Webpointer/IMPLEMENTATION.md) with Style Ribbon Redesign specifications.
+
 ## [0.3.2] - 2026-07-30
 ### Fixed
 - Fixed inline event handler `ReferenceError: updateSvgDefs is not defined` when changing stroke color.
