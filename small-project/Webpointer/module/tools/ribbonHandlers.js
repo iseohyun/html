@@ -696,11 +696,15 @@
     cfg.opacity = num;
 
     var members = getAllGroupMembers(cfg.selectedIds);
+    var isTextTab = (cfg.currentTab === 'text');
+
     members.forEach(function(obj) {
       if (obj && obj.attrs) {
-        obj.attrs.opacity = num;
-        if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
-          window.WebpointerRender.updateElementAttributes(obj);
+        if ((isTextTab && obj.type === 'text') || (!isTextTab && obj.type !== 'text')) {
+          obj.attrs.opacity = num;
+          if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.updateElementAttributes) {
+            window.WebpointerRenderCanvas.updateElementAttributes(obj);
+          }
         }
       }
     });
@@ -717,70 +721,14 @@
     }
   }
 
-  function startHoldAlphaInput(e, btnEl) {
-    state.holdTriggered = false;
-    clearTimeout(holdTimer);
-    holdTimer = setTimeout(function() {
-      state.holdTriggered = true;
-      showAlphaInputPopup(btnEl);
-    }, 400);
-  }
-
-  function endHoldAlphaInput() {
-    clearTimeout(holdTimer);
-  }
-
-  function showAlphaInputPopup(btnEl) {
-    var old = document.getElementById('alphaPopupSelect');
-    if (old && old.parentNode) old.parentNode.removeChild(old);
-
-    var popup = document.createElement('div');
-    popup.id = 'alphaPopupSelect';
-    popup.style.cssText = 'position:fixed; z-index:99999; padding:6px; border:1px solid #0284c7; border-radius:6px; background:#ffffff; box-shadow:0 6px 16px rgba(0,0,0,0.18); outline:none; font-family:sans-serif; display:flex; flex-direction:column; gap:4px; width:120px;';
-    var rect = btnEl.getBoundingClientRect();
-    popup.style.left = Math.max(10, rect.left) + 'px';
-    popup.style.top = (rect.bottom + 4) + 'px';
-
-    var curPct = Math.round((cfg.opacity !== undefined ? cfg.opacity : 1) * 100);
-    popup.innerHTML =
-      '<div style="font-size:0.75rem; font-weight:700; color:#0f172a;">투명도 (0~100%)</div>' +
-      '<input type="number" id="alphaNumberInput" min="0" max="100" value="' + curPct + '" style="width:100%; box-sizing:border-box; padding:4px 6px; font-size:0.8rem; border:1px solid #cbd5e1; border-radius:4px; text-align:center;" placeholder="100">';
-
-    document.body.appendChild(popup);
-    var inputEl = document.getElementById('alphaNumberInput');
-
-    function closePopup() {
-      var p = document.getElementById('alphaPopupSelect');
-      if (p && p.parentNode) p.parentNode.removeChild(p);
+  function setGridStepSize(val) {
+    var num = parseInt(val, 10);
+    cfg.gridStepSize = (isNaN(num) || num <= 0) ? 24 : num;
+    if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.renderGrid) {
+      window.WebpointerRenderCanvas.renderGrid();
     }
-
-    if (inputEl) {
-      inputEl.focus();
-      inputEl.select();
-
-      inputEl.onkeydown = function(ev) {
-        if (ev.key === 'Enter') {
-          ev.preventDefault();
-          var val = parseInt(inputEl.value, 10);
-          if (isNaN(val)) val = 100;
-          closePopup();
-          setElementOpacity(val / 100);
-        } else if (ev.key === 'Escape') {
-          closePopup();
-        }
-      };
-
-      inputEl.onblur = function() {
-        setTimeout(function() {
-          var val = inputEl ? parseInt(inputEl.value, 10) : NaN;
-          if (!isNaN(val)) {
-            closePopup();
-            setElementOpacity(val / 100);
-          } else {
-            closePopup();
-          }
-        }, 100);
-      };
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+      window.WebpointerRender.renderRibbon();
     }
   }
 
@@ -1350,6 +1298,7 @@
 
   window.toggleGridSnap = toggleGridSnap;
   window.setGridDensity = setGridDensity;
+  window.setGridStepSize = setGridStepSize;
   window.setProximityThreshold = setProximityThreshold;
   window.setDefaultShapeSize = setDefaultShapeSize;
   window.setCanvasRatio = setCanvasRatio;

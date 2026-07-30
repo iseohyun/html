@@ -119,20 +119,55 @@
       var proxVal = cfg.proximityThreshold !== undefined ? cfg.proximityThreshold : 30;
       var szVal = cfg.defaultShapeSize !== undefined ? cfg.defaultShapeSize : 100;
       var stepCnt = cfg.alphaStepCount !== undefined ? cfg.alphaStepCount : 5;
+      var stepPx = cfg.gridStepSize || 24;
 
-      var gridSettingsHtml =
-        '<div class="category-grid" style="grid-template-columns: auto;">' +
-          '<div class="ribbon-control-item"><label>격자 보이기:</label><input type="checkbox" id="chkGridToggle" ' + (cfg.gridSnapEnabled ? 'checked' : '') + ' onchange="toggleGridSnap(this.checked)"></div>' +
-          '<div class="ribbon-control-item"><label>격자 크기:</label><select onchange="setGridDensity(this.value)"><option value="480x270" selected>481×271 Step (16:9 표준)</option><option value="240x135">241×136 Step (조밀하게)</option><option value="120x67">121×68 Step (성기게)</option></select></div>' +
-          '<div class="ribbon-control-item"><label>근접 선택 거리:</label><select onchange="setProximityThreshold(this.value)"><option value="30" ' + (proxVal===30?'selected':'') + '>30px (기본값)</option><option value="20" ' + (proxVal===20?'selected':'') + '>20px</option><option value="10" ' + (proxVal===10?'selected':'') + '>10px</option><option value="0" ' + (proxVal===0?'selected':'') + '>0px (해제 - 정확한 클릭)</option></select></div>' +
-          '<div class="ribbon-control-item"><label>기본 도형 크기:</label><select onchange="setDefaultShapeSize(this.value)"><option value="100" ' + (szVal===100?'selected':'') + '>100px (기본값)</option><option value="150" ' + (szVal===150?'selected':'') + '>150px</option><option value="200" ' + (szVal===200?'selected':'') + '>200px</option><option value="50" ' + (szVal===50?'selected':'') + '>50px</option></select></div>' +
-          '<div class="ribbon-control-item"><label>투명도 조절 단계:</label><select onchange="setAlphaStepCount(this.value)"><option value="5" ' + (stepCnt===5?'selected':'') + '>5단계 (0.2 단위)</option><option value="10" ' + (stepCnt===10?'selected':'') + '>10단계 (0.1 단위)</option><option value="20" ' + (stepCnt===20?'selected':'') + '>20단계 (0.05 단위)</option><option value="100" ' + (stepCnt===100?'selected':'') + '>100단계 (세밀하게 1%)</option></select></div>' +
+      var canvasSettingsContentHtml =
+        '<div style="display:flex; flex-direction:column; gap:4px; justify-content:center;">' +
+          '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
+            '<span style="font-size:0.78rem; font-weight:600; color:#475569;">격자</span>' +
+            '<input type="checkbox" id="chkGridToggle" ' + (cfg.gridSnapEnabled ? 'checked' : '') + ' onchange="toggleGridSnap(this.checked)" style="width:16px; height:16px; cursor:pointer;">' +
+            '<input type="number" min="5" max="200" value="' + stepPx + '" oninput="setGridStepSize(this.value)" onchange="setGridStepSize(this.value)" style="width:55px; padding:2px 4px; font-size:0.8rem; border:1px solid #cbd5e1; border-radius:4px; text-align:center;" title="격자 크기 (px)">' +
+          '</div>' +
+          '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
+            '<select onchange="setCanvasRatio(this.value)" style="width:130px; padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px;" title="캔버스 크기">' +
+              '<option value="960x540" ' + ((cfg.canvasRatio||'960x540')==='960x540'?'selected':'') + '>16:9 (960×540)</option>' +
+              '<option value="1280x720" ' + (cfg.canvasRatio==='1280x720'?'selected':'') + '>16:9 HD (1280×720)</option>' +
+              '<option value="800x600" ' + (cfg.canvasRatio==='800x600'?'selected':'') + '>4:3 (800×600)</option>' +
+              '<option value="600x600" ' + (cfg.canvasRatio==='600x600'?'selected':'') + '>1:1 (600×600)</option>' +
+            '</select>' +
+            '<input type="color" value="' + (cfg.canvasBgColor || '#ffffff') + '" onchange="setCanvasBgColor(this.value)" style="width:34px; height:24px; padding:0; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer;" title="캔버스 색상">' +
+          '</div>' +
         '</div>';
 
-      var canvasSettingsHtml =
-        '<div class="category-grid" style="grid-template-columns: auto;">' +
-          '<div class="ribbon-control-item"><label>캔버스 크기:</label><select onchange="setCanvasRatio(this.value)"><option value="960x540" selected>16:9 (960×540 px)</option><option value="1280x720">16:9 HD (1280×720 px)</option><option value="800x600">4:3 (800×600 px)</option><option value="600x600">1:1 (600×600 px)</option></select></div>' +
-          '<div class="ribbon-control-item"><label>캔버스 색상:</label><input type="color" value="' + cfg.canvasBgColor + '" onchange="setCanvasBgColor(this.value)"></div>' +
+      var settingsContentHtml =
+        '<div style="display:flex; flex-direction:column; gap:4px; justify-content:center;">' +
+          '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
+            '<span style="font-size:0.78rem; font-weight:600; color:#475569; min-width:90px; text-align:right;">근접 선택 거리:</span>' +
+            '<select onchange="setProximityThreshold(this.value)" style="width:110px; padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px;">' +
+              '<option value="30" ' + (proxVal===30?'selected':'') + '>30px (기본)</option>' +
+              '<option value="20" ' + (proxVal===20?'selected':'') + '>20px</option>' +
+              '<option value="10" ' + (proxVal===10?'selected':'') + '>10px</option>' +
+              '<option value="0" ' + (proxVal===0?'selected':'') + '>0px (해제)</option>' +
+            '</select>' +
+          '</div>' +
+          '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
+            '<span style="font-size:0.78rem; font-weight:600; color:#475569; min-width:90px; text-align:right;">기본 도형 크기:</span>' +
+            '<select onchange="setDefaultShapeSize(this.value)" style="width:110px; padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px;">' +
+              '<option value="100" ' + (szVal===100?'selected':'') + '>100px (기본)</option>' +
+              '<option value="150" ' + (szVal===150?'selected':'') + '>150px</option>' +
+              '<option value="200" ' + (szVal===200?'selected':'') + '>200px</option>' +
+              '<option value="50" ' + (szVal===50?'selected':'') + '>50px</option>' +
+            '</select>' +
+          '</div>' +
+          '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
+            '<span style="font-size:0.78rem; font-weight:600; color:#475569; min-width:90px; text-align:right;">투명도 조절 단계:</span>' +
+            '<select onchange="setAlphaStepCount(this.value)" style="width:110px; padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px;">' +
+              '<option value="5" ' + (stepCnt===5?'selected':'') + '>5단계 (0.2)</option>' +
+              '<option value="10" ' + (stepCnt===10?'selected':'') + '>10단계 (0.1)</option>' +
+              '<option value="20" ' + (stepCnt===20?'selected':'') + '>20단계 (0.05)</option>' +
+              '<option value="100" ' + (stepCnt===100?'selected':'') + '>100단계 (1%)</option>' +
+            '</select>' +
+          '</div>' +
         '</div>';
 
       var openPaletteBtnHtml   = '<button class="tool-btn" onclick="window.open(\'https://iseohyun.github.io/UniPalette/\', \'_blank\')" style="width:34px; height:34px;"><span class="alt-badge">O</span>' + (icons.openPalette || '') + '<span class="tooltip-text">기본색상 정하기 (UniPalette 새탭)</span></button>';
@@ -144,8 +179,8 @@
         '</div>';
 
       ribbonBar.innerHTML =
-        buildCategoryHtml('view_grid', '설정', gridSettingsHtml) +
-        buildCategoryHtml('view_canvas', '캔버스 화면 설정', canvasSettingsHtml) +
+        buildCategoryHtml('view_canvas', '캔버스 설정', canvasSettingsContentHtml) +
+        buildCategoryHtml('view_settings', '설정', settingsContentHtml) +
         buildCategoryHtml('view_theme', '테마', themeSettingsHtml);
     } else if (cfg.currentTab === 'style') {
       var strokeBtnHtml = '<button class="tool-btn" onclick="toggleColorPalettePopover(this, \'stroke\')" style="width:34px; height:34px; position:relative;">' + (icons.targetStroke || '') + '<span style="position:absolute; bottom:2px; left:4px; right:4px; height:4px; background:' + (cfg.strokeColor==='none'?'transparent':cfg.strokeColor) + '; border-radius:2px;"></span><span class="tooltip-text">선 색상 (클릭하여 팔레트 열기)</span></button>';
@@ -158,11 +193,12 @@
 
       var stepVal = 1 / (cfg.alphaStepCount || 5);
       var curAlpha = cfg.opacity !== undefined ? cfg.opacity : 1;
+      var alphaPct = Math.round(curAlpha * 100);
 
       var alphaRangeHtml =
         '<div style="display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px; height:72px; padding:0 4px; border-left:1px solid #cbd5e1;">' +
-          '<span style="font-size:0.72rem; font-weight:700; color:#475569;">투명도 (' + Math.round(curAlpha * 100) + '%)</span>' +
-          '<input type="range" min="0" max="1" step="' + stepVal + '" value="' + curAlpha + '" oninput="setElementOpacity(this.value)" onmousedown="startHoldAlphaInput(event, this)" onmouseup="endHoldAlphaInput()" onmouseleave="endHoldAlphaInput()" style="width:72px; cursor:pointer;" title="투명도(Alpha) 슬라이더 (길게 눌러 수치 직접 입력)">' +
+          '<span style="font-size:0.72rem; font-weight:700; color:#475569;">a: ' + alphaPct + '%</span>' +
+          '<input type="range" min="0" max="1" step="' + stepVal + '" value="' + curAlpha + '" oninput="setElementOpacity(this.value)" style="width:72px; cursor:pointer;" title="투명도(Alpha)">' +
         '</div>';
 
       var lineGridHtml =
@@ -276,7 +312,7 @@
       var italicBtnHtml =
         '<button class="tool-btn ' + (isItalicActive ? 'active' : '') + '" onclick="toggleTextItalic()" onmousedown="startHoldStyle(event, this)" onmouseup="endHoldStyle()" onmouseleave="endHoldStyle()" style="width:34px; height:34px; font-style:italic; font-size:1.1rem; font-family:serif;">' +
           'I' +
-          '<span class="tooltip-text">글자 기울임 (클릭: Italic, 길게누르기: 옵션)</span>' +
+          '<span class="tooltip-text">글자 기울임 (클릭: Italic, 길게누르기: Normal/Italic/Oblique)</span>' +
         '</button>';
 
       var strikethroughBtnHtml =
@@ -391,12 +427,12 @@
           '</div>' +
           '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
             '<span style="font-size:0.75rem; font-weight:700; color:#475569; white-space:nowrap;">a: ' + alphaPct + '%</span>' +
-            '<input type="range" min="0" max="1" step="' + stepVal + '" value="' + curAlpha + '" oninput="setElementOpacity(this.value)" onmousedown="startHoldAlphaInput(event, this)" onmouseup="endHoldAlphaInput()" onmouseleave="endHoldAlphaInput()" style="width:70px; cursor:pointer;" title="투명도(Alpha) (길게 눌러 수치 직접 입력)">' +
+            '<input type="range" min="0" max="1" step="' + stepVal + '" value="' + curAlpha + '" oninput="setElementOpacity(this.value)" style="width:70px; cursor:pointer;" title="투명도(Alpha)">' +
           '</div>' +
         '</div>';
 
       var underlineColor   = cfg.textUnderlineColor || cfg.strokeColor || '#041e49';
-      var underlineStyle   = cfg.textUnderlineStyle || 'solid';
+      var underlineStyle   = cfg.textUnderlineStyle || 'none';
       var underlineOffset  = cfg.textUnderlineOffset !== undefined ? cfg.textUnderlineOffset : 3;
       var underlineWidth   = cfg.textUnderlineWidth !== undefined ? cfg.textUnderlineWidth : 1;
 
@@ -404,12 +440,12 @@
 
       var underlineStyleSelectHtml =
         '<select onchange="setTextUnderlineStyle(this.value)" style="padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px; height:34px; max-width:95px;" title="밑줄 종류">' +
+          '<option value="none" ' + (underlineStyle==='none'?'selected':'') + '>없음</option>' +
           '<option value="solid" ' + (underlineStyle==='solid'?'selected':'') + '>실선</option>' +
           '<option value="dashed" ' + (underlineStyle==='dashed'?'selected':'') + '>점선</option>' +
           '<option value="dotted" ' + (underlineStyle==='dotted'?'selected':'') + '>점</option>' +
           '<option value="double" ' + (underlineStyle==='double'?'selected':'') + '>이중선</option>' +
           '<option value="wavy" ' + (underlineStyle==='wavy'?'selected':'') + '>물결선</option>' +
-          '<option value="none" ' + (underlineStyle==='none'?'selected':'') + '>없음</option>' +
         '</select>';
 
       var underlineOffsetInputHtml =

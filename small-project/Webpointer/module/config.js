@@ -63,6 +63,12 @@
     ],
 
     // Selection & Manipulation Memory
+    gridStepSize: 24,         // Default grid step size 24px
+    textUnderlineStyle: 'none', // Default underline style: 'none'
+    textUnderlineColor: '#041e49',
+    textUnderlineOffset: 3,
+    textUnderlineWidth: 1,
+
     selectedIds: new Set(),
     objectsMap: new Map(),
     nextId: 1

@@ -40,6 +40,10 @@
   margin: 0 !important;
 }
 
+.webpointer-app .menu-bar + .ribbon-bar {
+  margin-top: -10px !important;
+}
+
 /* Menu Tab Buttons */
 .webpointer-app .tab-btn {
   padding: 8px 20px !important;
@@ -54,6 +58,10 @@
   transition: all 0.15s ease !important;
   position: relative !important;
   outline: none !important;
+}
+
+.webpointer-app .tab-btn.tab-align-right {
+  margin-left: auto !important;
 }
 
 .webpointer-app .tab-btn:hover {
