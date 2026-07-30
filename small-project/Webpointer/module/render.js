@@ -179,8 +179,9 @@
       var isCollapsed = cfg.collapsedCategories && cfg.collapsedCategories.has(catKey);
       return '<div class="ribbon-category ' + (isCollapsed ? 'collapsed' : '') + '">' +
                '<div class="category-content" style="' + (isCollapsed ? 'display:none;' : '') + '">' + contentHtml + '</div>' +
-               '<div class="category-title" onclick="toggleCategoryCollapse(\'' + catKey + '\')" title="클릭하여 열기/접기">' +
-                 catTitle + ' <span style="font-size:0.65rem; opacity:0.75;">' + (isCollapsed ? '▼' : '▲') + '</span>' +
+               '<div class="category-title" onclick="toggleCategoryCollapse(\'' + catKey + '\')" title="클릭하여 ' + (isCollapsed ? '열기' : '접기') + '">' +
+                 '<span class="title-text">' + catTitle + '</span>' +
+                 '<span class="toggle-icon">' + (isCollapsed ? '▶' : '▲') + '</span>' +
                '</div>' +
              '</div>';
     },
@@ -409,13 +410,54 @@
         var curCap = cfg.strokeCap || 'butt';
         var curJoin = cfg.strokeJoin || 'miter';
 
-        var capButtBtn = '<button class="tool-btn ' + (curCap==='butt'?'active':'') + '" onclick="setStrokeCap(\'butt\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="4" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="4" stroke-linecap="butt"/><line x1="20" y1="5" x2="20" y2="19" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="2,2"/></svg><span class="tooltip-text">선 마감: 평평함 (Butt)</span></button>';
-        var capRoundBtn = '<button class="tool-btn ' + (curCap==='round'?'active':'') + '" onclick="setStrokeCap(\'round\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="4" y1="12" x2="18" y2="12" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><line x1="18" y1="5" x2="18" y2="19" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="2,2"/></svg><span class="tooltip-text">선 마감: 둥글게 (Round)</span></button>';
-        var capSquareBtn = '<button class="tool-btn ' + (curCap==='square'?'active':'') + '" onclick="setStrokeCap(\'square\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="4" y1="12" x2="17" y2="12" stroke="currentColor" stroke-width="4" stroke-linecap="square"/><line x1="17" y1="5" x2="17" y2="19" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="2,2"/></svg><span class="tooltip-text">선 마감: 사각형 (Square)</span></button>';
+        // Magnified Cap Icons with Red Endpoint/Center Dot & Guideline
+        var capButtIcon =
+          '<svg viewBox="0 0 24 24" style="width:26px; height:26px;">' +
+            '<line x1="2" y1="12" x2="13" y2="12" stroke="currentColor" stroke-width="12" stroke-linecap="butt"/>' +
+            '<line x1="13" y1="2" x2="13" y2="22" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="2,2"/>' +
+            '<circle cx="13" cy="12" r="2.5" fill="#ef4444" stroke="#ffffff" stroke-width="0.8"/>' +
+          '</svg>';
 
-        var joinMiterBtn = '<button class="tool-btn ' + (curJoin==='miter'?'active':'') + '" onclick="setStrokeJoin(\'miter\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><path d="M5 19L12 6l7 13" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="miter"/><line x1="12" y1="3" x2="12" y2="21" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2,2"/></svg><span class="tooltip-text">모서리 마감: 뾰족함 (Miter)</span></button>';
-        var joinRoundBtn = '<button class="tool-btn ' + (curJoin==='round'?'active':'') + '" onclick="setStrokeJoin(\'round\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><path d="M5 19L12 6l7 13" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="12" cy="6" r="3" fill="none" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2,2"/></svg><span class="tooltip-text">모서리 마감: 둥글게 (Round)</span></button>';
-        var joinBevelBtn = '<button class="tool-btn ' + (curJoin==='bevel'?'active':'') + '" onclick="setStrokeJoin(\'bevel\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><path d="M5 19L12 6l7 13" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="bevel"/><line x1="9.5" y1="6" x2="14.5" y2="6" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="2,2"/></svg><span class="tooltip-text">모서리 마감: 깎임 (Bevel)</span></button>';
+        var capRoundIcon =
+          '<svg viewBox="0 0 24 24" style="width:26px; height:26px;">' +
+            '<line x1="2" y1="12" x2="13" y2="12" stroke="currentColor" stroke-width="12" stroke-linecap="round"/>' +
+            '<line x1="13" y1="2" x2="13" y2="22" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="2,2"/>' +
+            '<circle cx="13" cy="12" r="2.5" fill="#ef4444" stroke="#ffffff" stroke-width="0.8"/>' +
+          '</svg>';
+
+        var capSquareIcon =
+          '<svg viewBox="0 0 24 24" style="width:26px; height:26px;">' +
+            '<line x1="2" y1="12" x2="13" y2="12" stroke="currentColor" stroke-width="12" stroke-linecap="square"/>' +
+            '<line x1="13" y1="2" x2="13" y2="22" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="2,2"/>' +
+            '<circle cx="13" cy="12" r="2.5" fill="#ef4444" stroke="#ffffff" stroke-width="0.8"/>' +
+          '</svg>';
+
+        var capButtBtn = '<button class="tool-btn ' + (curCap==='butt'?'active':'') + '" onclick="setStrokeCap(\'butt\')" style="width:34px; height:34px;">' + capButtIcon + '<span class="tooltip-text">선 마감: 평평함 (Butt - 중심점에서 딱 끎)</span></button>';
+        var capRoundBtn = '<button class="tool-btn ' + (curCap==='round'?'active':'') + '" onclick="setStrokeCap(\'round\')" style="width:34px; height:34px;">' + capRoundIcon + '<span class="tooltip-text">선 마감: 둥글게 (Round - 중심점 밖 둥근 돌출)</span></button>';
+        var capSquareBtn = '<button class="tool-btn ' + (curCap==='square'?'active':'') + '" onclick="setStrokeCap(\'square\')" style="width:34px; height:34px;">' + capSquareIcon + '<span class="tooltip-text">선 마감: 사각형 (Square - 중심점 밖 직각 돌출)</span></button>';
+
+        // Magnified Join Icons with Red Corner Point Highlight
+        var joinMiterIcon =
+          '<svg viewBox="0 0 24 24" style="width:26px; height:26px;">' +
+            '<path d="M 3 21 L 12 5 L 21 21" fill="none" stroke="currentColor" stroke-width="8" stroke-linejoin="miter" stroke-linecap="butt"/>' +
+            '<circle cx="12" cy="5" r="2.5" fill="#ef4444" stroke="#ffffff" stroke-width="0.8"/>' +
+          '</svg>';
+
+        var joinRoundIcon =
+          '<svg viewBox="0 0 24 24" style="width:26px; height:26px;">' +
+            '<path d="M 3 21 L 12 5 L 21 21" fill="none" stroke="currentColor" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>' +
+            '<circle cx="12" cy="7" r="2.5" fill="#ef4444" stroke="#ffffff" stroke-width="0.8"/>' +
+          '</svg>';
+
+        var joinBevelIcon =
+          '<svg viewBox="0 0 24 24" style="width:26px; height:26px;">' +
+            '<path d="M 3 21 L 12 5 L 21 21" fill="none" stroke="currentColor" stroke-width="8" stroke-linejoin="bevel" stroke-linecap="butt"/>' +
+            '<circle cx="12" cy="8" r="2.5" fill="#ef4444" stroke="#ffffff" stroke-width="0.8"/>' +
+          '</svg>';
+
+        var joinMiterBtn = '<button class="tool-btn ' + (curJoin==='miter'?'active':'') + '" onclick="setStrokeJoin(\'miter\')" style="width:34px; height:34px;">' + joinMiterIcon + '<span class="tooltip-text">모서리 마감: 뾰족함 (Miter - 날카로운 모서리)</span></button>';
+        var joinRoundBtn = '<button class="tool-btn ' + (curJoin==='round'?'active':'') + '" onclick="setStrokeJoin(\'round\')" style="width:34px; height:34px;">' + joinRoundIcon + '<span class="tooltip-text">모서리 마감: 둥글게 (Round - 부드러운 곡선 모서리)</span></button>';
+        var joinBevelBtn = '<button class="tool-btn ' + (curJoin==='bevel'?'active':'') + '" onclick="setStrokeJoin(\'bevel\')" style="width:34px; height:34px;">' + joinBevelIcon + '<span class="tooltip-text">모서리 마감: 깎임 (Bevel - 깎인 평평한 모서리)</span></button>';
 
         var capJoinContent =
           '<div style="display:flex; flex-direction:column; gap:4px; justify-content:center;">' +

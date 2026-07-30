@@ -175,9 +175,44 @@
 }
 
 .webpointer-app .ribbon-category.collapsed {
-  justify-content: flex-end !important;
-  padding-right: 12px !important;
-  margin-right: 12px !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 0 4px !important;
+  margin-right: 8px !important;
+  border-right: 1px solid #e2e8f0 !important;
+  min-width: 32px !important;
+  width: 32px !important;
+}
+
+.webpointer-app .ribbon-category.collapsed .category-title {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  writing-mode: vertical-rl !important;
+  text-orientation: upright !important;
+  letter-spacing: 2px !important;
+  margin: 0 !important;
+  padding: 6px 2px !important;
+  height: 100% !important;
+  width: 100% !important;
+  background-color: #f1f5f9 !important;
+  border-radius: 6px !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0369a1 !important;
+  font-size: 0.76rem !important;
+}
+
+.webpointer-app .ribbon-category.collapsed .category-title:hover {
+  background-color: #e0f2fe !important;
+  border-color: #0284c7 !important;
+  color: #0284c7 !important;
+}
+
+.webpointer-app .ribbon-category.collapsed .category-title .toggle-icon {
+  margin-top: 4px !important;
+  writing-mode: horizontal-tb !important;
+  font-size: 0.65rem !important;
 }
 
 /* Uniform Square Tool Buttons */
