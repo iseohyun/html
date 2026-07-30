@@ -137,9 +137,6 @@
         buildCategoryHtml('insert_align', '정렬 및 간격', build3RowGridHtml(alignTools)) +
         buildCategoryHtml('insert_transform', '회전 및 대칭', build3RowGridHtml(transformTools));
     } else if (cfg.currentTab === 'view') {
-      var proxVal = cfg.proximityThreshold !== undefined ? cfg.proximityThreshold : 30;
-      var szVal = cfg.defaultShapeSize !== undefined ? cfg.defaultShapeSize : 100;
-      var stepCnt = cfg.alphaStepCount !== undefined ? cfg.alphaStepCount : 5;
       var stepPx = cfg.gridStepSize || 24;
 
       var canvasSettingsContentHtml =
@@ -160,35 +157,12 @@
           '</div>' +
         '</div>';
 
+      var openDetailedBtnHtml = '<button class="tool-btn" id="btnDetailedSettings" onclick="openDetailedSettingsModal()" style="width:34px; height:34px;"><span class="alt-badge">S</span>' + (icons.settingsGear || '⚙') + '<span class="tooltip-text">세부 설정 (근접선택거리, 기본크기, 투명도단계)</span></button>';
+      var openShortcutBtnHtml = '<button class="tool-btn" id="btnShortcutGuide" onclick="openShortcutModal()" style="width:34px; height:34px;"><span class="alt-badge">K</span>' + (icons.keyboardShortcut || '⌨') + '<span class="tooltip-text">단축키 안내 (전체 키보드 매핑)</span></button>';
+
       var settingsContentHtml =
-        '<div style="display:flex; flex-direction:column; gap:4px; justify-content:center;">' +
-          '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
-            '<span style="font-size:0.78rem; font-weight:600; color:#475569; min-width:90px; text-align:right;">근접 선택 거리:</span>' +
-            '<select onchange="setProximityThreshold(this.value)" style="width:110px; padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px;">' +
-              '<option value="30" ' + (proxVal===30?'selected':'') + '>30px (기본)</option>' +
-              '<option value="20" ' + (proxVal===20?'selected':'') + '>20px</option>' +
-              '<option value="10" ' + (proxVal===10?'selected':'') + '>10px</option>' +
-              '<option value="0" ' + (proxVal===0?'selected':'') + '>0px (해제)</option>' +
-            '</select>' +
-          '</div>' +
-          '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
-            '<span style="font-size:0.78rem; font-weight:600; color:#475569; min-width:90px; text-align:right;">기본 도형 크기:</span>' +
-            '<select onchange="setDefaultShapeSize(this.value)" style="width:110px; padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px;">' +
-              '<option value="100" ' + (szVal===100?'selected':'') + '>100px (기본)</option>' +
-              '<option value="150" ' + (szVal===150?'selected':'') + '>150px</option>' +
-              '<option value="200" ' + (szVal===200?'selected':'') + '>200px</option>' +
-              '<option value="50" ' + (szVal===50?'selected':'') + '>50px</option>' +
-            '</select>' +
-          '</div>' +
-          '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
-            '<span style="font-size:0.78rem; font-weight:600; color:#475569; min-width:90px; text-align:right;">투명도 조절 단계:</span>' +
-            '<select onchange="setAlphaStepCount(this.value)" style="width:110px; padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px;">' +
-              '<option value="5" ' + (stepCnt===5?'selected':'') + '>5단계 (0.2)</option>' +
-              '<option value="10" ' + (stepCnt===10?'selected':'') + '>10단계 (0.1)</option>' +
-              '<option value="20" ' + (stepCnt===20?'selected':'') + '>20단계 (0.05)</option>' +
-              '<option value="100" ' + (stepCnt===100?'selected':'') + '>100단계 (1%)</option>' +
-            '</select>' +
-          '</div>' +
+        '<div style="display:flex; flex-direction:row; gap:4px; align-items:center;">' +
+          openDetailedBtnHtml + openShortcutBtnHtml +
         '</div>';
 
       var openPaletteBtnHtml   = '<button class="tool-btn" onclick="window.open(\'https://iseohyun.github.io/UniPalette/\', \'_blank\')" style="width:34px; height:34px;"><span class="alt-badge">O</span>' + (icons.openPalette || '') + '<span class="tooltip-text">기본색상 정하기 (UniPalette 새탭)</span></button>';

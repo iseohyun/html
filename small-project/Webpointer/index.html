@@ -227,6 +227,72 @@
     </div>
   </div>
 
+  <!-- Shortcut Guidance Modal Backdrop -->
+  <div class="palette-modal-backdrop" id="shortcutModal">
+    <div class="palette-modal-card" style="max-width: 560px;">
+      <div class="palette-modal-header">
+        <div class="palette-modal-title">⌨️ Webpointer 단축키 안내</div>
+      </div>
+      <div class="palette-modal-desc">
+        Webpointer에서 사용할 수 있는 전체 키보드 단축키 목록입니다.
+      </div>
+      <div style="max-height: 280px; overflow-y: auto; font-size: 0.85rem; color: #334155; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+          <thead>
+            <tr style="border-bottom: 2px solid #cbd5e1; background: #f8fafc; color: #0284c7;">
+              <th style="padding: 6px 8px;">단축키</th>
+              <th style="padding: 6px 8px;">기능 설명</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 8px; font-weight: 700; color: #0f172a;">V</td><td style="padding: 6px 8px;">선택 도구 (Select)</td></tr>
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 8px; font-weight: 700; color: #0f172a;">T</td><td style="padding: 6px 8px;">텍스트 도구 (Text)</td></tr>
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 8px; font-weight: 700; color: #0f172a;">P</td><td style="padding: 6px 8px;">점 도구 (Point)</td></tr>
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 8px; font-weight: 700; color: #0f172a;">L</td><td style="padding: 6px 8px;">직선 도구 (Line)</td></tr>
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 8px; font-weight: 700; color: #0f172a;">R</td><td style="padding: 6px 8px;">직사각형 도구 (Rectangle)</td></tr>
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 8px; font-weight: 700; color: #0f172a;">Ctrl + Z</td><td style="padding: 6px 8px;">실행 취소 (Undo)</td></tr>
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 8px; font-weight: 700; color: #0f172a;">Ctrl + Y / Ctrl + Shift + Z</td><td style="padding: 6px 8px;">다시 실행 (Redo)</td></tr>
+            <tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 6px 8px; font-weight: 700; color: #0f172a;">Delete / Backspace</td><td style="padding: 6px 8px;">선택한 도형 삭제</td></tr>
+            <tr><td style="padding: 6px 8px; font-weight: 700; color: #0f172a;">Shift (드래그 중)</td><td style="padding: 6px 8px;">45도 스냅 및 정정사각형/정원 생성</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="palette-modal-actions">
+        <button class="palette-modal-btn primary" onclick="closeShortcutModal()">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Settings Modal Backdrop -->
+  <div class="palette-modal-backdrop" id="detailedSettingsModal">
+    <div class="palette-modal-card" style="max-width: 440px;">
+      <div class="palette-modal-header">
+        <div class="palette-modal-title">⚙️ Webpointer 세부 설정</div>
+      </div>
+      <div class="palette-modal-desc">
+        Webpointer 편집기의 세부 환경설정을 변경합니다.
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.88rem; color: #334155;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <label for="settingProximityThreshold" style="font-weight: 600;">근접 선택 거리 (px):</label>
+          <input type="number" id="settingProximityThreshold" min="0" max="100" value="12" style="width: 90px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem; text-align: center;">
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <label for="settingDefaultShapeSize" style="font-weight: 600;">기본 도형 크기 (px):</label>
+          <input type="number" id="settingDefaultShapeSize" min="10" max="500" value="100" style="width: 90px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem; text-align: center;">
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <label for="settingAlphaStepCount" style="font-weight: 600;">투명도 조절 단계 수:</label>
+          <input type="number" id="settingAlphaStepCount" min="2" max="100" value="5" style="width: 90px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem; text-align: center;">
+        </div>
+      </div>
+      <div class="palette-modal-actions" style="margin-top: 10px;">
+        <button class="palette-modal-btn secondary" onclick="closeDetailedSettingsModal()">취소</button>
+        <button class="palette-modal-btn primary" onclick="applyDetailedSettings()">적용</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Standard SPC Modular JS Layer -->
   <script src="module/config.js"></script>
   <script src="module/core/objects.js"></script>

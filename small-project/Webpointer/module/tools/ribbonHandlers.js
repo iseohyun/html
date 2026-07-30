@@ -1543,6 +1543,50 @@
     document.getElementById('dlCancelBtn').onclick = closePop;
   }
 
+  function openShortcutModal() {
+    var modal = document.getElementById('shortcutModal');
+    if (modal) modal.classList.add('show');
+  }
+
+  function closeShortcutModal() {
+    var modal = document.getElementById('shortcutModal');
+    if (modal) modal.classList.remove('show');
+  }
+
+  function openDetailedSettingsModal() {
+    var modal = document.getElementById('detailedSettingsModal');
+    if (modal) {
+      var proxInput = document.getElementById('settingProximityThreshold');
+      var sizeInput = document.getElementById('settingDefaultShapeSize');
+      var stepInput = document.getElementById('settingAlphaStepCount');
+      if (proxInput) proxInput.value = cfg.proximityThreshold !== undefined ? cfg.proximityThreshold : 12;
+      if (sizeInput) sizeInput.value = cfg.defaultShapeSize || 100;
+      if (stepInput) stepInput.value = cfg.alphaStepCount || 5;
+      modal.classList.add('show');
+    }
+  }
+
+  function closeDetailedSettingsModal() {
+    var modal = document.getElementById('detailedSettingsModal');
+    if (modal) modal.classList.remove('show');
+  }
+
+  function applyDetailedSettings() {
+    var proxInput = document.getElementById('settingProximityThreshold');
+    var sizeInput = document.getElementById('settingDefaultShapeSize');
+    var stepInput = document.getElementById('settingAlphaStepCount');
+    if (proxInput && proxInput.value !== '') setProximityThreshold(proxInput.value);
+    if (sizeInput && sizeInput.value !== '') setDefaultShapeSize(sizeInput.value);
+    if (stepInput && stepInput.value !== '') setAlphaStepCount(stepInput.value);
+    closeDetailedSettingsModal();
+  }
+
+  window.openShortcutModal = openShortcutModal;
+  window.closeShortcutModal = closeShortcutModal;
+  window.openDetailedSettingsModal = openDetailedSettingsModal;
+  window.closeDetailedSettingsModal = closeDetailedSettingsModal;
+  window.applyDetailedSettings = applyDetailedSettings;
+
   window.pushHistoryState = pushHistoryState;
   window.undo = undo;
   window.redo = redo;

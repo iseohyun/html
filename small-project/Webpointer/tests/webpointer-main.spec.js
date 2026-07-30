@@ -256,4 +256,47 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
 
     expect(pageErrors).toEqual([]);
   });
+
+  test('TC13: Shortcut Guidance Modal Popup', async ({ page }) => {
+    // Switch to Settings Tab ("설정")
+    await page.click('.tab-btn:has-text("설정")');
+
+    // Click Keyboard Shortcut button
+    await page.click('#btnShortcutGuide');
+
+    // Verify shortcut modal opens
+    const modal = page.locator('#shortcutModal');
+    await expect(modal).toHaveClass(/show/);
+
+    // Close modal
+    await page.click('#shortcutModal button:has-text("닫기")');
+    await expect(modal).not.toHaveClass(/show/);
+
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('TC14: Detailed Settings Modal & Apply Proximity Threshold', async ({ page }) => {
+    // Switch to Settings Tab ("설정")
+    await page.click('.tab-btn:has-text("설정")');
+
+    // Click Detailed Settings Gear button
+    await page.click('#btnDetailedSettings');
+
+    // Verify detailed settings modal opens
+    const modal = page.locator('#detailedSettingsModal');
+    await expect(modal).toHaveClass(/show/);
+
+    // Change proximity threshold to 25
+    await page.fill('#settingProximityThreshold', '25');
+
+    // Click Apply
+    await page.click('#detailedSettingsModal button:has-text("적용")');
+    await expect(modal).not.toHaveClass(/show/);
+
+    // Verify config value updated to 25
+    const proxVal = await page.evaluate(() => window.WebpointerConfig.proximityThreshold);
+    expect(proxVal).toBe(25);
+
+    expect(pageErrors).toEqual([]);
+  });
 });
