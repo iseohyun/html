@@ -138,4 +138,122 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
       mask: [page.locator('#uiGroup')]
     });
   });
+
+  test('TC07: Full Shape Drawing Suite (Point, Line, Ellipse, Arc)', async ({ page }) => {
+    await page.click('.tab-btn:has-text("삽입")');
+    const canvas = page.locator('#mainSvg');
+    const box = await canvas.boundingBox();
+
+    // 1. Draw Line
+    await page.locator('button[onclick*="line"]').first().click();
+    await page.mouse.move(box.x + 50, box.y + 50);
+    await page.mouse.down();
+    await page.mouse.move(box.x + 150, box.y + 50);
+    await page.mouse.up();
+    expect(await page.locator('#objectsGroup line').count()).toBeGreaterThanOrEqual(1);
+
+    // 2. Draw Point
+    await page.locator('button[onclick*="point"]').first().click();
+    await page.mouse.click(box.x + 200, box.y + 50);
+    expect(await page.locator('#objectsGroup circle').count()).toBeGreaterThanOrEqual(1);
+
+    // 3. Draw Ellipse
+    await page.locator('button[onclick*="ellipse"]').first().click();
+    await page.mouse.move(box.x + 250, box.y + 50);
+    await page.mouse.down();
+    await page.mouse.move(box.x + 350, box.y + 120);
+    await page.mouse.up();
+    expect(await page.locator('#objectsGroup ellipse').count()).toBeGreaterThanOrEqual(1);
+
+    // 4. Draw Arc
+    await page.locator('button[onclick*="arc"]').first().click();
+    await page.mouse.move(box.x + 400, box.y + 50);
+    await page.mouse.down();
+    await page.mouse.move(box.x + 480, box.y + 120);
+    await page.mouse.up();
+    expect(await page.locator('#objectsGroup path').count()).toBeGreaterThanOrEqual(1);
+
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('TC08: Picture Formatting Suite (Stroke Width & Format Inputs)', async ({ page }) => {
+    // Draw a rectangle first
+    await page.click('.tab-btn:has-text("삽입")');
+    await page.locator('button[onclick*="rect"]').first().click();
+    const canvas = page.locator('#mainSvg');
+    const box = await canvas.boundingBox();
+
+    await page.mouse.move(box.x + 100, box.y + 200);
+    await page.mouse.down();
+    await page.mouse.move(box.x + 200, box.y + 280);
+    await page.mouse.up();
+
+    // Switch to Picture Formatting Tab ("그림 서식")
+    await page.click('.tab-btn:has-text("그림 서식")');
+
+    const strokeWidthInput = page.locator('input[oninput*="setStrokeWidth"]');
+    if (await strokeWidthInput.count() > 0) {
+      await strokeWidthInput.fill('4');
+    }
+
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('TC09: Detailed Text Formatting Suite (Font, Underline Style)', async ({ page }) => {
+    // Switch to Text Tab ("글 서식")
+    await page.click('.tab-btn:has-text("글 서식")');
+
+    const underlineStyleSelect = page.locator('select[onchange*="setTextUnderlineStyle"]');
+    if (await underlineStyleSelect.count() > 0) {
+      await underlineStyleSelect.selectOption('solid');
+    }
+
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('TC10: Proximity Selection Distance & Nearest Object Detection', async ({ page }) => {
+    // Draw a point at (100, 100)
+    await page.click('.tab-btn:has-text("삽입")');
+    await page.locator('button[onclick*="point"]').first().click();
+    const canvas = page.locator('#mainSvg');
+    const box = await canvas.boundingBox();
+
+    await page.mouse.click(box.x + 100, box.y + 100);
+
+    // Switch to Select Tool (1st tool button in Insert tab)
+    await page.locator('.tool-btn').first().click();
+
+    // Click slightly offset at (105, 105) near the point
+    await page.mouse.click(box.x + 105, box.y + 105);
+
+    // Verify selection includes object
+    const selectedCount = await page.evaluate(() => window.WebpointerConfig.selectedIds.size);
+    expect(selectedCount).toBeGreaterThanOrEqual(1);
+
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('TC11: File Operations Suite (Web LocalStorage Save & File Modal)', async ({ page }) => {
+    // Switch to File Tab ("파일")
+    await page.click('.tab-btn:has-text("파일")');
+
+    // Click Web LocalStorage Save
+    await page.evaluate(() => window.saveFileToWeb());
+
+    // Verify localStorage item is written
+    const savedDoc = await page.evaluate(() => localStorage.getItem('webpointer_saved_doc'));
+    expect(savedDoc).not.toBeNull();
+
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('TC12: Animation Tab & Preset Previews', async ({ page }) => {
+    // Switch to Animation Tab ("애니메이션")
+    await page.click('.tab-btn:has-text("애니메이션")');
+
+    // Trigger Line Draw Animation preview
+    await page.evaluate(() => window.playAnimation && window.playAnimation('draw'));
+
+    expect(pageErrors).toEqual([]);
+  });
 });
