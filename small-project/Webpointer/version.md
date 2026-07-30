@@ -1,5 +1,13 @@
 # Webpointer Project Version History
 
+## [0.2.0] - 2026-07-30
+### Added
+- Completed Hierarchical Multi-Level Grouping & Step-by-Step Ungrouping System:
+  - Conditional activation of Group (`G`) & Ungroup (`U`) ribbon tools based on top-level unit counts.
+  - Multi-level nested group creation support (`<g>` inside `<g>`).
+  - 1-level-at-a-time hierarchical ungrouping (unpacks outermost group layer first, preserving inner subgroup relations).
+  - Outermost group ancestor resolution (`getOutermostGroupEl`) ensuring single nested groups selected alone properly disable the Group tool.
+
 ## [0.1.9] - 2026-07-30
 ### Added
 - Completed 2nd-order (Quadratic) & 3rd-order (Cubic) Bezier Curve Control System:
