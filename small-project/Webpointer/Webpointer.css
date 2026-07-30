@@ -257,40 +257,9 @@
   pointer-events: none !important;
 }
 
-/* Stationary Tooltip (Positioned Directly Below Icon) */
+/* Tooltip Elements (Handled via Global Fixed Floating Tooltip Manager) */
 .webpointer-app .tool-btn .tooltip-text {
   display: none !important;
-  position: absolute !important;
-  top: 100% !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  margin-top: 6px !important;
-  padding: 4px 8px !important;
-  background: #0f172a !important;
-  border: 1px solid #0284c7 !important;
-  color: #ffffff !important;
-  font-size: 0.72rem !important;
-  font-weight: 500 !important;
-  white-space: nowrap !important;
-  border-radius: 4px !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
-  z-index: 99999 !important;
-  pointer-events: none !important;
-}
-
-/* Tooltip direction for bottom row items: position ABOVE the button */
-.webpointer-app .category-grid > div:nth-child(3n) .tool-btn .tooltip-text,
-.webpointer-app .category-content > div:last-child .tool-btn .tooltip-text,
-.webpointer-app .tooltip-top .tooltip-text {
-  top: auto !important;
-  bottom: 100% !important;
-  margin-top: 0 !important;
-  margin-bottom: 6px !important;
-}
-
-.webpointer-app .tool-btn:hover .tooltip-text,
-body.show-alt-keybinds .webpointer-app .tool-btn .tooltip-text {
-  display: block !important;
 }
 
 /* Alt Keybind Badge */

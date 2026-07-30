@@ -505,6 +505,66 @@
     }
   }
 
+  // Global Fixed Floating Tooltip Manager (Positioned fixed to body, bypassing parent overflow/z-index/clipping)
+  (function initGlobalTooltipManager() {
+    var globalTooltip = document.getElementById('webpointerGlobalTooltip');
+    if (!globalTooltip) {
+      globalTooltip = document.createElement('div');
+      globalTooltip.id = 'webpointerGlobalTooltip';
+      globalTooltip.style.cssText =
+        'position:fixed; z-index:999999; display:none; padding:4px 8px; ' +
+        'background:#0f172a; border:1px solid #0284c7; color:#ffffff; ' +
+        'font-size:0.75rem; font-weight:500; white-space:nowrap; border-radius:4px; ' +
+        'box-shadow:0 4px 14px rgba(0,0,0,0.35); pointer-events:none; font-family:sans-serif; transition:opacity 0.1s ease;';
+      document.body.appendChild(globalTooltip);
+    }
+
+    document.addEventListener('mouseover', function(e) {
+      var btn = e.target.closest('.tool-btn, [title], [data-original-title], .ribbon-control-item');
+      if (!btn) return;
+
+      var tooltipStr = '';
+      var tooltipChild = btn.querySelector('.tooltip-text');
+      if (tooltipChild) {
+        tooltipStr = tooltipChild.textContent || tooltipChild.innerText;
+      } else if (btn.getAttribute('title')) {
+        tooltipStr = btn.getAttribute('title');
+        btn.setAttribute('data-original-title', tooltipStr);
+        btn.removeAttribute('title');
+      } else if (btn.getAttribute('data-original-title')) {
+        tooltipStr = btn.getAttribute('data-original-title');
+      }
+
+      if (!tooltipStr) return;
+
+      globalTooltip.textContent = tooltipStr;
+      globalTooltip.style.display = 'block';
+      globalTooltip.style.opacity = '1';
+
+      var rect = btn.getBoundingClientRect();
+      var tipRect = globalTooltip.getBoundingClientRect();
+
+      var left = rect.left + (rect.width / 2) - (tipRect.width / 2);
+      left = Math.max(8, Math.min(window.innerWidth - tipRect.width - 8, left));
+
+      var top = rect.bottom + 6;
+      if (top + tipRect.height > window.innerHeight - 8) {
+        top = rect.top - tipRect.height - 6;
+      }
+
+      globalTooltip.style.left = left + 'px';
+      globalTooltip.style.top = top + 'px';
+    }, true);
+
+    document.addEventListener('mouseout', function(e) {
+      var btn = e.target.closest('.tool-btn, [title], [data-original-title], .ribbon-control-item');
+      if (btn) {
+        globalTooltip.style.display = 'none';
+        globalTooltip.style.opacity = '0';
+      }
+    }, true);
+  })();
+
   window.WebpointerRenderRibbon = {
     getOutermostGroupEl: getOutermostGroupEl,
     build3RowGridHtml: build3RowGridHtml,
