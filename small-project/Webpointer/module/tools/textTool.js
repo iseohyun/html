@@ -127,10 +127,29 @@
       document.head.appendChild(st);
     }
 
+    function getSharpContrastColor(hexColor) {
+      if (!hexColor || hexColor === 'none' || hexColor === 'transparent') return '#ef4444';
+      if (hexColor.startsWith('#')) {
+        var hex = hexColor.substring(1);
+        if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+        if (hex.length === 6) {
+          var r = parseInt(hex.substring(0,2), 16);
+          var g = parseInt(hex.substring(2,4), 16);
+          var b = parseInt(hex.substring(4,6), 16);
+          var lum = (0.299 * r + 0.587 * g + 0.114 * b);
+          return (lum < 128) ? '#ef4444' : '#00f5c0';
+        }
+      }
+      return '#ef4444';
+    }
+
+    var caretColor = getSharpContrastColor(textColor);
+
     var caretEl = document.createElementNS('http://www.w3.org/2000/svg', 'line');
     caretEl.setAttribute('id', 'canvasBlinkingCaret');
-    caretEl.setAttribute('stroke', '#0284c7');
-    caretEl.setAttribute('stroke-width', '2.5');
+    caretEl.setAttribute('stroke', caretColor);
+    caretEl.setAttribute('stroke-width', '1');
+    caretEl.setAttribute('shape-rendering', 'crispEdges');
     caretEl.setAttribute('class', 'blinking-caret');
     caretEl.style.cssText = 'animation: caretBlink 0.85s infinite !important;';
 
@@ -354,8 +373,22 @@
 
     setTimeout(function() {
       if (document.getElementById('hiddenCanvasInput')) {
-        hiddenInput.addEventListener('blur', function() {
-          finishDirectCanvasTyping();
+        hiddenInput.addEventListener('blur', function(e) {
+          setTimeout(function() {
+            var active = document.activeElement;
+            var input = document.getElementById('hiddenCanvasInput');
+            if (!input || input.dataset.isFinishing === 'true') return;
+
+            if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'BUTTON' || active.tagName === 'SELECT')) {
+              if (active.id !== 'hiddenCanvasInput') {
+                finishDirectCanvasTyping();
+              }
+            } else if (state.typingSvgObj) {
+              input.focus();
+            } else {
+              finishDirectCanvasTyping();
+            }
+          }, 120);
         });
       }
     }, 250);
