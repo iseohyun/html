@@ -1,5 +1,16 @@
 # Webpointer Project Version History
 
+## [0.3.1] - 2026-07-30
+### Added
+- Completed Rotation & Flip (회전 및 대칭) Transformation System under Insert Ribbon Tab:
+  - Added new 3-row grid ribbon category "회전 및 대칭" with 4 tool buttons.
+  - Horizontal Flip (`flipH`, `F`): Mirrors objects/groups horizontally across bounding box center.
+  - Vertical Flip (`flipV`, `K`): Mirrors objects/groups vertically across bounding box center.
+  - 90° Clockwise Rotation (`rotate90`, `R`): Rotates objects/groups +90 degrees around bounding box center.
+  - -90° Counter-Clockwise Rotation (`rotateNeg90`, `L`): Rotates objects/groups -90 degrees around bounding box center.
+  - Horizontal & Vertical Equal Spacing alignment tools (requiring 3+ selected units).
+- Updated [`IMPLEMENTATION.md`](file:///c:/git/html/small-project/Webpointer/IMPLEMENTATION.md) with Rotation & Flip specifications.
+
 ## [0.3.0] - 2026-07-30
 ### Added
 - Completed Precision Geometric Boundary Alignment Engine:
