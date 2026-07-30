@@ -1,5 +1,17 @@
 # Webpointer Project Version History
 
+## [0.1.3] - 2026-07-30
+### Added
+- Completed Arc (호) 6-handle interactive editing system:
+  - Center handle (White fill `#ffffff`, Black border `#000000`): Moves entire arc shape.
+  - Horizontal radius `rx` handle (White fill `#ffffff`, Black border `#000000`): Adjusts `rx`.
+  - Vertical radius `ry` handle (White fill `#ffffff`, Black border `#000000`): Adjusts `ry`.
+  - Rotation handle (Yellow fill `#facc15`, Black border `#000000`): Controls overall `angle` rotation.
+  - Start Angle handle (White fill `#ffffff`, Black border `#000000`): Adjusts `startAngle` without changing radius.
+  - End Angle handle (White fill `#ffffff`, Black border `#000000`): Adjusts `endAngle` without changing radius.
+- Initial Arc creation starts from Center `(cx, cy)` to Radius `(rx, ry)` starting at 12 o'clock ($-90^\circ$).
+- Written comprehensive technical specification document [`IMPLEMENTATION.md`](file:///c:/git/html/small-project/Webpointer/IMPLEMENTATION.md) detailing shape handles, math, default colors, and ribbon layout standards.
+
 ## [0.1.2] - 2026-07-30
 ### Added
 - Completed Ellipse / Circle (타원/원) 4-handle interactive editing system:

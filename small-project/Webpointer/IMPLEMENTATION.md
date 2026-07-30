@@ -1,94 +1,100 @@
-# Webpointer Vector CAD Editor Implementation Specification
+# Webpointer Vector CAD Simulator - Technical Implementation Specification
 
-## 1. Executive Summary & Goals
-Webpointer is a 16:9 responsive vector graphic CAD editor and simulator built with native SVG DOM elements and 481×271 Step Grid snapping.
-It features an MS Office Ribbon-style user interface with 5 primary menu tabs: **삽입 (Insert)**, **보기 (View)**, **그림 서식 (Shape Formatting)**, **글 서식 (Text Formatting)**, and **애니메이션 (Animation)**.
+## 1. 개요 및 시스템 기본 스펙 (Canvas System Architecture)
 
----
+### 1.1 캔버스 비율 및 스냅 격자 (16:9 Aspect Ratio & 481×271 Step Grid)
+* **캔버스 해상도**: 기본 $960 \times 540\,\text{px}$ (16:9 비율)
+* **스냅 격자 (Step Grid System)**:
+  * 가로 축: $0 \le Step_X \le 480$ (총 481개 정밀 스냅 스텝 포인트)
+  * 세로 축: $0 \le Step_Y \le 270$ (총 271개 정밀 스냅 스텝 포인트)
+  * 좌표 변환 연산:
+    $$Pixel_X = \frac{Step_X}{480} \times 960, \quad Pixel_Y = \frac{Step_Y}{270} \times 540$$
+* **기본 캔버스 스타일**:
+  * 배경색: **순백색 하얀색 (`#ffffff`)**
+  * 격자선: 시인성 확보용 크리스프 연회색 (`#e2e8f0`, 두께 `0.8px`)
 
-## 2. Menu Tabs & Ribbon Bar Layout Specification
-
-### 2.1 Tab Architecture
-- **Tab Switching**: Clicking a tab highlights the menu button (MS Ribbon active tab style) and dynamically renders the corresponding ribbon toolbar.
-- **Global Function Exposing**: All UI event handlers (`switchTab`, `setTool`, `applyStyleToSelected`, etc.) are attached to `window` to prevent `Uncaught ReferenceError` in SPA / sandbox environments.
-
-### 2.2 Ribbon Layout & Icon Grid Rules
-- **Minimum 3-Row Height**: Each ribbon category group is formatted as a 3-row grid layout (`grid-template-rows: repeat(3, 34px)`).
-- **Uniform Icon Dimensions**: All tool icons have identical sizes ($32 \times 32\,\text{px}$ SVG canvas inside a $34 \times 34\,\text{px}$ button).
-- **Category Group Dividers**: Groups are separated by a vertical divider line (`border-right: 1px solid var(--border-color)`).
-- **Category Title Alignment**: Category names (e.g. `도형 삽입`, `레이어 순서`, `그룹화`, `정렬`, `보기 설정`) are centered at the very bottom of each category block.
-- **Tooltip & Alt Keybind Behavior**:
-  - Icon names/labels are **hidden by default** under the icon.
-  - Hovering (`mouseover`) or pressing the `Alt` key displays a fixed tooltip positioned directly below the tool button.
-  - Pressing `Alt` reveals keybind badges on each tool button.
+### 1.2 기본 도형 스타일 (Default Styling Tokens)
+* **테두리 기본 색상 (Stroke)**: `#041e49`
+* **채우기 기본 색상 (Fill)**: **투명 (`none`)**
+* **기본 테두리 두께 (Stroke Width)**: `2px`
 
 ---
 
-## 3. Ribbon Tool Groups by Tab
+## 2. 도형별 인터페이스 및 조종점 핸들 상세 명세 (Shape & Control Handle Specs)
 
-### 3.1 `삽입` (Insert Tab)
-1. **도형 삽입 (Insert Shapes)**:
-   - 점 (Point / Circle)
-   - 선 (Line)
-   - 사각 (Rectangle)
-   - 타원 (Ellipse)
-   - 호 (Arc)
-   - 2차 베지어 (Quadratic Bezier: 1 Control Point Handle icon)
-   - 3차 베지어 (Cubic Bezier: 2 Control Point Handles icon)
-   - 둥근사각 (Rounded Rectangle)
-2. **레이어 순서 (Layer Ordering)**:
-   - 뒤로, 맨 뒤로, 앞으로, 맨 앞으로
-3. **그룹화 (Grouping)**:
-   - 그룹 (`<g>`), 그룹 해제
-4. **정렬 (Alignment)**:
-   - 왼쪽, 중앙, 오른쪽, 위, 중앙, 아래 정렬
-
-### 3.2 `보기` (View Tab) - NEW
-1. **격자 보이기 (Toggle Grid)**: On/Off toggle for 481×271 Step grid lines.
-2. **격자 크기 (Grid Step Density)**:
-   - 481×271 Step (Standard 16:9)
-   - 241×136 Step (Dense 2x)
-   - 121×69 Step (Coarse 4x)
-3. **캔버스 크기 선택 (Canvas Ratio / Resolution)**:
-   - 16:9 (960×540 px)
-   - 16:9 (1280×720 px)
-   - 4:3 (800×600 px)
-   - 1:1 (600×600 px)
-4. **캔버스 색 (Canvas Background Color)**: Color picker for SVG canvas background.
-
-### 3.3 `그림 서식` (Shape Formatting Tab)
-1. **기본 스타일**: 테두리 색상, 채우기 색상, 선 두께 (1~20px), 선 스타일 (실선, 점선).
-2. **시작/끝 모양 마커 (Markers)**:
-   - 시작 모양: 없음, 화살표, 동그라미, 다이아몬드 + 크기 키우기(+)/줄이기(-)
-   - 끝 모양: 없음, 화살표, 동그라미, 다이아몬드 + 크기 키우기(+)/줄이기(-)
-
-### 3.4 `글 서식` (Text Formatting Tab)
-- 텍스트 상자 추가, 폰트 종류, 폰트 크기, Bold/Italic.
-
-### 3.5 `애니메이션` (Animation Tab)
-- 그리기 애니메이션 (Path Draw), 페이드 애니메이션 (Fade In).
+### 2.1 점 (Point)
+* **생성 인터페이스**: 도형삽입 $\rightarrow$ `점 (Point)` 클릭 후 캔버스 마우스 클릭 시 즉시 생성
+* **기본 스펙**:
+  * 크기: **지름 10px** (반지름 $r = 5\,\text{px}$)
+  * 기본 색상: `#041e49` (채우기 및 테두리 동일)
+* **선택 및 조종점 (Handles)**:
+  * 외곽선: 선택 시 점 주위에 반지름 $r + 4\,\text{px}$ 점선 링(`stroke-dasharray: 3,3`) 렌더링
+  * **중심점 핸들 (`point_center`)**: `(cx, cy)` 위치에 배치 (하얀색 `#ffffff` / 검은 테두리 `#000000`)
+  * 이동 연산: 핸들 드래그 시 가장 가까운 Step 스냅 좌표로 점의 위치 `(cx, cy)` 변경
 
 ---
 
-## 4. Canvas Engine & Step Snap Math
-
-### 4.1 Step Quantization
-Canvas resolution is 16:9 aspect ratio ($960 \times 540\,\text{px}$).
-Grid contains 481 horizontal points (0 to 480) and 271 vertical points (0 to 270):
-$$\text{Step}_X = \text{Math.round}\left(\frac{X_{\text{raw}}}{\text{CanvasWidth}} \times 480\right)$$
-$$\text{Step}_Y = \text{Math.round}\left(\frac{Y_{\text{raw}}}{\text{CanvasHeight}} \times 270\right)$$
-$$\text{Pixel}_X = \frac{\text{Step}_X}{480} \times \text{CanvasWidth}$$
-$$\text{Pixel}_Y = \frac{\text{Step}_Y}{270} \times \text{CanvasHeight}$$
-
-### 4.2 Real SVG DOM Elements & Handles
-- All objects are instantiated as actual SVG elements (`<circle>`, `<line>`, `<rect>`, `<ellipse>`, `<path>`, `<g>`).
-- Interactive Control Handles (`<circle class="handle-node">`) allow dragging Bezier control points (P1 for 2nd order, P1/P2 for 3rd order) and shape dimensions with real-time grid snapping.
+### 2.2 타원 / 원 (Ellipse / Circle)
+* **생성 인터페이스**: 마우스 대각선 드래그하여 중심 `(cx, cy)` 및 가로/세로 반지름 `(rx, ry)` 결정
+* **기본 채우기**: **투명 (`none`)**
+* **조종점 핸들 구성 (4종)**:
+  1. **원 중심 핸들 (`ellipse_center`)**:
+     * 위치: `(cx, cy)`
+     * 외형: **하얀색 배경 (`#ffffff`), 검은색 테두리 (`#000000`, 1.5px)**
+     * 동작: 드래그 시 원/타원 전체 위치 `(cx, cy)`를 스냅 이동
+  2. **가로길이 핸들 (`ellipse_width`)**:
+     * 위치: `(cx + rx, cy)` (회전 적용 시 각도 변환 반영)
+     * 외형: **하얀색 배경 (`#ffffff`), 검은색 테두리 (`#000000`, 1.5px)**
+     * 동작: 드래그 시 가로 반지름 `rx` 변경
+  3. **세로길이 핸들 (`ellipse_height`)**:
+     * 위치: `(cx, cy - ry)` (회전 적용 시 각도 변환 반영)
+     * 외형: **하얀색 배경 (`#ffffff`), 검은색 테두리 (`#000000`, 1.5px)**
+     * 동작: 드래그 시 세로 반지름 `ry` 변경
+  4. **회전각 핸들 (`ellipse_rotate`)**:
+     * 위치: 세로길이 핸들 상단 25px 연장 위치 `(cx, cy - ry - 25px)`
+     * 연장선: 세로길이 핸들과 회전 핸들 사이 파란색 점선 (`stroke-dasharray: 3,3`) 연결
+     * 외형: **노란색 배경 (`#facc15`), 검은색 테두리 (`#000000`, 1.5px)**
+     * 동작: 드래그 시 `atan2` 각도 계산을 거쳐 SVG `transform="rotate(angle, cx, cy)"` 변환 실시간 적용
 
 ---
 
-## 5. Verification & Testing Plan
-- Validate tab switching and eliminate any `switchTab is not defined` console errors.
-- Test "보기" menu view controls (grid toggle, grid step density, canvas ratio, background color).
-- Verify 3-row ribbon icon layout, uniform icon sizes, category dividers, and bottom-centered titles.
-- Verify tooltips appearing stationary below icons on hover and Alt key badges when `Alt` is pressed.
-- Verify marquee selection, Ctrl multi-selection, SVG grouping (`<g>`), and marker start/end scaling.
+### 2.3 호 (Arc)
+* **생성 인터페이스**:
+  * **시작점 클릭**: 호의 **중심점 `(cx, cy)`** 설정
+  * **드래그 이동**: 반지름 `(rx, ry)` 및 끝각 설정
+  * **기본 시작각**: **12시 방향 (상단, $-90^\circ$)**에서 시작
+* **SVG Path 연산 공식**:
+  $$P_1 = \text{getArcPoint}(cx, cy, rx, ry, \text{startAngle}, \text{angle})$$
+  $$P_2 = \text{getArcPoint}(cx, cy, rx, ry, \text{endAngle}, \text{angle})$$
+  $$\text{d} = \text{"M } P_1.x\text{ }P_1.y\text{ A } rx\text{ } ry\text{ } \text{angle } \text{largeArcFlag } 1\text{ } P_2.x\text{ }P_2.y\text{"}$$
+* **조종점 핸들 구성 (6종)**:
+  1. **중심점 핸들 (`arc_center`)**: `(cx, cy)` (하얀색 `#ffffff` / 검은 테두리 `#000000`) $\rightarrow$ 호 위치 스냅 이동
+  2. **가로지름 핸들 (`arc_rx`)**: 0° 위치 (하얀색 `#ffffff` / 검은 테두리 `#000000`) $\rightarrow$ 가로 반지름 `rx` 변경
+  3. **세로지름 핸들 (`arc_ry`)**: -90° 위치 (하얀색 `#ffffff` / 검은 테두리 `#000000`) $\rightarrow$ 세로 반지름 `ry` 변경
+  4. **회전각 핸들 (`arc_rotate`)**: 상단 25px 연장 노란색 핸들 (노란색 `#facc15` / 검은 테두리 `#000000`) $\rightarrow$ 전체 회전각 `angle` 연산
+  5. **시작각 핸들 (`arc_start_angle`)**: 호 시작점 $P_1$ 위치 (하얀색 `#ffffff` / 검은 테두리 `#000000`) $\rightarrow$ 반지름 변경 없이 `startAngle` 각도만 독립 연산
+  6. **끝각 핸들 (`arc_end_angle`)**: 호 끝점 $P_2$ 위치 (하얀색 `#ffffff` / 검은 테두리 `#000000`) $\rightarrow$ 반지름 변경 없이 `endAngle` 각도만 독립 연산
+
+---
+
+## 3. 조종점 핸들 외형 및 UI 디자인 표준 (Handle UI Standards)
+
+| 핸들 유형 | Fill 색상 | Stroke 색상 | Stroke 두께 | 반지름 ($r$) |
+| :--- | :--- | :--- | :--- | :--- |
+| **일반 조종점** (중심, 지름, 시작/끝각) | `#ffffff` (하얀색) | `#000000` (검은색) | `1.5px` | `5px` |
+| **회전각 조종점** (Rotation Handle) | `#facc15` (노란색) | `#000000` (검은색) | `1.5px` | `6px` |
+
+---
+
+## 4. MS 리본 레이아웃 및 SPA 라우팅 명세
+
+1. **메뉴바 (Menu Bar)**:
+   * 너비: `width: 100%` (회색 배경 `#e2e8f0`)
+   * 선택 탭: 흰색 배경(`background-color: #ffffff`), 하단 테두리 제거 및 마진 오버랩으로 리본바와 일체형 융합
+2. **리본바 (Ribbon Bar)**:
+   * 너비: `width: 100%` (흰색 배경 `#ffffff`)
+   * 카테고리 구성: 좌측에서 우측으로 가로 정렬 (`display: flex; flex-direction: row;`)
+   * 아이콘 3단 배열: 각 카테고리는 `display: grid; grid-template-rows: repeat(3, 34px);`로 3행을 채운 후 다음 열로 전개
+   * 카테고리 제목: 카테고리 블록 최하단 중앙에 명시 (`text-align: center; font-size: 0.74rem;`)
+3. **SPA 캡슐화**:
+   * `<article>` 내부에 `<div class="webpointer-app">` 래퍼 배치 및 inline fallback style 내장으로 SPA 라우터 스타일 유실 원천 방지

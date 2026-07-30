@@ -5,7 +5,20 @@
 (function() {
   var cfg = window.WebpointerConfig;
 
+  // Utility to calculate point on an rotated elliptical arc
+  function getArcPoint(cx, cy, rx, ry, angleDeg, rotationDeg) {
+    var aRad = angleDeg * (Math.PI / 180);
+    var rRad = (rotationDeg || 0) * (Math.PI / 180);
+    var xLocal = rx * Math.cos(aRad);
+    var yLocal = ry * Math.sin(aRad);
+    var xRot = xLocal * Math.cos(rRad) - yLocal * Math.sin(rRad);
+    var yRot = xLocal * Math.sin(rRad) + yLocal * Math.cos(rRad);
+    return { x: cx + xRot, y: cy + yRot };
+  }
+
   var WebpointerRender = {
+    getArcPoint: getArcPoint,
+
     // Render Step Grid Lines for White Canvas
     renderGrid: function() {
       var gridGroup = document.getElementById('gridGroup');
@@ -223,12 +236,25 @@
         } else {
           obj.el.removeAttribute('transform');
         }
+      } else if (obj.type === 'arc') {
+        // Arc path generation from startAngle to endAngle with radii rx, ry
+        var sAng = a.startAngle !== undefined ? a.startAngle : -90;
+        var eAng = a.endAngle !== undefined ? a.endAngle : 0;
+        var rot = a.angle || 0;
+
+        var p1 = getArcPoint(a.cx, a.cy, a.rx, a.ry, sAng, rot);
+        var p2 = getArcPoint(a.cx, a.cy, a.rx, a.ry, eAng, rot);
+
+        var sweepDiff = (eAng - sAng + 360) % 360;
+        var largeArcFlag = sweepDiff > 180 ? 1 : 0;
+
+        var d = 'M ' + p1.x + ' ' + p1.y +
+                ' A ' + a.rx + ' ' + a.ry + ' ' + rot + ' ' + largeArcFlag + ' 1 ' + p2.x + ' ' + p2.y;
+        obj.el.setAttribute('d', d);
       } else if (obj.type === 'bez2') {
         obj.el.setAttribute('d', 'M ' + a.x1 + ' ' + a.y1 + ' Q ' + a.cx + ' ' + a.cy + ' ' + a.x2 + ' ' + a.y2);
       } else if (obj.type === 'bez3') {
         obj.el.setAttribute('d', 'M ' + a.x1 + ' ' + a.y1 + ' C ' + a.c1x + ' ' + a.c1y + ', ' + a.c2x + ' ' + a.c2y + ', ' + a.x2 + ' ' + a.y2);
-      } else if (obj.type === 'arc') {
-        obj.el.setAttribute('d', 'M ' + a.x1 + ' ' + a.y1 + ' A ' + a.rx + ' ' + a.ry + ' 0 0 1 ' + a.x2 + ' ' + a.y2);
       }
     },
 
@@ -242,7 +268,7 @@
       circle.setAttribute('cy', y);
       circle.setAttribute('r', isRotation ? '6' : '5');
       circle.setAttribute('fill', isRotation ? '#facc15' : '#ffffff'); // Yellow for rotation, White for standard
-      circle.setAttribute('stroke', '#000000'); // Black border
+      circle.setAttribute('stroke', '#000000');
       circle.setAttribute('stroke-width', '1.5');
       circle.setAttribute('class', 'handle-node');
 
@@ -271,7 +297,6 @@
         var a = obj.attrs;
 
         if (obj.type === 'point') {
-          // Highlight ring for Point (White center handle, Black border)
           var ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
           ring.setAttribute('cx', a.cx);
           ring.setAttribute('cy', a.cy);
@@ -283,10 +308,8 @@
           uiGroup.appendChild(ring);
           self.createHandleNode(a.cx, a.cy, id, 'point_center', 1, false);
         } else if (obj.type === 'ellipse') {
-          // Ellipse Handles: 1) Center (cx,cy), 2) Horizontal Width (cx+rx, cy), 3) Vertical Height (cx, cy-ry), 4) Rotation Angle (cx, cy-ry-25)
           var angleRad = (a.angle || 0) * (Math.PI / 180);
           
-          // Calculate rotated positions
           function getRotatedPoint(px, py) {
             var dx = px - a.cx;
             var dy = py - a.cy;
@@ -300,7 +323,6 @@
           var ptHeight = getRotatedPoint(a.cx, a.cy - a.ry);
           var ptRotate = getRotatedPoint(a.cx, a.cy - a.ry - 25);
 
-          // Rotation Stem Line (Dashed)
           var rotStem = document.createElementNS('http://www.w3.org/2000/svg', 'line');
           rotStem.setAttribute('x1', ptHeight.x);
           rotStem.setAttribute('y1', ptHeight.y);
@@ -311,17 +333,62 @@
           rotStem.setAttribute('stroke-width', '1.5');
           uiGroup.appendChild(rotStem);
 
-          // 1) Center Handle (White, Black border)
           self.createHandleNode(ptCenter.x, ptCenter.y, id, 'ellipse_center', 1, false);
-
-          // 2) Width Handle (White, Black border)
           self.createHandleNode(ptWidth.x, ptWidth.y, id, 'ellipse_width', 2, false);
-
-          // 3) Height Handle (White, Black border)
           self.createHandleNode(ptHeight.x, ptHeight.y, id, 'ellipse_height', 3, false);
-
-          // 4) Rotation Handle (Yellow, Black border)
           self.createHandleNode(ptRotate.x, ptRotate.y, id, 'ellipse_rotate', 4, true);
+
+        } else if (obj.type === 'arc') {
+          // Arc Handles: 1) Center (cx,cy), 2) Horizontal radius rx, 3) Vertical radius ry, 4) Rotation angle, 5) Start Angle, 6) End Angle
+          var rotArc = a.angle || 0;
+          var sAng = a.startAngle !== undefined ? a.startAngle : -90;
+          var eAng = a.endAngle !== undefined ? a.endAngle : 0;
+
+          var ptCenterArc = { x: a.cx, y: a.cy };
+          var ptWidthArc  = getArcPoint(a.cx, a.cy, a.rx, a.ry, 0, rotArc);
+          var ptHeightArc = getArcPoint(a.cx, a.cy, a.rx, a.ry, -90, rotArc);
+          var ptRotateArc = getArcPoint(a.cx, a.cy, a.rx, a.ry - 25, -90, rotArc);
+
+          var ptStartAng = getArcPoint(a.cx, a.cy, a.rx, a.ry, sAng, rotArc);
+          var ptEndAng   = getArcPoint(a.cx, a.cy, a.rx, a.ry, eAng, rotArc);
+
+          // Center-to-start and Center-to-end radial guide lines
+          var lineStart = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          lineStart.setAttribute('x1', a.cx); lineStart.setAttribute('y1', a.cy);
+          lineStart.setAttribute('x2', ptStartAng.x); lineStart.setAttribute('y2', ptStartAng.y);
+          lineStart.setAttribute('stroke', '#38bdf8'); lineStart.setAttribute('stroke-dasharray', '2,2');
+          uiGroup.appendChild(lineStart);
+
+          var lineEnd = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          lineEnd.setAttribute('x1', a.cx); lineEnd.setAttribute('y1', a.cy);
+          lineEnd.setAttribute('x2', ptEndAng.x); lineEnd.setAttribute('y2', ptEndAng.y);
+          lineEnd.setAttribute('stroke', '#38bdf8'); lineEnd.setAttribute('stroke-dasharray', '2,2');
+          uiGroup.appendChild(lineEnd);
+
+          // Rotation Stem Line
+          var stemArc = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          stemArc.setAttribute('x1', ptHeightArc.x); stemArc.setAttribute('y1', ptHeightArc.y);
+          stemArc.setAttribute('x2', ptRotateArc.x); stemArc.setAttribute('y2', ptRotateArc.y);
+          stemArc.setAttribute('stroke', '#0284c7'); stemArc.setAttribute('stroke-dasharray', '3,3');
+          uiGroup.appendChild(stemArc);
+
+          // 1) Center Handle (White/Black)
+          self.createHandleNode(ptCenterArc.x, ptCenterArc.y, id, 'arc_center', 1, false);
+
+          // 2) Width Radius Handle (White/Black)
+          self.createHandleNode(ptWidthArc.x, ptWidthArc.y, id, 'arc_rx', 2, false);
+
+          // 3) Height Radius Handle (White/Black)
+          self.createHandleNode(ptHeightArc.x, ptHeightArc.y, id, 'arc_ry', 3, false);
+
+          // 4) Rotation Handle (Yellow/Black)
+          self.createHandleNode(ptRotateArc.x, ptRotateArc.y, id, 'arc_rotate', 4, true);
+
+          // 5) Start Angle Handle (White/Black)
+          self.createHandleNode(ptStartAng.x, ptStartAng.y, id, 'arc_start_angle', 5, false);
+
+          // 6) End Angle Handle (White/Black)
+          self.createHandleNode(ptEndAng.x, ptEndAng.y, id, 'arc_end_angle', 6, false);
 
         } else if (obj.type === 'bez2') {
           var guide = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -340,7 +407,7 @@
           uiGroup.appendChild(guide2);
           self.createHandleNode(a.c1x, a.c1y, id, 'bez3_ctrl1', 1, false);
           self.createHandleNode(a.c2x, a.c2y, id, 'bez3_ctrl2', 2, false);
-        } else if (obj.type === 'line' || obj.type === 'arc') {
+        } else if (obj.type === 'line') {
           self.createHandleNode(a.x1, a.y1, id, 'start', 1, false);
           self.createHandleNode(a.x2, a.y2, id, 'end', 2, false);
         } else if (obj.type === 'rect' || obj.type === 'rounded') {

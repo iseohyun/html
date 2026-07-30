@@ -82,6 +82,21 @@
       var rxEl = Math.max(10, Math.abs(px2 - px1) / 2);
       var ryEl = Math.max(10, Math.abs(py2 - py1) / 2);
       attrs = { cx: cx, cy: cy, rx: rxEl, ry: ryEl, angle: 0, stepCx: Math.round((stepStart.stepX + stepEnd.stepX) / 2), stepCy: Math.round((stepStart.stepY + stepEnd.stepY) / 2), stepRx: Math.abs(stepEnd.stepX - stepStart.stepX) / 2, stepRy: Math.abs(stepEnd.stepY - stepStart.stepY) / 2 };
+    } else if (type === 'arc') {
+      // Arc starting point is Center (px1, py1), End point is Radius (px2, py2)
+      el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      var rxArc = Math.max(10, Math.abs(px2 - px1));
+      var ryArc = Math.max(10, Math.abs(py2 - py1));
+      var initialEndAngle = Math.round(Math.atan2(py2 - py1, px2 - px1) * (180 / Math.PI));
+      attrs = {
+        cx: px1,
+        cy: py1,
+        rx: rxArc,
+        ry: ryArc,
+        startAngle: -90, // Starts at 12 o'clock (-90 deg)
+        endAngle: initialEndAngle,
+        angle: 0
+      };
     } else if (type === 'bez2') {
       el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       var midX = (px1 + px2) / 2;
@@ -94,14 +109,11 @@
       var c2x = px1 + (px2 - px1) * 0.66;
       var c2y = py2 - 40;
       attrs = { x1: px1, y1: py1, c1x: c1x, c1y: c1y, c2x: c2x, c2y: c2y, x2: px2, y2: py2, stepX1: stepStart.stepX, stepY1: stepStart.stepY, stepC1x: Math.round(stepStart.stepX + (stepEnd.stepX - stepStart.stepX) * 0.33), stepC1y: Math.max(0, stepStart.stepY - 20), stepC2x: Math.round(stepStart.stepX + (stepEnd.stepX - stepStart.stepX) * 0.66), stepC2y: Math.max(0, stepEnd.stepY - 20), stepX2: stepEnd.stepX, stepY2: stepEnd.stepY };
-    } else if (type === 'arc') {
-      el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      attrs = { x1: px1, y1: py1, rx: Math.abs(px2 - px1), ry: Math.abs(py2 - py1), x2: px2, y2: py2, stepX1: stepStart.stepX, stepY1: stepStart.stepY, stepX2: stepEnd.stepX, stepY2: stepEnd.stepY };
     }
 
     el.setAttribute('id', id);
     el.setAttribute('stroke', cfg.strokeColor || '#041e49');
-    el.setAttribute('fill', cfg.fillColor || 'none'); // Default fill is transparent 'none'
+    el.setAttribute('fill', cfg.fillColor || 'none');
     el.setAttribute('stroke-width', cfg.strokeWidth || 2);
 
     if (cfg.startMarker !== 'none') el.setAttribute('marker-start', 'url(#marker-start-' + cfg.startMarker + ')');
@@ -303,37 +315,36 @@
         if (obj) {
           var a = obj.attrs;
           if (state.activeHandleInfo.handleType === 'point_center') {
-            a.cx = coords.px;
-            a.cy = coords.py;
-            a.stepX = coords.stepX;
-            a.stepY = coords.stepY;
-          } else if (state.activeHandleInfo.handleType === 'ellipse_center') {
-            a.cx = coords.px;
-            a.cy = coords.py;
-            a.stepCx = coords.stepX;
-            a.stepCy = coords.stepY;
-          } else if (state.activeHandleInfo.handleType === 'ellipse_width') {
+            a.cx = coords.px; a.cy = coords.py;
+            a.stepX = coords.stepX; a.stepY = coords.stepY;
+          } else if (state.activeHandleInfo.handleType === 'ellipse_center' || state.activeHandleInfo.handleType === 'arc_center') {
+            a.cx = coords.px; a.cy = coords.py;
+            a.stepCx = coords.stepX; a.stepCy = coords.stepY;
+          } else if (state.activeHandleInfo.handleType === 'ellipse_width' || state.activeHandleInfo.handleType === 'arc_rx') {
             a.rx = Math.max(5, Math.abs(coords.px - a.cx));
-          } else if (state.activeHandleInfo.handleType === 'ellipse_height') {
+          } else if (state.activeHandleInfo.handleType === 'ellipse_height' || state.activeHandleInfo.handleType === 'arc_ry') {
             a.ry = Math.max(5, Math.abs(coords.py - a.cy));
-          } else if (state.activeHandleInfo.handleType === 'ellipse_rotate') {
+          } else if (state.activeHandleInfo.handleType === 'ellipse_rotate' || state.activeHandleInfo.handleType === 'arc_rotate') {
             var rad = Math.atan2(coords.py - a.cy, coords.px - a.cx);
             a.angle = Math.round((rad * (180 / Math.PI)) + 90);
+          } else if (state.activeHandleInfo.handleType === 'arc_start_angle') {
+            // Dragging Start Angle Handle: computes angle without changing rx/ry
+            var radS = Math.atan2(coords.py - a.cy, coords.px - a.cx);
+            a.startAngle = Math.round(radS * (180 / Math.PI)) - (a.angle || 0);
+          } else if (state.activeHandleInfo.handleType === 'arc_end_angle') {
+            // Dragging End Angle Handle: computes angle without changing rx/ry
+            var radE = Math.atan2(coords.py - a.cy, coords.px - a.cx);
+            a.endAngle = Math.round(radE * (180 / Math.PI)) - (a.angle || 0);
           } else if (state.activeHandleInfo.handleType === 'bez2_ctrl') {
-            a.cx = coords.px;
-            a.cy = coords.py;
+            a.cx = coords.px; a.cy = coords.py;
           } else if (state.activeHandleInfo.handleType === 'bez3_ctrl1') {
-            a.c1x = coords.px;
-            a.c1y = coords.py;
+            a.c1x = coords.px; a.c1y = coords.py;
           } else if (state.activeHandleInfo.handleType === 'bez3_ctrl2') {
-            a.c2x = coords.px;
-            a.c2y = coords.py;
+            a.c2x = coords.px; a.c2y = coords.py;
           } else if (state.activeHandleInfo.handleType === 'start') {
-            a.x1 = coords.px;
-            a.y1 = coords.py;
+            a.x1 = coords.px; a.y1 = coords.py;
           } else if (state.activeHandleInfo.handleType === 'end') {
-            a.x2 = coords.px;
-            a.y2 = coords.py;
+            a.x2 = coords.px; a.y2 = coords.py;
           } else if (state.activeHandleInfo.handleType === 'bottom_right') {
             a.width = Math.max(10, coords.px - a.x);
             a.height = Math.max(10, coords.py - a.y);
@@ -351,9 +362,17 @@
         var py2 = coords.py;
         var aTemp = state.activeTempObj.attrs;
 
-        if (state.activeTempObj.type === 'line' || state.activeTempObj.type === 'arc') {
+        if (state.activeTempObj.type === 'line') {
           aTemp.x2 = px2;
           aTemp.y2 = py2;
+        } else if (state.activeTempObj.type === 'arc') {
+          // Drawing arc: start point is Center (px1, py1), current point determines radius & end angle
+          aTemp.cx = px1;
+          aTemp.cy = py1;
+          aTemp.rx = Math.max(10, Math.abs(px2 - px1));
+          aTemp.ry = Math.max(10, Math.abs(py2 - py1));
+          aTemp.startAngle = -90; // Starts at 12 o'clock (-90 deg)
+          aTemp.endAngle = Math.round(Math.atan2(py2 - py1, px2 - px1) * (180 / Math.PI));
         } else if (state.activeTempObj.type === 'rect' || state.activeTempObj.type === 'rounded') {
           aTemp.x = Math.min(px1, px2);
           aTemp.y = Math.min(py1, py2);
