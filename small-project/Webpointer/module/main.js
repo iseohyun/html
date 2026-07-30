@@ -484,6 +484,32 @@
         }
       }
 
+      var isPlusKey = e.key === '+' || e.key === '=' || e.code === 'NumpadAdd' || e.code === 'Equal';
+      var isMinusKey = e.key === '-' || e.key === '_' || e.code === 'NumpadSubtract' || e.code === 'Minus';
+      if (isPlusKey || isMinusKey) {
+        var isInputTarget = e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT');
+        if (!state.typingSvgObj && !isInputTarget && cfg.selectedIds.size > 0) {
+          var hasTextObj = false;
+          var delta = isPlusKey ? 2 : -2;
+          cfg.selectedIds.forEach(function(id) {
+            var obj = cfg.objectsMap.get(id);
+            if (obj && obj.type === 'text') {
+              hasTextObj = true;
+              var curSize = parseInt(obj.attrs.fontSize || cfg.fontSize || 20, 10);
+              var newSize = Math.max(6, Math.min(200, curSize + delta));
+              obj.attrs.fontSize = newSize;
+              cfg.fontSize = newSize;
+            }
+          });
+          if (hasTextObj) {
+            e.preventDefault();
+            render.renderUI();
+            render.renderRibbon();
+            if (window.pushHistoryState) window.pushHistoryState();
+          }
+        }
+      }
+
       if (e.key === 'Enter') {
         if (state.isMultiBezierActive) {
           bezier.finishMultiBezier();

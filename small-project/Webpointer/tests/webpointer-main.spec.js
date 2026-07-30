@@ -305,4 +305,53 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
 
     expect(pageErrors).toEqual([]);
   });
+
+  test('TC15: Text Selection Font Size Hotkeys (+/-)', async ({ page }) => {
+    // Create and select a text object programmatically
+    const textObjId = await page.evaluate(() => {
+      window.WebpointerTextTool.startDirectCanvasTyping(300, 300, null);
+      var textObj = window.WebpointerState.typingSvgObj;
+      if (textObj) {
+        textObj.attrs.text = 'Hotkey Font Test';
+        textObj.attrs.fontSize = 20;
+        window.WebpointerTextTool.finishDirectCanvasTyping();
+        window.WebpointerConfig.selectedIds.clear();
+        window.WebpointerConfig.selectedIds.add(textObj.id);
+        window.WebpointerRender.renderUI();
+        return textObj.id;
+      }
+      return null;
+    });
+    expect(textObjId).not.toBeNull();
+
+    // Get initial font size
+    const initialSize = await page.evaluate(() => {
+      const textObj = Array.from(window.WebpointerConfig.objectsMap.values()).find(o => o.type === 'text');
+      return textObj ? textObj.attrs.fontSize || 20 : 0;
+    });
+    expect(initialSize).toBeGreaterThan(0);
+
+    // Trigger font size increase (+ / =) keydown
+    await page.evaluate(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: '+', code: 'Equal', bubbles: true }));
+    });
+
+    const sizeAfterPlus = await page.evaluate(() => {
+      const textObj = Array.from(window.WebpointerConfig.objectsMap.values()).find(o => o.type === 'text');
+      return textObj ? textObj.attrs.fontSize : 0;
+    });
+    expect(sizeAfterPlus).toBe(initialSize + 2);
+
+    // Trigger font size decrease (- / _) keydown
+    await page.evaluate(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: '-', code: 'Minus', bubbles: true }));
+    });
+    const sizeAfterMinus = await page.evaluate(() => {
+      const textObj = Array.from(window.WebpointerConfig.objectsMap.values()).find(o => o.type === 'text');
+      return textObj ? textObj.attrs.fontSize : 0;
+    });
+    expect(sizeAfterMinus).toBe(initialSize);
+
+    expect(pageErrors).toEqual([]);
+  });
 });
