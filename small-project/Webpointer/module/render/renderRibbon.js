@@ -323,22 +323,20 @@
         '</button>';
 
       var curVertAlign = cfg.textDominantBaseline || 'alphabetic';
-      var alignVertTopBtnHtml =
-        '<button class="tool-btn ' + (curVertAlign === 'hanging' ? 'active' : '') + '" onclick="setTextVerticalAlign(\'hanging\')" style="width:34px; height:34px;">' +
-          (icons.alignVertTop || '↑') +
-          '<span class="tooltip-text">위쪽 맞춤</span>' +
-        '</button>';
+      var iconSvg = icons.alignVertBottom;
+      var tooltipText = "아래쪽 맞춤 (클릭 시 위/중앙/아래 순환)";
+      if (curVertAlign === 'hanging') {
+        iconSvg = icons.alignVertTop;
+        tooltipText = "위쪽 맞춤 (클릭 시 위/중앙/아래 순환)";
+      } else if (curVertAlign === 'central' || curVertAlign === 'middle') {
+        iconSvg = icons.alignVertMiddle;
+        tooltipText = "중앙 맞춤 (클릭 시 위/중앙/아래 순환)";
+      }
 
-      var alignVertMiddleBtnHtml =
-        '<button class="tool-btn ' + (curVertAlign === 'central' || curVertAlign === 'middle' ? 'active' : '') + '" onclick="setTextVerticalAlign(\'central\')" style="width:34px; height:34px;">' +
-          (icons.alignVertMiddle || '−') +
-          '<span class="tooltip-text">중앙 맞춤</span>' +
-        '</button>';
-
-      var alignVertBottomBtnHtml =
-        '<button class="tool-btn ' + (curVertAlign === 'alphabetic' || curVertAlign === 'bottom' ? 'active' : '') + '" onclick="setTextVerticalAlign(\'alphabetic\')" style="width:34px; height:34px;">' +
-          (icons.alignVertBottom || '↓') +
-          '<span class="tooltip-text">아래 맞춤</span>' +
+      var alignVertCycleBtnHtml =
+        '<button class="tool-btn active" onclick="cycleTextVerticalAlign()" style="width:34px; height:34px;">' +
+          (iconSvg || '↕') +
+          '<span class="tooltip-text">' + tooltipText + '</span>' +
         '</button>';
 
       var fontOptionsHtml =
@@ -362,56 +360,69 @@
             alignRightBtnHtml +
             alignJustifyBtnHtml +
             '<div style="width:1px; height:24px; background:#cbd5e1; margin:0 2px;"></div>' +
-            alignVertTopBtnHtml +
-            alignVertMiddleBtnHtml +
-            alignVertBottomBtnHtml +
+            alignVertCycleBtnHtml +
           '</div>' +
         '</div>';
 
       var strokeColor = cfg.textStrokeColor || cfg.strokeColor || 'none';
       var fillColor   = cfg.textFillColor || cfg.fillColor || '#041e49';
       var strokeWidth = cfg.textStrokeWidth !== undefined ? cfg.textStrokeWidth : 1;
+      var stepVal     = 1 / (cfg.alphaStepCount || 5);
+      var curAlpha    = cfg.opacity !== undefined ? cfg.opacity : 1;
+      var alphaPct    = Math.round(curAlpha * 100);
 
-      var textStrokeBtnHtml = '<button class="tool-btn" onclick="toggleColorPalettePopover(this, \'text_stroke\')" style="width:34px; height:34px; position:relative;">' + (icons.targetStroke || '') + '<span style="position:absolute; bottom:2px; left:4px; right:4px; height:4px; background:' + (strokeColor==='none'?'transparent':strokeColor) + '; border-radius:2px;"></span><span class="tooltip-text">글자 테두리 색상 (stroke) (클릭하여 팔레트 열기)</span></button>';
-      var textFillBtnHtml   = '<button class="tool-btn" onclick="toggleColorPalettePopover(this, \'text_fill\')" style="width:34px; height:34px; position:relative;">' + (icons.targetFill || '') + '<span style="position:absolute; bottom:2px; left:4px; right:4px; height:4px; background:' + (fillColor==='none'?'transparent':fillColor) + '; border-radius:2px;"></span><span class="tooltip-text">글자 채우기 색상 (fill) (클릭하여 팔레트 열기)</span></button>';
+      var textFillBtnHtml   = '<button class="tool-btn" onclick="toggleColorPalettePopover(this, \'text_fill\')" style="width:34px; height:34px; position:relative;"><span class="alt-badge">F</span>' + (icons.targetFill || '') + '<span style="position:absolute; bottom:2px; left:4px; right:4px; height:4px; background:' + (fillColor==='none'?'transparent':fillColor) + '; border-radius:2px;"></span><span class="tooltip-text">글자 채우기 색상 (fill)</span></button>';
+      var textStrokeBtnHtml = '<button class="tool-btn" onclick="toggleColorPalettePopover(this, \'text_stroke\')" style="width:34px; height:34px; position:relative;"><span class="alt-badge">S</span>' + (icons.targetStroke || '') + '<span style="position:absolute; bottom:2px; left:4px; right:4px; height:4px; background:' + (strokeColor==='none'?'transparent':strokeColor) + '; border-radius:2px;"></span><span class="tooltip-text">글자 테두리 색상 (stroke)</span></button>';
       var strokeWidthInputHtml = '<input type="number" min="0" max="50" value="' + strokeWidth + '" oninput="setTextStrokeWidth(this.value)" onchange="setTextStrokeWidth(this.value)" style="width:34px; height:34px; box-sizing:border-box; padding:2px; font-size:0.85rem; font-weight:700; border:1px solid #cbd5e1; border-radius:6px; text-align:center; outline:none; background:#ffffff; color:#0f172a;" title="글자 테두리 두께 (px)">';
 
-      var textAlphaRangeHtml =
-        '<div style="display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2px; height:72px; padding:0 4px; border-left:1px solid #cbd5e1;">' +
-          '<span style="font-size:0.72rem; font-weight:700; color:#475569;">투명도 (' + Math.round(curAlpha * 100) + '%)</span>' +
-          '<input type="range" min="0" max="1" step="' + stepVal + '" value="' + curAlpha + '" oninput="setElementOpacity(this.value)" onmousedown="startHoldAlphaInput(event, this)" onmouseup="endHoldAlphaInput()" onmouseleave="endHoldAlphaInput()" style="width:72px; cursor:pointer;" title="투명도(Alpha) 슬라이더 (길게 눌러 수치 직접 입력)">' +
-        '</div>';
-
       var textColorContent =
-        '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
-          textStrokeBtnHtml + textFillBtnHtml + strokeWidthInputHtml + textAlphaRangeHtml +
+        '<div style="display:flex; flex-direction:column; gap:4px; justify-content:center;">' +
+          '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
+            textFillBtnHtml + textStrokeBtnHtml + strokeWidthInputHtml +
+          '</div>' +
+          '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
+            '<span style="font-size:0.75rem; font-weight:700; color:#475569; white-space:nowrap;">a: ' + alphaPct + '%</span>' +
+            '<input type="range" min="0" max="1" step="' + stepVal + '" value="' + curAlpha + '" oninput="setElementOpacity(this.value)" onmousedown="startHoldAlphaInput(event, this)" onmouseup="endHoldAlphaInput()" onmouseleave="endHoldAlphaInput()" style="width:70px; cursor:pointer;" title="투명도(Alpha) (길게 눌러 수치 직접 입력)">' +
+          '</div>' +
         '</div>';
 
-      var underlineColor = cfg.textUnderlineColor || cfg.strokeColor || '#041e49';
-      var underlineStyle = cfg.textUnderlineStyle || 'solid';
-      var underlineOffset = cfg.textUnderlineOffset !== undefined ? cfg.textUnderlineOffset : 3;
+      var underlineColor   = cfg.textUnderlineColor || cfg.strokeColor || '#041e49';
+      var underlineStyle   = cfg.textUnderlineStyle || 'solid';
+      var underlineOffset  = cfg.textUnderlineOffset !== undefined ? cfg.textUnderlineOffset : 3;
+      var underlineWidth   = cfg.textUnderlineWidth !== undefined ? cfg.textUnderlineWidth : 1;
 
-      var underlineColorBtnHtml = '<button class="tool-btn" onclick="toggleColorPalettePopover(this, \'text_underline\')" style="width:34px; height:34px; position:relative;"><span class="alt-badge">U</span>' + (icons.targetStroke || '') + '<span style="position:absolute; bottom:2px; left:4px; right:4px; height:4px; background:' + (underlineColor==='none'?'transparent':underlineColor) + '; border-radius:2px;"></span><span class="tooltip-text">밑줄 색상 (클릭하여 팔레트 열기)</span></button>';
+      var underlineColorBtnHtml = '<button class="tool-btn" onclick="toggleColorPalettePopover(this, \'text_underline\')" style="width:34px; height:34px; position:relative;"><span class="alt-badge">U</span>' + (icons.targetStroke || '') + '<span style="position:absolute; bottom:2px; left:4px; right:4px; height:4px; background:' + (underlineColor==='none'?'transparent':underlineColor) + '; border-radius:2px;"></span><span class="tooltip-text">밑줄 색상</span></button>';
 
       var underlineStyleSelectHtml =
-        '<select onchange="setTextUnderlineStyle(this.value)" style="padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px; height:34px;" title="밑줄 종류">' +
-          '<option value="solid" ' + (underlineStyle==='solid'?'selected':'') + '>실선 (Solid)</option>' +
-          '<option value="dashed" ' + (underlineStyle==='dashed'?'selected':'') + '>점선 (Dashed)</option>' +
-          '<option value="dotted" ' + (underlineStyle==='dotted'?'selected':'') + '>점 (Dotted)</option>' +
-          '<option value="double" ' + (underlineStyle==='double'?'selected':'') + '>이중선 (Double)</option>' +
-          '<option value="wavy" ' + (underlineStyle==='wavy'?'selected':'') + '>물결선 (Wavy)</option>' +
+        '<select onchange="setTextUnderlineStyle(this.value)" style="padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px; height:34px; max-width:95px;" title="밑줄 종류">' +
+          '<option value="solid" ' + (underlineStyle==='solid'?'selected':'') + '>실선</option>' +
+          '<option value="dashed" ' + (underlineStyle==='dashed'?'selected':'') + '>점선</option>' +
+          '<option value="dotted" ' + (underlineStyle==='dotted'?'selected':'') + '>점</option>' +
+          '<option value="double" ' + (underlineStyle==='double'?'selected':'') + '>이중선</option>' +
+          '<option value="wavy" ' + (underlineStyle==='wavy'?'selected':'') + '>물결선</option>' +
           '<option value="none" ' + (underlineStyle==='none'?'selected':'') + '>없음</option>' +
         '</select>';
 
       var underlineOffsetInputHtml =
-        '<div style="display:flex; flex-direction:column; align-items:center; gap:2px;">' +
-          '<span style="font-size:0.72rem; font-weight:700; color:#475569;">거리(px)</span>' +
-          '<input type="number" min="0" max="30" value="' + underlineOffset + '" oninput="setTextUnderlineOffset(this.value)" onchange="setTextUnderlineOffset(this.value)" style="width:42px; padding:2px 4px; font-size:0.8rem; border:1px solid #cbd5e1; border-radius:4px; text-align:center;" title="밑줄 간격 거리 (px)">' +
+        '<div style="display:flex; flex-direction:row; align-items:center; gap:2px;">' +
+          '<span style="font-size:0.75rem; font-weight:600; color:#475569;">거리:</span>' +
+          '<input type="number" min="0" max="30" value="' + underlineOffset + '" oninput="setTextUnderlineOffset(this.value)" onchange="setTextUnderlineOffset(this.value)" style="width:36px; padding:2px 4px; font-size:0.8rem; border:1px solid #cbd5e1; border-radius:4px; text-align:center;" title="밑줄 거리">' +
+        '</div>';
+
+      var underlineWidthInputHtml =
+        '<div style="display:flex; flex-direction:row; align-items:center; gap:2px;">' +
+          '<span style="font-size:0.75rem; font-weight:600; color:#475569;">두께:</span>' +
+          '<input type="number" min="1" max="20" value="' + underlineWidth + '" oninput="setTextUnderlineWidth(this.value)" onchange="setTextUnderlineWidth(this.value)" style="width:36px; padding:2px 4px; font-size:0.8rem; border:1px solid #cbd5e1; border-radius:4px; text-align:center;" title="밑줄 두께">' +
         '</div>';
 
       var underlineCategoryContent =
-        '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
-          underlineColorBtnHtml + underlineStyleSelectHtml + underlineOffsetInputHtml +
+        '<div style="display:flex; flex-direction:column; gap:4px; justify-content:center;">' +
+          '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
+            underlineStyleSelectHtml + underlineColorBtnHtml +
+          '</div>' +
+          '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
+            underlineOffsetInputHtml + underlineWidthInputHtml +
+          '</div>' +
         '</div>';
 
       ribbonBar.innerHTML =

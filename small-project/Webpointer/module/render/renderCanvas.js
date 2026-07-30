@@ -88,6 +88,7 @@
       var uColor  = a.underlineColor || cfg.textUnderlineColor || 'currentColor';
       var uStyle  = a.underlineStyle || cfg.textUnderlineStyle || 'solid';
       var uOffset = a.underlineOffset !== undefined ? a.underlineOffset : (cfg.textUnderlineOffset !== undefined ? cfg.textUnderlineOffset : 3);
+      var uWidth  = a.underlineWidth !== undefined ? a.underlineWidth : (cfg.textUnderlineWidth !== undefined ? cfg.textUnderlineWidth : 1);
 
       obj.el.setAttribute('font-size', fSize);
       obj.el.setAttribute('font-family', fFamily);
@@ -104,12 +105,14 @@
         obj.el.style.textDecorationColor = uColor;
         obj.el.style.textDecorationStyle = uStyle;
         obj.el.style.textUnderlineOffset = uOffset + 'px';
+        obj.el.style.textDecorationThickness = uWidth + 'px';
       } else {
         obj.el.setAttribute('text-decoration', tDeco);
         obj.el.style.textDecorationLine = tDeco;
         obj.el.style.textDecorationColor = '';
         obj.el.style.textDecorationStyle = '';
         obj.el.style.textUnderlineOffset = '';
+        obj.el.style.textDecorationThickness = '';
       }
 
       if (a.fill) {

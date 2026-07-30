@@ -496,13 +496,87 @@
     if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
   }
 
+  function getParentShapeBounds(textObj) {
+    if (!textObj || !textObj.parentId) return null;
+    var groupMembers = [];
+    cfg.objectsMap.forEach(function(o) {
+      if (o.parentId === textObj.parentId && o.id !== textObj.id && o.type !== 'text') {
+        groupMembers.push(o);
+      }
+    });
+    if (groupMembers.length === 0) return null;
+
+    var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    groupMembers.forEach(function(m) {
+      var b = window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(m) : null;
+      if (b) {
+        if (b.minX < minX) minX = b.minX;
+        if (b.maxX > maxX) maxX = b.maxX;
+        if (b.minY < minY) minY = b.minY;
+        if (b.maxY > maxY) maxY = b.maxY;
+      }
+    });
+    if (minX === Infinity) return null;
+    return { minX: minX, maxX: maxX, minY: minY, maxY: maxY };
+  }
+
   function setTextVerticalAlign(val) {
     cfg.textDominantBaseline = val;
     var members = getAllGroupMembers(cfg.selectedIds);
     var textObjs = members.filter(function(m) { return m.type === 'text'; });
+
     textObjs.forEach(function(obj) {
       if (obj && obj.attrs) {
-        obj.attrs.dominantBaseline = val;
+        var shapeBounds = getParentShapeBounds(obj);
+        var fSize = obj.attrs.fontSize || cfg.fontSize || 20;
+
+        if (shapeBounds) {
+          var cy = (shapeBounds.minY + shapeBounds.maxY) / 2;
+          var ty = shapeBounds.minY + (fSize * 0.8) + 4;
+          var by = shapeBounds.maxY - (fSize * 0.2) - 4;
+          var targetY = cy;
+          if (val === 'hanging') {
+            targetY = ty;
+          } else if (val === 'central' || val === 'middle') {
+            targetY = cy + (fSize * 0.35);
+          } else if (val === 'alphabetic' || val === 'bottom') {
+            targetY = by;
+          }
+          obj.attrs.y = Math.round(targetY);
+          obj.attrs.dominantBaseline = val;
+        } else {
+          obj.attrs.dominantBaseline = val;
+        }
+
+        if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+          window.WebpointerRender.updateElementAttributes(obj);
+        }
+      }
+    });
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+  }
+
+  function cycleTextVerticalAlign() {
+    var cur = cfg.textDominantBaseline || 'alphabetic';
+    var nextBaseline = 'hanging';
+    if (cur === 'hanging') {
+      nextBaseline = 'central';
+    } else if (cur === 'central' || cur === 'middle') {
+      nextBaseline = 'alphabetic';
+    } else {
+      nextBaseline = 'hanging';
+    }
+    setTextVerticalAlign(nextBaseline);
+  }
+
+  function setTextUnderlineWidth(val) {
+    var num = parseInt(val, 10);
+    cfg.textUnderlineWidth = isNaN(num) ? 1 : num;
+    var members = getAllGroupMembers(cfg.selectedIds);
+    var textObjs = members.filter(function(m) { return m.type === 'text'; });
+    textObjs.forEach(function(obj) {
+      if (obj && obj.attrs) {
+        obj.attrs.underlineWidth = cfg.textUnderlineWidth;
         if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
           window.WebpointerRender.updateElementAttributes(obj);
         }
@@ -773,47 +847,61 @@
 
     textObjs.forEach(function(obj) {
       if (obj && obj.attrs) {
-        var oldAnchor = obj.attrs.textAnchor || 'start';
-        if (oldAnchor !== newAnchor) {
-          var currX = obj.attrs.x || 0;
-          var width = 0;
-          try {
-            if (obj.el) {
-              var bbox = obj.el.getBBox();
-              width = bbox.width;
-            }
-          } catch(e) {}
+        var shapeBounds = getParentShapeBounds(obj);
+        if (shapeBounds) {
+          var cx = (shapeBounds.minX + shapeBounds.maxX) / 2;
+          var lx = shapeBounds.minX + 10;
+          var rx = shapeBounds.maxX - 10;
+          var targetX = cx;
+          if (newAnchor === 'start') targetX = lx;
+          else if (newAnchor === 'middle') targetX = cx;
+          else if (newAnchor === 'end') targetX = rx;
 
-          if (!width || width <= 0) {
-            var lines = (obj.attrs.text || '').split('\n');
-            var maxLen = 0;
-            lines.forEach(function(l) { if (l.length > maxLen) maxLen = l.length; });
-            width = maxLen * (obj.attrs.fontSize || 20) * 0.55;
-          }
-
-          var xLeft = currX;
-          if (oldAnchor === 'start') {
-            xLeft = currX;
-          } else if (oldAnchor === 'middle') {
-            xLeft = currX - (width / 2);
-          } else if (oldAnchor === 'end') {
-            xLeft = currX - width;
-          }
-
-          var newX = xLeft;
-          if (newAnchor === 'start') {
-            newX = xLeft;
-          } else if (newAnchor === 'middle') {
-            newX = xLeft + (width / 2);
-          } else if (newAnchor === 'end') {
-            newX = xLeft + width;
-          }
-
-          obj.attrs.x = Math.round(newX);
+          obj.attrs.x = Math.round(targetX);
           obj.attrs.textAnchor = newAnchor;
-          if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
-            window.WebpointerRender.updateElementAttributes(obj);
+        } else {
+          var oldAnchor = obj.attrs.textAnchor || 'start';
+          if (oldAnchor !== newAnchor) {
+            var currX = obj.attrs.x || 0;
+            var width = 0;
+            try {
+              if (obj.el) {
+                var bbox = obj.el.getBBox();
+                width = bbox.width;
+              }
+            } catch(e) {}
+
+            if (!width || width <= 0) {
+              var lines = (obj.attrs.text || '').split('\n');
+              var maxLen = 0;
+              lines.forEach(function(l) { if (l.length > maxLen) maxLen = l.length; });
+              width = maxLen * (obj.attrs.fontSize || 20) * 0.55;
+            }
+
+            var xLeft = currX;
+            if (oldAnchor === 'start') {
+              xLeft = currX;
+            } else if (oldAnchor === 'middle') {
+              xLeft = currX - (width / 2);
+            } else if (oldAnchor === 'end') {
+              xLeft = currX - width;
+            }
+
+            var newX = xLeft;
+            if (newAnchor === 'start') {
+              newX = xLeft;
+            } else if (newAnchor === 'middle') {
+              newX = xLeft + (width / 2);
+            } else if (newAnchor === 'end') {
+              newX = xLeft + width;
+            }
+
+            obj.attrs.x = Math.round(newX);
+            obj.attrs.textAnchor = newAnchor;
           }
+        }
+        if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+          window.WebpointerRender.updateElementAttributes(obj);
         }
       }
     });
@@ -1088,6 +1176,8 @@
   window.endHoldAlphaInput = endHoldAlphaInput;
   window.setTextUnderlineStyle = setTextUnderlineStyle;
   window.setTextUnderlineOffset = setTextUnderlineOffset;
+  window.setTextUnderlineWidth = setTextUnderlineWidth;
+  window.cycleTextVerticalAlign = cycleTextVerticalAlign;
 
   window.WebpointerHandlers = {
     setTool: setTool,
