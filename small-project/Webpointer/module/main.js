@@ -1122,63 +1122,112 @@
 
     var mainSvg = document.getElementById('mainSvg');
     if (!mainSvg) return;
-    var canvasContainer = mainSvg.parentNode || document.body;
 
     var svgRect = mainSvg.getBoundingClientRect();
-    var containerRect = canvasContainer.getBoundingClientRect();
-
     var scaleX = svgRect.width / (cfg.SVG_WIDTH || 960);
     var scaleY = svgRect.height / (cfg.SVG_HEIGHT || 540);
 
-    var posX = (svgRect.left - containerRect.left) + (px * scaleX);
-    var posY = (svgRect.top - containerRect.top) + (py * scaleY);
+    var posX = window.scrollX + svgRect.left + (px * scaleX);
+    var posY = window.scrollY + svgRect.top + (py * scaleY);
 
     var textarea = document.createElement('textarea');
     textarea.id = 'activeTextOverlay';
     textarea.style.position = 'absolute';
     textarea.style.left = posX + 'px';
     textarea.style.top = posY + 'px';
-    textarea.style.fontSize = '20px';
+    textarea.style.fontSize = '18px';
     textarea.style.fontFamily = 'sans-serif';
     textarea.style.color = (cfg.strokeColor && cfg.strokeColor !== 'none') ? cfg.strokeColor : '#041e49';
-    textarea.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
-    textarea.style.border = '2px dashed #0284c7';
-    textarea.style.borderRadius = '4px';
+    textarea.style.backgroundColor = '#ffffff';
+    textarea.style.border = '2.5px solid #0284c7';
+    textarea.style.borderRadius = '6px';
     textarea.style.outline = 'none';
-    textarea.style.padding = '4px 8px';
-    textarea.style.zIndex = '1000';
-    textarea.style.minWidth = '140px';
-    textarea.style.minHeight = '50px';
+    textarea.style.padding = '8px 10px';
+    textarea.style.zIndex = '99999';
+    textarea.style.minWidth = '220px';
+    textarea.style.minHeight = '65px';
     textarea.style.resize = 'both';
-    textarea.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-    textarea.placeholder = '텍스트 입력 (Enter: 줄바꿈, Esc: 완료)';
+    textarea.style.boxShadow = '0 6px 24px rgba(2, 132, 199, 0.35)';
+    textarea.style.caretColor = '#0284c7';
+    textarea.placeholder = '텍스트 입력... (Enter: 줄바꿈, Esc: 완료)';
+
+    var targetSvgObj = null;
 
     if (targetObj && targetObj.attrs) {
       textarea.value = targetObj.attrs.text || '';
       textarea.dataset.editingObjId = targetObj.id;
+      targetSvgObj = targetObj;
+    } else {
+      var objectsGroup = document.getElementById('objectsGroup');
+      var id = 'obj_' + (cfg.nextId++);
+      var el = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      var textColor = (cfg.strokeColor && cfg.strokeColor !== 'none') ? cfg.strokeColor : '#041e49';
+
+      el.setAttribute('id', id);
+      el.setAttribute('x', px);
+      el.setAttribute('y', py);
+      el.setAttribute('fill', textColor);
+      el.setAttribute('font-size', '20');
+      el.setAttribute('font-family', 'sans-serif');
+      el.setAttribute('dominant-baseline', 'alphabetic');
+
+      var attrs = {
+        x: px,
+        y: py,
+        text: '',
+        fill: textColor,
+        fontSize: 20
+      };
+
+      targetSvgObj = { id: id, type: 'text', parentId: null, attrs: attrs, el: el };
+      cfg.objectsMap.set(id, targetSvgObj);
+      render.updateElementAttributes(targetSvgObj);
+      if (objectsGroup) objectsGroup.appendChild(el);
+      textarea.dataset.editingObjId = id;
     }
 
-    canvasContainer.appendChild(textarea);
-    textarea.focus();
-    if (textarea.value) textarea.select();
+    document.body.appendChild(textarea);
 
-    function onKeyDown(e) {
+    ['mousedown', 'mouseup', 'click', 'dblclick'].forEach(function(evtName) {
+      textarea.addEventListener(evtName, function(e) {
+        e.stopPropagation();
+      });
+    });
+
+    textarea.addEventListener('input', function() {
+      if (targetSvgObj && targetSvgObj.attrs) {
+        targetSvgObj.attrs.text = textarea.value;
+        render.updateElementAttributes(targetSvgObj);
+      }
+    });
+
+    textarea.addEventListener('keydown', function(e) {
+      e.stopPropagation();
       if (e.key === 'Escape') {
         e.preventDefault();
-        e.stopPropagation();
-        finishTextEdit(px, py);
+        finishTextEdit();
       }
-    }
+    });
 
-    function onBlur() {
-      finishTextEdit(px, py);
-    }
+    setTimeout(function() {
+      var el = document.getElementById('activeTextOverlay');
+      if (el) {
+        el.focus();
+        if (el.value) el.select();
+      }
+    }, 50);
 
-    textarea.addEventListener('keydown', onKeyDown);
-    textarea.addEventListener('blur', onBlur);
+    setTimeout(function() {
+      var el = document.getElementById('activeTextOverlay');
+      if (el) {
+        el.addEventListener('blur', function() {
+          finishTextEdit();
+        });
+      }
+    }, 200);
   }
 
-  function finishTextEdit(fallbackPx, fallbackPy) {
+  function finishTextEdit() {
     var textarea = document.getElementById('activeTextOverlay');
     if (!textarea) return;
 
@@ -1191,42 +1240,14 @@
         if (textVal.trim()) {
           obj.attrs.text = textVal;
           render.updateElementAttributes(obj);
+          cfg.selectedIds.clear();
+          cfg.selectedIds.add(obj.id);
         } else {
           if (obj.el && obj.el.parentNode) obj.el.parentNode.removeChild(obj.el);
           cfg.objectsMap.delete(editingObjId);
           cfg.selectedIds.delete(editingObjId);
         }
       }
-    } else if (textVal.trim()) {
-      var objectsGroup = document.getElementById('objectsGroup');
-      var id = 'obj_' + (cfg.nextId++);
-      var el = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-
-      var textColor = (cfg.strokeColor && cfg.strokeColor !== 'none') ? cfg.strokeColor : '#041e49';
-
-      el.setAttribute('id', id);
-      el.setAttribute('x', fallbackPx);
-      el.setAttribute('y', fallbackPy);
-      el.setAttribute('fill', textColor);
-      el.setAttribute('font-size', '20');
-      el.setAttribute('font-family', 'sans-serif');
-      el.setAttribute('dominant-baseline', 'alphabetic');
-
-      var attrs = {
-        x: fallbackPx,
-        y: fallbackPy,
-        text: textVal,
-        fill: textColor,
-        fontSize: 20
-      };
-
-      var objData = { id: id, type: 'text', parentId: null, attrs: attrs, el: el };
-      cfg.objectsMap.set(id, objData);
-      render.updateElementAttributes(objData);
-      if (objectsGroup) objectsGroup.appendChild(el);
-
-      cfg.selectedIds.clear();
-      cfg.selectedIds.add(id);
     }
 
     if (textarea.parentNode) textarea.parentNode.removeChild(textarea);
