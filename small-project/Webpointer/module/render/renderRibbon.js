@@ -290,19 +290,24 @@
       var curFontStyle = cfg.fontStyle || 'normal';
       var curLineHeight = cfg.lineHeight || 1.2;
 
+      var systemFonts = cfg.systemFonts || [
+        "맑은 고딕", "나눔고딕", "나눔명조", "굴림", "돋움", "바탕", "궁서",
+        "Arial", "Calibri", "Comic Sans MS", "Consolas", "Courier New", "Georgia",
+        "Impact", "Segoe UI", "Tahoma", "Times New Roman", "Trebuchet MS", "Verdana",
+        "sans-serif", "serif", "monospace"
+      ];
+
+      var fontOptionsStr = systemFonts.map(function(fName) {
+        var isSel = (curFontFamily === fName) ? 'selected' : '';
+        return '<option value="' + fName + '" ' + isSel + '>' + fName + '</option>';
+      }).join('');
+
       var fontOptionsHtml =
         '<div style="display:flex; flex-direction:row; align-items:center; gap:8px;">' +
           '<div style="display:flex; flex-direction:column; gap:4px;">' +
             '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
-              '<label style="font-size:0.75rem; color:#475569; font-weight:600;">글꼴:</label>' +
-              '<select onchange="setTextFontFamily(this.value)" style="padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px;">' +
-                '<option value="sans-serif" ' + (curFontFamily==='sans-serif'?'selected':'') + '>Sans-Serif (고딕)</option>' +
-                '<option value="serif" ' + (curFontFamily==='serif'?'selected':'') + '>Serif (명조)</option>' +
-                '<option value="monospace" ' + (curFontFamily==='monospace'?'selected':'') + '>Monospace (고정폭)</option>' +
-                '<option value="Inter" ' + (curFontFamily==='Inter'?'selected':'') + '>Inter</option>' +
-                '<option value="Roboto" ' + (curFontFamily==='Roboto'?'selected':'') + '>Roboto</option>' +
-                '<option value="Courier New" ' + (curFontFamily==='Courier New'?'selected':'') + '>Courier New</option>' +
-                '<option value="Georgia" ' + (curFontFamily==='Georgia'?'selected':'') + '>Georgia</option>' +
+              '<select onfocus="fetchLocalSystemFonts()" onchange="setTextFontFamily(this.value)" style="max-width:140px; padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px;">' +
+                fontOptionsStr +
               '</select>' +
             '</div>' +
             '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +

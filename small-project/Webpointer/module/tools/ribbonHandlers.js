@@ -259,6 +259,27 @@
     });
   }
 
+  async function fetchLocalSystemFonts() {
+    if ('queryLocalFonts' in window) {
+      try {
+        var availableFonts = await window.queryLocalFonts();
+        var fontSet = new Set(cfg.systemFonts || []);
+        availableFonts.forEach(function(f) {
+          if (f.family) fontSet.add(f.family);
+        });
+        var sorted = Array.from(fontSet).sort();
+        if (sorted.length !== (cfg.systemFonts ? cfg.systemFonts.length : 0)) {
+          cfg.systemFonts = sorted;
+          if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+            window.WebpointerRender.renderRibbon();
+          }
+        }
+      } catch (err) {
+        console.warn('Local font query error/denied:', err);
+      }
+    }
+  }
+
   window.switchTab = switchTab;
   window.applyImportedPalette = importPaletteFromText;
   window.applyPaletteColor = applyPaletteColor;
@@ -269,6 +290,7 @@
   window.setTextFontWeight = setTextFontWeight;
   window.setTextFontStyle = setTextFontStyle;
   window.setTextLineHeight = setTextLineHeight;
+  window.fetchLocalSystemFonts = fetchLocalSystemFonts;
   window.setTool = setTool;
   window.setStrokeColor = setStrokeColor;
   window.setFillColor = setFillColor;
@@ -308,6 +330,7 @@
     setTextFontSize: setTextFontSize,
     setTextFontWeight: setTextFontWeight,
     setTextFontStyle: setTextFontStyle,
-    setTextLineHeight: setTextLineHeight
+    setTextLineHeight: setTextLineHeight,
+    fetchLocalSystemFonts: fetchLocalSystemFonts
   };
 })(window);

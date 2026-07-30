@@ -53,6 +53,12 @@
     fontStyle: 'normal',
     lineHeight: 1.2,
     activeTextColorTarget: 'text', // 'text' (글자색) vs 'bg' (배경색/하이라이트)
+    systemFonts: [
+      "맑은 고딕", "나눔고딕", "나눔명조", "굴림", "돋움", "바탕", "궁서",
+      "Arial", "Calibri", "Comic Sans MS", "Consolas", "Courier New", "Georgia",
+      "Impact", "Segoe UI", "Tahoma", "Times New Roman", "Trebuchet MS", "Verdana",
+      "sans-serif", "serif", "monospace"
+    ],
 
     // Selection & Manipulation Memory
     selectedIds: new Set(),
