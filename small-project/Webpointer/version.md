@@ -1,5 +1,15 @@
 # Webpointer Project Version History
 
+## [0.4.1] - 2026-07-30
+### Added & Fixed
+- Interactive In-Place Text Editing Workflow:
+  - Transformed Text Box creation ("텍스트 상자 추가") into interactive canvas click-to-edit tool mode (`I-beam` cursor `cursor: text`).
+  - Added high-visibility text overlay (`z-index: 99999`) with blue focus border (`border: 2.5px solid #0284c7`) and blinking cursor.
+  - Implemented real-time live typing preview: text updates on the SVG canvas instantly as user types every character into the textarea.
+  - Supported multi-line input via `Enter` key (`\n`), rendered as SVG `<tspan dy="1.2em">` lines.
+  - Supported `Esc` key / blur completion and double-click (`dblclick`) text re-editing on canvas.
+  - Fixed double-cleanup `Uncaught NotFoundError` during `Esc` completion via reentrancy guard (`isFinishing`).
+
 ## [0.4.0] - 2026-07-30
 ### Added & Updated
 - Picture Format Category Reordering & New Cap/Join Category:
