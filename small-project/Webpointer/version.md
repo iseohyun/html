@@ -1,5 +1,21 @@
 # Webpointer Project Version History
 
+## [0.5.4] - 2026-07-30
+### Added & Improved
+- Ribbon Layout, Settings Tab Refactoring & Canvas Bug Fixes:
+  - **Menu Bar Gap & Tab Right-Alignment**: Removed gap between menu bar and ribbon bar; renamed `"보기"` tab to **`"설정"`** and right-aligned it in the menu bar.
+  - **Default Underline Style**: Set default underline style to `'none'`.
+  - **Alpha Control Simplification & Scoping**: Removed alpha long-press popup; scoped alpha controls to shapes in `style` tab and text in `text` tab.
+  - **`캔버스 설정` Category Refactoring**:
+    - Row 1: `격자` [checkbox] + [number input (px)] for step size (preset dropdown removed).
+    - Row 2: Ratio select + Canvas background color picker without text labels.
+  - **`설정` Category Aligned Grid Layout**: Clean uniform grid layout for proximity threshold, default shape size, and alpha step count.
+  - **Canvas & Grid Rendering Bug Fixes**:
+    - Fixed black canvas bug on grid uncheck by keeping canvas background rect (`bgRect`) visible at all times.
+    - Updated grid line rendering to reflect `gridStepSize` changes in real time.
+    - Updated canvas background color picker to reflect changes in real time.
+    - Fixed `startHoldAlphaInput` and `toggleGridSnap` `ReferenceError` crashes.
+
 ## [0.5.3] - 2026-07-30
 ### Added & Improved
 - Text Ribbon Tab, Alignment & Custom SVG Underline Upgrades:
