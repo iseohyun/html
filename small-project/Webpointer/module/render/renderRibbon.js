@@ -387,9 +387,37 @@
           textStrokeBtnHtml + textFillBtnHtml + strokeWidthInputHtml + textAlphaRangeHtml +
         '</div>';
 
+      var underlineColor = cfg.textUnderlineColor || cfg.strokeColor || '#041e49';
+      var underlineStyle = cfg.textUnderlineStyle || 'solid';
+      var underlineOffset = cfg.textUnderlineOffset !== undefined ? cfg.textUnderlineOffset : 3;
+
+      var underlineColorBtnHtml = '<button class="tool-btn" onclick="toggleColorPalettePopover(this, \'text_underline\')" style="width:34px; height:34px; position:relative;"><span class="alt-badge">U</span>' + (icons.targetStroke || '') + '<span style="position:absolute; bottom:2px; left:4px; right:4px; height:4px; background:' + (underlineColor==='none'?'transparent':underlineColor) + '; border-radius:2px;"></span><span class="tooltip-text">밑줄 색상 (클릭하여 팔레트 열기)</span></button>';
+
+      var underlineStyleSelectHtml =
+        '<select onchange="setTextUnderlineStyle(this.value)" style="padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px; height:34px;" title="밑줄 종류">' +
+          '<option value="solid" ' + (underlineStyle==='solid'?'selected':'') + '>실선 (Solid)</option>' +
+          '<option value="dashed" ' + (underlineStyle==='dashed'?'selected':'') + '>점선 (Dashed)</option>' +
+          '<option value="dotted" ' + (underlineStyle==='dotted'?'selected':'') + '>점 (Dotted)</option>' +
+          '<option value="double" ' + (underlineStyle==='double'?'selected':'') + '>이중선 (Double)</option>' +
+          '<option value="wavy" ' + (underlineStyle==='wavy'?'selected':'') + '>물결선 (Wavy)</option>' +
+          '<option value="none" ' + (underlineStyle==='none'?'selected':'') + '>없음</option>' +
+        '</select>';
+
+      var underlineOffsetInputHtml =
+        '<div style="display:flex; flex-direction:column; align-items:center; gap:2px;">' +
+          '<span style="font-size:0.72rem; font-weight:700; color:#475569;">거리(px)</span>' +
+          '<input type="number" min="0" max="30" value="' + underlineOffset + '" oninput="setTextUnderlineOffset(this.value)" onchange="setTextUnderlineOffset(this.value)" style="width:42px; padding:2px 4px; font-size:0.8rem; border:1px solid #cbd5e1; border-radius:4px; text-align:center;" title="밑줄 간격 거리 (px)">' +
+        '</div>';
+
+      var underlineCategoryContent =
+        '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
+          underlineColorBtnHtml + underlineStyleSelectHtml + underlineOffsetInputHtml +
+        '</div>';
+
       ribbonBar.innerHTML =
         buildCategoryHtml('text_font', '글꼴', fontOptionsHtml) +
-        buildCategoryHtml('text_color', '색', textColorContent);
+        buildCategoryHtml('text_color', '색', textColorContent) +
+        buildCategoryHtml('text_underline', '밑줄', underlineCategoryContent);
     } else if (cfg.currentTab === 'anim') {
       var animContent =
         '<div class="category-grid" style="grid-template-columns: 34px 34px;">' +

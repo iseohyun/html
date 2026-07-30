@@ -414,10 +414,53 @@
           }
         }
       });
+    } else if (targetMode === 'text_underline') {
+      cfg.textUnderlineColor = hex;
+      var members = getAllGroupMembers(cfg.selectedIds);
+      var textObjs = members.filter(function(m) { return m.type === 'text'; });
+      textObjs.forEach(function(obj) {
+        if (obj && obj.attrs) {
+          obj.attrs.underlineColor = hex;
+          if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+            window.WebpointerRender.updateElementAttributes(obj);
+          }
+        }
+      });
     }
 
     var popover = document.getElementById('colorPalettePopover');
     if (popover && popover.parentNode) popover.parentNode.removeChild(popover);
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+  }
+
+  function setTextUnderlineStyle(val) {
+    cfg.textUnderlineStyle = val;
+    var members = getAllGroupMembers(cfg.selectedIds);
+    var textObjs = members.filter(function(m) { return m.type === 'text'; });
+    textObjs.forEach(function(obj) {
+      if (obj && obj.attrs) {
+        obj.attrs.underlineStyle = val;
+        if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+          window.WebpointerRender.updateElementAttributes(obj);
+        }
+      }
+    });
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+  }
+
+  function setTextUnderlineOffset(val) {
+    var num = parseInt(val, 10);
+    cfg.textUnderlineOffset = isNaN(num) ? 3 : num;
+    var members = getAllGroupMembers(cfg.selectedIds);
+    var textObjs = members.filter(function(m) { return m.type === 'text'; });
+    textObjs.forEach(function(obj) {
+      if (obj && obj.attrs) {
+        obj.attrs.underlineOffset = cfg.textUnderlineOffset;
+        if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+          window.WebpointerRender.updateElementAttributes(obj);
+        }
+      }
+    });
     if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
   }
 
@@ -1043,6 +1086,8 @@
   window.setAlphaStepCount = setAlphaStepCount;
   window.startHoldAlphaInput = startHoldAlphaInput;
   window.endHoldAlphaInput = endHoldAlphaInput;
+  window.setTextUnderlineStyle = setTextUnderlineStyle;
+  window.setTextUnderlineOffset = setTextUnderlineOffset;
 
   window.WebpointerHandlers = {
     setTool: setTool,

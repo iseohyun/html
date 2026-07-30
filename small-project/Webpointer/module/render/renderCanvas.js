@@ -85,14 +85,32 @@
       var dBase = a.dominantBaseline || cfg.textDominantBaseline || 'alphabetic';
       var wMode = a.writingMode || cfg.textWritingMode || 'horizontal-tb';
 
+      var uColor  = a.underlineColor || cfg.textUnderlineColor || 'currentColor';
+      var uStyle  = a.underlineStyle || cfg.textUnderlineStyle || 'solid';
+      var uOffset = a.underlineOffset !== undefined ? a.underlineOffset : (cfg.textUnderlineOffset !== undefined ? cfg.textUnderlineOffset : 3);
+
       obj.el.setAttribute('font-size', fSize);
       obj.el.setAttribute('font-family', fFamily);
       obj.el.setAttribute('font-weight', fWeight);
       obj.el.setAttribute('font-style', fStyle);
-      obj.el.setAttribute('text-decoration', tDeco);
       obj.el.setAttribute('text-anchor', tAnchor);
       obj.el.setAttribute('dominant-baseline', dBase);
       obj.el.setAttribute('writing-mode', wMode);
+
+      if (uStyle !== 'none') {
+        var decoVal = (tDeco && tDeco !== 'none') ? (tDeco + ' underline') : 'underline';
+        obj.el.setAttribute('text-decoration', decoVal);
+        obj.el.style.textDecorationLine = decoVal;
+        obj.el.style.textDecorationColor = uColor;
+        obj.el.style.textDecorationStyle = uStyle;
+        obj.el.style.textUnderlineOffset = uOffset + 'px';
+      } else {
+        obj.el.setAttribute('text-decoration', tDeco);
+        obj.el.style.textDecorationLine = tDeco;
+        obj.el.style.textDecorationColor = '';
+        obj.el.style.textDecorationStyle = '';
+        obj.el.style.textUnderlineOffset = '';
+      }
 
       if (a.fill) {
         obj.el.setAttribute('fill', a.fill);
