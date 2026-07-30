@@ -177,30 +177,34 @@
 .webpointer-app .ribbon-category.collapsed {
   justify-content: center !important;
   align-items: center !important;
-  padding: 0 4px !important;
+  padding: 0 2px !important;
   margin-right: 8px !important;
   border-right: 1px solid #e2e8f0 !important;
   min-width: 32px !important;
   width: 32px !important;
+  height: 125px !important;
+  max-height: 125px !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
 }
 
 .webpointer-app .ribbon-category.collapsed .category-title {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
-  justify-content: center !important;
-  writing-mode: vertical-rl !important;
-  text-orientation: upright !important;
-  letter-spacing: 2px !important;
+  justify-content: space-between !important;
   margin: 0 !important;
-  padding: 6px 2px !important;
-  height: 100% !important;
-  width: 100% !important;
+  padding: 8px 2px !important;
+  height: 125px !important;
+  max-height: 125px !important;
+  width: 32px !important;
   background-color: #f1f5f9 !important;
   border-radius: 6px !important;
   border: 1px solid #cbd5e1 !important;
   color: #0369a1 !important;
-  font-size: 0.76rem !important;
+  font-size: 0.75rem !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
 }
 
 .webpointer-app .ribbon-category.collapsed .category-title:hover {
@@ -209,10 +213,23 @@
   color: #0284c7 !important;
 }
 
-.webpointer-app .ribbon-category.collapsed .category-title .toggle-icon {
-  margin-top: 4px !important;
-  writing-mode: horizontal-tb !important;
-  font-size: 0.65rem !important;
+.webpointer-app .ribbon-category.collapsed .title-text {
+  writing-mode: vertical-rl !important;
+  text-orientation: mixed !important;
+  transform: rotate(180deg) !important;
+  white-space: nowrap !important;
+  max-height: 88px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  letter-spacing: 1px !important;
+  font-weight: 600 !important;
+}
+
+.webpointer-app .ribbon-category.collapsed .toggle-icon {
+  margin-top: auto !important;
+  font-size: 0.7rem !important;
+  color: #0284c7 !important;
+  padding-bottom: 2px !important;
 }
 
 /* Uniform Square Tool Buttons */
