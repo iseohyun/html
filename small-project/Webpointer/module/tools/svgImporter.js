@@ -190,7 +190,29 @@
       traverseNode(svgEl.childNodes[j], null);
     }
 
+    // Auto-adjust canvas viewBox & dimensions to fit imported SVG graphic cleanly
+    var mainSvg = document.getElementById('mainSvg');
+    if (mainSvg) {
+      var viewBoxAttr = svgEl.getAttribute('viewBox');
+      var svgW = parseFloat(svgEl.getAttribute('width'));
+      var svgH = parseFloat(svgEl.getAttribute('height'));
+
+      if (viewBoxAttr) {
+        mainSvg.setAttribute('viewBox', viewBoxAttr);
+        var vbParts = viewBoxAttr.trim().split(/[\s,]+/).map(Number);
+        if (vbParts.length === 4) {
+          cfg.SVG_WIDTH = vbParts[2];
+          cfg.SVG_HEIGHT = vbParts[3];
+        }
+      } else if (!isNaN(svgW) && !isNaN(svgH) && svgW > 0 && svgH > 0) {
+        mainSvg.setAttribute('viewBox', '0 0 ' + svgW + ' ' + svgH);
+        cfg.SVG_WIDTH = svgW;
+        cfg.SVG_HEIGHT = svgH;
+      }
+    }
+
     if (window.WebpointerRender) {
+      window.WebpointerRender.renderGrid();
       window.WebpointerRender.renderUI();
       window.WebpointerRender.renderRibbon();
     }

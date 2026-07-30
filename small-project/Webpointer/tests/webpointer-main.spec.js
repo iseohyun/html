@@ -448,11 +448,20 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
         var initCount = window.WebpointerConfig.objectsMap.size;
         var success = window.WebpointerSVGImporter.importSVGContent(content);
         var finalCount = window.WebpointerConfig.objectsMap.size;
-        return { success: success, addedCount: finalCount - initCount };
+        var mainSvg = document.getElementById('mainSvg');
+        var objectsGroup = document.getElementById('objectsGroup');
+        return {
+          success: success,
+          addedCount: finalCount - initCount,
+          viewBox: mainSvg ? mainSvg.getAttribute('viewBox') : null,
+          hasChildrenInDom: objectsGroup ? objectsGroup.childNodes.length > 0 : false
+        };
       }, svgContent);
 
       expect(importResult.success).toBe(true);
       expect(importResult.addedCount).toBeGreaterThan(0);
+      expect(importResult.viewBox).not.toBeNull();
+      expect(importResult.hasChildrenInDom).toBe(true);
     }
 
     expect(pageErrors).toEqual([]);
