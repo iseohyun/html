@@ -133,6 +133,14 @@
     caretEl.setAttribute('stroke-width', '2.5');
     caretEl.setAttribute('class', 'blinking-caret');
     caretEl.style.cssText = 'animation: caretBlink 0.85s infinite !important;';
+
+    var smilAnim = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+    smilAnim.setAttribute('attributeName', 'opacity');
+    smilAnim.setAttribute('values', '1;0;1');
+    smilAnim.setAttribute('dur', '0.8s');
+    smilAnim.setAttribute('repeatCount', 'indefinite');
+    caretEl.appendChild(smilAnim);
+
     if (uiGroup) uiGroup.appendChild(caretEl);
     state.typingCaretEl = caretEl;
 
