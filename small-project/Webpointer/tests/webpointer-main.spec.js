@@ -466,4 +466,47 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
 
     expect(pageErrors).toEqual([]);
   });
+
+  test('TC18: Symbol Manager Modal & Symbol Registry Operations', async ({ page }) => {
+    // Switch to File Tab & open Symbol Manager Modal
+    await page.evaluate(() => {
+      if (window.switchTab) window.switchTab('file');
+      if (window.openSymbolManagerModal) window.openSymbolManagerModal();
+    });
+    await page.waitForTimeout(200);
+
+    // Check modal visibility
+    const modal = page.locator('#symbolManagerModal');
+    await expect(modal).toBeVisible();
+
+    // Register test symbol programmatically
+    await page.evaluate(() => {
+      window.WebpointerConfig.symbolRegistry.push({
+        id: 'sym_test_1',
+        name: '해변플랜심볼',
+        type: 'image',
+        thumb: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><rect width="48" height="48" fill="%230ea5e9"/></svg>',
+        data: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><rect width="48" height="48" fill="%230ea5e9"/></svg>'
+      });
+      window.renderSymbolList();
+    });
+
+    // Check thumbnail and symbol card displayed
+    const symbolCard = page.locator('#symbolListContainer:has-text("해변플랜심볼")');
+    await expect(symbolCard).toBeVisible();
+
+    // Delete symbol
+    await page.evaluate(() => {
+      window.deleteSymbol('sym_test_1');
+    });
+
+    const emptyMsg = page.locator('#symbolListContainer:has-text("등록된 심볼이 없습니다.")');
+    await expect(emptyMsg).toBeVisible();
+
+    // Close modal
+    await page.click('#symbolManagerModal button:has-text("닫기")');
+    await expect(modal).toBeHidden();
+
+    expect(pageErrors).toEqual([]);
+  });
 });

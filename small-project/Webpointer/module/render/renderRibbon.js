@@ -45,13 +45,14 @@
     var icons = window.WebpointerIcons || {};
 
     if (cfg.currentTab === 'file') {
-      var openFileBtn = '<button class="tool-btn" onclick="openFile()" style="width:38px; height:38px;"><span class="alt-badge">O</span>' + (icons.openFile || '') + '<span class="tooltip-text">파일 불러오기 (.json / .webpointer)</span></button>';
-      var saveWebBtn  = '<button class="tool-btn" onclick="saveFileToWeb()" style="width:38px; height:38px;"><span class="alt-badge">S</span>' + (icons.saveFile || '') + '<span class="tooltip-text">파일 저장하기 (웹 LocalStorage)</span></button>';
-      var downloadBtn = '<button class="tool-btn" onclick="downloadFile()" style="width:38px; height:38px;"><span class="alt-badge">D</span>' + (icons.downloadFile || '') + '<span class="tooltip-text">파일 다운로드 (.json 프로젝트 / .svg 이미지)</span></button>';
+      var openFileBtn  = '<button class="tool-btn" onclick="openFile()" style="width:38px; height:38px;"><span class="alt-badge">O</span>' + (icons.openFile || '') + '<span class="tooltip-text">파일 불러오기 (.json / .webpointer / .svg)</span></button>';
+      var saveWebBtn   = '<button class="tool-btn" onclick="saveFileToWeb()" style="width:38px; height:38px;"><span class="alt-badge">S</span>' + (icons.saveFile || '') + '<span class="tooltip-text">파일 저장하기 (웹 LocalStorage)</span></button>';
+      var downloadBtn  = '<button class="tool-btn" onclick="downloadFile()" style="width:38px; height:38px;"><span class="alt-badge">D</span>' + (icons.downloadFile || '') + '<span class="tooltip-text">파일 다운로드 (.json 프로젝트 / .svg 이미지)</span></button>';
+      var symbolMgrBtn = '<button class="tool-btn" onclick="openSymbolManagerModal()" style="width:38px; height:38px;"><span class="alt-badge">M</span>' + (icons.shapes || '') + '<span class="tooltip-text">심볼 관리자 (Symbol Manager)</span></button>';
 
       var fileOpsContent =
         '<div style="display:flex; flex-direction:row; gap:6px; align-items:center;">' +
-          openFileBtn + saveWebBtn + downloadBtn +
+          openFileBtn + saveWebBtn + downloadBtn + symbolMgrBtn +
         '</div>';
 
       var undoBtn = '<button class="tool-btn" onclick="undo()" style="width:38px; height:38px;"><span class="alt-badge">Ctrl+Z</span>' + (icons.undo || '') + '<span class="tooltip-text">뒤로가기 (Ctrl + Z)</span></button>';

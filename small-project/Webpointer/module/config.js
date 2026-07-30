@@ -68,6 +68,7 @@
     textUnderlineColor: '#041e49',
     textUnderlineOffset: 3,
     textUnderlineWidth: 1,
+    symbolRegistry: JSON.parse(localStorage.getItem('webpointer_symbols') || '[]'),
 
     selectedIds: new Set(),
     objectsMap: new Map(),

@@ -1631,6 +1631,92 @@
   }
   window.toggleCropMode = toggleCropMode;
 
+  function renderSymbolList() {
+    var container = document.getElementById('symbolListContainer');
+    if (!container) return;
+    var symbols = cfg.symbolRegistry || [];
+    if (symbols.length === 0) {
+      container.innerHTML = '<div style="padding: 20px; text-align: center; color: #94a3b8; font-size: 0.85rem;">등록된 심볼이 없습니다.<br>"불러오기" 버튼으로 이미지/SVG 심볼을 추가하세요.</div>';
+      return;
+    }
+    var html = '';
+    for (var i = 0; i < symbols.length; i++) {
+      var sym = symbols[i];
+      html +=
+        '<div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px;">' +
+          '<div style="display: flex; align-items: center; gap: 10px;">' +
+            '<img src="' + (sym.thumb || sym.data) + '" style="width: 48px; height: 48px; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 4px; background: #ffffff;">' +
+            '<div style="display: flex; flex-direction: column;">' +
+              '<span style="font-weight: 600; font-size: 0.88rem; color: #0f172a;">' + sym.name + '</span>' +
+              '<span style="font-size: 0.72rem; color: #64748b;">ID: ' + sym.id + ' (' + sym.type.toUpperCase() + ')</span>' +
+            '</div>' +
+          '</div>' +
+          '<button onclick="deleteSymbol(\'' + sym.id + '\')" style="background: #ef4444; color: #ffffff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">삭제</button>' +
+        '</div>';
+    }
+    container.innerHTML = html;
+  }
+
+  function openSymbolManagerModal() {
+    var modal = document.getElementById('symbolManagerModal');
+    if (modal) {
+      modal.classList.add('show');
+      renderSymbolList();
+    }
+  }
+
+  function closeSymbolManagerModal() {
+    var modal = document.getElementById('symbolManagerModal');
+    if (modal) modal.classList.remove('show');
+  }
+
+  function importSymbolFromFile() {
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.svg,.png,.jpg,.jpeg';
+    input.onchange = function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        var content = ev.target.result;
+        var symName = file.name.replace(/\.[^/.]+$/, "");
+        var symId = 'sym_' + Date.now();
+        var isSvg = file.name.toLowerCase().endsWith('.svg');
+
+        var newSym = {
+          id: symId,
+          name: symName,
+          type: isSvg ? 'svg' : 'image',
+          thumb: isSvg ? 'data:image/svg+xml;utf8,' + encodeURIComponent(content) : content,
+          data: content
+        };
+
+        cfg.symbolRegistry.push(newSym);
+        localStorage.setItem('webpointer_symbols', JSON.stringify(cfg.symbolRegistry));
+        renderSymbolList();
+      };
+      if (file.name.toLowerCase().endsWith('.svg')) {
+        reader.readAsText(file);
+      } else {
+        reader.readAsDataURL(file);
+      }
+    };
+    input.click();
+  }
+
+  function deleteSymbol(symId) {
+    cfg.symbolRegistry = cfg.symbolRegistry.filter(function(s) { return s.id !== symId; });
+    localStorage.setItem('webpointer_symbols', JSON.stringify(cfg.symbolRegistry));
+    renderSymbolList();
+  }
+
+  window.openSymbolManagerModal = openSymbolManagerModal;
+  window.closeSymbolManagerModal = closeSymbolManagerModal;
+  window.importSymbolFromFile = importSymbolFromFile;
+  window.deleteSymbol = deleteSymbol;
+  window.renderSymbolList = renderSymbolList;
+
   window.WebpointerHandlers = {
     setTool: setTool,
     toggleColorPalettePopover: toggleColorPalettePopover,
@@ -1683,6 +1769,11 @@
     endHoldWeight: endHoldWeight,
     startHoldStyle: startHoldStyle,
     endHoldStyle: endHoldStyle,
-    toggleCropMode: toggleCropMode
+    toggleCropMode: toggleCropMode,
+    openSymbolManagerModal: openSymbolManagerModal,
+    closeSymbolManagerModal: closeSymbolManagerModal,
+    importSymbolFromFile: importSymbolFromFile,
+    deleteSymbol: deleteSymbol,
+    renderSymbolList: renderSymbolList
   };
 })(window);
