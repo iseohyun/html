@@ -257,6 +257,16 @@
     obj.el.setAttribute('stroke-linecap', strokeCap);
     obj.el.setAttribute('stroke-linejoin', strokeJoin);
 
+    // Stacked Non-destructive Filter Effects
+    var filterStr = a.filter || cfg.filterStr || '';
+    if (filterStr) {
+      obj.el.setAttribute('filter', filterStr);
+      obj.el.style.filter = filterStr;
+    } else {
+      obj.el.removeAttribute('filter');
+      obj.el.style.filter = '';
+    }
+
     // Non-destructive Clip-path Cropping
     var mainSvg = document.getElementById('mainSvg');
     if (mainSvg) {

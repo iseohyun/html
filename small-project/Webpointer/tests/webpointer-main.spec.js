@@ -589,4 +589,77 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
 
     expect(pageErrors).toEqual([]);
   });
+
+  test('TC20: Picture Filter Effects Suite (Stacked Filters & Range Coefficients)', async ({ page }) => {
+    // Select Rect tool and draw a rectangle
+    await page.click('.tab-btn:has-text("삽입")');
+    const rectToolBtn = page.locator('#ribbonBar button[onclick*="rect"]').first();
+    await rectToolBtn.click();
+
+    const svgBox = await page.locator('#mainSvg').boundingBox();
+    const startX = svgBox.x + 200;
+    const startY = svgBox.y + 200;
+
+    await page.mouse.move(startX, startY);
+    await page.mouse.down();
+    await page.mouse.move(startX + 150, startY + 100);
+    await page.mouse.up();
+
+    // Switch to Picture tab (style)
+    await page.click('.tab-btn:has-text("그림 서식")');
+    await page.waitForTimeout(200);
+
+    // Click Filter Popover button
+    const filterBtn = page.locator('#ribbonBar button:has-text("🪄")');
+    await expect(filterBtn).toBeVisible();
+    await filterBtn.click();
+
+    const popover = page.locator('#filterEffectPopover');
+    await expect(popover).toBeVisible();
+
+    // Select Blur filter and add
+    await page.selectOption('#popFilterType', 'blur');
+    await page.evaluate(() => {
+      const range = document.getElementById('popFilterRange');
+      if (range) range.value = 5;
+    });
+    await page.click('#filterEffectPopover button:has-text("➕ 필터 추가")');
+
+    // Select Sepia filter and add
+    await page.selectOption('#popFilterType', 'sepia');
+    await page.evaluate(() => {
+      const range = document.getElementById('popFilterRange');
+      if (range) range.value = 80;
+    });
+    await page.click('#filterEffectPopover button:has-text("➕ 필터 추가")');
+
+    // Verify filter stack tag list contains blur and sepia
+    const stackList = page.locator('#popFilterStackList');
+    await expect(stackList).toContainText('blur(5px)');
+    await expect(stackList).toContainText('sepia(80%)');
+
+    // Verify DOM element filter attribute and style
+    const filterState = await page.evaluate(() => {
+      const rectEl = document.querySelector('#objectsGroup rect');
+      return {
+        attr: rectEl ? rectEl.getAttribute('filter') : null,
+        style: rectEl ? rectEl.style.filter : null
+      };
+    });
+
+    expect(filterState.attr).toContain('blur(5px)');
+    expect(filterState.attr).toContain('sepia(80%)');
+
+    // Clear all filters
+    await page.click('#filterEffectPopover button:has-text("🧹 전체 삭제")');
+    await expect(stackList).toContainText('적용된 필터가 없습니다');
+
+    const clearedFilterAttr = await page.evaluate(() => {
+      const rectEl = document.querySelector('#objectsGroup rect');
+      return rectEl ? rectEl.getAttribute('filter') : null;
+    });
+    expect(clearedFilterAttr).toBeNull();
+
+    expect(pageErrors).toEqual([]);
+  });
 });

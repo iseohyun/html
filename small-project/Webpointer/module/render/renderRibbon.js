@@ -280,10 +280,18 @@
           cropBtnHtml +
         '</div>';
 
+      var filterBtnHtml = '<button class="tool-btn" onclick="openFilterPopover(this)" style="width:34px; height:34px;">🪄<span class="tooltip-text">필터 효과 설정 (blur, brightness, contrast, drop-shadow 등 중복 선택 가능)</span></button>';
+
+      var filterContent =
+        '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
+          filterBtnHtml +
+        '</div>';
+
       ribbonBar.innerHTML =
         buildCategoryHtml('style_line', '선 및 색상', lineGridHtml) +
         buildCategoryHtml('style_lineEnds', '선 끝', lineEndsContent) +
         buildCategoryHtml('style_capJoin', '마감', capJoinContent) +
+        buildCategoryHtml('style_filter', '필터', filterContent) +
         buildCategoryHtml('style_edit', '편집', editContent);
     } else if (cfg.currentTab === 'text') {
       var curFontFamily = cfg.fontFamily || 'sans-serif';

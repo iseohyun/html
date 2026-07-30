@@ -1980,6 +1980,215 @@
     }
   }
 
+  function openFilterPopover(btnEl) {
+    var old = document.getElementById('filterEffectPopover');
+    if (old) {
+      old.remove();
+      return;
+    }
+
+    var popover = document.createElement('div');
+    popover.id = 'filterEffectPopover';
+    popover.style.cssText = 'position:fixed; z-index:99999; padding:10px; border:1px solid #0284c7; border-radius:8px; background:#ffffff; box-shadow:0 8px 24px rgba(0,0,0,0.2); outline:none; font-family:sans-serif; width:260px; display:flex; flex-direction:column; gap:8px;';
+
+    var rect = btnEl.getBoundingClientRect();
+    popover.style.left = Math.max(10, Math.min(window.innerWidth - 275, rect.left)) + 'px';
+    popover.style.top = (rect.bottom + 4) + 'px';
+
+    var html =
+      '<div style="font-size:0.82rem; font-weight:700; color:#0f172a; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">🪄 필터 효과 설정 (중복 가능)</div>' +
+      '<div style="display:flex; justify-content:space-between; align-items:center; font-size:0.78rem;">' +
+        '<span>필터 종류:</span>' +
+        '<select id="popFilterType" style="padding:3px; font-size:0.75rem;" onchange="updateFilterRangeConfig()">' +
+          '<option value="blur">블러 (blur)</option>' +
+          '<option value="brightness">밝기 (brightness)</option>' +
+          '<option value="contrast">대비 (contrast)</option>' +
+          '<option value="drop-shadow">그림자 (drop-shadow)</option>' +
+          '<option value="grayscale">흑백 (grayscale)</option>' +
+          '<option value="hue-rotate">색상 회전 (hue-rotate)</option>' +
+          '<option value="invert">반전 (invert)</option>' +
+          '<option value="opacity">불투명도 (opacity)</option>' +
+          '<option value="saturate">채도 (saturate)</option>' +
+          '<option value="sepia">세피아 (sepia)</option>' +
+        '</select>' +
+      '</div>' +
+      '<div style="display:flex; flex-direction:column; gap:2px; font-size:0.75rem;">' +
+        '<div style="display:flex; justify-content:space-between;">' +
+          '<span>계수 범위:</span>' +
+          '<span id="popFilterValDisp" style="font-weight:700; color:#0284c7;">3px</span>' +
+        '</div>' +
+        '<input type="range" id="popFilterRange" min="0" max="30" value="3" step="1" oninput="document.getElementById(\'popFilterValDisp\').innerText = this.value + (window.filterUnit || \'px\')">' +
+      '</div>' +
+      '<div style="display:flex; gap:6px;">' +
+        '<button onclick="addFilterFromPopover()" style="flex:1; padding:4px; background:#0284c7; color:#fff; border:none; border-radius:4px; font-size:0.75rem; font-weight:600; cursor:pointer;">➕ 필터 추가</button>' +
+        '<button onclick="clearAllFiltersFromPopover()" style="padding:4px 8px; background:#ef4444; color:#fff; border:none; border-radius:4px; font-size:0.75rem; cursor:pointer;">🧹 전체 삭제</button>' +
+      '</div>' +
+      '<div id="popFilterStackList" style="display:flex; flex-wrap:wrap; gap:4px; max-height:80px; overflow-y:auto; font-size:0.72rem; padding:4px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px;">' +
+      '</div>';
+
+    popover.innerHTML = html;
+    document.body.appendChild(popover);
+
+    updateFilterRangeConfig();
+    renderFilterStackListInPopover();
+
+    function onOutsideClick(evt) {
+      if (popover && !popover.contains(evt.target) && !btnEl.contains(evt.target)) {
+        if (popover.parentNode) popover.parentNode.removeChild(popover);
+        document.removeEventListener('mousedown', onOutsideClick);
+      }
+    }
+    setTimeout(function() {
+      document.addEventListener('mousedown', onOutsideClick);
+    }, 50);
+  }
+
+  function updateFilterRangeConfig() {
+    var select = document.getElementById('popFilterType');
+    var range = document.getElementById('popFilterRange');
+    var disp = document.getElementById('popFilterValDisp');
+    if (!select || !range || !disp) return;
+
+    var type = select.value;
+    var unit = 'px';
+    var min = 0, max = 100, val = 100, step = 1;
+
+    if (type === 'blur') {
+      min = 0; max = 30; val = 3; unit = 'px';
+    } else if (type === 'brightness') {
+      min = 0; max = 300; val = 120; unit = '%';
+    } else if (type === 'contrast') {
+      min = 0; max = 300; val = 150; unit = '%';
+    } else if (type === 'drop-shadow') {
+      min = 0; max = 30; val = 4; unit = 'px';
+    } else if (type === 'grayscale') {
+      min = 0; max = 100; val = 100; unit = '%';
+    } else if (type === 'hue-rotate') {
+      min = 0; max = 360; val = 90; unit = 'deg';
+    } else if (type === 'invert') {
+      min = 0; max = 100; val = 100; unit = '%';
+    } else if (type === 'opacity') {
+      min = 0; max = 100; val = 80; unit = '%';
+    } else if (type === 'saturate') {
+      min = 0; max = 500; val = 200; unit = '%';
+    } else if (type === 'sepia') {
+      min = 0; max = 100; val = 100; unit = '%';
+    }
+
+    window.filterUnit = unit;
+    range.min = min;
+    range.max = max;
+    range.value = val;
+    range.step = step;
+    disp.innerText = val + unit;
+  }
+
+  function getSelectedObjectsForFilter() {
+    var members = getAllGroupMembers(cfg.selectedIds);
+    if (members.length === 0) {
+      return Array.from(cfg.objectsMap.values());
+    }
+    return members;
+  }
+
+  function renderFilterStackListInPopover() {
+    var listContainer = document.getElementById('popFilterStackList');
+    if (!listContainer) return;
+    var targets = getSelectedObjectsForFilter();
+    if (targets.length === 0) {
+      listContainer.innerHTML = '<span style="color:#94a3b8;">대상을 선택하세요</span>';
+      return;
+    }
+    var firstObj = targets[0];
+    var filters = (firstObj.attrs && firstObj.attrs.filterList) ? firstObj.attrs.filterList : [];
+    if (filters.length === 0) {
+      listContainer.innerHTML = '<span style="color:#94a3b8;">적용된 필터가 없습니다</span>';
+      return;
+    }
+
+    var tagsHtml = '';
+    for (var i = 0; i < filters.length; i++) {
+      tagsHtml +=
+        '<span style="display:inline-flex; align-items:center; gap:2px; background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; border:1px solid #bae6fd;">' +
+          filters[i] +
+          '<button onclick="removeFilterAtIndexFromPopover(' + i + ')" style="background:none; border:none; color:#ef4444; font-weight:bold; cursor:pointer; font-size:0.75rem; padding:0 2px;">×</button>' +
+        '</span>';
+    }
+    listContainer.innerHTML = tagsHtml;
+  }
+
+  function addFilterFromPopover() {
+    var select = document.getElementById('popFilterType');
+    var range = document.getElementById('popFilterRange');
+    if (!select || !range) return;
+
+    var type = select.value;
+    var val = range.value;
+    var unit = window.filterUnit || 'px';
+
+    var filterExpr = '';
+    if (type === 'drop-shadow') {
+      filterExpr = 'drop-shadow(' + val + 'px ' + val + 'px ' + (parseInt(val, 10) + 2) + 'px rgba(0,0,0,0.5))';
+    } else {
+      filterExpr = type + '(' + val + unit + ')';
+    }
+
+    var targets = getSelectedObjectsForFilter();
+    targets.forEach(function(obj) {
+      if (!obj.attrs) obj.attrs = {};
+      if (!obj.attrs.filterList) obj.attrs.filterList = [];
+      obj.attrs.filterList.push(filterExpr);
+      obj.attrs.filter = obj.attrs.filterList.join(' ');
+      if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.updateElementAttributes) {
+        window.WebpointerRenderCanvas.updateElementAttributes(obj);
+      }
+      if (window.WebpointerRender && window.WebpointerRender.renderCanvas) {
+        window.WebpointerRender.renderCanvas();
+      }
+    });
+
+    renderFilterStackListInPopover();
+  }
+
+  function removeFilterAtIndexFromPopover(idx) {
+    var targets = getSelectedObjectsForFilter();
+    targets.forEach(function(obj) {
+      if (obj.attrs && obj.attrs.filterList) {
+        obj.attrs.filterList.splice(idx, 1);
+        obj.attrs.filter = obj.attrs.filterList.join(' ');
+        if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.updateElementAttributes) {
+          window.WebpointerRenderCanvas.updateElementAttributes(obj);
+        }
+        if (window.WebpointerRender && window.WebpointerRender.renderCanvas) {
+          window.WebpointerRender.renderCanvas();
+        }
+      }
+    });
+    renderFilterStackListInPopover();
+  }
+
+  function clearAllFiltersFromPopover() {
+    var targets = getSelectedObjectsForFilter();
+    targets.forEach(function(obj) {
+      if (obj.attrs) {
+        obj.attrs.filterList = [];
+        obj.attrs.filter = '';
+        if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.updateElementAttributes) {
+          window.WebpointerRenderCanvas.updateElementAttributes(obj);
+        }
+        if (window.WebpointerRender && window.WebpointerRender.renderCanvas) {
+          window.WebpointerRender.renderCanvas();
+        }
+      }
+    });
+    renderFilterStackListInPopover();
+  }
+
+  window.openFilterPopover = openFilterPopover;
+  window.updateFilterRangeConfig = updateFilterRangeConfig;
+  window.addFilterFromPopover = addFilterFromPopover;
+  window.removeFilterAtIndexFromPopover = removeFilterAtIndexFromPopover;
+  window.clearAllFiltersFromPopover = clearAllFiltersFromPopover;
   window.openSymbolManagerModal = openSymbolManagerModal;
   window.closeSymbolManagerModal = closeSymbolManagerModal;
   window.importSymbolFromFile = importSymbolFromFile;
@@ -2047,6 +2256,9 @@
     startHoldStyle: startHoldStyle,
     endHoldStyle: endHoldStyle,
     toggleCropMode: toggleCropMode,
+    openFilterPopover: openFilterPopover,
+    addFilterFromPopover: addFilterFromPopover,
+    clearAllFiltersFromPopover: clearAllFiltersFromPopover,
     openSymbolManagerModal: openSymbolManagerModal,
     closeSymbolManagerModal: closeSymbolManagerModal,
     importSymbolFromFile: importSymbolFromFile,
