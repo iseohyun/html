@@ -185,6 +185,87 @@
     if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
   }
 
+  var default24Colors = [
+    "#660000", "#660000", "#086600", "#006627", "#002e66", "#000080", "#3a0066", "#660031",
+    "#e44d1b", "#c27800", "#669900", "#00a879", "#009dd1", "#4182fb", "#a760e2", "#d94594",
+    "#ff976b", "#ffbb00", "#aae43f", "#00f5c0", "#00eaff", "#85caff", "#ec99ff", "#ff8fda"
+  ];
+
+  function toggleColorPalettePopover(btnEl, targetMode) {
+    var old = document.getElementById('colorPalettePopover');
+    if (old) {
+      var isSame = old.dataset.targetMode === targetMode;
+      old.remove();
+      if (isSame) return;
+    }
+
+    var popover = document.createElement('div');
+    popover.id = 'colorPalettePopover';
+    popover.dataset.targetMode = targetMode;
+    popover.style.cssText = 'position:fixed; z-index:99999; padding:6px; border:1px solid #0284c7; border-radius:6px; background:#ffffff; box-shadow:0 6px 16px rgba(0,0,0,0.18); outline:none;';
+
+    var rect = btnEl.getBoundingClientRect();
+    popover.style.left = Math.max(10, Math.min(window.innerWidth - 245, rect.left)) + 'px';
+    popover.style.top = (rect.bottom + 4) + 'px';
+
+    var userColors = (cfg.customPalette || cfg.paletteColors || []).slice();
+    while (userColors.length < 24) {
+      userColors.push(default24Colors[userColors.length % default24Colors.length]);
+    }
+
+    var swatchGridHtml = '<div style="display:grid; grid-template-columns:repeat(9, 24px); grid-template-rows:repeat(3, 24px); gap:2px; margin:0; padding:0;">';
+    var userIdx = 0;
+
+    for (var slot = 1; slot <= 27; slot++) {
+      var hex = '#ffffff';
+      var title = '';
+      if (slot === 9) {
+        hex = '#ffffff'; title = '흰색 (#ffffff)';
+      } else if (slot === 18) {
+        hex = '#000000'; title = '검정색 (#000000)';
+      } else if (slot === 27) {
+        hex = 'none'; title = '투명색 (none)';
+      } else {
+        hex = userColors[userIdx++] || '#041e49';
+        title = hex;
+      }
+
+      var innerContent = (hex === 'none') ? '<svg viewBox="0 0 24 24" style="width:100%; height:100%; display:block;"><line x1="0" y1="24" x2="24" y2="0" stroke="#ef4444" stroke-width="2.5"/></svg>' : '';
+      swatchGridHtml += '<div style="width:24px; height:24px; box-sizing:border-box; border:1px solid rgba(0,0,0,0.15); border-radius:3px; background:' + (hex === 'none' ? '#ffffff' : hex) + '; cursor:pointer; position:relative;" onclick="selectColorFromPopover(\'' + targetMode + '\', \'' + hex + '\')" title="' + title + '">' + innerContent + '</div>';
+    }
+    swatchGridHtml += '</div>';
+
+    popover.innerHTML = swatchGridHtml;
+    document.body.appendChild(popover);
+
+    function onOutsideClick(evt) {
+      if (popover && !popover.contains(evt.target) && !btnEl.contains(evt.target)) {
+        if (popover.parentNode) popover.parentNode.removeChild(popover);
+        document.removeEventListener('mousedown', onOutsideClick);
+      }
+    }
+    setTimeout(function() {
+      document.addEventListener('mousedown', onOutsideClick);
+    }, 50);
+  }
+
+  function selectColorFromPopover(targetMode, hex) {
+    if (targetMode === 'stroke') {
+      setStrokeColor(hex);
+    } else if (targetMode === 'fill') {
+      setFillColor(hex);
+    } else if (targetMode === 'text') {
+      cfg.activeTextColorTarget = 'text';
+      applyPaletteColor(hex);
+    } else if (targetMode === 'bg') {
+      cfg.activeTextColorTarget = 'bg';
+      applyPaletteColor(hex);
+    }
+
+    var popover = document.getElementById('colorPalettePopover');
+    if (popover && popover.parentNode) popover.parentNode.removeChild(popover);
+  }
+
   function openPaletteModal() {
     var modal = document.getElementById('paletteModal');
     if (!modal) {
@@ -648,8 +729,13 @@
   window.closePaletteModal = closePaletteModal;
   window.importPaletteFromText = importPaletteFromText;
 
+  window.toggleColorPalettePopover = toggleColorPalettePopover;
+  window.selectColorFromPopover = selectColorFromPopover;
+
   window.WebpointerHandlers = {
     setTool: setTool,
+    toggleColorPalettePopover: toggleColorPalettePopover,
+    selectColorFromPopover: selectColorFromPopover,
     applyStyleToSelected: applyStyleToSelected,
     setStrokeColor: setStrokeColor,
     setFillColor: setFillColor,

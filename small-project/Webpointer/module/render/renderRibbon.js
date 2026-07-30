@@ -133,47 +133,25 @@
           '<div class="ribbon-control-item"><label>캔버스 색상:</label><input type="color" value="' + cfg.canvasBgColor + '" onchange="setCanvasBgColor(this.value)"></div>' +
         '</div>';
 
-      ribbonBar.innerHTML =
-        buildCategoryHtml('view_grid', '격자 및 스냅/선택/기본크기 설정', gridSettingsHtml) +
-        buildCategoryHtml('view_canvas', '캔버스 화면 설정', canvasSettingsHtml);
-    } else if (cfg.currentTab === 'style') {
-      var userColors = (cfg.customPalette || []).slice();
-      while (userColors.length < 24) {
-        userColors.push(default24Colors[userColors.length % default24Colors.length]);
-      }
-
-      var swatchGridHtml = '<div style="display:grid; grid-template-columns:repeat(9, 24px); grid-template-rows:repeat(3, 24px); gap:0; border:1px solid #cbd5e1; border-radius:4px; overflow:hidden; margin:0; padding:0;">';
-      var userIdx = 0;
-
-      for (var slot = 1; slot <= 27; slot++) {
-        if (slot === 9) {
-          swatchGridHtml += '<div style="width:24px; height:24px; box-sizing:border-box; border:1px solid rgba(0,0,0,0.08); background:#ffffff; cursor:pointer;" onclick="applyPaletteColor(\'#ffffff\')" title="흰색 (#ffffff)"></div>';
-        } else if (slot === 18) {
-          swatchGridHtml += '<div style="width:24px; height:24px; box-sizing:border-box; border:1px solid rgba(0,0,0,0.08); background:#000000; cursor:pointer;" onclick="applyPaletteColor(\'#000000\')" title="검정색 (#000000)"></div>';
-        } else if (slot === 27) {
-          swatchGridHtml += '<div style="width:24px; height:24px; box-sizing:border-box; border:1px solid rgba(0,0,0,0.08); background:#ffffff; cursor:pointer; position:relative;" onclick="applyPaletteColor(\'none\')" title="투명색 (none)"><svg viewBox="0 0 24 24" style="width:100%; height:100%; display:block;"><line x1="0" y1="24" x2="24" y2="0" stroke="#ef4444" stroke-width="2.5"/></svg></div>';
-        } else {
-          var hex = userColors[userIdx++] || '#041e49';
-          swatchGridHtml += '<div style="width:24px; height:24px; box-sizing:border-box; border:1px solid rgba(0,0,0,0.08); background:' + hex + '; cursor:pointer;" onclick="applyPaletteColor(\'' + hex + '\')" title="' + hex + '"></div>';
-        }
-      }
-      swatchGridHtml += '</div>';
-
-      var targetMode = cfg.activeColorTarget || 'stroke';
-      var isStrokeActive = targetMode === 'stroke';
-      var isFillActive = targetMode === 'fill';
-
-      var strokeBtnHtml = '<button class="tool-btn ' + (isStrokeActive ? 'active' : '') + '" onclick="setActiveColorTarget(\'stroke\')" style="width:34px; height:34px;"><span class="alt-badge">S</span>' + (icons.targetStroke || '') + '<span class="tooltip-text">테두리 색상 선택 (Active)</span></button>';
-      var fillBtnHtml   = '<button class="tool-btn ' + (isFillActive ? 'active' : '') + '" onclick="setActiveColorTarget(\'fill\')" style="width:34px; height:34px;"><span class="alt-badge">F</span>' + (icons.targetFill || '') + '<span class="tooltip-text">채우기 색상 선택 (Active)</span></button>';
-
       var openPaletteBtnHtml   = '<button class="tool-btn" onclick="window.open(\'https://iseohyun.github.io/UniPalette/\', \'_blank\')" style="width:34px; height:34px;"><span class="alt-badge">O</span>' + (icons.openPalette || '') + '<span class="tooltip-text">기본색상 정하기 (UniPalette 새탭)</span></button>';
       var importPaletteBtnHtml = '<button class="tool-btn" onclick="openPaletteModal()" style="width:34px; height:34px;"><span class="alt-badge">I</span>' + (icons.importPalette || '') + '<span class="tooltip-text">기본색상 가져오기 (코드 붙여넣기)</span></button>';
 
+      var themeSettingsHtml =
+        '<div style="display:flex; flex-direction:row; gap:4px; align-items:center;">' +
+          openPaletteBtnHtml + importPaletteBtnHtml +
+        '</div>';
+
+      ribbonBar.innerHTML =
+        buildCategoryHtml('view_grid', '격자 및 스냅/선택/기본크기 설정', gridSettingsHtml) +
+        buildCategoryHtml('view_canvas', '캔버스 화면 설정', canvasSettingsHtml) +
+        buildCategoryHtml('view_theme', '테마', themeSettingsHtml);
+    } else if (cfg.currentTab === 'style') {
+      var strokeBtnHtml = '<button class="tool-btn" onclick="toggleColorPalettePopover(this, \'stroke\')" style="width:34px; height:34px; position:relative;">' + (icons.targetStroke || '') + '<span style="position:absolute; bottom:2px; left:4px; right:4px; height:4px; background:' + (cfg.strokeColor==='none'?'transparent':cfg.strokeColor) + '; border-radius:2px;"></span><span class="tooltip-text">선 색상 (클릭하여 팔레트 열기)</span></button>';
+      var fillBtnHtml   = '<button class="tool-btn" onclick="toggleColorPalettePopover(this, \'fill\')" style="width:34px; height:34px; position:relative;">' + (icons.targetFill || '') + '<span style="position:absolute; bottom:2px; left:4px; right:4px; height:4px; background:' + (cfg.fillColor==='none'?'transparent':cfg.fillColor) + '; border-radius:2px;"></span><span class="tooltip-text">면 채우기 색상 (클릭하여 팔레트 열기)</span></button>';
+
       var colorContent =
-        '<div style="display:flex; flex-direction:row; align-items:center; gap:8px;">' +
-          '<div style="display:flex; flex-direction:column; gap:4px;">' + strokeBtnHtml + fillBtnHtml + '</div>' +
-          swatchGridHtml +
-          '<div style="display:flex; flex-direction:column; gap:4px;">' + openPaletteBtnHtml + importPaletteBtnHtml + '</div>' +
+        '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
+          strokeBtnHtml + fillBtnHtml +
         '</div>';
 
       var curDashStyle = cfg.strokeDashStyle || 'solid';
@@ -372,44 +350,12 @@
           '</div>' +
         '</div>';
 
-      // Swatch grid for Text Colors
-      var userColors = (cfg.customPalette || []).slice();
-      while (userColors.length < 24) {
-        userColors.push(default24Colors[userColors.length % default24Colors.length]);
-      }
-
-      var textColorSwatchGrid = '<div style="display:grid; grid-template-columns:repeat(9, 24px); grid-template-rows:repeat(3, 24px); gap:0; border:1px solid #cbd5e1; border-radius:4px; overflow:hidden; margin:0; padding:0;">';
-      var userIdx = 0;
-
-      for (var slot = 1; slot <= 27; slot++) {
-        if (slot === 9) {
-          textColorSwatchGrid += '<div style="width:24px; height:24px; box-sizing:border-box; border:1px solid rgba(0,0,0,0.08); background:#ffffff; cursor:pointer;" onclick="applyPaletteColor(\'#ffffff\')" title="흰색 (#ffffff)"></div>';
-        } else if (slot === 18) {
-          textColorSwatchGrid += '<div style="width:24px; height:24px; box-sizing:border-box; border:1px solid rgba(0,0,0,0.08); background:#000000; cursor:pointer;" onclick="applyPaletteColor(\'#000000\')" title="검정색 (#000000)"></div>';
-        } else if (slot === 27) {
-          textColorSwatchGrid += '<div style="width:24px; height:24px; box-sizing:border-box; border:1px solid rgba(0,0,0,0.08); background:#ffffff; cursor:pointer; position:relative;" onclick="applyPaletteColor(\'none\')" title="투명색 (none)"><svg viewBox="0 0 24 24" style="width:100%; height:100%; display:block;"><line x1="0" y1="24" x2="24" y2="0" stroke="#ef4444" stroke-width="2.5"/></svg></div>';
-        } else {
-          var hex = userColors[userIdx++] || '#041e49';
-          textColorSwatchGrid += '<div style="width:24px; height:24px; box-sizing:border-box; border:1px solid rgba(0,0,0,0.08); background:' + hex + '; cursor:pointer;" onclick="applyPaletteColor(\'' + hex + '\')" title="' + hex + '"></div>';
-        }
-      }
-      textColorSwatchGrid += '</div>';
-
-      var textTargetMode = cfg.activeTextColorTarget || 'text';
-      var isTextActive = textTargetMode === 'text';
-      var isBgActive = textTargetMode === 'bg';
-
-      var textColorBtnHtml = '<button class="tool-btn ' + (isTextActive ? 'active' : '') + '" onclick="setActiveTextColorTarget(\'text\')" style="width:34px; height:34px;"><span class="alt-badge">T</span>' + (icons.targetStroke || '') + '<span class="tooltip-text">글자색 선택 (Active)</span></button>';
-      var textBgBtnHtml   = '<button class="tool-btn ' + (isBgActive ? 'active' : '') + '" onclick="setActiveTextColorTarget(\'bg\')" style="width:34px; height:34px;"><span class="alt-badge">B</span>' + (icons.targetFill || '') + '<span class="tooltip-text">배경색(하이라이트) 선택 (Active)</span></button>';
-
-      var openPaletteBtnHtml   = '<button class="tool-btn" onclick="window.open(\'https://iseohyun.github.io/UniPalette/\', \'_blank\')" style="width:34px; height:34px;"><span class="alt-badge">O</span>' + (icons.openPalette || '') + '<span class="tooltip-text">기본색상 정하기 (UniPalette 새탭)</span></button>';
-      var importPaletteBtnHtml = '<button class="tool-btn" onclick="openPaletteModal()" style="width:34px; height:34px;"><span class="alt-badge">I</span>' + (icons.importPalette || '') + '<span class="tooltip-text">기본색상 가져오기 (코드 붙여넣기)</span></button>';
+      var textColorBtnHtml = '<button class="tool-btn" onclick="toggleColorPalettePopover(this, \'text\')" style="width:34px; height:34px; position:relative;"><span class="alt-badge">T</span>' + (icons.targetStroke || '') + '<span style="position:absolute; bottom:2px; left:4px; right:4px; height:4px; background:' + (cfg.strokeColor==='none'?'transparent':cfg.strokeColor) + '; border-radius:2px;"></span><span class="tooltip-text">글자색 (클릭하여 팔레트 열기)</span></button>';
+      var textBgBtnHtml   = '<button class="tool-btn" onclick="toggleColorPalettePopover(this, \'bg\')" style="width:34px; height:34px; position:relative;"><span class="alt-badge">B</span>' + (icons.targetFill || '') + '<span class="tooltip-text">배경색(하이라이트) (클릭하여 팔레트 열기)</span></button>';
 
       var textColorContent =
-        '<div style="display:flex; flex-direction:row; align-items:center; gap:8px;">' +
-          '<div style="display:flex; flex-direction:column; gap:4px;">' + textColorBtnHtml + textBgBtnHtml + '</div>' +
-          textColorSwatchGrid +
-          '<div style="display:flex; flex-direction:column; gap:4px;">' + openPaletteBtnHtml + importPaletteBtnHtml + '</div>' +
+        '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
+          textColorBtnHtml + textBgBtnHtml +
         '</div>';
 
       ribbonBar.innerHTML =

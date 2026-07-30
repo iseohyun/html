@@ -111,6 +111,12 @@
       }
     }
 
+    if (obj.type !== 'text') {
+      if (a.stroke !== undefined) obj.el.setAttribute('stroke', a.stroke);
+      if (a.fill !== undefined) obj.el.setAttribute('fill', a.fill);
+      if (a.strokeWidth !== undefined) obj.el.setAttribute('stroke-width', a.strokeWidth);
+    }
+
     var dashStyle = a.strokeDashStyle || 'solid';
     var dashArray = a.strokeDashArray || '6,6';
     if (dashStyle === 'dashed' && dashArray) {
