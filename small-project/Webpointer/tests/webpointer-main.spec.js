@@ -268,6 +268,9 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     const modal = page.locator('#shortcutModal');
     await expect(modal).toHaveClass(/show/);
 
+    // Save visual proof screenshot
+    await page.screenshot({ path: 'tests/shortcut-modal-proof.png' });
+
     // Close modal
     await page.click('#shortcutModal button:has-text("닫기")');
     await expect(modal).not.toHaveClass(/show/);
@@ -285,6 +288,9 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     // Verify detailed settings modal opens
     const modal = page.locator('#detailedSettingsModal');
     await expect(modal).toHaveClass(/show/);
+
+    // Save visual proof screenshot
+    await page.screenshot({ path: 'tests/detailed-settings-modal-proof.png' });
 
     // Change proximity threshold to 25
     await page.fill('#settingProximityThreshold', '25');
