@@ -69,26 +69,29 @@
       gridGroup.appendChild(gridPath);
     },
 
-    // Update SVG Defs for Markers (userSpaceOnUse prevents marker scaling on strokeWidth changes)
+    // Update SVG Defs for Markers (Inverse strokeWidth compensation keeps marker size constant at normal scale)
     updateSvgDefs: function() {
       var svgDefs = document.getElementById('svgDefs');
       if (!svgDefs) return;
       svgDefs.innerHTML = '';
+
+      var strokeW = Math.max(1, cfg.strokeWidth || 2);
 
       ['arrow', 'circle', 'diamond'].forEach(function(type) {
         ['start', 'end'].forEach(function(pos) {
           var markerId = 'marker-' + pos + '-' + type;
           var marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
           marker.setAttribute('id', markerId);
-          marker.setAttribute('markerUnits', 'userSpaceOnUse'); // Marker size stays independent of strokeWidth!
+          marker.setAttribute('markerUnits', 'strokeWidth');
           marker.setAttribute('viewBox', '0 0 10 10');
           marker.setAttribute('refX', pos === 'start' ? '2' : '8');
           marker.setAttribute('refY', '5');
 
           var scale = pos === 'start' ? cfg.startMarkerScale : cfg.endMarkerScale;
-          var markerSize = 14 * scale;
-          marker.setAttribute('markerWidth', markerSize.toString());
-          marker.setAttribute('markerHeight', markerSize.toString());
+          // Compensate markerWidth by dividing by (strokeW / 2) so rendered size stays constant regardless of line thickness
+          var normSize = (6 * scale) / (strokeW / 2);
+          marker.setAttribute('markerWidth', normSize.toString());
+          marker.setAttribute('markerHeight', normSize.toString());
           marker.setAttribute('orient', 'auto');
 
           var fillStyle = pos === 'start' ? (cfg.startMarkerFillStyle || 'solid') : (cfg.endMarkerFillStyle || 'solid');
