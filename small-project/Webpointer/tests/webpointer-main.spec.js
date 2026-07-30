@@ -38,8 +38,8 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     const count = await toolBtns.count();
     console.log('[Test Log] Found tool buttons count:', count);
 
-    // Click Rectangle Tool (5th tool button in Insert tab: select, text, point, line, rect)
-    await toolBtns.nth(4).click();
+    // Click Rectangle Tool
+    await page.click('.tool-btn[onclick*="rect"]');
 
     // Drag on SVG Canvas to create a rectangle
     const canvas = page.locator('#mainSvg');
@@ -57,8 +57,15 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     const rectCount = await page.locator('#objectsGroup rect').count();
     expect(rectCount).toBeGreaterThanOrEqual(1);
 
-    // Switch to Text Tool (2nd tool button: text)
-    await toolBtns.nth(1).click();
+    // Switch to Text Tool
+    await page.click('.tool-btn[onclick*="text"]');
+
+    // Switch to Pan Tool (1st tool button: pan) and test canvas panning
+    await page.click('.tool-btn[onclick*="pan"]');
+    await page.mouse.move(startX, startY);
+    await page.mouse.down();
+    await page.mouse.move(startX + 50, startY + 50);
+    await page.mouse.up();
 
     // Ensure zero page errors
     expect(pageErrors).toEqual([]);

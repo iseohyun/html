@@ -15,6 +15,8 @@
     if (mainSvg) {
       if (tool === 'text') {
         mainSvg.style.cursor = 'text';
+      } else if (tool === 'pan') {
+        mainSvg.style.cursor = 'grab';
       } else if (tool === 'select') {
         mainSvg.style.cursor = 'default';
       } else {

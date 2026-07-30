@@ -121,6 +121,30 @@
 
       if (state.isDraggingHandle) return;
 
+      if (cfg.currentTool === 'pan') {
+        state.isPanning = true;
+        state.panStartClientX = e.clientX;
+        state.panStartClientY = e.clientY;
+        var viewBoxAttr = mainSvg.getAttribute('viewBox');
+        if (viewBoxAttr) {
+          var vbParts = viewBoxAttr.trim().split(/[\s,]+/).map(Number);
+          if (vbParts.length === 4) {
+            state.initialVbX = vbParts[0];
+            state.initialVbY = vbParts[1];
+            state.initialVbW = vbParts[2];
+            state.initialVbH = vbParts[3];
+          }
+        }
+        if (state.initialVbX === undefined) {
+          state.initialVbX = 0;
+          state.initialVbY = 0;
+          state.initialVbW = cfg.SVG_WIDTH || 960;
+          state.initialVbH = cfg.SVG_HEIGHT || 540;
+        }
+        mainSvg.style.cursor = 'grabbing';
+        return;
+      }
+
       var targetObj = e.target.closest('circle, line, rect, ellipse, path, text, tspan');
       if (targetObj && targetObj.tagName.toLowerCase() === 'tspan') {
         targetObj = targetObj.closest('text');
@@ -197,6 +221,21 @@
 
     mainSvg.addEventListener('mousemove', function(e) {
       var coords = selection.getStepCoords(e);
+
+      if (cfg.currentTool === 'pan') {
+        mainSvg.style.cursor = state.isPanning ? 'grabbing' : 'grab';
+        if (state.isPanning) {
+          var dx = e.clientX - state.panStartClientX;
+          var dy = e.clientY - state.panStartClientY;
+          var rect = mainSvg.getBoundingClientRect();
+          var scaleX = (state.initialVbW || cfg.SVG_WIDTH || 960) / (rect.width || 1);
+          var scaleY = (state.initialVbH || cfg.SVG_HEIGHT || 540) / (rect.height || 1);
+          var newX = state.initialVbX - dx * scaleX;
+          var newY = state.initialVbY - dy * scaleY;
+          mainSvg.setAttribute('viewBox', newX + ' ' + newY + ' ' + state.initialVbW + ' ' + state.initialVbH);
+        }
+        return;
+      }
 
       if (cfg.currentTool === 'text') {
         mainSvg.style.cursor = 'text';
@@ -411,6 +450,10 @@
         }
       }
 
+      if (state.isPanning) {
+        state.isPanning = false;
+        mainSvg.style.cursor = cfg.currentTool === 'pan' ? 'grab' : 'default';
+      }
       if (state.isDrawingNewObject || state.isDraggingHandle || state.isDraggingObject) {
         if (window.pushHistoryState) window.pushHistoryState();
       }
@@ -564,7 +607,8 @@
 
       if (e.altKey) {
         var key = e.key.toUpperCase();
-        if (key === 'S') handlers.setTool('select');
+        if (key === 'H') handlers.setTool('pan');
+        else if (key === 'S') handlers.setTool('select');
         else if (key === 'R') handlers.setTool('rect');
         else if (key === 'U') handlers.setTool('rounded');
         else if (key === 'E') handlers.setTool('ellipse');

@@ -69,6 +69,7 @@
         buildCategoryHtml('file_history', '작업 히스토리', historyContent);
     } else if (cfg.currentTab === 'insert') {
       var shapeTools = [
+        '<button class="tool-btn ' + (cfg.currentTool==='pan'?'active':'') + '" onclick="setTool(\'pan\')"><span class="alt-badge">H</span>' + (icons.pan || '') + '<span class="tooltip-text">캔버스 화면 잡아서 밀기 (손/팬 도구 - H)</span></button>',
         '<button class="tool-btn ' + (cfg.currentTool==='select'?'active':'') + '" onclick="setTool(\'select\')"><span class="alt-badge">V</span>' + (icons.select || '') + '<span class="tooltip-text">선택 도구 (V)</span></button>',
         '<button class="tool-btn ' + (cfg.currentTool==='text'?'active':'') + '" onclick="setTool(\'text\')"><span class="alt-badge">T</span>' + (icons.addText || '') + '<span class="tooltip-text">텍스트 상자 도구 (T)</span></button>',
         '<button class="tool-btn ' + (cfg.currentTool==='point'?'active':'') + '" onclick="setTool(\'point\')"><span class="alt-badge">P</span>' + (icons.point || '') + '<span class="tooltip-text">점 도구 (P)</span></button>',

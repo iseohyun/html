@@ -2,6 +2,7 @@
   'use strict';
 
   var WebpointerIcons = {
+    pan: '<svg viewBox="0 0 24 24"><path d="M18 11V6a2 2 0 0 0-4 0v5-5a2 2 0 0 0-4 0v5-3a2 2 0 0 0-4 0v6a8 8 0 0 0 16 0v-3a2 2 0 0 0-4 0z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     select: '<svg viewBox="0 0 24 24"><path d="M3 3l7 18 3-7 7-3L3 3z"/></svg>',
     point: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="currentColor"/></svg>',
     line: '<svg viewBox="0 0 24 24"><line x1="4" y1="20" x2="20" y2="4" stroke="currentColor" stroke-width="2"/></svg>',
