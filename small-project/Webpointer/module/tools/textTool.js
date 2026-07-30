@@ -120,11 +120,19 @@
 
     state.typingSvgObj = targetSvgObj;
 
+    if (!document.getElementById('caretBlinkStyle')) {
+      var st = document.createElement('style');
+      st.id = 'caretBlinkStyle';
+      st.innerHTML = '@keyframes caretBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } } .blinking-caret { animation: caretBlink 0.85s infinite !important; }';
+      document.head.appendChild(st);
+    }
+
     var caretEl = document.createElementNS('http://www.w3.org/2000/svg', 'line');
     caretEl.setAttribute('id', 'canvasBlinkingCaret');
     caretEl.setAttribute('stroke', '#0284c7');
     caretEl.setAttribute('stroke-width', '2.5');
     caretEl.setAttribute('class', 'blinking-caret');
+    caretEl.style.cssText = 'animation: caretBlink 0.85s infinite !important;';
     if (uiGroup) uiGroup.appendChild(caretEl);
     state.typingCaretEl = caretEl;
 
@@ -144,8 +152,8 @@
       if (!state.typingSvgObj || !state.typingCaretEl) return;
       var textEl = state.typingSvgObj.el;
       var fontSize = parseInt(state.typingSvgObj.attrs.fontSize || 20, 10);
-      var fontBaselineY = state.typingSvgObj.attrs.y;
-      var baseX = state.typingSvgObj.attrs.x;
+      var fontBaselineY = state.typingSvgObj.attrs.y || 0;
+      var baseX = state.typingSvgObj.attrs.x || 0;
 
       var cx = baseX;
       var cy1 = fontBaselineY - (fontSize * 0.85);
@@ -157,21 +165,20 @@
           if (tspans && tspans.length > 0) {
             var lastIdx = tspans.length - 1;
             var lastTspan = tspans[lastIdx];
+            var lineY = fontBaselineY + (lastIdx * fontSize * (state.typingSvgObj.attrs.lineHeight || 1.2));
+            cy1 = lineY - (fontSize * 0.85);
+            cy2 = lineY + (fontSize * 0.15);
+
             var lastBBox = lastTspan.getBBox();
-            if (lastBBox && (lastBBox.x > 0 || lastBBox.y > 0)) {
-              var textWidth = (!lastTspan.textContent || lastTspan.textContent === '\u200B') ? 0 : lastBBox.width;
-              cx = lastBBox.x + textWidth + 1.5;
-              cy1 = fontBaselineY + (lastIdx * fontSize * 1.2) - (fontSize * 0.85);
-              cy2 = fontBaselineY + (lastIdx * fontSize * 1.2) + (fontSize * 0.15);
+            if (lastBBox && lastBBox.width > 0 && lastTspan.textContent && lastTspan.textContent !== '\u200B') {
+              cx = Math.round(lastBBox.x + lastBBox.width + 1.5);
             } else {
               cx = baseX;
-              cy1 = fontBaselineY + (lastIdx * fontSize * 1.2) - (fontSize * 0.85);
-              cy2 = fontBaselineY + (lastIdx * fontSize * 1.2) + (fontSize * 0.15);
             }
           } else {
             var bbox = textEl.getBBox();
-            if (bbox && bbox.width > 0 && (bbox.x > 0 || bbox.y > 0)) {
-              cx = bbox.x + bbox.width + 1.5;
+            if (bbox && bbox.width > 0) {
+              cx = Math.round(bbox.x + bbox.width + 1.5);
               cy1 = bbox.y;
               cy2 = bbox.y + bbox.height;
             }
@@ -184,6 +191,8 @@
       state.typingCaretEl.setAttribute('x2', cx);
       state.typingCaretEl.setAttribute('y2', cy2);
     }
+
+    updateCaretPosition();
 
     hiddenInput.addEventListener('input', function() {
       if (state.typingSvgObj) {
