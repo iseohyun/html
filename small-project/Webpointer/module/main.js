@@ -665,6 +665,16 @@
       finishMultiBezier();
     }
     cfg.currentTool = tool;
+    var mainSvg = document.getElementById('mainSvg');
+    if (mainSvg) {
+      if (tool === 'text') {
+        mainSvg.style.cursor = 'text';
+      } else if (tool === 'select') {
+        mainSvg.style.cursor = 'default';
+      } else {
+        mainSvg.style.cursor = 'crosshair';
+      }
+    }
     render.renderRibbon();
   };
 
@@ -1103,49 +1113,128 @@
   };
 
   window.addTextObject = function() {
-    console.log('[Webpointer Debug] addTextObject called');
-    var textStr = prompt('추가할 텍스트를 입력하세요:', '텍스트 상자');
-    if (!textStr || !textStr.trim()) return;
+    console.log('[Webpointer Debug] addTextObject called - switching to text tool mode');
+    setTool('text');
+  };
 
-    var objectsGroup = document.getElementById('objectsGroup');
-    var id = 'obj_' + (cfg.nextId++);
-    var el = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  function startInPlaceTextEdit(px, py, targetObj) {
+    finishTextEdit();
 
-    var cx = Math.round((cfg.SVG_WIDTH || 960) / 2);
-    var cy = Math.round((cfg.SVG_HEIGHT || 540) / 2);
+    var mainSvg = document.getElementById('mainSvg');
+    if (!mainSvg) return;
+    var canvasContainer = mainSvg.parentNode || document.body;
 
-    var textVal = textStr.trim();
-    var textColor = (cfg.strokeColor && cfg.strokeColor !== 'none') ? cfg.strokeColor : '#041e49';
+    var svgRect = mainSvg.getBoundingClientRect();
+    var containerRect = canvasContainer.getBoundingClientRect();
 
-    el.setAttribute('id', id);
-    el.setAttribute('x', cx);
-    el.setAttribute('y', cy);
-    el.setAttribute('fill', textColor);
-    el.setAttribute('font-size', '24');
-    el.setAttribute('font-family', 'sans-serif');
-    el.setAttribute('text-anchor', 'middle');
-    el.setAttribute('dominant-baseline', 'middle');
-    el.textContent = textVal;
+    var scaleX = svgRect.width / (cfg.SVG_WIDTH || 960);
+    var scaleY = svgRect.height / (cfg.SVG_HEIGHT || 540);
 
-    var attrs = {
-      x: cx,
-      y: cy,
-      text: textVal,
-      fill: textColor,
-      fontSize: 24
-    };
+    var posX = (svgRect.left - containerRect.left) + (px * scaleX);
+    var posY = (svgRect.top - containerRect.top) + (py * scaleY);
 
-    var objData = { id: id, type: 'text', parentId: null, attrs: attrs, el: el };
-    cfg.objectsMap.set(id, objData);
-    if (objectsGroup) objectsGroup.appendChild(el);
+    var textarea = document.createElement('textarea');
+    textarea.id = 'activeTextOverlay';
+    textarea.style.position = 'absolute';
+    textarea.style.left = posX + 'px';
+    textarea.style.top = posY + 'px';
+    textarea.style.fontSize = '20px';
+    textarea.style.fontFamily = 'sans-serif';
+    textarea.style.color = (cfg.strokeColor && cfg.strokeColor !== 'none') ? cfg.strokeColor : '#041e49';
+    textarea.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+    textarea.style.border = '2px dashed #0284c7';
+    textarea.style.borderRadius = '4px';
+    textarea.style.outline = 'none';
+    textarea.style.padding = '4px 8px';
+    textarea.style.zIndex = '1000';
+    textarea.style.minWidth = '140px';
+    textarea.style.minHeight = '50px';
+    textarea.style.resize = 'both';
+    textarea.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+    textarea.placeholder = '텍스트 입력 (Enter: 줄바꿈, Esc: 완료)';
 
-    cfg.selectedIds.clear();
-    cfg.selectedIds.add(id);
+    if (targetObj && targetObj.attrs) {
+      textarea.value = targetObj.attrs.text || '';
+      textarea.dataset.editingObjId = targetObj.id;
+    }
+
+    canvasContainer.appendChild(textarea);
+    textarea.focus();
+    if (textarea.value) textarea.select();
+
+    function onKeyDown(e) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        finishTextEdit(px, py);
+      }
+    }
+
+    function onBlur() {
+      finishTextEdit(px, py);
+    }
+
+    textarea.addEventListener('keydown', onKeyDown);
+    textarea.addEventListener('blur', onBlur);
+  }
+
+  function finishTextEdit(fallbackPx, fallbackPy) {
+    var textarea = document.getElementById('activeTextOverlay');
+    if (!textarea) return;
+
+    var textVal = textarea.value;
+    var editingObjId = textarea.dataset.editingObjId;
+
+    if (editingObjId) {
+      var obj = cfg.objectsMap.get(editingObjId);
+      if (obj) {
+        if (textVal.trim()) {
+          obj.attrs.text = textVal;
+          render.updateElementAttributes(obj);
+        } else {
+          if (obj.el && obj.el.parentNode) obj.el.parentNode.removeChild(obj.el);
+          cfg.objectsMap.delete(editingObjId);
+          cfg.selectedIds.delete(editingObjId);
+        }
+      }
+    } else if (textVal.trim()) {
+      var objectsGroup = document.getElementById('objectsGroup');
+      var id = 'obj_' + (cfg.nextId++);
+      var el = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+
+      var textColor = (cfg.strokeColor && cfg.strokeColor !== 'none') ? cfg.strokeColor : '#041e49';
+
+      el.setAttribute('id', id);
+      el.setAttribute('x', fallbackPx);
+      el.setAttribute('y', fallbackPy);
+      el.setAttribute('fill', textColor);
+      el.setAttribute('font-size', '20');
+      el.setAttribute('font-family', 'sans-serif');
+      el.setAttribute('dominant-baseline', 'alphabetic');
+
+      var attrs = {
+        x: fallbackPx,
+        y: fallbackPy,
+        text: textVal,
+        fill: textColor,
+        fontSize: 20
+      };
+
+      var objData = { id: id, type: 'text', parentId: null, attrs: attrs, el: el };
+      cfg.objectsMap.set(id, objData);
+      render.updateElementAttributes(objData);
+      if (objectsGroup) objectsGroup.appendChild(el);
+
+      cfg.selectedIds.clear();
+      cfg.selectedIds.add(id);
+    }
+
+    if (textarea.parentNode) textarea.parentNode.removeChild(textarea);
 
     render.updateDomTree();
     render.renderUI();
     render.renderRibbon();
-  };
+  }
 
   window.applyStyleToSelected = function() {
     console.log('[Webpointer Debug] applyStyleToSelected - selectedIds:', Array.from(cfg.selectedIds || []), 'strokeDashStyle:', cfg.strokeDashStyle, 'strokeDashArray:', cfg.strokeDashArray);
@@ -1417,6 +1506,12 @@
         }
         render.renderUI();
         render.renderRibbon();
+      } else if (cfg.currentTool === 'text') {
+        state.isDrawing = false;
+        startInPlaceTextEdit(coords.px, coords.py);
+        cfg.currentTool = 'select';
+        render.renderRibbon();
+        return;
       } else if (cfg.currentTool === 'point') {
         state.isDrawing = false;
         cfg.selectedIds.clear();
@@ -1448,10 +1543,30 @@
       }
     });
 
+    mainSvg.addEventListener('dblclick', function(e) {
+      var targetObj = e.target.closest('text');
+      if (!targetObj) {
+        var allObjs = Array.from(cfg.objectsMap.values());
+        var foundTextObj = allObjs.find(function(o) { return o.type === 'text' && (o.el === e.target || (o.el.contains && o.el.contains(e.target))); });
+        if (foundTextObj) targetObj = foundTextObj.el;
+      }
+      if (targetObj && cfg.objectsMap.has(targetObj.id)) {
+        var obj = cfg.objectsMap.get(targetObj.id);
+        if (obj && obj.type === 'text') {
+          startInPlaceTextEdit(obj.attrs.x, obj.attrs.y, obj);
+        }
+      }
+    });
+
     mainSvg.addEventListener('mousemove', function(e) {
       var coords = getStepCoords(e);
       if (statRaw) statRaw.textContent = '(' + coords.rawX + ', ' + coords.rawY + ')';
       if (statStep) statStep.textContent = 'Step (' + coords.stepX + ', ' + coords.stepY + ')';
+
+      if (cfg.currentTool === 'text') {
+        mainSvg.style.cursor = 'text';
+        return;
+      }
 
       // Hover Mouse Cursor Dynamic Feedback in Select Tool Mode
       if (cfg.currentTool === 'select' && !state.isDraggingHandle && !state.isDraggingObject) {

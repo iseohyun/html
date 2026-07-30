@@ -545,9 +545,29 @@
       } else if (obj.type === 'text') {
         obj.el.setAttribute('x', a.x);
         obj.el.setAttribute('y', a.y);
-        if (a.text !== undefined) obj.el.textContent = a.text;
         if (a.fontSize !== undefined) obj.el.setAttribute('font-size', a.fontSize);
         if (a.fill) obj.el.setAttribute('fill', a.fill);
+        obj.el.setAttribute('font-family', 'sans-serif');
+        obj.el.setAttribute('dominant-baseline', 'alphabetic');
+
+        var lines = (a.text || '').split('\n');
+        obj.el.innerHTML = '';
+        if (lines.length <= 1) {
+          obj.el.textContent = a.text || '';
+        } else {
+          var fontSize = parseInt(a.fontSize || 20, 10);
+          lines.forEach(function(lineStr, idx) {
+            var tspan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+            tspan.setAttribute('x', a.x);
+            if (idx === 0) {
+              tspan.setAttribute('dy', 0);
+            } else {
+              tspan.setAttribute('dy', (fontSize * 1.2) + 'px');
+            }
+            tspan.textContent = lineStr;
+            obj.el.appendChild(tspan);
+          });
+        }
       }
 
       // Sync Stroke Dash Array & Style from Object Attributes
