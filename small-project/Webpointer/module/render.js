@@ -494,11 +494,12 @@
 
         } else if (obj.type === 'bez3') {
           if (a.points && a.points.length > 0) {
-            // Render Vertex Handles (White)
+            // 1. Render All Vertex Handles (White)
             a.points.forEach(function(pt, idx) {
               self.createHandleNode(pt.px, pt.py, id, 'bez_vertex', idx, false);
             });
-            // Render 2 Control Handles for bez3 (Yellow)
+
+            // 2. Render Control Handles for ALL segments of bez3 (2 handles per segment: Auto/Reflected & Manual)
             if (a.points.length >= 2) {
               var B0 = a.points[0];
               var B1 = a.points[1];
@@ -507,11 +508,31 @@
               var b2x = a.c2x !== undefined ? a.c2x : B1.px;
               var b2y = a.c2y !== undefined ? a.c2y : Math.round((B0.py + B1.py) / 2 - 50);
 
+              // Segment 1 Control Handles (Yellow)
               self.createHandleNode(b1x, b1y, id, 'bez3_ctrl1', 1, true);
-              self.createHandleNode(b2x, b2y, id, 'bez3_ctrl2', 2, true);
+              self.createHandleNode(b2x, b2y, id, 'bez3_ctrl2', 1, true);
+
+              var gD3 = 'M ' + B0.px + ' ' + B0.py + ' L ' + b1x + ' ' + b1y + ' L ' + b2x + ' ' + b2y + ' L ' + B1.px + ' ' + B1.py;
+
+              var prevC2 = { x: b2x, y: b2y };
+              for (var sIdx = 2; sIdx < a.points.length; sIdx++) {
+                var vPrev = a.points[sIdx - 1];
+                var vCurr = a.points[sIdx];
+                // Handle 1 (Auto / Reflected from prevC2 across vPrev)
+                var autoC1x = 2 * vPrev.px - prevC2.x;
+                var autoC1y = 2 * vPrev.py - prevC2.y;
+                // Handle 2 (Manual / Midpoint or stored)
+                var manC2x = Math.round((vPrev.px + vCurr.px) / 2);
+                var manC2y = vPrev.py;
+
+                self.createHandleNode(autoC1x, autoC1y, id, 'bez3_auto_refl', sIdx, true);
+                self.createHandleNode(manC2x, manC2y, id, 'bez3_manual_ctrl2', sIdx, true);
+
+                gD3 += ' L ' + autoC1x + ' ' + autoC1y + ' L ' + manC2x + ' ' + manC2y + ' L ' + vCurr.px + ' ' + vCurr.py;
+                prevC2 = { x: manC2x, y: manC2y };
+              }
 
               var guideLine3 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-              var gD3 = 'M ' + B0.px + ' ' + B0.py + ' L ' + b1x + ' ' + b1y + ' L ' + b2x + ' ' + b2y + ' L ' + B1.px + ' ' + B1.py;
               guideLine3.setAttribute('d', gD3);
               guideLine3.setAttribute('stroke', '#0284c7');
               guideLine3.setAttribute('stroke-dasharray', '3,3');
