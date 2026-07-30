@@ -1224,8 +1224,8 @@
   window.setTextVerticalAlign = setTextVerticalAlign;
   window.setElementOpacity = setElementOpacity;
   window.setAlphaStepCount = setAlphaStepCount;
-  window.startHoldAlphaInput = startHoldAlphaInput;
-  window.endHoldAlphaInput = endHoldAlphaInput;
+  window.startHoldAlphaInput = function() {};
+  window.endHoldAlphaInput = function() {};
   function toggleGridSnap(enabled) {
     cfg.gridSnapEnabled = !!enabled;
     if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.renderGrid) {
