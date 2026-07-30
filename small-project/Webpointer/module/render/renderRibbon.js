@@ -351,26 +351,24 @@
         '</button>';
 
       var fontOptionsHtml =
-        '<div style="display:flex; flex-direction:row; align-items:center; gap:8px;">' +
-          '<div style="display:flex; flex-direction:column; gap:4px;">' +
-            '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
-              '<select onfocus="fetchLocalSystemFonts()" onchange="setTextFontFamily(this.value)" style="max-width:130px; padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px;">' +
-                fontOptionsStr +
-              '</select>' +
-              '<input type="number" min="8" max="200" value="' + curFontSize + '" oninput="setTextFontSize(this.value)" onchange="setTextFontSize(this.value)" style="width:45px; padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px; text-align:center;">' +
-              '<div style="width:1px; height:24px; background:#cbd5e1; margin:0 2px;"></div>' +
-              lineHeightBtnHtml +
-              strikethroughBtnHtml +
-            '</div>' +
-            '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
-              boldBtnHtml +
-              italicBtnHtml +
-              '<div style="width:1px; height:24px; background:#cbd5e1; margin:0 2px;"></div>' +
-              alignLeftBtnHtml +
-              alignCenterBtnHtml +
-              alignRightBtnHtml +
-              alignJustifyBtnHtml +
-            '</div>' +
+        '<div style="display:flex; flex-direction:column; gap:3px;">' +
+          '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
+            '<select onfocus="fetchLocalSystemFonts()" onchange="setTextFontFamily(this.value)" style="max-width:130px; padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px;">' +
+              fontOptionsStr +
+            '</select>' +
+            '<input type="number" min="8" max="200" value="' + curFontSize + '" oninput="setTextFontSize(this.value)" onchange="setTextFontSize(this.value)" style="width:45px; padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px; text-align:center;">' +
+          '</div>' +
+          '<div style="display:flex; flex-direction:row; align-items:center; gap:3px;">' +
+            boldBtnHtml +
+            italicBtnHtml +
+            strikethroughBtnHtml +
+            lineHeightBtnHtml +
+          '</div>' +
+          '<div style="display:flex; flex-direction:row; align-items:center; gap:3px;">' +
+            alignLeftBtnHtml +
+            alignCenterBtnHtml +
+            alignRightBtnHtml +
+            alignJustifyBtnHtml +
           '</div>' +
         '</div>';
 

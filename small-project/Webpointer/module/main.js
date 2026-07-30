@@ -76,7 +76,15 @@
       var coords = selection.getStepCoords(e);
 
       if (cfg.currentTool === 'text') {
-        textTool.startDirectCanvasTyping(coords.px, coords.py);
+        var clickedTextEl = e.target ? (e.target.closest('text') || (e.target.closest('tspan') ? e.target.closest('tspan').closest('text') : null)) : null;
+        if (clickedTextEl && cfg.objectsMap.has(clickedTextEl.id)) {
+          var existingObj = cfg.objectsMap.get(clickedTextEl.id);
+          cfg.selectedIds.clear();
+          cfg.selectedIds.add(existingObj.id);
+          textTool.startDirectCanvasTyping(existingObj.attrs.x, existingObj.attrs.y, existingObj);
+        } else {
+          textTool.startDirectCanvasTyping(coords.px, coords.py);
+        }
         return;
       }
 
@@ -361,15 +369,15 @@
 
     mainSvg.addEventListener('dblclick', function(e) {
       var targetObj = e.target.closest('text, tspan');
-      if (!targetObj) {
-        var allObjs = Array.from(cfg.objectsMap.values());
-        var foundTextObj = allObjs.find(function(o) { return o.type === 'text' && (o.el === e.target || (o.el.contains && o.el.contains(e.target))); });
-        if (foundTextObj) targetObj = foundTextObj.el;
-      }
-      if (targetObj && cfg.objectsMap.has(targetObj.id)) {
-        var obj = cfg.objectsMap.get(targetObj.id);
-        if (obj && obj.type === 'text') {
-          textTool.startDirectCanvasTyping(obj.attrs.x, obj.attrs.y, obj);
+      if (targetObj) {
+        if (targetObj.tagName.toLowerCase() === 'tspan') targetObj = targetObj.closest('text');
+        if (targetObj && cfg.objectsMap.has(targetObj.id)) {
+          var textObj = cfg.objectsMap.get(targetObj.id);
+          if (textObj) {
+            cfg.selectedIds.clear();
+            cfg.selectedIds.add(textObj.id);
+            textTool.startDirectCanvasTyping(textObj.attrs.x, textObj.attrs.y, textObj);
+          }
         }
       }
     });
@@ -386,6 +394,18 @@
 
       if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
         return;
+      }
+
+      if (e.key === 'F2') {
+        if (cfg.selectedIds.size === 1) {
+          var selId = Array.from(cfg.selectedIds)[0];
+          var selObj = cfg.objectsMap.get(selId);
+          if (selObj && selObj.type === 'text') {
+            e.preventDefault();
+            textTool.startDirectCanvasTyping(selObj.attrs.x, selObj.attrs.y, selObj);
+            return;
+          }
+        }
       }
 
       if (e.key === 'Alt') {
