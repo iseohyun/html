@@ -26,6 +26,8 @@
       setupKeyboardEvents();
       setupWindowResize();
 
+      if (window.pushHistoryState) window.pushHistoryState();
+
       var mainSvg = document.getElementById('mainSvg');
       if (mainSvg) mainSvg.style.cursor = 'default';
       console.log('[Webpointer Debug] Webpointer Application Initialized Successfully!');

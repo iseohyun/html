@@ -794,6 +794,7 @@
       window.WebpointerRender.renderRibbon();
     }
   }
+  window.switchTab = switchTab;
 
   function setActiveColorTarget(target) {
     cfg.activeColorTarget = target;
@@ -1412,14 +1413,7 @@
   }
 
   function undo() {
-    if (undoStack.length <= 1) {
-      if (undoStack.length === 1) {
-        var current = undoStack.pop();
-        redoStack.push(current);
-        restoreSnapshot(JSON.parse(JSON.stringify({ canvas: { width: cfg.SVG_WIDTH, height: cfg.SVG_HEIGHT, bgColor: cfg.canvasBgColor, gridSnapEnabled: cfg.gridSnapEnabled, gridStepSize: cfg.gridStepSize }, objects: [] })));
-      }
-      return;
-    }
+    if (undoStack.length <= 1) return;
     var currentSnap = undoStack.pop();
     redoStack.push(currentSnap);
     var prevSnap = undoStack[undoStack.length - 1];
