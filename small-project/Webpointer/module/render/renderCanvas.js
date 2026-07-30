@@ -428,45 +428,44 @@
     var gridGroup = document.getElementById('gridGroup');
     if (!gridGroup) return;
     gridGroup.innerHTML = '';
-
-    if (!cfg.gridSnapEnabled) {
-      gridGroup.style.display = 'none';
-      return;
-    }
     gridGroup.style.display = 'block';
 
     var w = cfg.SVG_WIDTH || 960;
     var h = cfg.SVG_HEIGHT || 540;
-    var stepsX = cfg.STEPS_X || 40;
-    var stepsY = cfg.STEPS_Y || 40;
+    var bgColor = cfg.canvasBgColor || '#ffffff';
 
     var bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    bgRect.setAttribute('x', '0');
+    bgRect.setAttribute('y', '0');
     bgRect.setAttribute('width', w);
     bgRect.setAttribute('height', h);
-    bgRect.setAttribute('fill', '#ffffff');
+    bgRect.setAttribute('fill', bgColor);
     gridGroup.appendChild(bgRect);
 
-    var stepW = w / stepsX;
-    var stepH = h / stepsY;
+    if (cfg.gridSnapEnabled) {
+      var stepSize = cfg.gridStepSize || 24;
 
-    for (var i = 0; i <= stepsX; i++) {
-      var x = i * stepW;
-      var lineX = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      lineX.setAttribute('x1', x); lineX.setAttribute('y1', 0);
-      lineX.setAttribute('x2', x); lineX.setAttribute('y2', h);
-      lineX.setAttribute('stroke', (i % 5 === 0) ? '#e2e8f0' : '#f1f5f9');
-      lineX.setAttribute('stroke-width', (i % 5 === 0) ? '1' : '0.5');
-      gridGroup.appendChild(lineX);
-    }
+      var countX = Math.floor(w / stepSize);
+      for (var i = 0; i <= countX; i++) {
+        var x = i * stepSize;
+        var lineX = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        lineX.setAttribute('x1', x); lineX.setAttribute('y1', 0);
+        lineX.setAttribute('x2', x); lineX.setAttribute('y2', h);
+        lineX.setAttribute('stroke', (i % 5 === 0) ? '#cbd5e1' : '#f1f5f9');
+        lineX.setAttribute('stroke-width', (i % 5 === 0) ? '1' : '0.5');
+        gridGroup.appendChild(lineX);
+      }
 
-    for (var j = 0; j <= stepsY; j++) {
-      var y = j * stepH;
-      var lineY = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      lineY.setAttribute('x1', 0); lineY.setAttribute('y1', y);
-      lineY.setAttribute('x2', w); lineY.setAttribute('y2', y);
-      lineY.setAttribute('stroke', (j % 5 === 0) ? '#e2e8f0' : '#f1f5f9');
-      lineY.setAttribute('stroke-width', (j % 5 === 0) ? '1' : '0.5');
-      gridGroup.appendChild(lineY);
+      var countY = Math.floor(h / stepSize);
+      for (var j = 0; j <= countY; j++) {
+        var y = j * stepSize;
+        var lineY = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        lineY.setAttribute('x1', 0); lineY.setAttribute('y1', y);
+        lineY.setAttribute('x2', w); lineY.setAttribute('y2', y);
+        lineY.setAttribute('stroke', (j % 5 === 0) ? '#cbd5e1' : '#f1f5f9');
+        lineY.setAttribute('stroke-width', (j % 5 === 0) ? '1' : '0.5');
+        gridGroup.appendChild(lineY);
+      }
     }
   }
 
