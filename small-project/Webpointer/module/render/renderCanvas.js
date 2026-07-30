@@ -429,6 +429,12 @@
     if (!gridGroup) return;
     gridGroup.innerHTML = '';
 
+    if (!cfg.gridSnapEnabled) {
+      gridGroup.style.display = 'none';
+      return;
+    }
+    gridGroup.style.display = 'block';
+
     var w = cfg.SVG_WIDTH || 960;
     var h = cfg.SVG_HEIGHT || 540;
     var stepsX = cfg.STEPS_X || 40;

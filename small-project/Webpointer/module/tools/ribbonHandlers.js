@@ -1278,6 +1278,83 @@
   window.setAlphaStepCount = setAlphaStepCount;
   window.startHoldAlphaInput = startHoldAlphaInput;
   window.endHoldAlphaInput = endHoldAlphaInput;
+  function toggleGridSnap(enabled) {
+    cfg.gridSnapEnabled = !!enabled;
+    if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.renderGrid) {
+      window.WebpointerRenderCanvas.renderGrid();
+    }
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+      window.WebpointerRender.renderRibbon();
+    }
+  }
+
+  function setGridDensity(val) {
+    cfg.gridDensity = val;
+    if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.renderGrid) {
+      window.WebpointerRenderCanvas.renderGrid();
+    }
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+      window.WebpointerRender.renderRibbon();
+    }
+  }
+
+  function setProximityThreshold(val) {
+    var num = parseInt(val, 10);
+    cfg.proximityThreshold = isNaN(num) ? 30 : num;
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+      window.WebpointerRender.renderRibbon();
+    }
+  }
+
+  function setDefaultShapeSize(val) {
+    var num = parseInt(val, 10);
+    cfg.defaultShapeSize = isNaN(num) ? 100 : num;
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+      window.WebpointerRender.renderRibbon();
+    }
+  }
+
+  function setCanvasRatio(val) {
+    cfg.canvasRatio = val;
+    var mainSvg = document.getElementById('mainSvg');
+    if (mainSvg) {
+      var parts = val.split('x');
+      if (parts.length === 2) {
+        var w = parseInt(parts[0], 10);
+        var h = parseInt(parts[1], 10);
+        if (!isNaN(w) && !isNaN(h)) {
+          cfg.SVG_WIDTH = w;
+          cfg.SVG_HEIGHT = h;
+          mainSvg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+        }
+      }
+    }
+    if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.renderGrid) {
+      window.WebpointerRenderCanvas.renderGrid();
+    }
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+      window.WebpointerRender.renderRibbon();
+    }
+  }
+
+  function setCanvasBgColor(val) {
+    cfg.canvasBgColor = val;
+    var mainSvg = document.getElementById('mainSvg');
+    if (mainSvg) {
+      mainSvg.style.backgroundColor = val;
+    }
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+      window.WebpointerRender.renderRibbon();
+    }
+  }
+
+  window.toggleGridSnap = toggleGridSnap;
+  window.setGridDensity = setGridDensity;
+  window.setProximityThreshold = setProximityThreshold;
+  window.setDefaultShapeSize = setDefaultShapeSize;
+  window.setCanvasRatio = setCanvasRatio;
+  window.setCanvasBgColor = setCanvasBgColor;
+
   window.setTextUnderlineStyle = setTextUnderlineStyle;
   window.setTextUnderlineOffset = setTextUnderlineOffset;
   window.setTextUnderlineWidth = setTextUnderlineWidth;
