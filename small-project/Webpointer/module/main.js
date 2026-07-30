@@ -92,16 +92,19 @@
     return '';
   }
 
-  // Calculate Distance from Point (px, py) to an Object
+  // Calculate Distance from Point (px, py) to an Object (High precision sampling)
   function getDistanceToObj(px, py, obj) {
     var a = obj.attrs;
-    if (obj.type === 'point' || obj.type === 'ellipse' || obj.type === 'arc') {
-      var dx = px - a.cx;
-      var dy = py - a.cy;
-      var distToCenter = Math.sqrt(dx * dx + dy * dy);
-      if (obj.type === 'point') return distToCenter;
+    if (obj.type === 'point') {
+      var dxP = px - a.cx;
+      var dyP = py - a.cy;
+      return Math.sqrt(dxP * dxP + dyP * dyP);
+    } else if (obj.type === 'ellipse' || obj.type === 'arc') {
+      var dxE = px - a.cx;
+      var dyE = py - a.cy;
+      var distCenter = Math.sqrt(dxE * dxE + dyE * dyE);
       var avgR = ((a.rx || 10) + (a.ry || 10)) / 2;
-      return Math.abs(distToCenter - avgR);
+      return Math.abs(distCenter - avgR);
     } else if (obj.type === 'line') {
       var x1 = a.x1, y1 = a.y1, x2 = a.x2, y2 = a.y2;
       var A = px - x1, B = py - y1, C = x2 - x1, D = y2 - y1;
@@ -116,25 +119,53 @@
       return Math.sqrt(dxL * dxL + dyL * dyL);
     } else if (obj.type === 'rect' || obj.type === 'rounded') {
       var rx1 = a.x, ry1 = a.y, rx2 = a.x + a.width, ry2 = a.y + a.height;
+      if (px >= rx1 && px <= rx2 && py >= ry1 && py <= ry2) {
+        return 0; // Click inside rectangle
+      }
       var dxR = Math.max(rx1 - px, 0, px - rx2);
       var dyR = Math.max(ry1 - py, 0, py - ry2);
       return Math.sqrt(dxR * dxR + dyR * dyR);
     } else if (obj.type === 'bez2' || obj.type === 'bez3') {
       var minD = Infinity;
-      if (a.points && a.points.length > 0) {
-        a.points.forEach(function(pt) {
-          var d = Math.sqrt((px - pt.px) * (px - pt.px) + (py - pt.py) * (py - pt.py));
-          if (d < minD) minD = d;
-        });
+      if (a.points && a.points.length >= 2) {
+        var P0 = a.points[0];
+        var P1 = a.points[1];
+        var cx = a.firstCtrl ? a.firstCtrl.cx : Math.round((P0.px + P1.px) / 2);
+        var cy = a.firstCtrl ? a.firstCtrl.cy : (Math.min(P0.py, P1.py) - 100);
+
+        // 1st segment sampling (20 samples)
+        for (var t = 0; t <= 1; t += 0.05) {
+          var sx = (1-t)*(1-t)*P0.px + 2*(1-t)*t*cx + t*t*P1.px;
+          var sy = (1-t)*(1-t)*P0.py + 2*(1-t)*t*cy + t*t*P1.py;
+          var dS = Math.sqrt((px - sx)*(px - sx) + (py - sy)*(py - sy));
+          if (dS < minD) minD = dS;
+        }
+
+        // Subsequent T segments sampling
+        var prevC = { x: cx, y: cy };
+        for (var k = 2; k < a.points.length; k++) {
+          var prevP = a.points[k-1];
+          var currP = a.points[k];
+          var reflX = 2 * prevP.px - prevC.x;
+          var reflY = 2 * prevP.py - prevC.y;
+          for (var t2 = 0; t2 <= 1; t2 += 0.05) {
+            var sx2 = (1-t2)*(1-t2)*prevP.px + 2*(1-t2)*t2*reflX + t2*t2*currP.px;
+            var sy2 = (1-t2)*(1-t2)*prevP.py + 2*(1-t2)*t2*reflY + t2*t2*currP.py;
+            var dS2 = Math.sqrt((px - sx2)*(px - sx2) + (py - sy2)*(py - sy2));
+            if (dS2 < minD) minD = dS2;
+          }
+          prevC = { x: reflX, y: reflY };
+        }
       } else {
-        var pts = [ {x: a.x1, y: a.y1}, {x: a.x2, y: a.y2} ];
-        if (a.cx !== undefined) pts.push({x: a.cx, y: a.cy});
-        if (a.c1x !== undefined) pts.push({x: a.c1x, y: a.c1y});
-        if (a.c2x !== undefined) pts.push({x: a.c2x, y: a.c2y});
-        pts.forEach(function(pt) {
-          var d = Math.sqrt((px - pt.x) * (px - pt.x) + (py - pt.y) * (py - pt.y));
-          if (d < minD) minD = d;
-        });
+        var x1b = a.x1 || 0, y1b = a.y1 || 0, x2b = a.x2 || 0, y2b = a.y2 || 0;
+        var cxb = a.cx !== undefined ? a.cx : Math.round((x1b + x2b)/2);
+        var cyb = a.cy !== undefined ? a.cy : (Math.min(y1b, y2b)-50);
+        for (var t3 = 0; t3 <= 1; t3 += 0.05) {
+          var sxb = (1-t3)*(1-t3)*x1b + 2*(1-t3)*t3*cxb + t3*t3*x2b;
+          var syb = (1-t3)*(1-t3)*y1b + 2*(1-t3)*t3*cyb + t3*t3*y2b;
+          var dSb = Math.sqrt((px - sxb)*(px - sxb) + (py - syb)*(py - syb));
+          if (dSb < minD) minD = dSb;
+        }
       }
       return minD;
     }
@@ -525,7 +556,7 @@
       if (statRaw) statRaw.textContent = '(' + coords.rawX + ', ' + coords.rawY + ')';
       if (statStep) statStep.textContent = 'Step (' + coords.stepX + ', ' + coords.stepY + ')';
 
-      // 1. Handle Node Dragging
+      // 1. Handle Node Dragging (Real-time Redraw)
       if (state.isDraggingHandle && state.activeHandleInfo) {
         var obj = cfg.objectsMap.get(state.activeHandleInfo.objId);
         if (obj) {
