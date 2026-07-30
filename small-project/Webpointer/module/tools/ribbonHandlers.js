@@ -308,8 +308,17 @@
   }
 
   function toggleCategoryCollapse(catId) {
-    cfg.collapsedCategories[catId] = !cfg.collapsedCategories[catId];
-    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+    if (!cfg.collapsedCategories || !(cfg.collapsedCategories instanceof Set)) {
+      cfg.collapsedCategories = new Set();
+    }
+    if (cfg.collapsedCategories.has(catId)) {
+      cfg.collapsedCategories.delete(catId);
+    } else {
+      cfg.collapsedCategories.add(catId);
+    }
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+      window.WebpointerRender.renderRibbon();
+    }
   }
 
   var default24Colors = [
