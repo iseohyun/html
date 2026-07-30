@@ -1,4 +1,6 @@
 const { test, expect } = require('@playwright/test');
+const fs = require('fs');
+const path = require('path');
 
 test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
   let pageErrors = [];
@@ -428,6 +430,30 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
       return obj && obj.el ? obj.el.getAttribute('clip-path') : null;
     }, rectObjId);
     expect(clipAttrReset).toBeNull();
+
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('TC17: SVG File Import & Parser Diagnostics Suite', async ({ page }) => {
+    const exampleSvgDir = path.join(__dirname, 'exampleSvg');
+    const svgFiles = fs.readdirSync(exampleSvgDir).filter(f => f.toLowerCase().endsWith('.svg'));
+    expect(svgFiles.length).toBeGreaterThanOrEqual(3);
+
+    for (const fileName of svgFiles) {
+      const filePath = path.join(exampleSvgDir, fileName);
+      const svgContent = fs.readFileSync(filePath, 'utf-8');
+
+      const importResult = await page.evaluate((content) => {
+        if (!window.WebpointerSVGImporter) return false;
+        var initCount = window.WebpointerConfig.objectsMap.size;
+        var success = window.WebpointerSVGImporter.importSVGContent(content);
+        var finalCount = window.WebpointerConfig.objectsMap.size;
+        return { success: success, addedCount: finalCount - initCount };
+      }, svgContent);
+
+      expect(importResult.success).toBe(true);
+      expect(importResult.addedCount).toBeGreaterThan(0);
+    }
 
     expect(pageErrors).toEqual([]);
   });

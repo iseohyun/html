@@ -1474,8 +1474,13 @@
       reader.onload = function(ev) {
         var content = ev.target.result;
         try {
-          if (file.name.endsWith('.svg')) {
-            alert('SVG 파일이 선택되었습니다. 프로젝트 JSON 파일 불러오기를 시도합니다.');
+          if (file.name.toLowerCase().endsWith('.svg')) {
+            pushHistoryState();
+            if (window.WebpointerSVGImporter) {
+              window.WebpointerSVGImporter.importSVGContent(content);
+            }
+            pushHistoryState();
+            alert('SVG 벡터 객체를 성공적으로 불러왔습니다!');
           } else {
             pushHistoryState();
             restoreSnapshot(content);
