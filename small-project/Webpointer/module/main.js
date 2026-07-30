@@ -927,10 +927,41 @@
     render.renderUI();
   };
 
+  window.setStrokeColor = function(val) {
+    cfg.strokeColor = val;
+    render.updateSvgDefs();
+    window.applyStyleToSelected();
+  };
+
+  window.setFillColor = function(val) {
+    cfg.fillColor = val;
+    window.applyStyleToSelected();
+  };
+
+  window.setStrokeWidth = function(val) {
+    cfg.strokeWidth = parseInt(val, 10) || 1;
+    window.applyStyleToSelected();
+  };
+
+  window.setStartMarker = function(val) {
+    cfg.startMarker = val;
+    window.applyStyleToSelected();
+  };
+
+  window.setEndMarker = function(val) {
+    cfg.endMarker = val;
+    window.applyStyleToSelected();
+  };
+
   window.applyStyleToSelected = function() {
     cfg.selectedIds.forEach(function(id) {
       var obj = cfg.objectsMap.get(id);
       if (!obj) return;
+      if (obj.attrs) {
+        obj.attrs.stroke = cfg.strokeColor;
+        obj.attrs.fill = cfg.fillColor;
+        obj.attrs.strokeWidth = cfg.strokeWidth;
+      }
       obj.el.setAttribute('stroke', cfg.strokeColor);
       obj.el.setAttribute('fill', cfg.fillColor);
       obj.el.setAttribute('stroke-width', cfg.strokeWidth);

@@ -215,15 +215,15 @@
         ribbonBar.innerHTML = 
           '<div class="ribbon-category">' +
             '<div class="category-grid" style="grid-template-columns: auto;">' +
-              '<div class="ribbon-control-item"><label>테두리 색상:</label><input type="color" value="' + cfg.strokeColor + '" onchange="strokeColor=this.value; updateSvgDefs(); applyStyleToSelected();"></div>' +
-              '<div class="ribbon-control-item"><label>채우기 색상:</label><input type="color" value="' + (cfg.fillColor.startsWith('#') ? cfg.fillColor : '#041e49') + '" onchange="fillColor=this.value; applyStyleToSelected();"></div>' +
-              '<div class="ribbon-control-item"><label>선 두께:</label><input type="number" min="1" max="20" value="' + cfg.strokeWidth + '" onchange="strokeWidth=parseInt(this.value); applyStyleToSelected();" style="width:55px;"></div>' +
+              '<div class="ribbon-control-item"><label>테두리 색상:</label><input type="color" value="' + cfg.strokeColor + '" oninput="setStrokeColor(this.value)" onchange="setStrokeColor(this.value)"></div>' +
+              '<div class="ribbon-control-item"><label>채우기 색상:</label><input type="color" value="' + (cfg.fillColor && cfg.fillColor.startsWith('#') ? cfg.fillColor : '#041e49') + '" oninput="setFillColor(this.value)" onchange="setFillColor(this.value)"></div>' +
+              '<div class="ribbon-control-item"><label>선 두께:</label><input type="number" min="1" max="20" value="' + cfg.strokeWidth + '" oninput="setStrokeWidth(this.value)" onchange="setStrokeWidth(this.value)" style="width:55px;"></div>' +
             '</div>' +
             '<div class="category-title">기본 스타일</div>' +
           '</div>' +
           '<div class="ribbon-category">' +
             '<div class="category-grid" style="grid-template-columns: auto 34px 34px;">' +
-              '<div class="ribbon-control-item" style="grid-row: 1 / span 3;"><label>시작 모양:</label><select onchange="startMarker=this.value; applyStyleToSelected();"><option value="none" ' + (cfg.startMarker==='none'?'selected':'') + '>없음</option><option value="arrow" ' + (cfg.startMarker==='arrow'?'selected':'') + '>화살표</option><option value="circle" ' + (cfg.startMarker==='circle'?'selected':'') + '>동그라미</option><option value="diamond" ' + (cfg.startMarker==='diamond'?'selected':'') + '>다이아몬드</option></select></div>' +
+              '<div class="ribbon-control-item" style="grid-row: 1 / span 3;"><label>시작 모양:</label><select onchange="setStartMarker(this.value)"><option value="none" ' + (cfg.startMarker==='none'?'selected':'') + '>없음</option><option value="arrow" ' + (cfg.startMarker==='arrow'?'selected':'') + '>화살표</option><option value="circle" ' + (cfg.startMarker==='circle'?'selected':'') + '>동그라미</option><option value="diamond" ' + (cfg.startMarker==='diamond'?'selected':'') + '>다이아몬드</option></select></div>' +
               '<button class="tool-btn" onclick="scaleMarker(\'start\', 1.25)" style="grid-row: 1;"><span class="alt-badge">+</span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span class="tooltip-text">시작모양 키우기</span></button>' +
               '<button class="tool-btn" onclick="scaleMarker(\'start\', 0.8)" style="grid-row: 2;"><span class="alt-badge">-</span><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg><span class="tooltip-text">시작모양 줄이기</span></button>' +
             '</div>' +
@@ -231,7 +231,7 @@
           '</div>' +
           '<div class="ribbon-category">' +
             '<div class="category-grid" style="grid-template-columns: auto 34px 34px;">' +
-              '<div class="ribbon-control-item" style="grid-row: 1 / span 3;"><label>끝 모양:</label><select onchange="endMarker=this.value; applyStyleToSelected();"><option value="none" ' + (cfg.endMarker==='none'?'selected':'') + '>없음</option><option value="arrow" ' + (cfg.endMarker==='arrow'?'selected':'') + '>화살표</option><option value="circle" ' + (cfg.endMarker==='circle'?'selected':'') + '>동그라미</option><option value="diamond" ' + (cfg.endMarker==='diamond'?'selected':'') + '>다이아몬드</option></select></div>' +
+              '<div class="ribbon-control-item" style="grid-row: 1 / span 3;"><label>끝 모양:</label><select onchange="setEndMarker(this.value)"><option value="none" ' + (cfg.endMarker==='none'?'selected':'') + '>없음</option><option value="arrow" ' + (cfg.endMarker==='arrow'?'selected':'') + '>화살표</option><option value="circle" ' + (cfg.endMarker==='circle'?'selected':'') + '>동그라미</option><option value="diamond" ' + (cfg.endMarker==='diamond'?'selected':'') + '>다이아몬드</option></select></div>' +
               '<button class="tool-btn" onclick="scaleMarker(\'end\', 1.25)" style="grid-row: 1;"><span class="alt-badge">+</span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span class="tooltip-text">끝모양 키우기</span></button>' +
               '<button class="tool-btn" onclick="scaleMarker(\'end\', 0.8)" style="grid-row: 2;"><span class="alt-badge">-</span><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg><span class="tooltip-text">끝모양 줄이기</span></button>' +
             '</div>' +
@@ -639,6 +639,11 @@
         domTree.appendChild(item);
       });
     }
+  };
+
+  // Expose global updateSvgDefs helper to guarantee global accessibility
+  window.updateSvgDefs = function() {
+    WebpointerRender.updateSvgDefs();
   };
 
   window.WebpointerRender = WebpointerRender;
