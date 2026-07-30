@@ -1,5 +1,14 @@
 # Webpointer Project Version History
 
+## [0.3.5] - 2026-07-30
+### Added & Updated
+- Completed Line Ends (`선 끝`) Category Redesign & Icon Alignment:
+  - Added new 2-row layout category **`선 끝` (Line Ends)**:
+    - **Row 1 (Top)**: Start Marker Options — 4×1 Left-facing Icons (←) | Vertical Divider `|` | 2×1 Start Fill Option (Solid/Hollow) | Vertical Divider `|` | 2×1 Start Size Scaling (`+`/`-`).
+    - **Row 2 (Bottom)**: End Marker Options — 4×1 Right-facing Icons (→) | Vertical Divider `|` | 2×1 End Fill Option (Solid/Hollow) | Vertical Divider `|` | 2×1 End Size Scaling (`+`/`-`).
+  - Added independent marker fill style properties (`startMarkerFillStyle` and `endMarkerFillStyle`) supporting solid filled vs hollow outlined marker ends.
+  - Reordered top menu tab buttons to: `삽입`, `그림 서식`, `글 서식`, `애니메이션`, `보기`.
+
 ## [0.3.4] - 2026-07-30
 ### Added & Updated
 - Updated default 24 color palette preset to custom user palette:
