@@ -106,13 +106,13 @@
           // Reference Point (refX) Calculation:
           // For Arrow: Start refX=1.5, End refX=8.5
           // For Circle & Diamond:
-          //   - If Solid: refX=5 (Center of shape)
-          //   - If Hollow: Start refX=9 (Right outer edge), End refX=1 (Left outer edge) so line stroke connects to outer edge without entering interior!
+          //   - If Hollow: Start refX=0, End refX=10 so marker center (5,5) aligns 100% PERFECTLY with control handle node (P1, P2)!
+          //   - If Solid: refX=5
           var refX = '5';
           if (type === 'arrow') {
             refX = pos === 'start' ? '1.5' : '8.5';
           } else if (fillStyle === 'hollow') {
-            refX = pos === 'start' ? '9' : '1';
+            refX = pos === 'start' ? '0' : '10';
           } else {
             refX = '5';
           }
