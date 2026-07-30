@@ -16,6 +16,19 @@
     return { x: cx + xRot, y: cy + yRot };
   }
 
+  // Get Outermost <g> Element for DOM Element
+  function getOutermostGroupEl(el) {
+    if (!el) return null;
+    var objectsGroup = document.getElementById('objectsGroup');
+    var current = el.parentElement;
+    var topG = null;
+    while (current && current !== objectsGroup && current.tagName && current.tagName.toLowerCase() === 'g') {
+      topG = current;
+      current = current.parentElement;
+    }
+    return topG;
+  }
+
   var WebpointerRender = {
     getArcPoint: getArcPoint,
 
@@ -127,18 +140,19 @@
           '<button class="tool-btn" onclick="arrangeOrder(\'front\')"><span class="alt-badge">R</span><svg viewBox="0 0 24 24"><rect x="4" y="4" width="10" height="10"/><rect x="10" y="10" width="10" height="10" fill="rgba(4,30,73,0.3)"/></svg><span class="tooltip-text">맨앞으로</span></button>'
         ];
 
-        // Group counts as 1 single top-level unit!
+        // Root Outermost Group Element counts as 1 single top-level unit!
         var topLevelUnits = new Set();
         var canUngroup = false;
 
         cfg.selectedIds.forEach(function(id) {
           var obj = cfg.objectsMap.get(id);
           if (obj) {
-            if (obj.parentId) {
-              topLevelUnits.add(obj.parentId);
+            var outerG = getOutermostGroupEl(obj.el);
+            if (outerG) {
+              topLevelUnits.add(outerG);
               canUngroup = true;
             } else {
-              topLevelUnits.add(id);
+              topLevelUnits.add(obj.el);
             }
           }
         });
