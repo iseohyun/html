@@ -69,7 +69,7 @@
       gridGroup.appendChild(gridPath);
     },
 
-    // Update SVG Defs for Markers (Circle & Diamond centered at refX=5, refY=5; Hollow markers use background mask to prevent line penetration)
+    // Update SVG Defs for Markers (100% Transparent fill="none" for hollow, edge refX connections prevent line penetration)
     updateSvgDefs: function() {
       var svgDefs = document.getElementById('svgDefs');
       if (!svgDefs) return;
@@ -83,12 +83,23 @@
           marker.setAttribute('markerUnits', 'userSpaceOnUse'); // Absolute canvas pixels - fixed size!
           marker.setAttribute('viewBox', '0 0 10 10');
 
-          // Reference points: Circle & Diamond use exact center (5, 5); Arrow uses tip (start=1.5, end=8.5)
+          var fillStyle = pos === 'start' ? (cfg.startMarkerFillStyle || 'solid') : (cfg.endMarkerFillStyle || 'solid');
+
+          // Reference Point (refX) Calculation:
+          // For Arrow: Start refX=1.5, End refX=8.5
+          // For Circle & Diamond:
+          //   - If Solid: refX=5 (Center of shape)
+          //   - If Hollow: Start refX=9 (Right outer edge), End refX=1 (Left outer edge) so line stroke connects to outer edge without entering interior!
+          var refX = '5';
           if (type === 'arrow') {
-            marker.setAttribute('refX', pos === 'start' ? '1.5' : '8.5');
+            refX = pos === 'start' ? '1.5' : '8.5';
+          } else if (fillStyle === 'hollow') {
+            refX = pos === 'start' ? '9' : '1';
           } else {
-            marker.setAttribute('refX', '5'); // Exact Center for Circle and Diamond!
+            refX = '5';
           }
+
+          marker.setAttribute('refX', refX);
           marker.setAttribute('refY', '5');
 
           var scale = pos === 'start' ? (cfg.startMarkerScale || 1) : (cfg.endMarkerScale || 1);
@@ -96,8 +107,6 @@
           marker.setAttribute('markerWidth', markerSize.toString());
           marker.setAttribute('markerHeight', markerSize.toString());
           marker.setAttribute('orient', 'auto');
-
-          var fillStyle = pos === 'start' ? (cfg.startMarkerFillStyle || 'solid') : (cfg.endMarkerFillStyle || 'solid');
 
           var pathD = '';
           if (type === 'arrow') {
@@ -108,30 +117,19 @@
             pathD = 'M 5 1 L 9 5 L 5 9 L 1 5 Z';
           }
 
-          if (fillStyle === 'hollow') {
-            // Layer 1: Background Masking Fill (Canvas Bg or #ffffff) to prevent line stroke penetration into hollow interior
-            var bgMask = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            bgMask.setAttribute('d', pathD);
-            bgMask.setAttribute('fill', cfg.canvasBgColor || '#ffffff');
-            bgMask.setAttribute('stroke', 'none');
-            marker.appendChild(bgMask);
+          var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          path.setAttribute('d', pathD);
 
-            // Layer 2: Hollow Outlined Stroke
-            var strokePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            strokePath.setAttribute('d', pathD);
-            strokePath.setAttribute('fill', 'none');
-            strokePath.setAttribute('stroke', cfg.strokeColor || '#041e49');
-            strokePath.setAttribute('stroke-width', '1.5');
-            marker.appendChild(strokePath);
+          if (fillStyle === 'hollow') {
+            path.setAttribute('fill', 'none'); // 100% True Transparent!
+            path.setAttribute('stroke', cfg.strokeColor || '#041e49');
+            path.setAttribute('stroke-width', '1.5');
           } else {
-            // Solid Filled Marker
-            var solidPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            solidPath.setAttribute('d', pathD);
-            solidPath.setAttribute('fill', cfg.strokeColor || '#041e49');
-            solidPath.setAttribute('stroke', 'none');
-            marker.appendChild(solidPath);
+            path.setAttribute('fill', cfg.strokeColor || '#041e49');
+            path.setAttribute('stroke', 'none');
           }
 
+          marker.appendChild(path);
           svgDefs.appendChild(marker);
         });
       });
