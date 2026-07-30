@@ -447,6 +447,15 @@ body.show-alt-keybinds .webpointer-app .alt-badge {
   font-weight: 700 !important;
 }
 
+@keyframes caretBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.webpointer-app .blinking-caret {
+  animation: caretBlink 0.85s infinite !important;
+}
+
 /* Control Handles styling */
 .webpointer-app .handle-node {
   cursor: pointer !important;

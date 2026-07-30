@@ -1117,51 +1117,22 @@
     setTool('text');
   };
 
-  function startInPlaceTextEdit(px, py, targetObj) {
-    finishTextEdit();
+  function startDirectCanvasTyping(px, py, targetObj) {
+    finishDirectCanvasTyping();
 
     var mainSvg = document.getElementById('mainSvg');
-    if (!mainSvg) return;
+    var objectsGroup = document.getElementById('objectsGroup');
+    var uiGroup = document.getElementById('uiGroup');
+    if (!mainSvg || !objectsGroup) return;
 
-    var svgRect = mainSvg.getBoundingClientRect();
-    var scaleX = svgRect.width / (cfg.SVG_WIDTH || 960);
-    var scaleY = svgRect.height / (cfg.SVG_HEIGHT || 540);
-
-    var posX = window.scrollX + svgRect.left + (px * scaleX);
-    var posY = window.scrollY + svgRect.top + (py * scaleY);
-
-    var textarea = document.createElement('textarea');
-    textarea.id = 'activeTextOverlay';
-    textarea.style.position = 'absolute';
-    textarea.style.left = posX + 'px';
-    textarea.style.top = posY + 'px';
-    textarea.style.fontSize = '18px';
-    textarea.style.fontFamily = 'sans-serif';
-    textarea.style.color = (cfg.strokeColor && cfg.strokeColor !== 'none') ? cfg.strokeColor : '#041e49';
-    textarea.style.backgroundColor = '#ffffff';
-    textarea.style.border = '2.5px solid #0284c7';
-    textarea.style.borderRadius = '6px';
-    textarea.style.outline = 'none';
-    textarea.style.padding = '8px 10px';
-    textarea.style.zIndex = '99999';
-    textarea.style.minWidth = '220px';
-    textarea.style.minHeight = '65px';
-    textarea.style.resize = 'both';
-    textarea.style.boxShadow = '0 6px 24px rgba(2, 132, 199, 0.35)';
-    textarea.style.caretColor = '#0284c7';
-    textarea.placeholder = '텍스트 입력... (Enter: 줄바꿈, Esc: 완료)';
-
+    var textColor = (cfg.strokeColor && cfg.strokeColor !== 'none') ? cfg.strokeColor : '#041e49';
     var targetSvgObj = null;
 
     if (targetObj && targetObj.attrs) {
-      textarea.value = targetObj.attrs.text || '';
-      textarea.dataset.editingObjId = targetObj.id;
       targetSvgObj = targetObj;
     } else {
-      var objectsGroup = document.getElementById('objectsGroup');
       var id = 'obj_' + (cfg.nextId++);
       var el = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      var textColor = (cfg.strokeColor && cfg.strokeColor !== 'none') ? cfg.strokeColor : '#041e49';
 
       el.setAttribute('id', id);
       el.setAttribute('x', px);
@@ -1182,84 +1153,130 @@
       targetSvgObj = { id: id, type: 'text', parentId: null, attrs: attrs, el: el };
       cfg.objectsMap.set(id, targetSvgObj);
       render.updateElementAttributes(targetSvgObj);
-      if (objectsGroup) objectsGroup.appendChild(el);
-      textarea.dataset.editingObjId = id;
+      objectsGroup.appendChild(el);
     }
 
-    document.body.appendChild(textarea);
+    state.typingSvgObj = targetSvgObj;
 
-    ['mousedown', 'mouseup', 'click', 'dblclick'].forEach(function(evtName) {
-      textarea.addEventListener(evtName, function(e) {
-        e.stopPropagation();
-      });
-    });
+    var caretEl = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    caretEl.setAttribute('id', 'canvasBlinkingCaret');
+    caretEl.setAttribute('stroke', '#0284c7');
+    caretEl.setAttribute('stroke-width', '2.5');
+    caretEl.setAttribute('class', 'blinking-caret');
+    if (uiGroup) uiGroup.appendChild(caretEl);
+    state.typingCaretEl = caretEl;
 
-    textarea.addEventListener('input', function() {
-      if (targetSvgObj && targetSvgObj.attrs) {
-        targetSvgObj.attrs.text = textarea.value;
-        render.updateElementAttributes(targetSvgObj);
+    var hiddenInput = document.createElement('textarea');
+    hiddenInput.id = 'hiddenCanvasInput';
+    hiddenInput.style.position = 'fixed';
+    hiddenInput.style.left = '-9999px';
+    hiddenInput.style.top = '-9999px';
+    hiddenInput.style.opacity = '0';
+    hiddenInput.style.width = '1px';
+    hiddenInput.style.height = '1px';
+    hiddenInput.style.zIndex = '-1';
+    hiddenInput.value = targetSvgObj.attrs.text || '';
+    document.body.appendChild(hiddenInput);
+
+    function updateCaretPosition() {
+      if (!state.typingSvgObj || !state.typingCaretEl) return;
+      var textEl = state.typingSvgObj.el;
+      var fontSize = parseInt(state.typingSvgObj.attrs.fontSize || 20, 10);
+      var fontBaselineY = state.typingSvgObj.attrs.y;
+
+      var cx = state.typingSvgObj.attrs.x;
+      var cy1 = fontBaselineY - (fontSize * 0.85);
+      var cy2 = fontBaselineY + (fontSize * 0.15);
+
+      try {
+        if (textEl && textEl.textContent.length > 0) {
+          var bbox = textEl.getBBox();
+          if (bbox && bbox.width > 0) {
+            var tspans = textEl.querySelectorAll('tspan');
+            if (tspans && tspans.length > 1) {
+              var lastTspan = tspans[tspans.length - 1];
+              var lastBBox = lastTspan.getBBox();
+              cx = lastBBox.x + lastBBox.width + 1.5;
+              cy1 = lastBBox.y;
+              cy2 = lastBBox.y + (fontSize * 1.1);
+            } else {
+              cx = bbox.x + bbox.width + 1.5;
+              cy1 = bbox.y;
+              cy2 = bbox.y + bbox.height;
+            }
+          }
+        }
+      } catch(err) {}
+
+      state.typingCaretEl.setAttribute('x1', cx);
+      state.typingCaretEl.setAttribute('y1', cy1);
+      state.typingCaretEl.setAttribute('x2', cx);
+      state.typingCaretEl.setAttribute('y2', cy2);
+    }
+
+    hiddenInput.addEventListener('input', function() {
+      if (state.typingSvgObj) {
+        state.typingSvgObj.attrs.text = hiddenInput.value;
+        render.updateElementAttributes(state.typingSvgObj);
+        updateCaretPosition();
       }
     });
 
-    textarea.addEventListener('keydown', function(e) {
+    hiddenInput.addEventListener('keydown', function(e) {
       e.stopPropagation();
       if (e.key === 'Escape') {
         e.preventDefault();
-        finishTextEdit();
+        finishDirectCanvasTyping();
       }
     });
 
     setTimeout(function() {
-      var el = document.getElementById('activeTextOverlay');
-      if (el) {
-        el.focus();
-        if (el.value) el.select();
+      if (document.getElementById('hiddenCanvasInput')) {
+        hiddenInput.focus();
+        updateCaretPosition();
       }
     }, 50);
 
     setTimeout(function() {
-      var el = document.getElementById('activeTextOverlay');
-      if (el) {
-        el.addEventListener('blur', function() {
-          finishTextEdit();
+      if (document.getElementById('hiddenCanvasInput')) {
+        hiddenInput.addEventListener('blur', function() {
+          finishDirectCanvasTyping();
         });
       }
-    }, 200);
+    }, 250);
   }
 
-  function finishTextEdit() {
-    var textarea = document.getElementById('activeTextOverlay');
-    if (!textarea) return;
+  function finishDirectCanvasTyping() {
+    var hiddenInput = document.getElementById('hiddenCanvasInput');
+    if (hiddenInput && hiddenInput.dataset.isFinishing === 'true') return;
+    if (hiddenInput) hiddenInput.dataset.isFinishing = 'true';
 
-    if (textarea.dataset.isFinishing === 'true') return;
-    textarea.dataset.isFinishing = 'true';
+    var caretEl = document.getElementById('canvasBlinkingCaret');
+    if (caretEl && caretEl.parentNode) {
+      caretEl.parentNode.removeChild(caretEl);
+    }
+    state.typingCaretEl = null;
 
-    var textVal = textarea.value;
-    var editingObjId = textarea.dataset.editingObjId;
-
-    if (editingObjId) {
-      var obj = cfg.objectsMap.get(editingObjId);
-      if (obj) {
-        if (textVal.trim()) {
-          obj.attrs.text = textVal;
-          render.updateElementAttributes(obj);
-          cfg.selectedIds.clear();
-          cfg.selectedIds.add(obj.id);
-        } else {
-          if (obj.el && obj.el.parentNode) obj.el.parentNode.removeChild(obj.el);
-          cfg.objectsMap.delete(editingObjId);
-          cfg.selectedIds.delete(editingObjId);
+    if (state.typingSvgObj) {
+      var textVal = (state.typingSvgObj.attrs.text || '').trim();
+      if (!textVal) {
+        if (state.typingSvgObj.el && state.typingSvgObj.el.parentNode) {
+          state.typingSvgObj.el.parentNode.removeChild(state.typingSvgObj.el);
         }
+        cfg.objectsMap.delete(state.typingSvgObj.id);
+        cfg.selectedIds.delete(state.typingSvgObj.id);
+      } else {
+        cfg.selectedIds.clear();
+        cfg.selectedIds.add(state.typingSvgObj.id);
       }
+      state.typingSvgObj = null;
     }
 
     try {
-      if (textarea && textarea.parentNode && textarea.parentNode.contains(textarea)) {
-        textarea.parentNode.removeChild(textarea);
+      if (hiddenInput && hiddenInput.parentNode && hiddenInput.parentNode.contains(hiddenInput)) {
+        hiddenInput.parentNode.removeChild(hiddenInput);
       }
-    } catch (e) {
-      console.warn('[Webpointer Debug] Safe textarea removal caught:', e);
-    }
+    } catch(e) {}
 
     render.updateDomTree();
     render.renderUI();
@@ -1538,7 +1555,7 @@
         render.renderRibbon();
       } else if (cfg.currentTool === 'text') {
         state.isDrawing = false;
-        startInPlaceTextEdit(coords.px, coords.py);
+        startDirectCanvasTyping(coords.px, coords.py);
         cfg.currentTool = 'select';
         render.renderRibbon();
         return;
@@ -1583,7 +1600,7 @@
       if (targetObj && cfg.objectsMap.has(targetObj.id)) {
         var obj = cfg.objectsMap.get(targetObj.id);
         if (obj && obj.type === 'text') {
-          startInPlaceTextEdit(obj.attrs.x, obj.attrs.y, obj);
+          startDirectCanvasTyping(obj.attrs.x, obj.attrs.y, obj);
         }
       }
     });
