@@ -1,5 +1,15 @@
 # Webpointer Project Version History
 
+## [0.3.0] - 2026-07-30
+### Added
+- Completed Precision Geometric Boundary Alignment Engine:
+  - Supports 6-way geometric alignment (Align Left, Right, Top, Bottom, H-Center, V-Center).
+  - Align Left / Right / Top / Bottom matches outermost geometric bounds ($X_{\min}, X_{\max}, Y_{\min}, Y_{\max}$).
+  - Align H-Center uses the horizontal center of the **leftmost selected unit** as the reference axis.
+  - Align V-Center uses the vertical center of the **topmost selected unit** as the reference axis.
+  - Full support for top-level group unit boundary calculations and shift operations.
+- Updated [`IMPLEMENTATION.md`](file:///c:/git/html/small-project/Webpointer/IMPLEMENTATION.md) Section 4 with complete alignment specifications.
+
 ## [0.2.1] - 2026-07-30
 ### Added
 - Completed Ctrl + Click Object/Group Deselection (Toggle OFF) System:
