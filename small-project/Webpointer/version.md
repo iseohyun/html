@@ -1,5 +1,11 @@
 # Webpointer Project Version History
 
+## [0.2.1] - 2026-07-30
+### Added
+- Completed Ctrl + Click Object/Group Deselection (Toggle OFF) System:
+  - Supports clicking already selected objects or groups with `Ctrl` key pressed to deselect (toggle off) specific items.
+- Updated [`IMPLEMENTATION.md`](file:///c:/git/html/small-project/Webpointer/IMPLEMENTATION.md) with comprehensive Hierarchical Multi-Level Grouping & Ctrl Deselection technical specifications.
+
 ## [0.2.0] - 2026-07-30
 ### Added
 - Completed Hierarchical Multi-Level Grouping & Step-by-Step Ungrouping System:
