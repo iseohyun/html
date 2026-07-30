@@ -52,5 +52,29 @@
     nextId: 1
   };
 
+  var WebpointerState = {
+    isDrawingNewObject: false,
+    drawStartCoords: null,
+    activeNewObj: null,
+
+    isDraggingHandle: false,
+    activeHandleInfo: null,
+
+    isDraggingObject: false,
+    dragStartCoords: null,
+    initialObjAttrsMap: new Map(),
+
+    isMarqueeSelecting: false,
+    marqueeStartCoords: null,
+
+    isMultiBezierActive: false,
+    bezierPoints: [],
+    activeBezierObj: null,
+
+    typingSvgObj: null,
+    typingCaretEl: null
+  };
+
   window.WebpointerConfig = WebpointerConfig;
+  window.WebpointerState = WebpointerState;
 })();

@@ -1,33 +1,48 @@
 (function(window) {
   'use strict';
 
-  var cfg = window.WebpointerConfig;
-  var state = window.WebpointerState;
-  var render = window.WebpointerRender;
-  var objects = window.WebpointerObjects;
-  var selection = window.WebpointerSelection;
-  var bezier = window.WebpointerBezier;
-  var textTool = window.WebpointerTextTool;
-  var handlers = window.WebpointerHandlers;
-
-  document.addEventListener('DOMContentLoaded', function() {
-    initApp();
-  });
+  function getCfg() { return window.WebpointerConfig; }
+  function getState() { return window.WebpointerState; }
+  function getRender() { return window.WebpointerRender; }
+  function getObjects() { return window.WebpointerObjects; }
+  function getSelection() { return window.WebpointerSelection; }
+  function getBezier() { return window.WebpointerBezier; }
+  function getTextTool() { return window.WebpointerTextTool; }
+  function getHandlers() { return window.WebpointerHandlers; }
 
   function initApp() {
-    render.renderGrid();
-    render.updateSvgDefs();
-    render.renderRibbon();
-    setupTabSwitching();
-    setupMouseEvents();
-    setupKeyboardEvents();
-    setupWindowResize();
+    console.log('[Webpointer Debug] Initializing Webpointer Application...');
+    try {
+      var r = getRender();
+      if (!r) {
+        console.error('[Webpointer Error] window.WebpointerRender is missing!');
+        return;
+      }
+      r.renderGrid();
+      r.updateSvgDefs();
+      r.renderRibbon();
+      setupTabSwitching();
+      setupMouseEvents();
+      setupKeyboardEvents();
+      setupWindowResize();
 
-    var mainSvg = document.getElementById('mainSvg');
-    if (mainSvg) mainSvg.style.cursor = 'default';
+      var mainSvg = document.getElementById('mainSvg');
+      if (mainSvg) mainSvg.style.cursor = 'default';
+      console.log('[Webpointer Debug] Webpointer Application Initialized Successfully!');
+    } catch (err) {
+      console.error('[Webpointer Error] Failed during initApp:', err);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+  } else {
+    initApp();
   }
 
   function setupTabSwitching() {
+    var cfg = getCfg();
+    var render = getRender();
     var tabContainer = document.querySelector('.ribbon-tabs');
     if (!tabContainer) return;
     tabContainer.addEventListener('click', function(e) {
@@ -45,6 +60,15 @@
   }
 
   function setupMouseEvents() {
+    var cfg = getCfg();
+    var state = getState();
+    var render = getRender();
+    var objects = getObjects();
+    var selection = getSelection();
+    var bezier = getBezier();
+    var textTool = getTextTool();
+    var handlers = getHandlers();
+
     var mainSvg = document.getElementById('mainSvg');
     var statRaw = document.getElementById('statRaw');
     var statStep = document.getElementById('statStep');
@@ -357,6 +381,13 @@
 
   function setupKeyboardEvents() {
     window.addEventListener('keydown', function(e) {
+      var cfg = getCfg();
+      var state = getState();
+      var render = getRender();
+      var bezier = getBezier();
+      var textTool = getTextTool();
+      var handlers = getHandlers();
+
       if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
         return;
       }
@@ -413,8 +444,11 @@
 
   function setupWindowResize() {
     window.addEventListener('resize', function() {
-      render.renderGrid();
-      render.renderUI();
+      var render = getRender();
+      if (render) {
+        render.renderGrid();
+        render.renderUI();
+      }
     });
   }
 })(window);
