@@ -1231,6 +1231,9 @@
     var textarea = document.getElementById('activeTextOverlay');
     if (!textarea) return;
 
+    if (textarea.dataset.isFinishing === 'true') return;
+    textarea.dataset.isFinishing = 'true';
+
     var textVal = textarea.value;
     var editingObjId = textarea.dataset.editingObjId;
 
@@ -1250,7 +1253,13 @@
       }
     }
 
-    if (textarea.parentNode) textarea.parentNode.removeChild(textarea);
+    try {
+      if (textarea && textarea.parentNode && textarea.parentNode.contains(textarea)) {
+        textarea.parentNode.removeChild(textarea);
+      }
+    } catch (e) {
+      console.warn('[Webpointer Debug] Safe textarea removal caught:', e);
+    }
 
     render.updateDomTree();
     render.renderUI();
