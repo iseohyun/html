@@ -212,19 +212,32 @@
         ];
 
         // Conditional Grouping & Ungrouping Ribbon Tools
-        var selectedTopUnits = getSelectedTopUnits();
-        var canGroup = selectedTopUnits.length >= 2;
-        var canUngroup = selectedTopUnits.some(function(unit) {
-          return unit.isGroup;
+        var topLevelUnits = new Set();
+        var canUngroup = false;
+
+        (cfg.selectedIds || new Set()).forEach(function(id) {
+          var obj = cfg.objectsMap.get(id);
+          if (obj && obj.el) {
+            var outerG = getOutermostGroupEl(obj.el);
+            if (outerG) {
+              topLevelUnits.add(outerG);
+              canUngroup = true;
+            } else {
+              topLevelUnits.add(obj.el);
+            }
+          }
         });
+
+        var selectedTopCount = topLevelUnits.size;
+        var canGroup = selectedTopCount >= 2;
+        var canAlign2 = selectedTopCount >= 2;
+        var canAlign3 = selectedTopCount >= 3;
+        var canTransform = (cfg.selectedIds || new Set()).size >= 1;
 
         var groupTools = [
           '<button class="tool-btn ' + (canGroup ? '' : 'disabled') + '" ' + (canGroup ? 'onclick="groupSelected()"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">G</span><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" stroke-dasharray="3,3"/><rect x="6" y="6" width="6" height="6"/><rect x="12" y="12" width="6" height="6"/></svg><span class="tooltip-text">' + (canGroup ? '그룹화 (<g>)' : '그룹화 (독립 단위 2개 이상 선택 필요)') + '</span></button>',
           '<button class="tool-btn ' + (canUngroup ? '' : 'disabled') + '" ' + (canUngroup ? 'onclick="ungroupSelected()"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">U</span><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" stroke-dasharray="2,2"/><rect x="13" y="13" width="8" height="8" stroke-dasharray="2,2"/></svg><span class="tooltip-text">' + (canUngroup ? '그룹 해제' : '그룹 해제 (그룹 객체 선택 필요)') + '</span></button>'
         ];
-
-        var canAlign2 = selectedTopUnits.length >= 2;
-        var canAlign3 = selectedTopUnits.length >= 3;
 
         var alignTools = [
           '<button class="tool-btn ' + (canAlign2 ? '' : 'disabled') + '" ' + (canAlign2 ? 'onclick="alignSelected(\'left\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">Alt+L</span><svg viewBox="0 0 24 24"><path d="M4 2v20M8 6h12v4H8zM8 14h8v4H8z"/></svg><span class="tooltip-text">' + (canAlign2 ? '왼쪽 정렬' : '왼쪽 정렬 (독립 단위 2개 이상 필요)') + '</span></button>',
@@ -236,8 +249,6 @@
           '<button class="tool-btn ' + (canAlign3 ? '' : 'disabled') + '" ' + (canAlign3 ? 'onclick="alignSelected(\'hspace\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">Alt+H</span><svg viewBox="0 0 24 24"><path d="M2 2v20M22 2v20M6 6h3v12H6zM15 6h3v12h-3z"/></svg><span class="tooltip-text">' + (canAlign3 ? '가로 간격 동일하게' : '가로 간격 동일하게 (독립 단위 3개 이상 필요)') + '</span></button>',
           '<button class="tool-btn ' + (canAlign3 ? '' : 'disabled') + '" ' + (canAlign3 ? 'onclick="alignSelected(\'vspace\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">Alt+V</span><svg viewBox="0 0 24 24"><path d="M2 2h20M2 22h20M6 6h12v3H6zM6 15h12v3H6z"/></svg><span class="tooltip-text">' + (canAlign3 ? '세로 간격 동일하게' : '세로 간격 동일하게 (독립 단위 3개 이상 필요)') + '</span></button>'
         ];
-
-        var canTransform = selectedTopUnits.length >= 1;
 
         var transformTools = [
           '<button class="tool-btn ' + (canTransform ? '' : 'disabled') + '" ' + (canTransform ? 'onclick="transformSelected(\'flipH\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">F</span><svg viewBox="0 0 24 24"><path d="M12 3v18M16 6l5 6-5 6V6zM8 6L3 12l5 6V6z"/></svg><span class="tooltip-text">' + (canTransform ? '좌우 대칭' : '좌우 대칭 (객체 선택 필요)') + '</span></button>',
