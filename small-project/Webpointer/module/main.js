@@ -1102,6 +1102,51 @@
     render.renderRibbon();
   };
 
+  window.addTextObject = function() {
+    console.log('[Webpointer Debug] addTextObject called');
+    var textStr = prompt('추가할 텍스트를 입력하세요:', '텍스트 상자');
+    if (!textStr || !textStr.trim()) return;
+
+    var objectsGroup = document.getElementById('objectsGroup');
+    var id = 'obj_' + (cfg.nextId++);
+    var el = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+
+    var cx = Math.round((cfg.SVG_WIDTH || 960) / 2);
+    var cy = Math.round((cfg.SVG_HEIGHT || 540) / 2);
+
+    var textVal = textStr.trim();
+    var textColor = (cfg.strokeColor && cfg.strokeColor !== 'none') ? cfg.strokeColor : '#041e49';
+
+    el.setAttribute('id', id);
+    el.setAttribute('x', cx);
+    el.setAttribute('y', cy);
+    el.setAttribute('fill', textColor);
+    el.setAttribute('font-size', '24');
+    el.setAttribute('font-family', 'sans-serif');
+    el.setAttribute('text-anchor', 'middle');
+    el.setAttribute('dominant-baseline', 'middle');
+    el.textContent = textVal;
+
+    var attrs = {
+      x: cx,
+      y: cy,
+      text: textVal,
+      fill: textColor,
+      fontSize: 24
+    };
+
+    var objData = { id: id, type: 'text', parentId: null, attrs: attrs, el: el };
+    cfg.objectsMap.set(id, objData);
+    if (objectsGroup) objectsGroup.appendChild(el);
+
+    cfg.selectedIds.clear();
+    cfg.selectedIds.add(id);
+
+    render.updateDomTree();
+    render.renderUI();
+    render.renderRibbon();
+  };
+
   window.applyStyleToSelected = function() {
     console.log('[Webpointer Debug] applyStyleToSelected - selectedIds:', Array.from(cfg.selectedIds || []), 'strokeDashStyle:', cfg.strokeDashStyle, 'strokeDashArray:', cfg.strokeDashArray);
     cfg.selectedIds.forEach(function(id) {

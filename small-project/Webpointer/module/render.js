@@ -542,6 +542,12 @@
         } else if (obj.type === 'bez3') {
           obj.el.setAttribute('d', 'M ' + a.x1 + ' ' + a.y1 + ' C ' + a.c1x + ' ' + a.c1y + ', ' + a.c2x + ' ' + a.c2y + ', ' + a.x2 + ' ' + a.y2);
         }
+      } else if (obj.type === 'text') {
+        obj.el.setAttribute('x', a.x);
+        obj.el.setAttribute('y', a.y);
+        if (a.text !== undefined) obj.el.textContent = a.text;
+        if (a.fontSize !== undefined) obj.el.setAttribute('font-size', a.fontSize);
+        if (a.fill) obj.el.setAttribute('fill', a.fill);
       }
 
       // Sync Stroke Dash Array & Style from Object Attributes
