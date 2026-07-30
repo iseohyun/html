@@ -148,6 +148,83 @@
     hiddenInput.value = targetSvgObj.attrs.text || '';
     document.body.appendChild(hiddenInput);
 
+    function updateTextSelectionHighlight() {
+      var oldGroup = document.getElementById('canvasTextSelectionGroup');
+      if (oldGroup && oldGroup.parentNode) oldGroup.parentNode.removeChild(oldGroup);
+
+      if (!hiddenInput || !state.typingSvgObj || !uiGroup) return;
+
+      var selStart = hiddenInput.selectionStart;
+      var selEnd = hiddenInput.selectionEnd;
+
+      if (selStart === undefined || selEnd === undefined || selStart >= selEnd) return;
+
+      var textEl = state.typingSvgObj.el;
+      if (!textEl) return;
+
+      var highlightGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      highlightGroup.setAttribute('id', 'canvasTextSelectionGroup');
+
+      var totalChars = 0;
+      var tspans = textEl.querySelectorAll('tspan');
+
+      try {
+        if (tspans && tspans.length > 0) {
+          tspans.forEach(function(tspan) {
+            var content = tspan.textContent || '';
+            if (content === '\u200B') content = '';
+            var len = content.length;
+            var lineStart = totalChars;
+            var lineEnd = totalChars + len;
+
+            var overlapStart = Math.max(selStart, lineStart);
+            var overlapEnd = Math.min(selEnd, lineEnd);
+
+            if (overlapStart < overlapEnd && tspan.getExtentOfChar) {
+              for (var chIdx = overlapStart - lineStart; chIdx < overlapEnd - lineStart; chIdx++) {
+                try {
+                  var ext = tspan.getExtentOfChar(chIdx);
+                  if (ext && ext.width > 0 && ext.height > 0) {
+                    var rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    rect.setAttribute('x', Math.round(ext.x));
+                    rect.setAttribute('y', Math.round(ext.y));
+                    rect.setAttribute('width', Math.round(ext.width));
+                    rect.setAttribute('height', Math.round(ext.height));
+                    rect.setAttribute('fill', '#3b82f6');
+                    rect.setAttribute('fill-opacity', '0.35');
+                    highlightGroup.appendChild(rect);
+                  }
+                } catch(e) {}
+              }
+            }
+            totalChars += (len + 1);
+          });
+        } else if (textEl.getExtentOfChar) {
+          for (var i = selStart; i < selEnd; i++) {
+            try {
+              var ext = textEl.getExtentOfChar(i);
+              if (ext && ext.width > 0 && ext.height > 0) {
+                var rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('x', Math.round(ext.x));
+                rect.setAttribute('y', Math.round(ext.y));
+                rect.setAttribute('width', Math.round(ext.width));
+                rect.setAttribute('height', Math.round(ext.height));
+                rect.setAttribute('fill', '#3b82f6');
+                rect.setAttribute('fill-opacity', '0.35');
+                highlightGroup.appendChild(rect);
+              }
+            } catch(e) {}
+          }
+        }
+      } catch(err) {}
+
+      if (caretEl && caretEl.parentNode === uiGroup) {
+        uiGroup.insertBefore(highlightGroup, caretEl);
+      } else {
+        uiGroup.appendChild(highlightGroup);
+      }
+    }
+
     function updateCaretPosition() {
       if (!state.typingSvgObj || !state.typingCaretEl) return;
       var textEl = state.typingSvgObj.el;
@@ -161,17 +238,51 @@
 
       try {
         if (textEl) {
+          var caretPos = hiddenInput.selectionDirection === 'backward' ? hiddenInput.selectionStart : hiddenInput.selectionEnd;
+          if (caretPos === undefined) caretPos = (hiddenInput.value || '').length;
+
           var tspans = textEl.querySelectorAll('tspan');
           if (tspans && tspans.length > 0) {
-            var lastIdx = tspans.length - 1;
-            var lastTspan = tspans[lastIdx];
-            var lineY = fontBaselineY + (lastIdx * fontSize * (state.typingSvgObj.attrs.lineHeight || 1.2));
+            var accumChars = 0;
+            var targetTspan = tspans[0];
+            var targetLineIdx = 0;
+            var chIdxInLine = caretPos;
+
+            for (var l = 0; l < tspans.length; l++) {
+              var content = tspans[l].textContent || '';
+              if (content === '\u200B') content = '';
+              var lineLen = content.length;
+
+              if (caretPos <= accumChars + lineLen || l === tspans.length - 1) {
+                targetTspan = tspans[l];
+                targetLineIdx = l;
+                chIdxInLine = Math.max(0, Math.min(lineLen, caretPos - accumChars));
+                break;
+              }
+              accumChars += (lineLen + 1);
+            }
+
+            var lineY = fontBaselineY + (targetLineIdx * fontSize * (state.typingSvgObj.attrs.lineHeight || 1.2));
             cy1 = lineY - (fontSize * 0.85);
             cy2 = lineY + (fontSize * 0.15);
 
-            var lastBBox = lastTspan.getBBox();
-            if (lastBBox && lastBBox.width > 0 && lastTspan.textContent && lastTspan.textContent !== '\u200B') {
-              cx = Math.round(lastBBox.x + lastBBox.width + 1.5);
+            if (targetTspan && targetTspan.getExtentOfChar) {
+              if (chIdxInLine > 0) {
+                var ext = targetTspan.getExtentOfChar(chIdxInLine - 1);
+                if (ext && ext.width > 0) {
+                  cx = Math.round(ext.x + ext.width + 1);
+                } else {
+                  var bbox = targetTspan.getBBox();
+                  cx = (bbox && bbox.width > 0) ? Math.round(bbox.x + bbox.width + 1) : baseX;
+                }
+              } else {
+                var ext0 = targetTspan.getExtentOfChar(0);
+                if (ext0 && ext0.width > 0) {
+                  cx = Math.round(ext0.x);
+                } else {
+                  cx = baseX;
+                }
+              }
             } else {
               cx = baseX;
             }
@@ -193,6 +304,7 @@
     }
 
     updateCaretPosition();
+    updateTextSelectionHighlight();
 
     hiddenInput.addEventListener('input', function() {
       if (state.typingSvgObj) {
@@ -201,14 +313,26 @@
           window.WebpointerRender.updateElementAttributes(state.typingSvgObj);
         }
         updateCaretPosition();
+        updateTextSelectionHighlight();
       }
     });
+
+    function syncSelection() {
+      updateCaretPosition();
+      updateTextSelectionHighlight();
+    }
+
+    hiddenInput.addEventListener('keyup', syncSelection);
+    hiddenInput.addEventListener('click', syncSelection);
+    hiddenInput.addEventListener('select', syncSelection);
 
     hiddenInput.addEventListener('keydown', function(e) {
       e.stopPropagation();
       if (e.key === 'Escape') {
         e.preventDefault();
         finishDirectCanvasTyping();
+      } else {
+        setTimeout(syncSelection, 10);
       }
     });
 
@@ -216,6 +340,7 @@
       if (document.getElementById('hiddenCanvasInput')) {
         hiddenInput.focus();
         updateCaretPosition();
+        updateTextSelectionHighlight();
       }
     }, 50);
 
@@ -238,6 +363,11 @@
       caretEl.parentNode.removeChild(caretEl);
     }
     state.typingCaretEl = null;
+
+    var selGroup = document.getElementById('canvasTextSelectionGroup');
+    if (selGroup && selGroup.parentNode) {
+      selGroup.parentNode.removeChild(selGroup);
+    }
 
     if (state.typingSvgObj) {
       var textVal = (state.typingSvgObj.attrs.text || '').trim();
