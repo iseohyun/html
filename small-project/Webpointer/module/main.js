@@ -111,6 +111,18 @@
         });
       }
     }
+
+    if (cfg.selectedIds.size === 1) {
+      var selId = Array.from(cfg.selectedIds)[0];
+      var selObj = cfg.objectsMap.get(selId);
+      if (selObj && selObj.attrs) {
+        if (selObj.attrs.strokeDashStyle) cfg.strokeDashStyle = selObj.attrs.strokeDashStyle;
+        if (selObj.attrs.strokeDashArray) cfg.strokeDashArray = selObj.attrs.strokeDashArray;
+        if (selObj.attrs.strokeWidth) cfg.strokeWidth = selObj.attrs.strokeWidth;
+        if (selObj.attrs.stroke) cfg.strokeColor = selObj.attrs.stroke;
+        if (selObj.attrs.fill) cfg.fillColor = selObj.attrs.fill;
+      }
+    }
   }
 
   // Build Continuous Bezier SVG Path Data String ("M 50 150 Q 125 50, 200 150 T 350 150 T 500 150")
@@ -965,6 +977,9 @@
   window.setStrokeDashArray = function(pattern) {
     console.log('[Webpointer Debug] setStrokeDashArray called:', pattern);
     cfg.strokeDashArray = pattern;
+    if (pattern && pattern.trim() !== '') {
+      cfg.strokeDashStyle = 'dashed';
+    }
     window.applyStyleToSelected();
   };
 
