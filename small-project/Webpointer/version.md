@@ -1,5 +1,17 @@
 # Webpointer Project Version History
 
+## [0.4.4] - 2026-07-30
+### Refactored & Improved
+- Full Role-Based Modular Refactoring:
+  - Decomposed 1,920-line monolithic `main.js` and 950-line `render.js` into clean, specialized ES/browser modules.
+  - Created `core/objects.js` for SVG object data model creation, mutation, bounds, rotation, and flipping.
+  - Created `core/selection.js` for single/multi/group selection, marquee selection, and proximity detection.
+  - Created `core/bezier.js` for 2-point and 3-point Bezier curve mathematics and control point reflections.
+  - Created `tools/textTool.js` for direct in-canvas text typing and blinking caret bar management.
+  - Created `tools/ribbonHandlers.js` for style mutations, stroke Cap/Join, markers, and palette import modal.
+  - Created `render/renderRibbon.js` and `render/renderCanvas.js` for clean UI DOM and SVG canvas rendering.
+  - Streamlined `main.js` as an explicit event-listener capture entry point.
+
 ## [0.4.3] - 2026-07-30
 ### Fixed & Improved
 - Text Selection Bounding Box Accuracy & Handle Removal:
