@@ -70,8 +70,6 @@
     var handlers = getHandlers();
 
     var mainSvg = document.getElementById('mainSvg');
-    var statRaw = document.getElementById('statRaw');
-    var statStep = document.getElementById('statStep');
     if (!mainSvg) return;
 
     mainSvg.addEventListener('mousedown', function(e) {
@@ -180,8 +178,6 @@
 
     mainSvg.addEventListener('mousemove', function(e) {
       var coords = selection.getStepCoords(e);
-      if (statRaw) statRaw.textContent = '(' + coords.rawX + ', ' + coords.rawY + ')';
-      if (statStep) statStep.textContent = 'Step (' + coords.stepX + ', ' + coords.stepY + ')';
 
       if (cfg.currentTool === 'text') {
         mainSvg.style.cursor = 'text';

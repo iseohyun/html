@@ -377,26 +377,7 @@
     });
   }
 
-  function updateDomTree() {
-    var domTree = document.getElementById('domTree');
-    if (!domTree) return;
-    domTree.innerHTML = '';
-    cfg.objectsMap.forEach(function(obj, id) {
-      var item = document.createElement('div');
-      item.className = 'tree-item ' + (cfg.selectedIds.has(id) ? 'selected' : '');
-      item.textContent = '<' + obj.type + '> #' + id + (obj.parentId ? ' [Group: ' + obj.parentId + ']' : '');
-      item.onclick = function(e) {
-        if (window.WebpointerSelection && window.WebpointerSelection.selectObjectWithGroup) {
-          window.WebpointerSelection.selectObjectWithGroup(id, e.ctrlKey);
-          renderUI();
-          if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
-            window.WebpointerRender.renderRibbon();
-          }
-        }
-      };
-      domTree.appendChild(item);
-    });
-  }
+  function updateDomTree() {}
 
   window.WebpointerRenderCanvas = {
     updateElementAttributes: updateElementAttributes,

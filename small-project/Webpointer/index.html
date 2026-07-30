@@ -32,19 +32,7 @@
           box-sizing: border-box;
         }
         .webpointer-app * { box-sizing: border-box; }
-        .webpointer-app .header-bar {
-          display: flex; align-items: center; justify-content: space-between;
-          padding: 8px 14px; background: rgba(30, 41, 59, 0.95);
-          border: 1px solid #334155; border-radius: 8px;
-        }
-        .webpointer-app .header-left { display: flex; align-items: center; gap: 10px; }
-        .webpointer-app .header-left a { display: flex; align-items: center; transition: transform 0.2s; }
-        .webpointer-app .header-left a:hover { transform: scale(1.1); }
-        .webpointer-app .header-title {
-          font-size: 1.15rem; font-weight: 700;
-          background: linear-gradient(135deg, #38bdf8, #818cf8);
-          -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
+
         .webpointer-app .menu-bar {
           width: 100% !important; background-color: #e2e8f0 !important;
           border: 1px solid #cbd5e1 !important; border-bottom: 1px solid #cbd5e1 !important;
@@ -137,30 +125,7 @@
           box-shadow: 0 0 6px rgba(0,0,0,0.4) !important;
           z-index: 10 !important;
         }
-        .webpointer-app .content-area { display: grid !important; grid-template-columns: 1fr 260px !important; gap: 12px !important; }
-        @media (max-width: 960px) { .webpointer-app .content-area { grid-template-columns: 1fr !important; } }
-        .webpointer-app .svg-wrapper {
-          position: relative !important; width: 100% !important; aspect-ratio: 16 / 9 !important;
-          background: #020617 !important; border: 1px solid #334155 !important; border-radius: 8px !important;
-          overflow: hidden !important; box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 4px 12px rgba(0, 0, 0, 0.5) !important;
-        }
-        .webpointer-app svg#mainSvg { width: 100% !important; height: 100% !important; display: block !important; }
-        .webpointer-app .inspector-panel {
-          background: rgba(30, 41, 59, 0.95) !important; border: 1px solid #334155 !important;
-          border-radius: 8px !important; padding: 12px !important; display: flex !important;
-          flex-direction: column !important; gap: 12px !important; font-size: 0.85rem !important;
-        }
-        .webpointer-app .inspector-title { font-weight: 700 !important; color: #38bdf8 !important; border-bottom: 1px solid #334155 !important; padding-bottom: 6px !important; }
-        .webpointer-app .stat-row { display: flex !important; justify-content: space-between !important; font-family: monospace !important; }
-        .webpointer-app .stat-label { color: #94a3b8 !important; }
-        .webpointer-app .stat-val { font-weight: 600 !important; color: #38bdf8 !important; }
-        .webpointer-app .tree-box {
-          background: #020617 !important; border: 1px solid #334155 !important; border-radius: 6px !important;
-          padding: 6px !important; height: 180px !important; overflow-y: auto !important; font-family: monospace !important; font-size: 0.75rem !important;
-        }
-        .webpointer-app .tree-item { padding: 3px 6px !important; cursor: pointer !important; border-radius: 3px !important; }
-        .webpointer-app .tree-item:hover { background: rgba(56, 189, 248, 0.15) !important; }
-        .webpointer-app .tree-item.selected { background: rgba(56, 189, 248, 0.3) !important; color: #38bdf8 !important; font-weight: 700 !important; }
+        .webpointer-app .content-area { display: block !important; width: 100% !important; }
         .webpointer-app .handle-node { cursor: pointer !important; transition: r 0.15s ease !important; }
         .webpointer-app .handle-node:hover { r: 6 !important; stroke-width: 2.5 !important; }
 
@@ -209,18 +174,7 @@
         };
       </script>
 
-      <!-- Header Bar -->
-      <div class="header-bar">
-        <div class="header-left">
-          <a href="/" title="메인으로 이동">
-            <img src="/source/icon_seohyun.svg" style="width:1.8em; height:1.8em;" alt="Home">
-          </a>
-          <h1 class="header-title">Webpointer Vector CAD Editor</h1>
-        </div>
-        <div style="font-size: 0.8rem; color: #94a3b8;">
-          Alt 키로 단축키 및 툴팁 힌트 노출
-        </div>
-      </div>
+
 
       <!-- === Menu Bar (Gray Background, Width 100%) === -->
       <div class="menu-bar">
@@ -236,7 +190,7 @@
         <!-- Injected dynamically via JS -->
       </div>
 
-      <!-- Content Area: SVG Canvas & Inspector -->
+      <!-- Content Area: SVG Canvas -->
       <div class="content-area">
         <div class="svg-wrapper" id="svgWrapper">
           <svg id="mainSvg" viewBox="0 0 960 540">
@@ -249,27 +203,9 @@
             <g id="uiGroup"></g>
           </svg>
         </div>
-
-        <!-- Inspector Panel -->
-        <div class="inspector-panel">
-          <div class="inspector-title">📊 실시간 좌표 & 상태</div>
-          <div class="stat-row">
-            <span class="stat-label">입력 (Raw):</span>
-            <span class="stat-val" id="statRaw">(0, 0)</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-label">스냅 (Step):</span>
-            <span class="stat-val" id="statStep">Step (0, 0)</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-label">선택 개수:</span>
-            <span class="stat-val" id="statSelected">0개</span>
-          </div>
-
-          <div class="inspector-title">🌳 SVG DOM 계층 트리 (&lt;g&gt;)</div>
-          <div class="tree-box" id="domTree"></div>
-        </div>
       </div>
+
+
     </div>
   </article>
 
