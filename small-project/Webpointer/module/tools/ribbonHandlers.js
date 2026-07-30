@@ -27,9 +27,33 @@
   }
 
   function applyStyleToSelected() {
+    var objectsGroup = document.getElementById('objectsGroup');
+    var targetShapes = [];
+    var standaloneTexts = [];
+
     cfg.selectedIds.forEach(function(id) {
       var obj = cfg.objectsMap.get(id);
       if (!obj) return;
+
+      var members = [obj];
+      if (obj.parentId) {
+        members = [];
+        cfg.objectsMap.forEach(function(o) {
+          if (o.parentId === obj.parentId) members.push(o);
+        });
+      }
+
+      var hasShapeInGroup = members.some(function(m) { return m.type !== 'text'; });
+      members.forEach(function(m) {
+        if (m.type !== 'text') {
+          if (targetShapes.indexOf(m) === -1) targetShapes.push(m);
+        } else if (!hasShapeInGroup) {
+          if (standaloneTexts.indexOf(m) === -1) standaloneTexts.push(m);
+        }
+      });
+    });
+
+    targetShapes.forEach(function(obj) {
       if (obj.attrs) {
         obj.attrs.stroke = cfg.strokeColor;
         obj.attrs.fill = cfg.fillColor;
@@ -41,6 +65,51 @@
       }
       if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
         window.WebpointerRender.updateElementAttributes(obj);
+      }
+    });
+
+    standaloneTexts.forEach(function(textObj) {
+      var bounds = window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(textObj) : null;
+      if (!bounds) return;
+
+      var rectX = Math.round(bounds.minX - 8);
+      var rectY = Math.round(bounds.minY - 8);
+      var rectW = Math.max(20, Math.round(bounds.maxX - bounds.minX + 16));
+      var rectH = Math.max(20, Math.round(bounds.maxY - bounds.minY + 16));
+
+      var shapeId = 'obj_' + (cfg.nextId++);
+      var el = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+
+      var groupId = textObj.parentId || ('group_' + (cfg.nextId++));
+      textObj.parentId = groupId;
+
+      var attrs = {
+        x: rectX,
+        y: rectY,
+        width: rectW,
+        height: rectH,
+        rx: 10,
+        stroke: cfg.strokeColor || '#041e49',
+        fill: cfg.fillColor || 'none',
+        strokeWidth: cfg.strokeWidth || 2,
+        strokeDashStyle: cfg.strokeDashStyle || 'solid',
+        strokeDashArray: cfg.strokeDashArray || '6,6',
+        strokeCap: cfg.strokeCap || 'butt',
+        strokeJoin: cfg.strokeJoin || 'miter'
+      };
+
+      var newShapeObj = { id: shapeId, type: 'rounded', parentId: groupId, attrs: attrs, el: el };
+      cfg.objectsMap.set(shapeId, newShapeObj);
+      cfg.selectedIds.add(shapeId);
+
+      if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+        window.WebpointerRender.updateElementAttributes(newShapeObj);
+      }
+
+      if (objectsGroup && textObj.el) {
+        objectsGroup.insertBefore(el, textObj.el);
+      } else if (objectsGroup) {
+        objectsGroup.appendChild(el);
       }
     });
   }
@@ -188,9 +257,23 @@
   function applyPaletteColor(hex) {
     if (cfg.currentTab === 'text') {
       var target = cfg.activeTextColorTarget || 'text';
+      var textObjs = [];
       cfg.selectedIds.forEach(function(id) {
         var obj = cfg.objectsMap.get(id);
-        if (obj && obj.type === 'text' && obj.attrs) {
+        if (!obj) return;
+        if (obj.type === 'text') {
+          if (textObjs.indexOf(obj) === -1) textObjs.push(obj);
+        } else if (obj.parentId) {
+          cfg.objectsMap.forEach(function(o) {
+            if (o.parentId === obj.parentId && o.type === 'text') {
+              if (textObjs.indexOf(o) === -1) textObjs.push(o);
+            }
+          });
+        }
+      });
+
+      textObjs.forEach(function(obj) {
+        if (obj && obj.attrs) {
           if (target === 'text') {
             obj.attrs.fill = hex;
           } else {
@@ -244,9 +327,23 @@
   }
 
   function applyTextStyleToSelected() {
+    var textObjs = [];
     cfg.selectedIds.forEach(function(id) {
       var obj = cfg.objectsMap.get(id);
-      if (obj && obj.type === 'text' && obj.attrs) {
+      if (!obj) return;
+      if (obj.type === 'text') {
+        if (textObjs.indexOf(obj) === -1) textObjs.push(obj);
+      } else if (obj.parentId) {
+        cfg.objectsMap.forEach(function(o) {
+          if (o.parentId === obj.parentId && o.type === 'text') {
+            if (textObjs.indexOf(o) === -1) textObjs.push(o);
+          }
+        });
+      }
+    });
+
+    textObjs.forEach(function(obj) {
+      if (obj && obj.attrs) {
         obj.attrs.fontFamily = cfg.fontFamily;
         obj.attrs.fontSize = cfg.fontSize;
         obj.attrs.fontWeight = cfg.fontWeight;

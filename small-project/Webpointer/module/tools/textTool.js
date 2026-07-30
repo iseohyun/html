@@ -98,7 +98,19 @@
         textAnchor: tAnchor
       };
 
-      targetSvgObj = { id: id, type: 'text', parentId: null, attrs: attrs, el: el };
+      var parentGroup = null;
+      if (cfg.selectedIds && cfg.selectedIds.size === 1) {
+        var selId = Array.from(cfg.selectedIds)[0];
+        var parentShape = cfg.objectsMap.get(selId);
+        if (parentShape && parentShape.type !== 'text') {
+          if (!parentShape.parentId) {
+            parentShape.parentId = 'group_' + (cfg.nextId++);
+          }
+          parentGroup = parentShape.parentId;
+        }
+      }
+
+      targetSvgObj = { id: id, type: 'text', parentId: parentGroup, attrs: attrs, el: el };
       cfg.objectsMap.set(id, targetSvgObj);
       if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
         window.WebpointerRender.updateElementAttributes(targetSvgObj);
