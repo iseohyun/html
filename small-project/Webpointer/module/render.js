@@ -29,6 +29,13 @@
     return topG;
   }
 
+  // Default 24 Harmonious User Palette Fallback Colors
+  var default24Colors = [
+    "#2aa314", "#14a36a", "#1471a3", "#2314a3", "#8e14a3", "#a3144d", "#a34614", "#95a314",
+    "#ef4444", "#f97316", "#f59e0b", "#84cc16", "#10b981", "#06b6d4", "#3b82f6", "#6366f1",
+    "#8b5cf6", "#ec4899", "#f43f5e", "#64748b", "#0284c7", "#38bdf8", "#fbbf24", "#a855f7"
+  ];
+
   var WebpointerRender = {
     getArcPoint: getArcPoint,
 
@@ -212,47 +219,67 @@
             '<div class="category-title">캔버스 화면 설정</div>' +
           '</div>';
       } else if (cfg.currentTab === 'style') {
-        var swatches = cfg.customPalette || [];
-        var swatchChipsHtml = '';
-        swatches.slice(0, 32).forEach(function(colorHex) {
-          swatchChipsHtml += '<div class="palette-swatch-chip" style="width:14px; height:14px; min-width:14px; min-height:14px; border-radius:3px; background:' + colorHex + '; border:1px solid #cbd5e1; cursor:pointer;" onclick="applyPaletteColor(\'' + colorHex + '\')" title="' + colorHex + '"></div>';
-        });
+        var userColors = (cfg.customPalette || []).slice();
+        while (userColors.length < 24) {
+          userColors.push(default24Colors[userColors.length % default24Colors.length]);
+        }
 
-        var targetOption = cfg.activeColorTarget || 'stroke';
+        // Build 27-slot Seamless 9x3 Swatch Grid (Slots 9=White, 18=Black, 27=Transparent 'none')
+        var swatchGridHtml = '<div style="display:grid; grid-template-columns:repeat(9, 24px); grid-template-rows:repeat(3, 24px); gap:0; border:1px solid #cbd5e1; border-radius:4px; overflow:hidden; margin:0; padding:0;">';
+        var userIdx = 0;
+
+        for (var slot = 1; slot <= 27; slot++) {
+          if (slot === 9) {
+            swatchGridHtml += '<div style="width:24px; height:24px; box-sizing:border-box; border:1px solid rgba(0,0,0,0.08); background:#ffffff; cursor:pointer;" onclick="applyPaletteColor(\'#ffffff\')" title="흰색 (#ffffff)"></div>';
+          } else if (slot === 18) {
+            swatchGridHtml += '<div style="width:24px; height:24px; box-sizing:border-box; border:1px solid rgba(0,0,0,0.08); background:#000000; cursor:pointer;" onclick="applyPaletteColor(\'#000000\')" title="검정색 (#000000)"></div>';
+          } else if (slot === 27) {
+            swatchGridHtml += '<div style="width:24px; height:24px; box-sizing:border-box; border:1px solid rgba(0,0,0,0.08); background:#ffffff; cursor:pointer; position:relative;" onclick="applyPaletteColor(\'none\')" title="투명색 (none)"><svg viewBox="0 0 24 24" style="width:100%; height:100%; display:block;"><line x1="0" y1="24" x2="24" y2="0" stroke="#ef4444" stroke-width="2.5"/></svg></div>';
+          } else {
+            var hex = userColors[userIdx++] || '#041e49';
+            swatchGridHtml += '<div style="width:24px; height:24px; box-sizing:border-box; border:1px solid rgba(0,0,0,0.08); background:' + hex + '; cursor:pointer;" onclick="applyPaletteColor(\'' + hex + '\')" title="' + hex + '"></div>';
+          }
+        }
+        swatchGridHtml += '</div>';
+
+        var targetMode = cfg.activeColorTarget || 'stroke';
+        var isStrokeActive = targetMode === 'stroke';
+        var isFillActive = targetMode === 'fill';
+
+        // 1x2 Radio Target Selection Buttons (Stroke Icon: gray bg + red border; Fill Icon: gray border + red fill)
+        var strokeBtnHtml = '<button class="tool-btn ' + (isStrokeActive ? 'active' : '') + '" onclick="setActiveColorTarget(\'stroke\')" style="width:34px; height:34px;"><span class="alt-badge">S</span><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" fill="#e2e8f0" stroke="#ef4444" stroke-width="3" rx="2"/></svg><span class="tooltip-text">테두리 색상 선택 (Active)</span></button>';
+        var fillBtnHtml   = '<button class="tool-btn ' + (isFillActive ? 'active' : '') + '" onclick="setActiveColorTarget(\'fill\')" style="width:34px; height:34px;"><span class="alt-badge">F</span><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" fill="#ef4444" stroke="#cbd5e1" stroke-width="1.5" rx="2"/></svg><span class="tooltip-text">채우기 색상 선택 (Active)</span></button>';
+
+        // 1x2 UniPalette Import/Open Buttons
+        var openPaletteBtnHtml   = '<button class="tool-btn" onclick="window.open(\'https://iseohyun.github.io/UniPalette/\', \'_blank\')" style="width:34px; height:34px;"><span class="alt-badge">O</span><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg><span class="tooltip-text">기본색상 정하기 (UniPalette 새탭)</span></button>';
+        var importPaletteBtnHtml = '<button class="tool-btn" onclick="openPaletteModal()" style="width:34px; height:34px;"><span class="alt-badge">I</span><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span class="tooltip-text">기본색상 가져오기 (코드 붙여넣기)</span></button>';
 
         ribbonBar.innerHTML = 
+          // === 1. 색 Category (Color) ===
           '<div class="ribbon-category">' +
-            '<div class="category-grid" style="grid-template-columns: auto;">' +
-              '<div class="ribbon-control-item"><label>테두리 색상:</label><input type="color" value="' + cfg.strokeColor + '" oninput="setStrokeColor(this.value)" onchange="setStrokeColor(this.value)"></div>' +
-              '<div class="ribbon-control-item"><label>채우기 색상:</label><input type="color" value="' + (cfg.fillColor && cfg.fillColor.startsWith('#') ? cfg.fillColor : '#041e49') + '" oninput="setFillColor(this.value)" onchange="setFillColor(this.value)"></div>' +
-              '<div class="ribbon-control-item"><label>선 두께:</label><input type="number" min="1" max="20" value="' + cfg.strokeWidth + '" oninput="setStrokeWidth(this.value)" onchange="setStrokeWidth(this.value)" style="width:55px;"></div>' +
+            '<div style="display:flex; flex-direction:row; align-items:center; gap:8px;">' +
+              // 1x2 Radio Mode Target Selector
+              '<div style="display:flex; flex-direction:column; gap:4px;">' + strokeBtnHtml + fillBtnHtml + '</div>' +
+              // 1x2 UniPalette Action Buttons
+              '<div style="display:flex; flex-direction:column; gap:4px;">' + openPaletteBtnHtml + importPaletteBtnHtml + '</div>' +
+              // 9x3 Seamless Swatch Grid
+              swatchGridHtml +
             '</div>' +
-            '<div class="category-title">기본 스타일</div>' +
+            '<div class="category-title">색</div>' +
           '</div>' +
-          '<div class="ribbon-category">' +
-            '<div class="category-grid" style="grid-template-columns: 34px 34px 135px; gap:6px; align-items:center;">' +
-              '<button class="tool-btn" onclick="window.open(\'https://iseohyun.github.io/UniPalette/\', \'_blank\')" style="grid-row:1/span 2;"><span class="alt-badge">O</span><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg><span class="tooltip-text">기본색상 정하기 (UniPalette 새탭)</span></button>' +
-              '<button class="tool-btn" onclick="openPaletteModal()" style="grid-row:1/span 2;"><span class="alt-badge">I</span><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span class="tooltip-text">기본색상 가져오기 (코드 붙여넣기)</span></button>' +
-              '<div style="grid-column:3; grid-row:1/span 3; display:grid; grid-template-columns: repeat(8, 14px); gap:3px; max-height:85px; overflow-y:auto; align-content:center;">' + swatchChipsHtml + '</div>' +
-              '<div class="ribbon-control-item" style="grid-row:3; grid-column:1/span 2; justify-content:center;"><select onchange="cfg.activeColorTarget=this.value;" style="font-size:0.75rem; padding:2px 4px; width:72px;"><option value="stroke" ' + (targetOption==='stroke'?'selected':'') + '>테두리색</option><option value="fill" ' + (targetOption==='fill'?'selected':'') + '>채우기색</option></select></div>' +
-            '</div>' +
-            '<div class="category-title">팔레트 및 기본 색상</div>' +
-          '</div>' +
+
+          // === 2. 선 Category (Line - Future Dev) ===
           '<div class="ribbon-category">' +
             '<div class="category-grid" style="grid-template-columns: auto 34px 34px;">' +
-              '<div class="ribbon-control-item" style="grid-row: 1 / span 3;"><label>시작 모양:</label><select onchange="setStartMarker(this.value)"><option value="none" ' + (cfg.startMarker==='none'?'selected':'') + '>없음</option><option value="arrow" ' + (cfg.startMarker==='arrow'?'selected':'') + '>화살표</option><option value="circle" ' + (cfg.startMarker==='circle'?'selected':'') + '>동그라미</option><option value="diamond" ' + (cfg.startMarker==='diamond'?'selected':'') + '>다이아몬드</option></select></div>' +
-              '<button class="tool-btn" onclick="scaleMarker(\'start\', 1.25)" style="grid-row: 1;"><span class="alt-badge">+</span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span class="tooltip-text">시작모양 키우기</span></button>' +
-              '<button class="tool-btn" onclick="scaleMarker(\'start\', 0.8)" style="grid-row: 2;"><span class="alt-badge">-</span><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg><span class="tooltip-text">시작모양 줄이기</span></button>' +
+              '<div class="ribbon-control-item" style="grid-row: 1;"><label>선 두께:</label><input type="number" min="1" max="20" value="' + cfg.strokeWidth + '" oninput="setStrokeWidth(this.value)" onchange="setStrokeWidth(this.value)" style="width:55px;"></div>' +
+              '<div class="ribbon-control-item" style="grid-row: 2;"><label>시작 모양:</label><select onchange="setStartMarker(this.value)"><option value="none" ' + (cfg.startMarker==='none'?'selected':'') + '>없음</option><option value="arrow" ' + (cfg.startMarker==='arrow'?'selected':'') + '>화살표</option><option value="circle" ' + (cfg.startMarker==='circle'?'selected':'') + '>동그라미</option><option value="diamond" ' + (cfg.startMarker==='diamond'?'selected':'') + '>다이아몬드</option></select></div>' +
+              '<button class="tool-btn" onclick="scaleMarker(\'start\', 1.25)" style="grid-row: 2; grid-column:2;"><span class="alt-badge">+</span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span class="tooltip-text">시작모양 키우기</span></button>' +
+              '<button class="tool-btn" onclick="scaleMarker(\'start\', 0.8)" style="grid-row: 2; grid-column:3;"><span class="alt-badge">-</span><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg><span class="tooltip-text">시작모양 줄이기</span></button>' +
+              '<div class="ribbon-control-item" style="grid-row: 3;"><label>끝 모양:</label><select onchange="setEndMarker(this.value)"><option value="none" ' + (cfg.endMarker==='none'?'selected':'') + '>없음</option><option value="arrow" ' + (cfg.endMarker==='arrow'?'selected':'') + '>화살표</option><option value="circle" ' + (cfg.endMarker==='circle'?'selected':'') + '>동그라미</option><option value="diamond" ' + (cfg.endMarker==='diamond'?'selected':'') + '>다이아몬드</option></select></div>' +
+              '<button class="tool-btn" onclick="scaleMarker(\'end\', 1.25)" style="grid-row: 3; grid-column:2;"><span class="alt-badge">+</span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span class="tooltip-text">끝모양 키우기</span></button>' +
+              '<button class="tool-btn" onclick="scaleMarker(\'end\', 0.8)" style="grid-row: 3; grid-column:3;"><span class="alt-badge">-</span><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg><span class="tooltip-text">끝모양 줄이기</span></button>' +
             '</div>' +
-            '<div class="category-title">시작 모양 마커</div>' +
-          '</div>' +
-          '<div class="ribbon-category">' +
-            '<div class="category-grid" style="grid-template-columns: auto 34px 34px;">' +
-              '<div class="ribbon-control-item" style="grid-row: 1 / span 3;"><label>끝 모양:</label><select onchange="setEndMarker(this.value)"><option value="none" ' + (cfg.endMarker==='none'?'selected':'') + '>없음</option><option value="arrow" ' + (cfg.endMarker==='arrow'?'selected':'') + '>화살표</option><option value="circle" ' + (cfg.endMarker==='circle'?'selected':'') + '>동그라미</option><option value="diamond" ' + (cfg.endMarker==='diamond'?'selected':'') + '>다이아몬드</option></select></div>' +
-              '<button class="tool-btn" onclick="scaleMarker(\'end\', 1.25)" style="grid-row: 1;"><span class="alt-badge">+</span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span class="tooltip-text">끝모양 키우기</span></button>' +
-              '<button class="tool-btn" onclick="scaleMarker(\'end\', 0.8)" style="grid-row: 2;"><span class="alt-badge">-</span><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg><span class="tooltip-text">끝모양 줄이기</span></button>' +
-            '</div>' +
-            '<div class="category-title">끝 모양 마커</div>' +
+            '<div class="category-title">선</div>' +
           '</div>';
       } else if (cfg.currentTab === 'text') {
         ribbonBar.innerHTML = 

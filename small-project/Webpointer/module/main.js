@@ -970,6 +970,11 @@
     }
   };
 
+  window.setActiveColorTarget = function(target) {
+    cfg.activeColorTarget = target;
+    render.renderRibbon();
+  };
+
   window.applyImportedPalette = function() {
     var textarea = document.getElementById('paletteTextarea');
     if (!textarea) return;
@@ -979,14 +984,14 @@
       return;
     }
 
-    // Parse hex colors from UniPalette JS output array string (Max 32 colors)
+    // Parse hex colors from UniPalette JS output array string (Max 24 user slots for 9x3 grid)
     var regex = /#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b/g;
     var matches = rawText.match(regex);
 
     if (matches && matches.length > 0) {
       var extractedColors = [];
       matches.forEach(function(hex) {
-        if (extractedColors.length < 32) {
+        if (extractedColors.length < 24) {
           extractedColors.push(hex.toLowerCase());
         }
       });
