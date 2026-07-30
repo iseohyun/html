@@ -1,5 +1,13 @@
 # Webpointer Project Version History
 
+## [0.4.2] - 2026-07-30
+### Added & Improved
+- Direct In-Canvas Text Typing Mode:
+  - Eliminated all background input boxes, borders, and popup UI overlays for text creation.
+  - Implemented direct SVG text typing directly on the SVG canvas with a blinking vertical caret line (`.blinking-caret`).
+  - Integrated transparent IME listener supporting multi-language Korean Hangeul composition, numbers, symbols, `Backspace`, and multi-line `Enter` (`\n`) key.
+  - Supported `Esc` completion and double-click (`dblclick`) direct canvas text re-editing.
+
 ## [0.4.1] - 2026-07-30
 ### Added & Fixed
 - Interactive In-Place Text Editing Workflow:
