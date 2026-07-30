@@ -508,6 +508,9 @@
       } else {
         obj.el.style.cursor = 'crosshair';
       }
+
+      // Output SVG Element HTML Code to Browser Console for Inspection
+      console.log('[Webpointer SVG Element Debug] ID: ' + obj.id + ' | Type: ' + obj.type + ' | SVG Code:\n' + obj.el.outerHTML);
     },
 
     // Render Control Handle Node

@@ -1019,6 +1019,7 @@
       else obj.el.removeAttribute('marker-end');
 
       window.WebpointerRender.updateElementAttributes(obj);
+      console.log('[Webpointer SVG Rendered Code] ID: ' + id + ' | Type: ' + obj.type + ' | SVG Code:\n' + obj.el.outerHTML);
     });
   };
 
