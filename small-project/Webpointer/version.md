@@ -1,5 +1,20 @@
 # Webpointer Project Version History
 
+## [0.5.5] - 2026-07-30
+### Added & Improved
+- File Operations, Undo/Redo History Manager & Global Floating Tooltip Upgrades:
+  - **`파일` (File) Menu Tab**:
+    - Added `"파일"` tab before `"삽입"` tab.
+    - **`파일 불러오기`** (`openFile`): Open & load `.json` / `.webpointer` project files.
+    - **`파일 저장하기(웹에 저장)`** (`saveFileToWeb`): Save current document snapshot to browser `localStorage`.
+    - **`파일 다운로드`** (`downloadFile`): Download `.json` project file or `.svg` vector image.
+  - **Undo / Redo History Manager**:
+    - Added **`뒤로가기`** (`undo`: `Ctrl + Z`) and **`앞으로가기`** (`redo`: `Ctrl + Y` / `Ctrl + Shift + Z`).
+    - Automatic state snapshotting on object creation, drag, handle resize, transform, or format change.
+  - **Global Fixed Floating Tooltip Manager**:
+    - Implemented `#webpointerGlobalTooltip` fixed to `document.body` with `z-index: 999999`.
+    - Solved container clipping issues caused by menu bar, ribbon bar, or svg wrapper boundaries.
+
 ## [0.5.4] - 2026-07-30
 ### Added & Improved
 - Ribbon Layout, Settings Tab Refactoring & Canvas Bug Fixes:
