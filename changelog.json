@@ -6,7 +6,7 @@
         "type": "Added",
         "projectName": "Webpointer",
         "projectPath": "/small-project/Webpointer/index.html",
-        "summary": "v0.1.7: 근접 자동 선택, 포괄 점선 박스 오버레이 및 보기 탭 선택 거리 옵션 검증 완료 및 정식 반영"
+        "summary": "v0.1.8: 도형 생성 후 선택도구 자동 복귀, 10px 이하 클릭 시 100px 기본크기 자동 생성, 베지어 X/Y 제어점 연산, Esc 취소 및 근접거리 30px 기본값 변경"
       }
     ]
   },

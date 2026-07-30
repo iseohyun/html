@@ -21,7 +21,8 @@
     strokeWidth: 2,
     pointRadius: 5,           // Default Point Diameter 10px (radius = 5px)
 
-    proximityThreshold: 10,   // Default 10px Proximity selection threshold for empty canvas clicks
+    proximityThreshold: 30,   // Default 30px Proximity selection threshold
+    defaultShapeSize: 100,    // Default 100px shape size for short clicks (<= 10px drag)
 
     startMarker: 'none',
     startMarkerScale: 1,

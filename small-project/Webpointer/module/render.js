@@ -115,8 +115,8 @@
           self.makeToolHtml('rect', '사각형', '4', '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="1"/></svg>'),
           self.makeToolHtml('ellipse', '타원', '5', '<svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="9" ry="6"/></svg>'),
           self.makeToolHtml('arc', '호 (Arc)', '6', '<svg viewBox="0 0 24 24"><path d="M 4 18 A 9 9 0 0 1 20 18"/></svg>'),
-          self.makeToolHtml('bez2', '2차 베지어 (1 핸들)', '7', '<svg viewBox="0 0 24 24"><path d="M 3 18 Q 12 3 21 18"/><circle cx="12" cy="3" r="2" fill="currentColor"/></svg>'),
-          self.makeToolHtml('bez3', '3차 베지어 (2 핸들)', '8', '<svg viewBox="0 0 24 24"><path d="M 3 18 C 7 3, 17 3, 21 18"/><circle cx="7" cy="3" r="2" fill="currentColor"/><circle cx="17" cy="3" r="2" fill="currentColor"/></svg>'),
+          self.makeToolHtml('bez2', '1차 베지어 (Q-Bezier)', '7', '<svg viewBox="0 0 24 24"><path d="M 3 18 Q 12 3 21 18"/><circle cx="12" cy="3" r="2" fill="currentColor"/></svg>'),
+          self.makeToolHtml('bez3', '2차 베지어 (C-Bezier)', '8', '<svg viewBox="0 0 24 24"><path d="M 3 18 C 7 3, 17 3, 21 18"/><circle cx="7" cy="3" r="2" fill="currentColor"/><circle cx="17" cy="3" r="2" fill="currentColor"/></svg>'),
           self.makeToolHtml('rounded', '둥근 사각형', '9', '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="5"/></svg>')
         ];
 
@@ -147,15 +147,17 @@
           '<div class="ribbon-category">' + self.build3RowGridHtml(groupTools) + '<div class="category-title">그룹화</div></div>' +
           '<div class="ribbon-category">' + self.build3RowGridHtml(alignTools) + '<div class="category-title">정렬</div></div>';
       } else if (cfg.currentTab === 'view') {
-        var proxVal = cfg.proximityThreshold !== undefined ? cfg.proximityThreshold : 10;
+        var proxVal = cfg.proximityThreshold !== undefined ? cfg.proximityThreshold : 30;
+        var szVal = cfg.defaultShapeSize !== undefined ? cfg.defaultShapeSize : 100;
         ribbonBar.innerHTML = 
           '<div class="ribbon-category">' +
             '<div class="category-grid" style="grid-template-columns: auto;">' +
               '<div class="ribbon-control-item"><label>격자 보이기:</label><input type="checkbox" id="chkGridToggle" ' + (cfg.gridSnapEnabled ? 'checked' : '') + ' onchange="toggleGridSnap(this.checked)"></div>' +
               '<div class="ribbon-control-item"><label>격자 크기:</label><select onchange="setGridDensity(this.value)"><option value="480x270" selected>481×271 Step (16:9 표준)</option><option value="240x135">241×136 Step (조밀하게)</option><option value="120x67">121×68 Step (성기게)</option></select></div>' +
-              '<div class="ribbon-control-item"><label>근접 선택 거리:</label><select onchange="setProximityThreshold(this.value)"><option value="10" ' + (proxVal===10?'selected':'') + '>10px (기본값)</option><option value="20" ' + (proxVal===20?'selected':'') + '>20px</option><option value="30" ' + (proxVal===30?'selected':'') + '>30px</option><option value="0" ' + (proxVal===0?'selected':'') + '>0px (해제 - 정확한 클릭)</option></select></div>' +
+              '<div class="ribbon-control-item"><label>근접 선택 거리:</label><select onchange="setProximityThreshold(this.value)"><option value="30" ' + (proxVal===30?'selected':'') + '>30px (기본값)</option><option value="10" ' + (proxVal===10?'selected':'') + '>10px</option><option value="20" ' + (proxVal===20?'selected':'') + '>20px</option><option value="0" ' + (proxVal===0?'selected':'') + '>0px (해제 - 정확한 클릭)</option></select></div>' +
+              '<div class="ribbon-control-item"><label>기본 도형 크기:</label><select onchange="setDefaultShapeSize(this.value)"><option value="100" ' + (szVal===100?'selected':'') + '>100px (기본값)</option><option value="150" ' + (szVal===150?'selected':'') + '>150px</option><option value="200" ' + (szVal===200?'selected':'') + '>200px</option><option value="50" ' + (szVal===50?'selected':'') + '>50px</option></select></div>' +
             '</div>' +
-            '<div class="category-title">격자 및 스냅/선택 설정</div>' +
+            '<div class="category-title">격자 및 스냅/선택/기본크기 설정</div>' +
           '</div>' +
           '<div class="ribbon-category">' +
             '<div class="category-grid" style="grid-template-columns: auto;">' +
@@ -333,7 +335,6 @@
         }
       });
 
-      // Render Dashed Enclosing Bounding Box Overlay for Selection (Single & Multi-Selection)
       if (minX !== Infinity) {
         var pad = 6;
         var boxRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');

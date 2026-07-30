@@ -97,7 +97,7 @@
 
   // Find Nearest Object to Click Position (px, py)
   function findNearestObject(px, py) {
-    var threshold = cfg.proximityThreshold !== undefined ? cfg.proximityThreshold : 10;
+    var threshold = cfg.proximityThreshold !== undefined ? cfg.proximityThreshold : 30;
     if (threshold <= 0) return null;
 
     var nearestObj = null;
@@ -165,16 +165,14 @@
       };
     } else if (type === 'bez2') {
       el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      var midX = (px1 + px2) / 2;
-      var midY = Math.min(py1, py2) - 50;
-      attrs = { x1: px1, y1: py1, cx: midX, cy: midY, x2: px2, y2: py2, stepX1: stepStart.stepX, stepY1: stepStart.stepY, stepCx: Math.round((stepStart.stepX + stepEnd.stepX) / 2), stepCy: Math.max(0, Math.min(stepStart.stepY, stepEnd.stepY) - 25), stepX2: stepEnd.stepX, stepY2: stepEnd.stepY };
+      attrs = { x1: px1, y1: py1, cx: px1, cy: py2, x2: px2, y2: py2 };
     } else if (type === 'bez3') {
       el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      var c1x = px1 + (px2 - px1) * 0.33;
-      var c1y = py1 - 40;
-      var c2x = px1 + (px2 - px1) * 0.66;
-      var c2y = py2 - 40;
-      attrs = { x1: px1, y1: py1, c1x: c1x, c1y: c1y, c2x: c2x, c2y: c2y, x2: px2, y2: py2, stepX1: stepStart.stepX, stepY1: stepStart.stepY, stepC1x: Math.round(stepStart.stepX + (stepEnd.stepX - stepStart.stepX) * 0.33), stepC1y: Math.max(0, stepStart.stepY - 20), stepC2x: Math.round(stepStart.stepX + (stepEnd.stepX - stepStart.stepX) * 0.66), stepC2y: Math.max(0, stepEnd.stepY - 20), stepX2: stepEnd.stepX, stepY2: stepEnd.stepY };
+      var c1x = px1;
+      var c1y = (py1 + py2) / 2;
+      var c2x = (px1 + px2) / 2;
+      var c2y = py2;
+      attrs = { x1: px1, y1: py1, c1x: c1x, c1y: c1y, c2x: c2x, c2y: c2y, x2: px2, y2: py2 };
     }
 
     el.setAttribute('id', id);
@@ -225,6 +223,11 @@
 
   window.setProximityThreshold = function(val) {
     cfg.proximityThreshold = parseInt(val, 10);
+    render.renderRibbon();
+  };
+
+  window.setDefaultShapeSize = function(val) {
+    cfg.defaultShapeSize = parseInt(val, 10);
     render.renderRibbon();
   };
 
@@ -354,7 +357,6 @@
 
       if (cfg.currentTool === 'select') {
         if (targetObj && cfg.objectsMap.has(targetObj.id)) {
-          // Direct Click on Object Element
           if (!e.ctrlKey && !cfg.selectedIds.has(targetObj.id)) {
             cfg.selectedIds.clear();
           }
@@ -370,7 +372,6 @@
             }
           });
         } else {
-          // Click on Empty Canvas: Proximity Check
           var nearestObj = findNearestObject(coords.px, coords.py);
           if (nearestObj) {
             if (!e.ctrlKey && !cfg.selectedIds.has(nearestObj.id)) {
@@ -388,7 +389,6 @@
               }
             });
           } else {
-            // No object within proximityThreshold (default 10px): Deselect current selection
             if (!e.ctrlKey) cfg.selectedIds.clear();
             state.isMarquee = true;
           }
@@ -400,6 +400,9 @@
         var pointObj = createSvgObject('point', coords, coords);
         cfg.selectedIds.add(pointObj.id);
         render.renderUI();
+        // Switch back to select tool after creation
+        cfg.currentTool = 'select';
+        render.renderRibbon();
       } else {
         if (targetObj && cfg.objectsMap.has(targetObj.id) && cfg.selectedIds.has(targetObj.id)) {
           state.isDraggingObject = true;
@@ -525,7 +528,7 @@
         return;
       }
 
-      // 3. New Shape Drawing Drag
+      // 3. New Shape Drawing Drag (Real-time Preview)
       if (state.isDrawing && state.activeTempObj && state.drawStartStep) {
         var px1 = (state.drawStartStep.stepX / cfg.STEPS_X) * cfg.SVG_WIDTH;
         var py1 = (state.drawStartStep.stepY / cfg.STEPS_Y) * cfg.SVG_HEIGHT;
@@ -554,24 +557,75 @@
           aTemp.rx = Math.max(5, Math.abs(px2 - px1) / 2);
           aTemp.ry = Math.max(5, Math.abs(py2 - py1) / 2);
         } else if (state.activeTempObj.type === 'bez2') {
+          // 1차 베지어 (bez2): Start (px1, py1), End (px2, py2), Control Point (px1, py2) [start X, end Y]
           aTemp.x2 = px2;
           aTemp.y2 = py2;
-          aTemp.cx = (px1 + px2) / 2;
-          aTemp.cy = Math.min(py1, py2) - 40;
+          aTemp.cx = px1;
+          aTemp.cy = py2;
         } else if (state.activeTempObj.type === 'bez3') {
+          // 2차 베지어 (bez3): Start (px1, py1), End (px2, py2), Virtual center V = (px1, py2)
+          // Control 1 = Midpoint(Start, V) = (px1, (py1+py2)/2)
+          // Control 2 = Midpoint(V, End) = ((px1+px2)/2, py2)
           aTemp.x2 = px2;
           aTemp.y2 = py2;
-          aTemp.c1x = px1 + (px2 - px1) * 0.33;
-          aTemp.c1y = py1 - 40;
-          aTemp.c2x = px1 + (px2 - px1) * 0.66;
-          aTemp.c2y = py2 - 40;
+          aTemp.c1x = px1;
+          aTemp.c1y = (py1 + py2) / 2;
+          aTemp.c2x = (px1 + px2) / 2;
+          aTemp.c2y = py2;
         }
         render.updateElementAttributes(state.activeTempObj);
         render.renderUI();
       }
     });
 
-    mainSvg.addEventListener('mouseup', function() {
+    mainSvg.addEventListener('mouseup', function(e) {
+      var coords = getStepCoords(e);
+      if (state.isDrawing && state.activeTempObj && state.drawStartStep) {
+        var startPx = (state.drawStartStep.stepX / cfg.STEPS_X) * cfg.SVG_WIDTH;
+        var startPy = (state.drawStartStep.stepY / cfg.STEPS_Y) * cfg.SVG_HEIGHT;
+        var dist = Math.sqrt((coords.px - startPx) * (coords.px - startPx) + (coords.py - startPy) * (coords.py - startPy));
+
+        // Short click (distance <= 10px): Apply default shape size presets
+        if (dist <= 10) {
+          var sz = cfg.defaultShapeSize || 100;
+          var a = state.activeTempObj.attrs;
+          if (state.activeTempObj.type === 'line') {
+            a.x1 = startPx; a.y1 = startPy;
+            a.x2 = startPx + sz; a.y2 = startPy;
+          } else if (state.activeTempObj.type === 'rect') {
+            a.x = startPx; a.y = startPy;
+            a.width = sz; a.height = sz;
+          } else if (state.activeTempObj.type === 'ellipse') {
+            a.cx = startPx; a.cy = startPy;
+            a.rx = sz / 2; a.ry = sz / 2;
+          } else if (state.activeTempObj.type === 'arc') {
+            a.cx = startPx; a.cy = startPy;
+            a.rx = sz / 2; a.ry = sz / 2;
+            a.startAngle = -90; // 12 o'clock
+            a.endAngle = 0;    // 3 o'clock
+          } else if (state.activeTempObj.type === 'bez2') {
+            a.x1 = startPx; a.y1 = startPy;
+            a.x2 = startPx + sz; a.y2 = startPy;
+            a.cx = startPx; a.cy = startPy + sz;
+          } else if (state.activeTempObj.type === 'bez3') {
+            a.x1 = startPx; a.y1 = startPy;
+            a.x2 = startPx + sz; a.y2 = startPy;
+            a.c1x = startPx; a.c1y = startPy + sz / 2;
+            a.c2x = startPx + sz / 2; a.c2y = startPy + sz;
+          } else if (state.activeTempObj.type === 'rounded') {
+            a.x = startPx; a.y = startPy;
+            a.width = sz; a.height = sz;
+            a.rx = 15;
+          }
+          render.updateElementAttributes(state.activeTempObj);
+          render.renderUI();
+        }
+
+        // Automatic tool switch back to 'select' after creation
+        cfg.currentTool = 'select';
+        render.renderRibbon();
+      }
+
       state.isDrawing = false;
       state.isMarquee = false;
       state.isDraggingHandle = false;
@@ -585,6 +639,18 @@
     window.addEventListener('keydown', function(e) {
       if (e.key === 'Alt') {
         document.body.classList.add('show-alt-keybinds');
+      } else if (e.key === 'Escape') {
+        // Esc Key Cancels Active Drawing & Switches to Select Tool
+        if (state.isDrawing && state.activeTempObj) {
+          state.activeTempObj.el.remove();
+          cfg.objectsMap.delete(state.activeTempObj.id);
+          cfg.selectedIds.delete(state.activeTempObj.id);
+          state.isDrawing = false;
+          state.activeTempObj = null;
+        }
+        cfg.currentTool = 'select';
+        render.renderRibbon();
+        render.renderUI();
       }
     });
 
