@@ -47,7 +47,7 @@
   }
 
   function renderRibbon() {
-    var ribbon = document.getElementById('ribbonContainer');
+    var ribbon = document.getElementById('ribbonBar') || document.getElementById('ribbonContainer');
     if (!ribbon) return;
 
     if (!cfg.collapsedCategories) cfg.collapsedCategories = new Set();
