@@ -126,7 +126,7 @@
       if (a.fill) {
         obj.el.setAttribute('fill', a.fill);
       } else {
-        obj.el.setAttribute('fill', cfg.fillColor && cfg.fillColor !== 'none' ? cfg.fillColor : '#041e49');
+        obj.el.removeAttribute('fill');
       }
 
       if (a.stroke && a.stroke !== 'none') {

@@ -117,7 +117,7 @@
         return;
       }
 
-      var fill = getInheritedStyle(node, 'fill', nodeName === 'text' ? '#000000' : 'none');
+      var fill = getInheritedStyle(node, 'fill', '');
       var stroke = getInheritedStyle(node, 'stroke', 'none');
       var strokeWidth = parseFloat(getInheritedStyle(node, 'stroke-width', '1'));
       var opacity = parseFloat(getInheritedStyle(node, 'opacity', '1'));
