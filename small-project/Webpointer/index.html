@@ -47,7 +47,7 @@
       gap: 10px;
     }
 
-    /* Top Navigation Header */
+    /* Top Navigation Header Bar */
     .header-bar {
       display: flex;
       align-items: center;
@@ -82,9 +82,10 @@
       -webkit-text-fill-color: transparent;
     }
 
-    /* Tab Header Menu */
+    /* Tab Header Menu Bar */
     .menu-tabs {
       display: flex;
+      align-items: center;
       gap: 2px;
       border-bottom: 2px solid var(--border-color);
       background: #0f172a;
@@ -118,33 +119,45 @@
       margin-bottom: -2px;
     }
 
-    /* Ribbon Toolbar Area */
+    /* Ribbon Toolbar Container (Minimum 3-Row Height) */
     .ribbon-container {
       background: var(--ribbon-bg);
       border: 1px solid var(--border-color);
       border-top: none;
       border-radius: 0 0 8px 8px;
       padding: 10px 14px;
-      min-height: 85px;
+      min-height: 135px; /* Ensures 3-row layout capacity */
       display: flex;
-      align-items: center;
+      align-items: stretch;
       gap: 16px;
       overflow-x: auto;
+      position: relative;
     }
 
+    /* Ribbon Group & Vertical Divider */
     .ribbon-group {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      justify-content: space-between;
       padding-right: 14px;
       border-right: 1px solid var(--border-color);
-      height: 100%;
+      position: relative;
     }
 
     .ribbon-group:last-child {
       border-right: none;
     }
 
+    /* 3-Row Tools Grid Layout */
+    .ribbon-tools-grid {
+      display: grid;
+      grid-template-rows: repeat(3, 34px);
+      grid-auto-flow: column;
+      gap: 4px;
+      align-items: center;
+    }
+
+    /* Category Title (Centered at Bottom) */
     .ribbon-group-title {
       font-size: 0.72rem;
       font-weight: 600;
@@ -152,35 +165,29 @@
       text-align: center;
       text-transform: uppercase;
       letter-spacing: 0.04em;
+      margin-top: 6px;
+      padding-top: 4px;
     }
 
-    .ribbon-tools {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    /* Ribbon Tool Buttons & Custom SVG Icons */
+    /* Uniform Icon Buttons */
     .tool-btn {
+      position: relative;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      width: 52px;
-      height: 52px;
-      padding: 4px;
+      width: 34px;
+      height: 34px;
+      padding: 0;
       background: rgba(30, 41, 59, 0.6);
       border: 1px solid var(--border-color);
       border-radius: 6px;
       color: var(--text-main);
       cursor: pointer;
       transition: all 0.15s ease;
-      font-size: 0.7rem;
-      gap: 3px;
     }
 
     .tool-btn:hover {
-      background: rgba(56, 189, 248, 0.15);
+      background: rgba(56, 189, 248, 0.2);
       border-color: var(--accent-color);
       color: var(--accent-color);
     }
@@ -192,31 +199,84 @@
       box-shadow: 0 0 8px var(--accent-glow);
     }
 
+    /* Uniform SVG Icon Dimensions (32x32 ViewBox, 20x20 Display) */
     .tool-btn svg {
-      width: 22px;
-      height: 22px;
+      width: 20px;
+      height: 20px;
       fill: none;
       stroke: currentColor;
       stroke-width: 1.8;
       stroke-linecap: round;
       stroke-linejoin: round;
+      pointer-events: none;
     }
 
-    .ribbon-control {
+    /* Fixed Stationary Tooltip (Positioned directly below icon) */
+    .tool-btn .tooltip-text {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-top: 6px;
+      padding: 4px 8px;
+      background: #0f172a;
+      border: 1px solid var(--accent-color);
+      color: #f8fafc;
+      font-size: 0.72rem;
+      font-weight: 500;
+      white-space: nowrap;
+      border-radius: 4px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      z-index: 200;
+      pointer-events: none;
+    }
+
+    .tool-btn:hover .tooltip-text,
+    body.show-alt-keybinds .tool-btn .tooltip-text {
+      display: block;
+    }
+
+    /* Alt Keybind Badge */
+    .alt-badge {
+      display: none;
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: #ea4335;
+      color: white;
+      font-size: 9px;
+      font-weight: 800;
+      border-radius: 50%;
+      width: 14px;
+      height: 14px;
+      line-height: 14px;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+      z-index: 210;
+    }
+
+    body.show-alt-keybinds .alt-badge {
+      display: block;
+    }
+
+    .ribbon-control-item {
       display: flex;
       align-items: center;
       gap: 6px;
       font-size: 0.8rem;
+      height: 34px;
     }
 
-    .ribbon-control label {
+    .ribbon-control-item label {
       color: var(--text-muted);
       font-size: 0.78rem;
+      white-space: nowrap;
     }
 
-    .ribbon-control select, 
-    .ribbon-control input[type="color"],
-    .ribbon-control input[type="number"] {
+    .ribbon-control-item select, 
+    .ribbon-control-item input[type="color"],
+    .ribbon-control-item input[type="number"] {
       padding: 4px 6px;
       background: #0f172a;
       border: 1px solid var(--border-color);
@@ -226,7 +286,7 @@
       outline: none;
     }
 
-    /* Content Area: SVG Canvas & Status Info */
+    /* Content Area: SVG Canvas & Inspector */
     .content-area {
       display: grid;
       grid-template-columns: 1fr 260px;
@@ -317,7 +377,7 @@
       font-weight: 700;
     }
 
-    /* Floating Snap Handle styling on Canvas */
+    /* Control Handles styling */
     .handle-node {
       cursor: pointer;
       transition: r 0.15s ease;
@@ -331,7 +391,7 @@
 </head>
 <body>
   <article>
-    <!-- Header -->
+    <!-- Header Bar -->
     <div class="header-bar">
       <div class="header-left">
         <a href="/" title="메인으로 이동">
@@ -340,13 +400,14 @@
         <h1 class="header-title">Webpointer Vector CAD Editor</h1>
       </div>
       <div style="font-size: 0.8rem; color: var(--text-muted);">
-        16:9 (481×271 Step Snap)
+        Alt 키로 단축키 및 툴팁 힌트 표시
       </div>
     </div>
 
-    <!-- Top Menu Tabs -->
+    <!-- Top Menu Tabs (삽입, 보기, 그림 서식, 글 서식, 애니메이션) -->
     <div class="menu-tabs">
       <button class="tab-btn active" onclick="switchTab('insert')">삽입</button>
+      <button class="tab-btn" onclick="switchTab('view')">보기</button>
       <button class="tab-btn" onclick="switchTab('style')">그림 서식</button>
       <button class="tab-btn" onclick="switchTab('text')">글 서식</button>
       <button class="tab-btn" onclick="switchTab('anim')">애니메이션</button>
@@ -354,10 +415,10 @@
 
     <!-- Ribbon Toolbar Container -->
     <div class="ribbon-container" id="ribbonBar">
-      <!-- Dynamic Ribbon Content Injected via JS -->
+      <!-- Injected via JS -->
     </div>
 
-    <!-- Main Content: SVG Canvas & Inspector -->
+    <!-- Content Area: SVG Canvas & Inspector -->
     <div class="content-area">
       <div class="svg-wrapper" id="svgWrapper">
         <svg id="mainSvg" viewBox="0 0 960 540">
@@ -394,23 +455,24 @@
   </article>
 
   <script>
-    // Canvas Constants
-    const SVG_WIDTH = 960;
-    const SVG_HEIGHT = 540;
-    const STEPS_X = 480; // 0 ~ 480 (481 points)
-    const STEPS_Y = 270; // 0 ~ 270 (271 points)
+    // Canvas & Grid Constants
+    let SVG_WIDTH = 960;
+    let SVG_HEIGHT = 540;
+    let STEPS_X = 480; // 0 ~ 480 (481 points)
+    let STEPS_Y = 270; // 0 ~ 270 (271 points)
 
     // State Variables
     let currentTab = 'insert';
     let currentTool = 'select'; // select, point, line, rect, ellipse, arc, bez2, bez3, rounded
     let gridSnapEnabled = true;
+    let canvasBgColor = '#020617';
+
     let strokeColor = '#38bdf8';
     let fillColor = 'rgba(56, 189, 248, 0.2)';
     let strokeWidth = 2;
-    let strokeDash = 'solid';
 
     // Marker Settings
-    let startMarker = 'none'; // none, arrow, circle, diamond
+    let startMarker = 'none';
     let startMarkerScale = 1;
     let endMarker = 'none';
     let endMarkerScale = 1;
@@ -420,18 +482,16 @@
     let isDrawing = false;
     let isMarquee = false;
     let isDraggingHandle = false;
-    let activeHandleInfo = null; // { objId, handleType, pointIndex }
+    let activeHandleInfo = null;
 
     let drawStartStep = null;
     let activeTempObj = null;
-    let marqueeStart = null;
 
     // SVG DOM Object Storage
-    // Each element: { id, type, parentId: null, attrs: {...}, el: SVGElement }
     const objectsMap = new Map();
     let nextId = 1;
 
-    // DOM References
+    // DOM Elements
     const mainSvg = document.getElementById('mainSvg');
     const svgWrapper = document.getElementById('svgWrapper');
     const gridGroup = document.getElementById('gridGroup');
@@ -480,9 +540,10 @@
     // === Grid Layer Renderer ===
     function renderGrid() {
       gridGroup.innerHTML = '';
+      mainSvg.style.backgroundColor = canvasBgColor;
+
       if (!gridSnapEnabled) return;
 
-      // Draw Grid Major Lines (every 30 steps)
       let pathData = '';
       const stepW = SVG_WIDTH / STEPS_X;
       for (let s = 0; s <= STEPS_X; s += 30) {
@@ -502,11 +563,9 @@
       gridGroup.appendChild(gridPath);
     }
 
-    // === Custom Marker Definitions Generator ===
+    // === SVG Defs (Markers) Generator ===
     function updateSvgDefs() {
       svgDefs.innerHTML = '';
-
-      // Start Marker Definitions
       ['arrow', 'circle', 'diamond'].forEach(type => {
         ['start', 'end'].forEach(pos => {
           const markerId = `marker-${pos}-${type}`;
@@ -515,8 +574,8 @@
           marker.setAttribute('viewBox', '0 0 10 10');
           marker.setAttribute('refX', pos === 'start' ? '2' : '8');
           marker.setAttribute('refY', '5');
-          marker.setAttribute('markerWidth', '6');
-          marker.setAttribute('markerHeight', '6');
+          marker.setAttribute('markerWidth', (6 * (pos === 'start' ? startMarkerScale : endMarkerScale)).toString());
+          marker.setAttribute('markerHeight', (6 * (pos === 'start' ? startMarkerScale : endMarkerScale)).toString());
           marker.setAttribute('orient', 'auto');
 
           const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -535,137 +594,133 @@
       });
     }
 
-    // === Ribbon Toolbar Builder ===
+    // Helper to build uniform 3-row icon button
+    function makeBtnHtml(toolId, title, keybind, svgPath) {
+      const isActive = currentTool === toolId ? 'active' : '';
+      return `
+        <button class="tool-btn ${isActive}" onclick="setTool('${toolId}')">
+          <span class="alt-badge">${keybind}</span>
+          ${svgPath}
+          <span class="tooltip-text">${title}</span>
+        </button>
+      `;
+    }
+
+    // === Ribbon Toolbar Renderer (Exposed to Window) ===
     function renderRibbon() {
       ribbonBar.innerHTML = '';
 
       if (currentTab === 'insert') {
         ribbonBar.innerHTML = `
-          <!-- Shapes Group -->
+          <!-- 도형 삽입 -->
           <div class="ribbon-group">
-            <div class="ribbon-tools">
-              <button class="tool-btn ${currentTool === 'select' ? 'active' : ''}" onclick="setTool('select')" title="선택 도구">
-                <svg viewBox="0 0 24 24"><path d="M3 3l7 18 3-7 7-3L3 3z"/></svg>
-                <span>선택</span>
-              </button>
-              <button class="tool-btn ${currentTool === 'point' ? 'active' : ''}" onclick="setTool('point')" title="점 (Point)">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="currentColor"/></svg>
-                <span>점</span>
-              </button>
-              <button class="tool-btn ${currentTool === 'line' ? 'active' : ''}" onclick="setTool('line')" title="선 (Line)">
-                <svg viewBox="0 0 24 24"><line x1="4" y1="20" x2="20" y2="4"/></svg>
-                <span>선</span>
-              </button>
-              <button class="tool-btn ${currentTool === 'rect' ? 'active' : ''}" onclick="setTool('rect')" title="사각형">
-                <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="1"/></svg>
-                <span>사각</span>
-              </button>
-              <button class="tool-btn ${currentTool === 'ellipse' ? 'active' : ''}" onclick="setTool('ellipse')" title="타원">
-                <svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="9" ry="6"/></svg>
-                <span>타원</span>
-              </button>
-              <button class="tool-btn ${currentTool === 'arc' ? 'active' : ''}" onclick="setTool('arc')" title="호 (Arc)">
-                <svg viewBox="0 0 24 24"><path d="M 4 18 A 9 9 0 0 1 20 18"/></svg>
-                <span>호</span>
-              </button>
-              <button class="tool-btn ${currentTool === 'bez2' ? 'active' : ''}" onclick="setTool('bez2')" title="2차 베지어 (1 핸들)">
-                <svg viewBox="0 0 24 24">
-                  <path d="M 3 18 Q 12 3 21 18"/>
-                  <circle cx="12" cy="3" r="2" fill="currentColor"/>
-                  <line x1="12" y1="3" x2="12" y2="10.5" stroke-dasharray="2,2"/>
-                </svg>
-                <span>2차베지어</span>
-              </button>
-              <button class="tool-btn ${currentTool === 'bez3' ? 'active' : ''}" onclick="setTool('bez3')" title="3차 베지어 (2 핸들)">
-                <svg viewBox="0 0 24 24">
-                  <path d="M 3 18 C 7 3, 17 3, 21 18"/>
-                  <circle cx="7" cy="3" r="2" fill="currentColor"/>
-                  <circle cx="17" cy="3" r="2" fill="currentColor"/>
-                </svg>
-                <span>3차베지어</span>
-              </button>
-              <button class="tool-btn ${currentTool === 'rounded' ? 'active' : ''}" onclick="setTool('rounded')" title="둥근 사각형">
-                <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="5"/></svg>
-                <span>둥근사각</span>
-              </button>
+            <div class="ribbon-tools-grid">
+              ${makeBtnHtml('select', '선택 도구', '1', '<svg viewBox="0 0 24 24"><path d="M3 3l7 18 3-7 7-3L3 3z"/></svg>')}
+              ${makeBtnHtml('point', '점 (Point)', '2', '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="currentColor"/></svg>')}
+              ${makeBtnHtml('line', '선 (Line)', '3', '<svg viewBox="0 0 24 24"><line x1="4" y1="20" x2="20" y2="4"/></svg>')}
+              ${makeBtnHtml('rect', '사각형', '4', '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="1"/></svg>')}
+              ${makeBtnHtml('ellipse', '타원', '5', '<svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="9" ry="6"/></svg>')}
+              ${makeBtnHtml('arc', '호 (Arc)', '6', '<svg viewBox="0 0 24 24"><path d="M 4 18 A 9 9 0 0 1 20 18"/></svg>')}
+              ${makeBtnHtml('bez2', '2차 베지어 (1 핸들)', '7', '<svg viewBox="0 0 24 24"><path d="M 3 18 Q 12 3 21 18"/><circle cx="12" cy="3" r="2" fill="currentColor"/></svg>')}
+              ${makeBtnHtml('bez3', '3차 베지어 (2 핸들)', '8', '<svg viewBox="0 0 24 24"><path d="M 3 18 C 7 3, 17 3, 21 18"/><circle cx="7" cy="3" r="2" fill="currentColor"/><circle cx="17" cy="3" r="2" fill="currentColor"/></svg>')}
+              ${makeBtnHtml('rounded', '둥근 사각형', '9', '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="5"/></svg>')}
             </div>
             <div class="ribbon-group-title">도형 삽입</div>
           </div>
 
-          <!-- Order Group -->
+          <!-- 레이어 순서 -->
           <div class="ribbon-group">
-            <div class="ribbon-tools">
-              <button class="tool-btn" onclick="arrangeOrder('backward')" title="뒤로">
-                <svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12"/><rect x="4" y="4" width="12" height="12" fill="rgba(56,189,248,0.3)"/></svg>
-                <span>뒤로</span>
-              </button>
-              <button class="tool-btn" onclick="arrangeOrder('back')" title="맨 뒤로">
-                <svg viewBox="0 0 24 24"><rect x="10" y="10" width="10" height="10"/><rect x="4" y="4" width="10" height="10" fill="rgba(56,189,248,0.3)"/></svg>
-                <span>맨뒤로</span>
-              </button>
-              <button class="tool-btn" onclick="arrangeOrder('forward')" title="앞으로">
-                <svg viewBox="0 0 24 24"><rect x="4" y="4" width="12" height="12"/><rect x="8" y="8" width="12" height="12" fill="rgba(56,189,248,0.3)"/></svg>
-                <span>앞으로</span>
-              </button>
-              <button class="tool-btn" onclick="arrangeOrder('front')" title="맨 앞으로">
-                <svg viewBox="0 0 24 24"><rect x="4" y="4" width="10" height="10"/><rect x="10" y="10" width="10" height="10" fill="rgba(56,189,248,0.3)"/></svg>
-                <span>맨앞으로</span>
-              </button>
+            <div class="ribbon-tools-grid">
+              <button class="tool-btn" onclick="arrangeOrder('backward')"><span class="alt-badge">Q</span><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12"/><rect x="4" y="4" width="12" height="12" fill="rgba(56,189,248,0.3)"/></svg><span class="tooltip-text">뒤로</span></button>
+              <button class="tool-btn" onclick="arrangeOrder('back')"><span class="alt-badge">W</span><svg viewBox="0 0 24 24"><rect x="10" y="10" width="10" height="10"/><rect x="4" y="4" width="10" height="10" fill="rgba(56,189,248,0.3)"/></svg><span class="tooltip-text">맨뒤로</span></button>
+              <button class="tool-btn" onclick="arrangeOrder('forward')"><span class="alt-badge">E</span><svg viewBox="0 0 24 24"><rect x="4" y="4" width="12" height="12"/><rect x="8" y="8" width="12" height="12" fill="rgba(56,189,248,0.3)"/></svg><span class="tooltip-text">앞으로</span></button>
+              <button class="tool-btn" onclick="arrangeOrder('front')"><span class="alt-badge">R</span><svg viewBox="0 0 24 24"><rect x="4" y="4" width="10" height="10"/><rect x="10" y="10" width="10" height="10" fill="rgba(56,189,248,0.3)"/></svg><span class="tooltip-text">맨앞으로</span></button>
             </div>
             <div class="ribbon-group-title">레이어 순서</div>
           </div>
 
-          <!-- Grouping -->
+          <!-- 그룹화 -->
           <div class="ribbon-group">
-            <div class="ribbon-tools">
-              <button class="tool-btn" onclick="groupSelected()" title="그룹 (&lt;g&gt;)">
-                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" stroke-dasharray="3,3"/><rect x="6" y="6" width="6" height="6"/><rect x="12" y="12" width="6" height="6"/></svg>
-                <span>그룹</span>
-              </button>
-              <button class="tool-btn" onclick="ungroupSelected()" title="그룹 해제">
-                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" stroke-dasharray="2,2"/><rect x="13" y="13" width="8" height="8" stroke-dasharray="2,2"/></svg>
-                <span>해제</span>
-              </button>
+            <div class="ribbon-tools-grid">
+              <button class="tool-btn" onclick="groupSelected()"><span class="alt-badge">G</span><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" stroke-dasharray="3,3"/><rect x="6" y="6" width="6" height="6"/><rect x="12" y="12" width="6" height="6"/></svg><span class="tooltip-text">그룹화 (&lt;g&gt;)</span></button>
+              <button class="tool-btn" onclick="ungroupSelected()"><span class="alt-badge">U</span><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" stroke-dasharray="2,2"/><rect x="13" y="13" width="8" height="8" stroke-dasharray="2,2"/></svg><span class="tooltip-text">그룹 해제</span></button>
             </div>
             <div class="ribbon-group-title">그룹화</div>
           </div>
 
-          <!-- Alignment -->
+          <!-- 정렬 -->
           <div class="ribbon-group">
-            <div class="ribbon-tools">
-              <button class="tool-btn" onclick="alignSelected('left')" title="왼쪽 정렬"><svg viewBox="0 0 24 24"><line x1="4" y1="3" x2="4" y2="21"/><rect x="8" y="6" width="12" height="4"/><rect x="8" y="14" width="8" height="4"/></svg><span>왼쪽</span></button>
-              <button class="tool-btn" onclick="alignSelected('hcenter')" title="중앙 정렬"><svg viewBox="0 0 24 24"><line x1="12" y1="3" x2="12" y2="21"/><rect x="6" y="6" width="12" height="4"/><rect x="8" y="14" width="8" height="4"/></svg><span>중앙</span></button>
-              <button class="tool-btn" onclick="alignSelected('right')" title="오른쪽 정렬"><svg viewBox="0 0 24 24"><line x1="20" y1="3" x2="20" y2="21"/><rect x="4" y="6" width="12" height="4"/><rect x="8" y="14" width="8" height="4"/></svg><span>오른쪽</span></button>
-              <button class="tool-btn" onclick="alignSelected('top')" title="위 정렬"><svg viewBox="0 0 24 24"><line x1="3" y1="4" x2="21" y2="4"/><rect x="6" y="8" width="4" height="12"/><rect x="14" y="8" width="4" height="8"/></svg><span>위</span></button>
-              <button class="tool-btn" onclick="alignSelected('vcenter')" title="중앙 정렬"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><rect x="6" y="6" width="4" height="12"/><rect x="14" y="8" width="4" height="8"/></svg><span>중앙</span></button>
-              <button class="tool-btn" onclick="alignSelected('bottom')" title="아래 정렬"><svg viewBox="0 0 24 24"><line x1="3" y1="20" x2="21" y2="20"/><rect x="6" y="4" width="4" height="12"/><rect x="14" y="8" width="4" height="8"/></svg><span>아래</span></button>
+            <div class="ribbon-tools-grid">
+              <button class="tool-btn" onclick="alignSelected('left')"><span class="alt-badge">A</span><svg viewBox="0 0 24 24"><line x1="4" y1="3" x2="4" y2="21"/><rect x="8" y="6" width="12" height="4"/><rect x="8" y="14" width="8" height="4"/></svg><span class="tooltip-text">왼쪽 정렬</span></button>
+              <button class="tool-btn" onclick="alignSelected('hcenter')"><span class="alt-badge">S</span><svg viewBox="0 0 24 24"><line x1="12" y1="3" x2="12" y2="21"/><rect x="6" y="6" width="12" height="4"/><rect x="8" y="14" width="8" height="4"/></svg><span class="tooltip-text">수평 중앙 정렬</span></button>
+              <button class="tool-btn" onclick="alignSelected('right')"><span class="alt-badge">D</span><svg viewBox="0 0 24 24"><line x1="20" y1="3" x2="20" y2="21"/><rect x="4" y="6" width="12" height="4"/><rect x="8" y="14" width="8" height="4"/></svg><span class="tooltip-text">오른쪽 정렬</span></button>
+              <button class="tool-btn" onclick="alignSelected('top')"><span class="alt-badge">Z</span><svg viewBox="0 0 24 24"><line x1="3" y1="4" x2="21" y2="4"/><rect x="6" y="8" width="4" height="12"/><rect x="14" y="8" width="4" height="8"/></svg><span class="tooltip-text">위 정렬</span></button>
+              <button class="tool-btn" onclick="alignSelected('vcenter')"><span class="alt-badge">X</span><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><rect x="6" y="6" width="4" height="12"/><rect x="14" y="8" width="4" height="8"/></svg><span class="tooltip-text">수직 중앙 정렬</span></button>
+              <button class="tool-btn" onclick="alignSelected('bottom')"><span class="alt-badge">C</span><svg viewBox="0 0 24 24"><line x1="3" y1="20" x2="21" y2="20"/><rect x="6" y="4" width="4" height="12"/><rect x="14" y="8" width="4" height="8"/></svg><span class="tooltip-text">아래 정렬</span></button>
             </div>
             <div class="ribbon-group-title">정렬</div>
           </div>
         `;
+      } else if (currentTab === 'view') { // "보기" 신설 탭
+        ribbonBar.innerHTML = `
+          <!-- 격자 보이기 & 크기 -->
+          <div class="ribbon-group">
+            <div class="ribbon-control-item">
+              <label>격자 보이기:</label>
+              <input type="checkbox" id="chkGridToggle" ${gridSnapEnabled ? 'checked' : ''} onchange="toggleGridSnap(this.checked)">
+            </div>
+            <div class="ribbon-control-item">
+              <label>격자 크기:</label>
+              <select onchange="setGridDensity(this.value)">
+                <option value="480x270" selected>481×271 Step (16:9 표준)</option>
+                <option value="240x135">241×136 Step (조밀하게)</option>
+                <option value="120x67">121×68 Step (성기게)</option>
+              </select>
+            </div>
+            <div class="ribbon-group-title">격자 및 스냅 설정</div>
+          </div>
+
+          <!-- 캔버스 크기 및 배경색 -->
+          <div class="ribbon-group">
+            <div class="ribbon-control-item">
+              <label>캔버스 크기:</label>
+              <select onchange="setCanvasRatio(this.value)">
+                <option value="960x540" selected>16:9 (960×540 px)</option>
+                <option value="1280x720">16:9 HD (1280×720 px)</option>
+                <option value="800x600">4:3 (800×600 px)</option>
+                <option value="600x600">1:1 (600×600 px)</option>
+              </select>
+            </div>
+            <div class="ribbon-control-item">
+              <label>캔버스 색상:</label>
+              <input type="color" value="${canvasBgColor}" onchange="setCanvasBgColor(this.value)">
+            </div>
+            <div class="ribbon-group-title">캔버스 화면 설정</div>
+          </div>
+        `;
       } else if (currentTab === 'style') {
         ribbonBar.innerHTML = `
-          <!-- Fill & Stroke -->
+          <!-- 기본 서식 -->
           <div class="ribbon-group">
-            <div class="ribbon-control">
+            <div class="ribbon-control-item">
               <label>테두리 색상:</label>
               <input type="color" value="${strokeColor}" onchange="strokeColor=this.value; updateSvgDefs(); applyStyleToSelected();">
             </div>
-            <div class="ribbon-control">
+            <div class="ribbon-control-item">
               <label>채우기 색상:</label>
               <input type="color" value="${fillColor.startsWith('#') ? fillColor : '#38bdf8'}" onchange="fillColor=this.value; applyStyleToSelected();">
             </div>
-            <div class="ribbon-control">
+            <div class="ribbon-control-item">
               <label>선 두께:</label>
               <input type="number" min="1" max="20" value="${strokeWidth}" onchange="strokeWidth=parseInt(this.value); applyStyleToSelected();" style="width:50px;">
             </div>
             <div class="ribbon-group-title">기본 스타일</div>
           </div>
 
-          <!-- Markers Section (Start / End Shapes & Scaling) -->
+          <!-- 시작 모양 마커 -->
           <div class="ribbon-group">
-            <div class="ribbon-tools">
-              <div class="ribbon-control">
+            <div class="ribbon-tools-grid">
+              <div class="ribbon-control-item">
                 <label>시작 모양:</label>
                 <select onchange="startMarker=this.value; applyStyleToSelected();">
                   <option value="none" ${startMarker==='none'?'selected':''}>없음</option>
@@ -674,21 +729,16 @@
                   <option value="diamond" ${startMarker==='diamond'?'selected':''}>다이아몬드</option>
                 </select>
               </div>
-              <button class="tool-btn" onclick="scaleMarker('start', 1.2)" title="시작모양 키우기">
-                <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-                <span>시작+</span>
-              </button>
-              <button class="tool-btn" onclick="scaleMarker('start', 0.8)" title="시작모양 줄이기">
-                <svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg>
-                <span>시작-</span>
-              </button>
+              <button class="tool-btn" onclick="scaleMarker('start', 1.25)"><span class="alt-badge">+</span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span class="tooltip-text">시작모양 키우기</span></button>
+              <button class="tool-btn" onclick="scaleMarker('start', 0.8)"><span class="alt-badge">-</span><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg><span class="tooltip-text">시작모양 줄이기</span></button>
             </div>
             <div class="ribbon-group-title">시작 모양 마커</div>
           </div>
 
+          <!-- 끝 모양 마커 -->
           <div class="ribbon-group">
-            <div class="ribbon-tools">
-              <div class="ribbon-control">
+            <div class="ribbon-tools-grid">
+              <div class="ribbon-control-item">
                 <label>끝 모양:</label>
                 <select onchange="endMarker=this.value; applyStyleToSelected();">
                   <option value="none" ${endMarker==='none'?'selected':''}>없음</option>
@@ -697,14 +747,8 @@
                   <option value="diamond" ${endMarker==='diamond'?'selected':''}>다이아몬드</option>
                 </select>
               </div>
-              <button class="tool-btn" onclick="scaleMarker('end', 1.2)" title="끝모양 키우기">
-                <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-                <span>끝+</span>
-              </button>
-              <button class="tool-btn" onclick="scaleMarker('end', 0.8)" title="끝모양 줄이기">
-                <svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg>
-                <span>끝-</span>
-              </button>
+              <button class="tool-btn" onclick="scaleMarker('end', 1.25)"><span class="alt-badge">+</span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span class="tooltip-text">끝모양 키우기</span></button>
+              <button class="tool-btn" onclick="scaleMarker('end', 0.8)"><span class="alt-badge">-</span><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg><span class="tooltip-text">끝모양 줄이기</span></button>
             </div>
             <div class="ribbon-group-title">끝 모양 마커</div>
           </div>
@@ -712,11 +756,8 @@
       } else if (currentTab === 'text') {
         ribbonBar.innerHTML = `
           <div class="ribbon-group">
-            <div class="ribbon-tools">
-              <button class="tool-btn" onclick="addTextObject()" title="텍스트 상자 추가">
-                <svg viewBox="0 0 24 24"><path d="M4 7V4h16v3M12 4v16M9 20h6"/></svg>
-                <span>텍스트</span>
-              </button>
+            <div class="ribbon-tools-grid">
+              <button class="tool-btn" onclick="addTextObject()"><span class="alt-badge">T</span><svg viewBox="0 0 24 24"><path d="M4 7V4h16v3M12 4v16M9 20h6"/></svg><span class="tooltip-text">텍스트 상자 추가</span></button>
             </div>
             <div class="ribbon-group-title">글 서식</div>
           </div>
@@ -724,26 +765,49 @@
       } else if (currentTab === 'anim') {
         ribbonBar.innerHTML = `
           <div class="ribbon-group">
-            <div class="ribbon-tools">
-              <button class="tool-btn" onclick="playAnimation('draw')" title="선 그리기 애니메이션">
-                <svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>
-                <span>그리기</span>
-              </button>
-              <button class="tool-btn" onclick="playAnimation('fade')" title="서서히 나타나기">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-dasharray="4,4"/></svg>
-                <span>페이드</span>
-              </button>
+            <div class="ribbon-tools-grid">
+              <button class="tool-btn" onclick="playAnimation('draw')"><span class="alt-badge">P</span><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg><span class="tooltip-text">선 그리기 애니메이션</span></button>
+              <button class="tool-btn" onclick="playAnimation('fade')"><span class="alt-badge">F</span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-dasharray="4,4"/></svg><span class="tooltip-text">페이드 나타나기</span></button>
             </div>
-            <div class="ribbon-group-title">SVG 애니메이션 미리보기</div>
+            <div class="ribbon-group-title">애니메이션 미리보기</div>
           </div>
         `;
       }
     }
 
+    // === View Tab Options Handlers ===
+    function toggleGridSnap(val) {
+      gridSnapEnabled = val;
+      renderGrid();
+    }
+
+    function setGridDensity(val) {
+      const [gx, gy] = val.split('x').map(v => parseInt(v, 10));
+      STEPS_X = gx;
+      STEPS_Y = gy;
+      renderGrid();
+    }
+
+    function setCanvasRatio(val) {
+      const [w, h] = val.split('x').map(v => parseInt(v, 10));
+      SVG_WIDTH = w;
+      SVG_HEIGHT = h;
+      mainSvg.setAttribute('viewBox', `0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`);
+      svgWrapper.style.aspectRatio = `${SVG_WIDTH} / ${SVG_HEIGHT}`;
+      renderGrid();
+    }
+
+    function setCanvasBgColor(val) {
+      canvasBgColor = val;
+      renderGrid();
+    }
+
     function switchTab(tab) {
       currentTab = tab;
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
+      if (event && event.target) {
+        event.target.classList.add('active');
+      }
       renderRibbon();
     }
 
@@ -784,13 +848,11 @@
         const ry = Math.max(10, Math.abs(py2 - py1) / 2);
         attrs = { cx, cy, rx, ry, stepCx: Math.round((stepStart.stepX + stepEnd.stepX) / 2), stepCy: Math.round((stepStart.stepY + stepEnd.stepY) / 2), stepRx: Math.abs(stepEnd.stepX - stepStart.stepX) / 2, stepRy: Math.abs(stepEnd.stepY - stepStart.stepY) / 2 };
       } else if (type === 'bez2') {
-        // Quadratic Bezier (1 Handle)
         el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         const midX = (px1 + px2) / 2;
         const midY = Math.min(py1, py2) - 50;
         attrs = { x1: px1, y1: py1, cx: midX, cy: midY, x2: px2, y2: py2, stepX1: stepStart.stepX, stepY1: stepStart.stepY, stepCx: Math.round((stepStart.stepX + stepEnd.stepX) / 2), stepCy: Math.max(0, Math.min(stepStart.stepY, stepEnd.stepY) - 25), stepX2: stepEnd.stepX, stepY2: stepEnd.stepY };
       } else if (type === 'bez3') {
-        // Cubic Bezier (2 Handles)
         el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         const c1x = px1 + (px2 - px1) * 0.33;
         const c1y = py1 - 40;
@@ -849,7 +911,7 @@
       }
     }
 
-    // === Selection UI & Control Handles Overlay ===
+    // === Selection Overlay & Control Handles ===
     function renderUI() {
       uiGroup.innerHTML = '';
       statSelected.textContent = `${selectedIds.size}개`;
@@ -859,37 +921,29 @@
       selectedIds.forEach(id => {
         const obj = objectsMap.get(id);
         if (!obj) return;
-
         const a = obj.attrs;
-        // Render Bounding / Guide Lines & Control Point Handles
+
         if (obj.type === 'bez2') {
-          // Render dashed guide lines for Control Handle
           const guide = document.createElementNS('http://www.w3.org/2000/svg', 'path');
           guide.setAttribute('d', `M ${a.x1} ${a.y1} L ${a.cx} ${a.cy} L ${a.x2} ${a.y2}`);
           guide.setAttribute('stroke', '#38bdf8');
           guide.setAttribute('stroke-dasharray', '3,3');
           guide.setAttribute('fill', 'none');
           uiGroup.appendChild(guide);
-
-          // Handle P1 Control Point (1 Handle)
           createHandleNode(a.cx, a.cy, id, 'bez2_ctrl', 1);
         } else if (obj.type === 'bez3') {
-          // Render dashed guide lines for 2 Control Handles
           const guide = document.createElementNS('http://www.w3.org/2000/svg', 'path');
           guide.setAttribute('d', `M ${a.x1} ${a.y1} L ${a.c1x} ${a.c1y} L ${a.c2x} ${a.c2y} L ${a.x2} ${a.y2}`);
           guide.setAttribute('stroke', '#38bdf8');
           guide.setAttribute('stroke-dasharray', '3,3');
           guide.setAttribute('fill', 'none');
           uiGroup.appendChild(guide);
-
-          // Handle P1, P2 Control Points (2 Handles)
           createHandleNode(a.c1x, a.c1y, id, 'bez3_ctrl1', 1);
           createHandleNode(a.c2x, a.c2y, id, 'bez3_ctrl2', 2);
         } else if (obj.type === 'line' || obj.type === 'arc') {
           createHandleNode(a.x1, a.y1, id, 'start', 1);
           createHandleNode(a.x2, a.y2, id, 'end', 2);
         } else if (obj.type === 'rect' || obj.type === 'rounded') {
-          // Corner Resize Handles
           createHandleNode(a.x, a.y, id, 'top_left', 1);
           createHandleNode(a.x + a.width, a.y + a.height, id, 'bottom_right', 2);
         }
@@ -914,7 +968,7 @@
       uiGroup.appendChild(circle);
     }
 
-    // === Event Handling: Drawing, Dragging & Snapping ===
+    // === Event Listeners for Canvas ===
     mainSvg.addEventListener('mousedown', (e) => {
       const coords = getStepCoords(e);
       statRaw.textContent = `(${coords.rawX}, ${coords.rawY})`;
@@ -923,7 +977,6 @@
       if (isDraggingHandle) return;
 
       if (currentTool === 'select') {
-        // Check hit object
         const targetObj = e.target.closest('circle, line, rect, ellipse, path');
         if (targetObj && objectsMap.has(targetObj.id)) {
           if (!e.ctrlKey) selectedIds.clear();
@@ -931,11 +984,9 @@
         } else {
           if (!e.ctrlKey) selectedIds.clear();
           isMarquee = true;
-          marqueeStart = coords;
         }
         renderUI();
       } else {
-        // Start Drawing Object
         isDrawing = true;
         drawStartStep = coords;
         selectedIds.clear();
@@ -951,7 +1002,6 @@
       statStep.textContent = `Step (${coords.stepX}, ${coords.stepY})`;
 
       if (isDraggingHandle && activeHandleInfo) {
-        // Dragging Handle Node to modify shape parameters in real-time
         const obj = objectsMap.get(activeHandleInfo.objId);
         if (obj) {
           const a = obj.attrs;
@@ -981,7 +1031,6 @@
       }
 
       if (isDrawing && activeTempObj && drawStartStep) {
-        // Update temp drawing shape
         const px1 = (drawStartStep.stepX / STEPS_X) * SVG_WIDTH;
         const py1 = (drawStartStep.stepY / STEPS_Y) * SVG_HEIGHT;
         const px2 = coords.px;
@@ -1025,6 +1074,19 @@
       isDraggingHandle = false;
       activeHandleInfo = null;
       activeTempObj = null;
+    });
+
+    // Alt Keybind Toggle Handler
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Alt') {
+        document.body.classList.add('show-alt-keybinds');
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      if (e.key === 'Alt') {
+        document.body.classList.remove('show-alt-keybinds');
+      }
     });
 
     // === Grouping & Hierarchy Operations ===
@@ -1077,12 +1139,11 @@
 
     function alignSelected(type) {
       if (selectedIds.size === 0) return;
-      // Simple alignment logic for selected shapes
       selectedIds.forEach(id => {
         const obj = objectsMap.get(id);
         if (!obj) return;
         const a = obj.attrs;
-        if (type === 'left') { if (a.x !== undefined) a.x = 20; if (a.cx !== undefined) a.cx = 40; if (a.x1 !== undefined) a.x1 = 20; }
+        if (type === 'left') { if (a.x !== undefined) a.x = 20; if (a.cx !== undefined) a.cx = 40; }
         else if (type === 'hcenter') { if (a.x !== undefined) a.x = (SVG_WIDTH - a.width) / 2; if (a.cx !== undefined) a.cx = SVG_WIDTH / 2; }
         updateElementAttributes(obj);
       });
@@ -1127,7 +1188,21 @@
       });
     }
 
-    // Initialize
+    // === GLOBAL SCOPE BINDING (Fixes ReferenceError in SPA/IIFE) ===
+    window.switchTab = switchTab;
+    window.setTool = setTool;
+    window.toggleGridSnap = toggleGridSnap;
+    window.setGridDensity = setGridDensity;
+    window.setCanvasRatio = setCanvasRatio;
+    window.setCanvasBgColor = setCanvasBgColor;
+    window.groupSelected = groupSelected;
+    window.ungroupSelected = ungroupSelected;
+    window.arrangeOrder = arrangeOrder;
+    window.alignSelected = alignSelected;
+    window.applyStyleToSelected = applyStyleToSelected;
+    window.scaleMarker = scaleMarker;
+
+    // Initial Startup
     renderGrid();
     updateSvgDefs();
     renderRibbon();
