@@ -77,11 +77,20 @@
 
       if (cfg.currentTool === 'text') {
         var clickedTextEl = e.target ? (e.target.closest('text') || (e.target.closest('tspan') ? e.target.closest('tspan').closest('text') : null)) : null;
+        var targetTextObj = null;
         if (clickedTextEl && cfg.objectsMap.has(clickedTextEl.id)) {
-          var existingObj = cfg.objectsMap.get(clickedTextEl.id);
+          targetTextObj = cfg.objectsMap.get(clickedTextEl.id);
+        } else {
+          var nearest = selection.findNearestObject(coords.px, coords.py);
+          if (nearest && nearest.type === 'text') {
+            targetTextObj = nearest;
+          }
+        }
+
+        if (targetTextObj) {
           cfg.selectedIds.clear();
-          cfg.selectedIds.add(existingObj.id);
-          textTool.startDirectCanvasTyping(existingObj.attrs.x, existingObj.attrs.y, existingObj);
+          cfg.selectedIds.add(targetTextObj.id);
+          textTool.startDirectCanvasTyping(targetTextObj.attrs.x, targetTextObj.attrs.y, targetTextObj);
         } else {
           textTool.startDirectCanvasTyping(coords.px, coords.py);
         }
@@ -350,8 +359,33 @@
       }
     });
 
-    mainSvg.addEventListener('mouseup', function() {
-      if (state.isDrawingNewObject) {
+    mainSvg.addEventListener('mouseup', function(e) {
+      if (state.isDrawingNewObject && state.activeNewObj) {
+        var obj = state.activeNewObj;
+        var start = state.drawStartCoords;
+        var coords = selection.getStepCoords(e);
+        var dist = start ? Math.hypot(coords.px - start.px, coords.py - start.py) : 0;
+
+        if (dist < 10 && obj.attrs) {
+          var a = obj.attrs;
+          if (obj.type === 'line') {
+            a.x2 = a.x1 + 80;
+            a.y2 = a.y1 + 50;
+          } else if (obj.type === 'rect' || obj.type === 'rounded') {
+            a.width = 100;
+            a.height = 60;
+          } else if (obj.type === 'ellipse') {
+            a.rx = 50;
+            a.ry = 30;
+          } else if (obj.type === 'arc') {
+            a.rx = 50;
+            a.ry = 50;
+            a.startAngle = -90;
+            a.endAngle = 0;
+          }
+          render.updateElementAttributes(obj);
+        }
+
         state.isDrawingNewObject = false;
         state.activeNewObj = null;
       }
