@@ -8,1218 +8,234 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Standard SPC Modular Stylesheet -->
+  <link rel="stylesheet" href="Webpointer.css">
 </head>
 <body>
-  <article class="webpointer-app">
-    <!-- Embedded Scoped Style for SPA Router Compatibility -->
-    <style>
-      .webpointer-app {
-        max-width: 1200px;
-        width: 100%;
-        margin: 0 auto;
-        padding: 12px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        color: #f8fafc;
-        user-select: none;
-      }
-
-      /* Header Bar */
-      .webpointer-app .header-bar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 8px 14px;
-        background: rgba(30, 41, 59, 0.95);
-        border: 1px solid #334155;
-        border-radius: 8px;
-      }
-
-      .webpointer-app .header-left {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-
-      .webpointer-app .header-left a {
-        display: flex;
-        align-items: center;
-        transition: transform 0.2s;
-      }
-
-      .webpointer-app .header-left a:hover {
-        transform: scale(1.1);
-      }
-
-      .webpointer-app .header-title {
-        font-size: 1.15rem;
-        font-weight: 700;
-        background: linear-gradient(135deg, #38bdf8, #818cf8);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
-
-      /* === Menu Bar (Gray Background, Width 100%) === */
-      .webpointer-app .menu-bar {
-        width: 100% !important;
-        background-color: #e2e8f0 !important;
-        border: 1px solid #cbd5e1 !important;
-        border-bottom: 1px solid #cbd5e1 !important;
-        border-radius: 8px 8px 0 0 !important;
-        padding: 6px 10px 0 10px !important;
-        display: flex !important;
-        flex-direction: row !important;
-        align-items: flex-end !important;
-        gap: 4px !important;
-        margin: 0 !important;
-      }
-
-      /* Menu Tab Buttons */
-      .webpointer-app .tab-btn {
-        padding: 8px 20px !important;
-        font-size: 0.9rem !important;
-        font-weight: 600 !important;
-        color: #475569 !important;
-        background-color: #e2e8f0 !important;
-        border: 1px solid transparent !important;
-        border-bottom: none !important;
-        border-radius: 6px 6px 0 0 !important;
-        cursor: pointer !important;
-        transition: all 0.15s ease !important;
-        position: relative !important;
-        outline: none !important;
-      }
-
-      .webpointer-app .tab-btn:hover {
-        color: #0f172a !important;
-        background-color: #cbd5e1 !important;
-      }
-
-      /* Selected Active Tab (White Background, Seamless Ribbon Connection) */
-      .webpointer-app .tab-btn.active {
-        color: #0284c7 !important;
-        background-color: #ffffff !important;
-        border: 1px solid #cbd5e1 !important;
-        border-bottom: 1px solid #ffffff !important;
-        margin-bottom: -1px !important;
-        z-index: 10 !important;
-        font-weight: 700 !important;
-        box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.05) !important;
-      }
-
-      /* === Ribbon Bar (White Background, Width 100%, Horizontal Categories) === */
-      .webpointer-app .ribbon-bar {
-        width: 100% !important;
-        background-color: #ffffff !important;
-        color: #0f172a !important;
-        border: 1px solid #cbd5e1 !important;
-        border-top: 1px solid #cbd5e1 !important;
-        border-radius: 0 0 8px 8px !important;
-        padding: 10px 16px !important;
-        min-height: 145px !important;
-        display: flex !important;
-        flex-direction: row !important;
-        align-items: stretch !important;
-        flex-wrap: nowrap !important;
-        gap: 0 !important;
-        overflow-x: auto !important;
-        position: relative !important;
-        z-index: 5 !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
-        margin: 0 !important;
-      }
-
-      /* Category DIV (Left to Right Alignment) */
-      .webpointer-app .ribbon-category {
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: space-between !important;
-        padding-right: 16px !important;
-        margin-right: 16px !important;
-        border-right: 1px solid #e2e8f0 !important;
-        position: relative !important;
-        height: 100% !important;
-        flex-shrink: 0 !important;
-      }
-
-      .webpointer-app .ribbon-category:last-child {
-        border-right: none !important;
-        padding-right: 0 !important;
-        margin-right: 0 !important;
-      }
-
-      /* Category 3-Row Grid (Fill Row 1, Row 2, Row 3 sequentially) */
-      .webpointer-app .category-grid {
-        display: grid !important;
-        grid-template-rows: repeat(3, 34px) !important;
-        gap: 4px !important;
-        align-items: center !important;
-      }
-
-      /* Category Title (Centered at Bottom) */
-      .webpointer-app .category-title {
-        font-size: 0.74rem !important;
-        font-weight: 600 !important;
-        color: #64748b !important;
-        text-align: center !important;
-        margin-top: auto !important;
-        padding-top: 6px !important;
-        letter-spacing: 0.02em !important;
-        white-space: nowrap !important;
-      }
-
-      /* Uniform Square Tool Buttons */
-      .webpointer-app .tool-btn {
-        position: relative !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        width: 34px !important;
-        height: 34px !important;
-        min-width: 34px !important;
-        min-height: 34px !important;
-        max-width: 34px !important;
-        max-height: 34px !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        background-color: #f8fafc !important;
-        border: 1px solid #cbd5e1 !important;
-        border-radius: 6px !important;
-        color: #334155 !important;
-        cursor: pointer !important;
-        transition: all 0.15s ease !important;
-        box-sizing: border-box !important;
-      }
-
-      .webpointer-app .tool-btn:hover {
-        background-color: #e2e8f0 !important;
-        border-color: #0284c7 !important;
-        color: #0284c7 !important;
-      }
-
-      .webpointer-app .tool-btn.active {
-        background-color: #0284c7 !important;
-        border-color: #0284c7 !important;
-        color: #ffffff !important;
-        box-shadow: 0 0 6px rgba(2, 132, 199, 0.4) !important;
-      }
-
-      /* Uniform SVG Icon Dimensions (20x20 Display) */
-      .webpointer-app .tool-btn svg {
-        width: 20px !important;
-        height: 20px !important;
-        fill: none !important;
-        stroke: currentColor !important;
-        stroke-width: 1.8 !important;
-        stroke-linecap: round !important;
-        stroke-linejoin: round !important;
-        pointer-events: none !important;
-      }
-
-      /* Stationary Tooltip (Positioned Directly Below Icon) */
-      .webpointer-app .tool-btn .tooltip-text {
-        display: none !important;
-        position: absolute !important;
-        top: 100% !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        margin-top: 6px !important;
-        padding: 4px 8px !important;
-        background: #0f172a !important;
-        border: 1px solid #0284c7 !important;
-        color: #ffffff !important;
-        font-size: 0.72rem !important;
-        font-weight: 500 !important;
-        white-space: nowrap !important;
-        border-radius: 4px !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
-        z-index: 300 !important;
-        pointer-events: none !important;
-      }
-
-      .webpointer-app .tool-btn:hover .tooltip-text,
-      body.show-alt-keybinds .webpointer-app .tool-btn .tooltip-text {
-        display: block !important;
-      }
-
-      /* Alt Keybind Badge */
-      .webpointer-app .alt-badge {
-        display: none !important;
-        position: absolute !important;
-        top: -4px !important;
-        right: -4px !important;
-        background: #ea4335 !important;
-        color: white !important;
-        font-size: 9px !important;
-        font-weight: 800 !important;
-        border-radius: 50% !important;
-        width: 14px !important;
-        height: 14px !important;
-        line-height: 14px !important;
-        text-align: center !important;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important;
-        z-index: 310 !important;
-      }
-
-      body.show-alt-keybinds .webpointer-app .alt-badge {
-        display: block !important;
-      }
-
-      .webpointer-app .ribbon-control-item {
-        display: flex !important;
-        align-items: center !important;
-        gap: 6px !important;
-        font-size: 0.8rem !important;
-        height: 34px !important;
-      }
-
-      .webpointer-app .ribbon-control-item label {
-        color: #475569 !important;
-        font-size: 0.8rem !important;
-        font-weight: 500 !important;
-        white-space: nowrap !important;
-      }
-
-      .webpointer-app .ribbon-control-item select, 
-      .webpointer-app .ribbon-control-item input[type="color"],
-      .webpointer-app .ribbon-control-item input[type="number"] {
-        padding: 4px 6px !important;
-        background: #ffffff !important;
-        border: 1px solid #cbd5e1 !important;
-        border-radius: 4px !important;
-        color: #0f172a !important;
-        font-size: 0.8rem !important;
-        outline: none !important;
-      }
-
-      /* Content Area: SVG Canvas & Inspector Panel */
-      .webpointer-app .content-area {
-        display: grid !important;
-        grid-template-columns: 1fr 260px !important;
-        gap: 12px !important;
-      }
-
-      @media (max-width: 960px) {
-        .webpointer-app .content-area {
-          grid-template-columns: 1fr !important;
+  <article>
+    <!-- Wrapper div inside article to ensure class persistence in SPA navigation router -->
+    <div class="webpointer-app">
+      <!-- Inline CSS Fallback for Guaranteed Immediate SPA Frame Rendering -->
+      <style>
+        .webpointer-app {
+          max-width: 1200px;
+          width: 100%;
+          margin: 0 auto;
+          padding: 12px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          font-family: 'Inter', system-ui, -apple-system, sans-serif;
+          color: #f8fafc;
+          user-select: none;
+          box-sizing: border-box;
         }
-      }
+        .webpointer-app * { box-sizing: border-box; }
+        .webpointer-app .header-bar {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 8px 14px; background: rgba(30, 41, 59, 0.95);
+          border: 1px solid #334155; border-radius: 8px;
+        }
+        .webpointer-app .header-left { display: flex; align-items: center; gap: 10px; }
+        .webpointer-app .header-left a { display: flex; align-items: center; transition: transform 0.2s; }
+        .webpointer-app .header-left a:hover { transform: scale(1.1); }
+        .webpointer-app .header-title {
+          font-size: 1.15rem; font-weight: 700;
+          background: linear-gradient(135deg, #38bdf8, #818cf8);
+          -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .webpointer-app .menu-bar {
+          width: 100% !important; background-color: #e2e8f0 !important;
+          border: 1px solid #cbd5e1 !important; border-bottom: 1px solid #cbd5e1 !important;
+          border-radius: 8px 8px 0 0 !important; padding: 6px 10px 0 10px !important;
+          display: flex !important; flex-direction: row !important; align-items: flex-end !important;
+          gap: 4px !important; margin: 0 !important;
+        }
+        .webpointer-app .tab-btn {
+          padding: 8px 20px !important; font-size: 0.9rem !important; font-weight: 600 !important;
+          color: #475569 !important; background-color: #e2e8f0 !important;
+          border: 1px solid transparent !important; border-bottom: none !important;
+          border-radius: 6px 6px 0 0 !important; cursor: pointer !important;
+          transition: all 0.15s ease !important; position: relative !important; outline: none !important;
+        }
+        .webpointer-app .tab-btn:hover { color: #0f172a !important; background-color: #cbd5e1 !important; }
+        .webpointer-app .tab-btn.active {
+          color: #0284c7 !important; background-color: #ffffff !important;
+          border: 1px solid #cbd5e1 !important; border-bottom: 1px solid #ffffff !important;
+          margin-bottom: -1px !important; z-index: 10 !important; font-weight: 700 !important;
+          box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.05) !important;
+        }
+        .webpointer-app .ribbon-bar {
+          width: 100% !important; background-color: #ffffff !important; color: #0f172a !important;
+          border: 1px solid #cbd5e1 !important; border-top: 1px solid #cbd5e1 !important;
+          border-radius: 0 0 8px 8px !important; padding: 10px 16px !important;
+          min-height: 145px !important; display: flex !important; flex-direction: row !important;
+          align-items: stretch !important; flex-wrap: nowrap !important; gap: 0 !important;
+          overflow-x: auto !important; position: relative !important; z-index: 5 !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important; margin: 0 !important;
+        }
+        .webpointer-app .ribbon-category {
+          display: flex !important; flex-direction: column !important; justify-content: space-between !important;
+          padding-right: 16px !important; margin-right: 16px !important; border-right: 1px solid #e2e8f0 !important;
+          position: relative !important; height: 100% !important; flex-shrink: 0 !important;
+        }
+        .webpointer-app .ribbon-category:last-child { border-right: none !important; padding-right: 0 !important; margin-right: 0 !important; }
+        .webpointer-app .category-grid {
+          display: grid !important; grid-template-rows: repeat(3, 34px) !important; gap: 4px !important; align-items: center !important;
+        }
+        .webpointer-app .category-title {
+          font-size: 0.74rem !important; font-weight: 600 !important; color: #64748b !important;
+          text-align: center !important; margin-top: auto !important; padding-top: 6px !important;
+          letter-spacing: 0.02em !important; white-space: nowrap !important;
+        }
+        .webpointer-app .tool-btn {
+          position: relative !important; display: flex !important; align-items: center !important; justify-content: center !important;
+          width: 34px !important; height: 34px !important; min-width: 34px !important; min-height: 34px !important;
+          max-width: 34px !important; max-height: 34px !important; padding: 0 !important; margin: 0 !important;
+          background-color: #f8fafc !important; border: 1px solid #cbd5e1 !important; border-radius: 6px !important;
+          color: #334155 !important; cursor: pointer !important; transition: all 0.15s ease !important; box-sizing: border-box !important;
+        }
+        .webpointer-app .tool-btn:hover { background-color: #e2e8f0 !important; border-color: #0284c7 !important; color: #0284c7 !important; }
+        .webpointer-app .tool-btn.active {
+          background-color: #0284c7 !important; border-color: #0284c7 !important; color: #ffffff !important;
+          box-shadow: 0 0 6px rgba(2, 132, 199, 0.4) !important;
+        }
+        .webpointer-app .tool-btn svg {
+          width: 20px !important; height: 20px !important; fill: none !important; stroke: currentColor !important;
+          stroke-width: 1.8 !important; stroke-linecap: round !important; stroke-linejoin: round !important; pointer-events: none !important;
+        }
+        .webpointer-app .tool-btn .tooltip-text {
+          display: none !important; position: absolute !important; top: 100% !important; left: 50% !important;
+          transform: translateX(-50%) !important; margin-top: 6px !important; padding: 4px 8px !important;
+          background: #0f172a !important; border: 1px solid #0284c7 !important; color: #ffffff !important;
+          font-size: 0.72rem !important; font-weight: 500 !important; white-space: nowrap !important;
+          border-radius: 4px !important; box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important; z-index: 300 !important; pointer-events: none !important;
+        }
+        .webpointer-app .tool-btn:hover .tooltip-text,
+        body.show-alt-keybinds .webpointer-app .tool-btn .tooltip-text { display: block !important; }
+        .webpointer-app .alt-badge {
+          display: none !important; position: absolute !important; top: -4px !important; right: -4px !important;
+          background: #ea4335 !important; color: white !important; font-size: 9px !important; font-weight: 800 !important;
+          border-radius: 50% !important; width: 14px !important; height: 14px !important; line-height: 14px !important;
+          text-align: center !important; box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important; z-index: 310 !important;
+        }
+        body.show-alt-keybinds .webpointer-app .alt-badge { display: block !important; }
+        .webpointer-app .ribbon-control-item { display: flex !important; align-items: center !important; gap: 6px !important; font-size: 0.8rem !important; height: 34px !important; }
+        .webpointer-app .ribbon-control-item label { color: #475569 !important; font-size: 0.8rem !important; font-weight: 500 !important; white-space: nowrap !important; }
+        .webpointer-app .ribbon-control-item select, 
+        .webpointer-app .ribbon-control-item input[type="color"],
+        .webpointer-app .ribbon-control-item input[type="number"] {
+          padding: 4px 6px !important; background: #ffffff !important; border: 1px solid #cbd5e1 !important;
+          border-radius: 4px !important; color: #0f172a !important; font-size: 0.8rem !important; outline: none !important;
+        }
+        .webpointer-app .content-area { display: grid !important; grid-template-columns: 1fr 260px !important; gap: 12px !important; }
+        @media (max-width: 960px) { .webpointer-app .content-area { grid-template-columns: 1fr !important; } }
+        .webpointer-app .svg-wrapper {
+          position: relative !important; width: 100% !important; aspect-ratio: 16 / 9 !important;
+          background: #020617 !important; border: 1px solid #334155 !important; border-radius: 8px !important;
+          overflow: hidden !important; box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+        }
+        .webpointer-app svg#mainSvg { width: 100% !important; height: 100% !important; display: block !important; }
+        .webpointer-app .inspector-panel {
+          background: rgba(30, 41, 59, 0.95) !important; border: 1px solid #334155 !important;
+          border-radius: 8px !important; padding: 12px !important; display: flex !important;
+          flex-direction: column !important; gap: 12px !important; font-size: 0.85rem !important;
+        }
+        .webpointer-app .inspector-title { font-weight: 700 !important; color: #38bdf8 !important; border-bottom: 1px solid #334155 !important; padding-bottom: 6px !important; }
+        .webpointer-app .stat-row { display: flex !important; justify-content: space-between !important; font-family: monospace !important; }
+        .webpointer-app .stat-label { color: #94a3b8 !important; }
+        .webpointer-app .stat-val { font-weight: 600 !important; color: #38bdf8 !important; }
+        .webpointer-app .tree-box {
+          background: #020617 !important; border: 1px solid #334155 !important; border-radius: 6px !important;
+          padding: 6px !important; height: 180px !important; overflow-y: auto !important; font-family: monospace !important; font-size: 0.75rem !important;
+        }
+        .webpointer-app .tree-item { padding: 3px 6px !important; cursor: pointer !important; border-radius: 3px !important; }
+        .webpointer-app .tree-item:hover { background: rgba(56, 189, 248, 0.15) !important; }
+        .webpointer-app .tree-item.selected { background: rgba(56, 189, 248, 0.3) !important; color: #38bdf8 !important; font-weight: 700 !important; }
+        .webpointer-app .handle-node { cursor: pointer !important; transition: r 0.15s ease !important; }
+        .webpointer-app .handle-node:hover { r: 6 !important; stroke-width: 2.5 !important; }
+      </style>
 
-      .webpointer-app .svg-wrapper {
-        position: relative !important;
-        width: 100% !important;
-        aspect-ratio: 16 / 9 !important;
-        background: #020617 !important;
-        border: 1px solid #334155 !important;
-        border-radius: 8px !important;
-        overflow: hidden !important;
-        box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 4px 12px rgba(0, 0, 0, 0.5) !important;
-      }
+      <!-- Standard SPC Error Console Component -->
+      <div id="error-console" style="color: #ef4444; background: #fef2f2; border: 1px solid #fee2e2; padding: 12px; margin-bottom: 12px; border-radius: 8px; font-family: monospace; display: none; font-size: 0.9rem; line-height: 1.4;"></div>
+      <script>
+        window.onerror = function(message, source, lineno, colno, error) {
+          const consoleDiv = document.getElementById("error-console");
+          if (consoleDiv) {
+            consoleDiv.style.display = "block";
+            consoleDiv.innerHTML += `<div><strong>JS Error:</strong> ${message} <br><small>at ${source}:${lineno}:${colno}</small></div>`;
+          }
+          return false;
+        };
+      </script>
 
-      .webpointer-app svg#mainSvg {
-        width: 100% !important;
-        height: 100% !important;
-        display: block !important;
-      }
-
-      /* Inspector Panel */
-      .webpointer-app .inspector-panel {
-        background: rgba(30, 41, 59, 0.95) !important;
-        border: 1px solid #334155 !important;
-        border-radius: 8px !important;
-        padding: 12px !important;
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 12px !important;
-        font-size: 0.85rem !important;
-      }
-
-      .webpointer-app .inspector-title {
-        font-weight: 700 !important;
-        color: #38bdf8 !important;
-        border-bottom: 1px solid #334155 !important;
-        padding-bottom: 6px !important;
-      }
-
-      .webpointer-app .stat-row {
-        display: flex !important;
-        justify-content: space-between !important;
-        font-family: monospace !important;
-      }
-
-      .webpointer-app .stat-label {
-        color: #94a3b8 !important;
-      }
-
-      .webpointer-app .stat-val {
-        font-weight: 600 !important;
-        color: #38bdf8 !important;
-      }
-
-      .webpointer-app .tree-box {
-        background: #020617 !important;
-        border: 1px solid #334155 !important;
-        border-radius: 6px !important;
-        padding: 6px !important;
-        height: 180px !important;
-        overflow-y: auto !important;
-        font-family: monospace !important;
-        font-size: 0.75rem !important;
-      }
-
-      .webpointer-app .tree-item {
-        padding: 3px 6px !important;
-        cursor: pointer !important;
-        border-radius: 3px !important;
-      }
-
-      .webpointer-app .tree-item:hover {
-        background: rgba(56, 189, 248, 0.15) !important;
-      }
-
-      .webpointer-app .tree-item.selected {
-        background: rgba(56, 189, 248, 0.3) !important;
-        color: #38bdf8 !important;
-        font-weight: 700 !important;
-      }
-
-      /* Control Handles styling */
-      .webpointer-app .handle-node {
-        cursor: pointer !important;
-        transition: r 0.15s ease !important;
-      }
-
-      .webpointer-app .handle-node:hover {
-        r: 6 !important;
-        stroke-width: 2.5 !important;
-      }
-    </style>
-
-    <!-- Header Bar -->
-    <div class="header-bar">
-      <div class="header-left">
-        <a href="/" title="메인으로 이동">
-          <img src="/source/icon_seohyun.svg" style="width:1.8em; height:1.8em;" alt="Home">
-        </a>
-        <h1 class="header-title">Webpointer Vector CAD Editor</h1>
-      </div>
-      <div style="font-size: 0.8rem; color: #94a3b8;">
-        Alt 키로 단축키 및 툴팁 힌트 노출
-      </div>
-    </div>
-
-    <!-- === Menu Bar (Gray Background, Width 100%) === -->
-    <div class="menu-bar">
-      <button class="tab-btn active" onclick="switchTab('insert')">삽입</button>
-      <button class="tab-btn" onclick="switchTab('view')">보기</button>
-      <button class="tab-btn" onclick="switchTab('style')">그림 서식</button>
-      <button class="tab-btn" onclick="switchTab('text')">글 서식</button>
-      <button class="tab-btn" onclick="switchTab('anim')">애니메이션</button>
-    </div>
-
-    <!-- === Ribbon Bar (White Background, Width 100%, Left to Right Category DIVs) === -->
-    <div class="ribbon-bar" id="ribbonBar">
-      <!-- Injected dynamically via JS -->
-    </div>
-
-    <!-- Content Area: SVG Canvas & Inspector -->
-    <div class="content-area">
-      <div class="svg-wrapper" id="svgWrapper">
-        <svg id="mainSvg" viewBox="0 0 960 540">
-          <defs id="svgDefs"></defs>
-          <!-- Grid Layer -->
-          <g id="gridGroup"></g>
-          <!-- User Objects & Groups Layer -->
-          <g id="objectsGroup"></g>
-          <!-- Selection, Marquee & Control Handles Layer -->
-          <g id="uiGroup"></g>
-        </svg>
-      </div>
-
-      <!-- Inspector Panel -->
-      <div class="inspector-panel">
-        <div class="inspector-title">📊 실시간 좌표 & 상태</div>
-        <div class="stat-row">
-          <span class="stat-label">입력 (Raw):</span>
-          <span class="stat-val" id="statRaw">(0, 0)</span>
+      <!-- Header Bar -->
+      <div class="header-bar">
+        <div class="header-left">
+          <a href="/" title="메인으로 이동">
+            <img src="/source/icon_seohyun.svg" style="width:1.8em; height:1.8em;" alt="Home">
+          </a>
+          <h1 class="header-title">Webpointer Vector CAD Editor</h1>
         </div>
-        <div class="stat-row">
-          <span class="stat-label">스냅 (Step):</span>
-          <span class="stat-val" id="statStep">Step (0, 0)</span>
+        <div style="font-size: 0.8rem; color: #94a3b8;">
+          Alt 키로 단축키 및 툴팁 힌트 노출
         </div>
-        <div class="stat-row">
-          <span class="stat-label">선택 개수:</span>
-          <span class="stat-val" id="statSelected">0개</span>
+      </div>
+
+      <!-- === Menu Bar (Gray Background, Width 100%) === -->
+      <div class="menu-bar">
+        <button class="tab-btn active" onclick="switchTab('insert')">삽입</button>
+        <button class="tab-btn" onclick="switchTab('view')">보기</button>
+        <button class="tab-btn" onclick="switchTab('style')">그림 서식</button>
+        <button class="tab-btn" onclick="switchTab('text')">글 서식</button>
+        <button class="tab-btn" onclick="switchTab('anim')">애니메이션</button>
+      </div>
+
+      <!-- === Ribbon Bar (White Background, Width 100%, Horizontal Categories) === -->
+      <div class="ribbon-bar" id="ribbonBar">
+        <!-- Injected dynamically via JS -->
+      </div>
+
+      <!-- Content Area: SVG Canvas & Inspector -->
+      <div class="content-area">
+        <div class="svg-wrapper" id="svgWrapper">
+          <svg id="mainSvg" viewBox="0 0 960 540">
+            <defs id="svgDefs"></defs>
+            <!-- Grid Layer -->
+            <g id="gridGroup"></g>
+            <!-- User Objects & Groups Layer -->
+            <g id="objectsGroup"></g>
+            <!-- Selection, Marquee & Control Handles Layer -->
+            <g id="uiGroup"></g>
+          </svg>
         </div>
 
-        <div class="inspector-title">🌳 SVG DOM 계층 트리 (&lt;g&gt;)</div>
-        <div class="tree-box" id="domTree"></div>
+        <!-- Inspector Panel -->
+        <div class="inspector-panel">
+          <div class="inspector-title">📊 실시간 좌표 & 상태</div>
+          <div class="stat-row">
+            <span class="stat-label">입력 (Raw):</span>
+            <span class="stat-val" id="statRaw">(0, 0)</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">스냅 (Step):</span>
+            <span class="stat-val" id="statStep">Step (0, 0)</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">선택 개수:</span>
+            <span class="stat-val" id="statSelected">0개</span>
+          </div>
+
+          <div class="inspector-title">🌳 SVG DOM 계층 트리 (&lt;g&gt;)</div>
+          <div class="tree-box" id="domTree"></div>
+        </div>
       </div>
     </div>
   </article>
 
-  <script>
-    // Canvas & Grid Constants
-    let SVG_WIDTH = 960;
-    let SVG_HEIGHT = 540;
-    let STEPS_X = 480;
-    let STEPS_Y = 270;
-
-    // State Variables
-    let currentTab = 'insert';
-    let currentTool = 'select';
-    let gridSnapEnabled = true;
-    let canvasBgColor = '#020617';
-
-    let strokeColor = '#38bdf8';
-    let fillColor = 'rgba(56, 189, 248, 0.2)';
-    let strokeWidth = 2;
-
-    // Marker Settings
-    let startMarker = 'none';
-    let startMarkerScale = 1;
-    let endMarker = 'none';
-    let endMarkerScale = 1;
-
-    // Selection State
-    const selectedIds = new Set();
-    let isDrawing = false;
-    let isMarquee = false;
-    let isDraggingHandle = false;
-    let activeHandleInfo = null;
-
-    let drawStartStep = null;
-    let activeTempObj = null;
-
-    // SVG DOM Object Storage
-    const objectsMap = new Map();
-    let nextId = 1;
-
-    // DOM Elements
-    const mainSvg = document.getElementById('mainSvg');
-    const svgWrapper = document.getElementById('svgWrapper');
-    const gridGroup = document.getElementById('gridGroup');
-    const objectsGroup = document.getElementById('objectsGroup');
-    const uiGroup = document.getElementById('uiGroup');
-    const svgDefs = document.getElementById('svgDefs');
-    const ribbonBar = document.getElementById('ribbonBar');
-    const domTree = document.getElementById('domTree');
-
-    const statRaw = document.getElementById('statRaw');
-    const statStep = document.getElementById('statStep');
-    const statSelected = document.getElementById('statSelected');
-
-    // === Step Snap Utility ===
-    function getStepCoords(evt) {
-      const rect = mainSvg.getBoundingClientRect();
-      const rawX = (evt.clientX - rect.left) * (SVG_WIDTH / rect.width);
-      const rawY = (evt.clientY - rect.top) * (SVG_HEIGHT / rect.height);
-
-      const clampedX = Math.max(0, Math.min(SVG_WIDTH, rawX));
-      const clampedY = Math.max(0, Math.min(SVG_HEIGHT, rawY));
-
-      let stepX, stepY, px, py;
-      if (gridSnapEnabled) {
-        stepX = Math.round((clampedX / SVG_WIDTH) * STEPS_X);
-        stepY = Math.round((clampedY / SVG_HEIGHT) * STEPS_Y);
-        px = (stepX / STEPS_X) * SVG_WIDTH;
-        py = (stepY / STEPS_Y) * SVG_HEIGHT;
-      } else {
-        px = clampedX;
-        py = clampedY;
-        stepX = Math.round((px / SVG_WIDTH) * STEPS_X);
-        stepY = Math.round((py / SVG_HEIGHT) * STEPS_Y);
-      }
-
-      return {
-        rawX: Math.round(clampedX),
-        rawY: Math.round(clampedY),
-        stepX,
-        stepY,
-        px,
-        py
-      };
-    }
-
-    // === Grid Layer Renderer ===
-    function renderGrid() {
-      gridGroup.innerHTML = '';
-      mainSvg.style.backgroundColor = canvasBgColor;
-
-      if (!gridSnapEnabled) return;
-
-      let pathData = '';
-      const stepW = SVG_WIDTH / STEPS_X;
-      for (let s = 0; s <= STEPS_X; s += 30) {
-        const x = s * stepW;
-        pathData += `M ${x} 0 V ${SVG_HEIGHT} `;
-      }
-      const stepH = SVG_HEIGHT / STEPS_Y;
-      for (let s = 0; s <= STEPS_Y; s += 30) {
-        const y = s * stepH;
-        pathData += `M 0 ${y} H ${SVG_WIDTH} `;
-      }
-
-      const gridPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      gridPath.setAttribute('d', pathData);
-      gridPath.setAttribute('stroke', 'rgba(51, 65, 85, 0.4)');
-      gridPath.setAttribute('stroke-width', '0.6');
-      gridGroup.appendChild(gridPath);
-    }
-
-    // === SVG Defs (Markers) Generator ===
-    function updateSvgDefs() {
-      svgDefs.innerHTML = '';
-      ['arrow', 'circle', 'diamond'].forEach(type => {
-        ['start', 'end'].forEach(pos => {
-          const markerId = `marker-${pos}-${type}`;
-          const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
-          marker.setAttribute('id', markerId);
-          marker.setAttribute('viewBox', '0 0 10 10');
-          marker.setAttribute('refX', pos === 'start' ? '2' : '8');
-          marker.setAttribute('refY', '5');
-          marker.setAttribute('markerWidth', (6 * (pos === 'start' ? startMarkerScale : endMarkerScale)).toString());
-          marker.setAttribute('markerHeight', (6 * (pos === 'start' ? startMarkerScale : endMarkerScale)).toString());
-          marker.setAttribute('orient', 'auto');
-
-          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-          path.setAttribute('fill', strokeColor);
-
-          if (type === 'arrow') {
-            path.setAttribute('d', pos === 'start' ? 'M 10 0 L 0 5 L 10 10 Z' : 'M 0 0 L 10 5 L 0 10 Z');
-          } else if (type === 'circle') {
-            path.setAttribute('d', 'M 5 1 A 4 4 0 1 1 4.99 1 Z');
-          } else if (type === 'diamond') {
-            path.setAttribute('d', 'M 5 0 L 10 5 L 5 10 L 0 5 Z');
-          }
-          marker.appendChild(path);
-          svgDefs.appendChild(marker);
-        });
-      });
-    }
-
-    // Helper to generate Tool Button HTML
-    function makeToolHtml(toolId, title, keybind, svgPath) {
-      const isActive = currentTool === toolId ? 'active' : '';
-      return `
-        <button class="tool-btn ${isActive}" onclick="setTool('${toolId}')">
-          <span class="alt-badge">${keybind}</span>
-          ${svgPath}
-          <span class="tooltip-text">${title}</span>
-        </button>
-      `;
-    }
-
-    // Helper to format category items into exact 3-Row Grid (Filling Row 1, Row 2, Row 3)
-    function build3RowGridHtml(itemsHtmlArray) {
-      const colCount = Math.ceil(itemsHtmlArray.length / 3);
-      return `<div class="category-grid" style="grid-template-columns: repeat(${colCount}, 34px);">${itemsHtmlArray.join('')}</div>`;
-    }
-
-    // === Ribbon Bar Renderer (Left to Right Category DIVs, White Background) ===
-    function renderRibbon() {
-      ribbonBar.innerHTML = '';
-
-      if (currentTab === 'insert') {
-        const shapeTools = [
-          makeToolHtml('select', '선택 도구', '1', '<svg viewBox="0 0 24 24"><path d="M3 3l7 18 3-7 7-3L3 3z"/></svg>'),
-          makeToolHtml('point', '점 (Point)', '2', '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="currentColor"/></svg>'),
-          makeToolHtml('line', '선 (Line)', '3', '<svg viewBox="0 0 24 24"><line x1="4" y1="20" x2="20" y2="4"/></svg>'),
-          makeToolHtml('rect', '사각형', '4', '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="1"/></svg>'),
-          makeToolHtml('ellipse', '타원', '5', '<svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="9" ry="6"/></svg>'),
-          makeToolHtml('arc', '호 (Arc)', '6', '<svg viewBox="0 0 24 24"><path d="M 4 18 A 9 9 0 0 1 20 18"/></svg>'),
-          makeToolHtml('bez2', '2차 베지어 (1 핸들)', '7', '<svg viewBox="0 0 24 24"><path d="M 3 18 Q 12 3 21 18"/><circle cx="12" cy="3" r="2" fill="currentColor"/></svg>'),
-          makeToolHtml('bez3', '3차 베지어 (2 핸들)', '8', '<svg viewBox="0 0 24 24"><path d="M 3 18 C 7 3, 17 3, 21 18"/><circle cx="7" cy="3" r="2" fill="currentColor"/><circle cx="17" cy="3" r="2" fill="currentColor"/></svg>'),
-          makeToolHtml('rounded', '둥근 사각형', '9', '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="5"/></svg>')
-        ];
-
-        const layerTools = [
-          `<button class="tool-btn" onclick="arrangeOrder('backward')"><span class="alt-badge">Q</span><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12"/><rect x="4" y="4" width="12" height="12" fill="rgba(56,189,248,0.3)"/></svg><span class="tooltip-text">뒤로</span></button>`,
-          `<button class="tool-btn" onclick="arrangeOrder('back')"><span class="alt-badge">W</span><svg viewBox="0 0 24 24"><rect x="10" y="10" width="10" height="10"/><rect x="4" y="4" width="10" height="10" fill="rgba(56,189,248,0.3)"/></svg><span class="tooltip-text">맨뒤로</span></button>`,
-          `<button class="tool-btn" onclick="arrangeOrder('forward')"><span class="alt-badge">E</span><svg viewBox="0 0 24 24"><rect x="4" y="4" width="12" height="12"/><rect x="8" y="8" width="12" height="12" fill="rgba(56,189,248,0.3)"/></svg><span class="tooltip-text">앞으로</span></button>`,
-          `<button class="tool-btn" onclick="arrangeOrder('front')"><span class="alt-badge">R</span><svg viewBox="0 0 24 24"><rect x="4" y="4" width="10" height="10"/><rect x="10" y="10" width="10" height="10" fill="rgba(56,189,248,0.3)"/></svg><span class="tooltip-text">맨앞으로</span></button>`
-        ];
-
-        const groupTools = [
-          `<button class="tool-btn" onclick="groupSelected()"><span class="alt-badge">G</span><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" stroke-dasharray="3,3"/><rect x="6" y="6" width="6" height="6"/><rect x="12" y="12" width="6" height="6"/></svg><span class="tooltip-text">그룹화 (&lt;g&gt;)</span></button>`,
-          `<button class="tool-btn" onclick="ungroupSelected()"><span class="alt-badge">U</span><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" stroke-dasharray="2,2"/><rect x="13" y="13" width="8" height="8" stroke-dasharray="2,2"/></svg><span class="tooltip-text">그룹 해제</span></button>`
-        ];
-
-        const alignTools = [
-          `<button class="tool-btn" onclick="alignSelected('left')"><span class="alt-badge">A</span><svg viewBox="0 0 24 24"><line x1="4" y1="3" x2="4" y2="21"/><rect x="8" y="6" width="12" height="4"/><rect x="8" y="14" width="8" height="4"/></svg><span class="tooltip-text">왼쪽 정렬</span></button>`,
-          `<button class="tool-btn" onclick="alignSelected('hcenter')"><span class="alt-badge">S</span><svg viewBox="0 0 24 24"><line x1="12" y1="3" x2="12" y2="21"/><rect x="6" y="6" width="12" height="4"/><rect x="8" y="14" width="8" height="4"/></svg><span class="tooltip-text">수평 중앙 정렬</span></button>`,
-          `<button class="tool-btn" onclick="alignSelected('right')"><span class="alt-badge">D</span><svg viewBox="0 0 24 24"><line x1="20" y1="3" x2="20" y2="21"/><rect x="4" y="6" width="12" height="4"/><rect x="8" y="14" width="8" height="4"/></svg><span class="tooltip-text">오른쪽 정렬</span></button>`,
-          `<button class="tool-btn" onclick="alignSelected('top')"><span class="alt-badge">Z</span><svg viewBox="0 0 24 24"><line x1="3" y1="4" x2="21" y2="4"/><rect x="6" y="8" width="4" height="12"/><rect x="14" y="8" width="4" height="8"/></svg><span class="tooltip-text">위 정렬</span></button>`,
-          `<button class="tool-btn" onclick="alignSelected('vcenter')"><span class="alt-badge">X</span><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><rect x="6" y="6" width="4" height="12"/><rect x="14" y="8" width="4" height="8"/></svg><span class="tooltip-text">수직 중앙 정렬</span></button>`,
-          `<button class="tool-btn" onclick="alignSelected('bottom')"><span class="alt-badge">C</span><svg viewBox="0 0 24 24"><line x1="3" y1="20" x2="21" y2="20"/><rect x="6" y="4" width="4" height="12"/><rect x="14" y="8" width="4" height="8"/></svg><span class="tooltip-text">아래 정렬</span></button>`
-        ];
-
-        ribbonBar.innerHTML = `
-          <div class="ribbon-category">
-            ${build3RowGridHtml(shapeTools)}
-            <div class="category-title">도형 삽입</div>
-          </div>
-          <div class="ribbon-category">
-            ${build3RowGridHtml(layerTools)}
-            <div class="category-title">레이어 순서</div>
-          </div>
-          <div class="ribbon-category">
-            ${build3RowGridHtml(groupTools)}
-            <div class="category-title">그룹화</div>
-          </div>
-          <div class="ribbon-category">
-            ${build3RowGridHtml(alignTools)}
-            <div class="category-title">정렬</div>
-          </div>
-        `;
-      } else if (currentTab === 'view') {
-        ribbonBar.innerHTML = `
-          <div class="ribbon-category">
-            <div class="category-grid" style="grid-template-columns: auto;">
-              <div class="ribbon-control-item">
-                <label>격자 보이기:</label>
-                <input type="checkbox" id="chkGridToggle" ${gridSnapEnabled ? 'checked' : ''} onchange="toggleGridSnap(this.checked)">
-              </div>
-              <div class="ribbon-control-item">
-                <label>격자 크기:</label>
-                <select onchange="setGridDensity(this.value)">
-                  <option value="480x270" selected>481×271 Step (16:9 표준)</option>
-                  <option value="240x135">241×136 Step (조밀하게)</option>
-                  <option value="120x67">121×68 Step (성기게)</option>
-                </select>
-              </div>
-            </div>
-            <div class="category-title">격자 및 스냅 설정</div>
-          </div>
-          <div class="ribbon-category">
-            <div class="category-grid" style="grid-template-columns: auto;">
-              <div class="ribbon-control-item">
-                <label>캔버스 크기:</label>
-                <select onchange="setCanvasRatio(this.value)">
-                  <option value="960x540" selected>16:9 (960×540 px)</option>
-                  <option value="1280x720">16:9 HD (1280×720 px)</option>
-                  <option value="800x600">4:3 (800×600 px)</option>
-                  <option value="600x600">1:1 (600×600 px)</option>
-                </select>
-              </div>
-              <div class="ribbon-control-item">
-                <label>캔버스 색상:</label>
-                <input type="color" value="${canvasBgColor}" onchange="setCanvasBgColor(this.value)">
-              </div>
-            </div>
-            <div class="category-title">캔버스 화면 설정</div>
-          </div>
-        `;
-      } else if (currentTab === 'style') {
-        ribbonBar.innerHTML = `
-          <div class="ribbon-category">
-            <div class="category-grid" style="grid-template-columns: auto;">
-              <div class="ribbon-control-item">
-                <label>테두리 색상:</label>
-                <input type="color" value="${strokeColor}" onchange="strokeColor=this.value; updateSvgDefs(); applyStyleToSelected();">
-              </div>
-              <div class="ribbon-control-item">
-                <label>채우기 색상:</label>
-                <input type="color" value="${fillColor.startsWith('#') ? fillColor : '#38bdf8'}" onchange="fillColor=this.value; applyStyleToSelected();">
-              </div>
-              <div class="ribbon-control-item">
-                <label>선 두께:</label>
-                <input type="number" min="1" max="20" value="${strokeWidth}" onchange="strokeWidth=parseInt(this.value); applyStyleToSelected();" style="width:55px;">
-              </div>
-            </div>
-            <div class="category-title">기본 스타일</div>
-          </div>
-          <div class="ribbon-category">
-            <div class="category-grid" style="grid-template-columns: auto 34px 34px;">
-              <div class="ribbon-control-item" style="grid-row: 1 / span 3;">
-                <label>시작 모양:</label>
-                <select onchange="startMarker=this.value; applyStyleToSelected();">
-                  <option value="none" ${startMarker==='none'?'selected':''}>없음</option>
-                  <option value="arrow" ${startMarker==='arrow'?'selected':''}>화살표</option>
-                  <option value="circle" ${startMarker==='circle'?'selected':''}>동그라미</option>
-                  <option value="diamond" ${startMarker==='diamond'?'selected':''}>다이아몬드</option>
-                </select>
-              </div>
-              <button class="tool-btn" onclick="scaleMarker('start', 1.25)" style="grid-row: 1;"><span class="alt-badge">+</span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span class="tooltip-text">시작모양 키우기</span></button>
-              <button class="tool-btn" onclick="scaleMarker('start', 0.8)" style="grid-row: 2;"><span class="alt-badge">-</span><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg><span class="tooltip-text">시작모양 줄이기</span></button>
-            </div>
-            <div class="category-title">시작 모양 마커</div>
-          </div>
-          <div class="ribbon-category">
-            <div class="category-grid" style="grid-template-columns: auto 34px 34px;">
-              <div class="ribbon-control-item" style="grid-row: 1 / span 3;">
-                <label>끝 모양:</label>
-                <select onchange="endMarker=this.value; applyStyleToSelected();">
-                  <option value="none" ${endMarker==='none'?'selected':''}>없음</option>
-                  <option value="arrow" ${endMarker==='arrow'?'selected':''}>화살표</option>
-                  <option value="circle" ${endMarker==='circle'?'selected':''}>동그라미</option>
-                  <option value="diamond" ${endMarker==='diamond'?'selected':''}>다이아몬드</option>
-                </select>
-              </div>
-              <button class="tool-btn" onclick="scaleMarker('end', 1.25)" style="grid-row: 1;"><span class="alt-badge">+</span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span class="tooltip-text">끝모양 키우기</span></button>
-              <button class="tool-btn" onclick="scaleMarker('end', 0.8)" style="grid-row: 2;"><span class="alt-badge">-</span><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg><span class="tooltip-text">끝모양 줄이기</span></button>
-            </div>
-            <div class="category-title">끝 모양 마커</div>
-          </div>
-        `;
-      } else if (currentTab === 'text') {
-        ribbonBar.innerHTML = `
-          <div class="ribbon-category">
-            <div class="category-grid" style="grid-template-columns: 34px;">
-              <button class="tool-btn" onclick="addTextObject()"><span class="alt-badge">T</span><svg viewBox="0 0 24 24"><path d="M4 7V4h16v3M12 4v16M9 20h6"/></svg><span class="tooltip-text">텍스트 상자 추가</span></button>
-            </div>
-            <div class="category-title">글 서식</div>
-          </div>
-        `;
-      } else if (currentTab === 'anim') {
-        ribbonBar.innerHTML = `
-          <div class="ribbon-category">
-            <div class="category-grid" style="grid-template-columns: 34px 34px;">
-              <button class="tool-btn" onclick="playAnimation('draw')"><span class="alt-badge">P</span><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg><span class="tooltip-text">선 그리기 애니메이션</span></button>
-              <button class="tool-btn" onclick="playAnimation('fade')"><span class="alt-badge">F</span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-dasharray="4,4"/></svg><span class="tooltip-text">페이드 나타나기</span></button>
-            </div>
-            <div class="category-title">애니메이션 미리보기</div>
-          </div>
-        `;
-      }
-    }
-
-    // === View Control Handlers ===
-    function toggleGridSnap(val) {
-      gridSnapEnabled = val;
-      renderGrid();
-    }
-
-    function setGridDensity(val) {
-      const [gx, gy] = val.split('x').map(v => parseInt(v, 10));
-      STEPS_X = gx;
-      STEPS_Y = gy;
-      renderGrid();
-    }
-
-    function setCanvasRatio(val) {
-      const [w, h] = val.split('x').map(v => parseInt(v, 10));
-      SVG_WIDTH = w;
-      SVG_HEIGHT = h;
-      mainSvg.setAttribute('viewBox', `0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`);
-      svgWrapper.style.aspectRatio = `${SVG_WIDTH} / ${SVG_HEIGHT}`;
-      renderGrid();
-    }
-
-    function setCanvasBgColor(val) {
-      canvasBgColor = val;
-      renderGrid();
-    }
-
-    function switchTab(tab) {
-      currentTab = tab;
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      if (window.event && window.event.target) {
-        window.event.target.classList.add('active');
-      } else {
-        const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(tab));
-        if (activeBtn) activeBtn.classList.add('active');
-      }
-      renderRibbon();
-    }
-
-    function setTool(tool) {
-      currentTool = tool;
-      renderRibbon();
-    }
-
-    // === Object Creation & Handle Operations ===
-    function createSvgObject(type, stepStart, stepEnd) {
-      const id = `obj_${nextId++}`;
-      let el, attrs = {};
-
-      const px1 = (stepStart.stepX / STEPS_X) * SVG_WIDTH;
-      const py1 = (stepStart.stepY / STEPS_Y) * SVG_HEIGHT;
-      const px2 = (stepEnd.stepX / STEPS_X) * SVG_WIDTH;
-      const py2 = (stepEnd.stepY / STEPS_Y) * SVG_HEIGHT;
-
-      if (type === 'point') {
-        el = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        attrs = { cx: px1, cy: py1, r: 6, stepX: stepStart.stepX, stepY: stepStart.stepY };
-      } else if (type === 'line') {
-        el = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        attrs = { x1: px1, y1: py1, x2: px2, y2: py2, stepX1: stepStart.stepX, stepY1: stepStart.stepY, stepX2: stepEnd.stepX, stepY2: stepEnd.stepY };
-      } else if (type === 'rect' || type === 'rounded') {
-        el = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        const x = Math.min(px1, px2);
-        const y = Math.min(py1, py2);
-        const w = Math.max(10, Math.abs(px2 - px1));
-        const h = Math.max(10, Math.abs(py2 - py1));
-        const rx = type === 'rounded' ? 15 : 0;
-        attrs = { x, y, width: w, height: h, rx, stepX: Math.min(stepStart.stepX, stepEnd.stepX), stepY: Math.min(stepStart.stepY, stepEnd.stepY), stepW: Math.abs(stepEnd.stepX - stepStart.stepX), stepH: Math.abs(stepEnd.stepY - stepStart.stepY) };
-      } else if (type === 'ellipse') {
-        el = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-        const cx = (px1 + px2) / 2;
-        const cy = (py1 + py2) / 2;
-        const rx = Math.max(10, Math.abs(px2 - px1) / 2);
-        const ry = Math.max(10, Math.abs(py2 - py1) / 2);
-        attrs = { cx, cy, rx, ry, stepCx: Math.round((stepStart.stepX + stepEnd.stepX) / 2), stepCy: Math.round((stepStart.stepY + stepEnd.stepY) / 2), stepRx: Math.abs(stepEnd.stepX - stepStart.stepX) / 2, stepRy: Math.abs(stepEnd.stepY - stepStart.stepY) / 2 };
-      } else if (type === 'bez2') {
-        el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        const midX = (px1 + px2) / 2;
-        const midY = Math.min(py1, py2) - 50;
-        attrs = { x1: px1, y1: py1, cx: midX, cy: midY, x2: px2, y2: py2, stepX1: stepStart.stepX, stepY1: stepStart.stepY, stepCx: Math.round((stepStart.stepX + stepEnd.stepX) / 2), stepCy: Math.max(0, Math.min(stepStart.stepY, stepEnd.stepY) - 25), stepX2: stepEnd.stepX, stepY2: stepEnd.stepY };
-      } else if (type === 'bez3') {
-        el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        const c1x = px1 + (px2 - px1) * 0.33;
-        const c1y = py1 - 40;
-        const c2x = px1 + (px2 - px1) * 0.66;
-        const c2y = py2 - 40;
-        attrs = { x1: px1, y1: py1, c1x, c1y, c2x, c2y, x2: px2, y2: py2, stepX1: stepStart.stepX, stepY1: stepStart.stepY, stepC1x: Math.round(stepStart.stepX + (stepEnd.stepX - stepStart.stepX) * 0.33), stepC1y: Math.max(0, stepStart.stepY - 20), stepC2x: Math.round(stepStart.stepX + (stepEnd.stepX - stepStart.stepX) * 0.66), stepC2y: Math.max(0, stepEnd.stepY - 20), stepX2: stepEnd.stepX, stepY2: stepEnd.stepY };
-      } else if (type === 'arc') {
-        el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        attrs = { x1: px1, y1: py1, rx: Math.abs(px2 - px1), ry: Math.abs(py2 - py1), x2: px2, y2: py2, stepX1: stepStart.stepX, stepY1: stepStart.stepY, stepX2: stepEnd.stepX, stepY2: stepEnd.stepY };
-      }
-
-      el.setAttribute('id', id);
-      el.setAttribute('stroke', strokeColor);
-      el.setAttribute('fill', type === 'line' || type === 'bez2' || type === 'bez3' || type === 'arc' ? 'none' : fillColor);
-      el.setAttribute('stroke-width', strokeWidth);
-
-      if (startMarker !== 'none') el.setAttribute('marker-start', `url(#marker-start-${startMarker})`);
-      if (endMarker !== 'none') el.setAttribute('marker-end', `url(#marker-end-${endMarker})`);
-
-      const objData = { id, type, parentId: null, attrs, el };
-      objectsMap.set(id, objData);
-      updateElementAttributes(objData);
-      objectsGroup.appendChild(el);
-      updateDomTree();
-      return objData;
-    }
-
-    function updateElementAttributes(obj) {
-      const a = obj.attrs;
-      if (obj.type === 'point') {
-        obj.el.setAttribute('cx', a.cx);
-        obj.el.setAttribute('cy', a.cy);
-        obj.el.setAttribute('r', a.r || 6);
-      } else if (obj.type === 'line') {
-        obj.el.setAttribute('x1', a.x1);
-        obj.el.setAttribute('y1', a.y1);
-        obj.el.setAttribute('x2', a.x2);
-        obj.el.setAttribute('y2', a.y2);
-      } else if (obj.type === 'rect' || obj.type === 'rounded') {
-        obj.el.setAttribute('x', a.x);
-        obj.el.setAttribute('y', a.y);
-        obj.el.setAttribute('width', a.width);
-        obj.el.setAttribute('height', a.height);
-        if (a.rx) obj.el.setAttribute('rx', a.rx);
-      } else if (obj.type === 'ellipse') {
-        obj.el.setAttribute('cx', a.cx);
-        obj.el.setAttribute('cy', a.cy);
-        obj.el.setAttribute('rx', a.rx);
-        obj.el.setAttribute('ry', a.ry);
-      } else if (obj.type === 'bez2') {
-        obj.el.setAttribute('d', `M ${a.x1} ${a.y1} Q ${a.cx} ${a.cy} ${a.x2} ${a.y2}`);
-      } else if (obj.type === 'bez3') {
-        obj.el.setAttribute('d', `M ${a.x1} ${a.y1} C ${a.c1x} ${a.c1y}, ${a.c2x} ${a.c2y}, ${a.x2} ${a.y2}`);
-      } else if (obj.type === 'arc') {
-        obj.el.setAttribute('d', `M ${a.x1} ${a.y1} A ${a.rx} ${a.ry} 0 0 1 ${a.x2} ${a.y2}`);
-      }
-    }
-
-    // === Selection Overlay & Control Handles ===
-    function renderUI() {
-      uiGroup.innerHTML = '';
-      statSelected.textContent = `${selectedIds.size}개`;
-
-      if (selectedIds.size === 0) return;
-
-      selectedIds.forEach(id => {
-        const obj = objectsMap.get(id);
-        if (!obj) return;
-        const a = obj.attrs;
-
-        if (obj.type === 'bez2') {
-          const guide = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-          guide.setAttribute('d', `M ${a.x1} ${a.y1} L ${a.cx} ${a.cy} L ${a.x2} ${a.y2}`);
-          guide.setAttribute('stroke', '#38bdf8');
-          guide.setAttribute('stroke-dasharray', '3,3');
-          guide.setAttribute('fill', 'none');
-          uiGroup.appendChild(guide);
-          createHandleNode(a.cx, a.cy, id, 'bez2_ctrl', 1);
-        } else if (obj.type === 'bez3') {
-          const guide = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-          guide.setAttribute('d', `M ${a.x1} ${a.y1} L ${a.c1x} ${a.c1y} L ${a.c2x} ${a.c2y} L ${a.x2} ${a.y2}`);
-          guide.setAttribute('stroke', '#38bdf8');
-          guide.setAttribute('stroke-dasharray', '3,3');
-          guide.setAttribute('fill', 'none');
-          uiGroup.appendChild(guide);
-          createHandleNode(a.c1x, a.c1y, id, 'bez3_ctrl1', 1);
-          createHandleNode(a.c2x, a.c2y, id, 'bez3_ctrl2', 2);
-        } else if (obj.type === 'line' || obj.type === 'arc') {
-          createHandleNode(a.x1, a.y1, id, 'start', 1);
-          createHandleNode(a.x2, a.y2, id, 'end', 2);
-        } else if (obj.type === 'rect' || obj.type === 'rounded') {
-          createHandleNode(a.x, a.y, id, 'top_left', 1);
-          createHandleNode(a.x + a.width, a.y + a.height, id, 'bottom_right', 2);
-        }
-      });
-    }
-
-    function createHandleNode(x, y, objId, handleType, idx) {
-      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-      circle.setAttribute('cx', x);
-      circle.setAttribute('cy', y);
-      circle.setAttribute('r', '5');
-      circle.setAttribute('fill', '#38bdf8');
-      circle.setAttribute('stroke', '#ffffff');
-      circle.setAttribute('stroke-width', '1.5');
-      circle.setAttribute('class', 'handle-node');
-
-      circle.addEventListener('mousedown', (e) => {
-        e.stopPropagation();
-        isDraggingHandle = true;
-        activeHandleInfo = { objId, handleType, idx };
-      });
-      uiGroup.appendChild(circle);
-    }
-
-    // === Event Listeners for Canvas ===
-    mainSvg.addEventListener('mousedown', (e) => {
-      const coords = getStepCoords(e);
-      statRaw.textContent = `(${coords.rawX}, ${coords.rawY})`;
-      statStep.textContent = `Step (${coords.stepX}, ${coords.stepY})`;
-
-      if (isDraggingHandle) return;
-
-      if (currentTool === 'select') {
-        const targetObj = e.target.closest('circle, line, rect, ellipse, path');
-        if (targetObj && objectsMap.has(targetObj.id)) {
-          if (!e.ctrlKey) selectedIds.clear();
-          selectedIds.add(targetObj.id);
-        } else {
-          if (!e.ctrlKey) selectedIds.clear();
-          isMarquee = true;
-        }
-        renderUI();
-      } else {
-        isDrawing = true;
-        drawStartStep = coords;
-        selectedIds.clear();
-        activeTempObj = createSvgObject(currentTool, coords, coords);
-        selectedIds.add(activeTempObj.id);
-        renderUI();
-      }
-    });
-
-    mainSvg.addEventListener('mousemove', (e) => {
-      const coords = getStepCoords(e);
-      statRaw.textContent = `(${coords.rawX}, ${coords.rawY})`;
-      statStep.textContent = `Step (${coords.stepX}, ${coords.stepY})`;
-
-      if (isDraggingHandle && activeHandleInfo) {
-        const obj = objectsMap.get(activeHandleInfo.objId);
-        if (obj) {
-          const a = obj.attrs;
-          if (activeHandleInfo.handleType === 'bez2_ctrl') {
-            a.cx = coords.px;
-            a.cy = coords.py;
-          } else if (activeHandleInfo.handleType === 'bez3_ctrl1') {
-            a.c1x = coords.px;
-            a.c1y = coords.py;
-          } else if (activeHandleInfo.handleType === 'bez3_ctrl2') {
-            a.c2x = coords.px;
-            a.c2y = coords.py;
-          } else if (activeHandleInfo.handleType === 'start') {
-            a.x1 = coords.px;
-            a.y1 = coords.py;
-          } else if (activeHandleInfo.handleType === 'end') {
-            a.x2 = coords.px;
-            a.y2 = coords.py;
-          } else if (activeHandleInfo.handleType === 'bottom_right') {
-            a.width = Math.max(10, coords.px - a.x);
-            a.height = Math.max(10, coords.py - a.y);
-          }
-          updateElementAttributes(obj);
-          renderUI();
-        }
-        return;
-      }
-
-      if (isDrawing && activeTempObj && drawStartStep) {
-        const px1 = (drawStartStep.stepX / STEPS_X) * SVG_WIDTH;
-        const py1 = (drawStartStep.stepY / STEPS_Y) * SVG_HEIGHT;
-        const px2 = coords.px;
-        const py2 = coords.py;
-        const a = activeTempObj.attrs;
-
-        if (activeTempObj.type === 'line' || activeTempObj.type === 'arc') {
-          a.x2 = px2;
-          a.y2 = py2;
-        } else if (activeTempObj.type === 'rect' || activeTempObj.type === 'rounded') {
-          a.x = Math.min(px1, px2);
-          a.y = Math.min(py1, py2);
-          a.width = Math.max(10, Math.abs(px2 - px1));
-          a.height = Math.max(10, Math.abs(py2 - py1));
-        } else if (activeTempObj.type === 'ellipse') {
-          a.cx = (px1 + px2) / 2;
-          a.cy = (py1 + py2) / 2;
-          a.rx = Math.max(5, Math.abs(px2 - px1) / 2);
-          a.ry = Math.max(5, Math.abs(py2 - py1) / 2);
-        } else if (activeTempObj.type === 'bez2') {
-          a.x2 = px2;
-          a.y2 = py2;
-          a.cx = (px1 + px2) / 2;
-          a.cy = Math.min(py1, py2) - 40;
-        } else if (activeTempObj.type === 'bez3') {
-          a.x2 = px2;
-          a.y2 = py2;
-          a.c1x = px1 + (px2 - px1) * 0.33;
-          a.c1y = py1 - 40;
-          a.c2x = px1 + (px2 - px1) * 0.66;
-          a.c2y = py2 - 40;
-        }
-        updateElementAttributes(activeTempObj);
-        renderUI();
-      }
-    });
-
-    mainSvg.addEventListener('mouseup', () => {
-      isDrawing = false;
-      isMarquee = false;
-      isDraggingHandle = false;
-      activeHandleInfo = null;
-      activeTempObj = null;
-    });
-
-    // Alt Keybind Toggle Handler
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Alt') {
-        document.body.classList.add('show-alt-keybinds');
-      }
-    });
-
-    window.addEventListener('keyup', (e) => {
-      if (e.key === 'Alt') {
-        document.body.classList.remove('show-alt-keybinds');
-      }
-    });
-
-    // === Grouping & Hierarchy Operations ===
-    function groupSelected() {
-      if (selectedIds.size < 2) return;
-      const gId = `g_${nextId++}`;
-      const groupEl = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      groupEl.setAttribute('id', gId);
-
-      selectedIds.forEach(id => {
-        const obj = objectsMap.get(id);
-        if (obj) {
-          obj.parentId = gId;
-          groupEl.appendChild(obj.el);
-        }
-      });
-      objectsGroup.appendChild(groupEl);
-      updateDomTree();
-      renderUI();
-    }
-
-    function ungroupSelected() {
-      selectedIds.forEach(id => {
-        const obj = objectsMap.get(id);
-        if (obj && obj.parentId) {
-          const parentGroup = document.getElementById(obj.parentId);
-          if (parentGroup) {
-            objectsGroup.appendChild(obj.el);
-            if (parentGroup.children.length === 0) parentGroup.remove();
-          }
-          obj.parentId = null;
-        }
-      });
-      updateDomTree();
-      renderUI();
-    }
-
-    function arrangeOrder(action) {
-      selectedIds.forEach(id => {
-        const obj = objectsMap.get(id);
-        if (!obj) return;
-        const el = obj.el;
-        if (action === 'front') objectsGroup.appendChild(el);
-        else if (action === 'back') objectsGroup.insertBefore(el, objectsGroup.firstChild);
-        else if (action === 'forward' && el.nextSibling) objectsGroup.insertBefore(el.nextSibling, el);
-        else if (action === 'backward' && el.previousSibling) objectsGroup.insertBefore(el, el.previousSibling);
-      });
-      updateDomTree();
-    }
-
-    function alignSelected(type) {
-      if (selectedIds.size === 0) return;
-      selectedIds.forEach(id => {
-        const obj = objectsMap.get(id);
-        if (!obj) return;
-        const a = obj.attrs;
-        if (type === 'left') { if (a.x !== undefined) a.x = 20; if (a.cx !== undefined) a.cx = 40; }
-        else if (type === 'hcenter') { if (a.x !== undefined) a.x = (SVG_WIDTH - a.width) / 2; if (a.cx !== undefined) a.cx = SVG_WIDTH / 2; }
-        updateElementAttributes(obj);
-      });
-      renderUI();
-    }
-
-    function applyStyleToSelected() {
-      selectedIds.forEach(id => {
-        const obj = objectsMap.get(id);
-        if (!obj) return;
-        obj.el.setAttribute('stroke', strokeColor);
-        if (obj.type !== 'line' && obj.type !== 'bez2' && obj.type !== 'bez3' && obj.type !== 'arc') {
-          obj.el.setAttribute('fill', fillColor);
-        }
-        obj.el.setAttribute('stroke-width', strokeWidth);
-        if (startMarker !== 'none') obj.el.setAttribute('marker-start', `url(#marker-start-${startMarker})`);
-        else obj.el.removeAttribute('marker-start');
-        if (endMarker !== 'none') obj.el.setAttribute('marker-end', `url(#marker-end-${endMarker})`);
-        else obj.el.removeAttribute('marker-end');
-      });
-    }
-
-    function scaleMarker(pos, factor) {
-      if (pos === 'start') startMarkerScale *= factor;
-      else endMarkerScale *= factor;
-      updateSvgDefs();
-    }
-
-    function updateDomTree() {
-      domTree.innerHTML = '';
-      objectsMap.forEach((obj, id) => {
-        const item = document.createElement('div');
-        item.className = `tree-item ${selectedIds.has(id) ? 'selected' : ''}`;
-        item.textContent = `<${obj.type}> #${id}${obj.parentId ? ' [Group: ' + obj.parentId + ']' : ''}`;
-        item.onclick = (e) => {
-          if (!e.ctrlKey) selectedIds.clear();
-          selectedIds.add(id);
-          renderUI();
-          updateDomTree();
-        };
-        domTree.appendChild(item);
-      });
-    }
-
-    // === GLOBAL SCOPE BINDINGS ===
-    window.switchTab = switchTab;
-    window.setTool = setTool;
-    window.toggleGridSnap = toggleGridSnap;
-    window.setGridDensity = setGridDensity;
-    window.setCanvasRatio = setCanvasRatio;
-    window.setCanvasBgColor = setCanvasBgColor;
-    window.groupSelected = groupSelected;
-    window.ungroupSelected = ungroupSelected;
-    window.arrangeOrder = arrangeOrder;
-    window.alignSelected = alignSelected;
-    window.applyStyleToSelected = applyStyleToSelected;
-    window.scaleMarker = scaleMarker;
-
-    // Initial Startup
-    renderGrid();
-    updateSvgDefs();
-    renderRibbon();
-  </script>
+  <!-- Standard SPC Modular JS Layer -->
+  <script src="/small-project/Webpointer/module/config.js"></script>
+  <script src="/small-project/Webpointer/module/render.js"></script>
+  <script src="/small-project/Webpointer/module/main.js"></script>
 </body>
 </html>
