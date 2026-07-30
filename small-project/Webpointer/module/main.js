@@ -284,6 +284,16 @@
     } else if (obj.type === 'rect' || obj.type === 'rounded') {
       minX = a.x; maxX = a.x + a.width;
       minY = a.y; maxY = a.y + a.height;
+    } else if (obj.type === 'text') {
+      var w = 80, h = 24;
+      try {
+        if (obj.el) {
+          var bb = obj.el.getBBox();
+          if (bb && bb.width > 0) { w = bb.width; h = bb.height; }
+        }
+      } catch(e) {}
+      minX = a.x; maxX = a.x + w;
+      minY = a.y - h; maxY = a.y;
     } else if (obj.type === 'ellipse' || obj.type === 'arc') {
       minX = a.cx - a.rx; maxX = a.cx + a.rx;
       minY = a.cy - a.ry; maxY = a.cy + a.ry;
@@ -319,7 +329,7 @@
     } else if (obj.type === 'line') {
       a.x1 += deltaX; a.y1 += deltaY;
       a.x2 += deltaX; a.y2 += deltaY;
-    } else if (obj.type === 'rect' || obj.type === 'rounded') {
+    } else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'text') {
       a.x += deltaX; a.y += deltaY;
     } else if (obj.type === 'bez2' || obj.type === 'bez3') {
       if (a.points && a.points.length > 0) {
@@ -1183,23 +1193,32 @@
       var textEl = state.typingSvgObj.el;
       var fontSize = parseInt(state.typingSvgObj.attrs.fontSize || 20, 10);
       var fontBaselineY = state.typingSvgObj.attrs.y;
+      var baseX = state.typingSvgObj.attrs.x;
 
-      var cx = state.typingSvgObj.attrs.x;
+      var cx = baseX;
       var cy1 = fontBaselineY - (fontSize * 0.85);
       var cy2 = fontBaselineY + (fontSize * 0.15);
 
       try {
-        if (textEl && textEl.textContent.length > 0) {
-          var bbox = textEl.getBBox();
-          if (bbox && bbox.width > 0) {
-            var tspans = textEl.querySelectorAll('tspan');
-            if (tspans && tspans.length > 1) {
-              var lastTspan = tspans[tspans.length - 1];
-              var lastBBox = lastTspan.getBBox();
-              cx = lastBBox.x + lastBBox.width + 1.5;
-              cy1 = lastBBox.y;
-              cy2 = lastBBox.y + (fontSize * 1.1);
+        if (textEl) {
+          var tspans = textEl.querySelectorAll('tspan');
+          if (tspans && tspans.length > 0) {
+            var lastIdx = tspans.length - 1;
+            var lastTspan = tspans[lastIdx];
+            var lastBBox = lastTspan.getBBox();
+            if (lastBBox && (lastBBox.x > 0 || lastBBox.y > 0)) {
+              var textWidth = (!lastTspan.textContent || lastTspan.textContent === '\u200B') ? 0 : lastBBox.width;
+              cx = lastBBox.x + textWidth + 1.5;
+              cy1 = fontBaselineY + (lastIdx * fontSize * 1.2) - (fontSize * 0.85);
+              cy2 = fontBaselineY + (lastIdx * fontSize * 1.2) + (fontSize * 0.15);
             } else {
+              cx = baseX;
+              cy1 = fontBaselineY + (lastIdx * fontSize * 1.2) - (fontSize * 0.85);
+              cy2 = fontBaselineY + (lastIdx * fontSize * 1.2) + (fontSize * 0.15);
+            }
+          } else {
+            var bbox = textEl.getBBox();
+            if (bbox && bbox.width > 0 && (bbox.x > 0 || bbox.y > 0)) {
               cx = bbox.x + bbox.width + 1.5;
               cy1 = bbox.y;
               cy2 = bbox.y + bbox.height;
@@ -1727,7 +1746,7 @@
             a.y1 = initialAttrs.y1 + deltaPy;
             a.x2 = initialAttrs.x2 + deltaPx;
             a.y2 = initialAttrs.y2 + deltaPy;
-          } else if (obj.type === 'rect' || obj.type === 'rounded') {
+          } else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'text') {
             a.x = initialAttrs.x + deltaPx;
             a.y = initialAttrs.y + deltaPy;
           } else if (obj.type === 'bez2' || obj.type === 'bez3') {

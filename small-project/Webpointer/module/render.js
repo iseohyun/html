@@ -564,7 +564,7 @@
             } else {
               tspan.setAttribute('dy', (fontSize * 1.2) + 'px');
             }
-            tspan.textContent = lineStr;
+            tspan.textContent = lineStr || '\u200B';
             obj.el.appendChild(tspan);
           });
         }
@@ -891,6 +891,8 @@
           self.createHandleNode(a.x, a.y, id, 'top_left', 1, false);
           self.createHandleNode(a.x + a.width, a.y + a.height, id, 'bottom_right', 2, false);
           self.createHandleNode(a.x + cornerRx, a.y, id, 'corner_rx', 3, true);
+        } else if (obj.type === 'text') {
+          self.createHandleNode(a.x, a.y, id, 'top_left', 1, false);
         }
       });
     },
