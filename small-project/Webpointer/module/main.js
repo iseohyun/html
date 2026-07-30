@@ -333,6 +333,194 @@
     render.updateElementAttributes(obj);
   }
 
+  // Transform Selected Objects (Flip H, Flip V, Rotate +90, Rotate -90)
+  window.transformSelected = function(action) {
+    if (cfg.selectedIds.size === 0) return;
+
+    // Calculate Overall Bounding Box of all selected objects
+    var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    cfg.selectedIds.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (!obj) return;
+      var b = getObjectBounds(obj);
+      minX = Math.min(minX, b.minX);
+      maxX = Math.max(maxX, b.maxX);
+      minY = Math.min(minY, b.minY);
+      maxY = Math.max(maxY, b.maxY);
+    });
+
+    if (minX === Infinity) return;
+
+    var Cx = (minX + maxX) / 2;
+    var Cy = (minY + maxY) / 2;
+
+    // Rotate point (px, py) around (Cx, Cy) by angleDeg (+90 or -90)
+    function rotatePoint(px, py, angleDeg) {
+      var dx = px - Cx;
+      var dy = py - Cy;
+      if (angleDeg === 90) {
+        return { x: Cx - dy, y: Cy + dx };
+      } else if (angleDeg === -90) {
+        return { x: Cx + dy, y: Cy - dx };
+      }
+      return { x: px, y: py };
+    }
+
+    cfg.selectedIds.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (!obj) return;
+      var a = obj.attrs;
+
+      if (action === 'flipH') {
+        if (obj.type === 'point' || obj.type === 'ellipse' || obj.type === 'arc') {
+          a.cx = 2 * Cx - a.cx;
+          if (obj.type === 'ellipse' || obj.type === 'arc') {
+            a.angle = -(a.angle || 0);
+          }
+          if (obj.type === 'arc') {
+            var oldStart = a.startAngle !== undefined ? a.startAngle : -90;
+            var oldEnd = a.endAngle !== undefined ? a.endAngle : 0;
+            a.startAngle = 180 - oldEnd;
+            a.endAngle = 180 - oldStart;
+          }
+        } else if (obj.type === 'line') {
+          a.x1 = 2 * Cx - a.x1;
+          a.x2 = 2 * Cx - a.x2;
+        } else if (obj.type === 'rect' || obj.type === 'rounded') {
+          a.x = 2 * Cx - a.x - a.width;
+        } else if (obj.type === 'bez2' || obj.type === 'bez3') {
+          if (a.points && a.points.length > 0) {
+            a.points.forEach(function(pt) {
+              pt.px = 2 * Cx - pt.px;
+            });
+            if (a.firstCtrl) {
+              a.firstCtrl.cx = 2 * Cx - a.firstCtrl.cx;
+            }
+            if (a.ctrls3) {
+              a.ctrls3.forEach(function(cp) {
+                cp.c1.x = 2 * Cx - cp.c1.x;
+                cp.c2.x = 2 * Cx - cp.c2.x;
+              });
+            }
+            a.pathD = buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3);
+          } else {
+            a.x1 = 2 * Cx - a.x1;
+            a.x2 = 2 * Cx - a.x2;
+            if (a.cx !== undefined) a.cx = 2 * Cx - a.cx;
+            if (a.c1x !== undefined) a.c1x = 2 * Cx - a.c1x;
+            if (a.c2x !== undefined) a.c2x = 2 * Cx - a.c2x;
+          }
+        }
+      } else if (action === 'flipV') {
+        if (obj.type === 'point' || obj.type === 'ellipse' || obj.type === 'arc') {
+          a.cy = 2 * Cy - a.cy;
+          if (obj.type === 'ellipse' || obj.type === 'arc') {
+            a.angle = -(a.angle || 0);
+          }
+          if (obj.type === 'arc') {
+            var oldStartV = a.startAngle !== undefined ? a.startAngle : -90;
+            var oldEndV = a.endAngle !== undefined ? a.endAngle : 0;
+            a.startAngle = -oldEndV;
+            a.endAngle = -oldStartV;
+          }
+        } else if (obj.type === 'line') {
+          a.y1 = 2 * Cy - a.y1;
+          a.y2 = 2 * Cy - a.y2;
+        } else if (obj.type === 'rect' || obj.type === 'rounded') {
+          a.y = 2 * Cy - a.y - a.height;
+        } else if (obj.type === 'bez2' || obj.type === 'bez3') {
+          if (a.points && a.points.length > 0) {
+            a.points.forEach(function(pt) {
+              pt.py = 2 * Cy - pt.py;
+            });
+            if (a.firstCtrl) {
+              a.firstCtrl.cy = 2 * Cy - a.firstCtrl.cy;
+            }
+            if (a.ctrls3) {
+              a.ctrls3.forEach(function(cp) {
+                cp.c1.y = 2 * Cy - cp.c1.y;
+                cp.c2.y = 2 * Cy - cp.c2.y;
+              });
+            }
+            a.pathD = buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3);
+          } else {
+            a.y1 = 2 * Cy - a.y1;
+            a.y2 = 2 * Cy - a.y2;
+            if (a.cy !== undefined) a.cy = 2 * Cy - a.cy;
+            if (a.c1y !== undefined) a.c1y = 2 * Cy - a.c1y;
+            if (a.c2y !== undefined) a.c2y = 2 * Cy - a.c2y;
+          }
+        }
+      } else if (action === 'rotate90' || action === 'rotateNeg90') {
+        var deg = action === 'rotate90' ? 90 : -90;
+
+        if (obj.type === 'point') {
+          var pPt = rotatePoint(a.cx, a.cy, deg);
+          a.cx = pPt.x; a.cy = pPt.y;
+        } else if (obj.type === 'ellipse' || obj.type === 'arc') {
+          var pEl = rotatePoint(a.cx, a.cy, deg);
+          a.cx = pEl.x; a.cy = pEl.y;
+          a.angle = ((a.angle || 0) + deg) % 360;
+        } else if (obj.type === 'line') {
+          var pL1 = rotatePoint(a.x1, a.y1, deg);
+          var pL2 = rotatePoint(a.x2, a.y2, deg);
+          a.x1 = pL1.x; a.y1 = pL1.y;
+          a.x2 = pL2.x; a.y2 = pL2.y;
+        } else if (obj.type === 'rect' || obj.type === 'rounded') {
+          var rectCenter = { x: a.x + a.width / 2, y: a.y + a.height / 2 };
+          var pRectC = rotatePoint(rectCenter.x, rectCenter.y, deg);
+          var oldW = a.width;
+          var oldH = a.height;
+          a.width = oldH;
+          a.height = oldW;
+          a.x = pRectC.x - a.width / 2;
+          a.y = pRectC.y - a.height / 2;
+        } else if (obj.type === 'bez2' || obj.type === 'bez3') {
+          if (a.points && a.points.length > 0) {
+            a.points.forEach(function(pt) {
+              var pRot = rotatePoint(pt.px, pt.py, deg);
+              pt.px = pRot.x; pt.py = pRot.y;
+            });
+            if (a.firstCtrl) {
+              var pFC = rotatePoint(a.firstCtrl.cx, a.firstCtrl.cy, deg);
+              a.firstCtrl.cx = pFC.x; a.firstCtrl.cy = pFC.y;
+            }
+            if (a.ctrls3) {
+              a.ctrls3.forEach(function(cp) {
+                var pC1 = rotatePoint(cp.c1.x, cp.c1.y, deg);
+                var pC2 = rotatePoint(cp.c2.x, cp.c2.y, deg);
+                cp.c1.x = pC1.x; cp.c1.y = pC1.y;
+                cp.c2.x = pC2.x; cp.c2.y = pC2.y;
+              });
+            }
+            a.pathD = buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3);
+          } else {
+            var pB1 = rotatePoint(a.x1, a.y1, deg);
+            var pB2 = rotatePoint(a.x2, a.y2, deg);
+            a.x1 = pB1.x; a.y1 = pB1.y;
+            a.x2 = pB2.x; a.y2 = pB2.y;
+            if (a.cx !== undefined) {
+              var pBC = rotatePoint(a.cx, a.cy, deg);
+              a.cx = pBC.x; a.cy = pBC.y;
+            }
+            if (a.c1x !== undefined) {
+              var pBC1 = rotatePoint(a.c1x, a.c1y, deg);
+              a.c1x = pBC1.x; a.c1y = pBC1.y;
+            }
+            if (a.c2x !== undefined) {
+              var pBC2 = rotatePoint(a.c2x, a.c2y, deg);
+              a.c2x = pBC2.x; a.c2y = pBC2.y;
+            }
+          }
+        }
+      }
+
+      render.updateElementAttributes(obj);
+    });
+
+    render.renderUI();
+  };
+
   // Create SVG Object Data Struct
   function createSvgObject(type, stepStart, stepEnd) {
     var objectsGroup = document.getElementById('objectsGroup');

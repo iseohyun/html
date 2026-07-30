@@ -160,6 +160,7 @@
         var canGroup = topLevelUnits.size >= 2;
         var canAlign2 = topLevelUnits.size >= 2;
         var canAlign3 = topLevelUnits.size >= 3;
+        var canTransform = cfg.selectedIds.size >= 1;
 
         var groupTools = [
           '<button class="tool-btn ' + (canGroup ? '' : 'disabled') + '" ' + (canGroup ? 'onclick="groupSelected()"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">G</span><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" stroke-dasharray="3,3"/><rect x="6" y="6" width="6" height="6"/><rect x="12" y="12" width="6" height="6"/></svg><span class="tooltip-text">' + (canGroup ? '그룹화 (<g>)' : '그룹화 (독립 단위 2개 이상 선택 필요)') + '</span></button>',
@@ -177,11 +178,19 @@
           '<button class="tool-btn ' + (canAlign3 ? '' : 'disabled') + '" ' + (canAlign3 ? 'onclick="alignSelected(\'vdistribute\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">V</span><svg viewBox="0 0 24 24"><line x1="4" y1="3" x2="20" y2="3"/><line x1="4" y1="21" x2="20" y2="21"/><rect x="7" y="7" width="10" height="4"/><rect x="7" y="13" width="10" height="4"/></svg><span class="tooltip-text">' + (canAlign3 ? '세로 동일 간격' : '세로 동일 간격 (독립 단위 3개 이상 선택 필요)') + '</span></button>'
         ];
 
+        var transformTools = [
+          '<button class="tool-btn ' + (canTransform ? '' : 'disabled') + '" ' + (canTransform ? 'onclick="transformSelected(\'flipH\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">F</span><svg viewBox="0 0 24 24"><path d="M12 3v18M16 6l5 6-5 6V6zM8 6L3 12l5 6V6z"/></svg><span class="tooltip-text">' + (canTransform ? '좌우 대칭' : '좌우 대칭 (객체 선택 필요)') + '</span></button>',
+          '<button class="tool-btn ' + (canTransform ? '' : 'disabled') + '" ' + (canTransform ? 'onclick="transformSelected(\'flipV\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">K</span><svg viewBox="0 0 24 24"><path d="M3 12h18M6 8l6-5 6 5H6zM6 16l6 5 6-5H6z"/></svg><span class="tooltip-text">' + (canTransform ? '상하 대칭' : '상하 대칭 (객체 선택 필요)') + '</span></button>',
+          '<button class="tool-btn ' + (canTransform ? '' : 'disabled') + '" ' + (canTransform ? 'onclick="transformSelected(\'rotate90\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">R</span><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.5 0 4.8 1 6.4 2.6L21 3v6h-6l2.5-2.5A6.9 6.9 0 1 0 19 12"/></svg><span class="tooltip-text">' + (canTransform ? '90도 회전 (시계방향)' : '90도 회전 (객체 선택 필요)') + '</span></button>',
+          '<button class="tool-btn ' + (canTransform ? '' : 'disabled') + '" ' + (canTransform ? 'onclick="transformSelected(\'rotateNeg90\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">L</span><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9c-2.5 0-4.8 1-6.4 2.6L3 3v6h6L6.5 6.5A6.9 6.9 0 1 1 5 12"/></svg><span class="tooltip-text">' + (canTransform ? '-90도 회전 (반시계방향)' : '-90도 회전 (객체 선택 필요)') + '</span></button>'
+        ];
+
         ribbonBar.innerHTML = 
           '<div class="ribbon-category">' + self.build3RowGridHtml(shapeTools) + '<div class="category-title">도형 삽입</div></div>' +
           '<div class="ribbon-category">' + self.build3RowGridHtml(layerTools) + '<div class="category-title">레이어 순서</div></div>' +
           '<div class="ribbon-category">' + self.build3RowGridHtml(groupTools) + '<div class="category-title">그룹화</div></div>' +
-          '<div class="ribbon-category">' + self.build3RowGridHtml(alignTools) + '<div class="category-title">정렬 및 간격</div></div>';
+          '<div class="ribbon-category">' + self.build3RowGridHtml(alignTools) + '<div class="category-title">정렬 및 간격</div></div>' +
+          '<div class="ribbon-category">' + self.build3RowGridHtml(transformTools) + '<div class="category-title">회전 및 대칭</div></div>';
       } else if (cfg.currentTab === 'view') {
         var proxVal = cfg.proximityThreshold !== undefined ? cfg.proximityThreshold : 30;
         var szVal = cfg.defaultShapeSize !== undefined ? cfg.defaultShapeSize : 100;
