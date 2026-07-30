@@ -174,77 +174,7 @@
       return '<div class="category-grid" style="grid-template-columns: repeat(' + colCount + ', 34px);">' + itemsHtmlArray.join('') + '</div>';
     },
 
-    // Render Ribbon Bar Controls
-    renderRibbon: function() {
-      var ribbonBar = document.getElementById('ribbonBar');
-      if (!ribbonBar) return;
-      ribbonBar.innerHTML = '';
-
-      var self = this;
-      if (cfg.currentTab === 'insert') {
-        var shapeTools = [
-          self.makeToolHtml('select', '선택 도구', '1', '<svg viewBox="0 0 24 24"><path d="M3 3l7 18 3-7 7-3L3 3z"/></svg>'),
-          self.makeToolHtml('point', '점 (Point)', '2', '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="currentColor"/></svg>'),
-          self.makeToolHtml('line', '선 (Line)', '3', '<svg viewBox="0 0 24 24"><line x1="4" y1="20" x2="20" y2="4"/></svg>'),
-          self.makeToolHtml('rect', '사각형', '4', '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="1"/></svg>'),
-          self.makeToolHtml('ellipse', '타원', '5', '<svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="9" ry="6"/></svg>'),
-          self.makeToolHtml('arc', '호 (Arc)', '6', '<svg viewBox="0 0 24 24"><path d="M 4 18 A 9 9 0 0 1 20 18"/></svg>'),
-          self.makeToolHtml('bez2', '2차 베지어 (Quadratic Bezier)', '7', '<svg viewBox="0 0 24 24"><path d="M 3 18 Q 12 3 21 18"/><circle cx="12" cy="3" r="2" fill="currentColor"/></svg>'),
-          self.makeToolHtml('bez3', '3차 베지어 (Cubic Bezier)', '8', '<svg viewBox="0 0 24 24"><path d="M 3 18 C 7 3, 17 3, 21 18"/><circle cx="7" cy="3" r="2" fill="currentColor"/><circle cx="17" cy="3" r="2" fill="currentColor"/></svg>'),
-          self.makeToolHtml('rounded', '둥근 사각형', '9', '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="5"/></svg>')
-        ];
-
-        var layerTools = [
-          '<button class="tool-btn" onclick="arrangeOrder(\'backward\')"><span class="alt-badge">Q</span><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12"/><rect x="4" y="4" width="12" height="12" fill="rgba(4,30,73,0.3)"/></svg><span class="tooltip-text">뒤로</span></button>',
-          '<button class="tool-btn" onclick="arrangeOrder(\'back\')"><span class="alt-badge">W</span><svg viewBox="0 0 24 24"><rect x="10" y="10" width="10" height="10"/><rect x="4" y="4" width="10" height="10" fill="rgba(4,30,73,0.3)"/></svg><span class="tooltip-text">맨뒤로</span></button>',
-          '<button class="tool-btn" onclick="arrangeOrder(\'forward\')"><span class="alt-badge">E</span><svg viewBox="0 0 24 24"><rect x="4" y="4" width="12" height="12"/><rect x="8" y="8" width="12" height="12" fill="rgba(4,30,73,0.3)"/></svg><span class="tooltip-text">앞으로</span></button>',
-          '<button class="tool-btn" onclick="arrangeOrder(\'front\')"><span class="alt-badge">R</span><svg viewBox="0 0 24 24"><rect x="4" y="4" width="10" height="10"/><rect x="10" y="10" width="10" height="10" fill="rgba(4,30,73,0.3)"/></svg><span class="tooltip-text">맨앞으로</span></button>'
-        ];
-
-        var topLevelUnits = new Set();
-        var canUngroup = false;
-
-        cfg.selectedIds.forEach(function(id) {
-          var obj = cfg.objectsMap.get(id);
-          if (obj) {
-            var outerG = getOutermostGroupEl(obj.el);
-            if (outerG) {
-              topLevelUnits.add(outerG);
-              canUngroup = true;
-            } else {
-              topLevelUnits.add(obj.el);
-            }
-          }
-        });
-
-        var canGroup = topLevelUnits.size >= 2;
-        var canAlign2 = topLevelUnits.size >= 2;
-        var canAlign3 = topLevelUnits.size >= 3;
-        var canTransform = cfg.selectedIds.size >= 1;
-
-        var groupTools = [
-          '<button class="tool-btn ' + (canGroup ? '' : 'disabled') + '" ' + (canGroup ? 'onclick="groupSelected()"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">G</span><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" stroke-dasharray="3,3"/><rect x="6" y="6" width="6" height="6"/><rect x="12" y="12" width="6" height="6"/></svg><span class="tooltip-text">' + (canGroup ? '그룹화 (<g>)' : '그룹화 (독립 단위 2개 이상 선택 필요)') + '</span></button>',
-          '<button class="tool-btn ' + (canUngroup ? '' : 'disabled') + '" ' + (canUngroup ? 'onclick="ungroupSelected()"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">U</span><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" stroke-dasharray="2,2"/><rect x="13" y="13" width="8" height="8" stroke-dasharray="2,2"/></svg><span class="tooltip-text">' + (canUngroup ? '그룹 해제' : '그룹 해제 (그룹 객체 선택 필요)') + '</span></button>'
-        ];
-
-        var alignTools = [
-          '<button class="tool-btn ' + (canAlign2 ? '' : 'disabled') + '" ' + (canAlign2 ? 'onclick="alignSelected(\'left\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">A</span><svg viewBox="0 0 24 24"><line x1="4" y1="3" x2="4" y2="21"/><rect x="8" y="6" width="12" height="4"/><rect x="8" y="14" width="8" height="4"/></svg><span class="tooltip-text">' + (canAlign2 ? '왼쪽 정렬' : '왼쪽 정렬 (2개 이상 선택 필요)') + '</span></button>',
-          '<button class="tool-btn ' + (canAlign2 ? '' : 'disabled') + '" ' + (canAlign2 ? 'onclick="alignSelected(\'hcenter\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">S</span><svg viewBox="0 0 24 24"><line x1="12" y1="3" x2="12" y2="21"/><rect x="6" y="6" width="12" height="4"/><rect x="8" y="14" width="8" height="4"/></svg><span class="tooltip-text">' + (canAlign2 ? '수평 중앙 정렬 (가장 왼쪽 항목 중심 기준)' : '수평 중앙 정렬 (2개 이상 선택 필요)') + '</span></button>',
-          '<button class="tool-btn ' + (canAlign2 ? '' : 'disabled') + '" ' + (canAlign2 ? 'onclick="alignSelected(\'right\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">D</span><svg viewBox="0 0 24 24"><line x1="20" y1="3" x2="20" y2="21"/><rect x="4" y="6" width="12" height="4"/><rect x="8" y="14" width="8" height="4"/></svg><span class="tooltip-text">' + (canAlign2 ? '오른쪽 정렬' : '오른쪽 정렬 (2개 이상 선택 필요)') + '</span></button>',
-          '<button class="tool-btn ' + (canAlign2 ? '' : 'disabled') + '" ' + (canAlign2 ? 'onclick="alignSelected(\'top\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">Z</span><svg viewBox="0 0 24 24"><line x1="3" y1="4" x2="21" y2="4"/><rect x="6" y="8" width="4" height="12"/><rect x="14" y="8" width="4" height="8"/></svg><span class="tooltip-text">' + (canAlign2 ? '위 정렬' : '위 정렬 (2개 이상 선택 필요)') + '</span></button>',
-          '<button class="tool-btn ' + (canAlign2 ? '' : 'disabled') + '" ' + (canAlign2 ? 'onclick="alignSelected(\'vcenter\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">X</span><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><rect x="6" y="6" width="4" height="12"/><rect x="14" y="8" width="4" height="8"/></svg><span class="tooltip-text">' + (canAlign2 ? '수직 중앙 정렬 (가장 위 항목 중심 기준)' : '수직 중앙 정렬 (2개 이상 선택 필요)') + '</span></button>',
-          '<button class="tool-btn ' + (canAlign2 ? '' : 'disabled') + '" ' + (canAlign2 ? 'onclick="alignSelected(\'bottom\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">C</span><svg viewBox="0 0 24 24"><line x1="3" y1="20" x2="21" y2="20"/><rect x="6" y="4" width="4" height="12"/><rect x="14" y="8" width="4" height="8"/></svg><span class="tooltip-text">' + (canAlign2 ? '아래 정렬' : '아래 정렬 (2개 이상 선택 필요)') + '</span></button>',
-          '<button class="tool-btn ' + (canAlign3 ? '' : 'disabled') + '" ' + (canAlign3 ? 'onclick="alignSelected(\'hdistribute\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">H</span><svg viewBox="0 0 24 24"><line x1="3" y1="4" x2="3" y2="20"/><line x1="21" y1="4" x2="21" y2="20"/><rect x="7" y="7" width="4" height="10"/><rect x="13" y="7" width="4" height="10"/></svg><span class="tooltip-text">' + (canAlign3 ? '가로 동일 간격' : '가로 동일 간격 (독립 단위 3개 이상 선택 필요)') + '</span></button>',
-          '<button class="tool-btn ' + (canAlign3 ? '' : 'disabled') + '" ' + (canAlign3 ? 'onclick="alignSelected(\'vdistribute\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">V</span><svg viewBox="0 0 24 24"><line x1="4" y1="3" x2="20" y2="3"/><line x1="4" y1="21" x2="20" y2="21"/><rect x="7" y="7" width="10" height="4"/><rect x="7" y="13" width="10" height="4"/></svg><span class="tooltip-text">' + (canAlign3 ? '세로 동일 간격' : '세로 동일 간격 (독립 단위 3개 이상 선택 필요)') + '</span></button>'
-        ];
-
-        var transformTools = [
-          '<button class="tool-btn ' + (canTransform ? '' : 'disabled') + '" ' + (canTransform ? 'onclick="transformSelected(\'flipH\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">F</span><svg viewBox="0 0 24 24"><path d="M12 3v18M16 6l5 6-5 6V6zM8 6L3 12l5 6V6z"/></svg><span class="tooltip-text">' + (canTransform ? '좌우 대칭' : '좌우 대칭 (객체 선택 필요)') + '</span></button>',
-          '<button class="tool-btn ' + (canTransform ? '' : 'disabled') + '" ' + (canTransform ? 'onclick="transformSelected(\'flipV\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">K</span><svg viewBox="0 0 24 24"><path d="M3 12h18M6 8l6-5 6 5H6zM6 16l6 5 6-5H6z"/></svg><span class="tooltip-text">' + (canTransform ? '상하 대칭' : '상하 대칭 (객체 선택 필요)') + '</span></button>',
-          '<button class="tool-btn ' + (canTransform ? '' : 'disabled') + '" ' + (canTransform ? 'onclick="transformSelected(\'rotate90\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">R</span><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.5 0 4.8 1 6.4 2.6L21 3v6h-6l2.5-2.5A6.9 6.9 0 1 0 19 12"/></svg><span class="tooltip-text">' + (canTransform ? '90도 회전 (시계방향)' : '90도 회전 (객체 선택 필요)') + '</span></button>',
-          '<button class="tool-btn ' + (canTransform ? '' : 'disabled') + '" ' + (canTransform ? 'onclick="transformSelected(\'rotateNeg90\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">L</span><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9c-2.5 0-4.8 1-6.4 2.6L3 3v6h6L6.5 6.5A6.9 6.9 0 1 1 5 12"/></svg><span class="tooltip-text">' + (canTransform ? '-90도 회전 (반시계방향)' : '-90도 회전 (객체 선택 필요)') + '</span></button>'
-        ];
-
+    // Helper: Build Ribbon Category HTML with Collapsible Title Toggle
     buildCategoryHtml: function(catKey, catTitle, contentHtml) {
       var isCollapsed = cfg.collapsedCategories && cfg.collapsedCategories.has(catKey);
       return '<div class="ribbon-category ' + (isCollapsed ? 'collapsed' : '') + '">' +
