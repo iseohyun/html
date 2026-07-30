@@ -69,7 +69,7 @@
       gridGroup.appendChild(gridPath);
     },
 
-    // Update SVG Defs for Markers
+    // Update SVG Defs for Markers (userSpaceOnUse prevents marker scaling on strokeWidth changes)
     updateSvgDefs: function() {
       var svgDefs = document.getElementById('svgDefs');
       if (!svgDefs) return;
@@ -80,12 +80,15 @@
           var markerId = 'marker-' + pos + '-' + type;
           var marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
           marker.setAttribute('id', markerId);
+          marker.setAttribute('markerUnits', 'userSpaceOnUse'); // Marker size stays independent of strokeWidth!
           marker.setAttribute('viewBox', '0 0 10 10');
           marker.setAttribute('refX', pos === 'start' ? '2' : '8');
           marker.setAttribute('refY', '5');
+
           var scale = pos === 'start' ? cfg.startMarkerScale : cfg.endMarkerScale;
-          marker.setAttribute('markerWidth', (6 * scale).toString());
-          marker.setAttribute('markerHeight', (6 * scale).toString());
+          var markerSize = 14 * scale;
+          marker.setAttribute('markerWidth', markerSize.toString());
+          marker.setAttribute('markerHeight', markerSize.toString());
           marker.setAttribute('orient', 'auto');
 
           var fillStyle = pos === 'start' ? (cfg.startMarkerFillStyle || 'solid') : (cfg.endMarkerFillStyle || 'solid');
@@ -197,7 +200,7 @@
           '<button class="tool-btn ' + (canTransform ? '' : 'disabled') + '" ' + (canTransform ? 'onclick="transformSelected(\'flipH\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">F</span><svg viewBox="0 0 24 24"><path d="M12 3v18M16 6l5 6-5 6V6zM8 6L3 12l5 6V6z"/></svg><span class="tooltip-text">' + (canTransform ? '좌우 대칭' : '좌우 대칭 (객체 선택 필요)') + '</span></button>',
           '<button class="tool-btn ' + (canTransform ? '' : 'disabled') + '" ' + (canTransform ? 'onclick="transformSelected(\'flipV\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">K</span><svg viewBox="0 0 24 24"><path d="M3 12h18M6 8l6-5 6 5H6zM6 16l6 5 6-5H6z"/></svg><span class="tooltip-text">' + (canTransform ? '상하 대칭' : '상하 대칭 (객체 선택 필요)') + '</span></button>',
           '<button class="tool-btn ' + (canTransform ? '' : 'disabled') + '" ' + (canTransform ? 'onclick="transformSelected(\'rotate90\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">R</span><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.5 0 4.8 1 6.4 2.6L21 3v6h-6l2.5-2.5A6.9 6.9 0 1 0 19 12"/></svg><span class="tooltip-text">' + (canTransform ? '90도 회전 (시계방향)' : '90도 회전 (객체 선택 필요)') + '</span></button>',
-          '<button class="tool-btn ' + (canTransform ? '' : 'disabled') + '" ' + (canTransform ? 'onclick="transformSelected(\'rotateNeg90\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">L</span><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9c-2.5 0-4.8 1-6.4 2.6L3 3v6h6L6.5 6.5A6.9 6.9 0 1 1 5 12"/></svg><span class="tooltip-text">' + (canTransform ? '-90도 회전 (반시계방향)' : '-90도 회전 (객체 선택 필요)') + '</span></button>'
+          '<button class="tool-btn ' + (canTransform ? '' : 'disabled') + '" ' + (canTransform ? 'onclick="transformSelected(\'rotateNeg90\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">L</span><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9c-2.5 0-4.8 1-6.4 2.6L3 3v6h6L6.5 6.5A6.9 6.9 0 1 1 5 12"/></svg><span class="tooltip-text">' + (-90도 회전 (반시계방향)) + '</span></button>'
         ];
 
         ribbonBar.innerHTML = 
@@ -262,13 +265,13 @@
         var openPaletteBtnHtml   = '<button class="tool-btn" onclick="window.open(\'https://iseohyun.github.io/UniPalette/\', \'_blank\')" style="width:34px; height:34px;"><span class="alt-badge">O</span><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg><span class="tooltip-text">기본색상 정하기 (UniPalette 새탭)</span></button>';
         var importPaletteBtnHtml = '<button class="tool-btn" onclick="openPaletteModal()" style="width:34px; height:34px;"><span class="alt-badge">I</span><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span class="tooltip-text">기본색상 가져오기 (코드 붙여넣기)</span></button>';
 
-        // === 2. 선 끝 Category (Row 1: Start Marker Options (Top) / Row 2: End Marker Options (Bottom)) ===
+        // === 2. 선 끝 Category (Row 1: 시작모양 | 채우기 | +/-   Row 2: 끝모양 | 채우기 | +/-) ===
         var curStartMarker = cfg.startMarker || 'none';
         var curEndMarker   = cfg.endMarker || 'none';
         var curStartFill   = cfg.startMarkerFillStyle || 'solid';
         var curEndFill     = cfg.endMarkerFillStyle || 'solid';
 
-        // --- ROW 1: 시작 모양 옵션 (Left-facing Icons ←) ---
+        // --- ROW 1: 시작 모양 옵션들 (Left-facing Icons ←) ---
         var startNone = '<button class="tool-btn ' + (curStartMarker==='none'?'active':'') + '" onclick="setStartMarker(\'none\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="4" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="2"/><line x1="4" y1="7" x2="4" y2="17" stroke="currentColor" stroke-width="2"/></svg><span class="tooltip-text">시작 모양: 없음</span></button>';
         var startArrow = '<button class="tool-btn ' + (curStartMarker==='arrow'?'active':'') + '" onclick="setStartMarker(\'arrow\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="21" y1="12" x2="8" y2="12" stroke="currentColor" stroke-width="2"/><path d="M10 6L4 12l6 6z" fill="currentColor"/></svg><span class="tooltip-text">시작 모양: 화살표 (왼쪽)</span></button>';
         var startCircle = '<button class="tool-btn ' + (curStartMarker==='circle'?'active':'') + '" onclick="setStartMarker(\'circle\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="2"/><circle cx="6" cy="12" r="4" fill="currentColor"/></svg><span class="tooltip-text">시작 모양: 원 (왼쪽)</span></button>';
@@ -280,7 +283,7 @@
         var startScalePlus = '<button class="tool-btn" onclick="scaleMarker(\'start\', 1.25)" style="width:34px; height:34px;"><span class="alt-badge">+</span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5"/></svg><span class="tooltip-text">시작 마커 크기 키우기 (+)</span></button>';
         var startScaleMinus = '<button class="tool-btn" onclick="scaleMarker(\'start\', 0.8)" style="width:34px; height:34px;"><span class="alt-badge">-</span><svg viewBox="0 0 24 24"><path d="M5 12h14" stroke="currentColor" stroke-width="2.5"/></svg><span class="tooltip-text">시작 마커 크기 줄이기 (-)</span></button>';
 
-        // --- ROW 2: 끝 모양 옵션 (Right-facing Icons →) ---
+        // --- ROW 2: 끝 모양 옵션들 (Right-facing Icons →) ---
         var endNone = '<button class="tool-btn ' + (curEndMarker==='none'?'active':'') + '" onclick="setEndMarker(\'none\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="4" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="2"/><line x1="20" y1="7" x2="20" y2="17" stroke="currentColor" stroke-width="2"/></svg><span class="tooltip-text">끝 모양: 없음</span></button>';
         var endArrow = '<button class="tool-btn ' + (curEndMarker==='arrow'?'active':'') + '" onclick="setEndMarker(\'arrow\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="16" y2="12" stroke="currentColor" stroke-width="2"/><path d="M14 6l6 6-6 6z" fill="currentColor"/></svg><span class="tooltip-text">끝 모양: 화살표 (오른쪽)</span></button>';
         var endCircle = '<button class="tool-btn ' + (curEndMarker==='circle'?'active':'') + '" onclick="setEndMarker(\'circle\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="15" y2="12" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="12" r="4" fill="currentColor"/></svg><span class="tooltip-text">끝 모양: 원 (오른쪽)</span></button>';
@@ -291,6 +294,13 @@
 
         var endScalePlus = '<button class="tool-btn" onclick="scaleMarker(\'end\', 1.25)" style="width:34px; height:34px;"><span class="alt-badge">+</span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5"/></svg><span class="tooltip-text">끝 마커 크기 키우기 (+)</span></button>';
         var endScaleMinus = '<button class="tool-btn" onclick="scaleMarker(\'end\', 0.8)" style="width:34px; height:34px;"><span class="alt-badge">-</span><svg viewBox="0 0 24 24"><path d="M5 12h14" stroke="currentColor" stroke-width="2.5"/></svg><span class="tooltip-text">끝 마커 크기 줄이기 (-)</span></button>';
+
+        // === 3. 선 Category (Line Thickness +/-, Solid/Dashed, Dash Array Input Text) ===
+        var curDashStyle = cfg.strokeDashStyle || 'solid';
+        var curDashArray = cfg.strokeDashArray || '6,6';
+
+        var solidLineBtn = '<button class="tool-btn ' + (curDashStyle==='solid'?'active':'') + '" onclick="setStrokeDashStyle(\'solid\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="3"/></svg><span class="tooltip-text">선 모양: 실선</span></button>';
+        var dashedLineBtn = '<button class="tool-btn ' + (curDashStyle==='dashed'?'active':'') + '" onclick="setStrokeDashStyle(\'dashed\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="3" stroke-dasharray="4,3"/></svg><span class="tooltip-text">선 모양: 점선</span></button>';
 
         ribbonBar.innerHTML = 
           // === 1. 색 Category (Color) ===
@@ -329,10 +339,27 @@
             '<div class="category-title">선 끝</div>' +
           '</div>' +
 
-          // === 3. 선 Category (Line Thickness & Future Props) ===
+          // === 3. 선 Category (Line Thickness +/-, Solid/Dashed, Dash Array Input Text) ===
           '<div class="ribbon-category">' +
-            '<div class="category-grid" style="grid-template-columns: auto;">' +
-              '<div class="ribbon-control-item"><label>선 두께:</label><input type="number" min="1" max="20" value="' + cfg.strokeWidth + '" oninput="setStrokeWidth(this.value)" onchange="setStrokeWidth(this.value)" style="width:55px;"></div>' +
+            '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
+              // 1. Line Thickness Controls (Input Number + / - Buttons)
+              '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
+                '<label style="font-size:0.8rem; color:#475569; font-weight:600;">선 두께:</label>' +
+                '<input type="number" min="1" max="50" value="' + cfg.strokeWidth + '" oninput="setStrokeWidth(this.value)" onchange="setStrokeWidth(this.value)" style="width:45px; padding:3px 5px; font-size:0.82rem; border:1px solid #cbd5e1; border-radius:4px; text-align:center;">' +
+                '<button class="tool-btn" onclick="adjustStrokeWidth(1)" style="width:28px; height:28px;"><span class="alt-badge">+</span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5"/></svg><span class="tooltip-text">선 두께 키우기 (+1)</span></button>' +
+                '<button class="tool-btn" onclick="adjustStrokeWidth(-1)" style="width:28px; height:28px;"><span class="alt-badge">-</span><svg viewBox="0 0 24 24"><path d="M5 12h14" stroke="currentColor" stroke-width="2.5"/></svg><span class="tooltip-text">선 두께 줄이기 (-1)</span></button>' +
+              '</div>' +
+              // Divider |
+              '<div style="width:1px; height:34px; background:#cbd5e1; margin:0 4px;"></div>' +
+              // 2. Line Style Buttons (Solid vs Dashed)
+              '<div style="display:flex; flex-direction:row; gap:3px;">' + solidLineBtn + dashedLineBtn + '</div>' +
+              // Divider |
+              '<div style="width:1px; height:34px; background:#cbd5e1; margin:0 4px;"></div>' +
+              // 3. Custom Dash Pattern Input Text
+              '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
+                '<label style="font-size:0.8rem; color:#475569; font-weight:600;">점선 패턴:</label>' +
+                '<input type="text" value="' + curDashArray + '" placeholder="6,6" oninput="setStrokeDashArray(this.value)" style="width:65px; padding:3px 6px; font-size:0.82rem; border:1px solid #cbd5e1; border-radius:4px; font-family:monospace;">' +
+              '</div>' +
             '</div>' +
             '<div class="category-title">선</div>' +
           '</div>';

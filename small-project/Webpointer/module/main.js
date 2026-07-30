@@ -941,6 +941,52 @@
   window.setStrokeWidth = function(val) {
     cfg.strokeWidth = parseInt(val, 10) || 1;
     window.applyStyleToSelected();
+    render.renderRibbon();
+  };
+
+  window.adjustStrokeWidth = function(delta) {
+    var cur = parseInt(cfg.strokeWidth, 10) || 2;
+    var next = Math.max(1, cur + delta);
+    window.setStrokeWidth(next);
+  };
+
+  window.setStrokeDashStyle = function(style) {
+    cfg.strokeDashStyle = style;
+    window.applyStyleToSelected();
+    render.renderRibbon();
+  };
+
+  window.setStrokeDashArray = function(pattern) {
+    cfg.strokeDashArray = pattern;
+    window.applyStyleToSelected();
+  };
+
+  window.applyStyleToSelected = function() {
+    cfg.selectedIds.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (!obj) return;
+      if (obj.attrs) {
+        obj.attrs.stroke = cfg.strokeColor;
+        obj.attrs.fill = cfg.fillColor;
+        obj.attrs.strokeWidth = cfg.strokeWidth;
+        obj.attrs.strokeDashStyle = cfg.strokeDashStyle;
+        obj.attrs.strokeDashArray = cfg.strokeDashArray;
+      }
+      obj.el.setAttribute('stroke', cfg.strokeColor);
+      obj.el.setAttribute('fill', cfg.fillColor);
+      obj.el.setAttribute('stroke-width', cfg.strokeWidth);
+
+      if (cfg.strokeDashStyle === 'dashed' && cfg.strokeDashArray) {
+        obj.el.setAttribute('stroke-dasharray', cfg.strokeDashArray);
+      } else {
+        obj.el.removeAttribute('stroke-dasharray');
+      }
+
+      if (cfg.startMarker !== 'none') obj.el.setAttribute('marker-start', 'url(#marker-start-' + cfg.startMarker + ')');
+      else obj.el.removeAttribute('marker-start');
+      if (cfg.endMarker !== 'none') obj.el.setAttribute('marker-end', 'url(#marker-end-' + cfg.endMarker + ')');
+      else obj.el.removeAttribute('marker-end');
+    });
   };
 
   window.setStartMarker = function(val) {

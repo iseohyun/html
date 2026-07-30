@@ -19,6 +19,8 @@
     strokeColor: '#041e49',   // Default Shape Color (#041e49)
     fillColor: 'none',        // Default Fill: Transparent ('none')
     strokeWidth: 2,
+    strokeDashStyle: 'solid',  // 'solid' (실선) vs 'dashed' (점선)
+    strokeDashArray: '6,6',    // Default custom dash pattern ('6,6')
     pointRadius: 5,           // Default Point Diameter 10px (radius = 5px)
 
     proximityThreshold: 30,   // Default 30px Proximity selection threshold
