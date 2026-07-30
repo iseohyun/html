@@ -59,7 +59,7 @@
   }
 
   // Build Continuous Bezier SVG Path Data String ("M 50 150 Q 125 50, 200 150 T 350 150 T 500 150")
-  function buildContinuousBezierPathD(points, floatingPt, toolType) {
+  function buildContinuousBezierPathD(points, floatingPt, toolType, firstCtrl) {
     var pts = points.slice();
     if (floatingPt) pts.push(floatingPt);
     if (pts.length === 0) return '';
@@ -69,8 +69,8 @@
     var P1 = pts[1];
 
     if (toolType === 'bez2') {
-      var cx = Math.round((P0.px + P1.px) / 2);
-      var cy = Math.min(P0.py, P1.py) - 100;
+      var cx = firstCtrl ? firstCtrl.cx : Math.round((P0.px + P1.px) / 2);
+      var cy = firstCtrl ? firstCtrl.cy : (Math.min(P0.py, P1.py) - 100);
       var d = 'M ' + P0.px + ' ' + P0.py + ' Q ' + cx + ' ' + cy + ', ' + P1.px + ' ' + P1.py;
       for (var i = 2; i < pts.length; i++) {
         d += ' T ' + pts[i].px + ' ' + pts[i].py;
@@ -235,12 +235,11 @@
     if (!state.isMultiBezierActive) return;
 
     if (state.activeBezierObj) {
-      // Remove trailing unconfirmed preview segment from pathD
-      var finalD = buildContinuousBezierPathD(state.bezierPoints, null, cfg.currentTool);
+      var finalD = buildContinuousBezierPathD(state.bezierPoints, null, cfg.currentTool, state.activeBezierObj.attrs.firstCtrl);
       state.activeBezierObj.attrs.pathD = finalD;
       state.activeBezierObj.attrs.points = state.bezierPoints.slice();
 
-      if (state.bezierPoints.length >= 2) {
+      if (state.bezierPoints.length >= 2 && !state.activeBezierObj.attrs.firstCtrl) {
         var p0 = state.bezierPoints[0], p1 = state.bezierPoints[1];
         if (cfg.currentTool === 'bez2') {
           state.activeBezierObj.attrs.firstCtrl = {
@@ -443,7 +442,7 @@
         } else {
           // 2. Subsequent Clicks: Add confirmed point to bezierPoints array
           state.bezierPoints.push(coords);
-          var pathD = buildContinuousBezierPathD(state.bezierPoints, null, cfg.currentTool);
+          var pathD = buildContinuousBezierPathD(state.bezierPoints, null, cfg.currentTool, state.activeBezierObj.attrs.firstCtrl);
           state.activeBezierObj.attrs.pathD = pathD;
           state.activeBezierObj.attrs.points = state.bezierPoints.slice();
           render.updateElementAttributes(state.activeBezierObj);
@@ -552,13 +551,16 @@
             a.endAngle = Math.round(radE * (180 / Math.PI)) - (a.angle || 0);
           } else if (state.activeHandleInfo.handleType === 'bez2_ctrl') {
             a.cx = coords.px; a.cy = coords.py;
-            if (a.firstCtrl) { a.firstCtrl.cx = coords.px; a.firstCtrl.cy = coords.py; }
+            a.firstCtrl = { cx: coords.px, cy: coords.py };
+            if (a.points && a.points.length >= 2) {
+              a.pathD = buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl);
+            }
           } else if (state.activeHandleInfo.handleType === 'bez_vertex') {
             var idx = state.activeHandleInfo.idx;
             if (a.points && a.points[idx]) {
               a.points[idx].px = coords.px;
               a.points[idx].py = coords.py;
-              a.pathD = buildContinuousBezierPathD(a.points, null, obj.type);
+              a.pathD = buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl);
             }
           } else if (state.activeHandleInfo.handleType === 'bez3_ctrl1') {
             a.c1x = coords.px; a.c1y = coords.py;
@@ -617,7 +619,7 @@
               if (initialAttrs.firstCtrl) {
                 a.firstCtrl = { cx: initialAttrs.firstCtrl.cx + deltaPx, cy: initialAttrs.firstCtrl.cy + deltaPy };
               }
-              a.pathD = buildContinuousBezierPathD(a.points, null, obj.type);
+              a.pathD = buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl);
             } else {
               a.x1 = initialAttrs.x1 + deltaPx;
               a.y1 = initialAttrs.y1 + deltaPy;
@@ -636,7 +638,7 @@
 
       // 3. Continuous Multi-Click Bezier Real-time Mousemove Preview
       if (state.isMultiBezierActive && state.activeBezierObj) {
-        var previewD = buildContinuousBezierPathD(state.bezierPoints, coords, cfg.currentTool);
+        var previewD = buildContinuousBezierPathD(state.bezierPoints, coords, cfg.currentTool, state.activeBezierObj.attrs.firstCtrl);
         state.activeBezierObj.attrs.pathD = previewD;
         render.updateElementAttributes(state.activeBezierObj);
         render.renderUI();
