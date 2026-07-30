@@ -3,18 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Webpointer 시뮬레이터 - iseohyun.com</title>
+  <title>Webpointer Vector CAD Editor - iseohyun.com</title>
   <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-color: #0f172a;
-      --card-bg: rgba(30, 41, 59, 0.85);
-      --border-color: #334155;
+      --bg-color: #090d16;
+      --panel-bg: rgba(21, 29, 46, 0.95);
+      --ribbon-bg: #111827;
+      --tab-active-bg: #1e293b;
+      --border-color: #2e3d54;
       --accent-color: #38bdf8;
-      --accent-glow: rgba(56, 189, 248, 0.35);
+      --accent-glow: rgba(56, 189, 248, 0.3);
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
     }
@@ -32,572 +34,1103 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      user-select: none;
     }
 
     article {
-      max-width: 1100px;
+      max-width: 1200px;
       width: 100%;
       margin: 0 auto;
-      padding: 20px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
+    /* Top Navigation Header */
     .header-bar {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 20px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid var(--border-color);
+      justify-content: space-between;
+      padding: 6px 12px;
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
     }
 
-    .header-bar a {
-      display: inline-flex;
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-left a {
+      display: flex;
       align-items: center;
       transition: transform 0.2s;
     }
 
-    .header-bar a:hover {
-      transform: scale(1.08);
+    .header-left a:hover {
+      transform: scale(1.1);
     }
 
     .header-title {
-      font-size: 1.25rem;
+      font-size: 1.1rem;
       font-weight: 700;
-      letter-spacing: -0.02em;
       background: linear-gradient(135deg, #38bdf8, #818cf8);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
-    .main-grid {
-      display: grid;
-      grid-template-columns: 1fr 320px;
-      gap: 20px;
+    /* Tab Header Menu */
+    .menu-tabs {
+      display: flex;
+      gap: 2px;
+      border-bottom: 2px solid var(--border-color);
+      background: #0f172a;
+      border-radius: 8px 8px 0 0;
+      padding: 4px 6px 0 6px;
     }
 
-    @media (max-width: 900px) {
-      .main-grid {
+    .tab-btn {
+      padding: 8px 18px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: transparent;
+      border: 1px solid transparent;
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .tab-btn.active {
+      color: var(--accent-color);
+      background: var(--ribbon-bg);
+      border-color: var(--border-color);
+      border-bottom: 2px solid var(--ribbon-bg);
+      margin-bottom: -2px;
+    }
+
+    /* Ribbon Toolbar Area */
+    .ribbon-container {
+      background: var(--ribbon-bg);
+      border: 1px solid var(--border-color);
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      padding: 10px 14px;
+      min-height: 85px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      overflow-x: auto;
+    }
+
+    .ribbon-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-right: 14px;
+      border-right: 1px solid var(--border-color);
+      height: 100%;
+    }
+
+    .ribbon-group:last-child {
+      border-right: none;
+    }
+
+    .ribbon-group-title {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .ribbon-tools {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Ribbon Tool Buttons & Custom SVG Icons */
+    .tool-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      height: 52px;
+      padding: 4px;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-size: 0.7rem;
+      gap: 3px;
+    }
+
+    .tool-btn:hover {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: var(--accent-color);
+      color: var(--accent-color);
+    }
+
+    .tool-btn.active {
+      background: var(--accent-glow);
+      border-color: var(--accent-color);
+      color: #38bdf8;
+      box-shadow: 0 0 8px var(--accent-glow);
+    }
+
+    .tool-btn svg {
+      width: 22px;
+      height: 22px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .ribbon-control {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+    }
+
+    .ribbon-control label {
+      color: var(--text-muted);
+      font-size: 0.78rem;
+    }
+
+    .ribbon-control select, 
+    .ribbon-control input[type="color"],
+    .ribbon-control input[type="number"] {
+      padding: 4px 6px;
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      color: var(--text-main);
+      font-size: 0.8rem;
+      outline: none;
+    }
+
+    /* Content Area: SVG Canvas & Status Info */
+    .content-area {
+      display: grid;
+      grid-template-columns: 1fr 260px;
+      gap: 12px;
+    }
+
+    @media (max-width: 960px) {
+      .content-area {
         grid-template-columns: 1fr;
       }
     }
 
-    .canvas-container {
+    .svg-wrapper {
       position: relative;
       width: 100%;
       aspect-ratio: 16 / 9;
       background: #020617;
-      border-radius: 12px;
       border: 1px solid var(--border-color);
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px var(--accent-glow);
+      border-radius: 8px;
       overflow: hidden;
-      cursor: crosshair;
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 4px 12px rgba(0, 0, 0, 0.5);
     }
 
-    canvas {
-      display: block;
+    svg#mainSvg {
       width: 100%;
       height: 100%;
+      display: block;
     }
 
-    /* Floating Coordinate Tooltip */
-    .coord-tooltip {
-      position: absolute;
-      pointer-events: none;
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid var(--accent-color);
-      color: #00f2ff;
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-family: monospace;
-      font-weight: 600;
-      white-space: nowrap;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-      transform: translate(12px, 12px);
-      z-index: 10;
-      display: none;
-    }
-
-    .panel {
-      background: var(--card-bg);
-      backdrop-filter: blur(12px);
+    /* Status & Inspector Panel */
+    .inspector-panel {
+      background: var(--panel-bg);
       border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .panel-title {
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--accent-color);
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 8px;
-    }
-
-    .info-card {
-      background: rgba(15, 23, 42, 0.6);
       border-radius: 8px;
       padding: 12px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-    }
-
-    .info-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      gap: 12px;
       font-size: 0.85rem;
     }
 
-    .info-label {
+    .inspector-title {
+      font-weight: 700;
+      color: var(--accent-color);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 6px;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      font-family: monospace;
+    }
+
+    .stat-label {
       color: var(--text-muted);
     }
 
-    .info-value {
-      font-family: monospace;
+    .stat-val {
       font-weight: 600;
       color: #38bdf8;
     }
 
-    .info-value.highlight {
-      color: #4ade80;
-      font-size: 1rem;
-    }
-
-    .control-group {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    label {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-
-    select, input[type="color"] {
-      width: 100%;
-      padding: 8px 12px;
-      background: #0f172a;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      color: var(--text-main);
-      font-size: 0.9rem;
-      outline: none;
-    }
-
-    select:focus {
-      border-color: var(--accent-color);
-    }
-
-    .checkbox-label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      font-size: 0.88rem;
-      color: var(--text-main);
-      user-select: none;
-    }
-
-    .checkbox-label input {
-      accent-color: var(--accent-color);
-      width: 16px;
-      height: 16px;
-    }
-
-    .btn-group {
-      display: flex;
-      gap: 8px;
-    }
-
-    .btn {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      font-weight: 600;
-      font-size: 0.88rem;
-      cursor: pointer;
-      transition: background-color 0.2s, transform 0.1s;
-    }
-
-    .btn:active {
-      transform: scale(0.98);
-    }
-
-    .btn-primary {
-      background: #0284c7;
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background: #0369a1;
-    }
-
-    .btn-danger {
-      background: #dc2626;
-      color: white;
-    }
-
-    .btn-danger:hover {
-      background: #b91c1c;
-    }
-
-    .log-box {
-      max-height: 150px;
-      overflow-y: auto;
+    .tree-box {
       background: #020617;
       border: 1px solid var(--border-color);
       border-radius: 6px;
-      padding: 8px;
+      padding: 6px;
+      height: 180px;
+      overflow-y: auto;
       font-family: monospace;
-      font-size: 0.78rem;
-      color: var(--text-muted);
+      font-size: 0.75rem;
     }
 
-    .log-entry {
-      padding: 3px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    .tree-item {
+      padding: 3px 6px;
+      cursor: pointer;
+      border-radius: 3px;
     }
 
-    .log-entry span {
+    .tree-item:hover {
+      background: rgba(56, 189, 248, 0.15);
+    }
+
+    .tree-item.selected {
+      background: var(--accent-glow);
       color: #38bdf8;
+      font-weight: 700;
     }
 
-    /* Scrollbar */
-    .log-box::-webkit-scrollbar {
-      width: 5px;
+    /* Floating Snap Handle styling on Canvas */
+    .handle-node {
+      cursor: pointer;
+      transition: r 0.15s ease;
     }
 
-    .log-box::-webkit-scrollbar-thumb {
-      background: var(--border-color);
-      border-radius: 4px;
+    .handle-node:hover {
+      r: 6;
+      stroke-width: 2.5;
     }
   </style>
 </head>
 <body>
   <article>
+    <!-- Header -->
     <div class="header-bar">
-      <a href="/" title="메인으로 이동">
-        <img src="/source/icon_home.svg" style="width:2em; height:2em;">
-      </a>
-      <h1 class="header-title">Webpointer (16:9 481×271 Step Canvas)</h1>
+      <div class="header-left">
+        <a href="/" title="메인으로 이동">
+          <img src="/source/icon_seohyun.svg" style="width:1.8em; height:1.8em;" alt="Home">
+        </a>
+        <h1 class="header-title">Webpointer Vector CAD Editor</h1>
+      </div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">
+        16:9 (481×271 Step Snap)
+      </div>
     </div>
 
-    <div class="main-grid">
-      <!-- Canvas Display Area -->
-      <div class="canvas-container" id="canvas-wrapper">
-        <canvas id="pointerCanvas" width="960" height="540"></canvas>
-        <div class="coord-tooltip" id="coordTooltip">Step: (0, 0)</div>
+    <!-- Top Menu Tabs -->
+    <div class="menu-tabs">
+      <button class="tab-btn active" onclick="switchTab('insert')">삽입</button>
+      <button class="tab-btn" onclick="switchTab('style')">그림 서식</button>
+      <button class="tab-btn" onclick="switchTab('text')">글 서식</button>
+      <button class="tab-btn" onclick="switchTab('anim')">애니메이션</button>
+    </div>
+
+    <!-- Ribbon Toolbar Container -->
+    <div class="ribbon-container" id="ribbonBar">
+      <!-- Dynamic Ribbon Content Injected via JS -->
+    </div>
+
+    <!-- Main Content: SVG Canvas & Inspector -->
+    <div class="content-area">
+      <div class="svg-wrapper" id="svgWrapper">
+        <svg id="mainSvg" viewBox="0 0 960 540">
+          <defs id="svgDefs"></defs>
+          <!-- Grid Layer -->
+          <g id="gridGroup"></g>
+          <!-- User Objects & Groups Layer -->
+          <g id="objectsGroup"></g>
+          <!-- Selection, Marquee & Control Handles Layer -->
+          <g id="uiGroup"></g>
+        </svg>
       </div>
 
-      <!-- Right Control Panel -->
-      <div class="panel">
-        <div class="panel-title">🎯 포인터 좌표 정보</div>
-
-        <div class="info-card">
-          <div class="info-row">
-            <span class="info-label">실제 입력 (Raw):</span>
-            <span class="info-value" id="valRaw">(0.0, 0.0)</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">근사 스냅 Step (481×271):</span>
-            <span class="info-value highlight" id="valStep">Step (0, 0)</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">스냅된 픽셀 좌표:</span>
-            <span class="info-value" id="valPixel">(0px, 0px)</span>
-          </div>
+      <!-- Inspector Panel -->
+      <div class="inspector-panel">
+        <div class="inspector-title">📊 실시간 좌표 & 상태</div>
+        <div class="stat-row">
+          <span class="stat-label">입력 (Raw):</span>
+          <span class="stat-val" id="statRaw">(0, 0)</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">스냅 (Step):</span>
+          <span class="stat-val" id="statStep">Step (0, 0)</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">선택 개수:</span>
+          <span class="stat-val" id="statSelected">0개</span>
         </div>
 
-        <div class="panel-title">⚙️ 설정 및 도구</div>
-
-        <div class="control-group">
-          <label for="drawMode">그리기 모드</label>
-          <select id="drawMode">
-            <option value="point">점(Pointer Dot) 찍기</option>
-            <option value="line">스냅 선(Line) 연결하기</option>
-            <option value="hover">탐색(Inspector) 전용</option>
-          </select>
-        </div>
-
-        <div class="control-group">
-          <label for="pointerColor">포인터 색상</label>
-          <input type="color" id="pointerColor" value="#38bdf8">
-        </div>
-
-        <div class="control-group">
-          <label class="checkbox-label">
-            <input type="checkbox" id="chkGrid" checked>
-            <span>격자선 (481×271 Grid) 표시</span>
-          </label>
-        </div>
-
-        <div class="control-group">
-          <label class="checkbox-label">
-            <input type="checkbox" id="chkHighlight" checked>
-            <span>현재 스냅 위치 셀 가이드 강조</span>
-          </label>
-        </div>
-
-        <div class="btn-group">
-          <button class="btn btn-danger" onclick="clearCanvas()">캔버스 초기화</button>
-        </div>
-
-        <div class="panel-title">📋 클릭 좌표 기록 로그</div>
-        <div class="log-box" id="logBox">
-          <div class="log-entry">준비 완료. 캔버스를 클릭하세요.</div>
-        </div>
+        <div class="inspector-title">🌳 SVG DOM 계층 트리 (&lt;g&gt;)</div>
+        <div class="tree-box" id="domTree"></div>
       </div>
     </div>
   </article>
 
   <script>
-    const CANVAS_WIDTH = 960;
-    const CANVAS_HEIGHT = 540;
-    const STEPS_X = 480; // 0 ~ 480 (총 481 개 포인트)
-    const STEPS_Y = 270; // 0 ~ 270 (총 271 개 포인트)
+    // Canvas Constants
+    const SVG_WIDTH = 960;
+    const SVG_HEIGHT = 540;
+    const STEPS_X = 480; // 0 ~ 480 (481 points)
+    const STEPS_Y = 270; // 0 ~ 270 (271 points)
 
-    const canvas = document.getElementById('pointerCanvas');
-    const ctx = canvas.getContext('2d');
-    const wrapper = document.getElementById('canvas-wrapper');
-    const tooltip = document.getElementById('coordTooltip');
+    // State Variables
+    let currentTab = 'insert';
+    let currentTool = 'select'; // select, point, line, rect, ellipse, arc, bez2, bez3, rounded
+    let gridSnapEnabled = true;
+    let strokeColor = '#38bdf8';
+    let fillColor = 'rgba(56, 189, 248, 0.2)';
+    let strokeWidth = 2;
+    let strokeDash = 'solid';
 
-    const valRaw = document.getElementById('valRaw');
-    const valStep = document.getElementById('valStep');
-    const valPixel = document.getElementById('valPixel');
-    const drawModeSelect = document.getElementById('drawMode');
-    const pointerColorInput = document.getElementById('pointerColor');
-    const chkGrid = document.getElementById('chkGrid');
-    const chkHighlight = document.getElementById('chkHighlight');
-    const logBox = document.getElementById('logBox');
+    // Marker Settings
+    let startMarker = 'none'; // none, arrow, circle, diamond
+    let startMarkerScale = 1;
+    let endMarker = 'none';
+    let endMarkerScale = 1;
 
-    let isMouseDown = false;
-    let currentStepX = 0;
-    let currentStepY = 0;
-    let lastSnappedPt = null;
+    // Selection & Manipulation State
+    const selectedIds = new Set();
+    let isDrawing = false;
+    let isMarquee = false;
+    let isDraggingHandle = false;
+    let activeHandleInfo = null; // { objId, handleType, pointIndex }
 
-    // Stored drawn objects: points = [{stepX, stepY, color}], lines = [{from: {stepX, stepY}, to: {stepX, stepY}, color}]
-    const drawnPoints = [];
-    const drawnLines = [];
+    let drawStartStep = null;
+    let activeTempObj = null;
+    let marqueeStart = null;
 
-    // Initialize Canvas Size
-    canvas.width = CANVAS_WIDTH;
-    canvas.height = CANVAS_HEIGHT;
+    // SVG DOM Object Storage
+    // Each element: { id, type, parentId: null, attrs: {...}, el: SVGElement }
+    const objectsMap = new Map();
+    let nextId = 1;
 
-    function getStepCoordinates(evt) {
-      const rect = canvas.getBoundingClientRect();
-      const scaleX = CANVAS_WIDTH / rect.width;
-      const scaleY = CANVAS_HEIGHT / rect.height;
+    // DOM References
+    const mainSvg = document.getElementById('mainSvg');
+    const svgWrapper = document.getElementById('svgWrapper');
+    const gridGroup = document.getElementById('gridGroup');
+    const objectsGroup = document.getElementById('objectsGroup');
+    const uiGroup = document.getElementById('uiGroup');
+    const svgDefs = document.getElementById('svgDefs');
+    const ribbonBar = document.getElementById('ribbonBar');
+    const domTree = document.getElementById('domTree');
 
-      // Raw canvas pixel location
-      const rawX = (evt.clientX - rect.left) * scaleX;
-      const rawY = (evt.clientY - rect.top) * scaleY;
+    const statRaw = document.getElementById('statRaw');
+    const statStep = document.getElementById('statStep');
+    const statSelected = document.getElementById('statSelected');
 
-      // Clamp raw location within canvas bounds
-      const clampedX = Math.max(0, Math.min(CANVAS_WIDTH, rawX));
-      const clampedY = Math.max(0, Math.min(CANVAS_HEIGHT, rawY));
+    // === Step Snap Utility ===
+    function getStepCoords(evt) {
+      const rect = mainSvg.getBoundingClientRect();
+      const rawX = (evt.clientX - rect.left) * (SVG_WIDTH / rect.width);
+      const rawY = (evt.clientY - rect.top) * (SVG_HEIGHT / rect.height);
 
-      // Calculate Step coordinates (0 ~ 480, 0 ~ 270) using Math.round for nearest grid point approximation
-      const stepX = Math.round((clampedX / CANVAS_WIDTH) * STEPS_X);
-      const stepY = Math.round((clampedY / CANVAS_HEIGHT) * STEPS_Y);
+      const clampedX = Math.max(0, Math.min(SVG_WIDTH, rawX));
+      const clampedY = Math.max(0, Math.min(SVG_HEIGHT, rawY));
 
-      // Convert Step coordinates back to snapped Canvas Pixels
-      const snappedPixelX = (stepX / STEPS_X) * CANVAS_WIDTH;
-      const snappedPixelY = (stepY / STEPS_Y) * CANVAS_HEIGHT;
+      let stepX, stepY, px, py;
+      if (gridSnapEnabled) {
+        stepX = Math.round((clampedX / SVG_WIDTH) * STEPS_X);
+        stepY = Math.round((clampedY / SVG_HEIGHT) * STEPS_Y);
+        px = (stepX / STEPS_X) * SVG_WIDTH;
+        py = (stepY / STEPS_Y) * SVG_HEIGHT;
+      } else {
+        px = clampedX;
+        py = clampedY;
+        stepX = Math.round((px / SVG_WIDTH) * STEPS_X);
+        stepY = Math.round((py / SVG_HEIGHT) * STEPS_Y);
+      }
 
       return {
-        rawX: parseFloat(clampedX.toFixed(2)),
-        rawY: parseFloat(clampedY.toFixed(2)),
+        rawX: Math.round(clampedX),
+        rawY: Math.round(clampedY),
         stepX,
         stepY,
-        snappedPixelX,
-        snappedPixelY,
-        rectLeft: evt.clientX - rect.left,
-        rectTop: evt.clientY - rect.top
+        px,
+        py
       };
     }
 
-    function render() {
-      // Clear canvas background
-      ctx.fillStyle = '#020617';
-      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    // === Grid Layer Renderer ===
+    function renderGrid() {
+      gridGroup.innerHTML = '';
+      if (!gridSnapEnabled) return;
 
-      // Draw Grid Lines (if enabled)
-      if (chkGrid.checked) {
-        ctx.strokeStyle = 'rgba(51, 65, 85, 0.4)';
-        ctx.lineWidth = 0.5;
-
-        // Draw Major vertical grid lines (every 30 steps)
-        const stepWidth = CANVAS_WIDTH / STEPS_X;
-        for (let s = 0; s <= STEPS_X; s += 30) {
-          const x = s * stepWidth;
-          ctx.beginPath();
-          ctx.moveTo(x, 0);
-          ctx.lineTo(x, CANVAS_HEIGHT);
-          ctx.stroke();
-        }
-
-        // Draw Major horizontal grid lines (every 30 steps)
-        const stepHeight = CANVAS_HEIGHT / STEPS_Y;
-        for (let s = 0; s <= STEPS_Y; s += 30) {
-          const y = s * stepHeight;
-          ctx.beginPath();
-          ctx.moveTo(0, y);
-          ctx.lineTo(CANVAS_WIDTH, y);
-          ctx.stroke();
-        }
+      // Draw Grid Major Lines (every 30 steps)
+      let pathData = '';
+      const stepW = SVG_WIDTH / STEPS_X;
+      for (let s = 0; s <= STEPS_X; s += 30) {
+        const x = s * stepW;
+        pathData += `M ${x} 0 V ${SVG_HEIGHT} `;
+      }
+      const stepH = SVG_HEIGHT / STEPS_Y;
+      for (let s = 0; s <= STEPS_Y; s += 30) {
+        const y = s * stepH;
+        pathData += `M 0 ${y} H ${SVG_WIDTH} `;
       }
 
-      // Draw Lines
-      drawnLines.forEach(line => {
-        const x1 = (line.from.stepX / STEPS_X) * CANVAS_WIDTH;
-        const y1 = (line.from.stepY / STEPS_Y) * CANVAS_HEIGHT;
-        const x2 = (line.to.stepX / STEPS_X) * CANVAS_WIDTH;
-        const y2 = (line.to.stepY / STEPS_Y) * CANVAS_HEIGHT;
+      const gridPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      gridPath.setAttribute('d', pathData);
+      gridPath.setAttribute('stroke', 'rgba(51, 65, 85, 0.4)');
+      gridPath.setAttribute('stroke-width', '0.6');
+      gridGroup.appendChild(gridPath);
+    }
 
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.strokeStyle = line.color;
-        ctx.lineWidth = 3;
-        ctx.stroke();
+    // === Custom Marker Definitions Generator ===
+    function updateSvgDefs() {
+      svgDefs.innerHTML = '';
+
+      // Start Marker Definitions
+      ['arrow', 'circle', 'diamond'].forEach(type => {
+        ['start', 'end'].forEach(pos => {
+          const markerId = `marker-${pos}-${type}`;
+          const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+          marker.setAttribute('id', markerId);
+          marker.setAttribute('viewBox', '0 0 10 10');
+          marker.setAttribute('refX', pos === 'start' ? '2' : '8');
+          marker.setAttribute('refY', '5');
+          marker.setAttribute('markerWidth', '6');
+          marker.setAttribute('markerHeight', '6');
+          marker.setAttribute('orient', 'auto');
+
+          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          path.setAttribute('fill', strokeColor);
+
+          if (type === 'arrow') {
+            path.setAttribute('d', pos === 'start' ? 'M 10 0 L 0 5 L 10 10 Z' : 'M 0 0 L 10 5 L 0 10 Z');
+          } else if (type === 'circle') {
+            path.setAttribute('d', 'M 5 1 A 4 4 0 1 1 4.99 1 Z');
+          } else if (type === 'diamond') {
+            path.setAttribute('d', 'M 5 0 L 10 5 L 5 10 L 0 5 Z');
+          }
+          marker.appendChild(path);
+          svgDefs.appendChild(marker);
+        });
       });
+    }
 
-      // Draw Points
-      drawnPoints.forEach(pt => {
-        const px = (pt.stepX / STEPS_X) * CANVAS_WIDTH;
-        const py = (pt.stepY / STEPS_Y) * CANVAS_HEIGHT;
+    // === Ribbon Toolbar Builder ===
+    function renderRibbon() {
+      ribbonBar.innerHTML = '';
 
-        ctx.beginPath();
-        ctx.arc(px, py, 5, 0, 2 * Math.PI);
-        ctx.fillStyle = pt.color;
-        ctx.fill();
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-      });
+      if (currentTab === 'insert') {
+        ribbonBar.innerHTML = `
+          <!-- Shapes Group -->
+          <div class="ribbon-group">
+            <div class="ribbon-tools">
+              <button class="tool-btn ${currentTool === 'select' ? 'active' : ''}" onclick="setTool('select')" title="선택 도구">
+                <svg viewBox="0 0 24 24"><path d="M3 3l7 18 3-7 7-3L3 3z"/></svg>
+                <span>선택</span>
+              </button>
+              <button class="tool-btn ${currentTool === 'point' ? 'active' : ''}" onclick="setTool('point')" title="점 (Point)">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="currentColor"/></svg>
+                <span>점</span>
+              </button>
+              <button class="tool-btn ${currentTool === 'line' ? 'active' : ''}" onclick="setTool('line')" title="선 (Line)">
+                <svg viewBox="0 0 24 24"><line x1="4" y1="20" x2="20" y2="4"/></svg>
+                <span>선</span>
+              </button>
+              <button class="tool-btn ${currentTool === 'rect' ? 'active' : ''}" onclick="setTool('rect')" title="사각형">
+                <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="1"/></svg>
+                <span>사각</span>
+              </button>
+              <button class="tool-btn ${currentTool === 'ellipse' ? 'active' : ''}" onclick="setTool('ellipse')" title="타원">
+                <svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="9" ry="6"/></svg>
+                <span>타원</span>
+              </button>
+              <button class="tool-btn ${currentTool === 'arc' ? 'active' : ''}" onclick="setTool('arc')" title="호 (Arc)">
+                <svg viewBox="0 0 24 24"><path d="M 4 18 A 9 9 0 0 1 20 18"/></svg>
+                <span>호</span>
+              </button>
+              <button class="tool-btn ${currentTool === 'bez2' ? 'active' : ''}" onclick="setTool('bez2')" title="2차 베지어 (1 핸들)">
+                <svg viewBox="0 0 24 24">
+                  <path d="M 3 18 Q 12 3 21 18"/>
+                  <circle cx="12" cy="3" r="2" fill="currentColor"/>
+                  <line x1="12" y1="3" x2="12" y2="10.5" stroke-dasharray="2,2"/>
+                </svg>
+                <span>2차베지어</span>
+              </button>
+              <button class="tool-btn ${currentTool === 'bez3' ? 'active' : ''}" onclick="setTool('bez3')" title="3차 베지어 (2 핸들)">
+                <svg viewBox="0 0 24 24">
+                  <path d="M 3 18 C 7 3, 17 3, 21 18"/>
+                  <circle cx="7" cy="3" r="2" fill="currentColor"/>
+                  <circle cx="17" cy="3" r="2" fill="currentColor"/>
+                </svg>
+                <span>3차베지어</span>
+              </button>
+              <button class="tool-btn ${currentTool === 'rounded' ? 'active' : ''}" onclick="setTool('rounded')" title="둥근 사각형">
+                <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="5"/></svg>
+                <span>둥근사각</span>
+              </button>
+            </div>
+            <div class="ribbon-group-title">도형 삽입</div>
+          </div>
 
-      // Draw Snapped Hover Highlight Guide
-      if (chkHighlight.checked) {
-        const curPx = (currentStepX / STEPS_X) * CANVAS_WIDTH;
-        const curPy = (currentStepY / STEPS_Y) * CANVAS_HEIGHT;
+          <!-- Order Group -->
+          <div class="ribbon-group">
+            <div class="ribbon-tools">
+              <button class="tool-btn" onclick="arrangeOrder('backward')" title="뒤로">
+                <svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12"/><rect x="4" y="4" width="12" height="12" fill="rgba(56,189,248,0.3)"/></svg>
+                <span>뒤로</span>
+              </button>
+              <button class="tool-btn" onclick="arrangeOrder('back')" title="맨 뒤로">
+                <svg viewBox="0 0 24 24"><rect x="10" y="10" width="10" height="10"/><rect x="4" y="4" width="10" height="10" fill="rgba(56,189,248,0.3)"/></svg>
+                <span>맨뒤로</span>
+              </button>
+              <button class="tool-btn" onclick="arrangeOrder('forward')" title="앞으로">
+                <svg viewBox="0 0 24 24"><rect x="4" y="4" width="12" height="12"/><rect x="8" y="8" width="12" height="12" fill="rgba(56,189,248,0.3)"/></svg>
+                <span>앞으로</span>
+              </button>
+              <button class="tool-btn" onclick="arrangeOrder('front')" title="맨 앞으로">
+                <svg viewBox="0 0 24 24"><rect x="4" y="4" width="10" height="10"/><rect x="10" y="10" width="10" height="10" fill="rgba(56,189,248,0.3)"/></svg>
+                <span>맨앞으로</span>
+              </button>
+            </div>
+            <div class="ribbon-group-title">레이어 순서</div>
+          </div>
 
-        // Crosshair Guide Lines
-        ctx.beginPath();
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
-        ctx.setLineDash([4, 4]);
-        ctx.lineWidth = 1;
-        ctx.moveTo(curPx, 0);
-        ctx.lineTo(curPx, CANVAS_HEIGHT);
-        ctx.moveTo(0, curPy);
-        ctx.lineTo(CANVAS_WIDTH, curPy);
-        ctx.stroke();
-        ctx.setLineDash([]); // Reset dash
+          <!-- Grouping -->
+          <div class="ribbon-group">
+            <div class="ribbon-tools">
+              <button class="tool-btn" onclick="groupSelected()" title="그룹 (&lt;g&gt;)">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" stroke-dasharray="3,3"/><rect x="6" y="6" width="6" height="6"/><rect x="12" y="12" width="6" height="6"/></svg>
+                <span>그룹</span>
+              </button>
+              <button class="tool-btn" onclick="ungroupSelected()" title="그룹 해제">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" stroke-dasharray="2,2"/><rect x="13" y="13" width="8" height="8" stroke-dasharray="2,2"/></svg>
+                <span>해제</span>
+              </button>
+            </div>
+            <div class="ribbon-group-title">그룹화</div>
+          </div>
 
-        // Glowing Snapped Target Ring
-        ctx.beginPath();
-        ctx.arc(curPx, curPy, 7, 0, 2 * Math.PI);
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 2;
-        ctx.stroke();
+          <!-- Alignment -->
+          <div class="ribbon-group">
+            <div class="ribbon-tools">
+              <button class="tool-btn" onclick="alignSelected('left')" title="왼쪽 정렬"><svg viewBox="0 0 24 24"><line x1="4" y1="3" x2="4" y2="21"/><rect x="8" y="6" width="12" height="4"/><rect x="8" y="14" width="8" height="4"/></svg><span>왼쪽</span></button>
+              <button class="tool-btn" onclick="alignSelected('hcenter')" title="중앙 정렬"><svg viewBox="0 0 24 24"><line x1="12" y1="3" x2="12" y2="21"/><rect x="6" y="6" width="12" height="4"/><rect x="8" y="14" width="8" height="4"/></svg><span>중앙</span></button>
+              <button class="tool-btn" onclick="alignSelected('right')" title="오른쪽 정렬"><svg viewBox="0 0 24 24"><line x1="20" y1="3" x2="20" y2="21"/><rect x="4" y="6" width="12" height="4"/><rect x="8" y="14" width="8" height="4"/></svg><span>오른쪽</span></button>
+              <button class="tool-btn" onclick="alignSelected('top')" title="위 정렬"><svg viewBox="0 0 24 24"><line x1="3" y1="4" x2="21" y2="4"/><rect x="6" y="8" width="4" height="12"/><rect x="14" y="8" width="4" height="8"/></svg><span>위</span></button>
+              <button class="tool-btn" onclick="alignSelected('vcenter')" title="중앙 정렬"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><rect x="6" y="6" width="4" height="12"/><rect x="14" y="8" width="4" height="8"/></svg><span>중앙</span></button>
+              <button class="tool-btn" onclick="alignSelected('bottom')" title="아래 정렬"><svg viewBox="0 0 24 24"><line x1="3" y1="20" x2="21" y2="20"/><rect x="6" y="4" width="4" height="12"/><rect x="14" y="8" width="4" height="8"/></svg><span>아래</span></button>
+            </div>
+            <div class="ribbon-group-title">정렬</div>
+          </div>
+        `;
+      } else if (currentTab === 'style') {
+        ribbonBar.innerHTML = `
+          <!-- Fill & Stroke -->
+          <div class="ribbon-group">
+            <div class="ribbon-control">
+              <label>테두리 색상:</label>
+              <input type="color" value="${strokeColor}" onchange="strokeColor=this.value; updateSvgDefs(); applyStyleToSelected();">
+            </div>
+            <div class="ribbon-control">
+              <label>채우기 색상:</label>
+              <input type="color" value="${fillColor.startsWith('#') ? fillColor : '#38bdf8'}" onchange="fillColor=this.value; applyStyleToSelected();">
+            </div>
+            <div class="ribbon-control">
+              <label>선 두께:</label>
+              <input type="number" min="1" max="20" value="${strokeWidth}" onchange="strokeWidth=parseInt(this.value); applyStyleToSelected();" style="width:50px;">
+            </div>
+            <div class="ribbon-group-title">기본 스타일</div>
+          </div>
 
-        ctx.beginPath();
-        ctx.arc(curPx, curPy, 2, 0, 2 * Math.PI);
-        ctx.fillStyle = '#ffffff';
-        ctx.fill();
+          <!-- Markers Section (Start / End Shapes & Scaling) -->
+          <div class="ribbon-group">
+            <div class="ribbon-tools">
+              <div class="ribbon-control">
+                <label>시작 모양:</label>
+                <select onchange="startMarker=this.value; applyStyleToSelected();">
+                  <option value="none" ${startMarker==='none'?'selected':''}>없음</option>
+                  <option value="arrow" ${startMarker==='arrow'?'selected':''}>화살표</option>
+                  <option value="circle" ${startMarker==='circle'?'selected':''}>동그라미</option>
+                  <option value="diamond" ${startMarker==='diamond'?'selected':''}>다이아몬드</option>
+                </select>
+              </div>
+              <button class="tool-btn" onclick="scaleMarker('start', 1.2)" title="시작모양 키우기">
+                <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                <span>시작+</span>
+              </button>
+              <button class="tool-btn" onclick="scaleMarker('start', 0.8)" title="시작모양 줄이기">
+                <svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg>
+                <span>시작-</span>
+              </button>
+            </div>
+            <div class="ribbon-group-title">시작 모양 마커</div>
+          </div>
+
+          <div class="ribbon-group">
+            <div class="ribbon-tools">
+              <div class="ribbon-control">
+                <label>끝 모양:</label>
+                <select onchange="endMarker=this.value; applyStyleToSelected();">
+                  <option value="none" ${endMarker==='none'?'selected':''}>없음</option>
+                  <option value="arrow" ${endMarker==='arrow'?'selected':''}>화살표</option>
+                  <option value="circle" ${endMarker==='circle'?'selected':''}>동그라미</option>
+                  <option value="diamond" ${endMarker==='diamond'?'selected':''}>다이아몬드</option>
+                </select>
+              </div>
+              <button class="tool-btn" onclick="scaleMarker('end', 1.2)" title="끝모양 키우기">
+                <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                <span>끝+</span>
+              </button>
+              <button class="tool-btn" onclick="scaleMarker('end', 0.8)" title="끝모양 줄이기">
+                <svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg>
+                <span>끝-</span>
+              </button>
+            </div>
+            <div class="ribbon-group-title">끝 모양 마커</div>
+          </div>
+        `;
+      } else if (currentTab === 'text') {
+        ribbonBar.innerHTML = `
+          <div class="ribbon-group">
+            <div class="ribbon-tools">
+              <button class="tool-btn" onclick="addTextObject()" title="텍스트 상자 추가">
+                <svg viewBox="0 0 24 24"><path d="M4 7V4h16v3M12 4v16M9 20h6"/></svg>
+                <span>텍스트</span>
+              </button>
+            </div>
+            <div class="ribbon-group-title">글 서식</div>
+          </div>
+        `;
+      } else if (currentTab === 'anim') {
+        ribbonBar.innerHTML = `
+          <div class="ribbon-group">
+            <div class="ribbon-tools">
+              <button class="tool-btn" onclick="playAnimation('draw')" title="선 그리기 애니메이션">
+                <svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>
+                <span>그리기</span>
+              </button>
+              <button class="tool-btn" onclick="playAnimation('fade')" title="서서히 나타나기">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-dasharray="4,4"/></svg>
+                <span>페이드</span>
+              </button>
+            </div>
+            <div class="ribbon-group-title">SVG 애니메이션 미리보기</div>
+          </div>
+        `;
       }
     }
 
-    function addLogEntry(rawX, rawY, stepX, stepY) {
-      const entry = document.createElement('div');
-      entry.className = 'log-entry';
-      entry.innerHTML = `Raw(${rawX}, ${rawY}) &rarr; <span>Step (${stepX}, ${stepY})</span>`;
-      logBox.insertBefore(entry, logBox.firstChild);
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      renderRibbon();
     }
 
-    function handlePointerClick(coords) {
-      const color = pointerColorInput.value;
-      const mode = drawModeSelect.value;
+    function setTool(tool) {
+      currentTool = tool;
+      renderRibbon();
+    }
 
-      if (mode === 'point') {
-        drawnPoints.push({ stepX: coords.stepX, stepY: coords.stepY, color });
-        addLogEntry(coords.rawX, coords.rawY, coords.stepX, coords.stepY);
-      } else if (mode === 'line') {
-        if (lastSnappedPt) {
-          drawnLines.push({
-            from: { stepX: lastSnappedPt.stepX, stepY: lastSnappedPt.stepY },
-            to: { stepX: coords.stepX, stepY: coords.stepY },
-            color
-          });
-          drawnPoints.push({ stepX: coords.stepX, stepY: coords.stepY, color });
-          addLogEntry(coords.rawX, coords.rawY, coords.stepX, coords.stepY);
+    // === Object Creation & Handle Operations ===
+    function createSvgObject(type, stepStart, stepEnd) {
+      const id = `obj_${nextId++}`;
+      let el, attrs = {};
+
+      const px1 = (stepStart.stepX / STEPS_X) * SVG_WIDTH;
+      const py1 = (stepStart.stepY / STEPS_Y) * SVG_HEIGHT;
+      const px2 = (stepEnd.stepX / STEPS_X) * SVG_WIDTH;
+      const py2 = (stepEnd.stepY / STEPS_Y) * SVG_HEIGHT;
+
+      if (type === 'point') {
+        el = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        attrs = { cx: px1, cy: py1, r: 6, stepX: stepStart.stepX, stepY: stepStart.stepY };
+      } else if (type === 'line') {
+        el = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        attrs = { x1: px1, y1: py1, x2: px2, y2: py2, stepX1: stepStart.stepX, stepY1: stepStart.stepY, stepX2: stepEnd.stepX, stepY2: stepEnd.stepY };
+      } else if (type === 'rect' || type === 'rounded') {
+        el = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        const x = Math.min(px1, px2);
+        const y = Math.min(py1, py2);
+        const w = Math.max(10, Math.abs(px2 - px1));
+        const h = Math.max(10, Math.abs(py2 - py1));
+        const rx = type === 'rounded' ? 15 : 0;
+        attrs = { x, y, width: w, height: h, rx, stepX: Math.min(stepStart.stepX, stepEnd.stepX), stepY: Math.min(stepStart.stepY, stepEnd.stepY), stepW: Math.abs(stepEnd.stepX - stepStart.stepX), stepH: Math.abs(stepEnd.stepY - stepStart.stepY) };
+      } else if (type === 'ellipse') {
+        el = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+        const cx = (px1 + px2) / 2;
+        const cy = (py1 + py2) / 2;
+        const rx = Math.max(10, Math.abs(px2 - px1) / 2);
+        const ry = Math.max(10, Math.abs(py2 - py1) / 2);
+        attrs = { cx, cy, rx, ry, stepCx: Math.round((stepStart.stepX + stepEnd.stepX) / 2), stepCy: Math.round((stepStart.stepY + stepEnd.stepY) / 2), stepRx: Math.abs(stepEnd.stepX - stepStart.stepX) / 2, stepRy: Math.abs(stepEnd.stepY - stepStart.stepY) / 2 };
+      } else if (type === 'bez2') {
+        // Quadratic Bezier (1 Handle)
+        el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const midX = (px1 + px2) / 2;
+        const midY = Math.min(py1, py2) - 50;
+        attrs = { x1: px1, y1: py1, cx: midX, cy: midY, x2: px2, y2: py2, stepX1: stepStart.stepX, stepY1: stepStart.stepY, stepCx: Math.round((stepStart.stepX + stepEnd.stepX) / 2), stepCy: Math.max(0, Math.min(stepStart.stepY, stepEnd.stepY) - 25), stepX2: stepEnd.stepX, stepY2: stepEnd.stepY };
+      } else if (type === 'bez3') {
+        // Cubic Bezier (2 Handles)
+        el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const c1x = px1 + (px2 - px1) * 0.33;
+        const c1y = py1 - 40;
+        const c2x = px1 + (px2 - px1) * 0.66;
+        const c2y = py2 - 40;
+        attrs = { x1: px1, y1: py1, c1x, c1y, c2x, c2y, x2: px2, y2: py2, stepX1: stepStart.stepX, stepY1: stepStart.stepY, stepC1x: Math.round(stepStart.stepX + (stepEnd.stepX - stepStart.stepX) * 0.33), stepC1y: Math.max(0, stepStart.stepY - 20), stepC2x: Math.round(stepStart.stepX + (stepEnd.stepX - stepStart.stepX) * 0.66), stepC2y: Math.max(0, stepEnd.stepY - 20), stepX2: stepEnd.stepX, stepY2: stepEnd.stepY };
+      } else if (type === 'arc') {
+        el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        attrs = { x1: px1, y1: py1, rx: Math.abs(px2 - px1), ry: Math.abs(py2 - py1), x2: px2, y2: py2, stepX1: stepStart.stepX, stepY1: stepStart.stepY, stepX2: stepEnd.stepX, stepY2: stepEnd.stepY };
+      }
+
+      el.setAttribute('id', id);
+      el.setAttribute('stroke', strokeColor);
+      el.setAttribute('fill', type === 'line' || type === 'bez2' || type === 'bez3' || type === 'arc' ? 'none' : fillColor);
+      el.setAttribute('stroke-width', strokeWidth);
+
+      if (startMarker !== 'none') el.setAttribute('marker-start', `url(#marker-start-${startMarker})`);
+      if (endMarker !== 'none') el.setAttribute('marker-end', `url(#marker-end-${endMarker})`);
+
+      const objData = { id, type, parentId: null, attrs, el };
+      objectsMap.set(id, objData);
+      updateElementAttributes(objData);
+      objectsGroup.appendChild(el);
+      updateDomTree();
+      return objData;
+    }
+
+    function updateElementAttributes(obj) {
+      const a = obj.attrs;
+      if (obj.type === 'point') {
+        obj.el.setAttribute('cx', a.cx);
+        obj.el.setAttribute('cy', a.cy);
+        obj.el.setAttribute('r', a.r || 6);
+      } else if (obj.type === 'line') {
+        obj.el.setAttribute('x1', a.x1);
+        obj.el.setAttribute('y1', a.y1);
+        obj.el.setAttribute('x2', a.x2);
+        obj.el.setAttribute('y2', a.y2);
+      } else if (obj.type === 'rect' || obj.type === 'rounded') {
+        obj.el.setAttribute('x', a.x);
+        obj.el.setAttribute('y', a.y);
+        obj.el.setAttribute('width', a.width);
+        obj.el.setAttribute('height', a.height);
+        if (a.rx) obj.el.setAttribute('rx', a.rx);
+      } else if (obj.type === 'ellipse') {
+        obj.el.setAttribute('cx', a.cx);
+        obj.el.setAttribute('cy', a.cy);
+        obj.el.setAttribute('rx', a.rx);
+        obj.el.setAttribute('ry', a.ry);
+      } else if (obj.type === 'bez2') {
+        obj.el.setAttribute('d', `M ${a.x1} ${a.y1} Q ${a.cx} ${a.cy} ${a.x2} ${a.y2}`);
+      } else if (obj.type === 'bez3') {
+        obj.el.setAttribute('d', `M ${a.x1} ${a.y1} C ${a.c1x} ${a.c1y}, ${a.c2x} ${a.c2y}, ${a.x2} ${a.y2}`);
+      } else if (obj.type === 'arc') {
+        obj.el.setAttribute('d', `M ${a.x1} ${a.y1} A ${a.rx} ${a.ry} 0 0 1 ${a.x2} ${a.y2}`);
+      }
+    }
+
+    // === Selection UI & Control Handles Overlay ===
+    function renderUI() {
+      uiGroup.innerHTML = '';
+      statSelected.textContent = `${selectedIds.size}개`;
+
+      if (selectedIds.size === 0) return;
+
+      selectedIds.forEach(id => {
+        const obj = objectsMap.get(id);
+        if (!obj) return;
+
+        const a = obj.attrs;
+        // Render Bounding / Guide Lines & Control Point Handles
+        if (obj.type === 'bez2') {
+          // Render dashed guide lines for Control Handle
+          const guide = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          guide.setAttribute('d', `M ${a.x1} ${a.y1} L ${a.cx} ${a.cy} L ${a.x2} ${a.y2}`);
+          guide.setAttribute('stroke', '#38bdf8');
+          guide.setAttribute('stroke-dasharray', '3,3');
+          guide.setAttribute('fill', 'none');
+          uiGroup.appendChild(guide);
+
+          // Handle P1 Control Point (1 Handle)
+          createHandleNode(a.cx, a.cy, id, 'bez2_ctrl', 1);
+        } else if (obj.type === 'bez3') {
+          // Render dashed guide lines for 2 Control Handles
+          const guide = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          guide.setAttribute('d', `M ${a.x1} ${a.y1} L ${a.c1x} ${a.c1y} L ${a.c2x} ${a.c2y} L ${a.x2} ${a.y2}`);
+          guide.setAttribute('stroke', '#38bdf8');
+          guide.setAttribute('stroke-dasharray', '3,3');
+          guide.setAttribute('fill', 'none');
+          uiGroup.appendChild(guide);
+
+          // Handle P1, P2 Control Points (2 Handles)
+          createHandleNode(a.c1x, a.c1y, id, 'bez3_ctrl1', 1);
+          createHandleNode(a.c2x, a.c2y, id, 'bez3_ctrl2', 2);
+        } else if (obj.type === 'line' || obj.type === 'arc') {
+          createHandleNode(a.x1, a.y1, id, 'start', 1);
+          createHandleNode(a.x2, a.y2, id, 'end', 2);
+        } else if (obj.type === 'rect' || obj.type === 'rounded') {
+          // Corner Resize Handles
+          createHandleNode(a.x, a.y, id, 'top_left', 1);
+          createHandleNode(a.x + a.width, a.y + a.height, id, 'bottom_right', 2);
+        }
+      });
+    }
+
+    function createHandleNode(x, y, objId, handleType, idx) {
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', x);
+      circle.setAttribute('cy', y);
+      circle.setAttribute('r', '5');
+      circle.setAttribute('fill', '#38bdf8');
+      circle.setAttribute('stroke', '#ffffff');
+      circle.setAttribute('stroke-width', '1.5');
+      circle.setAttribute('class', 'handle-node');
+
+      circle.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+        isDraggingHandle = true;
+        activeHandleInfo = { objId, handleType, idx };
+      });
+      uiGroup.appendChild(circle);
+    }
+
+    // === Event Handling: Drawing, Dragging & Snapping ===
+    mainSvg.addEventListener('mousedown', (e) => {
+      const coords = getStepCoords(e);
+      statRaw.textContent = `(${coords.rawX}, ${coords.rawY})`;
+      statStep.textContent = `Step (${coords.stepX}, ${coords.stepY})`;
+
+      if (isDraggingHandle) return;
+
+      if (currentTool === 'select') {
+        // Check hit object
+        const targetObj = e.target.closest('circle, line, rect, ellipse, path');
+        if (targetObj && objectsMap.has(targetObj.id)) {
+          if (!e.ctrlKey) selectedIds.clear();
+          selectedIds.add(targetObj.id);
         } else {
-          drawnPoints.push({ stepX: coords.stepX, stepY: coords.stepY, color });
-          addLogEntry(coords.rawX, coords.rawY, coords.stepX, coords.stepY);
+          if (!e.ctrlKey) selectedIds.clear();
+          isMarquee = true;
+          marqueeStart = coords;
         }
-        lastSnappedPt = { stepX: coords.stepX, stepY: coords.stepY };
+        renderUI();
+      } else {
+        // Start Drawing Object
+        isDrawing = true;
+        drawStartStep = coords;
+        selectedIds.clear();
+        activeTempObj = createSvgObject(currentTool, coords, coords);
+        selectedIds.add(activeTempObj.id);
+        renderUI();
       }
-      render();
+    });
+
+    mainSvg.addEventListener('mousemove', (e) => {
+      const coords = getStepCoords(e);
+      statRaw.textContent = `(${coords.rawX}, ${coords.rawY})`;
+      statStep.textContent = `Step (${coords.stepX}, ${coords.stepY})`;
+
+      if (isDraggingHandle && activeHandleInfo) {
+        // Dragging Handle Node to modify shape parameters in real-time
+        const obj = objectsMap.get(activeHandleInfo.objId);
+        if (obj) {
+          const a = obj.attrs;
+          if (activeHandleInfo.handleType === 'bez2_ctrl') {
+            a.cx = coords.px;
+            a.cy = coords.py;
+          } else if (activeHandleInfo.handleType === 'bez3_ctrl1') {
+            a.c1x = coords.px;
+            a.c1y = coords.py;
+          } else if (activeHandleInfo.handleType === 'bez3_ctrl2') {
+            a.c2x = coords.px;
+            a.c2y = coords.py;
+          } else if (activeHandleInfo.handleType === 'start') {
+            a.x1 = coords.px;
+            a.y1 = coords.py;
+          } else if (activeHandleInfo.handleType === 'end') {
+            a.x2 = coords.px;
+            a.y2 = coords.py;
+          } else if (activeHandleInfo.handleType === 'bottom_right') {
+            a.width = Math.max(10, coords.px - a.x);
+            a.height = Math.max(10, coords.py - a.y);
+          }
+          updateElementAttributes(obj);
+          renderUI();
+        }
+        return;
+      }
+
+      if (isDrawing && activeTempObj && drawStartStep) {
+        // Update temp drawing shape
+        const px1 = (drawStartStep.stepX / STEPS_X) * SVG_WIDTH;
+        const py1 = (drawStartStep.stepY / STEPS_Y) * SVG_HEIGHT;
+        const px2 = coords.px;
+        const py2 = coords.py;
+        const a = activeTempObj.attrs;
+
+        if (activeTempObj.type === 'line' || activeTempObj.type === 'arc') {
+          a.x2 = px2;
+          a.y2 = py2;
+        } else if (activeTempObj.type === 'rect' || activeTempObj.type === 'rounded') {
+          a.x = Math.min(px1, px2);
+          a.y = Math.min(py1, py2);
+          a.width = Math.max(10, Math.abs(px2 - px1));
+          a.height = Math.max(10, Math.abs(py2 - py1));
+        } else if (activeTempObj.type === 'ellipse') {
+          a.cx = (px1 + px2) / 2;
+          a.cy = (py1 + py2) / 2;
+          a.rx = Math.max(5, Math.abs(px2 - px1) / 2);
+          a.ry = Math.max(5, Math.abs(py2 - py1) / 2);
+        } else if (activeTempObj.type === 'bez2') {
+          a.x2 = px2;
+          a.y2 = py2;
+          a.cx = (px1 + px2) / 2;
+          a.cy = Math.min(py1, py2) - 40;
+        } else if (activeTempObj.type === 'bez3') {
+          a.x2 = px2;
+          a.y2 = py2;
+          a.c1x = px1 + (px2 - px1) * 0.33;
+          a.c1y = py1 - 40;
+          a.c2x = px1 + (px2 - px1) * 0.66;
+          a.c2y = py2 - 40;
+        }
+        updateElementAttributes(activeTempObj);
+        renderUI();
+      }
+    });
+
+    mainSvg.addEventListener('mouseup', () => {
+      isDrawing = false;
+      isMarquee = false;
+      isDraggingHandle = false;
+      activeHandleInfo = null;
+      activeTempObj = null;
+    });
+
+    // === Grouping & Hierarchy Operations ===
+    function groupSelected() {
+      if (selectedIds.size < 2) return;
+      const gId = `g_${nextId++}`;
+      const groupEl = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      groupEl.setAttribute('id', gId);
+
+      selectedIds.forEach(id => {
+        const obj = objectsMap.get(id);
+        if (obj) {
+          obj.parentId = gId;
+          groupEl.appendChild(obj.el);
+        }
+      });
+      objectsGroup.appendChild(groupEl);
+      updateDomTree();
+      renderUI();
     }
 
-    // Event Listeners
-    canvas.addEventListener('mousemove', (e) => {
-      const coords = getStepCoordinates(e);
-      currentStepX = coords.stepX;
-      currentStepY = coords.stepY;
-
-      // Update Panel Text
-      valRaw.textContent = `(${coords.rawX}, ${coords.rawY})`;
-      valStep.textContent = `Step (${coords.stepX}, ${coords.stepY})`;
-      valPixel.textContent = `(${Math.round(coords.snappedPixelX)}px, ${Math.round(coords.snappedPixelY)}px)`;
-
-      // Update Tooltip Position & Text
-      tooltip.style.display = 'block';
-      tooltip.style.left = `${coords.rectLeft}px`;
-      tooltip.style.top = `${coords.rectTop}px`;
-      tooltip.textContent = `Step (${coords.stepX}, ${coords.stepY})`;
-
-      if (isMouseDown && drawModeSelect.value !== 'hover') {
-        handlePointerClick(coords);
-      }
-
-      render();
-    });
-
-    canvas.addEventListener('mouseleave', () => {
-      tooltip.style.display = 'none';
-      isMouseDown = false;
-    });
-
-    canvas.addEventListener('mousedown', (e) => {
-      isMouseDown = true;
-      const coords = getStepCoordinates(e);
-      handlePointerClick(coords);
-    });
-
-    canvas.addEventListener('mouseup', () => {
-      isMouseDown = false;
-    });
-
-    chkGrid.addEventListener('change', render);
-    chkHighlight.addEventListener('change', render);
-
-    function clearCanvas() {
-      drawnPoints.length = 0;
-      drawnLines.length = 0;
-      lastSnappedPt = null;
-      logBox.innerHTML = '<div class="log-entry">캔버스가 초기화되었습니다.</div>';
-      render();
+    function ungroupSelected() {
+      selectedIds.forEach(id => {
+        const obj = objectsMap.get(id);
+        if (obj && obj.parentId) {
+          const parentGroup = document.getElementById(obj.parentId);
+          if (parentGroup) {
+            objectsGroup.appendChild(obj.el);
+            if (parentGroup.children.length === 0) parentGroup.remove();
+          }
+          obj.parentId = null;
+        }
+      });
+      updateDomTree();
+      renderUI();
     }
 
-    // Initial render
-    render();
+    function arrangeOrder(action) {
+      selectedIds.forEach(id => {
+        const obj = objectsMap.get(id);
+        if (!obj) return;
+        const el = obj.el;
+        if (action === 'front') objectsGroup.appendChild(el);
+        else if (action === 'back') objectsGroup.insertBefore(el, objectsGroup.firstChild);
+        else if (action === 'forward' && el.nextSibling) objectsGroup.insertBefore(el.nextSibling, el);
+        else if (action === 'backward' && el.previousSibling) objectsGroup.insertBefore(el, el.previousSibling);
+      });
+      updateDomTree();
+    }
+
+    function alignSelected(type) {
+      if (selectedIds.size === 0) return;
+      // Simple alignment logic for selected shapes
+      selectedIds.forEach(id => {
+        const obj = objectsMap.get(id);
+        if (!obj) return;
+        const a = obj.attrs;
+        if (type === 'left') { if (a.x !== undefined) a.x = 20; if (a.cx !== undefined) a.cx = 40; if (a.x1 !== undefined) a.x1 = 20; }
+        else if (type === 'hcenter') { if (a.x !== undefined) a.x = (SVG_WIDTH - a.width) / 2; if (a.cx !== undefined) a.cx = SVG_WIDTH / 2; }
+        updateElementAttributes(obj);
+      });
+      renderUI();
+    }
+
+    function applyStyleToSelected() {
+      selectedIds.forEach(id => {
+        const obj = objectsMap.get(id);
+        if (!obj) return;
+        obj.el.setAttribute('stroke', strokeColor);
+        if (obj.type !== 'line' && obj.type !== 'bez2' && obj.type !== 'bez3' && obj.type !== 'arc') {
+          obj.el.setAttribute('fill', fillColor);
+        }
+        obj.el.setAttribute('stroke-width', strokeWidth);
+        if (startMarker !== 'none') obj.el.setAttribute('marker-start', `url(#marker-start-${startMarker})`);
+        else obj.el.removeAttribute('marker-start');
+        if (endMarker !== 'none') obj.el.setAttribute('marker-end', `url(#marker-end-${endMarker})`);
+        else obj.el.removeAttribute('marker-end');
+      });
+    }
+
+    function scaleMarker(pos, factor) {
+      if (pos === 'start') startMarkerScale *= factor;
+      else endMarkerScale *= factor;
+      updateSvgDefs();
+    }
+
+    function updateDomTree() {
+      domTree.innerHTML = '';
+      objectsMap.forEach((obj, id) => {
+        const item = document.createElement('div');
+        item.className = `tree-item ${selectedIds.has(id) ? 'selected' : ''}`;
+        item.textContent = `<${obj.type}> #${id}${obj.parentId ? ' [Group: ' + obj.parentId + ']' : ''}`;
+        item.onclick = (e) => {
+          if (!e.ctrlKey) selectedIds.clear();
+          selectedIds.add(id);
+          renderUI();
+          updateDomTree();
+        };
+        domTree.appendChild(item);
+      });
+    }
+
+    // Initialize
+    renderGrid();
+    updateSvgDefs();
+    renderRibbon();
   </script>
 </body>
 </html>
