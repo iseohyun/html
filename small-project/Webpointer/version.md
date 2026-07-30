@@ -1,23 +1,12 @@
 # Webpointer Project Version History
 
-## [0.2.1] - 2026-07-30
-### Added
-- Implemented **Intermediate Control Point Handles** for Multi-Segment Bezier Curves:
-  - Renders yellow control point handles (`#facc15`) at all control point locations (including 1st segment control point and smooth `T` reflected control points) connected with blue dashed guide lines (`#0284c7`).
-- Implemented Dynamic Mouse Cursor Styles in Selection Tool Mode:
-  - **`pointer` (손가락)**: Displayed when hovering over an unselected selectable object.
-  - **`move` (이동 십자가)**: Displayed when hovering over a selected object or dragging an object body.
-  - **`grab`**: Displayed when hovering over control handles.
-  - **`crosshair`**: Displayed during shape drawing.
-- Updated [`IMPLEMENTATION.md`](file:///c:/git/html/small-project/Webpointer/IMPLEMENTATION.md) with mouse cursor states and multi-segment Bezier control handle specifications.
-
-## [0.2.0] - 2026-07-30
-### Added
-- Standardized Continuous Bezier Curve SVG Path Generation (`M..Q..T`).
-
 ## [0.1.9] - 2026-07-30
 ### Added
-- Completed Continuous Multi-Click Bezier Curve Input System.
+- Completed 2nd-order (Quadratic) & 3rd-order (Cubic) Bezier Curve Control System:
+  - Real-time redraw of Bezier curves on control handle drag (`bez2_ctrl`, `bez3_c1`, `bez3_c2`, `bez_vertex`).
+  - High-precision 20-sample parametric curve proximity distance calculation for accurate snap-selection near curve bodies.
+  - Proximity hover dynamic mouse cursor feedback (`pointer` on near object hover in Select tool mode).
+  - Dual symmetric control handle drag sync for 3rd-order Cubic Bezier curves (`bez3`), supporting smooth C1 continuity with automatic point-reflection.
 
 ## [0.1.8] - 2026-07-30
 ### Added
