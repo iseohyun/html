@@ -255,6 +255,84 @@
     return null;
   }
 
+  // Get Bounding Box for an individual Object
+  function getObjectBounds(obj) {
+    var a = obj.attrs;
+    var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+    if (obj.type === 'point') {
+      var r = a.r || 5;
+      minX = a.cx - r; maxX = a.cx + r;
+      minY = a.cy - r; maxY = a.cy + r;
+    } else if (obj.type === 'line') {
+      minX = Math.min(a.x1, a.x2); maxX = Math.max(a.x1, a.x2);
+      minY = Math.min(a.y1, a.y2); maxY = Math.max(a.y1, a.y2);
+    } else if (obj.type === 'rect' || obj.type === 'rounded') {
+      minX = a.x; maxX = a.x + a.width;
+      minY = a.y; maxY = a.y + a.height;
+    } else if (obj.type === 'ellipse' || obj.type === 'arc') {
+      minX = a.cx - a.rx; maxX = a.cx + a.rx;
+      minY = a.cy - a.ry; maxY = a.cy + a.ry;
+    } else if (obj.type === 'bez2' || obj.type === 'bez3') {
+      if (a.points && a.points.length > 0) {
+        a.points.forEach(function(pt) {
+          minX = Math.min(minX, pt.px); maxX = Math.max(maxX, pt.px);
+          minY = Math.min(minY, pt.py); maxY = Math.max(maxY, pt.py);
+        });
+        if (a.firstCtrl) {
+          minX = Math.min(minX, a.firstCtrl.cx); maxX = Math.max(maxX, a.firstCtrl.cx);
+          minY = Math.min(minY, a.firstCtrl.cy); maxY = Math.max(maxY, a.firstCtrl.cy);
+        }
+        if (a.ctrls3) {
+          a.ctrls3.forEach(function(cp) {
+            minX = Math.min(minX, cp.c1.x, cp.c2.x); maxX = Math.max(maxX, cp.c1.x, cp.c2.x);
+            minY = Math.min(minY, cp.c1.y, cp.c2.y); maxY = Math.max(maxY, cp.c1.y, cp.c2.y);
+          });
+        }
+      } else {
+        minX = Math.min(a.x1, a.x2); maxX = Math.max(a.x1, a.x2);
+        minY = Math.min(a.y1, a.y2); maxY = Math.max(a.y1, a.y2);
+      }
+    }
+    return { minX: minX, minY: minY, maxX: maxX, maxY: maxY };
+  }
+
+  // Shift an Object by (deltaX, deltaY)
+  function shiftObject(obj, deltaX, deltaY) {
+    var a = obj.attrs;
+    if (obj.type === 'point' || obj.type === 'ellipse' || obj.type === 'arc') {
+      a.cx += deltaX; a.cy += deltaY;
+    } else if (obj.type === 'line') {
+      a.x1 += deltaX; a.y1 += deltaY;
+      a.x2 += deltaX; a.y2 += deltaY;
+    } else if (obj.type === 'rect' || obj.type === 'rounded') {
+      a.x += deltaX; a.y += deltaY;
+    } else if (obj.type === 'bez2' || obj.type === 'bez3') {
+      if (a.points && a.points.length > 0) {
+        a.points.forEach(function(pt) {
+          pt.px += deltaX; pt.py += deltaY;
+        });
+        if (a.firstCtrl) {
+          a.firstCtrl.cx += deltaX; a.firstCtrl.cy += deltaY;
+        }
+        if (a.ctrls3) {
+          a.ctrls3.forEach(function(cp) {
+            cp.c1.x += deltaX; cp.c1.y += deltaY;
+            cp.c2.x += deltaX; cp.c2.y += deltaY;
+          });
+        }
+        a.pathD = buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3);
+      } else {
+        a.x1 += deltaX; a.y1 += deltaY;
+        a.x2 += deltaX; a.y2 += deltaY;
+        if (a.cx !== undefined) { a.cx += deltaX; a.cy += deltaY; }
+        if (a.c1x !== undefined) { a.c1x += deltaX; a.c1y += deltaY; }
+        if (a.c2x !== undefined) { a.c2x += deltaX; a.c2y += deltaY; }
+      }
+    }
+    render.updateElementAttributes(obj);
+  }
+
   // Create SVG Object Data Struct
   function createSvgObject(type, stepStart, stepEnd) {
     var objectsGroup = document.getElementById('objectsGroup');
@@ -438,7 +516,6 @@
 
     objectsGroup.appendChild(newGroupEl);
 
-    // Update parentId attributes for member shapes
     cfg.selectedIds.forEach(function(id) {
       var obj = cfg.objectsMap.get(id);
       if (obj) {
@@ -471,13 +548,11 @@
     outerGroupsToUnpack.forEach(function(outerG) {
       var children = Array.from(outerG.children);
       children.forEach(function(childEl) {
-        // Move child out 1 level to outerG's parent
         outerG.parentElement.insertBefore(childEl, outerG);
       });
       outerG.remove();
     });
 
-    // Refresh parentId for all objects and re-select newly unpacked items
     cfg.objectsMap.forEach(function(obj, id) {
       var p = obj.el.parentElement;
       if (p && p !== objectsGroup && p.id) {
@@ -514,16 +589,80 @@
     render.updateDomTree();
   };
 
+  // Precise Alignment Function (Align Left, Right, Top, Bottom, H-Center, V-Center)
   window.alignSelected = function(type) {
     if (cfg.selectedIds.size === 0) return;
+
+    // Collect top-level units
+    var topUnitsMap = new Map();
     cfg.selectedIds.forEach(function(id) {
       var obj = cfg.objectsMap.get(id);
       if (!obj) return;
-      var a = obj.attrs;
-      if (type === 'left') { if (a.x !== undefined) a.x = 20; if (a.cx !== undefined) a.cx = 40; }
-      else if (type === 'hcenter') { if (a.x !== undefined) a.x = (cfg.SVG_WIDTH - a.width) / 2; if (a.cx !== undefined) a.cx = cfg.SVG_WIDTH / 2; }
-      render.updateElementAttributes(obj);
+      var outerG = getOutermostGroupEl(obj.el);
+      var unitKey = outerG ? outerG : obj.el;
+      if (!topUnitsMap.has(unitKey)) {
+        topUnitsMap.set(unitKey, []);
+      }
+      topUnitsMap.get(unitKey).push(obj);
     });
+
+    if (topUnitsMap.size < 2) return;
+
+    // Calculate bounds per unit and overall selection bounds
+    var unitInfoList = [];
+    var overallMinX = Infinity, overallMinY = Infinity, overallMaxX = -Infinity, overallMaxY = -Infinity;
+
+    topUnitsMap.forEach(function(objectsInUnit, unitKey) {
+      var uMinX = Infinity, uMinY = Infinity, uMaxX = -Infinity, uMaxY = -Infinity;
+      objectsInUnit.forEach(function(obj) {
+        var b = getObjectBounds(obj);
+        uMinX = Math.min(uMinX, b.minX);
+        uMaxX = Math.max(uMaxX, b.maxX);
+        uMinY = Math.min(uMinY, b.minY);
+        uMaxY = Math.max(uMaxY, b.maxY);
+      });
+
+      overallMinX = Math.min(overallMinX, uMinX);
+      overallMaxX = Math.max(overallMaxX, uMaxX);
+      overallMinY = Math.min(overallMinY, uMinY);
+      overallMaxY = Math.max(overallMaxY, uMaxY);
+
+      unitInfoList.push({
+        objects: objectsInUnit,
+        minX: uMinX,
+        maxX: uMaxX,
+        minY: uMinY,
+        maxY: uMaxY,
+        centerX: (uMinX + uMaxX) / 2,
+        centerY: (uMinY + uMaxY) / 2
+      });
+    });
+
+    var overallCenterX = (overallMinX + overallMaxX) / 2;
+    var overallCenterY = (overallMinY + overallMaxY) / 2;
+
+    // Apply alignment delta to each top-level unit
+    unitInfoList.forEach(function(info) {
+      var deltaX = 0, deltaY = 0;
+      if (type === 'left') {
+        deltaX = overallMinX - info.minX;
+      } else if (type === 'right') {
+        deltaX = overallMaxX - info.maxX;
+      } else if (type === 'hcenter') {
+        deltaX = overallCenterX - info.centerX;
+      } else if (type === 'top') {
+        deltaY = overallMinY - info.minY;
+      } else if (type === 'bottom') {
+        deltaY = overallMaxY - info.maxY;
+      } else if (type === 'vcenter') {
+        deltaY = overallCenterY - info.centerY;
+      }
+
+      info.objects.forEach(function(obj) {
+        shiftObject(obj, deltaX, deltaY);
+      });
+    });
+
     render.renderUI();
   };
 
