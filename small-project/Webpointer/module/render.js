@@ -69,7 +69,7 @@
       gridGroup.appendChild(gridPath);
     },
 
-    // Update SVG Defs for Markers (userSpaceOnUse ensures fixed pixel size regardless of strokeWidth, fill=none for hollow)
+    // Update SVG Defs for Markers (Circle & Diamond centered at refX=5, refY=5; Hollow markers use background mask to prevent line penetration)
     updateSvgDefs: function() {
       var svgDefs = document.getElementById('svgDefs');
       if (!svgDefs) return;
@@ -82,7 +82,13 @@
           marker.setAttribute('id', markerId);
           marker.setAttribute('markerUnits', 'userSpaceOnUse'); // Absolute canvas pixels - fixed size!
           marker.setAttribute('viewBox', '0 0 10 10');
-          marker.setAttribute('refX', pos === 'start' ? '1.5' : '8.5');
+
+          // Reference points: Circle & Diamond use exact center (5, 5); Arrow uses tip (start=1.5, end=8.5)
+          if (type === 'arrow') {
+            marker.setAttribute('refX', pos === 'start' ? '1.5' : '8.5');
+          } else {
+            marker.setAttribute('refX', '5'); // Exact Center for Circle and Diamond!
+          }
           marker.setAttribute('refY', '5');
 
           var scale = pos === 'start' ? (cfg.startMarkerScale || 1) : (cfg.endMarkerScale || 1);
@@ -93,24 +99,39 @@
 
           var fillStyle = pos === 'start' ? (cfg.startMarkerFillStyle || 'solid') : (cfg.endMarkerFillStyle || 'solid');
 
-          var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-          if (fillStyle === 'hollow') {
-            path.setAttribute('fill', 'none'); // True transparent hollow center (no white block)!
-            path.setAttribute('stroke', cfg.strokeColor || '#041e49');
-            path.setAttribute('stroke-width', '1.5');
-          } else {
-            path.setAttribute('fill', cfg.strokeColor || '#041e49');
-            path.setAttribute('stroke', 'none');
+          var pathD = '';
+          if (type === 'arrow') {
+            pathD = pos === 'start' ? 'M 9 1.5 L 1.5 5 L 9 8.5 Z' : 'M 1 1.5 L 8.5 5 L 1 8.5 Z';
+          } else if (type === 'circle') {
+            pathD = 'M 5 1 A 4 4 0 1 1 4.99 1 Z';
+          } else if (type === 'diamond') {
+            pathD = 'M 5 1 L 9 5 L 5 9 L 1 5 Z';
           }
 
-          if (type === 'arrow') {
-            path.setAttribute('d', pos === 'start' ? 'M 9 1.5 L 1.5 5 L 9 8.5 Z' : 'M 1 1.5 L 8.5 5 L 1 8.5 Z');
-          } else if (type === 'circle') {
-            path.setAttribute('d', 'M 5 1 A 4 4 0 1 1 4.99 1 Z');
-          } else if (type === 'diamond') {
-            path.setAttribute('d', 'M 5 1 L 9 5 L 5 9 L 1 5 Z');
+          if (fillStyle === 'hollow') {
+            // Layer 1: Background Masking Fill (Canvas Bg or #ffffff) to prevent line stroke penetration into hollow interior
+            var bgMask = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            bgMask.setAttribute('d', pathD);
+            bgMask.setAttribute('fill', cfg.canvasBgColor || '#ffffff');
+            bgMask.setAttribute('stroke', 'none');
+            marker.appendChild(bgMask);
+
+            // Layer 2: Hollow Outlined Stroke
+            var strokePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            strokePath.setAttribute('d', pathD);
+            strokePath.setAttribute('fill', 'none');
+            strokePath.setAttribute('stroke', cfg.strokeColor || '#041e49');
+            strokePath.setAttribute('stroke-width', '1.5');
+            marker.appendChild(strokePath);
+          } else {
+            // Solid Filled Marker
+            var solidPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            solidPath.setAttribute('d', pathD);
+            solidPath.setAttribute('fill', cfg.strokeColor || '#041e49');
+            solidPath.setAttribute('stroke', 'none');
+            marker.appendChild(solidPath);
           }
-          marker.appendChild(path);
+
           svgDefs.appendChild(marker);
         });
       });
