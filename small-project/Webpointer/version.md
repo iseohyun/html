@@ -1,5 +1,23 @@
 # Webpointer Project Version History
 
+## [0.5.2] - 2026-07-30
+### Added & Improved
+- Shape-Text Auto-Grouping & Format Isolation:
+  - Text typed on/over a shape is automatically grouped (`parentId`).
+  - Shape formatting targets shapes; text formatting targets text.
+  - Recursive group format propagation across nested group hierarchies.
+- Standalone Text Shape Wrapping:
+  - Applying shape fill/stroke to a standalone text box automatically creates a minimal rounded rectangle (`rx = 10`, 8px padding) behind the text and groups them together.
+- Shape Real-Time Rendering Bug Fix:
+  - Updated `renderCanvas.js` (`updateElementAttributes`) to set `stroke`, `fill`, and `stroke-width` on SVG elements in real time.
+- Color Selection Popover Swatch Palette & Theme Menu Relocation:
+  - Converted color pickers into button popovers (`toggleColorPalettePopover`).
+  - Moved **`기본색상 정하기`** (UniPalette) and **`기본색상 가져오기`** (Import Palette) buttons to the **`보기` (`view`)** tab under the **`테마` (`theme`)** category.
+- Streamlined Shape Formatting Tab (`style`):
+  - Merged stroke color, fill color, stroke width (input only), and dashed line into a **2x2 grid** under `선` category. Removed `"선 두께:"` label and `+`/`-` buttons.
+  - Merged line style into a single **`점선`** toggle button with long-press custom pattern input popup. Removed `실선` button and `"선종류:"` / `"점선패턴:"` text labels.
+  - Integrated Start and End marker fill styles into single toggle buttons (꽉찬/빈모양).
+
 ## [0.5.1] - 2026-07-30
 ### Added & Improved
 - Text Tool Ribbon & Canvas Editing Enhancements:
