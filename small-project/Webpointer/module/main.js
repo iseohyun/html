@@ -1517,7 +1517,10 @@
 
       if (state.isDraggingHandle) return;
 
-      var targetObj = e.target.closest('circle, line, rect, ellipse, path');
+      var targetObj = e.target.closest('circle, line, rect, ellipse, path, text, tspan');
+      if (targetObj && targetObj.tagName.toLowerCase() === 'tspan') {
+        targetObj = targetObj.closest('text');
+      }
 
       if (cfg.currentTool === 'bez2' || cfg.currentTool === 'bez3') {
         if (!state.isMultiBezierActive) {
@@ -1539,8 +1542,11 @@
       }
 
       if (cfg.currentTool === 'select') {
-        if (targetObj && cfg.objectsMap.has(targetObj.id)) {
-          selectObjectWithGroup(targetObj.id, e.ctrlKey);
+        var isClickOnSelectionBorder = (e.target && e.target.parentNode && e.target.parentNode.id === 'uiGroup' && e.target.tagName.toLowerCase() === 'rect');
+        if ((targetObj && cfg.objectsMap.has(targetObj.id)) || isClickOnSelectionBorder) {
+          if (targetObj && cfg.objectsMap.has(targetObj.id)) {
+            selectObjectWithGroup(targetObj.id, e.ctrlKey);
+          }
 
           state.isDraggingObject = true;
           state.dragStartCoords = coords;
@@ -1636,7 +1642,8 @@
 
       // Hover Mouse Cursor Dynamic Feedback in Select Tool Mode
       if (cfg.currentTool === 'select' && !state.isDraggingHandle && !state.isDraggingObject) {
-        var hoverTarget = e.target.closest('circle, line, rect, ellipse, path');
+        var hoverTarget = e.target.closest('circle, line, rect, ellipse, path, text, tspan');
+        if (hoverTarget && hoverTarget.tagName.toLowerCase() === 'tspan') hoverTarget = hoverTarget.closest('text');
         if (hoverTarget && cfg.objectsMap.has(hoverTarget.id)) {
           mainSvg.style.cursor = cfg.selectedIds.has(hoverTarget.id) ? 'move' : 'pointer';
         } else {

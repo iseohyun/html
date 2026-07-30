@@ -676,6 +676,21 @@
             minY = Math.min(minY, a.y1, a.y2, a.cy !== undefined ? a.cy : a.y1);
             maxY = Math.max(maxY, a.y1, a.y2, a.cy !== undefined ? a.cy : a.y1);
           }
+        } else if (obj.type === 'text') {
+          var tW = 80, tH = 24;
+          try {
+            if (obj.el) {
+              var bb = obj.el.getBBox();
+              if (bb && bb.width > 0) {
+                tW = bb.width;
+                tH = bb.height;
+              }
+            }
+          } catch(e) {}
+          minX = Math.min(minX, a.x);
+          maxX = Math.max(maxX, a.x + tW);
+          minY = Math.min(minY, a.y - (tH * 0.85));
+          maxY = Math.max(maxY, a.y + (tH * 0.15));
         }
       });
 
@@ -690,6 +705,8 @@
         boxRect.setAttribute('stroke', '#0284c7');
         boxRect.setAttribute('stroke-width', '1.2');
         boxRect.setAttribute('stroke-dasharray', '4,4');
+        boxRect.setAttribute('pointer-events', 'stroke');
+        boxRect.style.cursor = 'move';
         uiGroup.appendChild(boxRect);
       }
 
