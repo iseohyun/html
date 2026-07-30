@@ -340,6 +340,14 @@
         // === 3. 선 Category (Line Thickness Column, Line Style 1x2, Custom Dash Array Input below label) ===
         var curDashStyle = cfg.strokeDashStyle || 'solid';
         var curDashArray = cfg.strokeDashArray || '6,6';
+        if (cfg.selectedIds && cfg.selectedIds.size === 1) {
+          var selId = Array.from(cfg.selectedIds)[0];
+          var selObj = cfg.objectsMap.get(selId);
+          if (selObj && selObj.attrs) {
+            if (selObj.attrs.strokeDashStyle) curDashStyle = selObj.attrs.strokeDashStyle;
+            if (selObj.attrs.strokeDashArray) curDashArray = selObj.attrs.strokeDashArray;
+          }
+        }
         var isDashed = curDashStyle === 'dashed';
 
         var solidLineBtn = '<button class="tool-btn ' + (curDashStyle==='solid'?'active':'') + '" onclick="setStrokeDashStyle(\'solid\')" style="width:34px; height:34px;"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="3"/></svg><span class="tooltip-text">선 모양: 실선</span></button>';
@@ -409,10 +417,10 @@
               // Divider |
               '<div style="width:1px; height:48px; background:#cbd5e1; margin:0 4px;"></div>' +
 
-              // 3. Custom Dash Pattern Input Text (Top: Label, Bottom: Input Text; Active only when dashed)
-              '<div style="display:flex; flex-direction:column; align-items:center; gap:4px; ' + (isDashed ? '' : 'opacity:0.4; pointer-events:none;') + '">' +
+              // 3. Custom Dash Pattern Input Text (Top: Label, Bottom: Input Text; Always interactive for instant dash typing)
+              '<div style="display:flex; flex-direction:column; align-items:center; gap:4px;">' +
                 '<label style="font-size:0.78rem; color:#475569; font-weight:600;">점선 패턴:</label>' +
-                '<input type="text" value="' + curDashArray + '" placeholder="6,6" ' + (isDashed ? '' : 'disabled') + ' oninput="setStrokeDashArray(this.value)" style="width:65px; padding:2px 4px; font-size:0.8rem; border:1px solid #cbd5e1; border-radius:4px; font-family:monospace; text-align:center;">' +
+                '<input type="text" value="' + curDashArray + '" placeholder="6,6" oninput="setStrokeDashArray(this.value)" style="width:65px; padding:2px 4px; font-size:0.8rem; border:1px solid #cbd5e1; border-radius:4px; font-family:monospace; text-align:center;">' +
               '</div>' +
             '</div>' +
             '<div class="category-title">선</div>' +
