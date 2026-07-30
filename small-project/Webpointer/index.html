@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Webpointer 시뮬레이터 - iseohyun.com</title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.85);
+      --border-color: #334155;
+      --accent-color: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.35);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    article {
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .header-bar a {
+      display: inline-flex;
+      align-items: center;
+      transition: transform 0.2s;
+    }
+
+    .header-bar a:hover {
+      transform: scale(1.08);
+    }
+
+    .header-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .canvas-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #020617;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px var(--accent-glow);
+      overflow: hidden;
+      cursor: crosshair;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Floating Coordinate Tooltip */
+    .coord-tooltip {
+      position: absolute;
+      pointer-events: none;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid var(--accent-color);
+      color: #00f2ff;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: monospace;
+      font-weight: 600;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      transform: translate(12px, 12px);
+      z-index: 10;
+      display: none;
+    }
+
+    .panel {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .panel-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--accent-color);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+    }
+
+    .info-card {
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+    }
+
+    .info-label {
+      color: var(--text-muted);
+    }
+
+    .info-value {
+      font-family: monospace;
+      font-weight: 600;
+      color: #38bdf8;
+    }
+
+    .info-value.highlight {
+      color: #4ade80;
+      font-size: 1rem;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    select, input[type="color"] {
+      width: 100%;
+      padding: 8px 12px;
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-main);
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    select:focus {
+      border-color: var(--accent-color);
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      color: var(--text-main);
+      user-select: none;
+    }
+
+    .checkbox-label input {
+      accent-color: var(--accent-color);
+      width: 16px;
+      height: 16px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background: #0284c7;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #0369a1;
+    }
+
+    .btn-danger {
+      background: #dc2626;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #b91c1c;
+    }
+
+    .log-box {
+      max-height: 150px;
+      overflow-y: auto;
+      background: #020617;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 8px;
+      font-family: monospace;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .log-entry {
+      padding: 3px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .log-entry span {
+      color: #38bdf8;
+    }
+
+    /* Scrollbar */
+    .log-box::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .log-box::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <article>
+    <div class="header-bar">
+      <a href="/" title="메인으로 이동">
+        <img src="/source/icon_home.svg" style="width:2em; height:2em;">
+      </a>
+      <h1 class="header-title">Webpointer (16:9 481×271 Step Canvas)</h1>
+    </div>
+
+    <div class="main-grid">
+      <!-- Canvas Display Area -->
+      <div class="canvas-container" id="canvas-wrapper">
+        <canvas id="pointerCanvas" width="960" height="540"></canvas>
+        <div class="coord-tooltip" id="coordTooltip">Step: (0, 0)</div>
+      </div>
+
+      <!-- Right Control Panel -->
+      <div class="panel">
+        <div class="panel-title">🎯 포인터 좌표 정보</div>
+
+        <div class="info-card">
+          <div class="info-row">
+            <span class="info-label">실제 입력 (Raw):</span>
+            <span class="info-value" id="valRaw">(0.0, 0.0)</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">근사 스냅 Step (481×271):</span>
+            <span class="info-value highlight" id="valStep">Step (0, 0)</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">스냅된 픽셀 좌표:</span>
+            <span class="info-value" id="valPixel">(0px, 0px)</span>
+          </div>
+        </div>
+
+        <div class="panel-title">⚙️ 설정 및 도구</div>
+
+        <div class="control-group">
+          <label for="drawMode">그리기 모드</label>
+          <select id="drawMode">
+            <option value="point">점(Pointer Dot) 찍기</option>
+            <option value="line">스냅 선(Line) 연결하기</option>
+            <option value="hover">탐색(Inspector) 전용</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="pointerColor">포인터 색상</label>
+          <input type="color" id="pointerColor" value="#38bdf8">
+        </div>
+
+        <div class="control-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="chkGrid" checked>
+            <span>격자선 (481×271 Grid) 표시</span>
+          </label>
+        </div>
+
+        <div class="control-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="chkHighlight" checked>
+            <span>현재 스냅 위치 셀 가이드 강조</span>
+          </label>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-danger" onclick="clearCanvas()">캔버스 초기화</button>
+        </div>
+
+        <div class="panel-title">📋 클릭 좌표 기록 로그</div>
+        <div class="log-box" id="logBox">
+          <div class="log-entry">준비 완료. 캔버스를 클릭하세요.</div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <script>
+    const CANVAS_WIDTH = 960;
+    const CANVAS_HEIGHT = 540;
+    const STEPS_X = 480; // 0 ~ 480 (총 481 개 포인트)
+    const STEPS_Y = 270; // 0 ~ 270 (총 271 개 포인트)
+
+    const canvas = document.getElementById('pointerCanvas');
+    const ctx = canvas.getContext('2d');
+    const wrapper = document.getElementById('canvas-wrapper');
+    const tooltip = document.getElementById('coordTooltip');
+
+    const valRaw = document.getElementById('valRaw');
+    const valStep = document.getElementById('valStep');
+    const valPixel = document.getElementById('valPixel');
+    const drawModeSelect = document.getElementById('drawMode');
+    const pointerColorInput = document.getElementById('pointerColor');
+    const chkGrid = document.getElementById('chkGrid');
+    const chkHighlight = document.getElementById('chkHighlight');
+    const logBox = document.getElementById('logBox');
+
+    let isMouseDown = false;
+    let currentStepX = 0;
+    let currentStepY = 0;
+    let lastSnappedPt = null;
+
+    // Stored drawn objects: points = [{stepX, stepY, color}], lines = [{from: {stepX, stepY}, to: {stepX, stepY}, color}]
+    const drawnPoints = [];
+    const drawnLines = [];
+
+    // Initialize Canvas Size
+    canvas.width = CANVAS_WIDTH;
+    canvas.height = CANVAS_HEIGHT;
+
+    function getStepCoordinates(evt) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = CANVAS_WIDTH / rect.width;
+      const scaleY = CANVAS_HEIGHT / rect.height;
+
+      // Raw canvas pixel location
+      const rawX = (evt.clientX - rect.left) * scaleX;
+      const rawY = (evt.clientY - rect.top) * scaleY;
+
+      // Clamp raw location within canvas bounds
+      const clampedX = Math.max(0, Math.min(CANVAS_WIDTH, rawX));
+      const clampedY = Math.max(0, Math.min(CANVAS_HEIGHT, rawY));
+
+      // Calculate Step coordinates (0 ~ 480, 0 ~ 270) using Math.round for nearest grid point approximation
+      const stepX = Math.round((clampedX / CANVAS_WIDTH) * STEPS_X);
+      const stepY = Math.round((clampedY / CANVAS_HEIGHT) * STEPS_Y);
+
+      // Convert Step coordinates back to snapped Canvas Pixels
+      const snappedPixelX = (stepX / STEPS_X) * CANVAS_WIDTH;
+      const snappedPixelY = (stepY / STEPS_Y) * CANVAS_HEIGHT;
+
+      return {
+        rawX: parseFloat(clampedX.toFixed(2)),
+        rawY: parseFloat(clampedY.toFixed(2)),
+        stepX,
+        stepY,
+        snappedPixelX,
+        snappedPixelY,
+        rectLeft: evt.clientX - rect.left,
+        rectTop: evt.clientY - rect.top
+      };
+    }
+
+    function render() {
+      // Clear canvas background
+      ctx.fillStyle = '#020617';
+      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+      // Draw Grid Lines (if enabled)
+      if (chkGrid.checked) {
+        ctx.strokeStyle = 'rgba(51, 65, 85, 0.4)';
+        ctx.lineWidth = 0.5;
+
+        // Draw Major vertical grid lines (every 30 steps)
+        const stepWidth = CANVAS_WIDTH / STEPS_X;
+        for (let s = 0; s <= STEPS_X; s += 30) {
+          const x = s * stepWidth;
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, CANVAS_HEIGHT);
+          ctx.stroke();
+        }
+
+        // Draw Major horizontal grid lines (every 30 steps)
+        const stepHeight = CANVAS_HEIGHT / STEPS_Y;
+        for (let s = 0; s <= STEPS_Y; s += 30) {
+          const y = s * stepHeight;
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(CANVAS_WIDTH, y);
+          ctx.stroke();
+        }
+      }
+
+      // Draw Lines
+      drawnLines.forEach(line => {
+        const x1 = (line.from.stepX / STEPS_X) * CANVAS_WIDTH;
+        const y1 = (line.from.stepY / STEPS_Y) * CANVAS_HEIGHT;
+        const x2 = (line.to.stepX / STEPS_X) * CANVAS_WIDTH;
+        const y2 = (line.to.stepY / STEPS_Y) * CANVAS_HEIGHT;
+
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.strokeStyle = line.color;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      });
+
+      // Draw Points
+      drawnPoints.forEach(pt => {
+        const px = (pt.stepX / STEPS_X) * CANVAS_WIDTH;
+        const py = (pt.stepY / STEPS_Y) * CANVAS_HEIGHT;
+
+        ctx.beginPath();
+        ctx.arc(px, py, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = pt.color;
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      });
+
+      // Draw Snapped Hover Highlight Guide
+      if (chkHighlight.checked) {
+        const curPx = (currentStepX / STEPS_X) * CANVAS_WIDTH;
+        const curPy = (currentStepY / STEPS_Y) * CANVAS_HEIGHT;
+
+        // Crosshair Guide Lines
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+        ctx.setLineDash([4, 4]);
+        ctx.lineWidth = 1;
+        ctx.moveTo(curPx, 0);
+        ctx.lineTo(curPx, CANVAS_HEIGHT);
+        ctx.moveTo(0, curPy);
+        ctx.lineTo(CANVAS_WIDTH, curPy);
+        ctx.stroke();
+        ctx.setLineDash([]); // Reset dash
+
+        // Glowing Snapped Target Ring
+        ctx.beginPath();
+        ctx.arc(curPx, curPy, 7, 0, 2 * Math.PI);
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(curPx, curPy, 2, 0, 2 * Math.PI);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+      }
+    }
+
+    function addLogEntry(rawX, rawY, stepX, stepY) {
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.innerHTML = `Raw(${rawX}, ${rawY}) &rarr; <span>Step (${stepX}, ${stepY})</span>`;
+      logBox.insertBefore(entry, logBox.firstChild);
+    }
+
+    function handlePointerClick(coords) {
+      const color = pointerColorInput.value;
+      const mode = drawModeSelect.value;
+
+      if (mode === 'point') {
+        drawnPoints.push({ stepX: coords.stepX, stepY: coords.stepY, color });
+        addLogEntry(coords.rawX, coords.rawY, coords.stepX, coords.stepY);
+      } else if (mode === 'line') {
+        if (lastSnappedPt) {
+          drawnLines.push({
+            from: { stepX: lastSnappedPt.stepX, stepY: lastSnappedPt.stepY },
+            to: { stepX: coords.stepX, stepY: coords.stepY },
+            color
+          });
+          drawnPoints.push({ stepX: coords.stepX, stepY: coords.stepY, color });
+          addLogEntry(coords.rawX, coords.rawY, coords.stepX, coords.stepY);
+        } else {
+          drawnPoints.push({ stepX: coords.stepX, stepY: coords.stepY, color });
+          addLogEntry(coords.rawX, coords.rawY, coords.stepX, coords.stepY);
+        }
+        lastSnappedPt = { stepX: coords.stepX, stepY: coords.stepY };
+      }
+      render();
+    }
+
+    // Event Listeners
+    canvas.addEventListener('mousemove', (e) => {
+      const coords = getStepCoordinates(e);
+      currentStepX = coords.stepX;
+      currentStepY = coords.stepY;
+
+      // Update Panel Text
+      valRaw.textContent = `(${coords.rawX}, ${coords.rawY})`;
+      valStep.textContent = `Step (${coords.stepX}, ${coords.stepY})`;
+      valPixel.textContent = `(${Math.round(coords.snappedPixelX)}px, ${Math.round(coords.snappedPixelY)}px)`;
+
+      // Update Tooltip Position & Text
+      tooltip.style.display = 'block';
+      tooltip.style.left = `${coords.rectLeft}px`;
+      tooltip.style.top = `${coords.rectTop}px`;
+      tooltip.textContent = `Step (${coords.stepX}, ${coords.stepY})`;
+
+      if (isMouseDown && drawModeSelect.value !== 'hover') {
+        handlePointerClick(coords);
+      }
+
+      render();
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+      tooltip.style.display = 'none';
+      isMouseDown = false;
+    });
+
+    canvas.addEventListener('mousedown', (e) => {
+      isMouseDown = true;
+      const coords = getStepCoordinates(e);
+      handlePointerClick(coords);
+    });
+
+    canvas.addEventListener('mouseup', () => {
+      isMouseDown = false;
+    });
+
+    chkGrid.addEventListener('change', render);
+    chkHighlight.addEventListener('change', render);
+
+    function clearCanvas() {
+      drawnPoints.length = 0;
+      drawnLines.length = 0;
+      lastSnappedPt = null;
+      logBox.innerHTML = '<div class="log-entry">캔버스가 초기화되었습니다.</div>';
+      render();
+    }
+
+    // Initial render
+    render();
+  </script>
+</body>
+</html>

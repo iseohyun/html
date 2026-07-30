@@ -1,5 +1,16 @@
 [
   {
+    "date": "2026-7-30",
+    "updates": [
+      {
+        "type": "Added",
+        "projectName": "Webpointer",
+        "projectPath": "/small-project/Webpointer/index.html",
+        "summary": "16:9 비율 및 481×271 Step 근사 스냅(Grid Snap) 캔버스 시뮬레이터 신설"
+      }
+    ]
+  },
+  {
     "date": "2026-07-22",
     "updates": [
       {
