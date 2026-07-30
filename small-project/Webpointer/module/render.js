@@ -303,19 +303,9 @@
     renderUI: function() {
       var uiGroup = document.getElementById('uiGroup');
       var statSelected = document.getElementById('statSelected');
-      var mainSvg = document.getElementById('mainSvg');
       if (!uiGroup) return;
       uiGroup.innerHTML = '';
       if (statSelected) statSelected.textContent = cfg.selectedIds.size + '개';
-
-      // Update Main SVG Cursor
-      if (mainSvg) {
-        if (cfg.currentTool === 'select') {
-          mainSvg.style.cursor = 'default';
-        } else {
-          mainSvg.style.cursor = 'crosshair';
-        }
-      }
 
       if (cfg.selectedIds.size === 0) return;
 
@@ -458,18 +448,15 @@
 
         } else if (obj.type === 'bez2') {
           if (a.points && a.points.length > 0) {
-            // Render All Vertex Points (White)
             a.points.forEach(function(pt, idx) {
               self.createHandleNode(pt.px, pt.py, id, 'bez_vertex', idx, false);
             });
-            // Render All Intermediate Control Points (Yellow)
             if (a.points.length >= 2) {
               var P0 = a.points[0];
               var P1 = a.points[1];
               var c1x = a.firstCtrl ? a.firstCtrl.cx : Math.round((P0.px + P1.px) / 2);
               var c1y = a.firstCtrl ? a.firstCtrl.cy : (Math.min(P0.py, P1.py) - 100);
 
-              // 1st Control Handle (Yellow)
               self.createHandleNode(c1x, c1y, id, 'bez2_ctrl', 0, true);
 
               var guideLine = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -507,11 +494,30 @@
 
         } else if (obj.type === 'bez3') {
           if (a.points && a.points.length > 0) {
+            // Render Vertex Handles (White)
             a.points.forEach(function(pt, idx) {
               self.createHandleNode(pt.px, pt.py, id, 'bez_vertex', idx, false);
             });
-            if (a.c1x !== undefined) self.createHandleNode(a.c1x, a.c1y, id, 'bez3_ctrl1', 98, true);
-            if (a.c2x !== undefined) self.createHandleNode(a.c2x, a.c2y, id, 'bez3_ctrl2', 99, true);
+            // Render 2 Control Handles for bez3 (Yellow)
+            if (a.points.length >= 2) {
+              var B0 = a.points[0];
+              var B1 = a.points[1];
+              var b1x = a.c1x !== undefined ? a.c1x : B0.px;
+              var b1y = a.c1y !== undefined ? a.c1y : Math.round((B0.py + B1.py) / 2 - 50);
+              var b2x = a.c2x !== undefined ? a.c2x : B1.px;
+              var b2y = a.c2y !== undefined ? a.c2y : Math.round((B0.py + B1.py) / 2 - 50);
+
+              self.createHandleNode(b1x, b1y, id, 'bez3_ctrl1', 1, true);
+              self.createHandleNode(b2x, b2y, id, 'bez3_ctrl2', 2, true);
+
+              var guideLine3 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+              var gD3 = 'M ' + B0.px + ' ' + B0.py + ' L ' + b1x + ' ' + b1y + ' L ' + b2x + ' ' + b2y + ' L ' + B1.px + ' ' + B1.py;
+              guideLine3.setAttribute('d', gD3);
+              guideLine3.setAttribute('stroke', '#0284c7');
+              guideLine3.setAttribute('stroke-dasharray', '3,3');
+              guideLine3.setAttribute('fill', 'none');
+              uiGroup.appendChild(guideLine3);
+            }
           } else {
             var guide2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             guide2.setAttribute('d', 'M ' + a.x1 + ' ' + a.y1 + ' L ' + a.c1x + ' ' + a.c1y + ' L ' + a.c2x + ' ' + a.c2y + ' L ' + a.x2 + ' ' + a.y2);
