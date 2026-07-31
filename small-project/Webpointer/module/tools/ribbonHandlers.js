@@ -1754,40 +1754,81 @@
     }
   }
 
+  function getFileSlotKeys() {
+    var rawKeys = localStorage.getItem('webpointer_slot_keys');
+    var keys = ['1', '2', '3'];
+    if (rawKeys) {
+      try {
+        var parsed = JSON.parse(rawKeys);
+        if (Array.isArray(parsed) && parsed.length > 0) keys = parsed;
+      } catch(e) {}
+    }
+    return keys;
+  }
+
+  function saveFileSlotKeys(keys) {
+    localStorage.setItem('webpointer_slot_keys', JSON.stringify(keys));
+  }
+
+  function addNewFileSlot() {
+    var keys = getFileSlotKeys();
+    var maxNum = 0;
+    keys.forEach(function(k) {
+      var n = parseInt(k, 10);
+      if (!isNaN(n) && n > maxNum) maxNum = n;
+    });
+    var newKey = String(maxNum + 1);
+    keys.push(newKey);
+    saveFileSlotKeys(keys);
+    renderFileSlotsList();
+  }
+  window.addNewFileSlot = addNewFileSlot;
+
   function renderFileSlotsList() {
     var container = document.getElementById('fileSlotsContainer');
     if (!container) return;
+    var keys = getFileSlotKeys();
     var html = '';
-    [1, 2, 3].forEach(function(slotNum) {
-      var raw = localStorage.getItem('webpointer_slot_' + slotNum);
+
+    keys.forEach(function(slotKey) {
+      var raw = localStorage.getItem('webpointer_slot_' + slotKey);
       var slotData = null;
       var timeStr = '비어있음';
       var countStr = '0개 객체';
-      var thumbHtml = '<div style="height:48px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:0.75rem; color:#94a3b8;">미리보기 없음</div>';
+      var slotName = 'Slot ' + slotKey;
+      var thumbHtml = '<div style="height:44px; width:70px; min-width:70px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:0.68rem; color:#94a3b8;">미리보기</div>';
       var isSaved = false;
 
       if (raw) {
         try {
           slotData = JSON.parse(raw);
           isSaved = true;
+          if (slotData.name) slotName = slotData.name;
           if (slotData.timestamp) timeStr = new Date(slotData.timestamp).toLocaleString();
           if (slotData.objects) countStr = slotData.objects.length + '개 객체';
           if (slotData.thumbnail) {
-            thumbHtml = '<img src="' + slotData.thumbnail + '" style="height:48px; width:100%; object-fit:contain; background:#ffffff; border:1px solid #e2e8f0; border-radius:4px;" />';
+            thumbHtml = '<img src="' + slotData.thumbnail + '" style="height:44px; width:70px; min-width:70px; object-fit:contain; background:#ffffff; border:1px solid #e2e8f0; border-radius:4px;" />';
           }
         } catch(e){}
       }
+
       html +=
-        '<div id="fileSlotCard_' + slotNum + '" style="border:1px solid #cbd5e1; border-radius:8px; padding:10px; background:#ffffff; display:flex; flex-direction:column; gap:6px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">' +
-          '<div style="font-size:0.9rem; font-weight:700; color:#0f172a; border-bottom:1px solid #f1f5f9; padding-bottom:4px; display:flex; justify-content:space-between; align-items:center;">' +
-            '<span>💾 Slot ' + slotNum + ' ' + (isSaved ? '<span style="font-size:0.7rem; color:#059669; font-weight:600;">(저장됨)</span>' : '') + '</span>' +
-            '<span style="font-size:0.75rem; font-weight:400; color:#64748b;">' + countStr + '</span>' +
+        '<div id="fileSlotCard_' + slotKey + '" style="border:1px solid #cbd5e1; border-radius:8px; padding:10px 14px; background:#ffffff; display:flex; align-items:center; justify-content:space-between; gap:12px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">' +
+          '<div style="display:flex; align-items:center; gap:12px; flex:1; overflow:hidden;">' +
+            thumbHtml +
+            '<div style="display:flex; flex-direction:column; gap:2px; overflow:hidden;">' +
+              '<div style="font-size:0.92rem; font-weight:700; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' +
+                '<span>💾 ' + slotName + '</span> ' +
+                (isSaved ? '<span style="font-size:0.7rem; color:#059669; font-weight:600;">(' + countStr + ')</span>' : '<span style="font-size:0.7rem; color:#94a3b8;">(비어있음)</span>') +
+              '</div>' +
+              '<div style="font-size:0.75rem; color:#64748b;">저장 시각: ' + timeStr + '</div>' +
+            '</div>' +
           '</div>' +
-          thumbHtml +
-          '<div style="font-size:0.75rem; color:#64748b; margin-top:2px; height:24px; word-break:break-all; overflow:hidden;">저장 시각: ' + timeStr + '</div>' +
-          '<div style="display:flex; gap:4px; margin-top:4px;">' +
-            '<button onclick="saveToFileSlot(' + slotNum + ')" style="flex:1; padding:4px 6px; font-size:0.78rem; font-weight:600; background:#0284c7; color:#fff; border:none; border-radius:4px; cursor:pointer;">저장하기</button>' +
-            '<button onclick="loadFromFileSlot(' + slotNum + ')" ' + (!slotData ? 'disabled style="opacity:0.5; cursor:not-allowed;' : 'style="') + 'flex:1; padding:4px 6px; font-size:0.78rem; font-weight:600; background:#059669; color:#fff; border:none; border-radius:4px; cursor:pointer;">불러오기</button>' +
+          '<div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">' +
+            '<button onclick="saveToFileSlot(\'' + slotKey + '\')" style="padding:5px 10px; font-size:0.78rem; font-weight:700; background:#0284c7; color:#fff; border:none; border-radius:6px; cursor:pointer;" title="현재 작업 저장">저장하기</button>' +
+            '<button onclick="loadFromFileSlot(\'' + slotKey + '\')" ' + (!slotData ? 'disabled style="opacity:0.4; cursor:not-allowed; padding:5px 10px; font-size:0.78rem; font-weight:700; background:#059669; color:#fff; border:none; border-radius:6px;"' : 'style="padding:5px 10px; font-size:0.78rem; font-weight:700; background:#059669; color:#fff; border:none; border-radius:6px; cursor:pointer;"') + ' title="슬롯 작업 불러오기">불러오기</button>' +
+            '<button onclick="renameFileSlot(\'' + slotKey + '\')" style="padding:5px 10px; font-size:0.78rem; font-weight:700; background:#f59e0b; color:#fff; border:none; border-radius:6px; cursor:pointer;" title="슬롯 이름 변경">이름바꾸기</button>' +
+            '<button onclick="deleteFileSlot(\'' + slotKey + '\')" style="padding:5px 10px; font-size:0.78rem; font-weight:700; background:#ef4444; color:#fff; border:none; border-radius:6px; cursor:pointer;" title="슬롯 삭제">삭제하기</button>' +
           '</div>' +
         '</div>';
     });
@@ -1809,35 +1850,72 @@
   }
   window.closeFileSlotsModal = closeFileSlotsModal;
 
-  function saveToFileSlot(slotNum) {
+  function saveToFileSlot(slotKey) {
     try {
       var snapStr = captureSnapshot();
       var parsed = JSON.parse(snapStr);
       parsed.timestamp = Date.now();
       parsed.thumbnail = generateCanvasThumbnailSvg();
       parsed.snapStr = snapStr;
-      localStorage.setItem('webpointer_slot_' + slotNum, JSON.stringify(parsed));
+
+      var existingRaw = localStorage.getItem('webpointer_slot_' + slotKey);
+      if (existingRaw) {
+        try {
+          var ex = JSON.parse(existingRaw);
+          if (ex && ex.name) parsed.name = ex.name;
+        } catch(e) {}
+      }
+      if (!parsed.name) parsed.name = 'Slot ' + slotKey;
+
+      localStorage.setItem('webpointer_slot_' + slotKey, JSON.stringify(parsed));
       renderFileSlotsList();
-      alert('Slot ' + slotNum + '에 저장되었습니다.');
     } catch(e) {
-      alert('Slot 저장 실패: ' + e.message);
+      console.error('Slot 저장 실패:', e);
     }
   }
   window.saveToFileSlot = saveToFileSlot;
 
-  function loadFromFileSlot(slotNum) {
+  function loadFromFileSlot(slotKey) {
     try {
-      var raw = localStorage.getItem('webpointer_slot_' + slotNum);
+      var raw = localStorage.getItem('webpointer_slot_' + slotKey);
       if (!raw) return;
       var parsed = JSON.parse(raw);
       restoreSnapshot(parsed.snapStr || raw);
       closeFileSlotsModal();
-      alert('Slot ' + slotNum + '에서 불러왔습니다.');
+      // SILENT LOAD - NO ALERT POPUP AS REQUESTED!
     } catch(e) {
-      alert('Slot 불러오기 실패: ' + e.message);
+      console.error('Slot 불러오기 실패:', e);
     }
   }
   window.loadFromFileSlot = loadFromFileSlot;
+
+  function renameFileSlot(slotKey) {
+    var raw = localStorage.getItem('webpointer_slot_' + slotKey);
+    var curName = 'Slot ' + slotKey;
+    var slotData = {};
+    if (raw) {
+      try {
+        slotData = JSON.parse(raw);
+        if (slotData.name) curName = slotData.name;
+      } catch(e) {}
+    }
+    var newName = prompt('슬롯 이름을 입력하세요:', curName);
+    if (newName && newName.trim()) {
+      slotData.name = newName.trim();
+      localStorage.setItem('webpointer_slot_' + slotKey, JSON.stringify(slotData));
+      renderFileSlotsList();
+    }
+  }
+  window.renameFileSlot = renameFileSlot;
+
+  function deleteFileSlot(slotKey) {
+    localStorage.removeItem('webpointer_slot_' + slotKey);
+    var keys = getFileSlotKeys().filter(function(k) { return k !== String(slotKey); });
+    saveFileSlotKeys(keys);
+    renderFileSlotsList();
+  }
+  window.deleteFileSlot = deleteFileSlot;
+
   window.renderFileSlotsList = renderFileSlotsList;
 
 
