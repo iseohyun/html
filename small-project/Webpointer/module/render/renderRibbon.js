@@ -459,15 +459,12 @@
         '</div>';
 
       var underlineCategoryContent =
-        '<div style="display:flex; flex-direction:column; gap:3px; justify-content:center;">' +
+        '<div style="display:flex; flex-direction:column; gap:2px; justify-content:center;">' +
           '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
             underlineStyleSelectHtml + underlineColorBtnHtml +
           '</div>' +
-          '<div style="display:flex; flex-direction:column; gap:2px;">' +
-            underlineOffsetInputHtml +
-            '<br style="display:block; margin:0;" />' +
-            underlineWidthInputHtml +
-          '</div>' +
+          underlineOffsetInputHtml +
+          underlineWidthInputHtml +
         '</div>';
 
       var textPanBtn    = '<button class="tool-btn ' + (cfg.currentTool==='pan'?'active':'') + '" onclick="setTool(\'pan\')"><span class="alt-badge">H</span>' + (icons.pan || '') + '<span class="tooltip-text">캔버스 화면 잡아서 밀기 (H)</span></button>';
