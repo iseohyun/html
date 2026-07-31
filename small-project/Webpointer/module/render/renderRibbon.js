@@ -31,7 +31,7 @@
     var isCollapsed = cfg.collapsedCategories && cfg.collapsedCategories.has(catKey);
     return '<div class="ribbon-category ' + (isCollapsed ? 'collapsed' : '') + '">' +
              '<div class="category-content" style="' + (isCollapsed ? 'display:none;' : '') + '">' + contentHtml + '</div>' +
-             '<div class="category-title" onclick="toggleCategoryCollapse(\'' + catKey + '\')" title="클릭하여 접기/펼치기" style="cursor:pointer;">' +
+             '<div class="category-title" onclick="toggleCategoryCollapse(\'' + catKey + '\')" title="클릭하여 접기/펼치기" style="cursor:pointer; margin-top:auto;">' +
                '<span class="title-text">' + catTitle + '</span>' +
                '<span class="toggle-icon">' + (isCollapsed ? '▲' : '▼') + '</span>' +
              '</div>' +
@@ -72,8 +72,8 @@
 
       ribbonBar.innerHTML =
         buildCategoryHtml('file_ops', '파일 입출력', fileOpsContent) +
-        buildCategoryHtml('file_metadata', '메타데이터 관리', metadataContent) +
-        buildCategoryHtml('file_history', '작업 히스토리', historyContent);
+        buildCategoryHtml('file_history', '작업 히스토리', historyContent) +
+        buildCategoryHtml('file_metadata', '메타데이터 관리', metadataContent);
     } else if (cfg.currentTab === 'insert') {
       var shapeTools = [
         '<button class="tool-btn ' + (cfg.currentTool==='pan'?'active':'') + '" onclick="setTool(\'pan\')"><span class="alt-badge">H</span>' + (icons.pan || '') + '<span class="tooltip-text">캔버스 화면 잡아서 밀기 (손/팬 도구 - H)</span></button>',
@@ -628,7 +628,7 @@
         var stepNum = (catKey === 'anim_step1' ? 1 : catKey === 'anim_step2' ? 2 : catKey === 'anim_step3' ? 3 : catKey === 'anim_step4' ? 4 : 5);
         return '<div class="ribbon-category ' + (isCollapsed ? 'collapsed' : '') + '">' +
                  '<div class="category-content" style="' + (isCollapsed ? 'display:none;' : '') + '">' + contentHtml + '</div>' +
-                 '<div class="category-title" onclick="setAnimStep(' + stepNum + ')" title="클릭하여 단계 이동" style="cursor:pointer;">' +
+                 '<div class="category-title" onclick="setAnimStep(' + stepNum + ')" title="클릭하여 단계 이동" style="cursor:pointer; margin-top:auto;">' +
                    '<span class="title-text">' + catTitle + '</span>' +
                    '<span class="toggle-icon">' + (isExpanded ? '▼' : '▲') + '</span>' +
                  '</div>' +
