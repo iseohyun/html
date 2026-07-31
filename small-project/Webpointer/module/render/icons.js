@@ -32,6 +32,8 @@
     rotateNeg90: '<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9c-2.5 0-4.8 1-6.4 2.6L3 3v6h6L6.5 6.5A6.9 6.9 0 1 1 5 12"/></svg>',
     targetStroke: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" fill="#e2e8f0" stroke="#ef4444" stroke-width="3" rx="2"/></svg>',
     targetFill: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" fill="#ef4444" stroke="#cbd5e1" stroke-width="1.5" rx="2"/></svg>',
+    textFillIcon: '<svg viewBox="0 0 24 24"><text x="12" y="19" font-size="20" font-weight="900" font-family="Arial, sans-serif" text-anchor="middle" fill="#ef4444">A</text></svg>',
+    textStrokeIcon: '<svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" fill="none" stroke="#ef4444" stroke-width="2" rx="3"/><text x="12" y="17.5" font-size="16" font-weight="900" font-family="Arial, sans-serif" text-anchor="middle" fill="#ef4444">A</text></svg>',
     openPalette: '<svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>',
     importPalette: '<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
     lineSolid: '<svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="3"/></svg>',

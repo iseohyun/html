@@ -2394,8 +2394,13 @@
 
   function getSelectedObjectsForFilter() {
     var members = getAllGroupMembers(cfg.selectedIds);
-    if (members.length === 0) {
-      return Array.from(cfg.objectsMap.values());
+    var textObjs = members.filter(function(m) { return m.type === 'text'; });
+    if (textObjs.length > 0) {
+      return textObjs;
+    }
+    var allTexts = Array.from(cfg.objectsMap.values()).filter(function(o) { return o.type === 'text'; });
+    if (allTexts.length > 0) {
+      return allTexts;
     }
     return members;
   }
