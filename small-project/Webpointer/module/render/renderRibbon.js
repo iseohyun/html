@@ -30,8 +30,8 @@
   function buildCategoryHtml(catKey, catTitle, contentHtml) {
     var isCollapsed = cfg.collapsedCategories && cfg.collapsedCategories.has(catKey);
     return '<div class="ribbon-category ' + (isCollapsed ? 'collapsed' : '') + '">' +
-             '<div class="category-content" style="' + (isCollapsed ? 'display:none;' : '') + '">' + contentHtml + '</div>' +
-             '<div class="category-title" onclick="toggleCategoryCollapse(\'' + catKey + '\')" title="클릭하여 접기/펼치기" style="cursor:pointer; margin-top:auto;">' +
+             '<div class="category-content">' + contentHtml + '</div>' +
+             '<div class="category-title" onclick="toggleCategoryCollapse(\'' + catKey + '\')" title="클릭하여 접기/펼치기">' +
                '<span class="title-text">' + catTitle + '</span>' +
                '<span class="toggle-icon">' + (isCollapsed ? '▲' : '▼') + '</span>' +
              '</div>' +
@@ -603,8 +603,8 @@
         var isCollapsed = !isExpanded;
         var stepNum = (catKey === 'anim_step1' ? 1 : catKey === 'anim_step2' ? 2 : catKey === 'anim_step3' ? 3 : catKey === 'anim_step4' ? 4 : 5);
         return '<div class="ribbon-category ' + (isCollapsed ? 'collapsed' : '') + '">' +
-                 '<div class="category-content" style="' + (isCollapsed ? 'display:none;' : '') + '">' + contentHtml + '</div>' +
-                 '<div class="category-title" onclick="setAnimStep(' + stepNum + ')" title="클릭하여 단계 이동" style="cursor:pointer; margin-top:auto;">' +
+                 '<div class="category-content">' + contentHtml + '</div>' +
+                 '<div class="category-title" onclick="setAnimStep(' + stepNum + ')" title="클릭하여 단계 이동">' +
                    '<span class="title-text">' + catTitle + '</span>' +
                    '<span class="toggle-icon">' + (isExpanded ? '▼' : '▲') + '</span>' +
                  '</div>' +

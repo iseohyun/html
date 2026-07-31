@@ -105,121 +105,140 @@
 
 /* Category DIV (Left to Right Alignment) */
 .webpointer-app .ribbon-category {
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: space-between !important;
-  padding-right: 16px !important;
-  margin-right: 16px !important;
-  border-right: 1px solid #e2e8f0 !important;
-  position: relative !important;
-  height: 100% !important;
-  flex-shrink: 0 !important;
-  overflow: visible !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-right: 16px;
+  margin-right: 16px;
+  border-right: 1px solid #e2e8f0;
+  position: relative;
+  flex-shrink: 0;
+  overflow: visible;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease;
 }
 
 .webpointer-app .ribbon-category:last-child {
-  border-right: none !important;
-  padding-right: 0 !important;
-  margin-right: 0 !important;
+  border-right: none;
+  padding-right: 0;
+  margin-right: 0;
 }
 
 /* Category 3-Row Grid (3 Rows Max per Column, Left to Right Flow) */
 .webpointer-app .category-grid {
-  display: grid !important;
-  grid-template-rows: repeat(3, 34px) !important;
-  grid-auto-flow: column !important;
-  gap: 4px !important;
-  align-items: flex-start !important;
+  display: grid;
+  grid-template-rows: repeat(3, 34px);
+  grid-auto-flow: column;
+  gap: 4px;
+  align-items: flex-start;
 }
 
 /* Category Content (Icon Group Pinned to Very Top) */
 .webpointer-app .category-content {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-start !important;
-  justify-content: flex-start !important;
-  margin-top: 0 !important;
-  padding-top: 0 !important;
-  flex-grow: 1 !important;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  margin-top: 0;
+  padding-top: 0;
+  flex-grow: 1;
+  opacity: 1;
+  max-height: 500px;
+  overflow: visible;
+  transition: opacity 0.25s ease, max-height 0.3s ease, transform 0.25s ease;
 }
 
 /* Category Title (Centered at Bottom, Collapsible Click Target) */
 .webpointer-app .category-title {
-  font-size: 0.74rem !important;
-  font-weight: 600 !important;
-  color: #64748b !important;
-  text-align: center !important;
-  margin-top: auto !important;
-  margin-bottom: 0 !important;
-  padding-top: 4px !important;
-  padding-bottom: 2px !important;
-  letter-spacing: 0.02em !important;
-  white-space: nowrap !important;
-  cursor: pointer !important;
-  user-select: none !important;
-  transition: color 0.15s ease !important;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #64748b;
+  text-align: center;
+  margin-top: auto;
+  margin-bottom: 0;
+  padding-top: 4px;
+  padding-bottom: 2px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s ease, background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .webpointer-app .category-title:hover {
-  color: #0284c7 !important;
+  color: #0284c7;
 }
 
+/* Smooth Collapsed Category State */
 .webpointer-app .ribbon-category.collapsed {
-  justify-content: center !important;
-  align-items: center !important;
-  padding: 0 2px !important;
-  margin-right: 8px !important;
-  border-right: 1px solid #e2e8f0 !important;
-  min-width: 32px !important;
-  width: 32px !important;
-  height: 125px !important;
-  max-height: 125px !important;
-  box-sizing: border-box !important;
-  overflow: hidden !important;
+  justify-content: center;
+  align-items: center;
+  padding: 0 2px;
+  margin-right: 8px;
+  border-right: 1px solid #e2e8f0;
+  min-width: 32px;
+  width: 32px;
+  height: 125px;
+  max-height: 125px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.webpointer-app .ribbon-category.collapsed .category-content {
+  opacity: 0;
+  max-height: 0;
+  max-width: 0;
+  overflow: hidden;
+  pointer-events: none;
+  visibility: hidden;
+  margin: 0;
+  padding: 0;
+  transform: scale(0.95);
 }
 
 .webpointer-app .ribbon-category.collapsed .category-title {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  margin: 0 !important;
-  padding: 8px 2px !important;
-  height: 125px !important;
-  max-height: 125px !important;
-  width: 32px !important;
-  background-color: #f1f5f9 !important;
-  border-radius: 6px !important;
-  border: 1px solid #cbd5e1 !important;
-  color: #0369a1 !important;
-  font-size: 0.75rem !important;
-  box-sizing: border-box !important;
-  overflow: hidden !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0;
+  padding: 8px 2px;
+  height: 125px;
+  max-height: 125px;
+  width: 32px;
+  background-color: #f1f5f9;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  color: #0369a1;
+  font-size: 0.75rem;
+  box-sizing: border-box;
+  overflow: hidden;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
 .webpointer-app .ribbon-category.collapsed .category-title:hover {
-  background-color: #e0f2fe !important;
-  border-color: #0284c7 !important;
-  color: #0284c7 !important;
+  background-color: #e0f2fe;
+  border-color: #0284c7;
+  color: #0284c7;
 }
 
 .webpointer-app .ribbon-category.collapsed .title-text {
-  writing-mode: vertical-rl !important;
-  text-orientation: mixed !important;
-  transform: rotate(0deg) !important;
-  white-space: nowrap !important;
-  max-height: 88px !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  letter-spacing: 1px !important;
-  font-weight: 600 !important;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(0deg);
+  white-space: nowrap;
+  max-height: 88px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 1px;
+  font-weight: 600;
+  transition: opacity 0.3s ease;
 }
 
 .webpointer-app .ribbon-category.collapsed .toggle-icon {
-  margin-top: auto !important;
-  font-size: 0.7rem !important;
-  color: #0284c7 !important;
-  padding-bottom: 2px !important;
+  margin-top: auto;
+  font-size: 0.7rem;
+  color: #0284c7;
+  padding-bottom: 2px;
 }
 
 /* Uniform Square Tool Buttons */
