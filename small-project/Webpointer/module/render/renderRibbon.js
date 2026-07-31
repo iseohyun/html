@@ -395,19 +395,17 @@
       var fontOptionsHtml =
         '<div style="display:flex; flex-direction:column; gap:3px;">' +
           '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
-            '<select onfocus="fetchLocalSystemFonts()" onchange="setTextFontFamily(this.value)" style="max-width:130px; padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px;">' +
+            '<select onfocus="fetchLocalSystemFonts()" onchange="setTextFontFamily(this.value)" style="max-width:125px; padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px;">' +
               fontOptionsStr +
             '</select>' +
             '<input type="number" min="8" max="200" value="' + curFontSize + '" oninput="setTextFontSize(this.value)" onchange="setTextFontSize(this.value)" style="width:45px; padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px; text-align:center;">' +
           '</div>' +
-          '<div style="display:flex; flex-direction:row; align-items:center; gap:3px;">' +
+          '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
             boldBtnHtml +
             italicBtnHtml +
             strikethroughBtnHtml +
-            lineHeightBtnHtml +
-            textDirectionBtnHtml +
           '</div>' +
-          '<div style="display:flex; flex-direction:row; align-items:center; gap:3px;">' +
+          '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
             alignHorizCycleBtnHtml +
             alignVertCycleBtnHtml +
             autoFitCycleBtnHtml +
@@ -428,7 +426,7 @@
       var textColorContent =
         '<div style="display:flex; flex-direction:column; gap:4px; justify-content:center;">' +
           '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
-            textFillBtnHtml + textStrokeBtnHtml + strokeWidthInputHtml + textFilterBtnHtml +
+            textFillBtnHtml + textStrokeBtnHtml + strokeWidthInputHtml +
           '</div>' +
         '</div>';
 
