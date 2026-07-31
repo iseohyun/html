@@ -31,9 +31,9 @@
     var isCollapsed = cfg.collapsedCategories && cfg.collapsedCategories.has(catKey);
     return '<div class="ribbon-category ' + (isCollapsed ? 'collapsed' : '') + '">' +
              '<div class="category-content" style="' + (isCollapsed ? 'display:none;' : '') + '">' + contentHtml + '</div>' +
-             '<div class="category-title" onclick="toggleCategoryCollapse(\'' + catKey + '\')" title="클릭하여 접기/펼치기" style="cursor:pointer; display:flex; align-items:center; justify-content:center; gap:4px;">' +
-               '<span>' + catTitle + '</span>' +
-               '<span style="font-size:0.6rem; opacity:0.6;">' + (isCollapsed ? '▲' : '▼') + '</span>' +
+             '<div class="category-title" onclick="toggleCategoryCollapse(\'' + catKey + '\')" title="클릭하여 접기/펼치기" style="cursor:pointer;">' +
+               '<span class="title-text">' + catTitle + '</span>' +
+               '<span class="toggle-icon">' + (isCollapsed ? '▲' : '▼') + '</span>' +
              '</div>' +
            '</div>';
   }
@@ -497,11 +497,11 @@
       }
 
       if (state.animStep === undefined || state.animStep === null) {
-        state.animStep = hasAnim ? 3 : 1;
+        state.animStep = hasAnim ? 5 : 1;
       }
       var curStep = state.animStep;
 
-      // STEP 1: 효과 (Effect)
+      // STEP 1: 1. 효과 (Effect)
       var step1Content = '';
       if (!selId) {
         step1Content = '<div style="font-size:0.8rem; font-weight:600; color:#94a3b8; padding:4px 0;">대상을 선택하세요</div>';
@@ -524,7 +524,7 @@
           '</div>';
       }
 
-      // STEP 2: 목표 값 (Target Values & Duration)
+      // STEP 2: 2. 목표 값 (Target Values)
       var step2Content =
         '<div style="display:flex; flex-direction:column; gap:6px;">' +
           '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:4px;">' +
@@ -537,11 +537,7 @@
           '</div>' +
         '</div>';
 
-      // STEP 3: 실행 및 옵션 (Trigger & Management)
-      var mainActionBtn = hasAnim ?
-        '<button class="tool-btn" onclick="removeAllAnimationsFromSelected()" style="background:#ef4444; color:#fff; padding:4px 10px; font-weight:700; border-radius:4px;">🗑️ 효과 삭제</button>' :
-        '<button class="tool-btn" onclick="addCustomSmilAnimation()" style="background:#10b981; color:#fff; padding:4px 10px; font-weight:700; border-radius:4px;">➕ 효과 추가</button>';
-
+      // STEP 3: 3. 트리거 & 재생 시간 (Trigger & Timing)
       var step3Content =
         '<div style="display:flex; flex-direction:column; gap:6px;">' +
           '<div style="display:flex; align-items:center; gap:4px;">' +
@@ -564,7 +560,46 @@
           '</div>' +
           '<div style="display:flex; align-items:center; justify-content:space-between; gap:6px;">' +
             '<button class="tool-btn" onclick="setAnimStep(2)" style="background:#475569; color:#fff; padding:3px 8px; font-weight:600; border-radius:4px;">◀ 이전</button>' +
-            mainActionBtn +
+            '<button class="tool-btn" onclick="setAnimStep(4)" style="background:#0284c7; color:#fff; padding:3px 10px; font-weight:700; border-radius:4px;">다음 ➔</button>' +
+          '</div>' +
+        '</div>';
+
+      // STEP 4: 4. 종료 & 제한 조건 (Limits & Restart Rule)
+      var step4Content =
+        '<div style="display:flex; flex-direction:column; gap:6px;">' +
+          '<div style="display:flex; align-items:center; gap:4px;">' +
+            '<label style="font-size:0.72rem; color:#94a3b8;">재시작:</label>' +
+            '<select id="animRestart" style="background:#0f172a; color:#fff; border:1px solid #334155; border-radius:4px; padding:2px; font-size:0.72rem;">' +
+              '<option value="always">always</option>' +
+              '<option value="whenNotActive">whenNotActive</option>' +
+              '<option value="never">never</option>' +
+            '</select>' +
+            '<label style="font-size:0.72rem; color:#94a3b8;">강제종료:</label>' +
+            '<input type="text" id="animEnd" placeholder="mouseleave / 10s" style="width:90px; background:#0f172a; color:#fff; border:1px solid #334155; border-radius:4px; padding:2px; font-size:0.72rem;" />' +
+          '</div>' +
+          '<div style="display:flex; align-items:center; justify-content:space-between; gap:6px;">' +
+            '<button class="tool-btn" onclick="setAnimStep(3)" style="background:#475569; color:#fff; padding:3px 8px; font-weight:600; border-radius:4px;">◀ 이전</button>' +
+            '<button class="tool-btn" onclick="setAnimStep(5)" style="background:#0284c7; color:#fff; padding:3px 10px; font-weight:700; border-radius:4px;">다음 ➔</button>' +
+          '</div>' +
+        '</div>';
+
+      // STEP 5: 5. 효과 적용 & 제어 (Apply & Playback Controls)
+      var mainActionBtn = hasAnim ?
+        '<button class="tool-btn" onclick="removeAllAnimationsFromSelected()" style="background:#ef4444; color:#fff; width:100%; padding:5px; font-weight:700; border-radius:4px; margin-bottom:4px;">🗑️ 효과 삭제</button>' :
+        '<button class="tool-btn" onclick="addCustomSmilAnimation()" style="background:#10b981; color:#fff; width:100%; padding:5px; font-weight:700; border-radius:4px; margin-bottom:4px;">➕ 효과 추가</button>';
+
+      var playbackControlsHtml =
+        '<div style="display:flex; align-items:center; gap:6px;">' +
+          '<button class="tool-btn" onclick="playSelectedAnimation()" style="background:#0284c7; color:#fff; flex:1; padding:4px; font-weight:700; border-radius:4px;">▶️ 재생</button>' +
+          '<button class="tool-btn" onclick="stopAllAnimations()" style="background:#64748b; color:#fff; flex:1; padding:4px; font-weight:700; border-radius:4px;">⏹️ 정지</button>' +
+        '</div>';
+
+      var step5Content =
+        '<div style="display:flex; flex-direction:column; gap:4px;">' +
+          mainActionBtn +
+          playbackControlsHtml +
+          '<div style="display:flex; align-items:center; justify-content:flex-start; margin-top:4px;">' +
+            '<button class="tool-btn" onclick="setAnimStep(4)" style="background:#475569; color:#fff; padding:3px 8px; font-weight:600; border-radius:4px;">◀ 이전</button>' +
           '</div>' +
         '</div>';
 
@@ -589,11 +624,13 @@
         '</div>';
 
       function buildWizardCategoryHtml(catKey, catTitle, contentHtml, isExpanded) {
-        return '<div class="ribbon-category ' + (isExpanded ? '' : 'collapsed') + '">' +
-                 '<div class="category-content" style="' + (isExpanded ? '' : 'display:none;') + '">' + contentHtml + '</div>' +
-                 '<div class="category-title" onclick="toggleCategoryCollapse(\'' + catKey + '\')" style="cursor:pointer; display:flex; align-items:center; justify-content:center; gap:4px;">' +
-                   '<span>' + catTitle + '</span>' +
-                   '<span style="font-size:0.6rem; opacity:0.6;">' + (isExpanded ? '▼' : '▲') + '</span>' +
+        var isCollapsed = !isExpanded;
+        var stepNum = (catKey === 'anim_step1' ? 1 : catKey === 'anim_step2' ? 2 : catKey === 'anim_step3' ? 3 : catKey === 'anim_step4' ? 4 : 5);
+        return '<div class="ribbon-category ' + (isCollapsed ? 'collapsed' : '') + '">' +
+                 '<div class="category-content" style="' + (isCollapsed ? 'display:none;' : '') + '">' + contentHtml + '</div>' +
+                 '<div class="category-title" onclick="setAnimStep(' + stepNum + ')" title="클릭하여 단계 이동" style="cursor:pointer;">' +
+                   '<span class="title-text">' + catTitle + '</span>' +
+                   '<span class="toggle-icon">' + (isExpanded ? '▼' : '▲') + '</span>' +
                  '</div>' +
                '</div>';
       }
@@ -601,7 +638,9 @@
       ribbonBar.innerHTML =
         buildWizardCategoryHtml('anim_step1', '1. 효과', step1Content, curStep === 1) +
         buildWizardCategoryHtml('anim_step2', '2. 목표 값', step2Content, curStep === 2) +
-        buildWizardCategoryHtml('anim_step3', '3. 실행 및 옵션', step3Content, curStep === 3) +
+        buildWizardCategoryHtml('anim_step3', '3. 트리거 & 재생 시간', step3Content, curStep === 3) +
+        buildWizardCategoryHtml('anim_step4', '4. 종료 & 제한 조건', step4Content, curStep === 4) +
+        buildWizardCategoryHtml('anim_step5', '5. 효과 적용 & 제어', step5Content, curStep === 5) +
         buildCategoryHtml('anim_presets', '프리셋 & 제어', presetsContent);
     }
   }

@@ -3105,7 +3105,25 @@
     if (toInput && (!toInput.value || toInput.value.trim() === '')) toInput.value = d.to;
     if (durInput && (!durInput.value || durInput.value.trim() === '')) durInput.value = d.dur;
   }
-  window.updateAnimDefaultValues = updateAnimDefaultValues;
+  function playSelectedAnimation() {
+    var targets = getSelectedObjectsForFilter();
+    if (targets.length === 0) {
+      if (window.playAnimation) window.playAnimation('rotate');
+      return;
+    }
+    targets.forEach(function(obj) {
+      if (!obj.el) obj.el = document.getElementById(obj.id);
+      if (obj.el) {
+        var anims = obj.el.querySelectorAll('animate, animateTransform, animateMotion');
+        anims.forEach(function(anim) {
+          try {
+            if (anim.beginElement) anim.beginElement();
+          } catch(e) {}
+        });
+      }
+    });
+  }
+  window.playSelectedAnimation = playSelectedAnimation;
 
   function cycleStrokeCap() {
     var cur = cfg.strokeCap || 'butt';
