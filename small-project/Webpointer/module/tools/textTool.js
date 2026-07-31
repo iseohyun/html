@@ -377,9 +377,12 @@
       updateTextSelectionHighlight();
     }
 
+    state.syncCaretFunc = syncSelection;
+
     hiddenInput.addEventListener('keyup', syncSelection);
     hiddenInput.addEventListener('click', syncSelection);
     hiddenInput.addEventListener('select', syncSelection);
+    hiddenInput.addEventListener('selectionchange', syncSelection);
 
     hiddenInput.addEventListener('keydown', function(e) {
       e.stopPropagation();
@@ -387,7 +390,9 @@
         e.preventDefault();
         finishDirectCanvasTyping();
       } else {
-        setTimeout(syncSelection, 10);
+        syncSelection();
+        setTimeout(syncSelection, 0);
+        setTimeout(syncSelection, 15);
       }
     });
 
@@ -521,6 +526,88 @@
     }
   }
 
+  function findCharIndexAtCoords(textObj, clickX, clickY) {
+    if (!textObj || !textObj.el) return 0;
+    var textEl = textObj.el;
+    var tspans = textEl.querySelectorAll('tspan');
+
+    if (!tspans || tspans.length === 0) {
+      var fullText = textEl.textContent || '';
+      if (!textEl.getExtentOfChar) return fullText.length;
+      var bestIdx = fullText.length;
+      var minDist = Infinity;
+      for (var i = 0; i < fullText.length; i++) {
+        try {
+          var ext = textEl.getExtentOfChar(i);
+          if (ext && ext.width > 0) {
+            var midX = ext.x + ext.width / 2;
+            var dist = Math.abs(clickX - midX);
+            if (dist < minDist) {
+              minDist = dist;
+              bestIdx = (clickX < midX) ? i : i + 1;
+            }
+          }
+        } catch(e) {}
+      }
+      return bestIdx;
+    }
+
+    var accumChars = 0;
+    var bestGlobalIdx = 0;
+    var minLineDist = Infinity;
+
+    for (var l = 0; l < tspans.length; l++) {
+      var tspan = tspans[l];
+      var content = tspan.textContent || '';
+      if (content === '\u200B') content = '';
+      var lineLen = content.length;
+
+      var bbox = tspan.getBBox();
+      var lineMidY = bbox.y + bbox.height / 2;
+      var lineDistY = Math.abs(clickY - lineMidY);
+
+      if (lineDistY < minLineDist) {
+        minLineDist = lineDistY;
+        var lineBestIdx = lineLen;
+        var minCharDistX = Infinity;
+
+        if (tspan.getExtentOfChar && lineLen > 0) {
+          for (var c = 0; c < lineLen; c++) {
+            try {
+              var extC = tspan.getExtentOfChar(c);
+              if (extC && extC.width > 0) {
+                var midX = extC.x + extC.width / 2;
+                var distX = Math.abs(clickX - midX);
+                if (distX < minCharDistX) {
+                  minCharDistX = distX;
+                  lineBestIdx = (clickX < midX) ? c : c + 1;
+                }
+              }
+            } catch(e) {}
+          }
+        }
+        bestGlobalIdx = accumChars + lineBestIdx;
+      }
+      accumChars += (lineLen + 1);
+    }
+    return bestGlobalIdx;
+  }
+
+  function setCaretIndex(charIdx) {
+    var hiddenInput = document.getElementById('hiddenCanvasInput');
+    if (!hiddenInput) return;
+    var len = (hiddenInput.value || '').length;
+    var idx = Math.max(0, Math.min(len, charIdx));
+    try {
+      hiddenInput.focus();
+      hiddenInput.setSelectionRange(idx, idx);
+    } catch(e) {
+      hiddenInput.selectionStart = idx;
+      hiddenInput.selectionEnd = idx;
+    }
+    if (state.syncCaretFunc) state.syncCaretFunc();
+  }
+
   window.addTextObject = addTextObject;
   window.updateShapeTextAlignment = updateShapeTextAlignment;
 
@@ -529,6 +616,8 @@
     startDirectCanvasTyping: startDirectCanvasTyping,
     finishDirectCanvasTyping: finishDirectCanvasTyping,
     getShapeTextInsertionPoint: getShapeTextInsertionPoint,
-    updateShapeTextAlignment: updateShapeTextAlignment
+    updateShapeTextAlignment: updateShapeTextAlignment,
+    findCharIndexAtCoords: findCharIndexAtCoords,
+    setCaretIndex: setCaretIndex
   };
 })(window);

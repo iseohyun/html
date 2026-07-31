@@ -86,31 +86,39 @@
         }
 
         var isClickOnCurrentText = (state.typingSvgObj && clickedObj && clickedObj.id === state.typingSvgObj.id);
-        var isClickOnSelectionBorder = (clickedEl && clickedEl.parentNode && clickedEl.parentNode.id === 'uiGroup' && clickedEl.tagName.toLowerCase() === 'rect');
 
-        var editedObj = state.typingSvgObj;
-        textTool.finishDirectCanvasTyping();
+        if (isClickOnCurrentText) {
+          var charIdx = textTool.findCharIndexAtCoords(state.typingSvgObj, coords.px, coords.py);
+          textTool.setCaretIndex(charIdx);
 
-        if (handlers && handlers.setTool) {
-          handlers.setTool('select');
-        } else {
-          cfg.currentTool = 'select';
-        }
-
-        if (editedObj && (isClickOnCurrentText || isClickOnSelectionBorder || (clickedObj && cfg.objectsMap.has(clickedObj.id)))) {
-          var targetId = (clickedObj && cfg.objectsMap.has(clickedObj.id)) ? clickedObj.id : editedObj.id;
-          selection.selectObjectWithGroup(targetId, e.ctrlKey);
-
-          state.isDraggingObject = true;
-          state.dragStartCoords = coords;
-          state.initialObjAttrsMap.clear();
-          cfg.selectedIds.forEach(function(id) {
-            var obj = cfg.objectsMap.get(id);
-            if (obj) {
-              state.initialObjAttrsMap.set(id, JSON.parse(JSON.stringify(obj.attrs)));
-            }
-          });
+          state.isPendingTextDrag = true;
+          state.textDragStartCoords = coords;
+          state.textDragObj = state.typingSvgObj;
           return;
+        } else {
+          var editedObj = state.typingSvgObj;
+          textTool.finishDirectCanvasTyping();
+
+          if (handlers && handlers.setTool) {
+            handlers.setTool('select');
+          } else {
+            cfg.currentTool = 'select';
+          }
+
+          if (editedObj && (clickedObj && cfg.objectsMap.has(clickedObj.id))) {
+            selection.selectObjectWithGroup(clickedObj.id, e.ctrlKey);
+
+            state.isDraggingObject = true;
+            state.dragStartCoords = coords;
+            state.initialObjAttrsMap.clear();
+            cfg.selectedIds.forEach(function(id) {
+              var obj = cfg.objectsMap.get(id);
+              if (obj) {
+                state.initialObjAttrsMap.set(id, JSON.parse(JSON.stringify(obj.attrs)));
+              }
+            });
+            return;
+          }
         }
       }
 
@@ -254,6 +262,30 @@
 
     mainSvg.addEventListener('mousemove', function(e) {
       var coords = selection.getStepCoords(e);
+
+      if (state.isPendingTextDrag && state.textDragStartCoords) {
+        var dragDx = Math.abs(coords.px - state.textDragStartCoords.px);
+        var dragDy = Math.abs(coords.py - state.textDragStartCoords.py);
+        if (dragDx > 3 || dragDy > 3) {
+          var pendingObj = state.textDragObj;
+          state.isPendingTextDrag = false;
+          textTool.finishDirectCanvasTyping();
+
+          if (handlers && handlers.setTool) handlers.setTool('select');
+          else cfg.currentTool = 'select';
+
+          if (pendingObj && cfg.objectsMap.has(pendingObj.id)) {
+            selection.selectObjectWithGroup(pendingObj.id, e.ctrlKey);
+            state.isDraggingObject = true;
+            state.dragStartCoords = state.textDragStartCoords;
+            state.initialObjAttrsMap.clear();
+            cfg.selectedIds.forEach(function(id) {
+              var obj = cfg.objectsMap.get(id);
+              if (obj) state.initialObjAttrsMap.set(id, JSON.parse(JSON.stringify(obj.attrs)));
+            });
+          }
+        }
+      }
 
       if (cfg.currentTool === 'pan') {
         mainSvg.style.cursor = state.isPanning ? 'grabbing' : 'grab';
@@ -456,6 +488,7 @@
     });
 
     mainSvg.addEventListener('mouseup', function(e) {
+      state.isPendingTextDrag = false;
       if (state.isDrawingNewObject && state.activeNewObj) {
         var obj = state.activeNewObj;
         var start = state.drawStartCoords;
