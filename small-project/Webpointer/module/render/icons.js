@@ -34,6 +34,19 @@
     targetFill: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" fill="#ef4444" stroke="#cbd5e1" stroke-width="1.5" rx="2"/></svg>',
     textFillIcon: '<svg viewBox="0 0 24 24"><text x="12" y="19" font-size="20" font-weight="900" font-family="Arial, sans-serif" text-anchor="middle" fill="#ef4444">A</text></svg>',
     textStrokeIcon: '<svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" fill="none" stroke="#ef4444" stroke-width="2" rx="3"/><text x="12" y="17.5" font-size="16" font-weight="900" font-family="Arial, sans-serif" text-anchor="middle" fill="#ef4444">A</text></svg>',
+    textUnderlineIcon: '<svg viewBox="0 0 24 24"><text x="12" y="14" font-size="15" font-weight="800" font-family="Arial, sans-serif" text-anchor="middle" fill="#0f172a">U</text><path d="M 3 19 Q 6.5 16 10 19 T 17 19 T 21 19" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    getTextFillIcon: function(c) {
+      var fillC = (c && c !== 'none') ? c : '#ef4444';
+      return '<svg viewBox="0 0 24 24"><text x="12" y="19" font-size="20" font-weight="900" font-family="Arial, sans-serif" text-anchor="middle" fill="' + fillC + '">A</text></svg>';
+    },
+    getTextStrokeIcon: function(c) {
+      var strokeC = (c && c !== 'none') ? c : '#ef4444';
+      return '<svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" fill="none" stroke="' + strokeC + '" stroke-width="2" rx="3"/><text x="12" y="17.5" font-size="16" font-weight="900" font-family="Arial, sans-serif" text-anchor="middle" fill="' + strokeC + '">A</text></svg>';
+    },
+    getTextUnderlineIcon: function(c) {
+      var uC = (c && c !== 'none') ? c : '#ef4444';
+      return '<svg viewBox="0 0 24 24"><text x="12" y="14" font-size="15" font-weight="800" font-family="Arial, sans-serif" text-anchor="middle" fill="#0f172a">U</text><path d="M 3 19 Q 6.5 16 10 19 T 17 19 T 21 19" fill="none" stroke="' + uC + '" stroke-width="2.5" stroke-linecap="round"/></svg>';
+    },
     openPalette: '<svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>',
     importPalette: '<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
     lineSolid: '<svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="3"/></svg>',
