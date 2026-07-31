@@ -129,7 +129,18 @@
   grid-template-rows: repeat(3, 34px) !important;
   grid-auto-flow: column !important;
   gap: 4px !important;
-  align-items: center !important;
+  align-items: flex-start !important;
+}
+
+/* Category Content (Icon Group Pinned to Very Top) */
+.webpointer-app .category-content {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  flex-grow: 1 !important;
 }
 
 /* Category Title (Centered at Bottom, Collapsible Click Target) */
@@ -139,7 +150,9 @@
   color: #64748b !important;
   text-align: center !important;
   margin-top: auto !important;
-  padding-top: 6px !important;
+  margin-bottom: 0 !important;
+  padding-top: 4px !important;
+  padding-bottom: 2px !important;
   letter-spacing: 0.02em !important;
   white-space: nowrap !important;
   cursor: pointer !important;

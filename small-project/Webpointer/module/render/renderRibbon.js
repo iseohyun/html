@@ -153,7 +153,7 @@
       var stepPx = cfg.gridStepSize || 24;
 
       var canvasSettingsContentHtml =
-        '<div style="display:flex; flex-direction:column; gap:4px; justify-content:center;">' +
+        '<div style="display:flex; flex-direction:column; gap:4px; justify-content:flex-start;">' +
           '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
             '<span style="font-size:0.78rem; font-weight:600; color:#475569;">격자</span>' +
             '<input type="checkbox" id="chkGridToggle" ' + (cfg.gridSnapEnabled ? 'checked' : '') + ' onchange="toggleGridSnap(this.checked)" style="width:16px; height:16px; cursor:pointer;" title="격자 스냅">' +
@@ -238,7 +238,7 @@
       var endScaleMinus = '<button class="tool-btn" onclick="scaleMarker(\'end\', 0.8)" style="width:34px; height:34px;"><span class="alt-badge">-</span>' + (icons.markerMinus || '') + '<span class="tooltip-text">끝 마커 크기 줄이기 (-)</span></button>';
 
       var lineEndsContent =
-        '<div style="display:flex; flex-direction:column; gap:4px; justify-content:center;">' +
+        '<div style="display:flex; flex-direction:column; gap:4px; justify-content:flex-start;">' +
           '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
             startCycleBtn +
             '<div style="width:1px; height:28px; background:#cbd5e1; margin:0 3px;"></div>' +
@@ -262,7 +262,7 @@
       var joinCycleBtn = '<button class="tool-btn active" onclick="cycleStrokeJoin()" style="width:34px; height:34px;">' + (icons['join' + (curJoin.charAt(0).toUpperCase() + curJoin.slice(1))] || '┌') + '<span class="tooltip-text">모서리 마감 토글: ' + curJoin + ' (클릭 시 순환: miter/round/bevel)</span></button>';
 
       var capJoinContent =
-        '<div style="display:flex; flex-direction:column; gap:4px; justify-content:center;">' +
+        '<div style="display:flex; flex-direction:column; gap:4px; justify-content:flex-start;">' +
           '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
             '<span style="font-size:0.75rem; color:#475569; font-weight:600; min-width:32px;">끝:</span>' +
             capCycleBtn +
