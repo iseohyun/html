@@ -521,7 +521,34 @@
         state.selectionAnchorPos = null;
       }
 
-      if (e.key === 'ArrowUp') {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        var val = hiddenInput.value || '';
+        var currentActivePos = (hiddenInput.selectionDirection === 'backward') ? hiddenInput.selectionStart : hiddenInput.selectionEnd;
+        var newPos = Math.max(0, currentActivePos - 1);
+        if (e.ctrlKey) {
+          var sub = val.slice(0, currentActivePos);
+          var match = sub.search(/\S+\s*$/);
+          newPos = (match === -1) ? 0 : match;
+        }
+        applyNavSelection(newPos, e.shiftKey);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        var val = hiddenInput.value || '';
+        var currentActivePos = (hiddenInput.selectionDirection === 'backward') ? hiddenInput.selectionStart : hiddenInput.selectionEnd;
+        var newPos = Math.min(val.length, currentActivePos + 1);
+        if (e.ctrlKey) {
+          var sub = val.slice(currentActivePos);
+          var match = sub.search(/\s*\S+/);
+          if (match !== -1) {
+            var m = sub.match(/\s*\S+/);
+            newPos = currentActivePos + match + (m ? m[0].length : 1);
+          } else {
+            newPos = val.length;
+          }
+        }
+        applyNavSelection(newPos, e.shiftKey);
+      } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         var val = hiddenInput.value || '';
         var currentActivePos = (hiddenInput.selectionDirection === 'backward') ? hiddenInput.selectionStart : hiddenInput.selectionEnd;
@@ -704,18 +731,24 @@
 
     if (!tspans || tspans.length === 0) {
       var fullText = textEl.textContent || '';
-      if (!textEl.getExtentOfChar) return fullText.length;
+      if (fullText === '\u200B') fullText = '';
+      if (fullText.length === 0) return 0;
+
       var bestIdx = fullText.length;
       var minDist = Infinity;
       for (var i = 0; i < fullText.length; i++) {
         try {
           var ext = textEl.getExtentOfChar(i);
-          if (ext && ext.width > 0) {
-            var midX = ext.x + ext.width / 2;
-            var dist = Math.abs(clickX - midX);
-            if (dist < minDist) {
-              minDist = dist;
-              bestIdx = (clickX < midX) ? i : i + 1;
+          if (ext && ext.width >= 0) {
+            var distL = Math.abs(clickX - ext.x);
+            var distR = Math.abs(clickX - (ext.x + ext.width));
+            if (distL < minDist) {
+              minDist = distL;
+              bestIdx = i;
+            }
+            if (distR < minDist) {
+              minDist = distR;
+              bestIdx = i + 1;
             }
           }
         } catch(e) {}
@@ -733,8 +766,12 @@
       if (content === '\u200B') content = '';
       var lineLen = content.length;
 
-      var bbox = tspan.getBBox();
-      var lineMidY = bbox.y + bbox.height / 2;
+      var lineMidY = (textObj.attrs.y || 0) + (l * parseInt(textObj.attrs.fontSize || 20, 10) * (textObj.attrs.lineHeight || 1.2));
+      try {
+        var bbox = tspan.getBBox();
+        if (bbox && bbox.height > 0) lineMidY = bbox.y + bbox.height / 2;
+      } catch(eBbox) {}
+
       var lineDistY = Math.abs(clickY - lineMidY);
 
       if (lineDistY < minLineDist) {
@@ -742,19 +779,44 @@
         var lineBestIdx = lineLen;
         var minCharDistX = Infinity;
 
-        if (tspan.getExtentOfChar && lineLen > 0) {
+        if (lineLen > 0) {
           for (var c = 0; c < lineLen; c++) {
-            try {
-              var extC = tspan.getExtentOfChar(c);
-              if (extC && extC.width > 0) {
-                var midX = extC.x + extC.width / 2;
-                var distX = Math.abs(clickX - midX);
-                if (distX < minCharDistX) {
-                  minCharDistX = distX;
-                  lineBestIdx = (clickX < midX) ? c : c + 1;
+            var leftX = null;
+            var rightX = null;
+            if (tspan.getExtentOfChar) {
+              try {
+                var extC = tspan.getExtentOfChar(c);
+                if (extC && extC.width >= 0) {
+                  leftX = extC.x;
+                  rightX = extC.x + extC.width;
                 }
+              } catch(eExt) {}
+            }
+            if (leftX === null && tspan.getSubStringLength) {
+              try {
+                var sub1 = tspan.getSubStringLength(0, c);
+                var sub2 = tspan.getSubStringLength(0, c + 1);
+                var startX = textObj.attrs.x || 0;
+                if (tspan.getStartPositionOfChar) {
+                  try { startX = tspan.getStartPositionOfChar(0).x; } catch(eS) {}
+                }
+                leftX = startX + sub1;
+                rightX = startX + sub2;
+              } catch(eSub) {}
+            }
+
+            if (leftX !== null && rightX !== null) {
+              var dL = Math.abs(clickX - leftX);
+              var dR = Math.abs(clickX - rightX);
+              if (dL < minCharDistX) {
+                minCharDistX = dL;
+                lineBestIdx = c;
               }
-            } catch(e) {}
+              if (dR < minCharDistX) {
+                minCharDistX = dR;
+                lineBestIdx = c + 1;
+              }
+            }
           }
         }
         bestGlobalIdx = accumChars + lineBestIdx;
