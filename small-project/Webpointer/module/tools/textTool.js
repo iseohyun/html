@@ -179,6 +179,19 @@
     // Strict 1s cycle timer: 0.5s ON (0~500ms), 0.5s OFF (500~1000ms)
     var caretVisible = true;
     var startTime = Date.now();
+
+    function resetCaretBlinkTimer() {
+      startTime = Date.now();
+      caretVisible = true;
+      var el = document.getElementById('canvasBlinkingCaret');
+      if (el) {
+        el.style.visibility = 'visible';
+        el.style.opacity = '1';
+      }
+    }
+
+    state.resetCaretBlinkTimer = resetCaretBlinkTimer;
+
     state.caretBlinkTimer = setInterval(function() {
       var el = document.getElementById('canvasBlinkingCaret');
       if (!el) return;
@@ -430,6 +443,7 @@
     });
 
     function syncSelection() {
+      resetCaretBlinkTimer();
       updateCaretPosition();
       updateTextSelectionHighlight();
     }
