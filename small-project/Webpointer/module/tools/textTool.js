@@ -480,6 +480,35 @@
       return accum + targetCol;
     }
 
+    function applyNavSelection(newPos, isShift) {
+      var val = hiddenInput.value || '';
+      var clampedPos = Math.max(0, Math.min(val.length, newPos));
+
+      if (isShift) {
+        if (state.selectionAnchorPos === null || state.selectionAnchorPos === undefined) {
+          state.selectionAnchorPos = (hiddenInput.selectionDirection === 'backward') ? hiddenInput.selectionEnd : hiddenInput.selectionStart;
+        }
+        var anchor = state.selectionAnchorPos;
+        var start = Math.min(anchor, clampedPos);
+        var end = Math.max(anchor, clampedPos);
+        var dir = (clampedPos < anchor) ? 'backward' : 'forward';
+        try {
+          hiddenInput.setSelectionRange(start, end, dir);
+        } catch(e) {
+          hiddenInput.selectionStart = start;
+          hiddenInput.selectionEnd = end;
+        }
+      } else {
+        state.selectionAnchorPos = null;
+        try {
+          hiddenInput.setSelectionRange(clampedPos, clampedPos);
+        } catch(e) {
+          hiddenInput.selectionStart = clampedPos;
+          hiddenInput.selectionEnd = clampedPos;
+        }
+      }
+    }
+
     hiddenInput.addEventListener('keydown', function(e) {
       e.stopPropagation();
       if (e.key === 'Escape') {
@@ -488,52 +517,49 @@
         return;
       }
 
+      if (!e.shiftKey && e.key !== 'Shift' && e.key !== 'Control' && e.key !== 'Alt') {
+        state.selectionAnchorPos = null;
+      }
+
       if (e.key === 'ArrowUp') {
         e.preventDefault();
         var val = hiddenInput.value || '';
-        var pos = hiddenInput.selectionStart;
-        var info = getLineAndColFromPos(val, pos);
+        var currentActivePos = (hiddenInput.selectionDirection === 'backward') ? hiddenInput.selectionStart : hiddenInput.selectionEnd;
+        var info = getLineAndColFromPos(val, currentActivePos);
         if (info.lineIdx > 0) {
           var newPos = getPosFromLineAndCol(val, info.lineIdx - 1, info.colIdx);
-          hiddenInput.selectionStart = newPos;
-          hiddenInput.selectionEnd = newPos;
+          applyNavSelection(newPos, e.shiftKey);
         }
       } else if (e.key === 'ArrowDown') {
         e.preventDefault();
         var val = hiddenInput.value || '';
-        var pos = hiddenInput.selectionEnd;
-        var info = getLineAndColFromPos(val, pos);
+        var currentActivePos = (hiddenInput.selectionDirection === 'backward') ? hiddenInput.selectionStart : hiddenInput.selectionEnd;
+        var info = getLineAndColFromPos(val, currentActivePos);
         var lines = val.split('\n');
         if (info.lineIdx < lines.length - 1) {
           var newPos = getPosFromLineAndCol(val, info.lineIdx + 1, info.colIdx);
-          hiddenInput.selectionStart = newPos;
-          hiddenInput.selectionEnd = newPos;
+          applyNavSelection(newPos, e.shiftKey);
         }
       } else if (e.key === 'Home') {
-        if (e.ctrlKey) {
-          hiddenInput.selectionStart = 0;
-          hiddenInput.selectionEnd = 0;
-        } else {
-          var val = hiddenInput.value || '';
-          var pos = hiddenInput.selectionStart;
-          var lineStart = val.lastIndexOf('\n', pos - 1);
-          var targetPos = lineStart === -1 ? 0 : lineStart + 1;
-          hiddenInput.selectionStart = targetPos;
-          hiddenInput.selectionEnd = targetPos;
+        e.preventDefault();
+        var val = hiddenInput.value || '';
+        var targetPos = 0;
+        if (!e.ctrlKey) {
+          var currentActivePos = (hiddenInput.selectionDirection === 'backward') ? hiddenInput.selectionStart : hiddenInput.selectionEnd;
+          var lineStart = val.lastIndexOf('\n', currentActivePos - 1);
+          targetPos = lineStart === -1 ? 0 : lineStart + 1;
         }
+        applyNavSelection(targetPos, e.shiftKey);
       } else if (e.key === 'End') {
-        if (e.ctrlKey) {
-          var val = hiddenInput.value || '';
-          hiddenInput.selectionStart = val.length;
-          hiddenInput.selectionEnd = val.length;
-        } else {
-          var val = hiddenInput.value || '';
-          var pos = hiddenInput.selectionEnd;
-          var lineEnd = val.indexOf('\n', pos);
-          var targetPos = lineEnd === -1 ? val.length : lineEnd;
-          hiddenInput.selectionStart = targetPos;
-          hiddenInput.selectionEnd = targetPos;
+        e.preventDefault();
+        var val = hiddenInput.value || '';
+        var targetPos = val.length;
+        if (!e.ctrlKey) {
+          var currentActivePos = (hiddenInput.selectionDirection === 'backward') ? hiddenInput.selectionStart : hiddenInput.selectionEnd;
+          var lineEnd = val.indexOf('\n', currentActivePos);
+          targetPos = lineEnd === -1 ? val.length : lineEnd;
         }
+        applyNavSelection(targetPos, e.shiftKey);
       }
 
       syncSelection();
