@@ -3074,6 +3074,39 @@
       '</div>';
   }
 
+  function setAnimStep(step) {
+    state.animStep = step;
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+      window.WebpointerRender.renderRibbon();
+    }
+  }
+  window.setAnimStep = setAnimStep;
+
+  function updateAnimDefaultValues(attrType) {
+    var select = document.getElementById('animAttrType');
+    var type = attrType || (select ? select.value : 'transform:rotate');
+    var fromInput = document.getElementById('animFrom');
+    var toInput = document.getElementById('animTo');
+    var durInput = document.getElementById('animDur');
+
+    var defaults = {
+      'fill': { from: '#041e49', to: '#ef4444', dur: '2s' },
+      'stroke': { from: '#041e49', to: '#3b82f6', dur: '2s' },
+      'stroke-width': { from: '1', to: '5', dur: '1.5s' },
+      'opacity': { from: '0', to: '1', dur: '1.5s' },
+      'transform:translate': { from: '0 0', to: '50 0', dur: '2s' },
+      'transform:scale': { from: '1', to: '1.5', dur: '1.5s' },
+      'transform:rotate': { from: '0', to: '360', dur: '2s' },
+      'd': { from: '', to: '', dur: '2s' }
+    };
+
+    var d = defaults[type] || { from: '0', to: '100', dur: '2s' };
+    if (fromInput && (!fromInput.value || fromInput.value.trim() === '')) fromInput.value = d.from;
+    if (toInput && (!toInput.value || toInput.value.trim() === '')) toInput.value = d.to;
+    if (durInput && (!durInput.value || durInput.value.trim() === '')) durInput.value = d.dur;
+  }
+  window.updateAnimDefaultValues = updateAnimDefaultValues;
+
   function cycleStrokeCap() {
     var cur = cfg.strokeCap || 'butt';
     var next = 'butt';
