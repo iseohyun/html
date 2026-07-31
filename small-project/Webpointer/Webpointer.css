@@ -123,10 +123,11 @@
   margin-right: 0 !important;
 }
 
-/* Category 3-Row Grid */
+/* Category 3-Row Grid (3 Rows Max per Column, Left to Right Flow) */
 .webpointer-app .category-grid {
   display: grid !important;
   grid-template-rows: repeat(3, 34px) !important;
+  grid-auto-flow: column !important;
   gap: 4px !important;
   align-items: center !important;
 }

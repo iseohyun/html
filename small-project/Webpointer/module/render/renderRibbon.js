@@ -49,10 +49,8 @@
       var saveWebBtn   = '<button class="tool-btn" onclick="saveFileToWeb()" style="width:34px; height:34px;"><span class="alt-badge">S</span>' + (icons.saveFile || '') + '<span class="tooltip-text">저장하기 (웹 LocalStorage)</span></button>';
       var downloadBtn  = '<button class="tool-btn" onclick="downloadFile()" style="width:34px; height:34px;"><span class="alt-badge">D</span>' + (icons.downloadFile || '') + '<span class="tooltip-text">다운로드 (.json 프로젝트 / .svg 이미지)</span></button>';
 
-      var fileOpsContent =
-        '<div style="display:flex; flex-direction:row; gap:4px; align-items:center;">' +
-          openFileBtn + saveWebBtn + downloadBtn +
-        '</div>';
+      var fileOpsTools = [openFileBtn, saveWebBtn, downloadBtn];
+      var fileOpsContent = build3RowGridHtml(fileOpsTools);
 
       var halfSaveBtn  = '<button class="tool-btn" onclick="openFileSlotsModal()"><span class="alt-badge">L</span>' + (icons.halfDiskIcon || icons.saveFile || '') + '<span class="tooltip-text">임시저장 (슬롯 관리자: 3개 이상 확장)</span></button>';
       var symbolBtn    = '<button class="tool-btn" onclick="openSymbolManagerModal()"><span class="alt-badge">M</span>' + (icons.smileyIcon || icons.shapes || '') + '<span class="tooltip-text">심볼 (Symbol Manager)</span></button>';
@@ -474,10 +472,8 @@
       var textSelectBtn = '<button class="tool-btn ' + (cfg.currentTool==='select'?'active':'') + '" onclick="setTool(\'select\')"><span class="alt-badge">V</span>' + (icons.select || '') + '<span class="tooltip-text">선택 도구 (V)</span></button>';
       var textBoxBtn    = '<button class="tool-btn ' + (cfg.currentTool==='text'?'active':'') + '" onclick="setTool(\'text\')"><span class="alt-badge">T</span>' + (icons.addText || '') + '<span class="tooltip-text">텍스트 상자 도구 (T)</span></button>';
 
-      var textInsertContent =
-        '<div style="display:flex; flex-direction:row; gap:4px; align-items:center;">' +
-          textPanBtn + textSelectBtn + textBoxBtn +
-        '</div>';
+      var textInsertTools = [textPanBtn, textSelectBtn, textBoxBtn];
+      var textInsertContent = build3RowGridHtml(textInsertTools);
 
       ribbonBar.innerHTML =
         buildCategoryHtml('text_insert', '삽입', textInsertContent) +
