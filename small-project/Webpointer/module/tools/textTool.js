@@ -281,81 +281,122 @@
     }
 
     function updateCaretPosition() {
-      if (!state.typingSvgObj || !state.typingCaretEl) return;
+      var caretEl = state.typingCaretEl || document.getElementById('canvasBlinkingCaret');
+      if (!state.typingSvgObj || !caretEl) return;
+      state.typingCaretEl = caretEl;
+
       var textEl = state.typingSvgObj.el;
+      if (!textEl) return;
+
+      var hiddenInput = document.getElementById('hiddenCanvasInput');
+      if (!hiddenInput) return;
+
       var fontSize = parseInt(state.typingSvgObj.attrs.fontSize || 20, 10);
       var fontBaselineY = state.typingSvgObj.attrs.y || 0;
       var baseX = state.typingSvgObj.attrs.x || 0;
+      var textAnchor = state.typingSvgObj.attrs.textAnchor || 'start';
 
       var cx = baseX;
       var cy1 = fontBaselineY - (fontSize * 0.85);
       var cy2 = fontBaselineY + (fontSize * 0.15);
 
-      try {
-        if (textEl) {
-          var caretPos = hiddenInput.selectionDirection === 'backward' ? hiddenInput.selectionStart : hiddenInput.selectionEnd;
-          if (caretPos === undefined) caretPos = (hiddenInput.value || '').length;
+      var caretPos = hiddenInput.selectionDirection === 'backward' ? hiddenInput.selectionStart : hiddenInput.selectionEnd;
+      if (caretPos === undefined || caretPos === null) caretPos = (hiddenInput.value || '').length;
 
-          var tspans = textEl.querySelectorAll('tspan');
-          if (tspans && tspans.length > 0) {
-            var accumChars = 0;
-            var targetTspan = tspans[0];
-            var targetLineIdx = 0;
-            var chIdxInLine = caretPos;
+      var tspans = textEl.querySelectorAll('tspan');
+      if (tspans && tspans.length > 0) {
+        var accumChars = 0;
+        var targetTspan = tspans[0];
+        var targetLineIdx = 0;
+        var chIdxInLine = caretPos;
 
-            for (var l = 0; l < tspans.length; l++) {
-              var content = tspans[l].textContent || '';
-              if (content === '\u200B') content = '';
-              var lineLen = content.length;
+        for (var l = 0; l < tspans.length; l++) {
+          var content = tspans[l].textContent || '';
+          if (content === '\u200B') content = '';
+          var lineLen = content.length;
 
-              if (caretPos <= accumChars + lineLen || l === tspans.length - 1) {
-                targetTspan = tspans[l];
-                targetLineIdx = l;
-                chIdxInLine = Math.max(0, Math.min(lineLen, caretPos - accumChars));
-                break;
+          if (caretPos <= accumChars + lineLen || l === tspans.length - 1) {
+            targetTspan = tspans[l];
+            targetLineIdx = l;
+            chIdxInLine = Math.max(0, Math.min(lineLen, caretPos - accumChars));
+            break;
+          }
+          accumChars += (lineLen + 1);
+        }
+
+        var lineY = fontBaselineY + (targetLineIdx * fontSize * (state.typingSvgObj.attrs.lineHeight || 1.2));
+        cy1 = lineY - (fontSize * 0.85);
+        cy2 = lineY + (fontSize * 0.15);
+
+        if (targetTspan) {
+          var tspanText = targetTspan.textContent || '';
+          if (tspanText === '\u200B') tspanText = '';
+
+          var calculatedX = null;
+
+          // Tier 1: getExtentOfChar for character bounding box
+          if (chIdxInLine > 0 && targetTspan.getExtentOfChar) {
+            try {
+              var charIdxToQuery = Math.min(chIdxInLine - 1, Math.max(0, tspanText.length - 1));
+              var ext = targetTspan.getExtentOfChar(charIdxToQuery);
+              if (ext && ext.width >= 0) {
+                calculatedX = Math.round(ext.x + (chIdxInLine > charIdxToQuery ? ext.width : ext.width) + 1);
               }
-              accumChars += (lineLen + 1);
-            }
+            } catch(e1) {}
+          }
 
-            var lineY = fontBaselineY + (targetLineIdx * fontSize * (state.typingSvgObj.attrs.lineHeight || 1.2));
-            cy1 = lineY - (fontSize * 0.85);
-            cy2 = lineY + (fontSize * 0.15);
+          // Tier 2: getSubStringLength for exact substring width from line start
+          if (calculatedX === null && targetTspan.getSubStringLength && chIdxInLine > 0) {
+            try {
+              var subLen = targetTspan.getSubStringLength(0, Math.min(chIdxInLine, tspanText.length));
+              var startX = baseX;
+              if (targetTspan.getStartPositionOfChar) {
+                try { startX = targetTspan.getStartPositionOfChar(0).x; } catch(eStart) {}
+              }
+              if (textAnchor === 'middle') {
+                var totalLen = targetTspan.getComputedTextLength ? targetTspan.getComputedTextLength() : subLen;
+                startX = baseX - (totalLen / 2);
+              } else if (textAnchor === 'end' || textAnchor === 'right') {
+                var totalLen = targetTspan.getComputedTextLength ? targetTspan.getComputedTextLength() : subLen;
+                startX = baseX - totalLen;
+              }
+              calculatedX = Math.round(startX + subLen + 1);
+            } catch(e2) {}
+          }
 
-            if (targetTspan && targetTspan.getExtentOfChar) {
-              if (chIdxInLine > 0) {
-                var ext = targetTspan.getExtentOfChar(chIdxInLine - 1);
-                if (ext && ext.width > 0) {
-                  cx = Math.round(ext.x + ext.width + 1);
-                } else {
-                  var bbox = targetTspan.getBBox();
-                  cx = (bbox && bbox.width > 0) ? Math.round(bbox.x + bbox.width + 1) : baseX;
-                }
-              } else {
-                var ext0 = targetTspan.getExtentOfChar(0);
-                if (ext0 && ext0.width > 0) {
-                  cx = Math.round(ext0.x);
-                } else {
-                  cx = baseX;
+          // Tier 3: getBBox length ratio interpolation
+          if (calculatedX === null && targetTspan.getBBox) {
+            try {
+              var bbox = targetTspan.getBBox();
+              if (bbox && bbox.width > 0) {
+                if (chIdxInLine === 0) calculatedX = Math.round(bbox.x);
+                else {
+                  var ratio = Math.min(1, chIdxInLine / Math.max(1, tspanText.length));
+                  calculatedX = Math.round(bbox.x + bbox.width * ratio + 1);
                 }
               }
-            } else {
-              cx = baseX;
-            }
-          } else {
-            var bbox = textEl.getBBox();
-            if (bbox && bbox.width > 0) {
-              cx = Math.round(bbox.x + bbox.width + 1.5);
-              cy1 = bbox.y;
-              cy2 = bbox.y + bbox.height;
-            }
+            } catch(e3) {}
+          }
+
+          if (calculatedX !== null && !isNaN(calculatedX)) {
+            cx = calculatedX;
           }
         }
-      } catch(err) {}
+      } else {
+        try {
+          var bbox = textEl.getBBox();
+          if (bbox && bbox.width > 0) {
+            cx = Math.round(bbox.x + bbox.width + 1.5);
+            cy1 = bbox.y;
+            cy2 = bbox.y + bbox.height;
+          }
+        } catch(eBbox) {}
+      }
 
-      state.typingCaretEl.setAttribute('x1', cx);
-      state.typingCaretEl.setAttribute('y1', cy1);
-      state.typingCaretEl.setAttribute('x2', cx);
-      state.typingCaretEl.setAttribute('y2', cy2);
+      caretEl.setAttribute('x1', cx);
+      caretEl.setAttribute('y1', cy1);
+      caretEl.setAttribute('x2', cx);
+      caretEl.setAttribute('y2', cy2);
     }
 
     updateCaretPosition();
