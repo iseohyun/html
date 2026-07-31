@@ -162,24 +162,34 @@
     caretEl.style.visibility = 'visible';
     caretEl.style.opacity = '1';
 
-    var smilAnim = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+    var smilAnim = caretEl.querySelector('animate');
+    if (!smilAnim) {
+      smilAnim = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+      caretEl.appendChild(smilAnim);
+    }
     smilAnim.setAttribute('attributeName', 'opacity');
-    smilAnim.setAttribute('values', '1;0;1');
-    smilAnim.setAttribute('dur', '0.8s');
+    smilAnim.setAttribute('values', '1;1;0;0;1');
+    smilAnim.setAttribute('keyTimes', '0;0.499;0.5;0.999;1');
+    smilAnim.setAttribute('dur', '1s');
     smilAnim.setAttribute('repeatCount', 'indefinite');
-    caretEl.appendChild(smilAnim);
 
     if (uiGroup) uiGroup.appendChild(caretEl);
     state.typingCaretEl = caretEl;
 
+    // Strict 1s cycle timer: 0.5s ON (0~500ms), 0.5s OFF (500~1000ms)
     var caretVisible = true;
+    var startTime = Date.now();
     state.caretBlinkTimer = setInterval(function() {
       var el = document.getElementById('canvasBlinkingCaret');
       if (!el) return;
-      caretVisible = !caretVisible;
-      el.style.visibility = caretVisible ? 'visible' : 'hidden';
-      el.style.opacity = caretVisible ? '1' : '0';
-    }, 450);
+      var elapsed = (Date.now() - startTime) % 1000;
+      var shouldBeVisible = (elapsed < 500);
+      if (caretVisible !== shouldBeVisible) {
+        caretVisible = shouldBeVisible;
+        el.style.visibility = caretVisible ? 'visible' : 'hidden';
+        el.style.opacity = caretVisible ? '1' : '0';
+      }
+    }, 50);
 
     var hiddenInput = document.createElement('textarea');
     hiddenInput.id = 'hiddenCanvasInput';
