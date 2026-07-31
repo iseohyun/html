@@ -3157,6 +3157,11 @@
     if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
       window.WebpointerRender.renderRibbon();
     }
+    if (step === 2) {
+      setTimeout(function() {
+        if (window.updateAnimDefaultValues) window.updateAnimDefaultValues();
+      }, 0);
+    }
   }
   window.setAnimStep = setAnimStep;
 
@@ -3179,10 +3184,11 @@
     };
 
     var d = defaults[type] || { from: '0', to: '100', dur: '2s' };
-    if (fromInput && (!fromInput.value || fromInput.value.trim() === '')) fromInput.value = d.from;
-    if (toInput && (!toInput.value || toInput.value.trim() === '')) toInput.value = d.to;
-    if (durInput && (!durInput.value || durInput.value.trim() === '')) durInput.value = d.dur;
+    if (fromInput) fromInput.value = d.from;
+    if (toInput) toInput.value = d.to;
+    if (durInput) durInput.value = d.dur;
   }
+  window.updateAnimDefaultValues = updateAnimDefaultValues;
   function playSelectedAnimation() {
     var targets = getSelectedObjectsForFilter();
     if (targets.length === 0) {
