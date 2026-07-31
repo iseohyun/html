@@ -369,7 +369,14 @@
   function renderUI() {
     var uiGroup = document.getElementById('uiGroup');
     if (!uiGroup) return;
+
+    var activeCaret = document.getElementById('canvasBlinkingCaret');
+    var activeSelGroup = document.getElementById('canvasTextSelectionGroup');
+
     uiGroup.innerHTML = '';
+
+    if (activeSelGroup) uiGroup.appendChild(activeSelGroup);
+    if (activeCaret) uiGroup.appendChild(activeCaret);
 
     if (cfg.selectedIds.size === 0) return;
 

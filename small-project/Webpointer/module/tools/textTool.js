@@ -143,15 +143,24 @@
       return '#ef4444';
     }
 
+    if (state.caretBlinkTimer) {
+      clearInterval(state.caretBlinkTimer);
+      state.caretBlinkTimer = null;
+    }
+
     var caretColor = getSharpContrastColor(textColor);
 
-    var caretEl = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    caretEl.setAttribute('id', 'canvasBlinkingCaret');
+    var caretEl = document.getElementById('canvasBlinkingCaret');
+    if (!caretEl) {
+      caretEl = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      caretEl.setAttribute('id', 'canvasBlinkingCaret');
+    }
     caretEl.setAttribute('stroke', caretColor);
-    caretEl.setAttribute('stroke-width', '1');
+    caretEl.setAttribute('stroke-width', '2.5');
     caretEl.setAttribute('shape-rendering', 'crispEdges');
     caretEl.setAttribute('class', 'blinking-caret');
-    caretEl.style.cssText = 'animation: caretBlink 0.85s infinite !important;';
+    caretEl.style.visibility = 'visible';
+    caretEl.style.opacity = '1';
 
     var smilAnim = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
     smilAnim.setAttribute('attributeName', 'opacity');
@@ -162,6 +171,15 @@
 
     if (uiGroup) uiGroup.appendChild(caretEl);
     state.typingCaretEl = caretEl;
+
+    var caretVisible = true;
+    state.caretBlinkTimer = setInterval(function() {
+      var el = document.getElementById('canvasBlinkingCaret');
+      if (!el) return;
+      caretVisible = !caretVisible;
+      el.style.visibility = caretVisible ? 'visible' : 'hidden';
+      el.style.opacity = caretVisible ? '1' : '0';
+    }, 450);
 
     var hiddenInput = document.createElement('textarea');
     hiddenInput.id = 'hiddenCanvasInput';
@@ -398,6 +416,11 @@
     var hiddenInput = document.getElementById('hiddenCanvasInput');
     if (hiddenInput && hiddenInput.dataset.isFinishing === 'true') return;
     if (hiddenInput) hiddenInput.dataset.isFinishing = 'true';
+
+    if (state.caretBlinkTimer) {
+      clearInterval(state.caretBlinkTimer);
+      state.caretBlinkTimer = null;
+    }
 
     var caretEl = document.getElementById('canvasBlinkingCaret');
     if (caretEl && caretEl.parentNode) {
