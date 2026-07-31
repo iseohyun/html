@@ -56,8 +56,9 @@
       var symbolBtn    = '<button class="tool-btn" onclick="openSymbolManagerModal()"><span class="alt-badge">M</span>' + (icons.smileyIcon || icons.shapes || '') + '<span class="tooltip-text">심볼 (Symbol Manager)</span></button>';
       var markerBtn    = '<button class="tool-btn" onclick="openMarkerManagerModal()"><span class="alt-badge">K</span>' + (icons.markerIcon || icons.line || '') + '<span class="tooltip-text">마커 (화살표/원/다이아몬드/사용자1,2,3)</span></button>';
       var gradientBtn  = '<button class="tool-btn" onclick="openGradientManagerModal()"><span class="alt-badge">G</span>' + (icons.gradientPresetIcon || icons.targetFill || '') + '<span class="tooltip-text">그라데이션 (3가지 기본 프리셋)</span></button>';
+      var pathBtn      = '<button class="tool-btn" onclick="openPathManagerModal()"><span class="alt-badge">P</span>' + (icons.mobiusStripIcon || '') + '<span class="tooltip-text">경로 관리 (뫼비우스 띠: Path 데이터 검증 및 저장)</span></button>';
 
-      var metadataTools = [halfSaveBtn, symbolBtn, markerBtn, gradientBtn];
+      var metadataTools = [halfSaveBtn, symbolBtn, markerBtn, gradientBtn, pathBtn];
       var metadataContent = build3RowGridHtml(metadataTools);
 
       var undoBtn = '<button class="tool-btn" onclick="undo()" style="width:34px; height:34px;"><span class="alt-badge">Ctrl+Z</span>' + (icons.undo || '') + '<span class="tooltip-text">뒤로가기 (Ctrl + Z)</span></button>';

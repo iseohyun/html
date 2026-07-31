@@ -3410,4 +3410,256 @@
     anims.forEach(function(a) { a.remove(); });
   }
   window.stopAllAnimations = stopAllAnimations;
+
+  /* ==========================================================================
+     뫼비우스 경로 관리자 (Path Data Manager)
+     ========================================================================== */
+  function getCustomPathPresets() {
+    var raw = localStorage.getItem('webpointer_custom_paths');
+    if (raw) {
+      try { return JSON.parse(raw); } catch (e) {}
+    }
+    var defaultPresets = [
+      {
+        id: 'mobius_strip',
+        name: '뫼비우스의 띠 (Mobius Strip)',
+        d: 'M 12 12 C 9.5 8.5 7 7 4.5 7 C 2 7 0.5 8.5 0.5 12 C 0.5 15.5 2 17 4.5 17 C 7 17 9.5 15.5 12 12 Z M 12 12 C 14.5 8.5 17 7 19.5 7 C 22 7 23.5 8.5 23.5 12 C 23.5 15.5 22 17 19.5 17 C 17 17 14.5 15.5 12 12 Z',
+        createdAt: Date.now()
+      },
+      {
+        id: 'star_preset',
+        name: '5각 별 (5-Point Star)',
+        d: 'M 50 5 L 63 38 L 98 38 L 70 59 L 81 92 L 50 72 L 19 92 L 30 59 L 2 38 L 37 38 Z',
+        createdAt: Date.now() + 1
+      },
+      {
+        id: 'heart_preset',
+        name: '하트 (Heart)',
+        d: 'M 12 21.35 l -1.45 -1.32 C 5.4 15.36 2 12.28 2 8.5 C 2 5.42 4.42 3 7.5 3 c 1.74 0 3.41 0.81 4.5 2.09 C 13.09 3.81 14.76 3 16.5 3 C 19.58 3 22 5.42 22 8.5 c 0 3.78 -3.4 6.86 -8.55 11.54 L 12 21.35 Z',
+        createdAt: Date.now() + 2
+      }
+    ];
+    localStorage.setItem('webpointer_custom_paths', JSON.stringify(defaultPresets));
+    return defaultPresets;
+  }
+
+  function saveCustomPathPresets(list) {
+    localStorage.setItem('webpointer_custom_paths', JSON.stringify(list));
+  }
+
+  function validateAndExtractSvgPath(inputStr) {
+    if (!inputStr || typeof inputStr !== 'string') {
+      return { isValid: false, d: '', message: '입력된 내용이 없습니다.' };
+    }
+
+    var str = inputStr.trim();
+    if (str === '') {
+      return { isValid: false, d: '', message: '입력된 내용이 없습니다.' };
+    }
+
+    var dMatch = str.match(/\bd=["']([^"']+)["']/i);
+    if (dMatch && dMatch[1]) {
+      str = dMatch[1].trim();
+    } else if (str.indexOf('<path') !== -1) {
+      str = str.replace(/<[^>]+>/g, '').trim();
+    }
+
+    var pathRegex = /^[\s,]*([MmLlHhVvCcSsQqTtAaZz][\s,.\-+0-9]*)+$/;
+    var isPathSyntax = pathRegex.test(str);
+    var hasNumbers = /[0-9]/.test(str);
+
+    if (isPathSyntax && hasNumbers) {
+      return {
+        isValid: true,
+        d: str,
+        message: '✅ 유효한 SVG Path 데이터입니다.'
+      };
+    } else {
+      return {
+        isValid: false,
+        d: '',
+        message: '⚠️ 유효한 SVG Path 구문이 아닙니다 (M, L, C 등 경로 명령어 및 숫자 조합 필요).'
+      };
+    }
+  }
+  window.validateAndExtractSvgPath = validateAndExtractSvgPath;
+
+  function openPathManagerModal() {
+    var modal = document.getElementById('pathManagerModal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'pathManagerModal';
+      modal.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.65); display:flex; align-items:center; justify-content:center; z-index:99999; backdrop-filter:blur(4px);';
+      document.body.appendChild(modal);
+    }
+    modal.style.display = 'flex';
+    renderPathManagerContent();
+  }
+  window.openPathManagerModal = openPathManagerModal;
+
+  function closePathManagerModal() {
+    var modal = document.getElementById('pathManagerModal');
+    if (modal) modal.style.display = 'none';
+  }
+  window.closePathManagerModal = closePathManagerModal;
+
+  function onPathInputPaste(value) {
+    var statusEl = document.getElementById('pathValidationStatus');
+    var previewSvg = document.getElementById('pathPreviewContainer');
+    var res = validateAndExtractSvgPath(value);
+
+    if (statusEl) {
+      statusEl.innerHTML = res.message;
+      statusEl.style.color = res.isValid ? '#10b981' : '#ef4444';
+    }
+
+    if (previewSvg) {
+      if (res.isValid && res.d) {
+        previewSvg.innerHTML = '<svg viewBox="0 0 100 100" style="width:100%; height:100%; overflow:visible;"><path d="' + res.d + '" fill="none" stroke="#ec4899" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      } else {
+        previewSvg.innerHTML = '<div style="color:#94a3b8; font-size:0.8rem; display:flex; align-items:center; justify-content:center; height:100%;">미리보기 없음</div>';
+      }
+    }
+  }
+  window.onPathInputPaste = onPathInputPaste;
+
+  function saveCurrentPathData() {
+    var inputEl = document.getElementById('pathDataInput');
+    var nameEl = document.getElementById('pathNameInput');
+    if (!inputEl) return;
+
+    var val = inputEl.value;
+    var res = validateAndExtractSvgPath(val);
+    if (!res.isValid || !res.d) {
+      alert('유효한 SVG Path 데이터를 입력하세요.\n예시: <path d="M 10 10 L 90 90" /> 또는 M10 10L90 90');
+      return;
+    }
+
+    var presets = getCustomPathPresets();
+    var customName = (nameEl && nameEl.value.trim()) ? nameEl.value.trim() : ('사용자 경로 #' + (presets.length + 1));
+    var newPreset = {
+      id: 'path_' + Date.now(),
+      name: customName,
+      d: res.d,
+      createdAt: Date.now()
+    };
+
+    presets.unshift(newPreset);
+    saveCustomPathPresets(presets);
+    renderPathManagerContent();
+  }
+  window.saveCurrentPathData = saveCurrentPathData;
+
+  function renameCustomPathData(id) {
+    var presets = getCustomPathPresets();
+    var target = presets.find(function(p) { return p.id === id; });
+    if (!target) return;
+
+    var newName = prompt('변경할 경로의 이름을 입력하세요:', target.name);
+    if (newName && newName.trim()) {
+      target.name = newName.trim();
+      saveCustomPathPresets(presets);
+      renderPathManagerContent();
+    }
+  }
+  window.renameCustomPathData = renameCustomPathData;
+
+  function deleteCustomPathData(id) {
+    var presets = getCustomPathPresets();
+    var filtered = presets.filter(function(p) { return p.id !== id; });
+    saveCustomPathPresets(filtered);
+    renderPathManagerContent();
+  }
+  window.deleteCustomPathData = deleteCustomPathData;
+
+  function instantiatePathOnCanvas(dData) {
+    if (!dData) return;
+    var newEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    var newId = 'obj_' + Date.now();
+    newEl.setAttribute('id', newId);
+    newEl.setAttribute('d', dData);
+    newEl.setAttribute('fill', cfg.fillColor || 'none');
+    newEl.setAttribute('stroke', cfg.strokeColor || '#041e49');
+    newEl.setAttribute('stroke-width', cfg.strokeWidth || 2);
+    newEl.setAttribute('stroke-linecap', 'round');
+    newEl.setAttribute('stroke-linejoin', 'round');
+
+    state.canvas.appendChild(newEl);
+    state.objectsMap.set(newId, { id: newId, type: 'path', el: newEl });
+
+    clearSelection();
+    addToSelection(newId);
+    saveState();
+    closePathManagerModal();
+  }
+  window.instantiatePathOnCanvas = instantiatePathOnCanvas;
+
+  function renderPathManagerContent() {
+    var modal = document.getElementById('pathManagerModal');
+    if (!modal) return;
+
+    var presets = getCustomPathPresets();
+
+    var presetsListHtml = presets.map(function(item) {
+      var snippet = item.d.length > 35 ? item.d.slice(0, 35) + '...' : item.d;
+      var escapedD = item.d.replace(/'/g, "\\'");
+      return '<div style="display:flex; align-items:center; justify-content:space-between; background:#f8fafc; padding:10px 14px; border-radius:8px; border:1px solid #e2e8f0; gap:12px;">' +
+               '<div style="width:42px; height:42px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; padding:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">' +
+                 '<svg viewBox="0 0 100 100" style="width:100%; height:100%; overflow:visible;"><path d="' + item.d + '" fill="none" stroke="#ec4899" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+               '</div>' +
+               '<div style="flex:1; min-width:0;">' +
+                 '<div style="font-weight:700; font-size:0.88rem; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + item.name + '</div>' +
+                 '<div style="font-size:0.75rem; color:#64748b; font-family:monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + snippet + '</div>' +
+               '</div>' +
+               '<div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">' +
+                 '<button onclick="instantiatePathOnCanvas(\'' + escapedD + '\')" style="background:#0284c7; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:0.78rem; font-weight:700;">🎨 생성</button>' +
+                 '<button onclick="renameCustomPathData(\'' + item.id + '\')" style="background:#e2e8f0; color:#334155; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-size:0.78rem; font-weight:600;">✏️</button>' +
+                 '<button onclick="deleteCustomPathData(\'' + item.id + '\')" style="background:#fee2e2; color:#ef4444; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-size:0.78rem; font-weight:600;">🗑️</button>' +
+               '</div>' +
+             '</div>';
+    }).join('');
+
+    modal.innerHTML =
+      '<div style="background:#ffffff; border-radius:12px; width:520px; max-width:92vw; padding:22px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); border:1px solid #cbd5e1; max-height:90vh; display:flex; flex-direction:column;">' +
+        '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">' +
+          '<div style="display:flex; align-items:center; gap:8px;">' +
+            '<span style="font-size:1.4rem;">♾️</span>' +
+            '<h3 style="margin:0; font-size:1.1rem; color:#0f172a; font-weight:800;">뫼비우스 경로 관리자 (Path Data)</h3>' +
+          '</div>' +
+          '<button onclick="closePathManagerModal()" style="background:none; border:none; font-size:1.2rem; cursor:pointer; color:#64748b; font-weight:bold;">✕</button>' +
+        '</div>' +
+
+        '<div style="display:flex; flex-direction:column; gap:12px; overflow-y:auto; padding-right:4px;">' +
+          '<div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:12px; display:flex; flex-direction:column; gap:8px;">' +
+            '<div style="font-size:0.82rem; font-weight:700; color:#334155; display:flex; justify-content:space-between; align-items:center;">' +
+              '<span>📥 경로 데이터 입력 (Ctrl+V 클립보드 붙여넣기 지원)</span>' +
+              '<span id="pathValidationStatus" style="font-size:0.78rem; font-weight:600; color:#64748b;">(입력 대기 중)</span>' +
+            '</div>' +
+            '<div style="display:flex; gap:10px; align-items:center;">' +
+              '<textarea id="pathDataInput" rows="3" oninput="onPathInputPaste(this.value)" placeholder="오브젝트를 Ctrl+C하여 여기에 Ctrl+V 하거나 <path d=\'...\'/> 태그 또는 M10 10L90 90 구문을 입력하세요..." style="flex:1; padding:8px; font-size:0.8rem; border:1px solid #cbd5e1; border-radius:6px; font-family:monospace; resize:vertical; outline:none; color:#0f172a;"></textarea>' +
+              '<div id="pathPreviewContainer" style="width:60px; height:60px; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; padding:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">' +
+                '<div style="color:#94a3b8; font-size:0.75rem; text-align:center;">미리보기</div>' +
+              '</div>' +
+            '</div>' +
+            '<div style="display:flex; gap:8px; align-items:center;">' +
+              '<input type="text" id="pathNameInput" placeholder="경로 이름 (예: 사용자 정의 경로 #1)" style="flex:1; padding:6px 10px; font-size:0.8rem; border:1px solid #cbd5e1; border-radius:6px;">' +
+              '<button onclick="saveCurrentPathData()" style="background:#10b981; color:#ffffff; border:none; padding:6px 14px; border-radius:6px; font-weight:700; font-size:0.82rem; cursor:pointer;">💾 저장하기</button>' +
+            '</div>' +
+          '</div>' +
+
+          '<div style="display:flex; flex-direction:column; gap:8px;">' +
+            '<div style="font-size:0.85rem; font-weight:700; color:#475569; display:flex; justify-content:space-between; align-items:center;">' +
+              '<span>📋 저장된 경로 목록 (' + presets.length + '개)</span>' +
+            '</div>' +
+            '<div style="display:flex; flex-direction:column; gap:8px; max-height:240px; overflow-y:auto;">' +
+              (presetsListHtml || '<div style="color:#94a3b8; text-align:center; padding:20px; font-size:0.85rem;">저장된 경로가 없습니다.</div>') +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+
+        '<div style="display:flex; justify-content:flex-end; margin-top:14px; pt-10px; border-top:1px solid #e2e8f0;">' +
+          '<button onclick="closePathManagerModal()" style="background:#e2e8f0; color:#334155; border:none; padding:7px 16px; border-radius:6px; font-weight:700; font-size:0.82rem; cursor:pointer;">닫기</button>' +
+        '</div>' +
+      '</div>';
+  }
 })(window);
