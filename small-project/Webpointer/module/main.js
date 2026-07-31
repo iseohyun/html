@@ -77,6 +77,43 @@
     mainSvg.addEventListener('mousedown', function(e) {
       var coords = selection.getStepCoords(e);
 
+      var isEditingActive = (state.typingSvgObj || document.getElementById('hiddenCanvasInput'));
+      if (isEditingActive) {
+        var clickedEl = e.target;
+        var clickedObj = clickedEl ? clickedEl.closest('circle, line, rect, ellipse, path, text, tspan') : null;
+        if (clickedObj && clickedObj.tagName.toLowerCase() === 'tspan') {
+          clickedObj = clickedObj.closest('text');
+        }
+
+        var isClickOnCurrentText = (state.typingSvgObj && clickedObj && clickedObj.id === state.typingSvgObj.id);
+        var isClickOnSelectionBorder = (clickedEl && clickedEl.parentNode && clickedEl.parentNode.id === 'uiGroup' && clickedEl.tagName.toLowerCase() === 'rect');
+
+        var editedObj = state.typingSvgObj;
+        textTool.finishDirectCanvasTyping();
+
+        if (handlers && handlers.setTool) {
+          handlers.setTool('select');
+        } else {
+          cfg.currentTool = 'select';
+        }
+
+        if (editedObj && (isClickOnCurrentText || isClickOnSelectionBorder || (clickedObj && cfg.objectsMap.has(clickedObj.id)))) {
+          var targetId = (clickedObj && cfg.objectsMap.has(clickedObj.id)) ? clickedObj.id : editedObj.id;
+          selection.selectObjectWithGroup(targetId, e.ctrlKey);
+
+          state.isDraggingObject = true;
+          state.dragStartCoords = coords;
+          state.initialObjAttrsMap.clear();
+          cfg.selectedIds.forEach(function(id) {
+            var obj = cfg.objectsMap.get(id);
+            if (obj) {
+              state.initialObjAttrsMap.set(id, JSON.parse(JSON.stringify(obj.attrs)));
+            }
+          });
+          return;
+        }
+      }
+
       if (cfg.currentTool === 'text') {
         var clickedTextEl = e.target ? (e.target.closest('text') || (e.target.closest('tspan') ? e.target.closest('tspan').closest('text') : null)) : null;
         var targetTextObj = null;
@@ -97,10 +134,6 @@
           textTool.startDirectCanvasTyping(coords.px, coords.py);
         }
         return;
-      }
-
-      if (state.typingSvgObj || document.getElementById('hiddenCanvasInput')) {
-        textTool.finishDirectCanvasTyping();
       }
 
       var handleNode = e.target.closest('.handle-node');
