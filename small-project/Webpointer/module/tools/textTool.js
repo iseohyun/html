@@ -455,6 +455,31 @@
     hiddenInput.addEventListener('select', syncSelection);
     hiddenInput.addEventListener('selectionchange', syncSelection);
 
+    function getLineAndColFromPos(text, pos) {
+      var lines = text.split('\n');
+      var accum = 0;
+      for (var i = 0; i < lines.length; i++) {
+        var len = lines[i].length;
+        if (pos <= accum + len || i === lines.length - 1) {
+          var col = Math.max(0, Math.min(len, pos - accum));
+          return { lineIdx: i, colIdx: col, accumStart: accum, lineLen: len };
+        }
+        accum += len + 1;
+      }
+      return { lineIdx: 0, colIdx: 0, accumStart: 0, lineLen: text.length };
+    }
+
+    function getPosFromLineAndCol(text, lineIdx, colIdx) {
+      var lines = text.split('\n');
+      var targetLine = Math.max(0, Math.min(lines.length - 1, lineIdx));
+      var accum = 0;
+      for (var i = 0; i < targetLine; i++) {
+        accum += lines[i].length + 1;
+      }
+      var targetCol = Math.max(0, Math.min(lines[targetLine].length, colIdx));
+      return accum + targetCol;
+    }
+
     hiddenInput.addEventListener('keydown', function(e) {
       e.stopPropagation();
       if (e.key === 'Escape') {
@@ -463,7 +488,28 @@
         return;
       }
 
-      if (e.key === 'Home') {
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        var val = hiddenInput.value || '';
+        var pos = hiddenInput.selectionStart;
+        var info = getLineAndColFromPos(val, pos);
+        if (info.lineIdx > 0) {
+          var newPos = getPosFromLineAndCol(val, info.lineIdx - 1, info.colIdx);
+          hiddenInput.selectionStart = newPos;
+          hiddenInput.selectionEnd = newPos;
+        }
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        var val = hiddenInput.value || '';
+        var pos = hiddenInput.selectionEnd;
+        var info = getLineAndColFromPos(val, pos);
+        var lines = val.split('\n');
+        if (info.lineIdx < lines.length - 1) {
+          var newPos = getPosFromLineAndCol(val, info.lineIdx + 1, info.colIdx);
+          hiddenInput.selectionStart = newPos;
+          hiddenInput.selectionEnd = newPos;
+        }
+      } else if (e.key === 'Home') {
         if (e.ctrlKey) {
           hiddenInput.selectionStart = 0;
           hiddenInput.selectionEnd = 0;
