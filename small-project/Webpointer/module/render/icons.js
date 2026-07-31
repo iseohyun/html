@@ -30,22 +30,30 @@
     flipV: '<svg viewBox="0 0 24 24"><path d="M3 12h18M6 8l6-5 6 5H6zM6 16l6 5 6-5H6z"/></svg>',
     rotate90: '<svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.5 0 4.8 1 6.4 2.6L21 3v6h-6l2.5-2.5A6.9 6.9 0 1 0 19 12"/></svg>',
     rotateNeg90: '<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9c-2.5 0-4.8 1-6.4 2.6L3 3v6h6L6.5 6.5A6.9 6.9 0 1 1 5 12"/></svg>',
-    targetStroke: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" fill="#e2e8f0" stroke="#ef4444" stroke-width="3" rx="2"/></svg>',
-    targetFill: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" fill="#ef4444" stroke="#cbd5e1" stroke-width="1.5" rx="2"/></svg>',
-    textFillIcon: '<svg viewBox="0 0 24 24"><text x="12" y="19" font-size="20" font-weight="900" font-family="Arial, sans-serif" text-anchor="middle" fill="#ef4444">A</text></svg>',
-    textStrokeIcon: '<svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" fill="none" stroke="#ef4444" stroke-width="2" rx="3"/><text x="12" y="17.5" font-size="16" font-weight="900" font-family="Arial, sans-serif" text-anchor="middle" fill="#ef4444">A</text></svg>',
-    textUnderlineIcon: '<svg viewBox="0 0 24 24"><text x="12" y="14" font-size="15" font-weight="800" font-family="Arial, sans-serif" text-anchor="middle" fill="#0f172a">U</text><path d="M 3 19 Q 6.5 16 10 19 T 17 19 T 21 19" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/></svg>',
+    targetStroke: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" fill="none" stroke="#ef4444" stroke-width="4.5" rx="3"/></svg>',
+    targetFill: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" fill="#ef4444" rx="3"/></svg>',
+    textFillIcon: '<svg viewBox="0 0 24 24"><text x="12" y="20" font-size="22" font-weight="900" font-family="Arial, sans-serif" text-anchor="middle" fill="#ef4444">A</text></svg>',
+    textStrokeIcon: '<svg viewBox="0 0 24 24"><text x="12" y="20" font-size="22" font-weight="900" font-family="Arial, sans-serif" text-anchor="middle" fill="none" stroke="#ef4444" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round">A</text></svg>',
+    textUnderlineIcon: '<svg viewBox="0 0 24 24"><path d="M 2 12 Q 7.5 4 13 12 T 22 12" fill="none" stroke="#ef4444" stroke-width="4.5" stroke-linecap="round"/></svg>',
+    getShapeFillIcon: function(c) {
+      var fillC = (c && c !== 'none') ? c : 'transparent';
+      return '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" fill="' + fillC + '" stroke="' + (fillC === 'transparent' ? '#ef4444' : 'none') + '" stroke-width="2" rx="3"/>' + (fillC === 'transparent' ? '<line x1="3" y1="21" x2="21" y2="3" stroke="#ef4444" stroke-width="2"/>' : '') + '</svg>';
+    },
+    getShapeStrokeIcon: function(c) {
+      var strokeC = (c && c !== 'none') ? c : '#ef4444';
+      return '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" fill="none" stroke="' + strokeC + '" stroke-width="4.5" rx="3"/></svg>';
+    },
     getTextFillIcon: function(c) {
       var fillC = (c && c !== 'none') ? c : '#ef4444';
-      return '<svg viewBox="0 0 24 24"><text x="12" y="19" font-size="20" font-weight="900" font-family="Arial, sans-serif" text-anchor="middle" fill="' + fillC + '">A</text></svg>';
+      return '<svg viewBox="0 0 24 24"><text x="12" y="20" font-size="22" font-weight="900" font-family="Arial, sans-serif" text-anchor="middle" fill="' + fillC + '">A</text></svg>';
     },
     getTextStrokeIcon: function(c) {
       var strokeC = (c && c !== 'none') ? c : '#ef4444';
-      return '<svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" fill="none" stroke="' + strokeC + '" stroke-width="2" rx="3"/><text x="12" y="17.5" font-size="16" font-weight="900" font-family="Arial, sans-serif" text-anchor="middle" fill="' + strokeC + '">A</text></svg>';
+      return '<svg viewBox="0 0 24 24"><text x="12" y="20" font-size="22" font-weight="900" font-family="Arial, sans-serif" text-anchor="middle" fill="none" stroke="' + strokeC + '" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round">A</text></svg>';
     },
     getTextUnderlineIcon: function(c) {
       var uC = (c && c !== 'none') ? c : '#ef4444';
-      return '<svg viewBox="0 0 24 24"><text x="12" y="14" font-size="15" font-weight="800" font-family="Arial, sans-serif" text-anchor="middle" fill="#0f172a">U</text><path d="M 3 19 Q 6.5 16 10 19 T 17 19 T 21 19" fill="none" stroke="' + uC + '" stroke-width="2.5" stroke-linecap="round"/></svg>';
+      return '<svg viewBox="0 0 24 24"><path d="M 2 12 Q 7.5 4 13 12 T 22 12" fill="none" stroke="' + uC + '" stroke-width="4.5" stroke-linecap="round"/></svg>';
     },
     openPalette: '<svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>',
     importPalette: '<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
