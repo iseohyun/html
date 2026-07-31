@@ -55,6 +55,10 @@
       var uC = (c && c !== 'none') ? c : '#ef4444';
       return '<svg viewBox="0 0 24 24"><path d="M 2 12 Q 7.5 4 13 12 T 22 12" fill="none" stroke="' + uC + '" stroke-width="4.5" stroke-linecap="round"/></svg>';
     },
+    halfDiskIcon: '<svg viewBox="0 0 24 24"><path d="M4 4h10l6 6v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" fill="none" stroke="#64748b" stroke-width="2"/><path d="M4 4h6v7H4z" fill="#0284c7"/><rect x="6" y="14" width="12" height="6" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/></svg>',
+    smileyIcon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="#0284c7" stroke-width="2"/><circle cx="9" cy="9.5" r="1.5" fill="#0284c7"/><circle cx="15" cy="9.5" r="1.5" fill="#0284c7"/><path d="M 8 14 Q 12 18 16 14" fill="none" stroke="#0284c7" stroke-width="2" stroke-linecap="round"/></svg>',
+    markerIcon: '<svg viewBox="0 0 24 24"><path d="M 3 12 L 18 12 M 13 6 L 20 12 L 13 18" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    gradientPresetIcon: '<svg viewBox="0 0 24 24"><defs><linearGradient id="iconGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f97316"/><stop offset="100%" stop-color="#8b5cf6"/></linearGradient></defs><rect x="3" y="3" width="18" height="18" fill="url(#iconGrad)" rx="4"/></svg>',
     openPalette: '<svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>',
     importPalette: '<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
     lineSolid: '<svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="3"/></svg>',

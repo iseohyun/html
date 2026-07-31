@@ -2895,27 +2895,184 @@
     return { x: resultX, y: resultY, lines: guides, guides: guides };
   }
 
+  if (!cfg.markerPresets) {
+    cfg.markerPresets = [];
+  }
+
+  function getAvailableMarkerTypes() {
+    var base = ['none', 'arrow', 'circle', 'diamond'];
+    if (cfg.markerPresets && cfg.markerPresets.length > 0) {
+      return base.concat(cfg.markerPresets);
+    }
+    return base;
+  }
+
   function cycleStartMarker() {
+    var types = getAvailableMarkerTypes();
     var cur = cfg.startMarker || 'none';
-    var next = 'none';
-    if (cur === 'none') next = 'arrow';
-    else if (cur === 'arrow') next = 'circle';
-    else if (cur === 'circle') next = 'diamond';
-    else next = 'none';
-    setStartMarker(next);
+    var idx = types.indexOf(cur);
+    var nextIdx = (idx === -1 || idx >= types.length - 1) ? 0 : idx + 1;
+    setStartMarker(types[nextIdx]);
   }
   window.cycleStartMarker = cycleStartMarker;
 
   function cycleEndMarker() {
+    var types = getAvailableMarkerTypes();
     var cur = cfg.endMarker || 'none';
-    var next = 'none';
-    if (cur === 'none') next = 'arrow';
-    else if (cur === 'arrow') next = 'circle';
-    else if (cur === 'circle') next = 'diamond';
-    else next = 'none';
-    setEndMarker(next);
+    var idx = types.indexOf(cur);
+    var nextIdx = (idx === -1 || idx >= types.length - 1) ? 0 : idx + 1;
+    setEndMarker(types[nextIdx]);
   }
   window.cycleEndMarker = cycleEndMarker;
+
+  function openMarkerManagerModal() {
+    var modal = document.getElementById('markerManagerModal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'markerManagerModal';
+      modal.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.6); display:flex; align-items:center; justify-content:center; z-index:9999; backdrop-filter:blur(4px);';
+      document.body.appendChild(modal);
+    }
+    modal.style.display = 'flex';
+    renderMarkerManagerContent();
+  }
+  window.openMarkerManagerModal = openMarkerManagerModal;
+
+  function closeMarkerManagerModal() {
+    var modal = document.getElementById('markerManagerModal');
+    if (modal) modal.style.display = 'none';
+  }
+  window.closeMarkerManagerModal = closeMarkerManagerModal;
+
+  function addCustomMarkerPreset() {
+    if (!cfg.markerPresets) cfg.markerPresets = [];
+    var newIdx = cfg.markerPresets.length + 1;
+    cfg.markerPresets.push('user' + newIdx);
+    renderMarkerManagerContent();
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+      window.WebpointerRender.renderRibbon();
+    }
+  }
+  window.addCustomMarkerPreset = addCustomMarkerPreset;
+
+  function removeCustomMarkerPreset(name) {
+    if (!cfg.markerPresets) return;
+    cfg.markerPresets = cfg.markerPresets.filter(function(m) { return m !== name; });
+    renderMarkerManagerContent();
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+      window.WebpointerRender.renderRibbon();
+    }
+  }
+  window.removeCustomMarkerPreset = removeCustomMarkerPreset;
+
+  function renderMarkerManagerContent() {
+    var modal = document.getElementById('markerManagerModal');
+    if (!modal) return;
+    var customItems = (cfg.markerPresets || []).map(function(name, i) {
+      var numLabel = (i + 1);
+      return '<div style="display:flex; align-items:center; justify-content:space-between; background:#f8fafc; padding:8px 12px; border-radius:6px; border:1px solid #e2e8f0;">' +
+               '<div style="display:flex; align-items:center; gap:8px;">' +
+                 '<div style="width:28px; height:28px; background:#0284c7; color:#fff; font-weight:800; font-size:0.85rem; border-radius:4px; display:flex; align-items:center; justify-content:center;">' + numLabel + '</div>' +
+                 '<span style="font-weight:600; font-size:0.85rem; color:#334155;">사용자 프리셋 ' + numLabel + ' (' + name + ')</span>' +
+               '</div>' +
+               '<button onclick="removeCustomMarkerPreset(\'' + name + '\')" style="background:#fee2e2; color:#ef4444; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:0.75rem; font-weight:700;">삭제</button>' +
+             '</div>';
+    }).join('');
+
+    modal.innerHTML =
+      '<div style="background:#ffffff; border-radius:12px; width:440px; max-width:90vw; padding:20px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1); border:1px solid #e2e8f0;">' +
+        '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">' +
+          '<h3 style="margin:0; font-size:1.1rem; color:#0f172a;">📍 마커 프리셋 관리자</h3>' +
+          '<button onclick="closeMarkerManagerModal()" style="background:none; border:none; font-size:1.2rem; cursor:pointer; color:#64748b;">✕</button>' +
+        '</div>' +
+        '<p style="font-size:0.8rem; color:#64748b; margin-bottom:12px;">기본 프리셋(화살표, 원, 다이아몬드) 및 사용자 정의 프리셋(1, 2, 3...)을 추가하면 그림서식 선 끝 토글 가짓수가 늘어납니다.</p>' +
+        '<div style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px; max-height:220px; overflow-y:auto;">' +
+          '<div style="display:flex; align-items:center; gap:8px; background:#f0f9ff; padding:8px 12px; border-radius:6px; border:1px solid #bae6fd;">' +
+            '<span style="font-weight:700; font-size:0.85rem; color:#0369a1;">기본 마커</span>' +
+            '<span style="font-size:0.8rem; color:#0284c7;">▶ 화살표 / ● 원 / ◆ 다이아몬드</span>' +
+          '</div>' +
+          customItems +
+        '</div>' +
+        '<div style="display:flex; justify-content:space-between;">' +
+          '<button onclick="addCustomMarkerPreset()" style="background:#0284c7; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-weight:700; font-size:0.85rem; cursor:pointer;">+ 새 마커 프리셋 추가 (1, 2, 3...)</button>' +
+          '<button onclick="closeMarkerManagerModal()" style="background:#e2e8f0; color:#334155; border:none; padding:8px 14px; border-radius:6px; font-weight:700; font-size:0.85rem; cursor:pointer;">닫기</button>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function openGradientManagerModal() {
+    var modal = document.getElementById('gradientManagerModal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'gradientManagerModal';
+      modal.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.6); display:flex; align-items:center; justify-content:center; z-index:9999; backdrop-filter:blur(4px);';
+      document.body.appendChild(modal);
+    }
+    modal.style.display = 'flex';
+    renderGradientManagerContent();
+  }
+  window.openGradientManagerModal = openGradientManagerModal;
+
+  function closeGradientManagerModal() {
+    var modal = document.getElementById('gradientManagerModal');
+    if (modal) modal.style.display = 'none';
+  }
+  window.closeGradientManagerModal = closeGradientManagerModal;
+
+  function applyGradientPreset(presetIdx) {
+    var expr = '';
+    if (presetIdx === 1) {
+      expr = 'linear-gradient(90deg, #f97316, #ef4444, #8b5cf6)';
+    } else if (presetIdx === 2) {
+      expr = 'radial-gradient(circle, #06b6d4, #3b82f6, #1e3a8a)';
+    } else if (presetIdx === 3) {
+      expr = 'linear-gradient(45deg, #10b981, #3b82f6, #6366f1)';
+    }
+    cfg.fillColor = expr;
+    var targets = getSelectedObjectsForFilter();
+    targets.forEach(function(obj) {
+      if (obj.attrs) obj.attrs.fill = expr;
+      if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.updateElementAttributes) {
+        window.WebpointerRenderCanvas.updateElementAttributes(obj);
+      }
+    });
+    if (window.WebpointerRender && window.WebpointerRender.renderCanvas) {
+      window.WebpointerRender.renderCanvas();
+    }
+    closeGradientManagerModal();
+  }
+  window.applyGradientPreset = applyGradientPreset;
+
+  function renderGradientManagerContent() {
+    var modal = document.getElementById('gradientManagerModal');
+    if (!modal) return;
+
+    modal.innerHTML =
+      '<div style="background:#ffffff; border-radius:12px; width:440px; max-width:90vw; padding:20px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1); border:1px solid #e2e8f0;">' +
+        '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">' +
+          '<h3 style="margin:0; font-size:1.1rem; color:#0f172a;">🌈 그라데이션 프리셋 관리자</h3>' +
+          '<button onclick="closeGradientManagerModal()" style="background:none; border:none; font-size:1.2rem; cursor:pointer; color:#64748b;">✕</button>' +
+        '</div>' +
+        '<p style="font-size:0.8rem; color:#64748b; margin-bottom:12px;">지원하는 기본 프리셋 3가지 중 하나를 선택하면 현재 선택된 개체에 즉시 적용됩니다.</p>' +
+        '<div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin-bottom:16px;">' +
+          '<div onclick="applyGradientPreset(1)" style="cursor:pointer; border:2px solid #e2e8f0; border-radius:8px; padding:10px; text-align:center; transition:transform 0.15s;" onmouseover="this.style.borderColor=\'#0284c7\'" onmouseout="this.style.borderColor=\'#e2e8f0\'">' +
+            '<div style="height:50px; border-radius:6px; background:linear-gradient(90deg, #f97316, #ef4444, #8b5cf6); margin-bottom:6px;"></div>' +
+            '<span style="font-size:0.75rem; font-weight:700; color:#334155;">1. 일몰 선형</span>' +
+          '</div>' +
+          '<div onclick="applyGradientPreset(2)" style="cursor:pointer; border:2px solid #e2e8f0; border-radius:8px; padding:10px; text-align:center; transition:transform 0.15s;" onmouseover="this.style.borderColor=\'#0284c7\'" onmouseout="this.style.borderColor=\'#e2e8f0\'">' +
+            '<div style="height:50px; border-radius:6px; background:radial-gradient(circle, #06b6d4, #3b82f6, #1e3a8a); margin-bottom:6px;"></div>' +
+            '<span style="font-size:0.75rem; font-weight:700; color:#334155;">2. 해양 방사형</span>' +
+          '</div>' +
+          '<div onclick="applyGradientPreset(3)" style="cursor:pointer; border:2px solid #e2e8f0; border-radius:8px; padding:10px; text-align:center; transition:transform 0.15s;" onmouseover="this.style.borderColor=\'#0284c7\'" onmouseout="this.style.borderColor=\'#e2e8f0\'">' +
+            '<div style="height:50px; border-radius:6px; background:linear-gradient(45deg, #10b981, #3b82f6, #6366f1); margin-bottom:6px;"></div>' +
+            '<span style="font-size:0.75rem; font-weight:700; color:#334155;">3. 에메랄드 일출</span>' +
+          '</div>' +
+        '</div>' +
+        '<div style="display:flex; justify-content:flex-end;">' +
+          '<button onclick="closeGradientManagerModal()" style="background:#e2e8f0; color:#334155; border:none; padding:8px 14px; border-radius:6px; font-weight:700; font-size:0.85rem; cursor:pointer;">닫기</button>' +
+        '</div>' +
+      '</div>';
+  }
 
   function cycleStrokeCap() {
     var cur = cfg.strokeCap || 'butt';
