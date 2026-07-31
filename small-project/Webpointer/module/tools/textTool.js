@@ -334,48 +334,64 @@
 
           var calculatedX = null;
 
-          // Tier 1: getExtentOfChar for character bounding box
-          if (chIdxInLine > 0 && targetTspan.getExtentOfChar) {
-            try {
-              var charIdxToQuery = Math.min(chIdxInLine - 1, Math.max(0, tspanText.length - 1));
-              var ext = targetTspan.getExtentOfChar(charIdxToQuery);
-              if (ext && ext.width >= 0) {
-                calculatedX = Math.round(ext.x + (chIdxInLine > charIdxToQuery ? ext.width : ext.width) + 1);
-              }
-            } catch(e1) {}
-          }
-
-          // Tier 2: getSubStringLength for exact substring width from line start
-          if (calculatedX === null && targetTspan.getSubStringLength && chIdxInLine > 0) {
-            try {
-              var subLen = targetTspan.getSubStringLength(0, Math.min(chIdxInLine, tspanText.length));
-              var startX = baseX;
-              if (targetTspan.getStartPositionOfChar) {
-                try { startX = targetTspan.getStartPositionOfChar(0).x; } catch(eStart) {}
-              }
-              if (textAnchor === 'middle') {
-                var totalLen = targetTspan.getComputedTextLength ? targetTspan.getComputedTextLength() : subLen;
-                startX = baseX - (totalLen / 2);
-              } else if (textAnchor === 'end' || textAnchor === 'right') {
-                var totalLen = targetTspan.getComputedTextLength ? targetTspan.getComputedTextLength() : subLen;
-                startX = baseX - totalLen;
-              }
-              calculatedX = Math.round(startX + subLen + 1);
-            } catch(e2) {}
-          }
-
-          // Tier 3: getBBox length ratio interpolation
-          if (calculatedX === null && targetTspan.getBBox) {
-            try {
-              var bbox = targetTspan.getBBox();
-              if (bbox && bbox.width > 0) {
-                if (chIdxInLine === 0) calculatedX = Math.round(bbox.x);
-                else {
-                  var ratio = Math.min(1, chIdxInLine / Math.max(1, tspanText.length));
-                  calculatedX = Math.round(bbox.x + bbox.width * ratio + 1);
+          if (tspanText.length === 0) {
+            calculatedX = baseX;
+          } else if (chIdxInLine === 0) {
+            // START OF LINE (Home key / Position 0): Left edge of first character
+            if (targetTspan.getStartPositionOfChar) {
+              try { calculatedX = Math.round(targetTspan.getStartPositionOfChar(0).x); } catch(e) {}
+            }
+            if (calculatedX === null && targetTspan.getExtentOfChar) {
+              try {
+                var ext0 = targetTspan.getExtentOfChar(0);
+                if (ext0 && ext0.width >= 0) calculatedX = Math.round(ext0.x);
+              } catch(e) {}
+            }
+            if (calculatedX === null && targetTspan.getBBox) {
+              try {
+                var bbox0 = targetTspan.getBBox();
+                if (bbox0) calculatedX = Math.round(bbox0.x);
+              } catch(e) {}
+            }
+          } else {
+            // AFTER CHARACTER chIdxInLine - 1 (Right edge of character at chIdxInLine - 1)
+            var charIdxToQuery = Math.min(chIdxInLine - 1, tspanText.length - 1);
+            if (targetTspan.getExtentOfChar) {
+              try {
+                var ext = targetTspan.getExtentOfChar(charIdxToQuery);
+                if (ext && ext.width >= 0) {
+                  calculatedX = Math.round(ext.x + ext.width);
                 }
-              }
-            } catch(e3) {}
+              } catch(e) {}
+            }
+
+            if (calculatedX === null && targetTspan.getSubStringLength) {
+              try {
+                var subLen = targetTspan.getSubStringLength(0, Math.min(chIdxInLine, tspanText.length));
+                var startX = baseX;
+                if (targetTspan.getStartPositionOfChar) {
+                  try { startX = targetTspan.getStartPositionOfChar(0).x; } catch(eStart) {}
+                }
+                if (textAnchor === 'middle') {
+                  var totalLen = targetTspan.getComputedTextLength ? targetTspan.getComputedTextLength() : subLen;
+                  startX = baseX - (totalLen / 2);
+                } else if (textAnchor === 'end' || textAnchor === 'right') {
+                  var totalLen = targetTspan.getComputedTextLength ? targetTspan.getComputedTextLength() : subLen;
+                  startX = baseX - totalLen;
+                }
+                calculatedX = Math.round(startX + subLen);
+              } catch(e) {}
+            }
+
+            if (calculatedX === null && targetTspan.getBBox) {
+              try {
+                var bbox = targetTspan.getBBox();
+                if (bbox && bbox.width > 0) {
+                  var ratio = Math.min(1, chIdxInLine / Math.max(1, tspanText.length));
+                  calculatedX = Math.round(bbox.x + bbox.width * ratio);
+                }
+              } catch(e) {}
+            }
           }
 
           if (calculatedX !== null && !isNaN(calculatedX)) {
@@ -430,11 +446,39 @@
       if (e.key === 'Escape') {
         e.preventDefault();
         finishDirectCanvasTyping();
-      } else {
-        syncSelection();
-        setTimeout(syncSelection, 0);
-        setTimeout(syncSelection, 15);
+        return;
       }
+
+      if (e.key === 'Home') {
+        if (e.ctrlKey) {
+          hiddenInput.selectionStart = 0;
+          hiddenInput.selectionEnd = 0;
+        } else {
+          var val = hiddenInput.value || '';
+          var pos = hiddenInput.selectionStart;
+          var lineStart = val.lastIndexOf('\n', pos - 1);
+          var targetPos = lineStart === -1 ? 0 : lineStart + 1;
+          hiddenInput.selectionStart = targetPos;
+          hiddenInput.selectionEnd = targetPos;
+        }
+      } else if (e.key === 'End') {
+        if (e.ctrlKey) {
+          var val = hiddenInput.value || '';
+          hiddenInput.selectionStart = val.length;
+          hiddenInput.selectionEnd = val.length;
+        } else {
+          var val = hiddenInput.value || '';
+          var pos = hiddenInput.selectionEnd;
+          var lineEnd = val.indexOf('\n', pos);
+          var targetPos = lineEnd === -1 ? val.length : lineEnd;
+          hiddenInput.selectionStart = targetPos;
+          hiddenInput.selectionEnd = targetPos;
+        }
+      }
+
+      syncSelection();
+      setTimeout(syncSelection, 0);
+      setTimeout(syncSelection, 15);
     });
 
     setTimeout(function() {
