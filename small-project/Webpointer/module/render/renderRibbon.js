@@ -87,9 +87,12 @@
         '<button class="tool-btn ' + (cfg.currentTool==='bez3'?'active':'') + '" onclick="setTool(\'bez3\')"><span class="alt-badge">C</span>' + (icons.bez3 || '') + '<span class="tooltip-text">3차 베지어 곡선 (C)</span></button>'
       ];
 
+      var blankSlotHtml = '<div style="width:34px; height:34px;"></div>';
+
       var layerTools = [
         '<button class="tool-btn" onclick="bringToFront()"><span class="alt-badge">Shift+]</span>' + (icons.bringToFront || '') + '<span class="tooltip-text">맨 앞으로 가져오기</span></button>',
         '<button class="tool-btn" onclick="bringForward()"><span class="alt-badge">]</span>' + (icons.bringForward || '') + '<span class="tooltip-text">앞으로 가져오기</span></button>',
+        blankSlotHtml,
         '<button class="tool-btn" onclick="sendBackward()"><span class="alt-badge">[</span>' + (icons.sendBackward || '') + '<span class="tooltip-text">뒤로 보내기</span></button>',
         '<button class="tool-btn" onclick="sendToBack()"><span class="alt-badge">Shift+[</span>' + (icons.sendToBack || '') + '<span class="tooltip-text">맨 뒤로 보내기</span></button>'
       ];
@@ -135,6 +138,7 @@
       var transformTools = [
         '<button class="tool-btn ' + (canTransform ? '' : 'disabled') + '" ' + (canTransform ? 'onclick="transformSelected(\'flipH\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">F</span>' + (icons.flipH || '') + '<span class="tooltip-text">' + (canTransform ? '좌우 대칭' : '좌우 대칭 (객체 선택 필요)') + '</span></button>',
         '<button class="tool-btn ' + (canTransform ? '' : 'disabled') + '" ' + (canTransform ? 'onclick="transformSelected(\'flipV\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">K</span>' + (icons.flipV || '') + '<span class="tooltip-text">' + (canTransform ? '상하 대칭' : '상하 대칭 (객체 선택 필요)') + '</span></button>',
+        blankSlotHtml,
         '<button class="tool-btn ' + (canTransform ? '' : 'disabled') + '" ' + (canTransform ? 'onclick="transformSelected(\'rotate90\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">R</span>' + (icons.rotate90 || '') + '<span class="tooltip-text">' + (canTransform ? '90도 회전 (시계방향)' : '90도 회전 (객체 선택 필요)') + '</span></button>',
         '<button class="tool-btn ' + (canTransform ? '' : 'disabled') + '" ' + (canTransform ? 'onclick="transformSelected(\'rotateNeg90\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">L</span>' + (icons.rotateNeg90 || '') + '<span class="tooltip-text">' + (canTransform ? '-90도 회전 (반시계방향)' : '-90도 회전 (객체 선택 필요)') + '</span></button>'
       ];
@@ -421,12 +425,8 @@
       var strokeWidthInputHtml = '<input type="number" min="0" max="50" value="' + strokeWidth + '" oninput="setTextStrokeWidth(this.value)" onchange="setTextStrokeWidth(this.value)" style="width:34px; height:34px; box-sizing:border-box; padding:2px; font-size:0.85rem; font-weight:700; border:1px solid #cbd5e1; border-radius:6px; text-align:center; outline:none; background:#ffffff; color:#0f172a;" title="글자 테두리 두께 (px)">';
       var textFilterBtnHtml = '<button class="tool-btn" onclick="openFilterPopover(this)" style="width:34px; height:34px;">🪄<span class="tooltip-text">필터 효과 설정 (blur, brightness, contrast 등)</span></button>';
 
-      var textColorContent =
-        '<div style="display:flex; flex-direction:column; gap:4px; justify-content:center;">' +
-          '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
-            textFillBtnHtml + textStrokeBtnHtml + strokeWidthInputHtml +
-          '</div>' +
-        '</div>';
+      var textColorTools = [textFillBtnHtml, textStrokeBtnHtml, strokeWidthInputHtml];
+      var textColorContent = build3RowGridHtml(textColorTools);
 
       var underlineColor   = cfg.textUnderlineColor || cfg.strokeColor || '#041e49';
       var underlineStyle   = cfg.textUnderlineStyle || 'none';
@@ -459,12 +459,14 @@
         '</div>';
 
       var underlineCategoryContent =
-        '<div style="display:flex; flex-direction:column; gap:4px; justify-content:center;">' +
+        '<div style="display:flex; flex-direction:column; gap:3px; justify-content:center;">' +
           '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
             underlineStyleSelectHtml + underlineColorBtnHtml +
           '</div>' +
-          '<div style="display:flex; flex-direction:row; align-items:center; gap:6px;">' +
-            underlineOffsetInputHtml + underlineWidthInputHtml +
+          '<div style="display:flex; flex-direction:column; gap:2px;">' +
+            underlineOffsetInputHtml +
+            '<br style="display:block; margin:0;" />' +
+            underlineWidthInputHtml +
           '</div>' +
         '</div>';
 
@@ -597,26 +599,6 @@
           '</div>' +
         '</div>';
 
-      // Presets & Controls category
-      var presetsContent =
-        '<div style="display:flex; gap:4px; align-items:center;">' +
-          '<select onchange="if(this.value)playAnimation(this.value)" style="background:#0f172a; color:#fff; border:1px solid #334155; border-radius:4px; padding:3px 6px; font-size:0.75rem;">' +
-            '<option value="">⚡ 빠른 11종 프리셋 적용...</option>' +
-            '<option value="draw">✍️ 선 그리기 (draw)</option>' +
-            '<option value="fade">👻 페이드 (fade)</option>' +
-            '<option value="rotate">🔄 회전 (rotate)</option>' +
-            '<option value="pulse">💓 맥박 (pulse)</option>' +
-            '<option value="bounce">🏀 바운스 (bounce)</option>' +
-            '<option value="color">🎨 색상 (color)</option>' +
-            '<option value="morph">🦎 변형 (morph)</option>' +
-            '<option value="dash">🐜 대시 (dash)</option>' +
-            '<option value="zoom">🔍 줌인 (zoom)</option>' +
-            '<option value="shake">🫨 흔들기 (shake)</option>' +
-            '<option value="glow">✨ 발광 (glow)</option>' +
-          '</select>' +
-          '<button class="tool-btn" onclick="stopAllAnimations()" style="color:#ef4444; font-weight:bold;">⏹️ 정지</button>' +
-        '</div>';
-
       function buildWizardCategoryHtml(catKey, catTitle, contentHtml, isExpanded) {
         var isCollapsed = !isExpanded;
         var stepNum = (catKey === 'anim_step1' ? 1 : catKey === 'anim_step2' ? 2 : catKey === 'anim_step3' ? 3 : catKey === 'anim_step4' ? 4 : 5);
@@ -634,8 +616,7 @@
         buildWizardCategoryHtml('anim_step2', '2. 목표 값', step2Content, curStep === 2) +
         buildWizardCategoryHtml('anim_step3', '3. 트리거 & 재생 시간', step3Content, curStep === 3) +
         buildWizardCategoryHtml('anim_step4', '4. 종료 & 제한 조건', step4Content, curStep === 4) +
-        buildWizardCategoryHtml('anim_step5', '5. 효과 적용 & 제어', step5Content, curStep === 5) +
-        buildCategoryHtml('anim_presets', '프리셋 & 제어', presetsContent);
+        buildWizardCategoryHtml('anim_step5', '5. 효과 적용 & 제어', step5Content, curStep === 5);
     }
   }
 
