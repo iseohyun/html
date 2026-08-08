@@ -15,6 +15,13 @@
         "summary": "v2.0.0: 아키텍처 대규모 리팩터링 — main.js(4942행)를 11개 모듈(ai, board, dispatcher, flip, keyboard, record, rules, settings, state, ui)로 해체, style.css를 8개 도메인별 CSS로 분리, 109개 인라인 핸들러를 data-action 이벤트 위임으로 전환, 60개 글로벌 노출 제거"
       },
       {
+        "type": "Changed",
+        "projectName": "일본어 글자 암기",
+        "version": "1.0.2",
+        "projectPath": "/small-project/KanaLoop/",
+        "summary": "v1.0.2: Local-First 백엔드 통신 최적화 (0ms 캐싱 기동, 지연 배치 동기화, 단어 단위 스마트 병합) & 모달 UI 고도화 (.modal-header 겹침 방지, 스크롤바 디자인 숨김)"
+      },
+      {
         "type": "Fixed",
         "projectName": "공통 모듈",
         "summary": ".gitignore 정비: .gemini 로컬 AI 설정 폴더 추적 제외 처리"

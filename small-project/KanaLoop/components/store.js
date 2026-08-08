@@ -11,6 +11,7 @@ export const userConfig = {
   currentDomain: 'hira',
   errorFeedbackMode: 'both',
   spectatorInterval: 1, // 관전모드 출력 주기 (초)
+  voiceSource: 'google_mp3', // 음성 엔진 옵션: 'google_mp3', 'haruka_mp3', 'browser_tts'
   keybindings: {
     toggleDomain: { label: "도메인 변경", primary: "1", secondary: "d" },
     playSoundTest: { label: "음성 테스트", primary: "2", secondary: "t" },
