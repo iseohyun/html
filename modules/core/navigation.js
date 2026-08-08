@@ -189,6 +189,27 @@ window.SiteModules.Navigation = (function () {
 
       createModals();
       bindSidebarEvents();
+
+      // C. 모바일 스크린 상단 헤더 (header) 100% 동적 렌더링 주입
+      let siteHeader = document.querySelector("header");
+      if (!siteHeader) {
+        siteHeader = document.createElement("header");
+        siteHeader.className = "site-header";
+        siteHeader.innerHTML = `
+          <div id="headerIcons">
+            <div id="header-home" onclick="window.location.href='/'" title="홈으로" style="cursor:pointer; display:flex; align-items:center;">
+              <span class="material-symbols-outlined" style="color:#2563eb; font-size:22px;">home</span>
+            </div>
+            <div id="header-sitemap" onclick="document.getElementById('nav-sitemap')?.click()" title="사이트맵" style="cursor:pointer; display:flex; align-items:center;">
+              <span class="material-symbols-outlined" style="color:#475569; font-size:22px;">account_tree</span>
+            </div>
+            <div id="header-search" onclick="document.getElementById('nav-search')?.click()" title="검색" style="cursor:pointer; display:flex; align-items:center;">
+              <span class="material-symbols-outlined" style="color:#475569; font-size:22px;">search</span>
+            </div>
+          </div>
+        `;
+        document.body.prepend(siteHeader);
+      }
     }
 
     baseUl = document.getElementById("sitemap-tree");
@@ -519,10 +540,6 @@ window.SiteModules.Navigation = (function () {
 
     // 구조 빌드
     article.innerHTML = `
-      <div id="site-intro">
-        <img id="site-icon" src="/source/icon_seohyun.svg">
-        <div id="site-name">iseohyun.com</div>
-      </div>
       <ul id="site-history"></ul>
     `;
 
