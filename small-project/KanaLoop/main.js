@@ -480,7 +480,7 @@ async function terminateQuizSession() {
       alert(`학습모드 완료!\n🎯 정답수: ${correctCount}개\n⏱️ 소요 시간: ${formatTime(playedTime)}\n🎯 정답률: ${accuracy}%`);
     }
   } catch (dbError) {
-    console.error("백엔드 데이터 처리 중 예외 발생 (화면 복귀는 유지됨):", dbError);
+    console.warn("[LocalFirst] 학습모드 완료 백엔드 등록 안내 (로컬 저장 완료):", dbError.message || dbError);
   }
 }
 
@@ -1168,10 +1168,31 @@ async function openRemoteModalPopup(viewName) {
         .replace('{{keybindingsConfig}}', kbHtml);
     }
 
+    const viewTitles = {
+      help: '도움말',
+      leaderboard: '리더보드',
+      setting: '환경설정',
+      progress: '단어장 & 학습 현황',
+      login: '사용자 계정',
+      spectatorMode: '관전 모드',
+      studyMode: '학습 모드'
+    };
+    const modalTitle = viewTitles[viewName] || '안내';
+
     // 정제된 컴포넌트를 기반으로 단일 객체 생성 및 돔 트리 등록
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
-    overlay.innerHTML = `<div class="modal-content"><span class="modal-close" style="transform: scale(2); transform-origin: top right; display: inline-block; cursor: pointer;">&times;</span>${htmlContent}</div>`;
+    overlay.innerHTML = `
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">${modalTitle}</h3>
+          <button class="modal-close" aria-label="닫기">&times;</button>
+        </div>
+        <div class="modal-body">
+          ${htmlContent}
+        </div>
+      </div>
+    `;
 
     // 오버레이 및 닫기 버튼 클릭 시 모달 닫기 및 설정 일괄 저장 처리
     const closeHandler = (e) => {
