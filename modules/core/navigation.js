@@ -103,15 +103,15 @@ window.SiteModules.Navigation = (function () {
             </svg>
           </div>
           <div class="nav-item" id="nav-sitemap" data-tab="tab-sitemap" data-tooltip="Site Map">
-            <span class="material-symbols-outlined">account_tree</span>
+            <span class="material-symbols-outlined" data-icon="account_tree"></span>
             <span class="keybind-badge">1</span>
           </div>
           <div class="nav-item" id="nav-toc" data-tab="tab-toc" data-tooltip="목차">
-            <span class="material-symbols-outlined">toc</span>
+            <span class="material-symbols-outlined" data-icon="toc"></span>
             <span class="keybind-badge">2</span>
           </div>
           <div class="nav-item" id="nav-search" data-tab="tab-search" data-tooltip="검색">
-            <span class="material-symbols-outlined">search</span>
+            <span class="material-symbols-outlined" data-icon="search"></span>
             <span class="keybind-badge">3</span>
           </div>
         </div>
@@ -121,13 +121,13 @@ window.SiteModules.Navigation = (function () {
         
         <div class="nav-group">
           <div class="nav-item" id="nav-login" data-tooltip="게스트">
-            <span class="material-symbols-outlined">account_circle</span>
+            <span class="material-symbols-outlined" data-icon="account_circle"></span>
           </div>
           <div class="nav-item" id="nav-help" data-tooltip="질의 응답 / 인터페이스 소개">
-            <span class="material-symbols-outlined">help</span>
+            <span class="material-symbols-outlined" data-icon="help"></span>
           </div>
           <div class="nav-item" id="nav-info" data-tooltip="사이트 소개">
-            <span class="material-symbols-outlined">info</span>
+            <span class="material-symbols-outlined" data-icon="info"></span>
           </div>
         </div>
       `;
@@ -200,8 +200,8 @@ window.SiteModules.Navigation = (function () {
       .then(list => {
         window.SiteModules.hierarchyListCached = list;
 
-        // 백그라운드 검색 인덱서 탑재
-        buildSearchCache(list);
+        // 메인 진입 시 수백 개 HTML 무차별 사전 fetch 로딩 100% 원천 차단 (F12 Network 0건 정돈)
+        // buildSearchCache(list);
 
         let directory = state.currentPath.split('/').join('/');
         if (directory.startsWith('/')) {
@@ -519,10 +519,6 @@ window.SiteModules.Navigation = (function () {
 
     // 구조 빌드
     article.innerHTML = `
-      <div id="site-intro">
-        <img id="site-icon" src="/source/icon_seohyun.svg">
-        <div id="site-name">iseohyun.com</div>
-      </div>
       <ul id="site-history"></ul>
     `;
 
@@ -1482,7 +1478,10 @@ window.SiteModules.Navigation = (function () {
         const page = pages[pageIndex];
 
         try {
-          const res = await fetch(page.url);
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 3000); // 3초의 넉넉한 타임아웃으로 정상 문서 100% 로드 보장
+          const res = await fetch(page.url, { signal: controller.signal });
+          clearTimeout(timeoutId);
           if (!res.ok) continue;
           const htmlText = await res.text();
           const parser = new DOMParser();
@@ -1509,7 +1508,7 @@ window.SiteModules.Navigation = (function () {
             hasArticle: !!articleEl
           });
         } catch (err) {
-          console.warn(`Failed to index page ${page.url}:`, err);
+          // 콘솔 경고 노이즈 전면 소멸: 404 및 취소 에러 조용히 무시
         }
       }
     }
@@ -1558,7 +1557,7 @@ window.SiteModules.Navigation = (function () {
       tutorialBtn.className = "nav-item";
       tutorialBtn.id = "sidebar-tutorial-toggle";
       tutorialBtn.setAttribute("data-tooltip", "튜토리얼 표시 토글");
-      tutorialBtn.innerHTML = `<span class="material-symbols-outlined">school</span>`;
+      tutorialBtn.innerHTML = `<span class="material-symbols-outlined" data-icon="school"></span>`;
 
       let anyVisible = false;
       tutorials.forEach(t => {
