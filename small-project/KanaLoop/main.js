@@ -70,20 +70,41 @@ window.playSoundTest = playSoundTest;
 window.toggleAnalysisMode = toggleAnalysisMode;
 
 const MAIN_SELECTION_HTML = `
-  <div class="mode-selection">
-    <button class="mode-btn" onclick="startSessionWorkflow('study')" style="position: relative;">
-      학습 모드
-      <span class="keybind-badge" id="kb-badge-startStudy" style="top: 10px; right: 10px;">Q</span>
+  <div id="mode-selection-layer" class="mode-selection">
+    <button class="mode-btn mode-study" onclick="startSessionWorkflow('study')">
+      <div class="mode-btn-content">
+        <span class="material-symbols-outlined mode-icon">menu_book</span>
+        <span class="mode-title">학습 모드</span>
+        <span class="mode-desc">반복 오디오 퀴즈로 가나 익히기</span>
+      </div>
+      <span class="keybind-badge" id="kb-badge-startStudy">Q</span>
     </button>
-    <button class="mode-btn" onclick="startSessionWorkflow('record')" style="position: relative;">
-      기록 모드
-      <span class="keybind-badge" id="kb-badge-startRecord" style="top: 10px; right: 10px;">W</span>
+
+    <button class="mode-btn mode-record" onclick="startSessionWorkflow('record')">
+      <div class="mode-btn-content">
+        <span class="material-symbols-outlined mode-icon">timer</span>
+        <span class="mode-title">기록 모드</span>
+        <span class="mode-desc">타임어택으로 암기 속도 측정</span>
+      </div>
+      <span class="keybind-badge" id="kb-badge-startRecord">W</span>
     </button>
-    <button class="mode-btn" onclick="startSessionWorkflow('spectator')" style="position: relative;">
-      관전 모드
-      <span class="keybind-badge" id="kb-badge-startSpectator" style="top: 10px; right: 10px;">E</span>
+
+    <button class="mode-btn mode-spectator" onclick="startSessionWorkflow('spectator')">
+      <div class="mode-btn-content">
+        <span class="material-symbols-outlined mode-icon">visibility</span>
+        <span class="mode-title">관전 모드</span>
+        <span class="mode-desc">자동 재생으로 편안하게 복습</span>
+      </div>
+      <span class="keybind-badge" id="kb-badge-startSpectator">E</span>
     </button>
-    <div class="mode-btn-empty" style="aspect-ratio: 1 / 1;"></div>
+
+    <div class="mode-info-card">
+      <span class="material-symbols-outlined info-card-icon">auto_awesome</span>
+      <div class="info-card-text">
+        <strong>Kana-Loop</strong>
+        <p>단축키(Q, W, E, 1~5)와 퀴즈 루프로 빠르게 가나를 마스터하세요.</p>
+      </div>
+    </div>
   </div>
 `;
 
