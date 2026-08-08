@@ -6,24 +6,41 @@
 
 ## 1. 파일 구조 및 역할 분담 (Architecture Overview)
 
-장기 게임은 글로벌 네임스페이스를 공유하는 4개의 모듈식 스크립트 파일로 구성되어 있으며, `index.html`에서 `defer` 옵션으로 순서대로 호출됩니다.
+장기 게임은 ES Module 아키텍처를 기반으로 도메인별로 분리된 11개의 JavaScript 모듈과 8개의 CSS 파일로 구성되어 있습니다. `index.html`의 진입점을 통해 각 모듈이 로드되며, 명확한 의존성 규칙을 따릅니다.
 
-```mermaid
-graph TD
-    HTML[index.html] -->|defer 로드| Config[module/config.js: 전역 상태/설정]
-    Config -->|의존성 공유| Logic[module/logic.js: 기물 규칙/좌표 연산]
-    Logic -->|의존성 공유| Render[module/render.js: SVG 보드/기물 드로잉]
-    Render -->|최종 결합| Main[module/main.js: 이벤트 루프/기보/AI 엔진]
+### 디렉토리 구조 (Directory Structure)
+```text
+janggi/
+├── index.html              # 메인 HTML (data-action 이벤트 위임)
+├── css/
+│   ├── base.css            # :root 변수, 리셋, 레이아웃
+│   ├── board.css           # 장기판, SVG, 기물
+│   ├── controls.css        # 컨트롤바 (탐색, 자동재생)
+│   ├── scoreboard.css      # 점수판, 슬라이드
+│   ├── settings.css        # 설정 패널
+│   ├── record.css          # 기보 패널
+│   ├── modal.css           # 단축키/코멘트 모달
+│   └── comment.css         # 코멘트 말풍선
+└── module/
+    ├── state.js            # 전역 상태 (게임/설정/UI/상수)
+    ├── rules.js            # 행마 규칙, 좌표 유틸리티
+    ├── board.js            # 장기판 렌더링, 기물 배치
+    ├── ai.js               # AI 엔진, 장군 판정, 합법수
+    ├── flip.js             # 좌우반전/상하회전 애니메이션
+    ├── record.js           # 기보 파싱, 저장/불러오기
+    ├── keyboard.js         # 키보드 핸들러, 단축키 모달
+    ├── settings.js         # 설정 UI, 슬롯, 색상/크기
+    ├── ui.js               # 점수판, 코멘트, 자동재생
+    ├── dispatcher.js       # 이벤트 위임 디스패처
+    └── main.js             # 게임 코어 + 엔트리포인트
 ```
 
-- **`module/config.js`**:
-  - 보드 크기 비율, 애니메이션 시간, 설정 슬롯 데이터 구조, 전역 기물 배열(`pieces`)과 착수 로그(`log`)를 보관하는 데이터 레이어입니다.
-- **`module/logic.js`**:
-  - 보드 위 좌표 검사, 아군/적군 판별, 기물별 이동 가능 경로 계산 등 순수 장기 규칙만을 전담하는 엔진입니다.
-- **`module/render.js`**:
-  - SVG 격자판, 좌표 라벨, 기물 SVG 엘리먼트 갱신, 동적 후보지 박스(`.candi-svg`) 그리기 등 그래픽 렌더링을 전담합니다.
-- **`module/main.js`**:
-  - 사용자 마우스 클릭 핸들러, 설정 변경 리스너, 로컬스토리지 슬롯 및 기보 보관함 입출력, Minimax 인공지능 탐색 엔진 및 외통수 잠금을 주도하는 메인 컨트롤러입니다.
+### 핵심 아키텍처 설계 (Key Architecture Decisions)
+1. **이벤트 위임 패턴**: 모든 인라인 핸들러가 `data-action` 속성으로 전환됨. `dispatcher.js`가 click/change/input 이벤트를 캡처하여 해당 함수로 라우팅
+2. **중재자 패턴**: `record.js`는 순수 데이터 처리. 렌더링은 `board.js`가 담당
+3. **인자 주입/데이터 반환 패턴**: `rules.js`의 `getCandidateMoves()`가 `moves[]` 배열을 반환하고, `board.js`의 `renderCandidateMarkers()`가 렌더링
+4. **도메인별 상태 관리**: `state.js`에서 [game], [config], [UI], [CONSTANTS] 섹션으로 분리
+5. **스크립트 로드 순서**: state → rules → board → ai → flip → record → keyboard → settings → ui → main → dispatcher
 
 ---
 

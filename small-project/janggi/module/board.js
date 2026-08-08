@@ -1,4 +1,4 @@
-// render.js - Board drawing and HTML display updates
+// board.js - 장기판 렌더링, 기물 배치, 후보수 표시
 
 function initBoard() {
   // 제어판 요소를 가져옵니다.
@@ -453,6 +453,19 @@ function createCandiBox(i, x, y) {
   
   svg.appendChild(candiBox);
 }
+
+/**
+ * 후보 이동 위치들을 렌더링합니다.
+ * rules.js의 getCandidateMoves()가 반환한 moves 배열을 받아 렌더링합니다.
+ * @param {number} i - 선택된 기물 ID
+ * @param {Array<{x: number, y: number}>} moves - 이동 가능한 좌표 배열
+ */
+function renderCandidateMarkers(i, moves) {
+  for (const m of moves) {
+    createCandiBox(i, m.x, m.y);
+  }
+}
+
 
 // 장기알 서예 글씨 이미지의 크기와 정렬 오프셋을 동적으로 갱신합니다.
 function updatePieceGraphics() {

@@ -1,4 +1,4 @@
-// config.js - Global variables and game state configurations
+// state.js - 전역 상태 관리 (게임, 설정, UI, 상수)
 
 /**
  * @typedef {Object} Piece - 장기 기물 객체 스키마
@@ -34,10 +34,13 @@ if (typeof SVGAnimatedString !== 'undefined') {
   }
 }
 
+// ===== [UI] DOM 참조 및 뷰 상태 =====
 const svg = document.getElementById("janggi-svg");
 const board = document.getElementById("board");
 const selectBox = document.getElementById("select-box");
+// ===== [CONSTANTS] 불변 상수 =====
 const boardMargin = 0;  // 장기판의 외부 하얀색 여백(margin)
+// ===== [config] 사용자 설정값 =====
 var showCoordinates = true; // 좌표선 표시 여부
 var animDuration = 0.5; // 애니메이션 이동 시간 (초 단위)
 var animHeight = 0.2;   // 애니메이션 기물 들기 높이 배율 (기본 0.2, 범위 0~2.0)
@@ -73,6 +76,7 @@ var settingsTextColorType = "auto";
 var settingsTextColorCustom = "#f8fafc";
 var settingsAccentColor = "#3b82f6";
 
+// ===== [UI] 보드 레이아웃 상태 =====
 var boardPaddingLeft = 45;
 var boardPaddingRight = 20;
 var boardPaddingTop = 45;
@@ -82,16 +86,17 @@ var boardHeight;
 var unitSize; // 한 칸의 크기 (그릴 수 있는 최대 크기)
 var piecesSize = 0.8; // 장기말이 한칸당 차지하는 비율 (80%)
 var hitBox; // 말이 선택되었을 때
+const candiBoxList = new Array(); // 생성된 이동가능 경로들을 관리합니다.
+var kbCursorX = 5;
+var kbCursorY = 4;
+var kbCursorActive = false;
+// ===== [game] 게임 진행 상태 =====
 const pieces = new Array(32); // 장기말은 고유의 ID를 가지고 있습니다.
 const initPieces = new Array(32); // 장기말은 고유의 ID를 가지고 있습니다.
 var newGameState = [0, 0];
 var iAmCho = false;
-const candiBoxList = new Array(); // 생성된 이동가능 경로들을 관리합니다.
 const log = new Array(); // 착수 로그를 기록합니다.
 var curSelect = 32;
-var kbCursorX = 5;
-var kbCursorY = 4;
-var kbCursorActive = false;
 var shortcutKeys = {
   newGame: {
     primary: { key: "n", ctrl: false, alt: false, shift: false },

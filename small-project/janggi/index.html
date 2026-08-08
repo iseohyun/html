@@ -1,16 +1,16 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 
 <head>
   <meta charset="UTF-8">
-  <!-- 모바일 스케일 고정 -->
+  <!-- 모바???��???고정 -->
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="keywords" content="iseohyun, 장기, janggi">
+  <meta name="keywords" content="iseohyun, ?�기, janggi">
   <meta name="author" content="iseohyun">
 
-  <!-- 페이지 타이틀 -->
-  <title>장기 - iseohyun </title>
+  <!-- ?�이지 ?�?��? -->
+  <title>?�기 - iseohyun </title>
   <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
 
   <!-- Google tag (gtag.js) -->
@@ -22,37 +22,51 @@
     gtag('config', 'G-453XSP5W9M');
   </script>
 
-  <!-- 공통스킨 -->
+  <!-- 공통?�킨 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@900&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/board.css">
+  <link rel="stylesheet" href="css/controls.css">
+  <link rel="stylesheet" href="css/scoreboard.css">
+  <link rel="stylesheet" href="css/settings.css">
+  <link rel="stylesheet" href="css/record.css">
+  <link rel="stylesheet" href="css/modal.css">
+  <link rel="stylesheet" href="css/comment.css">
 
-  <!-- 모듈식 스크립트 순차 로드 -->
-  <script src="module/config.js" defer charset="UTF-8"></script>
-  <script src="module/logic.js" defer charset="UTF-8"></script>
-  <script src="module/render.js" defer charset="UTF-8"></script>
+  <!-- 모듈???�크립트 ?�차 로드 -->
+  <script src="module/state.js" defer charset="UTF-8"></script>
+  <script src="module/rules.js" defer charset="UTF-8"></script>
+  <script src="module/board.js" defer charset="UTF-8"></script>
+  <script src="module/ai.js" defer charset="UTF-8"></script>
+  <script src="module/flip.js" defer charset="UTF-8"></script>
+  <script src="module/record.js" defer charset="UTF-8"></script>
+  <script src="module/keyboard.js" defer charset="UTF-8"></script>
+  <script src="module/settings.js" defer charset="UTF-8"></script>
+  <script src="module/ui.js" defer charset="UTF-8"></script>
   <script src="module/main.js" defer charset="UTF-8"></script>
+  <script src="module/dispatcher.js" defer charset="UTF-8"></script>
 </head>
 
-<body style="overflow: hidden;">
+<body>
   <article id="janggi-app">
     <div id="setting-box">
-      <!-- 고정된 헤더 영역 (스크롤되지 않음) -->
+      <!-- 고정???�더 ?�역 (?�크롤되지 ?�음) -->
       <div class="settings-header">
-        <button id="close-btn" onclick="disalbeSettingBox()">X</button>
-        <span class="settings-title">설정</span>
-        <button id="shortcut-btn-in-settings" class="start-settings-btn" onclick="openShortcutModal()" title="단축키 지정하기">단축키</button>
+        <button id="close-btn" data-action="disalbeSettingBox">X</button>
+        <span class="settings-title">?�정</span>
+        <button id="shortcut-btn-in-settings" class="start-settings-btn" data-action="openShortcutModal" title="?�축??지?�하�?>?�축??/button>
       </div>
       
-      <!-- 스크롤 가능한 설정 콘텐츠 영역 -->
+      <!-- ?�크�?가?�한 ?�정 콘텐�??�역 -->
       <div class="settings-scroll-area">
-        <!-- 1. 상차림 -->
+        <!-- 1. ?�차�?-->
         <div class="setting-category">
           <div class="category-header">
-            <span class="category-title">상차림</span>
+            <span class="category-title">?�차�?/span>
             <div class="category-header-actions">
-              <button class="reset-category-btn" onclick="resetCategory1()" title="상차림 설정 초기화">🔄</button>
+              <button class="reset-category-btn" data-action="resetCategory1" title="?�차�??�정 초기??>?��</button>
             </div>
           </div>
           <div class="charim-container">
@@ -60,38 +74,38 @@
               <table>
                 <tr>
                   <td></td>
-                  <td style="text-align: center; font-weight: bold;">상차림 배치</td>
-                  <td style="text-align: center; font-weight: bold;">진영</td>
+                  <td class="charim-table-header">?�차�?배치</td>
+                  <td class="charim-table-header">진영</td>
                 </tr>
                 <tr>
-                  <td>위</td>
+                  <td>??/td>
                   <td>
-                    <button class="charim1" onclick="changeCharim(1, 0, this)">마상마상</button>
-                    <button class="charim1" onclick="changeCharim(1, 1, this)">마상상마</button>
-                    <button class="charim1" onclick="changeCharim(1, 2, this)">상마마상</button>
-                    <button class="charim1" onclick="changeCharim(1, 3, this)">상마상마</button>
+                    <button class="charim1" data-action="changeCharim" data-group="1" data-piece-type="0">마상마상</button>
+                    <button class="charim1" data-action="changeCharim" data-group="1" data-piece-type="1">마상?�마</button>
+                    <button class="charim1" data-action="changeCharim" data-group="1" data-piece-type="2">?�마마상</button>
+                    <button class="charim1" data-action="changeCharim" data-group="1" data-piece-type="3">?�마?�마</button>
                   </td>
                   <td>
-                    <button id="nation-top" onclick="toggleNation()" style="font-weight: bold; border: none; border-radius: 6px; padding: 6px 15px; cursor: pointer;">한</button>
+                    <button id="nation-top" data-action="toggleNation" class="nation-toggle-btn">??/button>
                   </td>
                 </tr>
                 <tr>
-                  <td>아래</td>
+                  <td>?�래</td>
                   <td>
-                    <button class="charim0" onclick="changeCharim(0, 0, this)">마상마상</button>
-                    <button class="charim0" onclick="changeCharim(0, 1, this)">마상상마</button>
-                    <button class="charim0" onclick="changeCharim(0, 2, this)">상마마상</button>
-                    <button class="charim0" onclick="changeCharim(0, 3, this)">상마상마</button>
+                    <button class="charim0" data-action="changeCharim" data-group="0" data-piece-type="0">마상마상</button>
+                    <button class="charim0" data-action="changeCharim" data-group="0" data-piece-type="1">마상?�마</button>
+                    <button class="charim0" data-action="changeCharim" data-group="0" data-piece-type="2">?�마마상</button>
+                    <button class="charim0" data-action="changeCharim" data-group="0" data-piece-type="3">?�마?�마</button>
                   </td>
                   <td>
-                    <button id="nation-bottom" onclick="toggleNation()" style="font-weight: bold; border: none; border-radius: 6px; padding: 6px 15px; cursor: pointer;">초</button>
+                    <button id="nation-bottom" data-action="toggleNation" class="nation-toggle-btn">�?/button>
                   </td>
                 </tr>
               </table>
             </div>
           </div>
           
-          <!-- 상차림 배치 예시 그림 (미니어처 9칸 back-row 표현) -->
+          <!-- ?�차�?배치 ?�시 그림 (미니?�처 9�?back-row ?�현) -->
           <div class="charim-preview-container">
             <div class="charim-preview-row">
               <div id="preview-han" class="charim-preview-tokens"></div>
@@ -102,164 +116,164 @@
           </div>
         </div>
 
-        <!-- 2. 장기판 보기 -->
+        <!-- 2. ?�기??보기 -->
         <div class="setting-category collapsible collapsed" id="board-view-category">
-          <div class="category-header accordion-toggle" onclick="toggleSettingCategory('board-view-category')" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
-            <span class="category-title">장기판 보기</span>
-            <div class="category-header-actions" onclick="event.stopPropagation();" style="display: flex; align-items: center; gap: 8px;">
-              <button class="reset-category-btn" onclick="resetCategory2()" title="장기판 보기 설정 초기화">🔄</button>
-              <button id="slot-1-btn" class="slot-btn" onclick="selectSlot(1)" title="슬롯 1 불러오기">1</button>
-              <button id="slot-2-btn" class="slot-btn" onclick="selectSlot(2)" title="슬롯 2 불러오기">2</button>
-              <button class="copy-btn" onclick="copyConfigToClipboard(this)" title="설정 클립보드로 복사">📋</button>
-              <span id="board-view-arrow" style="font-size: 0.8em; color: rgba(255,255,255,0.4); margin-left: 4px; transition: transform 0.2s;">▼</span>
+          <div class="category-header accordion-toggle" data-action="toggleSettingCategory" data-category-id="board-view-category">
+            <span class="category-title">?�기??보기</span>
+            <div data-stop-propagation  class="category-header-actions modal-theme-group">
+              <button class="reset-category-btn" data-action="resetCategory2" title="?�기??보기 ?�정 초기??>?��</button>
+              <button id="slot-1-btn" class="slot-btn" data-action="selectSlot" data-num="1" title="?�롯 1 불러?�기">1</button>
+              <button id="slot-2-btn" class="slot-btn" data-action="selectSlot" data-num="2" title="?�롯 2 불러?�기">2</button>
+              <button class="copy-btn" data-action="copyConfigToClipboard" title="?�정 ?�립보드�?복사">?��</button>
+              <span id="board-view-arrow" class="accordion-arrow">??/span>
             </div>
           </div>
-          <div id="board-view-category-content" style="display: none; margin-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 10px;">
+          <div id="board-view-category-content" class="accordion-content">
             <table class="settings-table">
             <tr>
               <td>좌표 보기</td>
               <td>
-                <button id="toggle-coords-btn-settings" onclick="toggleCoordinates()">좌표 표시 중</button>
+                <button id="toggle-coords-btn-settings" data-action="toggleCoordinates">좌표 ?�시 �?/button>
               </td>
             </tr>
             <tr>
-              <td>장기알 크기 (왕)</td>
+              <td>?�기???�기 (??</td>
               <td>
-                <button onclick="adjustPieceSize('king', -0.05)">-</button>
+                <button data-action="adjustPieceSize" data-type="king" data-delta="-0.05">-</button>
                 <span id="val-size-king">1.10</span>
-                <button onclick="adjustPieceSize('king', 0.05)">+</button>
+                <button data-action="adjustPieceSize" data-type="king" data-delta="0.05">+</button>
               </td>
             </tr>
             <tr>
-              <td>장기알 크기 (큰기물)</td>
+              <td>?�기???�기 (?�기�?</td>
               <td>
-                <button onclick="adjustPieceSize('middle', -0.05)">-</button>
+                <button data-action="adjustPieceSize" data-type="middle" data-delta="-0.05">-</button>
                 <span id="val-size-middle">0.95</span>
-                <button onclick="adjustPieceSize('middle', 0.05)">+</button>
+                <button data-action="adjustPieceSize" data-type="middle" data-delta="0.05">+</button>
               </td>
             </tr>
             <tr>
-              <td>장기알 크기 (작은기물)</td>
+              <td>?�기???�기 (?��?기물)</td>
               <td>
-                <button onclick="adjustPieceSize('small', -0.05)">-</button>
+                <button data-action="adjustPieceSize" data-type="small" data-delta="-0.05">-</button>
                 <span id="val-size-small">0.75</span>
-                <button onclick="adjustPieceSize('small', 0.05)">+</button>
+                <button data-action="adjustPieceSize" data-type="small" data-delta="0.05">+</button>
               </td>
             </tr>
             <tr>
-              <td>장기알 글씨 크기 (왕)</td>
+              <td>?�기??글???�기 (??</td>
               <td>
-                <button onclick="adjustPieceFontSize('king', -0.05)">-</button>
+                <button data-action="adjustPieceFontSize" data-type="king" data-delta="-0.05">-</button>
                 <span id="val-font-king">1.00</span>
-                <button onclick="adjustPieceFontSize('king', 0.05)">+</button>
+                <button data-action="adjustPieceFontSize" data-type="king" data-delta="0.05">+</button>
               </td>
             </tr>
             <tr>
-              <td>장기알 글씨 크기 (큰기물)</td>
+              <td>?�기??글???�기 (?�기�?</td>
               <td>
-                <button onclick="adjustPieceFontSize('middle', -0.05)">-</button>
+                <button data-action="adjustPieceFontSize" data-type="middle" data-delta="-0.05">-</button>
                 <span id="val-font-middle">1.00</span>
-                <button onclick="adjustPieceFontSize('middle', 0.05)">+</button>
+                <button data-action="adjustPieceFontSize" data-type="middle" data-delta="0.05">+</button>
               </td>
             </tr>
             <tr>
-              <td>장기알 글씨 크기 (작은기물)</td>
+              <td>?�기??글???�기 (?��?기물)</td>
               <td>
-                <button onclick="adjustPieceFontSize('small', -0.05)">-</button>
+                <button data-action="adjustPieceFontSize" data-type="small" data-delta="-0.05">-</button>
                 <span id="val-font-small">1.00</span>
-                <button onclick="adjustPieceFontSize('small', 0.05)">+</button>
+                <button data-action="adjustPieceFontSize" data-type="small" data-delta="0.05">+</button>
               </td>
             </tr>
             <tr>
-              <td>좌표 크기</td>
+              <td>좌표 ?�기</td>
               <td>
-                <button onclick="adjustCoordsFontSize(-0.02)">-</button>
+                <button data-action="adjustCoordsFontSize" data-amount="-0.02">-</button>
                 <span id="val-coords-size">0.22</span>
-                <button onclick="adjustCoordsFontSize(0.02)">+</button>
+                <button data-action="adjustCoordsFontSize" data-amount="0.02">+</button>
               </td>
             </tr>
             <tr>
-              <td>시스템 글자 크기</td>
+              <td>?�스??글???�기</td>
               <td>
-                <button onclick="changeFontSize(-1)">작게</button>
-                <button onclick="changeFontSize(1)">크게</button>
+                <button data-action="changeFontSize" data-amount="-1">?�게</button>
+                <button data-action="changeFontSize" data-amount="1">?�게</button>
               </td>
             </tr>
             <tr>
-              <td>장기판 색상</td>
+              <td>?�기???�상</td>
               <td>
-                <div style="display: flex; align-items: center; justify-content: flex-end;">
-                  <select id="board-color-select" onchange="changeBoardColor(this.value)">
-                    <option value="wood">전통 나무색</option>
-                    <option value="green">클래식 초록색</option>
-                    <option value="dark">모던 다크 회색</option>
-                    <option value="navy">슬레이트 네이비</option>
-                    <option value="custom">사용자 지정</option>
+                <div class="settings-flex-row">
+                  <select id="board-color-select" data-action="changeBoardColor">
+                    <option value="wood">?�통 ?�무??/option>
+                    <option value="green">?�래??초록??/option>
+                    <option value="dark">모던 ?�크 ?�색</option>
+                    <option value="navy">?�레?�트 ?�이�?/option>
+                    <option value="custom">?�용??지??/option>
                   </select>
-                  <input type="color" id="board-color-picker" oninput="changeBoardColor('custom')" style="display: none; vertical-align: middle; margin-left: 10px; width: 30px; height: 30px; padding: 0; border: none; border-radius: 4px; background: transparent; cursor: pointer;">
+                  <input type="color" id="board-color-picker" data-action="changeBoardColor" data-value="custom" class="color-picker-input">
                 </div>
               </td>
             </tr>
             <tr>
-              <td>장기알 색상 (초나라)</td>
+              <td>?�기???�상 (초나??</td>
               <td>
-                <div style="display: flex; align-items: center; justify-content: flex-end;">
-                  <select id="cho-color-select" onchange="changeChoColor(this.value)">
-                    <option value="blue">기본 청색 (Blue)</option>
-                    <option value="green">비취 녹색 (Green)</option>
-                    <option value="gold">황금 황색 (Gold)</option>
-                    <option value="custom">사용자 지정</option>
+                <div class="settings-flex-row">
+                  <select id="cho-color-select" data-action="changeChoColor">
+                    <option value="blue">기본 �?�� (Blue)</option>
+                    <option value="green">비취 ?�색 (Green)</option>
+                    <option value="gold">?�금 ?�색 (Gold)</option>
+                    <option value="custom">?�용??지??/option>
                   </select>
-                  <input type="color" id="cho-color-picker" oninput="changeChoColor('custom')" style="display: none; vertical-align: middle; margin-left: 10px; width: 30px; height: 30px; padding: 0; border: none; border-radius: 4px; background: transparent; cursor: pointer;">
+                  <input type="color" id="cho-color-picker" data-action="changeChoColor" data-value="custom" class="color-picker-input">
                 </div>
               </td>
             </tr>
             <tr>
-              <td>장기알 색상 (한나라)</td>
+              <td>?�기???�상 (?�나??</td>
               <td>
-                <div style="display: flex; align-items: center; justify-content: flex-end;">
-                  <select id="han-color-select" onchange="changeHanColor(this.value)">
-                    <option value="red">기본 적색 (Red)</option>
-                    <option value="purple">자옥 자색 (Purple)</option>
-                    <option value="slate">오닉스 회색 (Slate)</option>
-                    <option value="custom">사용자 지정</option>
+                <div class="settings-flex-row">
+                  <select id="han-color-select" data-action="changeHanColor">
+                    <option value="red">기본 ?�색 (Red)</option>
+                    <option value="purple">?�옥 ?�색 (Purple)</option>
+                    <option value="slate">?�닉???�색 (Slate)</option>
+                    <option value="custom">?�용??지??/option>
                   </select>
-                  <input type="color" id="han-color-picker" oninput="changeHanColor('custom')" style="display: none; vertical-align: middle; margin-left: 10px; width: 30px; height: 30px; padding: 0; border: none; border-radius: 4px; background: transparent; cursor: pointer;">
+                  <input type="color" id="han-color-picker" data-action="changeHanColor" data-value="custom" class="color-picker-input">
                 </div>
               </td>
             </tr>
             <tr>
-              <td>장기알 모양</td>
+              <td>?�기??모양</td>
               <td>
-                <select id="piece-shape-select" onchange="changePieceShape(this.value)">
-                  <option value="octagon">전통 팔각형</option>
-                  <option value="circle">현대 원형</option>
+                <select id="piece-shape-select" data-action="changePieceShape">
+                  <option value="octagon">?�통 ?�각??/option>
+                  <option value="circle">?��? ?�형</option>
                 </select>
               </td>
             </tr>
             <tr>
-              <td>이동 가능 위치 모양</td>
+              <td>?�동 가???�치 모양</td>
               <td>
-                <select id="candi-shape-select" onchange="changeCandiShape(this.value)">
-                  <option value="empty_circle">빈 원 (경계선)</option>
-                  <option value="filled_circle">꽉찬 원</option>
-                  <option value="empty_square">빈 사각형</option>
+                <select id="candi-shape-select" data-action="changeCandiShape">
+                  <option value="empty_circle">�???(경계??</option>
+                  <option value="filled_circle">꽉찬 ??/option>
+                  <option value="empty_square">�??�각??/option>
                 </select>
               </td>
             </tr>
             <tr>
-              <td>이동 가능 위치 색상</td>
+              <td>?�동 가???�치 ?�상</td>
               <td>
-                <div style="display: flex; align-items: center; justify-content: flex-end;">
-                  <select id="candi-color-select" onchange="changeCandiColor(this.value)">
-                    <option value="#3b82f6">파란색 (Blue)</option>
-                    <option value="#10b981">초록색 (Green)</option>
-                    <option value="#f97316">주황색 (Orange)</option>
-                    <option value="#a855f7">보라색 (Purple)</option>
-                    <option value="#eab308">노란색 (Yellow)</option>
-                    <option value="custom">사용자 지정</option>
+                <div class="settings-flex-row">
+                  <select id="candi-color-select" data-action="changeCandiColor">
+                    <option value="#3b82f6">?��???(Blue)</option>
+                    <option value="#10b981">초록??(Green)</option>
+                    <option value="#f97316">주황??(Orange)</option>
+                    <option value="#a855f7">보라??(Purple)</option>
+                    <option value="#eab308">?��???(Yellow)</option>
+                    <option value="custom">?�용??지??/option>
                   </select>
-                  <input type="color" id="candi-color-picker" oninput="changeCandiColor('custom')" style="display: none; vertical-align: middle; margin-left: 10px; width: 30px; height: 30px; padding: 0; border: none; border-radius: 4px; background: transparent; cursor: pointer;">
+                  <input type="color" id="candi-color-picker" data-action="changeCandiColor" data-value="custom" class="color-picker-input">
                 </div>
               </td>
             </tr>
@@ -267,49 +281,49 @@
         </div>
       </div>
 
-        <!-- 3. 애니메이션 -->
+        <!-- 3. ?�니메이??-->
         <div class="setting-category collapsible collapsed" id="anim-category">
-          <div class="category-header accordion-toggle" onclick="toggleSettingCategory('anim-category')" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
-            <span class="category-title">애니메이션</span>
-            <div class="category-header-actions" onclick="event.stopPropagation();" style="display: flex; align-items: center; gap: 8px;">
-              <button class="reset-category-btn" onclick="resetCategory3()" title="애니메이션 설정 초기화">🔄</button>
-              <span id="anim-arrow" style="font-size: 0.8em; color: rgba(255,255,255,0.4); margin-left: 4px; transition: transform 0.2s;">▼</span>
+          <div class="category-header accordion-toggle" data-action="toggleSettingCategory" data-category-id="anim-category">
+            <span class="category-title">?�니메이??/span>
+            <div data-stop-propagation  class="category-header-actions modal-theme-group">
+              <button class="reset-category-btn" data-action="resetCategory3" title="?�니메이???�정 초기??>?��</button>
+              <span id="anim-arrow" class="accordion-arrow">??/span>
             </div>
           </div>
-          <div id="anim-category-content" style="display: none; margin-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 10px;">
+          <div id="anim-category-content" class="accordion-content">
             <table class="settings-table">
             <tr>
-              <td>애니메이션 시간(초)</td>
+              <td>?�니메이???�간(�?</td>
               <td>
-                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
-                  <input type="range" id="anim-duration-slider" min="0" max="2" step="0.1" value="0.5" oninput="changeAnimDuration(this.value)" style="width: 150px; accent-color: #3b82f6;">
-                  <span id="anim-duration-val" style="min-width: 45px; text-align: right; color: #3b82f6;">0.5</span>
+                <div class="settings-flex-row-gap">
+                  <input type="range" id="anim-duration-slider" min="0" max="2" step="0.1" value="0.5" data-action="changeAnimDuration" class="range-slider-input">
+                  <span id="anim-duration-val" class="range-value-display">0.5</span>
                 </div>
               </td>
             </tr>
             <tr>
-              <td>기물 들기 높이</td>
+              <td>기물 ?�기 ?�이</td>
               <td>
-                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
-                  <input type="range" id="anim-height-slider" min="0" max="2" step="0.1" value="0.2" oninput="changeAnimHeight(this.value)" style="width: 150px; accent-color: #3b82f6;">
-                  <span id="anim-height-val" style="min-width: 45px; text-align: right; color: #3b82f6;">0.2</span>
+                <div class="settings-flex-row-gap">
+                  <input type="range" id="anim-height-slider" min="0" max="2" step="0.1" value="0.2" data-action="changeAnimHeight" class="range-slider-input">
+                  <span id="anim-height-val" class="range-value-display">0.2</span>
                 </div>
               </td>
             </tr>
             <tr>
-              <td>자동재생 간격 (초)</td>
+              <td>?�동?�생 간격 (�?</td>
               <td>
-                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
-                  <input type="range" id="autoplay-speed-slider" min="0.5" max="5" step="0.5" value="2" oninput="changeAutoplaySpeed(this.value)" style="width: 150px; accent-color: #3b82f6;">
-                  <span id="autoplay-speed-val" style="min-width: 45px; text-align: right; color: #3b82f6;">2.0</span>
+                <div class="settings-flex-row-gap">
+                  <input type="range" id="autoplay-speed-slider" min="0.5" max="5" step="0.5" value="2" data-action="changeAutoplaySpeed" class="range-slider-input">
+                  <span id="autoplay-speed-val" class="range-value-display">2.0</span>
                 </div>
               </td>
             </tr>
             <tr>
-              <td>자동재생 중 애니메이션 사용</td>
+              <td>?�동?�생 �??�니메이???�용</td>
               <td>
-                <div style="display: flex; align-items: center; justify-content: flex-end;">
-                  <input type="checkbox" id="autoplay-use-anim" checked onchange="changeAutoplayUseAnim(this.checked)" style="cursor: pointer; width: 18px; height: 18px; accent-color: #3b82f6;">
+                <div class="settings-flex-row">
+                  <input type="checkbox" id="autoplay-use-anim" checked data-action="changeAutoplayUseAnim" class="settings-checkbox">
                 </div>
               </td>
             </tr>
@@ -317,132 +331,132 @@
         </div>
       </div>
 
-        <!-- 4. 설정 -->
+        <!-- 4. ?�정 -->
         <div class="setting-category collapsible collapsed" id="settings-category">
-          <div class="category-header accordion-toggle" onclick="toggleSettingCategory('settings-category')" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
-            <span class="category-title">설정</span>
-            <div class="category-header-actions" onclick="event.stopPropagation();" style="display: flex; align-items: center; gap: 8px;">
-              <button class="reset-category-btn" onclick="resetCategory4()" title="설정 초기화">🔄</button>
-              <button class="copy-btn" onclick="copyConfigToClipboard(this)" title="설정 클립보드로 복사">📋</button>
-              <span id="settings-arrow" style="font-size: 0.8em; color: rgba(255,255,255,0.4); margin-left: 4px; transition: transform 0.2s;">▼</span>
+          <div class="category-header accordion-toggle" data-action="toggleSettingCategory" data-category-id="settings-category">
+            <span class="category-title">?�정</span>
+            <div data-stop-propagation  class="category-header-actions modal-theme-group">
+              <button class="reset-category-btn" data-action="resetCategory4" title="?�정 초기??>?��</button>
+              <button class="copy-btn" data-action="copyConfigToClipboard" title="?�정 ?�립보드�?복사">?��</button>
+              <span id="settings-arrow" class="accordion-arrow">??/span>
             </div>
           </div>
-          <div id="settings-category-content" style="display: none; margin-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 10px;">
+          <div id="settings-category-content" class="accordion-content">
             <table class="settings-table">
             <tr>
-              <td>설정 배경 색</td>
+              <td>?�정 배경 ??/td>
               <td>
-                <div style="display: flex; align-items: center; justify-content: flex-end;">
-                  <select id="settings-bg-select" onchange="changeSettingsBgColor(this.value)">
-                    <option value="#0f172a">슬레이트 네이비</option>
-                    <option value="#1e293b">다크 그레이</option>
-                    <option value="#1e1b4b">딥 인디고</option>
-                    <option value="#022c22">포레스트 그린</option>
-                    <option value="custom">사용자 지정</option>
+                <div class="settings-flex-row">
+                  <select id="settings-bg-select" data-action="changeSettingsBgColor">
+                    <option value="#0f172a">?�레?�트 ?�이�?/option>
+                    <option value="#1e293b">?�크 그레??/option>
+                    <option value="#1e1b4b">???�디�?/option>
+                    <option value="#022c22">?�레?�트 그린</option>
+                    <option value="custom">?�용??지??/option>
                   </select>
-                  <input type="color" id="settings-bg-picker" oninput="changeSettingsBgColor('custom')" style="display: none; vertical-align: middle; margin-left: 10px; width: 30px; height: 30px; padding: 0; border: none; border-radius: 4px; background: transparent; cursor: pointer;">
+                  <input type="color" id="settings-bg-picker" data-action="changeSettingsBgColor" data-value="custom" class="color-picker-input">
                 </div>
               </td>
             </tr>
             <tr>
-              <td>설정창 투명도</td>
+              <td>?�정�??�명??/td>
               <td>
-                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
-                  <input type="range" id="settings-opacity-slider" min="0.1" max="1.0" step="0.05" value="0.55" oninput="changeSettingsOpacity(this.value)" style="width: 150px; accent-color: #3b82f6;">
-                  <span id="settings-opacity-val" style="min-width: 45px; text-align: right; color: #3b82f6;">0.55</span>
+                <div class="settings-flex-row-gap">
+                  <input type="range" id="settings-opacity-slider" min="0.1" max="1.0" step="0.05" value="0.55" data-action="changeSettingsOpacity" class="range-slider-input">
+                  <span id="settings-opacity-val" class="range-value-display">0.55</span>
                 </div>
               </td>
             </tr>
             <tr>
-              <td>각 글자색 옵션</td>
+              <td>�?글?�색 ?�션</td>
               <td>
-                <div style="display: flex; align-items: center; justify-content: flex-end;">
-                  <select id="settings-text-color-select" onchange="changeSettingsTextColorType(this.value)">
-                    <option value="auto">자동</option>
+                <div class="settings-flex-row">
+                  <select id="settings-text-color-select" data-action="changeSettingsTextColorType">
+                    <option value="auto">?�동</option>
                     <option value="complementary">보색</option>
-                    <option value="custom">사용자 설정</option>
+                    <option value="custom">?�용???�정</option>
                   </select>
-                  <input type="color" id="settings-text-color-picker" oninput="changeSettingsTextColorCustom(this.value)" style="display: none; vertical-align: middle; margin-left: 10px; width: 30px; height: 30px; padding: 0; border: none; border-radius: 4px; background: transparent; cursor: pointer;">
+                  <input type="color" id="settings-text-color-picker" data-action="changeSettingsTextColorCustom" class="color-picker-input">
                 </div>
               </td>
             </tr>
             <tr>
-              <td>강조색</td>
+              <td>강조??/td>
               <td>
-                <div style="display: flex; align-items: center; justify-content: flex-end;">
-                  <select id="settings-accent-color-select" onchange="changeSettingsAccentColor(this.value)">
-                    <option value="#3b82f6">파란색</option>
-                    <option value="#10b981">초록색</option>
-                    <option value="#f97316">주황색</option>
-                    <option value="#a855f7">보라색</option>
-                    <option value="#eab308">노란색</option>
-                    <option value="custom">사용자 지정</option>
+                <div class="settings-flex-row">
+                  <select id="settings-accent-color-select" data-action="changeSettingsAccentColor">
+                    <option value="#3b82f6">?��???/option>
+                    <option value="#10b981">초록??/option>
+                    <option value="#f97316">주황??/option>
+                    <option value="#a855f7">보라??/option>
+                    <option value="#eab308">?��???/option>
+                    <option value="custom">?�용??지??/option>
                   </select>
-                  <input type="color" id="settings-accent-color-picker" oninput="changeSettingsAccentColor('custom')" style="display: none; vertical-align: middle; margin-left: 10px; width: 30px; height: 30px; padding: 0; border: none; border-radius: 4px; background: transparent; cursor: pointer;">
+                  <input type="color" id="settings-accent-color-picker" data-action="changeSettingsAccentColor" data-value="custom" class="color-picker-input">
                 </div>
               </td>
             </tr>
             <tr>
-              <td>인공지능 대국 (AI Mode)</td>
+              <td>?�공지???��?(AI Mode)</td>
               <td>
-                <div style="display: flex; align-items: center; justify-content: flex-end;">
-                  <select id="ai-mode-select" onchange="changeAiMode(this.value)">
-                    <option value="0">사용 안함 (로컬 2인용)</option>
-                    <option value="1">사용함 (AI가 항상 위쪽에서 플레이)</option>
-                  </select>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>키보드 커서락 모드</td>
-              <td>
-                <div style="display: flex; align-items: center; justify-content: flex-end;">
-                  <select id="cursor-lock-select" onchange="changeCursorLockMode(this.value)">
-                    <option value="false">비활성화</option>
-                    <option value="true">활성화 (CapsLock 토글)</option>
+                <div class="settings-flex-row">
+                  <select id="ai-mode-select" data-action="changeAiMode">
+                    <option value="0">?�용 ?�함 (로컬 2?�용)</option>
+                    <option value="1">?�용??(AI가 ??�� ?�쪽?�서 ?�레??</option>
                   </select>
                 </div>
               </td>
             </tr>
             <tr>
-              <td colspan="2" style="font-weight: bold; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 12px; color: rgba(255, 255, 255, 0.4); font-size: 0.85em; text-align: left;">점수판 설정</td>
-            </tr>
-            <tr>
-              <td>자동 순환 (Auto Rotation)</td>
+              <td>?�보??커서??모드</td>
               <td>
-                <div style="display: flex; align-items: center; justify-content: flex-end;">
-                  <select id="score-auto-rotate" onchange="updateScoreboardSettings()">
-                    <option value="true">활성화 (자동)</option>
-                    <option value="false">비활성화 (수동 클릭)</option>
+                <div class="settings-flex-row">
+                  <select id="cursor-lock-select" data-action="changeCursorLockMode">
+                    <option value="false">비활?�화</option>
+                    <option value="true">?�성??(CapsLock ?��?)</option>
                   </select>
                 </div>
               </td>
             </tr>
             <tr>
-              <td>순환 간격</td>
+              <td colspan="2" class="settings-section-label">?�수???�정</td>
+            </tr>
+            <tr>
+              <td>?�동 ?�환 (Auto Rotation)</td>
               <td>
-                <div style="display: flex; align-items: center; justify-content: flex-end;">
-                  <select id="score-rotate-interval" onchange="updateScoreboardSettings()">
-                    <option value="3">3초</option>
-                    <option value="5">5초</option>
-                    <option value="10">10초</option>
-                    <option value="15">15초</option>
+                <div class="settings-flex-row">
+                  <select id="score-auto-rotate" data-action="updateScoreboardSettings">
+                    <option value="true">?�성??(?�동)</option>
+                    <option value="false">비활?�화 (?�동 ?�릭)</option>
                   </select>
                 </div>
               </td>
             </tr>
             <tr>
-              <td>표출 슬라이드 항목</td>
+              <td>?�환 간격</td>
               <td>
-                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap;">
-                  <label style="display: flex; align-items: center; gap: 4px; font-size: 0.85em; cursor: pointer; color: #cbd5e1; user-select: none;">
-                    <input type="checkbox" id="score-show-slide1" checked onchange="updateScoreboardSettings()" style="cursor: pointer;"> 점수차
+                <div class="settings-flex-row">
+                  <select id="score-rotate-interval" data-action="updateScoreboardSettings">
+                    <option value="3">3�?/option>
+                    <option value="5">5�?/option>
+                    <option value="10">10�?/option>
+                    <option value="15">15�?/option>
+                  </select>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>?�출 ?�라?�드 ??��</td>
+              <td>
+                <div class="score-slide-settings-row">
+                  <label class="score-slide-label">
+                    <input type="checkbox" id="score-show-slide1" checked data-action="updateScoreboardSettings" class="score-slide-checkbox"> ?�수�?
                   </label>
-                  <label style="display: flex; align-items: center; gap: 4px; font-size: 0.85em; cursor: pointer; color: #cbd5e1; user-select: none;">
-                    <input type="checkbox" id="score-show-slide2" checked onchange="updateScoreboardSettings()" style="cursor: pointer;"> 타이머
+                  <label class="score-slide-label">
+                    <input type="checkbox" id="score-show-slide2" checked data-action="updateScoreboardSettings" class="score-slide-checkbox"> ?�?�머
                   </label>
-                  <label style="display: flex; align-items: center; gap: 4px; font-size: 0.85em; cursor: pointer; color: #cbd5e1; user-select: none;">
-                    <input type="checkbox" id="score-show-slide3" checked onchange="updateScoreboardSettings()" style="cursor: pointer;"> 대회정보
+                  <label class="score-slide-label">
+                    <input type="checkbox" id="score-show-slide3" checked data-action="updateScoreboardSettings" class="score-slide-checkbox"> ?�?�정�?
                   </label>
                 </div>
               </td>
@@ -452,80 +466,80 @@
       </div>
     </div>
 
-    <!-- 기보 관리 및 저장창 (기보창) -->
+    <!-- 기보 관�?�??�?�창 (기보�? -->
     <div id="record-box">
-      <!-- 고정된 헤더 영역 (스크롤되지 않음) -->
+      <!-- 고정???�더 ?�역 (?�크롤되지 ?�음) -->
       <div class="settings-header">
-        <button id="close-record-btn" onclick="closeRecordModal()">X</button>
+        <button id="close-record-btn" data-action="closeRecordModal">X</button>
         <span class="settings-title">기보</span>
         <div class="record-header-actions">
-          <button id="img-download-btn" class="record-header-btn" onclick="download()" title="장기판 이미지 다운로드">그림 저장</button>
+          <button id="img-download-btn" class="record-header-btn" data-action="download" title="?�기???��?지 ?�운로드">그림 ?�??/button>
         </div>
       </div>
       
-      <!-- 스크롤 가능한 기보 콘텐츠 영역 -->
+      <!-- ?�크�?가?�한 기보 콘텐�??�역 -->
       <div class="settings-scroll-area">
-        <!-- 대국 상세 정보 (접이식 아코디언) -->
+        <!-- ?��??�세 ?�보 (?�이???�코?�언) -->
         <div class="setting-category collapsible collapsed" id="metadata-category">
-          <div class="category-header accordion-toggle" onclick="toggleMetadataCategory(event)" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
-            <span class="category-title">대국 상세 정보</span>
-            <div style="display: flex; align-items: center; gap: 10px;" onclick="event.stopPropagation();">
-              <button id="save-record-square-btn" class="record-header-action-icon-btn" onclick="saveRecordToLibrary(this)" title="현재 기보 저장 (클립보드 및 보관함)">
+          <div class="category-header accordion-toggle" data-action="toggleMetadataCategory">
+            <span class="category-title">?��??�세 ?�보</span>
+            <div class="metadata-actions-row" data-stop-propagation>
+              <button id="save-record-square-btn" class="record-header-action-icon-btn" data-action="saveRecordToLibrary" title="?�재 기보 ?�??(?�립보드 �?보�???">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
                   <polyline points="17 21 17 13 7 13 7 21"></polyline>
                   <polyline points="7 3 7 8 15 8"></polyline>
                 </svg>
               </button>
-              <button id="load-record-square-btn" class="record-header-action-icon-btn" onclick="loadRecordFromClipboard()" title="클립보드 기보 불러오기">
+              <button id="load-record-square-btn" class="record-header-action-icon-btn" data-action="loadRecordFromClipboard" title="?�립보드 기보 불러?�기">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
                   <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
                 </svg>
               </button>
-              <span id="accordion-arrow" style="margin-left: 4px; font-size: 0.8em; color: rgba(255,255,255,0.4); transition: transform 0.2s;">▼</span>
+              <span id="accordion-arrow" class="accordion-arrow">??/span>
             </div>
           </div>
           
-          <div id="metadata-category-content" style="display: none; margin-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 10px;">
+          <div id="metadata-category-content" class="accordion-content">
             <table class="settings-table">
               <tr>
-                <td>초나라 대국자</td>
-                <td><input type="text" id="meta-cho-player" class="settings-input" placeholder="초나라 플레이어명" oninput="updateMetadataFromForm()"></td>
+                <td>초나???��?��</td>
+                <td><input type="text" id="meta-cho-player" class="settings-input" placeholder="초나???�레?�어�? data-action="updateMetadataFromForm"></td>
               </tr>
               <tr>
-                <td>한나라 대국자</td>
-                <td><input type="text" id="meta-han-player" class="settings-input" placeholder="한나라 플레이어명" oninput="updateMetadataFromForm()"></td>
+                <td>?�나???��?��</td>
+                <td><input type="text" id="meta-han-player" class="settings-input" placeholder="?�나???�레?�어�? data-action="updateMetadataFromForm"></td>
               </tr>
               <tr>
-                <td>대회명</td>
-                <td><input type="text" id="meta-tournament" class="settings-input" placeholder="대회 이름" oninput="updateMetadataFromForm()"></td>
+                <td>?�?�명</td>
+                <td><input type="text" id="meta-tournament" class="settings-input" placeholder="?�???�름" data-action="updateMetadataFromForm"></td>
               </tr>
               <tr>
-                <td>대국정보</td>
-                <td><input type="text" id="meta-round" class="settings-input" placeholder="예: 1국 (2026-07-19)" oninput="updateMetadataFromForm()"></td>
+                <td>?��?���?/td>
+                <td><input type="text" id="meta-round" class="settings-input" placeholder="?? 1�?(2026-07-19)" data-action="updateMetadataFromForm"></td>
               </tr>
               <tr>
                 <td>기보별명</td>
-                <td><input type="text" id="meta-nickname" class="settings-input" placeholder="예: 귀마 대 귀마 정석" oninput="updateMetadataFromForm()"></td>
+                <td><input type="text" id="meta-nickname" class="settings-input" placeholder="?? 귀�??� 귀�??�석" data-action="updateMetadataFromForm"></td>
               </tr>
               <tr>
                 <td>총평</td>
-                <td><textarea id="meta-summary" class="settings-textarea" placeholder="대국에 대한 전반적인 해설이나 총평을 남겨주세요." oninput="updateMetadataFromForm()" style="width: 100%; height: 50px; resize: none; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 4px; color: #fff; padding: 4px; font-size: 0.9em; box-sizing: border-box;"></textarea></td>
+                <td><textarea id="meta-summary" class="settings-textarea meta-summary-textarea" placeholder="?��?�� ?�???�반?�인 ?�설?�나 총평???�겨주세??" data-action="updateMetadataFromForm"></textarea></td>
               </tr>
             </table>
             
-            <div style="margin-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 12px;">
-              <span class="category-title" id="current-step-comment-title" style="font-size: 0.9em; display: block; margin-bottom: 6px;">현재 수순 (0수) 코멘트</span>
-              <input type="text" id="current-step-comment" class="settings-input" placeholder="이 수순에 대한 해설 코멘트 입력" oninput="updateCurrentStepComment()" style="width: 100%;">
+            <div class="step-comment-section">
+              <span class="category-title step-comment-title" id="current-step-comment-title">?�재 ?�순 (0?? 코멘??/span>
+              <input type="text" id="current-step-comment" class="settings-input step-comment-input" placeholder="???�순???�???�설 코멘???�력" data-action="updateCurrentStepComment">
             </div>
           </div>
         </div>
 
-        <!-- 2. 저장된 기보 목록 -->
+        <!-- 2. ?�?�된 기보 목록 -->
         <div class="setting-category">
           <div class="category-header">
-            <span class="category-title">저장된 기보 목록</span>
+            <span class="category-title">?�?�된 기보 목록</span>
           </div>
           <div id="saved-records-list" class="saved-records-list-container">
             <!-- JavaScript dynamically inserts saved record rows here -->
@@ -534,11 +548,11 @@
       </div>
     </div>
 
-    <!-- 해설 말풍선 (Neon Glassmorphic Speech Bubble) -->
-    <div id="comment-bubble" class="comment-bubble-container" style="display: none; cursor: pointer;" onclick="hideCommentBubble()">
+    <!-- ?�설 말풍??(Neon Glassmorphic Speech Bubble) -->
+    <div id="comment-bubble" class="comment-bubble-container" style="display: none; cursor: pointer;" data-action="hideCommentBubble">
       <div class="comment-bubble-content">
-        <div class="comment-bubble-title">💡 한수 해설</div>
-        <div id="comment-bubble-text">이곳에 수순별 코멘트가 표출됩니다.</div>
+        <div class="comment-bubble-title">?�� ?�수 ?�설</div>
+        <div id="comment-bubble-text">?�곳???�순�?코멘?��? ?�출?�니??</div>
       </div>
       <div class="comment-bubble-arrow"></div>
     </div>
@@ -547,32 +561,32 @@
       <div class="control-row">
         <!-- Turn & Navigation Group (Left) -->
         <div class="control-group turn-nav-group">
-          <button id="nav-start" class="nav-btn" onclick="goToStart()" title="맨 앞으로 이동 (Ctrl + LeftArrow)">
+          <button id="nav-start" class="nav-btn" data-action="goToStart" title="�??�으�??�동 (Ctrl + LeftArrow)">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
               <line x1="5" y1="5" x2="5" y2="19"></line>
               <polyline points="19 18 12 12 19 6"></polyline>
             </svg>
           </button>
-          <button id="prev" class="nav-btn" onclick="prev()" title="이전 수 (Alt + LeftArrow)">
+          <button id="prev" class="nav-btn" data-action="prev" title="?�전 ??(Alt + LeftArrow)">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
           </button>
           <div class="turn-display">
             <input id="turn" type="number" value="0" min="0"></input>
-            <span class="turn-suffix">수</span>
+            <span class="turn-suffix">??/span>
           </div>
-          <button id="nav-play-btn" class="nav-btn" onclick="toggleAutoplay()" title="자동 재생 시작 (P)">
+          <button id="nav-play-btn" class="nav-btn" data-action="toggleAutoplay" title="?�동 ?�생 ?�작 (P)">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
               <polygon points="6,4 20,12 6,20"/>
             </svg>
           </button>
-          <button id="next" class="nav-btn" onclick="next()" title="다음 수 (Alt + RightArrow)">
+          <button id="next" class="nav-btn" data-action="next" title="?�음 ??(Alt + RightArrow)">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
           </button>
-          <button id="nav-end" class="nav-btn" onclick="goToEnd()" title="맨 뒤로 이동 (Ctrl + RightArrow)">
+          <button id="nav-end" class="nav-btn" data-action="goToEnd" title="�??�로 ?�동 (Ctrl + RightArrow)">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="5 6 12 12 5 18"></polyline>
               <line x1="19" y1="5" x2="19" y2="19"></line>
@@ -581,56 +595,56 @@
         </div>
         
         <!-- Sum/Score Progress Bar Panel (Middle) - Rotating Info Panel -->
-        <div id="score-panel" onclick="rotateScorePanel()">
+        <div id="score-panel" data-action="rotateScorePanel">
           <div class="score-slides-wrapper">
-            <!-- Slide 1: 기본 점수판 -->
+            <!-- Slide 1: 기본 ?�수??-->
             <div class="score-slide active" id="score-slide-1">
               <div class="score-row">
-                <span id="han-score-val" class="score-label han-label">한: 73.5</span>
+                <span id="han-score-val" class="score-label han-label">?? 73.5</span>
                 <span id="diff-score-val" class="score-diff-val">0.0</span>
-                <span id="cho-score-val" class="score-label cho-label">초: 72.0</span>
+                <span id="cho-score-val" class="score-label cho-label">�? 72.0</span>
               </div>
               <div class="score-bar-container">
                 <div id="han-score-bar" class="score-bar han-bar"></div>
                 <div id="cho-score-bar" class="score-bar cho-bar"></div>
               </div>
             </div>
-            <!-- Slide 2: 대국 시간 타이머 -->
+            <!-- Slide 2: ?��??�간 ?�?�머 -->
             <div class="score-slide" id="score-slide-2">
               <div class="timer-row">
-                <div class="timer-player han-timer">한: <span id="han-timer-val">00:00</span></div>
+                <div class="timer-player han-timer">?? <span id="han-timer-val">00:00</span></div>
                 <div class="timer-vs">VS</div>
-                <div class="timer-player cho-timer"><span id="cho-timer-val">00:00</span> :초</div>
+                <div class="timer-player cho-timer"><span id="cho-timer-val">00:00</span> :�?/div>
               </div>
-              <div class="timer-active-turn" id="active-turn-timer-desc">초나라 차례</div>
+              <div class="timer-active-turn" id="active-turn-timer-desc">초나??차�?</div>
             </div>
-            <!-- Slide 3: 대국 정보 카드 -->
+            <!-- Slide 3: ?��??�보 카드 -->
             <div class="score-slide" id="score-slide-3">
               <div class="meta-row">
-                <span id="meta-tournament-display">대회명 미지정</span>
+                <span id="meta-tournament-display">?�?�명 미�???/span>
               </div>
               <div class="meta-row-players">
-                <span id="meta-cho-player-display">초나라</span> vs <span id="meta-han-player-display">한나라</span>
+                <span id="meta-cho-player-display">초나??/span> vs <span id="meta-han-player-display">?�나??/span>
               </div>
             </div>
           </div>
-          <!-- 슬라이드 제어용 도트 인디케이터 -->
+          <!-- ?�라?�드 ?�어???�트 ?�디케?�터 -->
           <div class="score-slide-dots">
-            <span class="score-dot active" onclick="setScoreSlide(0); event.stopPropagation();"></span>
-            <span class="score-dot" onclick="setScoreSlide(1); event.stopPropagation();"></span>
-            <span class="score-dot" onclick="setScoreSlide(2); event.stopPropagation();"></span>
+            <span class="score-dot active" data-action="setScoreSlide" data-index="0" data-stop-propagation></span>
+            <span class="score-dot" data-action="setScoreSlide" data-index="1" data-stop-propagation></span>
+            <span class="score-dot" data-action="setScoreSlide" data-index="2" data-stop-propagation></span>
           </div>
         </div>
         
         <!-- Icon Actions Group (Setting, Download) (Right) -->
         <div class="control-group action-icons">
-          <button id="setting-btn" class="icon-btn" onclick="enalbeSettingBox()" title="설정">
+          <button id="setting-btn" class="icon-btn" data-action="enalbeSettingBox" title="?�정">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="3"></circle>
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
             </svg>
           </button>
-          <button id="download-btn" class="icon-btn" onclick="openRecordModal()" title="기보 저장 및 관리">
+          <button id="download-btn" class="icon-btn" data-action="openRecordModal" title="기보 ?�??�?관�?>
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
               <polyline points="17 21 17 13 7 13 7 21"></polyline>
@@ -1072,25 +1086,25 @@
       <rect id="kb-cursor" stroke="#10b981" stroke-width="3" fill="none" stroke-dasharray="5 3" rx="6" style="display: none; transition: transform 0.1s ease-out; filter: drop-shadow(0 0 6px #10b981);" />
     </svg>
 
-    <!-- 단축키 지정 모달 -->
-    <div id="shortcut-modal" class="modal-overlay" onclick="handleModalOverlayClick(event)">
+    <!-- ?�축??지??모달 -->
+    <div id="shortcut-modal" class="modal-overlay" data-action="handleModalOverlayClick">
       <div class="modal-content">
         <div class="modal-header">
-          <span class="modal-title">단축키 지정</span>
-          <button class="modal-close" onclick="closeShortcutModal()">X</button>
+          <span class="modal-title">?�축??지??/span>
+          <button class="modal-close" data-action="closeShortcutModal">X</button>
         </div>
         <div class="modal-body">
-          <p style="margin-bottom: 12px; font-size: 13px; opacity: 0.8;">변경할 기능을 선택한 뒤, 새로운 키를 입력해 주세요.</p>
+          <p class="modal-description">변경할 기능???�택???? ?�로???��? ?�력??주세??</p>
           
-          <div class="modal-theme-row" style="display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 15px; padding: 10px; background: rgba(255, 255, 255, 0.03); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05); flex-wrap: wrap;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 13px; color: rgba(255, 255, 255, 0.7);">배경 색상:</span>
-              <input type="color" id="modal-bg-picker" oninput="changeModalBgColor(this.value)" style="width: 35px; height: 25px; border: none; border-radius: 4px; background: transparent; cursor: pointer; padding: 0;">
+          <div class="modal-theme-row modal-theme-row-mb">
+            <div class="modal-theme-group">
+              <span class="modal-theme-label">배경 ?�상:</span>
+              <input type="color" id="modal-bg-picker" data-action="changeModalBgColor" class="color-picker-input">
             </div>
-            <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1; justify-content: flex-end;">
-              <span style="font-size: 13px; color: rgba(255, 255, 255, 0.7);">투명도:</span>
-              <input type="range" id="modal-opacity-slider" min="0.3" max="1.0" step="0.05" oninput="changeModalOpacity(this.value)" style="width: 100px; accent-color: #3b82f6;">
-              <span id="modal-opacity-val" style="font-size: 13px; min-width: 30px; text-align: right; color: #3b82f6;">0.9</span>
+            <div class="modal-theme-group-grow">
+              <span class="modal-theme-label">?�명??</span>
+              <input type="range" id="modal-opacity-slider" min="0.3" max="1.0" step="0.05" data-action="changeModalOpacity" class="range-slider-input">
+              <span id="modal-opacity-val" class="range-value-display">0.9</span>
             </div>
           </div>
 
@@ -1098,53 +1112,53 @@
             <thead>
               <tr>
                 <th>기능</th>
-                <th>주 단축키</th>
-                <th>보조 단축키</th>
+                <th>�??�축??/th>
+                <th>보조 ?�축??/th>
               </tr>
             </thead>
             <tbody id="shortcut-table-body">
-              <!-- JS에서 동적으로 채워집니다 -->
+              <!-- JS?�서 ?�적?�로 채워집니??-->
             </tbody>
           </table>
         </div>
         <div class="modal-footer">
-          <button class="modal-btn reset" onclick="resetDefaultShortcuts()">기본값 복원</button>
-          <button class="modal-btn close" onclick="closeShortcutModal()">닫기</button>
+          <button class="modal-btn reset" data-action="resetDefaultShortcuts">기본�?복원</button>
+          <button class="modal-btn close" data-action="closeShortcutModal">?�기</button>
         </div>
       </div>
     </div>
-    <!-- 코멘트 입력 모달 -->
-    <div id="comment-modal" class="modal-overlay" onclick="handleCommentModalOverlayClick(event)">
+    <!-- 코멘???�력 모달 -->
+    <div id="comment-modal" class="modal-overlay" data-action="handleCommentModalOverlayClick">
       <div class="modal-content">
         <div class="modal-header">
-          <span class="modal-title" id="comment-modal-title">현재 수순 코멘트 편집</span>
-          <button class="modal-close" onclick="closeCommentModal()">X</button>
+          <span class="modal-title" id="comment-modal-title">?�재 ?�순 코멘???�집</span>
+          <button class="modal-close" data-action="closeCommentModal">X</button>
         </div>
         <div class="modal-body">
-          <textarea id="comment-modal-textarea" placeholder="이 수순에 대한 해설이나 코멘트를 입력하세요..." style="width: 100%; height: 120px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; padding: 10px; font-family: inherit; font-size: 14px; resize: none; box-sizing: border-box; margin-bottom: 15px; outline: none;"></textarea>
+          <textarea id="comment-modal-textarea" class="comment-modal-textarea" placeholder="???�순???�???�설?�나 코멘?��? ?�력?�세??.."></textarea>
           
-          <div class="modal-theme-row" style="display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 10px; background: rgba(255, 255, 255, 0.03); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05); flex-wrap: wrap;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 13px; color: rgba(255, 255, 255, 0.7);">배경 색상:</span>
-              <input type="color" id="comment-bg-picker" oninput="changeCommentBgColor(this.value)" style="width: 35px; height: 25px; border: none; border-radius: 4px; background: transparent; cursor: pointer; padding: 0;">
+          <div  class="modal-theme-row modal-theme-row">
+            <div class="modal-theme-group">
+              <span class="modal-theme-label">배경 ?�상:</span>
+              <input type="color" id="comment-bg-picker" data-action="changeCommentBgColor" class="color-picker-input">
             </div>
-            <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1; justify-content: flex-end;">
-              <span style="font-size: 13px; color: rgba(255, 255, 255, 0.7);">투명도:</span>
-              <input type="range" id="comment-opacity-slider" min="0.1" max="1.0" step="0.05" oninput="changeCommentOpacity(this.value)" style="width: 100px; accent-color: #3b82f6;">
-              <span id="comment-opacity-val" style="font-size: 13px; min-width: 30px; text-align: right; color: #3b82f6;">0.4</span>
+            <div class="modal-theme-group-grow">
+              <span class="modal-theme-label">?�명??</span>
+              <input type="range" id="comment-opacity-slider" min="0.1" max="1.0" step="0.05" data-action="changeCommentOpacity" class="range-slider-input">
+              <span id="comment-opacity-val" class="range-value-display">0.4</span>
             </div>
           </div>
           
-          <div class="modal-theme-row" style="display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-top: 10px; padding: 10px; background: rgba(255, 255, 255, 0.03); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05); flex-wrap: wrap;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 13px; color: rgba(255, 255, 255, 0.7);">표시 시간 (초, 0=무제한):</span>
-              <input type="number" id="comment-duration-input" min="0" max="60" step="1" onchange="changeCommentDuration(this.value)" style="width: 65px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; color: white; padding: 3px 5px; outline: none; text-align: center;">
+          <div class="modal-theme-row modal-theme-row-mt">
+            <div class="modal-theme-group">
+              <span class="modal-theme-label">?�시 ?�간 (�? 0=무제??:</span>
+              <input type="number" id="comment-duration-input" min="0" max="60" step="1" data-action="changeCommentDuration" class="comment-duration-input">
             </div>
           </div>
         </div>
         <div class="modal-footer">
-          <button class="modal-btn save" onclick="saveCommentModal()" style="background: #3b82f6; color: #fff;">저장</button>
-          <button class="modal-btn close" onclick="closeCommentModal()">닫기</button>
+          <button class="modal-btn save modal-save-btn" data-action="saveCommentModal">?�??/button>
+          <button class="modal-btn close" data-action="closeCommentModal">?�기</button>
         </div>
       </div>
     </div>

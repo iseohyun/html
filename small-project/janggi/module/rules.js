@@ -1,4 +1,4 @@
-// logic.js - Game rules and coordinate translation logic
+// rules.js - 장기 행마 규칙 및 좌표 유틸리티
 
 function Az2n(c) {
   return c.charCodeAt(0) - 65;
@@ -84,24 +84,25 @@ function isValidY(y) {
   return y >= 0 && y <= 9;
 }
 
-// 선택된 말의 이동가능 경로를 그립니다.
+// 선택된 말의 이동가능 좌표 목록을 반환합니다.
 // 새 좌표계: 나의 궁성 = y: 9,0,8 (x: 4,5,6), 상대 궁성 = y: 2,1,3 (x: 4,5,6)
 // 기존→새 변환: 1→0, 2→9, 3→8, 4→7, 5→6, 6→5, 7→4, 8→3, 9→2, 10→1
-function drawCandidates(i) {
+function getCandidateMoves(i) {
   // 기물 고유 ID 범위에 따라 해당 행마 규칙 함수 분기 호출
   if (i === 0 || i === 9 || i === 10 || i === 16 || i === 25 || i === 26) {
-    getKingOrGuardMoves(i);
+    return getKingOrGuardMoves(i);
   } else if (i === 1 || i === 2 || i === 17 || i === 18) {
-    getChariotMoves(i);
+    return getChariotMoves(i);
   } else if (i === 3 || i === 4 || i === 19 || i === 20) {
-    getCannonMoves(i);
+    return getCannonMoves(i);
   } else if (i === 5 || i === 6 || i === 21 || i === 22) {
-    getHorseMoves(i);
+    return getHorseMoves(i);
   } else if (i === 7 || i === 8 || i === 23 || i === 24) {
-    getElephantMoves(i);
+    return getElephantMoves(i);
   } else if ((i >= 11 && i <= 15) || (i >= 27 && i <= 31)) {
-    getSoldierMoves(i);
+    return getSoldierMoves(i);
   }
+  return [];
 }
 
 /**
@@ -109,51 +110,52 @@ function drawCandidates(i) {
  * @param {number} i - 기물 ID
  */
 function getKingOrGuardMoves(i) {
+  const moves = [];
   // 초나라 궁/사 (내 궁성: x=4~6, y=0,9,8)
   if (i === 0 || i === 9 || i === 10) {
     const px = pieces[i].x;
     const py = pieces[i].y;
     if (px === 4 && py === 0) {
-      if (checkTeam(i, 4, 9) !== 1) createCandiBox(i, 4, 9);
-      if (checkTeam(i, 5, 9) !== 1) createCandiBox(i, 5, 9);
-      if (checkTeam(i, 5, 0) !== 1) createCandiBox(i, 5, 0);
+      if (checkTeam(i, 4, 9) !== 1) moves.push({x: 4, y: 9});
+      if (checkTeam(i, 5, 9) !== 1) moves.push({x: 5, y: 9});
+      if (checkTeam(i, 5, 0) !== 1) moves.push({x: 5, y: 0});
     } else if (px === 5 && py === 0) {
-      if (checkTeam(i, 5, 9) !== 1) createCandiBox(i, 5, 9);
-      if (checkTeam(i, 6, 0) !== 1) createCandiBox(i, 6, 0);
-      if (checkTeam(i, 4, 0) !== 1) createCandiBox(i, 4, 0);
+      if (checkTeam(i, 5, 9) !== 1) moves.push({x: 5, y: 9});
+      if (checkTeam(i, 6, 0) !== 1) moves.push({x: 6, y: 0});
+      if (checkTeam(i, 4, 0) !== 1) moves.push({x: 4, y: 0});
     } else if (px === 6 && py === 0) {
-      if (checkTeam(i, 6, 9) !== 1) createCandiBox(i, 6, 9);
-      if (checkTeam(i, 5, 0) !== 1) createCandiBox(i, 5, 0);
-      if (checkTeam(i, 5, 9) !== 1) createCandiBox(i, 5, 9);
+      if (checkTeam(i, 6, 9) !== 1) moves.push({x: 6, y: 9});
+      if (checkTeam(i, 5, 0) !== 1) moves.push({x: 5, y: 0});
+      if (checkTeam(i, 5, 9) !== 1) moves.push({x: 5, y: 9});
     } else if (px === 4 && py === 9) {
-      if (checkTeam(i, 4, 8) !== 1) createCandiBox(i, 4, 8);
-      if (checkTeam(i, 5, 9) !== 1) createCandiBox(i, 5, 9);
-      if (checkTeam(i, 4, 0) !== 1) createCandiBox(i, 4, 0);
+      if (checkTeam(i, 4, 8) !== 1) moves.push({x: 4, y: 8});
+      if (checkTeam(i, 5, 9) !== 1) moves.push({x: 5, y: 9});
+      if (checkTeam(i, 4, 0) !== 1) moves.push({x: 4, y: 0});
     } else if (px === 5 && py === 9) {
-      if (checkTeam(i, 5, 8) !== 1) createCandiBox(i, 5, 8);
-      if (checkTeam(i, 6, 8) !== 1) createCandiBox(i, 6, 8);
-      if (checkTeam(i, 6, 9) !== 1) createCandiBox(i, 6, 9);
-      if (checkTeam(i, 6, 0) !== 1) createCandiBox(i, 6, 0);
-      if (checkTeam(i, 5, 0) !== 1) createCandiBox(i, 5, 0);
-      if (checkTeam(i, 4, 0) !== 1) createCandiBox(i, 4, 0);
-      if (checkTeam(i, 4, 9) !== 1) createCandiBox(i, 4, 9);
-      if (checkTeam(i, 4, 8) !== 1) createCandiBox(i, 4, 8);
+      if (checkTeam(i, 5, 8) !== 1) moves.push({x: 5, y: 8});
+      if (checkTeam(i, 6, 8) !== 1) moves.push({x: 6, y: 8});
+      if (checkTeam(i, 6, 9) !== 1) moves.push({x: 6, y: 9});
+      if (checkTeam(i, 6, 0) !== 1) moves.push({x: 6, y: 0});
+      if (checkTeam(i, 5, 0) !== 1) moves.push({x: 5, y: 0});
+      if (checkTeam(i, 4, 0) !== 1) moves.push({x: 4, y: 0});
+      if (checkTeam(i, 4, 9) !== 1) moves.push({x: 4, y: 9});
+      if (checkTeam(i, 4, 8) !== 1) moves.push({x: 4, y: 8});
     } else if (px === 6 && py === 9) {
-      if (checkTeam(i, 6, 8) !== 1) createCandiBox(i, 6, 8);
-      if (checkTeam(i, 6, 0) !== 1) createCandiBox(i, 6, 0);
-      if (checkTeam(i, 5, 9) !== 1) createCandiBox(i, 5, 9);
+      if (checkTeam(i, 6, 8) !== 1) moves.push({x: 6, y: 8});
+      if (checkTeam(i, 6, 0) !== 1) moves.push({x: 6, y: 0});
+      if (checkTeam(i, 5, 9) !== 1) moves.push({x: 5, y: 9});
     } else if (px === 4 && py === 8) {
-      if (checkTeam(i, 5, 8) !== 1) createCandiBox(i, 5, 8);
-      if (checkTeam(i, 5, 9) !== 1) createCandiBox(i, 5, 9);
-      if (checkTeam(i, 4, 9) !== 1) createCandiBox(i, 4, 9);
+      if (checkTeam(i, 5, 8) !== 1) moves.push({x: 5, y: 8});
+      if (checkTeam(i, 5, 9) !== 1) moves.push({x: 5, y: 9});
+      if (checkTeam(i, 4, 9) !== 1) moves.push({x: 4, y: 9});
     } else if (px === 5 && py === 8) {
-      if (checkTeam(i, 6, 8) !== 1) createCandiBox(i, 6, 8);
-      if (checkTeam(i, 5, 9) !== 1) createCandiBox(i, 5, 9);
-      if (checkTeam(i, 4, 8) !== 1) createCandiBox(i, 4, 8);
+      if (checkTeam(i, 6, 8) !== 1) moves.push({x: 6, y: 8});
+      if (checkTeam(i, 5, 9) !== 1) moves.push({x: 5, y: 9});
+      if (checkTeam(i, 4, 8) !== 1) moves.push({x: 4, y: 8});
     } else if (px === 6 && py === 8) {
-      if (checkTeam(i, 6, 9) !== 1) createCandiBox(i, 6, 9);
-      if (checkTeam(i, 5, 9) !== 1) createCandiBox(i, 5, 9);
-      if (checkTeam(i, 5, 8) !== 1) createCandiBox(i, 5, 8);
+      if (checkTeam(i, 6, 9) !== 1) moves.push({x: 6, y: 9});
+      if (checkTeam(i, 5, 9) !== 1) moves.push({x: 5, y: 9});
+      if (checkTeam(i, 5, 8) !== 1) moves.push({x: 5, y: 8});
     }
   }
   // 한나라 궁/사 (상대 궁성: x=4~6, y=1,2,3)
@@ -161,48 +163,49 @@ function getKingOrGuardMoves(i) {
     const px = pieces[i].x;
     const py = pieces[i].y;
     if (px === 4 && py === 3) {
-      if (checkTeam(i, 4, 2) !== 1) createCandiBox(i, 4, 2);
-      if (checkTeam(i, 5, 2) !== 1) createCandiBox(i, 5, 2);
-      if (checkTeam(i, 5, 3) !== 1) createCandiBox(i, 5, 3);
+      if (checkTeam(i, 4, 2) !== 1) moves.push({x: 4, y: 2});
+      if (checkTeam(i, 5, 2) !== 1) moves.push({x: 5, y: 2});
+      if (checkTeam(i, 5, 3) !== 1) moves.push({x: 5, y: 3});
     } else if (px === 5 && py === 3) {
-      if (checkTeam(i, 5, 2) !== 1) createCandiBox(i, 5, 2);
-      if (checkTeam(i, 6, 3) !== 1) createCandiBox(i, 6, 3);
-      if (checkTeam(i, 4, 3) !== 1) createCandiBox(i, 4, 3);
+      if (checkTeam(i, 5, 2) !== 1) moves.push({x: 5, y: 2});
+      if (checkTeam(i, 6, 3) !== 1) moves.push({x: 6, y: 3});
+      if (checkTeam(i, 4, 3) !== 1) moves.push({x: 4, y: 3});
     } else if (px === 6 && py === 3) {
-      if (checkTeam(i, 6, 2) !== 1) createCandiBox(i, 6, 2);
-      if (checkTeam(i, 5, 3) !== 1) createCandiBox(i, 5, 3);
-      if (checkTeam(i, 5, 2) !== 1) createCandiBox(i, 5, 2);
+      if (checkTeam(i, 6, 2) !== 1) moves.push({x: 6, y: 2});
+      if (checkTeam(i, 5, 3) !== 1) moves.push({x: 5, y: 3});
+      if (checkTeam(i, 5, 2) !== 1) moves.push({x: 5, y: 2});
     } else if (px === 4 && py === 2) {
-      if (checkTeam(i, 4, 1) !== 1) createCandiBox(i, 4, 1);
-      if (checkTeam(i, 5, 2) !== 1) createCandiBox(i, 5, 2);
-      if (checkTeam(i, 4, 3) !== 1) createCandiBox(i, 4, 3);
+      if (checkTeam(i, 4, 1) !== 1) moves.push({x: 4, y: 1});
+      if (checkTeam(i, 5, 2) !== 1) moves.push({x: 5, y: 2});
+      if (checkTeam(i, 4, 3) !== 1) moves.push({x: 4, y: 3});
     } else if (px === 5 && py === 2) {
-      if (checkTeam(i, 5, 1) !== 1) createCandiBox(i, 5, 1);
-      if (checkTeam(i, 6, 1) !== 1) createCandiBox(i, 6, 1);
-      if (checkTeam(i, 6, 2) !== 1) createCandiBox(i, 6, 2);
-      if (checkTeam(i, 6, 3) !== 1) createCandiBox(i, 6, 3);
-      if (checkTeam(i, 5, 3) !== 1) createCandiBox(i, 5, 3);
-      if (checkTeam(i, 4, 3) !== 1) createCandiBox(i, 4, 3);
-      if (checkTeam(i, 4, 2) !== 1) createCandiBox(i, 4, 2);
-      if (checkTeam(i, 4, 1) !== 1) createCandiBox(i, 4, 1);
+      if (checkTeam(i, 5, 1) !== 1) moves.push({x: 5, y: 1});
+      if (checkTeam(i, 6, 1) !== 1) moves.push({x: 6, y: 1});
+      if (checkTeam(i, 6, 2) !== 1) moves.push({x: 6, y: 2});
+      if (checkTeam(i, 6, 3) !== 1) moves.push({x: 6, y: 3});
+      if (checkTeam(i, 5, 3) !== 1) moves.push({x: 5, y: 3});
+      if (checkTeam(i, 4, 3) !== 1) moves.push({x: 4, y: 3});
+      if (checkTeam(i, 4, 2) !== 1) moves.push({x: 4, y: 2});
+      if (checkTeam(i, 4, 1) !== 1) moves.push({x: 4, y: 1});
     } else if (px === 6 && py === 2) {
-      if (checkTeam(i, 6, 1) !== 1) createCandiBox(i, 6, 1);
-      if (checkTeam(i, 6, 3) !== 1) createCandiBox(i, 6, 3);
-      if (checkTeam(i, 5, 2) !== 1) createCandiBox(i, 5, 2);
+      if (checkTeam(i, 6, 1) !== 1) moves.push({x: 6, y: 1});
+      if (checkTeam(i, 6, 3) !== 1) moves.push({x: 6, y: 3});
+      if (checkTeam(i, 5, 2) !== 1) moves.push({x: 5, y: 2});
     } else if (px === 4 && py === 1) {
-      if (checkTeam(i, 5, 1) !== 1) createCandiBox(i, 5, 1);
-      if (checkTeam(i, 5, 2) !== 1) createCandiBox(i, 5, 2);
-      if (checkTeam(i, 4, 2) !== 1) createCandiBox(i, 4, 2);
+      if (checkTeam(i, 5, 1) !== 1) moves.push({x: 5, y: 1});
+      if (checkTeam(i, 5, 2) !== 1) moves.push({x: 5, y: 2});
+      if (checkTeam(i, 4, 2) !== 1) moves.push({x: 4, y: 2});
     } else if (px === 5 && py === 1) {
-      if (checkTeam(i, 6, 1) !== 1) createCandiBox(i, 6, 1);
-      if (checkTeam(i, 5, 2) !== 1) createCandiBox(i, 5, 2);
-      if (checkTeam(i, 4, 1) !== 1) createCandiBox(i, 4, 1);
+      if (checkTeam(i, 6, 1) !== 1) moves.push({x: 6, y: 1});
+      if (checkTeam(i, 5, 2) !== 1) moves.push({x: 5, y: 2});
+      if (checkTeam(i, 4, 1) !== 1) moves.push({x: 4, y: 1});
     } else if (px === 6 && py === 1) {
-      if (checkTeam(i, 6, 2) !== 1) createCandiBox(i, 6, 2);
-      if (checkTeam(i, 5, 2) !== 1) createCandiBox(i, 5, 2);
-      if (checkTeam(i, 5, 1) !== 1) createCandiBox(i, 5, 1);
+      if (checkTeam(i, 6, 2) !== 1) moves.push({x: 6, y: 2});
+      if (checkTeam(i, 5, 2) !== 1) moves.push({x: 5, y: 2});
+      if (checkTeam(i, 5, 1) !== 1) moves.push({x: 5, y: 1});
     }
   }
+  return moves;
 }
 
 /**
@@ -210,83 +213,85 @@ function getKingOrGuardMoves(i) {
  * @param {number} i - 기물 ID
  */
 function getChariotMoves(i) {
+  const moves = [];
   const px = pieces[i].x;
   const py = pieces[i].y;
   
   // 가로 방향 탐색
   for (let x = px - 1; x >= 1; x--) {
-    if (checkTeam(i, x, py) !== 1) createCandiBox(i, x, py);
+    if (checkTeam(i, x, py) !== 1) moves.push({x: x, y: py});
     if (checkTeam(i, x, py) !== 0) break;
   }
   for (let x = px + 1; x <= 9; x++) {
-    if (checkTeam(i, x, py) !== 1) createCandiBox(i, x, py);
+    if (checkTeam(i, x, py) !== 1) moves.push({x: x, y: py});
     if (checkTeam(i, x, py) !== 0) break;
   }
   
   // 세로 방향 탐색
   for (let ty = yPrev(py); ty !== -1; ty = yPrev(ty)) {
-    if (checkTeam(i, px, ty) !== 1) createCandiBox(i, px, ty);
+    if (checkTeam(i, px, ty) !== 1) moves.push({x: px, y: ty});
     if (checkTeam(i, px, ty) !== 0) break;
   }
   for (let ty = yNext(py); ty !== -1; ty = yNext(ty)) {
-    if (checkTeam(i, px, ty) !== 1) createCandiBox(i, px, ty);
+    if (checkTeam(i, px, ty) !== 1) moves.push({x: px, y: ty});
     if (checkTeam(i, px, ty) !== 0) break;
   }
   
   // 상대 궁성 대각선 행마 (y=1,2,3 x=4,5,6)
   if (px === 4 && py === 3) {
-    if (checkTeam(i, 5, 2) !== 1) createCandiBox(i, 5, 2);
+    if (checkTeam(i, 5, 2) !== 1) moves.push({x: 5, y: 2});
     if (checkTeam(i, 5, 2) === 0) {
-      if (checkTeam(i, 6, 1) !== 1) createCandiBox(i, 6, 1);
+      if (checkTeam(i, 6, 1) !== 1) moves.push({x: 6, y: 1});
     }
   } else if (px === 6 && py === 3) {
-    if (checkTeam(i, 5, 2) !== 1) createCandiBox(i, 5, 2);
+    if (checkTeam(i, 5, 2) !== 1) moves.push({x: 5, y: 2});
     if (checkTeam(i, 5, 2) === 0) {
-      if (checkTeam(i, 4, 1) !== 1) createCandiBox(i, 4, 1);
+      if (checkTeam(i, 4, 1) !== 1) moves.push({x: 4, y: 1});
     }
   } else if (px === 4 && py === 1) {
-    if (checkTeam(i, 5, 2) !== 1) createCandiBox(i, 5, 2);
+    if (checkTeam(i, 5, 2) !== 1) moves.push({x: 5, y: 2});
     if (checkTeam(i, 5, 2) === 0) {
-      if (checkTeam(i, 6, 3) !== 1) createCandiBox(i, 6, 3);
+      if (checkTeam(i, 6, 3) !== 1) moves.push({x: 6, y: 3});
     }
   } else if (px === 6 && py === 1) {
-    if (checkTeam(i, 5, 2) !== 1) createCandiBox(i, 5, 2);
+    if (checkTeam(i, 5, 2) !== 1) moves.push({x: 5, y: 2});
     if (checkTeam(i, 5, 2) === 0) {
-      if (checkTeam(i, 4, 3) !== 1) createCandiBox(i, 4, 3);
+      if (checkTeam(i, 4, 3) !== 1) moves.push({x: 4, y: 3});
     }
   } else if (px === 5 && py === 2) {
-    if (checkTeam(i, 4, 3) !== 1) createCandiBox(i, 4, 3);
-    if (checkTeam(i, 4, 1) !== 1) createCandiBox(i, 4, 1);
-    if (checkTeam(i, 6, 3) !== 1) createCandiBox(i, 6, 3);
-    if (checkTeam(i, 6, 1) !== 1) createCandiBox(i, 6, 1);
+    if (checkTeam(i, 4, 3) !== 1) moves.push({x: 4, y: 3});
+    if (checkTeam(i, 4, 1) !== 1) moves.push({x: 4, y: 1});
+    if (checkTeam(i, 6, 3) !== 1) moves.push({x: 6, y: 3});
+    if (checkTeam(i, 6, 1) !== 1) moves.push({x: 6, y: 1});
   }
   // 내 궁성 대각선 행마 (y=0,9,8 x=4,5,6)
   else if (px === 4 && py === 0) {
-    if (checkTeam(i, 5, 9) !== 1) createCandiBox(i, 5, 9);
+    if (checkTeam(i, 5, 9) !== 1) moves.push({x: 5, y: 9});
     if (checkTeam(i, 5, 9) === 0) {
-      if (checkTeam(i, 6, 8) !== 1) createCandiBox(i, 6, 8);
+      if (checkTeam(i, 6, 8) !== 1) moves.push({x: 6, y: 8});
     }
   } else if (px === 6 && py === 0) {
-    if (checkTeam(i, 5, 9) !== 1) createCandiBox(i, 5, 9);
+    if (checkTeam(i, 5, 9) !== 1) moves.push({x: 5, y: 9});
     if (checkTeam(i, 5, 9) === 0) {
-      if (checkTeam(i, 4, 8) !== 1) createCandiBox(i, 4, 8);
+      if (checkTeam(i, 4, 8) !== 1) moves.push({x: 4, y: 8});
     }
   } else if (px === 4 && py === 8) {
-    if (checkTeam(i, 5, 9) !== 1) createCandiBox(i, 5, 9);
+    if (checkTeam(i, 5, 9) !== 1) moves.push({x: 5, y: 9});
     if (checkTeam(i, 5, 9) === 0) {
-      if (checkTeam(i, 6, 0) !== 1) createCandiBox(i, 6, 0);
+      if (checkTeam(i, 6, 0) !== 1) moves.push({x: 6, y: 0});
     }
   } else if (px === 6 && py === 8) {
-    if (checkTeam(i, 5, 9) !== 1) createCandiBox(i, 5, 9);
+    if (checkTeam(i, 5, 9) !== 1) moves.push({x: 5, y: 9});
     if (checkTeam(i, 5, 9) === 0) {
-      if (checkTeam(i, 4, 0) !== 1) createCandiBox(i, 4, 0);
+      if (checkTeam(i, 4, 0) !== 1) moves.push({x: 4, y: 0});
     }
   } else if (px === 5 && py === 9) {
-    if (checkTeam(i, 4, 0) !== 1) createCandiBox(i, 4, 0);
-    if (checkTeam(i, 4, 8) !== 1) createCandiBox(i, 4, 8);
-    if (checkTeam(i, 6, 0) !== 1) createCandiBox(i, 6, 0);
-    if (checkTeam(i, 6, 8) !== 1) createCandiBox(i, 6, 8);
+    if (checkTeam(i, 4, 0) !== 1) moves.push({x: 4, y: 0});
+    if (checkTeam(i, 4, 8) !== 1) moves.push({x: 4, y: 8});
+    if (checkTeam(i, 6, 0) !== 1) moves.push({x: 6, y: 0});
+    if (checkTeam(i, 6, 8) !== 1) moves.push({x: 6, y: 8});
   }
+  return moves;
 }
 
 /**
@@ -294,6 +299,7 @@ function getChariotMoves(i) {
  * @param {number} i - 기물 ID
  */
 function getCannonMoves(i) {
+  const moves = [];
   const px = pieces[i].x;
   const py = pieces[i].y;
   let bridge = false;
@@ -306,7 +312,7 @@ function getCannonMoves(i) {
       if (t < 32) bridge = true;
     } else {
       if (isEnemy(i, t) !== 1) {
-        createCandiBox(i, x, py);
+        moves.push({x: x, y: py});
         if (isEnemy(i, t) === 2) break; // 적 기물을 잡으면 탐색 종료
       } else {
         break;
@@ -323,7 +329,7 @@ function getCannonMoves(i) {
       if (t < 32) bridge = true;
     } else {
       if (isEnemy(i, t) !== 1) {
-        createCandiBox(i, x, py);
+        moves.push({x: x, y: py});
         if (isEnemy(i, t) === 2) break;
       } else {
         break;
@@ -340,7 +346,7 @@ function getCannonMoves(i) {
       if (t < 32) bridge = true;
     } else {
       if (isEnemy(i, t) !== 1) {
-        createCandiBox(i, px, ty);
+        moves.push({x: px, y: ty});
         if (isEnemy(i, t) === 2) break;
       } else {
         break;
@@ -357,7 +363,7 @@ function getCannonMoves(i) {
       if (t < 32) bridge = true;
     } else {
       if (isEnemy(i, t) !== 1) {
-        createCandiBox(i, px, ty);
+        moves.push({x: px, y: ty});
         if (isEnemy(i, t) === 2) break;
       } else {
         break;
@@ -368,31 +374,32 @@ function getCannonMoves(i) {
   // 내 궁성 대각선 포 도약 (y=0,9,8)
   if (px === 4 && py === 0) {
     let t = whoIsit(5, 9);
-    if (!isPo(t) && t < 32 && (checkTeam(i, 6, 8) !== 1) && !isPo(whoIsit(6, 8))) createCandiBox(i, 6, 8);
+    if (!isPo(t) && t < 32 && (checkTeam(i, 6, 8) !== 1) && !isPo(whoIsit(6, 8))) moves.push({x: 6, y: 8});
   } else if (px === 6 && py === 0) {
     let t = whoIsit(5, 9);
-    if (!isPo(t) && t < 32 && (checkTeam(i, 4, 8) !== 1) && !isPo(whoIsit(4, 8))) createCandiBox(i, 4, 8);
+    if (!isPo(t) && t < 32 && (checkTeam(i, 4, 8) !== 1) && !isPo(whoIsit(4, 8))) moves.push({x: 4, y: 8});
   } else if (px === 4 && py === 8) {
     let t = whoIsit(5, 9);
-    if (!isPo(t) && t < 32 && (checkTeam(i, 6, 0) !== 1) && !isPo(whoIsit(6, 0))) createCandiBox(i, 6, 0);
+    if (!isPo(t) && t < 32 && (checkTeam(i, 6, 0) !== 1) && !isPo(whoIsit(6, 0))) moves.push({x: 6, y: 0});
   } else if (px === 6 && py === 8) {
     let t = whoIsit(5, 9);
-    if (!isPo(t) && t < 32 && (checkTeam(i, 4, 0) !== 1) && !isPo(whoIsit(4, 0))) createCandiBox(i, 4, 0);
+    if (!isPo(t) && t < 32 && (checkTeam(i, 4, 0) !== 1) && !isPo(whoIsit(4, 0))) moves.push({x: 4, y: 0});
   }
   // 상대 궁성 대각선 포 도약 (y=1,2,3)
   else if (px === 4 && py === 1) {
     let t = whoIsit(5, 2);
-    if (!isPo(t) && t < 32 && (checkTeam(i, 6, 3) !== 1) && !isPo(whoIsit(6, 3))) createCandiBox(i, 6, 3);
+    if (!isPo(t) && t < 32 && (checkTeam(i, 6, 3) !== 1) && !isPo(whoIsit(6, 3))) moves.push({x: 6, y: 3});
   } else if (px === 6 && py === 1) {
     let t = whoIsit(5, 2);
-    if (!isPo(t) && t < 32 && (checkTeam(i, 4, 3) !== 1) && !isPo(whoIsit(4, 3))) createCandiBox(i, 4, 3);
+    if (!isPo(t) && t < 32 && (checkTeam(i, 4, 3) !== 1) && !isPo(whoIsit(4, 3))) moves.push({x: 4, y: 3});
   } else if (px === 4 && py === 3) {
     let t = whoIsit(5, 2);
-    if (!isPo(t) && t < 32 && (checkTeam(i, 6, 1) !== 1) && !isPo(whoIsit(6, 1))) createCandiBox(i, 6, 1);
+    if (!isPo(t) && t < 32 && (checkTeam(i, 6, 1) !== 1) && !isPo(whoIsit(6, 1))) moves.push({x: 6, y: 1});
   } else if (px === 6 && py === 3) {
     let t = whoIsit(5, 2);
-    if (!isPo(t) && t < 32 && (checkTeam(i, 4, 1) !== 1) && !isPo(whoIsit(4, 1))) createCandiBox(i, 4, 1);
+    if (!isPo(t) && t < 32 && (checkTeam(i, 4, 1) !== 1) && !isPo(whoIsit(4, 1))) moves.push({x: 4, y: 1});
   }
+  return moves;
 }
 
 /**
@@ -400,6 +407,7 @@ function getCannonMoves(i) {
  * @param {number} i - 기물 ID
  */
 function getHorseMoves(i) {
+  const moves = [];
   const px = pieces[i].x;
   const py = pieces[i].y;
   
@@ -407,15 +415,15 @@ function getHorseMoves(i) {
   if (whoIsit(px - 1, py) >= 32) {
     let prevY = yPrev(py);
     let nextY = yNext(py);
-    if (prevY !== -1 && isEnemy(i, whoIsit(px - 2, prevY)) !== 1) createCandiBox(i, px - 2, prevY);
-    if (nextY !== -1 && isEnemy(i, whoIsit(px - 2, nextY)) !== 1) createCandiBox(i, px - 2, nextY);
+    if (prevY !== -1 && isEnemy(i, whoIsit(px - 2, prevY)) !== 1) moves.push({x: px - 2, y: prevY});
+    if (nextY !== -1 && isEnemy(i, whoIsit(px - 2, nextY)) !== 1) moves.push({x: px - 2, y: nextY});
   }
   // 우측 멱 검사 후 L자 이동
   if (whoIsit(px + 1, py) >= 32) {
     let prevY = yPrev(py);
     let nextY = yNext(py);
-    if (prevY !== -1 && isEnemy(i, whoIsit(px + 2, prevY)) !== 1) createCandiBox(i, px + 2, prevY);
-    if (nextY !== -1 && isEnemy(i, whoIsit(px + 2, nextY)) !== 1) createCandiBox(i, px + 2, nextY);
+    if (prevY !== -1 && isEnemy(i, whoIsit(px + 2, prevY)) !== 1) moves.push({x: px + 2, y: prevY});
+    if (nextY !== -1 && isEnemy(i, whoIsit(px + 2, nextY)) !== 1) moves.push({x: px + 2, y: nextY});
   }
   // 위쪽 멱 검사 후 L자 이동
   {
@@ -423,8 +431,8 @@ function getHorseMoves(i) {
     if (py1 !== -1 && whoIsit(px, py1) >= 32) {
       let py2 = yPrev(py1);
       if (py2 !== -1) {
-        if (isEnemy(i, whoIsit(px - 1, py2)) !== 1) createCandiBox(i, px - 1, py2);
-        if (isEnemy(i, whoIsit(px + 1, py2)) !== 1) createCandiBox(i, px + 1, py2);
+        if (isEnemy(i, whoIsit(px - 1, py2)) !== 1) moves.push({x: px - 1, y: py2});
+        if (isEnemy(i, whoIsit(px + 1, py2)) !== 1) moves.push({x: px + 1, y: py2});
       }
     }
   }
@@ -434,11 +442,12 @@ function getHorseMoves(i) {
     if (ny1 !== -1 && whoIsit(px, ny1) >= 32) {
       let ny2 = yNext(ny1);
       if (ny2 !== -1) {
-        if (isEnemy(i, whoIsit(px - 1, ny2)) !== 1) createCandiBox(i, px - 1, ny2);
-        if (isEnemy(i, whoIsit(px + 1, ny2)) !== 1) createCandiBox(i, px + 1, ny2);
+        if (isEnemy(i, whoIsit(px - 1, ny2)) !== 1) moves.push({x: px - 1, y: ny2});
+        if (isEnemy(i, whoIsit(px + 1, ny2)) !== 1) moves.push({x: px + 1, y: ny2});
       }
     }
   }
+  return moves;
 }
 
 /**
@@ -446,6 +455,7 @@ function getHorseMoves(i) {
  * @param {number} i - 기물 ID
  */
 function getElephantMoves(i) {
+  const moves = [];
   const px = pieces[i].x;
   const py = pieces[i].y;
   
@@ -454,12 +464,12 @@ function getElephantMoves(i) {
     let py1 = yPrev(py);
     if (py1 !== -1 && whoIsit(px - 2, py1) >= 32) {
       let py2 = yPrev(py1);
-      if (py2 !== -1 && isEnemy(i, whoIsit(px - 3, py2)) !== 1) createCandiBox(i, px - 3, py2);
+      if (py2 !== -1 && isEnemy(i, whoIsit(px - 3, py2)) !== 1) moves.push({x: px - 3, y: py2});
     }
     let ny1 = yNext(py);
     if (ny1 !== -1 && whoIsit(px - 2, ny1) >= 32) {
       let ny2 = yNext(ny1);
-      if (ny2 !== -1 && isEnemy(i, whoIsit(px - 3, ny2)) !== 1) createCandiBox(i, px - 3, ny2);
+      if (ny2 !== -1 && isEnemy(i, whoIsit(px - 3, ny2)) !== 1) moves.push({x: px - 3, y: ny2});
     }
   }
   // 우측 멱 검사 후 대각선 행마
@@ -467,12 +477,12 @@ function getElephantMoves(i) {
     let py1 = yPrev(py);
     if (py1 !== -1 && whoIsit(px + 2, py1) >= 32) {
       let py2 = yPrev(py1);
-      if (py2 !== -1 && isEnemy(i, whoIsit(px + 3, py2)) !== 1) createCandiBox(i, px + 3, py2);
+      if (py2 !== -1 && isEnemy(i, whoIsit(px + 3, py2)) !== 1) moves.push({x: px + 3, y: py2});
     }
     let ny1 = yNext(py);
     if (ny1 !== -1 && whoIsit(px + 2, ny1) >= 32) {
       let ny2 = yNext(ny1);
-      if (ny2 !== -1 && isEnemy(i, whoIsit(px + 3, ny2)) !== 1) createCandiBox(i, px + 3, ny2);
+      if (ny2 !== -1 && isEnemy(i, whoIsit(px + 3, ny2)) !== 1) moves.push({x: px + 3, y: ny2});
     }
   }
   // 위쪽 멱 검사 후 대각선 행마
@@ -483,11 +493,11 @@ function getElephantMoves(i) {
       if (py2 !== -1) {
         if (whoIsit(px - 1, py2) >= 32) {
           let py3 = yPrev(py2);
-          if (py3 !== -1 && isEnemy(i, whoIsit(px - 2, py3)) !== 1) createCandiBox(i, px - 2, py3);
+          if (py3 !== -1 && isEnemy(i, whoIsit(px - 2, py3)) !== 1) moves.push({x: px - 2, y: py3});
         }
         if (whoIsit(px + 1, py2) >= 32) {
           let py3 = yPrev(py2);
-          if (py3 !== -1 && isEnemy(i, whoIsit(px + 2, py3)) !== 1) createCandiBox(i, px + 2, py3);
+          if (py3 !== -1 && isEnemy(i, whoIsit(px + 2, py3)) !== 1) moves.push({x: px + 2, y: py3});
         }
       }
     }
@@ -500,15 +510,16 @@ function getElephantMoves(i) {
       if (ny2 !== -1) {
         if (whoIsit(px - 1, ny2) >= 32) {
           let ny3 = yNext(ny2);
-          if (ny3 !== -1 && isEnemy(i, whoIsit(px - 2, ny3)) !== 1) createCandiBox(i, px - 2, ny3);
+          if (ny3 !== -1 && isEnemy(i, whoIsit(px - 2, ny3)) !== 1) moves.push({x: px - 2, y: ny3});
         }
         if (whoIsit(px + 1, ny2) >= 32) {
           let ny3 = yNext(ny2);
-          if (ny3 !== -1 && isEnemy(i, whoIsit(px + 2, ny3)) !== 1) createCandiBox(i, px + 2, ny3);
+          if (ny3 !== -1 && isEnemy(i, whoIsit(px + 2, ny3)) !== 1) moves.push({x: px + 2, y: ny3});
         }
       }
     }
   }
+  return moves;
 }
 
 /**
@@ -516,39 +527,41 @@ function getElephantMoves(i) {
  * @param {number} i - 기물 ID
  */
 function getSoldierMoves(i) {
+  const moves = [];
   const px = pieces[i].x;
   const py = pieces[i].y;
   
   // 좌우 탐색
-  if (isEnemy(i, whoIsit(px - 1, py)) !== 1) createCandiBox(i, px - 1, py);
-  if (isEnemy(i, whoIsit(px + 1, py)) !== 1) createCandiBox(i, px + 1, py);
+  if (isEnemy(i, whoIsit(px - 1, py)) !== 1) moves.push({x: px - 1, y: py});
+  if (isEnemy(i, whoIsit(px + 1, py)) !== 1) moves.push({x: px + 1, y: py});
   
   // 한나라 병 (ID 17~31, y 증가 방향으로 전진)
   if (i > 16) {
     let ny = yNext(py);
-    if (ny !== -1 && isEnemy(i, whoIsit(px, ny)) !== 1) createCandiBox(i, px, ny);
+    if (ny !== -1 && isEnemy(i, whoIsit(px, ny)) !== 1) moves.push({x: px, y: ny});
     // 내 궁성(y=0,9,8 x=4,5,6) 대각선 길목 추가
     if (px === 4 && py === 8) {
-      if (isEnemy(i, whoIsit(5, 9)) !== 1) createCandiBox(i, 5, 9);
+      if (isEnemy(i, whoIsit(5, 9)) !== 1) moves.push({x: 5, y: 9});
     } else if (px === 6 && py === 8) {
-      if (isEnemy(i, whoIsit(5, 9)) !== 1) createCandiBox(i, 5, 9);
+      if (isEnemy(i, whoIsit(5, 9)) !== 1) moves.push({x: 5, y: 9});
     } else if (px === 5 && py === 9) {
-      if (isEnemy(i, whoIsit(4, 0)) !== 1) createCandiBox(i, 4, 0);
-      if (isEnemy(i, whoIsit(6, 0)) !== 1) createCandiBox(i, 6, 0);
+      if (isEnemy(i, whoIsit(4, 0)) !== 1) moves.push({x: 4, y: 0});
+      if (isEnemy(i, whoIsit(6, 0)) !== 1) moves.push({x: 6, y: 0});
     }
   }
   // 초나라 졸 (ID 0~15, y 감소 방향으로 전진)
   else {
     let prevY = yPrev(py);
-    if (prevY !== -1 && isEnemy(i, whoIsit(px, prevY)) !== 1) createCandiBox(i, px, prevY);
+    if (prevY !== -1 && isEnemy(i, whoIsit(px, prevY)) !== 1) moves.push({x: px, y: prevY});
     // 상대 궁성(y=1,2,3 x=4,5,6) 대각선 길목 추가
     if (px === 4 && py === 3) {
-      if (isEnemy(i, whoIsit(5, 2)) !== 1) createCandiBox(i, 5, 2);
+      if (isEnemy(i, whoIsit(5, 2)) !== 1) moves.push({x: 5, y: 2});
     } else if (px === 6 && py === 3) {
-      if (isEnemy(i, whoIsit(5, 2)) !== 1) createCandiBox(i, 5, 2);
+      if (isEnemy(i, whoIsit(5, 2)) !== 1) moves.push({x: 5, y: 2});
     } else if (px === 5 && py === 2) {
-      if (isEnemy(i, whoIsit(4, 1)) !== 1) createCandiBox(i, 4, 1);
-      if (isEnemy(i, whoIsit(6, 1)) !== 1) createCandiBox(i, 6, 1);
+      if (isEnemy(i, whoIsit(4, 1)) !== 1) moves.push({x: 4, y: 1});
+      if (isEnemy(i, whoIsit(6, 1)) !== 1) moves.push({x: 6, y: 1});
     }
   }
+  return moves;
 }
