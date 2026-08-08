@@ -378,34 +378,12 @@ window.SiteModules.UpdateLog = (function() {
               let cleanHref = href.split(/[?#]/)[0];
               let absolutePath = cleanHref.startsWith("/") ? cleanHref : "/" + cleanHref;
 
-              window.SiteModules.searchCache = window.SiteModules.searchCache || [];
-              const exists = window.SiteModules.searchCache.some(p => p.url === absolutePath);
-              if (!exists) {
-                fetch(absolutePath)
-                  .then(res => {
-                    if (res.ok) return res.text();
-                  })
-                  .then(htmlText => {
-                    if (htmlText) {
-                      const parser = new DOMParser();
-                      const doc = parser.parseFromString(htmlText, "text/html");
-                      const articleEl = doc.querySelector("article");
-
-                      if (!window.SiteModules.searchCache.some(p => p.url === absolutePath)) {
-                        window.SiteModules.searchCache.push({
-                          url: absolutePath,
-                          hasArticle: !!articleEl
-                        });
-                      }
-                    }
-                  })
-                  .catch(err => console.warn("Pre-fetch failed for " + absolutePath, err));
-              }
+              // 최근 업데이트 링크 불필요한 30개 HTML 사전 fetch 다운로드 완전 파기 정돈 (Network 요청 0건)
             }
           });
         }
       } catch (e) {
-        console.warn("Failed to pre-fetch recent update links:", e);
+        // 무시
       }
 
     } catch (error) {
