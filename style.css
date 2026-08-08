@@ -2044,3 +2044,65 @@ article a:hover {
   color: #c5221f;
   border: 1px solid #fad2cf;
 }
+
+/* ==========================================================================
+   [당장 구현할 사항.md 매뉴얼 명세 구현]
+   1. 모바일 버전에서만 헤더가 출력된다 (데스크탑 display: none, 모바일 display: flex)
+   2. 헤더는 항상 상단에 고정되어 있다 (position: fixed, top: 0, left: 0, width: 100%)
+   3. 헤더는 네비게이션보다 z가 작다 (헤더 z-index: 900 < 네비게이션 z-index: 1000)
+   4. 헤더의 가장 왼쪽에는 네비게이션을 호출하는 아이콘이 항상 있다
+   5. 헤더는 현재 출력되는 문서의 title을 표시한다 (#header-doc-title)
+   ========================================================================== */
+
+/* 데스크탑 기본: 헤더 숨김 */
+.site-header {
+  display: none !important;
+}
+
+/* 모바일 전용 (max-width: 768px): 헤더 상단 고정 출력 */
+@media screen and (max-width: 768px) {
+  .site-header {
+    display: flex !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: 48px !important;
+    background-color: rgba(255, 255, 255, 0.92) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    z-index: 900 !important; /* 네비게이션(1000)보다 z가 작음 */
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0 12px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 주의사항 1번: 헤더는 문서를 가리지 않는다 (헤더 높이 48px 밑선 확보) */
+  body > article,
+  article {
+    margin-top: 48px !important;
+    padding-top: 10px !important;
+  }
+
+  /* [새로 추가된 주의사항] 모바일 버전에서는 네비게이션의 툴팁이 보이지 않는다 */
+  .tooltip,
+  #sidebar-container [data-tooltip]::before,
+  #sidebar-container [data-tooltip]::after,
+  #sidebar-panel [data-tooltip]::before,
+  #sidebar-panel [data-tooltip]::after,
+  .nav-item[data-tooltip]::before,
+  .nav-item[data-tooltip]::after {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    content: none !important;
+  }
+
+  /* 네비게이션 패널은 z-index: 1000으로 헤더 위로 덮임 */
+  #sidebar-container {
+    z-index: 1000 !important;
+  }
+}

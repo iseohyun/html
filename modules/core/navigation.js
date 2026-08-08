@@ -739,6 +739,13 @@ window.SiteModules.Navigation = (function () {
     });
   }
 
+  function updateHeaderTitle(titleText) {
+    const headerTitleEl = document.getElementById("header-doc-title");
+    if (headerTitleEl) {
+      headerTitleEl.textContent = titleText || "iseohyun.com";
+    }
+  }
+
   function postLoadPageActions(isHome, urlPath, docTitle) {
     const state = window.SiteModules.state;
 
@@ -749,6 +756,7 @@ window.SiteModules.Navigation = (function () {
       state.prv_doc = { title: "", dir: "", file: "" };
       state.next_doc = { title: "", dir: "", file: "" };
       document.title = "iseohyun.com";
+      updateHeaderTitle("iseohyun.com");
       document.body.classList.remove("admin-mode");
     } else {
       state.currentPath = urlPath;
@@ -757,6 +765,9 @@ window.SiteModules.Navigation = (function () {
       if (list) {
         findAndPopulateState(list, state.currentPath);
       }
+
+      const displayTitle = (state.cur_doc && state.cur_doc.title) || docTitle || document.title || "iseohyun.com";
+      updateHeaderTitle(displayTitle);
 
       // admin 페이지 여부에 따라 body.admin-mode 클래스 토글
       const isAdminPage = urlPath.endsWith("/admin.html") || urlPath.endsWith("/admin.htm");
@@ -1135,6 +1146,67 @@ window.SiteModules.Navigation = (function () {
   }
 
   function bindSidebarEvents() {
+    // [당장 구현할 사항.md 주의사항 2번] 헤더의 왼쪽 아이콘(사이트맵) 클릭 시 항상 등장하여 열림
+    const headerNavToggle = document.getElementById("header-nav-toggle");
+    if (headerNavToggle) {
+      headerNavToggle.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const container = document.getElementById("sidebar-container");
+        const isMobile = window.innerWidth <= 768;
+
+        if (isMobile) {
+          if (container && !container.classList.contains("active")) {
+            container.classList.add("active");
+          } else if (container) {
+            container.classList.toggle("active");
+          }
+        } else {
+          setPanelCollapsed(false);
+        }
+
+        const sitemapBtn = document.getElementById("nav-sitemap");
+        if (sitemapBtn) {
+          sitemapBtn.classList.add("active");
+          const paneEl = document.getElementById("tab-sitemap");
+          if (paneEl) {
+            document.querySelectorAll("#sidebar-panel .tab-pane").forEach(pane => pane.classList.remove("active"));
+            paneEl.classList.add("active");
+          }
+        }
+      });
+    }
+
+    // [당장 구현할 사항.md 새로 추가된 주의사항] 헤더의 오른쪽 아이콘은 목차 아이콘이다. 클릭 시 항상 등장하여 목차 탭(tab-toc)으로 열림
+    const headerTocToggle = document.getElementById("header-toc-toggle");
+    if (headerTocToggle) {
+      headerTocToggle.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const container = document.getElementById("sidebar-container");
+        const isMobile = window.innerWidth <= 768;
+
+        if (isMobile) {
+          if (container && !container.classList.contains("active")) {
+            container.classList.add("active");
+          } else if (container) {
+            container.classList.toggle("active");
+          }
+        } else {
+          setPanelCollapsed(false);
+        }
+
+        const tocBtn = document.getElementById("nav-toc");
+        if (tocBtn) {
+          document.querySelectorAll("#sidebar-panel .nav-item").forEach(item => item.classList.remove("active"));
+          tocBtn.classList.add("active");
+          const paneEl = document.getElementById("tab-toc");
+          if (paneEl) {
+            document.querySelectorAll("#sidebar-panel .tab-pane").forEach(pane => pane.classList.remove("active"));
+            paneEl.classList.add("active");
+          }
+        }
+      });
+    }
+
     const navHomeBtn = document.getElementById("nav-home");
     if (navHomeBtn) {
       navHomeBtn.addEventListener("click", () => {

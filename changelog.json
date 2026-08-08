@@ -1,5 +1,22 @@
 [
   {
+    "date": "2026-08-09",
+    "updates": [
+      {
+        "type": "Changed",
+        "projectName": "공통 모듈",
+        "projectPath": "/",
+        "summary": "모바일 네비게이션 매뉴얼 명세 100% 반영 — 모바일 상단 고정 헤더, 왼쪽 사이드바 토글 및 오른쪽 항상 목차(TOC) 열기, 문서 Title 실시간 연동, 본문 여백 48px 확보, 0.3초 로딩 속도 최적화, FOUT 텍스트 0% 차단"
+      },
+      {
+        "type": "Added",
+        "projectName": "KanaLoop",
+        "projectPath": "/small-project/KanaLoop/index.html",
+        "summary": "v1.0.0: 히라가나/카타카나 암기 학습 소프로젝트 KanaLoop 머지 및 릴리즈"
+      }
+    ]
+  },
+  {
     "date": "2026-08-08",
     "updates": [
       {
