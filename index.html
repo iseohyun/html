@@ -165,18 +165,19 @@
 </head>
 
 <body>
-  <!-- 0ms 초고속 인스턴트 상단 고정 헤더 (FOUT 텍스트 노출 0.000% 원천 차단) -->
+  <!-- [당장 구현할 사항.md 매뉴얼 구현] 모바일 전용 상단 고정 헤더 -->
   <header class="site-header">
-    <div id="header-brand" onclick="window.location.href='/'" style="cursor:pointer; display:flex; align-items:center; gap:8px;">
-      <span class="material-symbols-outlined" data-icon="home" style="color:#2563eb; font-size:22px;"></span>
-      <span style="font-weight:700; font-size:15px; color:#1e293b; letter-spacing:-0.3px;">iseohyun.com</span>
+    <!-- 4번: 가장 왼쪽에 네비게이션을 호출하는 아이콘 -->
+    <div id="header-nav-toggle" title="네비게이션 열기/닫기" style="cursor:pointer; display:flex; align-items:center; padding: 4px;">
+      <span class="material-symbols-outlined" data-icon="account_tree" style="color:#2563eb; font-size:24px;"></span>
+    </div>
+    <!-- 5번: 현재 출력되는 문서의 title 표시 -->
+    <div id="header-doc-title" style="font-weight:700; font-size:15px; color:#1e293b; letter-spacing:-0.3px; flex:1; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin: 0 10px;">
+      iseohyun.com
     </div>
     <div id="headerIcons">
-      <div id="header-sitemap" title="사이트맵" style="cursor:pointer; display:flex; align-items:center;">
-        <span class="material-symbols-outlined" data-icon="account_tree" style="color:#475569; font-size:22px;"></span>
-      </div>
-      <div id="header-search" title="검색" style="cursor:pointer; display:flex; align-items:center;">
-        <span class="material-symbols-outlined" data-icon="search" style="color:#475569; font-size:22px;"></span>
+      <div id="header-toc-toggle" title="목차" style="cursor:pointer; display:flex; align-items:center; padding: 4px;">
+        <span class="material-symbols-outlined" data-icon="toc" style="color:#475569; font-size:24px;"></span>
       </div>
     </div>
   </header>
