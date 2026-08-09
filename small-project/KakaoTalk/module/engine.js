@@ -125,14 +125,14 @@
     const isBold = (config['font-bold'] === 'true' || config['font-bold'] === true) ? 'bold ' : '';
     const lineSpacing = fontSize + 22; // 글꼴 크기에 비례한 줄 간격 산출
 
-    // 2. 개별 색상 커스텀 피커 연동 (v0.0.10)
-    const meBubbleColor = config['me-bubble-color'] || '#ffeb34';
-    const youBubbleColor = config['you-bubble-color'] || '#ffffff';
-    const timeColor = config['time-color'] || '#cccccc';
+    // 2. 개별 색상 커스텀 피커 연동 (캡처본 카카오톡 다크모드 명세 100% 동일 적용)
+    const meBubbleColor = config['me-bubble-color'] || '#fee500';
+    const youBubbleColor = config['you-bubble-color'] || '#2a2a2a';
+    const timeColor = config['time-color'] || '#8e8e93';
 
     // 3. 캔버스 배경 칠하기
     ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = config['background-color'] || '#acc0d1';
+    ctx.fillStyle = config['background-color'] || '#000000';
     ctx.fillRect(0, 0, width, height);
 
     // v0.0.10 피드백: 대화참여자가 2명이고 대화방 이름이 상대방 이름이면 1:1 개인 대화방으로 지정
@@ -339,27 +339,27 @@
       const isMe = (dialog.person === config['me']);
 
       if (isMe) {
-        // 내 말풍선 그리기 (커스텀 노란색)
+        // 내 말풍선 그리기 (카카오 시그니처 옐로우 #fee500)
         const bx = width - pos.width - 80;
         ctx.fillStyle = meBubbleColor;
-        drawRoundRect(ctx, bx, pos.posY, pos.width, pos.height + 40, 32);
+        drawRoundRect(ctx, bx, pos.posY, pos.width, pos.height + 40, 36);
         ctx.fill();
 
-        // 카톡 말풍선 오른쪽 꼬리 드로잉
+        // 카톡 내 말풍선 우상단 라운드 꼬리 드로잉
         ctx.beginPath();
         ctx.moveTo(bx + pos.width - 15, pos.posY);
-        ctx.quadraticCurveTo(bx + pos.width + 12, pos.posY - 1, bx + pos.width + 18, pos.posY + 10);
+        ctx.quadraticCurveTo(bx + pos.width + 12, pos.posY - 1, bx + pos.width + 16, pos.posY + 10);
         ctx.quadraticCurveTo(bx + pos.width + 8, pos.posY + 25, bx + pos.width - 15, pos.posY + 30);
         ctx.fill();
 
-        // 대화 시간 표시 (v0.0.10: 내 말풍선 왼쪽 하단 정렬)
+        // 대화 시간 표시 (내 말풍선 좌측 하단)
         ctx.fillStyle = timeColor;
         ctx.font = `bold ${Math.floor(fontSize * 0.7)}px ${selectedFont}`;
         ctx.textAlign = 'right';
         ctx.textBaseline = 'bottom';
         ctx.fillText(pos.time, bx - 15, pos.posY + pos.height + 40);
 
-        // 텍스트 출력
+        // 내 말풍선 텍스트 (딥 블랙 #000000)
         ctx.fillStyle = '#000000';
         ctx.font = `${isBold}${fontSize}px ${selectedFont}`;
         ctx.textAlign = 'left';
@@ -367,17 +367,17 @@
 
         drawWrappedText(ctx, pos.lines, bx + 22, pos.posY + 20, typingProgress, fontSize, lineSpacing);
       } else {
-        // 상대방 말풍선 그리기 (커스텀 흰색)
+        // 상대방 말풍선 그리기 (카카오 다크모드 차콜 그레이 #2a2a2a)
         const bx = 180;
 
         ctx.fillStyle = youBubbleColor;
-        drawRoundRect(ctx, bx, pos.posY, pos.width, pos.height + 40, 32);
+        drawRoundRect(ctx, bx, pos.posY, pos.width, pos.height + 40, 36);
         ctx.fill();
 
-        // 카톡 말풍선 왼쪽 꼬리 드로잉
+        // 카톡 상대방 말풍선 좌상단 라운드 꼬리 드로잉
         ctx.beginPath();
         ctx.moveTo(bx + 15, pos.posY);
-        ctx.quadraticCurveTo(bx - 12, pos.posY - 1, bx - 18, pos.posY + 10);
+        ctx.quadraticCurveTo(bx - 12, pos.posY - 1, bx - 16, pos.posY + 10);
         ctx.quadraticCurveTo(bx - 8, pos.posY + 25, bx + 15, pos.posY + 30);
         ctx.fill();
 
@@ -419,9 +419,9 @@
             ctx.fillText(customSettings.text, cx, cy);
           }
 
-          // 상대방 이름 라벨 출력 (v0.0.10 피드백: 1:1 개인톡방일 때는 이름 라벨 출력을 생략)
+          // 상대방 이름 라벨 출력 (다크모드 밝은 라벨 색상 #d1d1d6)
           if (!isDirectChat) {
-            ctx.fillStyle = '#2c3e50';
+            ctx.fillStyle = '#d1d1d6';
             ctx.font = `bold ${Math.floor(fontSize * 0.85)}px ${selectedFont}`;
             ctx.textAlign = 'left';
             ctx.textBaseline = 'bottom';
@@ -429,15 +429,15 @@
           }
         }
 
-        // 대화 시간 표시 (v0.0.10: 상대 말풍선 오른쪽 하단 정렬)
+        // 대화 시간 표시 (상대방 말풍선 우측 하단)
         ctx.fillStyle = timeColor;
         ctx.font = `bold ${Math.floor(fontSize * 0.7)}px ${selectedFont}`;
         ctx.textAlign = 'left';
         ctx.textBaseline = 'bottom';
         ctx.fillText(pos.time, bx + pos.width + 15, pos.posY + pos.height + 40);
 
-        // 텍스트 출력
-        ctx.fillStyle = '#000000';
+        // 상대방 말풍선 텍스트 (다크모드 화이트 글자 #ffffff)
+        ctx.fillStyle = '#ffffff';
         ctx.font = `${isBold}${fontSize}px ${selectedFont}`;
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
