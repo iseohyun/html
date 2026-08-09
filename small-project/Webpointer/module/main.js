@@ -25,6 +25,7 @@
       setupMouseEvents();
       setupKeyboardEvents();
       setupWindowResize();
+      if (typeof window.initCanvasDragAndDrop === 'function') window.initCanvasDragAndDrop();
 
       if (window.pushHistoryState) window.pushHistoryState();
 

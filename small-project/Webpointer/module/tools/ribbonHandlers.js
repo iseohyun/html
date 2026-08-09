@@ -4055,4 +4055,147 @@
         '</div>' +
       '</div>';
   }
+
+  function insertSymbolObjToCanvasCenter(dataUrl, name, type) {
+    var objectsGroup = document.getElementById('objectsGroup');
+    if (!objectsGroup) return;
+
+    var id = (type === 'svg' ? 'svg_' : 'img_') + Date.now();
+    var cx = (cfg.SVG_WIDTH || 960) / 2;
+    var cy = (cfg.SVG_HEIGHT || 540) / 2;
+    var w = 320;
+    var h = 320;
+
+    var el = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+    el.setAttribute('id', id);
+    el.setAttribute('x', Math.round(cx - w / 2));
+    el.setAttribute('y', Math.round(cy - h / 2));
+    el.setAttribute('width', w);
+    el.setAttribute('height', h);
+    el.setAttribute('href', dataUrl);
+    el.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', dataUrl);
+    el.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+    el.setAttribute('stroke', cfg.strokeColor || '#041e49');
+    el.setAttribute('stroke-width', cfg.strokeWidth || 2);
+    el.setAttribute('fill', cfg.fillColor || 'none');
+
+    objectsGroup.appendChild(el);
+
+    var newObj = {
+      id: id,
+      type: 'image',
+      name: name || '드롭 객체',
+      el: el,
+      attrs: {
+        x: Math.round(cx - w / 2),
+        y: Math.round(cy - h / 2),
+        width: w,
+        height: h,
+        href: dataUrl,
+        preserveAspectRatio: 'xMidYMid meet'
+      },
+      style: {
+        strokeColor: cfg.strokeColor || '#041e49',
+        fillColor: cfg.fillColor || 'none',
+        strokeWidth: cfg.strokeWidth || 2
+      }
+    };
+
+    cfg.objectsMap.set(id, newObj);
+    state.selectedIds = [id];
+    cfg.currentTool = 'select';
+
+    if (window.WebpointerRender) {
+      if (window.WebpointerRender.renderCanvas) window.WebpointerRender.renderCanvas();
+      if (window.WebpointerRender.renderUI) window.WebpointerRender.renderUI();
+    }
+    if (window.pushHistoryState) window.pushHistoryState();
+  }
+
+  function initCanvasDragAndDrop() {
+    var dropOverlay = document.getElementById('canvasDropOverlay');
+
+    // 1. 브라우저 전역 레벨 기본 파일 열기 동작 (새 탭으로 열림) 100% 원천 차단
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(function(evtName) {
+      document.addEventListener(evtName, function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }, false);
+      window.addEventListener(evtName, function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }, false);
+    });
+
+    // 2. 캔버스 오버레이 시각적 효과 제어
+    ['dragenter', 'dragover'].forEach(function(evtName) {
+      document.addEventListener(evtName, function(e) {
+        if (dropOverlay) dropOverlay.style.display = 'flex';
+      }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(function(evtName) {
+      document.addEventListener(evtName, function(e) {
+        if (dropOverlay) dropOverlay.style.display = 'none';
+      }, false);
+    });
+
+    // 3. 실제 파일 드롭 시 파일 핸들러 (FileReader API readAsDataURL 사용)
+    function processDroppedFiles(files) {
+      if (!files || files.length === 0) return;
+      var file = files[0];
+      var fileName = file.name.toLowerCase();
+
+      if (fileName.endsWith('.json')) {
+        var reader = new FileReader();
+        reader.onload = function(evt) {
+          try {
+            var jsonStr = evt.target.result;
+            if (typeof restoreSnapshot === 'function') {
+              restoreSnapshot(jsonStr);
+              if (window.pushHistoryState) window.pushHistoryState();
+            }
+          } catch(err) {
+            alert('JSON 파일 읽기 실패: ' + err.message);
+          }
+        };
+        reader.readAsText(file);
+      } else if (fileName.endsWith('.svg') || /\.(png|jpe?g|webp|gif|bmp)$/.test(fileName)) {
+        var reader = new FileReader();
+        reader.onload = function(evt) {
+          try {
+            var dataUrl = evt.target.result;
+            insertSymbolObjToCanvasCenter(dataUrl, file.name, fileName.endsWith('.svg') ? 'svg' : 'image');
+          } catch(err) {
+            alert('이미지/SVG 파일 읽기 실패: ' + err.message);
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // window 및 document 레벨 drop 수신
+    window.addEventListener('drop', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (dropOverlay) dropOverlay.style.display = 'none';
+      var dt = e.dataTransfer;
+      if (dt && dt.files && dt.files.length > 0) {
+        processDroppedFiles(dt.files);
+      }
+    }, false);
+
+    document.addEventListener('drop', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (dropOverlay) dropOverlay.style.display = 'none';
+      var dt = e.dataTransfer;
+      if (dt && dt.files && dt.files.length > 0) {
+        processDroppedFiles(dt.files);
+      }
+    }, false);
+  }
+
+  window.initCanvasDragAndDrop = initCanvasDragAndDrop;
 })(window);
