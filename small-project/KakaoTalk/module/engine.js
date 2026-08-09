@@ -409,16 +409,30 @@
 
         drawWrappedText(ctx, pos.lines, bx + 22, pos.posY + 20, typingProgress, fontSize, lineSpacing);
       } else {
-        // "이모네?" 텍스트 만났을 때: 오직 높이 스케일링만 조작하여 obj_6 원본 좌표 그대로 직대입 드로잉
+        // "이모네?" 텍스트 만났을 때: 3가지 정량 지시 (38/44 글자축소 & 7/99 높이 상향) 반영
         const dialogStr = (dialog.message || dialog.text || (pos.lines ? pos.lines.join('') : ''));
         if (dialogStr.includes('이모네')) {
-          const bx = 180;
-          ctx.save();
-          const targetH = 140; // 높이 기준 스케일링
+          const avatarDiameter = 116;
+          const bx = 180 - Math.round(avatarDiameter / 4) - 1; // 150px
+
+          const baseFontSize = Math.round(fontSize * (8.47 / 5.43));
+          const prevFontSize = Math.round(baseFontSize * 0.9) - 1; // 55px
+          // 1. 대화 글자 크기만 38/44 사이즈로 줄임 (48px)
+          const imoneFontSize = Math.round(prevFontSize * (38 / 44)); // 48px
+
+          // 2. 말풍선 크기는 줄이지 않고 기존 크기(119px) 고정 유지
+          const prevPadPx = Math.round(prevFontSize * 0.45); // ~25px
+          const baseH = prevFontSize + (prevPadPx * 2) + 8;
+          const targetH = Math.round(baseH * (10.23 / 9.79)); // 말풍선 크기 기존 119px 고정!
           const scale = targetH / 223.323;
 
+          // 2. 말풍선을 말풍선 높이(targetH)의 7/99만큼 위로 올려 배치
+          const shiftUpByHeight = Math.round(targetH * (7 / 99)); // ~8px
+          const adjustedPosY = (pos.posY - Math.round(avatarDiameter * (2 / 5))) + targetH - shiftUpByHeight;
+
+          ctx.save();
           ctx.fillStyle = youBubbleColor;
-          ctx.translate(bx - 12.55 * scale, pos.posY);
+          ctx.translate(bx - 12.55 * scale, adjustedPosY);
           ctx.scale(scale, scale);
           ctx.translate(-243.705, -197.347);
 
@@ -426,50 +440,48 @@
           ctx.fill(pathObj);
           ctx.restore();
 
-          // 초상화 및 이름 라벨 드로잉 (연속 메시지일 경우 생략)
+          // 초상화 (모서리 둥근 사각형)
           if (!pos.isContinuous) {
             const cx = 73;
             const cy = pos.posY - 10 + 58;
-            const r = 58;
+            const size = Math.round(116 * 0.9); // 104px
+            const avatarRadius = 46;
+            const ax = cx - size / 2;
+            const ay = cy - size / 2;
+
+            ctx.save();
+            drawRoundRect(ctx, ax, ay, size, size, avatarRadius);
+            ctx.clip();
 
             if (customSettings.image) {
               const cachedImg = getCachedImage(customSettings.image, () => {
                 drawCanvasChat(canvas, ctx, config, dialogs, avatarSettingsMap);
               });
-
               if (cachedImg) {
-                ctx.save();
-                ctx.beginPath();
-                ctx.arc(cx, cy, r, 0, Math.PI * 2);
-                ctx.clip();
-                ctx.drawImage(cachedImg, cx - r, cy - r, r * 2, r * 2);
-                ctx.restore();
+                ctx.drawImage(cachedImg, ax, ay, size, size);
               } else {
                 ctx.fillStyle = customSettings.color;
-                ctx.beginPath();
-                ctx.arc(cx, cy, r, 0, Math.PI * 2);
                 ctx.fill();
               }
             } else {
               ctx.fillStyle = customSettings.color;
-              ctx.beginPath();
-              ctx.arc(cx, cy, r, 0, Math.PI * 2);
               ctx.fill();
 
-              // 이름 이니셜
               ctx.fillStyle = customSettings.textColor;
-              ctx.font = `bold 44px ${selectedFont}`;
+              ctx.font = `bold 46px ${selectedFont}`;
               ctx.textAlign = 'center';
               ctx.textBaseline = 'middle';
               ctx.fillText(customSettings.text, cx, cy);
             }
+            ctx.restore();
 
-            // 상대방 이름
+            // 3. "상대방"을 말풍선 높이의 7/99만큼 위로 이동
+            const nameFontSize = Math.floor(fontSize * 0.85); // 34px
             ctx.fillStyle = youNameColor;
-            ctx.font = `bold ${Math.floor(fontSize * 0.85)}px ${selectedFont}`;
+            ctx.font = `${nameFontSize}px ${selectedFont}`;
             ctx.textAlign = 'left';
-            ctx.textBaseline = 'bottom';
-            ctx.fillText(dialog.person, bx, pos.posY - 15);
+            ctx.textBaseline = 'top';
+            ctx.fillText(dialog.person, (180 - nameFontSize) + 1, pos.posY + 13 - shiftUpByHeight);
           }
 
           // 대화 시간 표시
@@ -477,69 +489,67 @@
           ctx.font = `bold ${Math.floor(fontSize * 0.7)}px ${selectedFont}`;
           ctx.textAlign = 'left';
           ctx.textBaseline = 'bottom';
-          ctx.fillText(pos.time, bx + 445.95 * scale + 15, pos.posY + targetH);
+          ctx.fillText(pos.time, bx + 445.95 * scale + 15, adjustedPosY + targetH);
 
-          // "이모네?" 텍스트
+          // "이모네?" 텍스트 (38/44 사이즈 축소 48px 적용, 말풍선 크기 119px 고정)
           ctx.fillStyle = youTextColor;
-          ctx.font = `${isBold}${fontSize * scale * 1.5}px ${selectedFont}`;
+          ctx.font = `${imoneFontSize}px ${selectedFont}`;
           ctx.textAlign = 'left';
           ctx.textBaseline = 'top';
-          drawWrappedText(ctx, pos.lines, bx + 60 * scale, pos.posY + 35 * scale, typingProgress, fontSize * scale * 1.5, lineSpacing);
+          drawWrappedText(ctx, pos.lines, bx + prevPadPx + 6, adjustedPosY + prevPadPx + 6, typingProgress, imoneFontSize, lineSpacing);
           ctx.restore();
           return;
         }
 
-        // 일반 상대방 말풍선 그리기 (답지 obj_6 100% 일치 S자 3차 베지어 통합 패스)
+        // 일반 상대방 말풍선 그리기
         const bx = 180;
 
         ctx.fillStyle = youBubbleColor;
         drawSpeechBubbleWithTail(ctx, bx, pos.posY, pos.width, pos.height + 40, 32, false, !pos.isContinuous);
 
-        // 초상화 및 이름 라벨 드로잉 (연속 메시지일 경우 생략)
+        // 초상화
         if (!pos.isContinuous) {
           const cx = 73;
           const cy = pos.posY - 10 + 58;
-          const r = 58;
+          const size = Math.round(116 * 0.9);
+          const avatarRadius = 46;
+          const ax = cx - size / 2;
+          const ay = cy - size / 2;
+
+          ctx.save();
+          drawRoundRect(ctx, ax, ay, size, size, avatarRadius);
+          ctx.clip();
 
           if (customSettings.image) {
             const cachedImg = getCachedImage(customSettings.image, () => {
               drawCanvasChat(canvas, ctx, config, dialogs, avatarSettingsMap);
             });
-
             if (cachedImg) {
-              ctx.save();
-              ctx.beginPath();
-              ctx.arc(cx, cy, r, 0, Math.PI * 2);
-              ctx.clip();
-              ctx.drawImage(cachedImg, cx - r, cy - r, r * 2, r * 2);
-              ctx.restore();
+              ctx.drawImage(cachedImg, ax, ay, size, size);
             } else {
               ctx.fillStyle = customSettings.color;
-              ctx.beginPath();
-              ctx.arc(cx, cy, r, 0, Math.PI * 2);
               ctx.fill();
             }
           } else {
             ctx.fillStyle = customSettings.color;
-            ctx.beginPath();
-            ctx.arc(cx, cy, r, 0, Math.PI * 2);
             ctx.fill();
 
-            // 이름 이니셜
             ctx.fillStyle = customSettings.textColor;
-            ctx.font = `bold 55px ${selectedFont}`;
+            ctx.font = `bold 46px ${selectedFont}`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(customSettings.text, cx, cy);
           }
+          ctx.restore();
 
-          // 상대방 이름 라벨 출력 (커스텀 닉네임 색상 연동)
+          // 상대방 이름 라벨 (위로 1px, 오른쪽 1px)
           if (!isDirectChat) {
+            const nameFontSize = Math.floor(fontSize * 0.85);
             ctx.fillStyle = youNameColor;
-            ctx.font = `bold ${Math.floor(fontSize * 0.85)}px ${selectedFont}`;
+            ctx.font = `${nameFontSize}px ${selectedFont}`;
             ctx.textAlign = 'left';
-            ctx.textBaseline = 'bottom';
-            ctx.fillText(dialog.person, bx, pos.posY - 12);
+            ctx.textBaseline = 'top';
+            ctx.fillText(dialog.person, (180 - nameFontSize) + 1, pos.posY + 13);
           }
         }
 
