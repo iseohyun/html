@@ -2,6 +2,35 @@
 
 이 문서는 카카오톡 대화 생성기 소프로젝트의 버전별 주요 변경 사항 및 업데이트 내역을 기록합니다.
 
+## [v1.4.1] - 2026-08-09
+- **대화방 테마 드롭다운 콤보박스(`select-theme`) 선택 시 메인 캔버스 100% 즉시 적용 완치**:
+  - `gatherConfigFromUI()` 내 테마 선택(`light`, `dark`)별 8대 세부 색상 프리셋 연동 로직을 보정하여 테마 변경 시 `background-color`, `me-bubble-color`, `me-text-color`, `you-bubble-color`, `you-text-color`, `you-name-color`, `time-color`, `date-text-color`가 메인 캔버스에 100% 즉각 렌더링 반영되도록 완료.
+
+## [v1.4.0] - 2026-08-09
+- **테마 상세보기 모달 `✕` 닫기 버튼 동동 완치 & 실시간 예시 미니 미리보기 전용 렌더러 (`drawThemePreviewCanvas`) 탑재**:
+  - `interface.js` 이벤트 위임에서 `#btn-close-theme-modal` 클릭 이벤트를 추가하여 모달 우측 상단 `✕` 닫기 버튼 클릭 시 모달이 100% 정상적으로 닫히도록 완치.
+  - 모달 전용 360x460 미니 미리보기 렌더러(`drawThemePreviewCanvas`)를 신설하여 1080px 거대 헤더/아이콘 덮침 현상을 100% 제거하고 실제 핸드폰 카카오톡 화면처럼 수려하고 정교한 미니 렌더링 완성.
+
+## [v1.3.9] - 2026-08-09
+- **SPA 해시 라우팅 주소(`/#/small-project/KakaoTalk/index.html`) 진입 시 테마 상세보기 모달 유실 버그 완치**:
+  - 싱글 페이지 라우터(`navigation.js`)가 HTML의 `<article>` 내부 요소만 추출 주입할 때 `<div id="theme-detail-modal">`이 누락되던 구조적 원인을 발견하여 모달 구조를 `<div id="kakaotalk-article">` 안쪽으로 완전 이동 배치.
+  - `interface.js` 내 전역 이벤트 위임(Event Delegation) 및 body 텔레포트(`document.body.appendChild(modal)`) 로직을 장착하여 해시 라우팅 환경에서도 `z-index: 999999` 최상단 팝업이 100% 뜨도록 조치 완수.
+
+## [v1.3.8] - 2026-08-09
+- **셀 상태 및 와이파이 상태 0% 설정 시 캔버스 그림 100% 드로잉 렌더링 버그 완치**:
+  - `interface.js` 내 OR Falsy 연산자(`parseInt(val) || 4`) 버그를 수정하여 `0` 지정 시 4(100%)로 튕기지 않고 `0`(0%)으로 정확히 수집되도록 조치.
+  - `engine.js` 내 아이콘 렌더링 엔진의 0% 처리 조건부 칠하기(`wifiVal > 0`, `activeBars = cellVal`)를 교정하여 와이파이 및 셀 0% 설정 시 100% 아이콘 출력을 완전 소멸시키고 0% 꺼짐 상태로 정확히 드로잉 렌더링.
+
+## [v1.3.7] - 2026-08-09
+- **테마 상세보기 모달 100% 팝업 기동 완치 & 실물 캡처본 기준 프리셋 정밀 조정**:
+  - `btn-open-theme-modal` 클릭 수신기(`setupThemeModalEvents()`)를 완벽 추가하여 **[상세보기 ⚙️]** 클릭 시 모달창이 100% 정상적으로 팝업 노출되고 실시간 미니 캔버스가 즉시 렌더링되도록 수정.
+  - 라이트모드 실물 캡처본 기준으로 대화 시간 색상(`time-color: #64748b`), 상대 닉네임 색상(`you-name-color: #374151`) 정밀 보정 및 3인 이상 참여 시 대화방 이름 `"그룹채팅 5"` 자동 인원수 표시 동기화 연동.
+
+## [v1.3.6] - 2026-08-09
+- **`div#svg-box` 감싸는 불필요 wrapper 구조 제거 및 캔버스 자체 둥근 모서리(`border-radius: 20px`) 스타일링 반영**:
+  - `index.html`에서 `<div id="kakaotalk-article">` 직계 자식으로 `<canvas id="chat-canvas">`가 배치되도록 DOM 구조 간소화.
+  - `kakaotalk-style.css`에서 `#chat-canvas`에 `border-radius: 20px`, `box-shadow`, `border`, `overflow: hidden` 스타일을 직접 적용하여 수려한 모던 라운드 캔버스 표출.
+
 ## [v1.3.5] - 2026-08-09
 - **대화 파일 로드 시 대화 범위(`1 ~ totalCount`) 및 진행 슬라이더 100% 자동 재조정 연동**:
   - 사용자 대화 내보내기 파일 선택 로딩 시, 이전 `1 ~ 2` 범위 고정 현상을 제거하고 불러온 대화의 전체 개수(`totalCount`, 예: 3,192개)에 맞춰 `startRangeIndex = 1`, `endRangeIndex = totalCount`로 범위 라벨 및 진행률 슬라이더가 100% 자동 동기화 조절되도록 완벽 구현.

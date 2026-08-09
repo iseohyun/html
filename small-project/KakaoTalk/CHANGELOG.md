@@ -2,6 +2,33 @@
 
 All notable changes to the KakaoTalk Generator project will be documented in this file.
 
+## [1.4.1] - 2026-08-09
+### Fixed
+- Fixed theme select dropdown (`#select-theme`) not applying theme preset colors (light/dark/custom) to the main chat canvas immediately.
+
+## [1.4.0] - 2026-08-09
+### Fixed
+- Fixed `#btn-close-theme-modal` (✕ close button) not closing the theme detail modal.
+- Created dedicated mini preview renderer (`drawThemePreviewCanvas`) to eliminate giant text overlap and present realistic mobile KakaoTalk chat preview.
+
+## [1.3.9] - 2026-08-09
+### Fixed
+- Fixed theme detail modal missing on SPA hash route (`/#/small-project/KakaoTalk/index.html`) by moving modal inside `#kakaotalk-article` and applying event delegation & body teleportation.
+
+## [1.3.8] - 2026-08-09
+### Fixed
+- Fixed wifi and cell status 0% setting rendered as 100% full icons on canvas drawing due to JS falsy OR fallback bug.
+
+## [1.3.7] - 2026-08-09
+### Fixed
+- Fixed theme detail modal (`#theme-detail-modal`) not opening on `[상세보기 ⚙️]` button click by adding `setupThemeModalEvents()`.
+- Fine-tuned light theme presets based on real KakaoTalk screenshot (`time-color: #64748b`, `you-name-color: #374151`, auto `그룹채팅 5` room name count).
+
+## [1.3.6] - 2026-08-09
+### Changed
+- Removed redundant `#svg-box` wrapper div under `#kakaotalk-article`.
+- Applied `border-radius: 20px`, `box-shadow`, and `overflow: hidden` directly to `#chat-canvas` for clean rounded canvas rendering.
+
 ## [1.3.5] - 2026-08-09
 ### Fixed
 - Automatically adjusted dialog range (`startRangeIndex ~ endRangeIndex`) to match loaded dialog total count (`1 ~ totalCount`, e.g. `1 ~ 3192`) on file load.

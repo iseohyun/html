@@ -484,31 +484,33 @@
     ctx.moveTo(width - 115, 194); ctx.lineTo(width - 55, 194);
     ctx.stroke();
 
-    // 와이파이 안테나
-    const wifiVal = parseInt(config['wifi']) || 4;
+    // 와이파이 안테나 (0~4단계: 0=0%, 1=25%, 2=50%, 3=75%, 4=100%)
+    const rawWifi = parseInt(config['wifi']);
+    const wifiVal = (!isNaN(rawWifi) && rawWifi >= 0) ? rawWifi : 4;
     ctx.strokeStyle = '#000000';
     ctx.lineWidth = 4.5;
     const wcx = width - 175;
     const wcy = 58;
 
-    ctx.fillStyle = wifiVal >= 0 ? '#000' : 'rgba(0,0,0,0.15)';
+    ctx.fillStyle = wifiVal > 0 ? '#000' : 'rgba(0,0,0,0.15)';
     ctx.beginPath();
     ctx.arc(wcx, wcy, 3, 0, Math.PI * 2);
     ctx.fill();
 
     for (let r = 1; r <= 3; r++) {
-      ctx.strokeStyle = wifiVal >= r ? '#000' : 'rgba(0,0,0,0.15)';
+      ctx.strokeStyle = wifiVal >= (r + 1) ? '#000' : 'rgba(0,0,0,0.15)';
       ctx.beginPath();
       ctx.arc(wcx, wcy, r * 10, -Math.PI * 0.75, -Math.PI * 0.25);
       ctx.stroke();
     }
 
-    // 셀 상태
-    const cellVal = parseInt(config['cell']) || 4;
-    const activeBars = cellVal + 1;
+    // 셀 상태 (0~4단계: 0=0%, 1=25%, 2=50%, 3=75%, 4=100%)
+    const rawCell = parseInt(config['cell']);
+    const cellVal = (!isNaN(rawCell) && rawCell >= 0) ? rawCell : 4;
+    const activeBars = cellVal;
     const barX = width - 268;
     const barY = 56;
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 1; i <= 4; i++) {
       ctx.fillStyle = i <= activeBars ? '#000' : 'rgba(0,0,0,0.15)';
       const barH = i * 7;
       ctx.fillRect(barX + (i * 9), barY - barH, 5, barH);

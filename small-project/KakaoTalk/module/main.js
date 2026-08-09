@@ -328,11 +328,7 @@
       });
     }
 
-    // 물리적 scrollTop에 의한 상단 잘림 원천 봉쇄 방지
-    const svgBox = document.getElementById('svg-box');
-    if (svgBox) {
-      svgBox.scrollTop = 0;
-    }
+
   }
 
   // 저전력 렌더러 즉시 한 프레임 드로잉 업데이트 API (v1.0.5)

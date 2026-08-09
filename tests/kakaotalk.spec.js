@@ -32,4 +32,24 @@ test.describe('카카오톡 대화 생성기 (small-project/KakaoTalk)', () => {
       await expect(canvas).toBeVisible();
     }
   });
+
+  test('테마 상세보기 버튼 클릭 시 테마 상세 설정 모달 팝업 및 미리보기 캔버스 렌더링 검증', async ({ page }) => {
+    await page.goto('/small-project/KakaoTalk/index.html');
+    await page.waitForTimeout(1000);
+
+    const btnOpenThemeModal = page.locator('#btn-open-theme-modal');
+    await expect(btnOpenThemeModal).toBeVisible();
+
+    await btnOpenThemeModal.click();
+    await page.waitForTimeout(500);
+
+    const isModalFlex = await page.evaluate(() => {
+      const modal = document.getElementById('theme-detail-modal');
+      return modal ? window.getComputedStyle(modal).display === 'flex' : false;
+    });
+    expect(isModalFlex).toBe(true);
+
+    const previewCanvas = page.locator('#theme-preview-canvas');
+    await expect(previewCanvas).toBeVisible();
+  });
 });

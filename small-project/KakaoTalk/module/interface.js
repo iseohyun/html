@@ -27,6 +27,29 @@
   }
 
   // 전역 상태 변수
+  const THEME_PRESETS = {
+    light: {
+      'setting-bgcolor': '#acc0d1',
+      'me-bubble-color': '#fee500',
+      'me-text-color': '#000000',
+      'you-bubble-color': '#ffffff',
+      'you-text-color': '#000000',
+      'you-name-color': '#374151',
+      'time-color': '#64748b',
+      'date-text-color': '#475569'
+    },
+    dark: {
+      'setting-bgcolor': '#000000',
+      'me-bubble-color': '#fee500',
+      'me-text-color': '#000000',
+      'you-bubble-color': '#2a2a2a',
+      'you-text-color': '#ffffff',
+      'you-name-color': '#d1d1d6',
+      'time-color': '#8e8e93',
+      'date-text-color': '#8e8e93'
+    }
+  };
+
   let originalSettingsText = '';
   let loadedConfig = {};
   let avatarSettingsMap = {};
@@ -367,6 +390,9 @@
 
     btnDownload.addEventListener('click', downloadCanvasImage);
 
+    // v1.3.0 테마 상세보기 모달 이벤트 기동
+    setupThemeModalEvents();
+
     // 디폴트 데이터 로딩 기동
     loadDefaultData();
   }
@@ -548,22 +574,41 @@
     const yourNameEl = document.getElementById('input-your-name');
     config['your-name'] = yourNameEl ? (yourNameEl.value || '그룹채팅') : '그룹채팅';
 
-    const bgColorEl = document.getElementById('input-bg-color');
     const selThemeEl = document.getElementById('select-theme');
     const selTheme = selThemeEl ? selThemeEl.value : 'light';
-    const fallbackBg = (typeof THEME_PRESETS !== 'undefined' && THEME_PRESETS[selTheme]) ? THEME_PRESETS[selTheme]['setting-bgcolor'] : '#acc0d1';
-    const hexBgColor = bgColorEl ? (bgColorEl.value || fallbackBg) : fallbackBg;
-    config['background-color'] = hexBgColor;
+    const preset = (typeof THEME_PRESETS !== 'undefined' && THEME_PRESETS[selTheme]) ? THEME_PRESETS[selTheme] : THEME_PRESETS['light'];
+
+    if (selTheme === 'light' || selTheme === 'dark') {
+      config['background-color'] = preset['setting-bgcolor'];
+      config['me-bubble-color'] = preset['me-bubble-color'];
+      config['me-text-color'] = preset['me-text-color'];
+      config['you-bubble-color'] = preset['you-bubble-color'];
+      config['you-text-color'] = preset['you-text-color'];
+      config['you-name-color'] = preset['you-name-color'];
+      config['time-color'] = preset['time-color'];
+      config['date-text-color'] = preset['date-text-color'];
+    } else {
+      config['background-color'] = loadedConfig['setting-bgcolor'] || preset['setting-bgcolor'];
+      config['me-bubble-color'] = loadedConfig['me-bubble-color'] || preset['me-bubble-color'];
+      config['me-text-color'] = loadedConfig['me-text-color'] || preset['me-text-color'];
+      config['you-bubble-color'] = loadedConfig['you-bubble-color'] || preset['you-bubble-color'];
+      config['you-text-color'] = loadedConfig['you-text-color'] || preset['you-text-color'];
+      config['you-name-color'] = loadedConfig['you-name-color'] || preset['you-name-color'];
+      config['time-color'] = loadedConfig['time-color'] || preset['time-color'];
+      config['date-text-color'] = loadedConfig['date-text-color'] || preset['date-text-color'];
+    }
 
     config['me'] = inputMeName ? (inputMeName.value || '나') : '나';
 
     const wifiEl = document.getElementById('input-wifi');
-    config['wifi'] = wifiEl ? parseInt(wifiEl.value || '4') : 4;
+    const parsedWifi = wifiEl ? parseInt(wifiEl.value) : NaN;
+    config['wifi'] = !isNaN(parsedWifi) ? parsedWifi : 4;
     const labelWifiEl = document.getElementById('label-wifi');
     if (labelWifiEl) labelWifiEl.textContent = (config['wifi'] * 25) + '%';
 
     const cellEl = document.getElementById('input-cell');
-    config['cell'] = cellEl ? parseInt(cellEl.value || '4') : 4;
+    const parsedCell = cellEl ? parseInt(cellEl.value) : NaN;
+    config['cell'] = !isNaN(parsedCell) ? parsedCell : 4;
     const labelCellEl = document.getElementById('label-cell');
     if (labelCellEl) labelCellEl.textContent = (config['cell'] * 25) + '%';
 
@@ -670,10 +715,15 @@
       inputMeName.appendChild(option);
     });
 
-    // v0.0.10 피드백: 참여자 2명 및 방 이름이 상대방 이름일 때 상대방을 제외한 나머지 화자를 내 이름으로 자동 선택
     const yourNameEl = document.getElementById('input-your-name');
     const roomName = yourNameEl ? yourNameEl.value.trim() : '';
     const personsArr = Array.from(persons);
+
+    // 참여자 3명 이상일 때 실물 캡처처럼 "그룹채팅 5" 자동 인원수 표시 연동
+    if (personsArr.length >= 3 && yourNameEl && (!roomName || roomName === '그룹채팅' || roomName.startsWith('그룹채팅'))) {
+      yourNameEl.value = `그룹채팅 ${personsArr.length}`;
+      loadedConfig['your-name'] = yourNameEl.value;
+    }
 
     if (personsArr.length === 2 && roomName && personsArr.includes(roomName)) {
       const autoMe = personsArr.find(p => p !== roomName);
@@ -1126,6 +1176,283 @@
     window.addEventListener('touchmove', onMove, { passive: false });
     window.addEventListener('touchend', onEnd);
     window.addEventListener('touchcancel', onEnd);
+  }
+
+  /**
+   * 테마 모달 실시간 예시 미리보기 전용 미니 렌더러 (v1.3.0)
+   * 360x460 규격에 맞춰 7개 세부 색상을 실제 카카오톡 화면처럼 정교하고 아름답게 렌더링
+   */
+  function drawThemePreviewCanvas(canvas, ctx, colors) {
+    const width = 360;
+    const height = 460;
+
+    canvas.width = width;
+    canvas.height = height;
+
+    const bgColor = colors['setting-bgcolor'] || '#acc0d1';
+    const meBubbleColor = colors['me-bubble-color'] || '#fee500';
+    const meTextColor = colors['me-text-color'] || '#000000';
+    const youBubbleColor = colors['you-bubble-color'] || '#ffffff';
+    const youTextColor = colors['you-text-color'] || '#000000';
+    const youNameColor = colors['you-name-color'] || '#374151';
+    const timeColor = colors['time-color'] || '#64748b';
+    const dateTextColor = colors['date-text-color'] || '#475569';
+
+    // 1. 전체 대화방 배경 칠하기
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, width, height);
+
+    // 2. 미니 상태바 (Status Bar)
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+    ctx.font = '500 11px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('오전 10:04', 16, 22);
+
+    ctx.textAlign = 'right';
+    ctx.fillText('📶 83% 🔋', width - 16, 22);
+
+    // 3. 미니 상단 헤더 (Header Bar)
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.font = 'bold 15px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('←  그룹채팅 5', 16, 54);
+
+    ctx.textAlign = 'right';
+    ctx.font = '16px sans-serif';
+    ctx.fillText('🔍  ☰', width - 16, 54);
+
+    // 4. 날짜 헤더 뱃지 (Date Badge)
+    const dateStr = '2026년 8월 9일 일요일';
+    ctx.font = '500 11px sans-serif';
+    const dateMetrics = ctx.measureText(dateStr);
+    const dateW = dateMetrics.width + 20;
+    const dateX = (width - dateW) / 2;
+    const dateY = 76;
+
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+    ctx.beginPath();
+    ctx.roundRect(dateX, dateY, dateW, 22, 11);
+    ctx.fill();
+
+    ctx.fillStyle = dateTextColor;
+    ctx.textAlign = 'center';
+    ctx.fillText(dateStr, width / 2, dateY + 15);
+
+    // 5. 상대방 메시지 (정재현)
+    const youY = 118;
+    ctx.fillStyle = '#94a3b8';
+    ctx.beginPath();
+    ctx.arc(32, youY + 18, 16, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 13px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('정', 32, youY + 23);
+
+    ctx.fillStyle = youNameColor;
+    ctx.font = '500 12px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('정재현', 56, youY + 12);
+
+    const youMsg = '안녕하세요! 색상 변경 테스트입니다.';
+    ctx.font = '13px sans-serif';
+    const youMsgW = Math.min(ctx.measureText(youMsg).width + 20, 230);
+    const youBubbleY = youY + 20;
+
+    ctx.fillStyle = youBubbleColor;
+    ctx.beginPath();
+    ctx.roundRect(56, youBubbleY, youMsgW, 32, 12);
+    ctx.fill();
+
+    ctx.fillStyle = youTextColor;
+    ctx.fillText(youMsg, 66, youBubbleY + 20);
+
+    ctx.fillStyle = timeColor;
+    ctx.font = '10px sans-serif';
+    ctx.fillText('오후 2:16', 56 + youMsgW + 6, youBubbleY + 26);
+
+    // 6. 내 메시지 (나)
+    const meY = 198;
+    const meMsg = '네, 실시간으로 색상이 변경되네요!';
+    ctx.font = '13px sans-serif';
+    const meMsgW = Math.min(ctx.measureText(meMsg).width + 20, 230);
+    const meBubbleX = width - 16 - meMsgW;
+
+    ctx.fillStyle = timeColor;
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('오후 2:17', meBubbleX - 6, meY + 26);
+
+    ctx.fillStyle = meBubbleColor;
+    ctx.beginPath();
+    ctx.roundRect(meBubbleX, meY, meMsgW, 32, 12);
+    ctx.fill();
+
+    ctx.fillStyle = meTextColor;
+    ctx.textAlign = 'left';
+    ctx.fillText(meMsg, meBubbleX + 10, meY + 20);
+
+    // 7. 하단 메시지 입력창
+    const inputY = height - 44;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.roundRect(10, inputY, width - 20, 34, 17);
+    ctx.fill();
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '13px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('+   메시지 입력...', 24, inputY + 22);
+
+    ctx.textAlign = 'right';
+    ctx.fillText('😀  #', width - 24, inputY + 22);
+  }
+
+  /**
+   * 대화방 테마 상세보기 모달 제어 및 실시간 캔버스 미리보기 연동 (v1.3.0)
+   * SPA 해시 라우팅 (/#/small-project/KakaoTalk/index.html) 환경 대응: 이벤트 위임 & body 텔레포트 적용
+   */
+  function setupThemeModalEvents() {
+    const teleportModal = () => {
+      const modal = document.getElementById('theme-detail-modal');
+      if (modal && modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+      }
+      return modal;
+    };
+
+    const updatePreview = () => {
+      const previewCanvas = document.getElementById('theme-preview-canvas');
+      if (!previewCanvas) return;
+      const ctx = previewCanvas.getContext('2d');
+      if (!ctx) return;
+
+      const modalPickers = {
+        'setting-bgcolor': document.getElementById('input-modal-bg-color'),
+        'me-bubble-color': document.getElementById('input-modal-me-bubble-color'),
+        'me-text-color': document.getElementById('input-modal-me-text-color'),
+        'you-bubble-color': document.getElementById('input-modal-you-bubble-color'),
+        'you-text-color': document.getElementById('input-modal-you-text-color'),
+        'you-name-color': document.getElementById('input-modal-you-name-color'),
+        'time-color': document.getElementById('input-modal-time-color'),
+        'date-text-color': document.getElementById('input-modal-date-text-color')
+      };
+
+      const colors = {
+        'setting-bgcolor': modalPickers['setting-bgcolor']?.value || '#acc0d1',
+        'me-bubble-color': modalPickers['me-bubble-color']?.value || '#fee500',
+        'me-text-color': modalPickers['me-text-color']?.value || '#000000',
+        'you-bubble-color': modalPickers['you-bubble-color']?.value || '#ffffff',
+        'you-text-color': modalPickers['you-text-color']?.value || '#000000',
+        'you-name-color': modalPickers['you-name-color']?.value || '#374151',
+        'time-color': modalPickers['time-color']?.value || '#64748b',
+        'date-text-color': modalPickers['date-text-color']?.value || '#475569'
+      };
+
+      drawThemePreviewCanvas(previewCanvas, ctx, colors);
+    };
+
+    // SPA 전역 document 이벤트 위임 (DOM이 동적 교체되어도 100% 모달 팝업 감지)
+    document.addEventListener('click', (e) => {
+      const btnOpen = e.target.closest('#btn-open-theme-modal');
+      if (btnOpen) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const modal = teleportModal();
+        if (!modal) return;
+
+        const selTheme = document.getElementById('select-theme');
+        const curThemeKey = selTheme ? selTheme.value : 'light';
+        const preset = THEME_PRESETS[curThemeKey] || THEME_PRESETS['light'];
+
+        const modalPickers = {
+          'setting-bgcolor': document.getElementById('input-modal-bg-color'),
+          'me-bubble-color': document.getElementById('input-modal-me-bubble-color'),
+          'me-text-color': document.getElementById('input-modal-me-text-color'),
+          'you-bubble-color': document.getElementById('input-modal-you-bubble-color'),
+          'you-text-color': document.getElementById('input-modal-you-text-color'),
+          'you-name-color': document.getElementById('input-modal-you-name-color'),
+          'time-color': document.getElementById('input-modal-time-color'),
+          'date-text-color': document.getElementById('input-modal-date-text-color')
+        };
+
+        Object.keys(modalPickers).forEach(key => {
+          const picker = modalPickers[key];
+          if (picker) {
+            const val = loadedConfig[key] || preset[key];
+            if (val) picker.value = val;
+          }
+        });
+
+        modal.style.setProperty('display', 'flex', 'important');
+        modal.style.setProperty('z-index', '999999', 'important');
+        updatePreview();
+        return;
+      }
+
+      const btnApply = e.target.closest('#btn-apply-theme-modal');
+      if (btnApply) {
+        const modal = document.getElementById('theme-detail-modal');
+        const selTheme = document.getElementById('select-theme');
+        const modalPickers = {
+          'setting-bgcolor': document.getElementById('input-modal-bg-color'),
+          'me-bubble-color': document.getElementById('input-modal-me-bubble-color'),
+          'me-text-color': document.getElementById('input-modal-me-text-color'),
+          'you-bubble-color': document.getElementById('input-modal-you-bubble-color'),
+          'you-text-color': document.getElementById('input-modal-you-text-color'),
+          'you-name-color': document.getElementById('input-modal-you-name-color'),
+          'time-color': document.getElementById('input-modal-time-color'),
+          'date-text-color': document.getElementById('input-modal-date-text-color')
+        };
+
+        Object.keys(modalPickers).forEach(key => {
+          const picker = modalPickers[key];
+          if (picker) {
+            loadedConfig[key] = picker.value;
+          }
+        });
+
+        if (selTheme) selTheme.value = 'custom';
+        if (modal) modal.style.setProperty('display', 'none', 'important');
+        if (triggerUpdateCallback) triggerUpdateCallback(true);
+        return;
+      }
+
+      const btnCancel = e.target.closest('#btn-cancel-theme-modal');
+      const btnCloseHeader = e.target.closest('#btn-close-theme-modal');
+      if (btnCancel || btnCloseHeader) {
+        const modal = document.getElementById('theme-detail-modal');
+        if (modal) modal.style.setProperty('display', 'none', 'important');
+        return;
+      }
+
+      const modal = document.getElementById('theme-detail-modal');
+      if (modal && e.target === modal) {
+        modal.style.setProperty('display', 'none', 'important');
+      }
+    });
+
+    document.addEventListener('change', (e) => {
+      if (e.target.id === 'select-theme') {
+        const selThemeKey = e.target.value;
+        if (selThemeKey === 'light' || selThemeKey === 'dark') {
+          const preset = THEME_PRESETS[selThemeKey];
+          if (preset) {
+            Object.keys(preset).forEach(key => {
+              loadedConfig[key] = preset[key];
+            });
+          }
+        }
+        if (triggerUpdateCallback) triggerUpdateCallback(true);
+      }
+    });
+
+    document.addEventListener('input', (e) => {
+      if (e.target.id && e.target.id.startsWith('input-modal-')) {
+        updatePreview();
+      }
+    });
   }
 
   // 글로벌 Interface 네임스페이스 등록

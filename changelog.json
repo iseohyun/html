@@ -18,7 +18,7 @@
         "type": "Fixed",
         "projectName": "카카오톡 대화 생성기",
         "projectPath": "/small-project/KakaoTalk/index.html",
-        "summary": "v1.3.5: 대화 파일 로드 시 대화 범위(startRangeIndex~endRangeIndex) 및 진행 슬라이더를 불러온 대화 전체 개수(1~totalCount, 예: 1~3192개)로 100% 자동 즉시 재조정"
+        "summary": "v1.4.1: 대화방 테마 드롭다운(Light, Dark, Custom) 선택 시 메인 캔버스에 8대 세부 테마 색상이 100% 즉시 적용되도록 완치"
       }
     ]
   },
