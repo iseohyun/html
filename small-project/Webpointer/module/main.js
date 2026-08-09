@@ -748,11 +748,33 @@
         }
       }
 
-      if (e.key === 'Enter') {
-        if (state.isMultiBezierActive) {
-          bezier.finishMultiBezier();
-          render.renderUI();
-          render.renderRibbon();
+      if (e.key === 'Enter' || e.key === 'Escape' || e.key === 'Esc') {
+        if (state.isMultiBezierActive && bezier) {
+          if (bezier.finishMultiBezier) bezier.finishMultiBezier();
+          if (handlers && handlers.setTool) handlers.setTool('select');
+          if (render && render.renderUI) render.renderUI();
+          if (render && render.renderRibbon) render.renderRibbon();
+        } else if (e.key === 'Escape' || e.key === 'Esc') {
+          cfg.selectedIds.clear();
+          if (handlers && handlers.setTool) handlers.setTool('select');
+          if (render && render.renderUI) render.renderUI();
+          if (render && render.renderRibbon) render.renderRibbon();
+        }
+      }
+
+      if (e.key === ']' || e.key === '}') {
+        e.preventDefault();
+        if (e.shiftKey || e.key === '}') {
+          if (window.bringToFront) window.bringToFront();
+        } else {
+          if (window.bringForward) window.bringForward();
+        }
+      } else if (e.key === '[' || e.key === '{') {
+        e.preventDefault();
+        if (e.shiftKey || e.key === '{') {
+          if (window.sendToBack) window.sendToBack();
+        } else {
+          if (window.sendBackward) window.sendBackward();
         }
       }
 

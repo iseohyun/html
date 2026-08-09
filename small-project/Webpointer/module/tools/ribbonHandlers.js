@@ -4143,7 +4143,6 @@
       }, false);
     });
 
-    // 2. 캔버스 오버레이 시각적 효과 제어
     ['dragenter', 'dragover'].forEach(function(evtName) {
       document.addEventListener(evtName, function(e) {
         if (dropOverlay) dropOverlay.style.display = 'flex';
@@ -4156,7 +4155,6 @@
       }, false);
     });
 
-    // 3. 실제 파일 드롭 시 파일 핸들러 (FileReader API readAsDataURL 사용)
     function processDroppedFiles(files) {
       if (!files || files.length === 0) return;
       var file = files[0];
@@ -4212,5 +4210,122 @@
     }, false);
   }
 
+  function bringToFront() {
+    var cfg = window.WebpointerConfig;
+    var render = window.WebpointerRender;
+    if (!cfg || !cfg.selectedIds || cfg.selectedIds.size === 0) return;
+    var objectsGroup = document.getElementById('objectsGroup');
+    if (!objectsGroup) return;
+
+    if (window.pushHistoryState) window.pushHistoryState();
+
+    cfg.selectedIds.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (obj) {
+        if (obj.underlineEl && obj.underlineEl.parentNode) {
+          objectsGroup.appendChild(obj.underlineEl);
+        }
+        if (obj.el && obj.el.parentNode) {
+          objectsGroup.appendChild(obj.el);
+        }
+        cfg.objectsMap.delete(id);
+        cfg.objectsMap.set(id, obj);
+      }
+    });
+
+    if (render && render.renderUI) render.renderUI();
+    if (render && render.renderRibbon) render.renderRibbon();
+    if (render && render.updateDomTree) render.updateDomTree();
+    if (window.pushHistoryState) window.pushHistoryState();
+  }
+
+  function bringForward() {
+    var cfg = window.WebpointerConfig;
+    var render = window.WebpointerRender;
+    if (!cfg || !cfg.selectedIds || cfg.selectedIds.size === 0) return;
+    var objectsGroup = document.getElementById('objectsGroup');
+    if (!objectsGroup) return;
+
+    if (window.pushHistoryState) window.pushHistoryState();
+
+    cfg.selectedIds.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (obj && obj.el && obj.el.parentNode) {
+        var el = obj.el;
+        var next = el.nextSibling;
+        if (next) {
+          var targetNext = next.nextSibling;
+          if (targetNext) {
+            objectsGroup.insertBefore(el, targetNext);
+          } else {
+            objectsGroup.appendChild(el);
+          }
+        }
+      }
+    });
+
+    if (render && render.renderUI) render.renderUI();
+    if (render && render.renderRibbon) render.renderRibbon();
+    if (render && render.updateDomTree) render.updateDomTree();
+    if (window.pushHistoryState) window.pushHistoryState();
+  }
+
+  function sendBackward() {
+    var cfg = window.WebpointerConfig;
+    var render = window.WebpointerRender;
+    if (!cfg || !cfg.selectedIds || cfg.selectedIds.size === 0) return;
+    var objectsGroup = document.getElementById('objectsGroup');
+    if (!objectsGroup) return;
+
+    if (window.pushHistoryState) window.pushHistoryState();
+
+    cfg.selectedIds.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (obj && obj.el && obj.el.parentNode) {
+        var el = obj.el;
+        var prev = el.previousSibling;
+        if (prev) {
+          objectsGroup.insertBefore(el, prev);
+        }
+      }
+    });
+
+    if (render && render.renderUI) render.renderUI();
+    if (render && render.renderRibbon) render.renderRibbon();
+    if (render && render.updateDomTree) render.updateDomTree();
+    if (window.pushHistoryState) window.pushHistoryState();
+  }
+
+  function sendToBack() {
+    var cfg = window.WebpointerConfig;
+    var render = window.WebpointerRender;
+    if (!cfg || !cfg.selectedIds || cfg.selectedIds.size === 0) return;
+    var objectsGroup = document.getElementById('objectsGroup');
+    if (!objectsGroup) return;
+
+    if (window.pushHistoryState) window.pushHistoryState();
+
+    cfg.selectedIds.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (obj) {
+        if (obj.el && obj.el.parentNode) {
+          objectsGroup.insertBefore(obj.el, objectsGroup.firstChild);
+        }
+        if (obj.underlineEl && obj.underlineEl.parentNode) {
+          objectsGroup.insertBefore(obj.underlineEl, obj.el);
+        }
+      }
+    });
+
+    if (render && render.renderUI) render.renderUI();
+    if (render && render.renderRibbon) render.renderRibbon();
+    if (render && render.updateDomTree) render.updateDomTree();
+    if (window.pushHistoryState) window.pushHistoryState();
+  }
+
+  window.bringToFront = bringToFront;
+  window.bringForward = bringForward;
+  window.sendBackward = sendBackward;
+  window.sendToBack = sendToBack;
   window.initCanvasDragAndDrop = initCanvasDragAndDrop;
 })(window);

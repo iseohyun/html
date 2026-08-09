@@ -95,31 +95,35 @@
   }
 
   function getObjectBounds(obj) {
+    if (!obj || !obj.attrs) return { minX: 0, minY: 0, maxX: 100, maxY: 100 };
     var a = obj.attrs;
     var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
 
     if (obj.type === 'point') {
       var r = a.r || 5;
-      minX = a.cx - r; maxX = a.cx + r;
-      minY = a.cy - r; maxY = a.cy + r;
+      var cx = a.cx || 0, cy = a.cy || 0;
+      minX = cx - r; maxX = cx + r;
+      minY = cy - r; maxY = cy + r;
     } else if (obj.type === 'line') {
-      minX = Math.min(a.x1, a.x2); maxX = Math.max(a.x1, a.x2);
-      minY = Math.min(a.y1, a.y2); maxY = Math.max(a.y1, a.y2);
+      var x1 = a.x1 || 0, x2 = a.x2 || 0, y1 = a.y1 || 0, y2 = a.y2 || 0;
+      minX = Math.min(x1, x2); maxX = Math.max(x1, x2);
+      minY = Math.min(y1, y2); maxY = Math.max(y1, y2);
     } else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'image') {
       var state = window.WebpointerState || {};
       var hasCrop = a.cropLeft || a.cropRight || a.cropTop || a.cropBottom;
+      var ox = a.x || 0, oy = a.y || 0, ow = a.width || 100, oh = a.height || 100;
       if (hasCrop && !state.isCropModeActive) {
         var cL = a.cropLeft || 0;
         var cR = a.cropRight || 0;
         var cT = a.cropTop || 0;
         var cB = a.cropBottom || 0;
-        minX = a.x + a.width * cL;
-        maxX = a.x + a.width * (1 - cR);
-        minY = a.y + a.height * cT;
-        maxY = a.y + a.height * (1 - cB);
+        minX = ox + ow * cL;
+        maxX = ox + ow * (1 - cR);
+        minY = oy + oh * cT;
+        maxY = oy + oh * (1 - cB);
       } else {
-        minX = a.x; maxX = a.x + a.width;
-        minY = a.y; maxY = a.y + a.height;
+        minX = ox; maxX = ox + ow;
+        minY = oy; maxY = oy + oh;
       }
     } else if (obj.type === 'text') {
       var hasBBox = false;
@@ -136,33 +140,50 @@
       if (!hasBBox) {
         var fontSize = parseInt(a.fontSize || 20, 10);
         var approxW = (a.text || '').length * (fontSize * 0.55);
-        minX = a.x; maxX = a.x + approxW;
-        minY = a.y - fontSize; maxY = a.y + 4;
+        var tx = a.x || 0, ty = a.y || 0;
+        minX = tx; maxX = tx + approxW;
+        minY = ty - fontSize; maxY = ty + 4;
       }
     } else if (obj.type === 'ellipse' || obj.type === 'arc') {
-      minX = a.cx - a.rx; maxX = a.cx + a.rx;
-      minY = a.cy - a.ry; maxY = a.cy + a.ry;
+      var ecx = a.cx || 0, ecy = a.cy || 0, erx = a.rx || 30, ery = a.ry || 30;
+      minX = ecx - erx; maxX = ecx + erx;
+      minY = ecy - ery; maxY = ecy + ery;
     } else if (obj.type === 'bez2' || obj.type === 'bez3') {
       if (a.points && a.points.length > 0) {
         a.points.forEach(function(pt) {
-          minX = Math.min(minX, pt.px); maxX = Math.max(maxX, pt.px);
-          minY = Math.min(minY, pt.py); maxY = Math.max(maxY, pt.py);
+          if (pt && typeof pt.px === 'number' && typeof pt.py === 'number') {
+            minX = Math.min(minX, pt.px); maxX = Math.max(maxX, pt.px);
+            minY = Math.min(minY, pt.py); maxY = Math.max(maxY, pt.py);
+          }
         });
-        if (a.firstCtrl) {
+        if (a.firstCtrl && typeof a.firstCtrl.cx === 'number' && typeof a.firstCtrl.cy === 'number') {
           minX = Math.min(minX, a.firstCtrl.cx); maxX = Math.max(maxX, a.firstCtrl.cx);
           minY = Math.min(minY, a.firstCtrl.cy); maxY = Math.max(maxY, a.firstCtrl.cy);
         }
-        if (a.ctrls3) {
+        if (a.ctrls3 && Array.isArray(a.ctrls3)) {
           a.ctrls3.forEach(function(cp) {
-            minX = Math.min(minX, cp.c1.x, cp.c2.x); maxX = Math.max(maxX, cp.c1.x, cp.c2.x);
-            minY = Math.min(minY, cp.c1.y, cp.c2.y); maxY = Math.max(maxY, cp.c1.y, cp.c2.y);
+            if (cp && cp.c1 && typeof cp.c1.x === 'number' && typeof cp.c1.y === 'number') {
+              minX = Math.min(minX, cp.c1.x); maxX = Math.max(maxX, cp.c1.x);
+              minY = Math.min(minY, cp.c1.y); maxY = Math.max(maxY, cp.c1.y);
+            }
+            if (cp && cp.c2 && typeof cp.c2.x === 'number' && typeof cp.c2.y === 'number') {
+              minX = Math.min(minX, cp.c2.x); maxX = Math.max(maxX, cp.c2.x);
+              minY = Math.min(minY, cp.c2.y); maxY = Math.max(maxY, cp.c2.y);
+            }
           });
         }
       } else {
-        minX = Math.min(a.x1, a.x2); maxX = Math.max(a.x1, a.x2);
-        minY = Math.min(a.y1, a.y2); maxY = Math.max(a.y1, a.y2);
+        var bx1 = a.x1 || 0, bx2 = a.x2 || 100, by1 = a.y1 || 0, by2 = a.y2 || 100;
+        minX = Math.min(bx1, bx2); maxX = Math.max(bx1, bx2);
+        minY = Math.min(by1, by2); maxY = Math.max(by1, by2);
       }
     }
+
+    if (!isFinite(minX) || isNaN(minX)) minX = a.x || a.x1 || a.cx || 0;
+    if (!isFinite(maxX) || isNaN(maxX)) maxX = (a.x !== undefined ? a.x + (a.width || 100) : (a.x2 !== undefined ? a.x2 : (a.cx !== undefined ? a.cx + (a.rx || 50) : 100)));
+    if (!isFinite(minY) || isNaN(minY)) minY = a.y || a.y1 || a.cy || 0;
+    if (!isFinite(maxY) || isNaN(maxY)) maxY = (a.y !== undefined ? a.y + (a.height || 100) : (a.y2 !== undefined ? a.y2 : (a.cy !== undefined ? a.cy + (a.ry || 50) : 100)));
+
     return { minX: minX, minY: minY, maxX: maxX, maxY: maxY };
   }
 
