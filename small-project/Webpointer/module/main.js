@@ -377,13 +377,35 @@
         } else if (hType === 'top_left') {
           var oldRight = initialAttrs.x + initialAttrs.width;
           var oldBottom = initialAttrs.y + initialAttrs.height;
-          a.x = Math.min(oldRight - 10, coords.px);
-          a.y = Math.min(oldBottom - 10, coords.py);
-          a.width = oldRight - a.x;
-          a.height = oldBottom - a.y;
+          var newX = Math.min(oldRight - 10, coords.px);
+          var newW = oldRight - newX;
+          var isShiftPressed = e.shiftKey;
+
+          if (!isShiftPressed && initialAttrs.width > 0 && initialAttrs.height > 0) {
+            var aspect = initialAttrs.aspectRatio || (initialAttrs.width / initialAttrs.height);
+            var newH = Math.round(newW / aspect);
+            a.x = newX;
+            a.y = oldBottom - newH;
+            a.width = newW;
+            a.height = newH;
+          } else {
+            a.x = newX;
+            a.y = Math.min(oldBottom - 10, coords.py);
+            a.width = newW;
+            a.height = oldBottom - a.y;
+          }
         } else if (hType === 'bottom_right') {
-          a.width = Math.max(10, coords.px - a.x);
-          a.height = Math.max(10, coords.py - a.y);
+          var newW = Math.max(10, coords.px - a.x);
+          var isShiftPressed = e.shiftKey;
+
+          if (!isShiftPressed && initialAttrs.width > 0 && initialAttrs.height > 0) {
+            var aspect = initialAttrs.aspectRatio || (initialAttrs.width / initialAttrs.height);
+            a.width = newW;
+            a.height = Math.round(newW / aspect);
+          } else {
+            a.width = newW;
+            a.height = Math.max(10, coords.py - a.y);
+          }
         } else if (hType === 'corner_rx') {
           a.rx = Math.max(0, Math.min(a.width / 2, coords.px - a.x));
         } else if (hType === 'ellipse_center') {

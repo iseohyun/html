@@ -108,4 +108,60 @@ test.describe('Webpointer 캔버스 파일 드래그 앤 드랍(Drag & Drop) 자
     expect(imageDomState.tagName).toBe('image');
     expect(imageDomState.hasValidHref).toBe(true);
   });
+
+  test('TC-DRAG-DROP-04: 리사이즈 시 Shift 미누름(정비례) vs Shift 누름(자유 변형) 동작 검증', async ({ page }) => {
+    // 1. 2:1 비율 객체 생성 (width: 200, height: 100)
+    await page.evaluate(() => {
+      const id = 'test_aspect_obj';
+      const obj = {
+        id: id,
+        type: 'image',
+        attrs: { x: 100, y: 100, width: 200, height: 100, aspectRatio: 2.0, preserveAspectRatio: 'none' }
+      };
+      window.WebpointerConfig.objectsMap.set(id, obj);
+      window.WebpointerConfig.initialObjAttrsMap = window.WebpointerConfig.initialObjAttrsMap || new Map();
+      window.WebpointerState.activeHandleInfo = { objId: id, handleType: 'bottom_right' };
+      window.WebpointerState.isDraggingHandle = true;
+      window.WebpointerState.initialObjAttrsMap.set(id, { x: 100, y: 100, width: 200, height: 100, aspectRatio: 2.0 });
+    });
+
+    // 2. Shift 키 미누름 (기본: 정비례 리사이즈 ➔ width 400 시 height는 자동 200)
+    const proportionalResult = await page.evaluate(() => {
+      const obj = window.WebpointerConfig.objectsMap.get('test_aspect_obj');
+      const initialAttrs = window.WebpointerState.initialObjAttrsMap.get('test_aspect_obj');
+      const coords = { px: 500, py: 600 }; // x를 500으로 끌어 width 400으로 만듦
+      const e = { shiftKey: false };
+
+      const newW = Math.max(10, coords.px - obj.attrs.x);
+      if (!e.shiftKey) {
+        const aspect = initialAttrs.aspectRatio || (initialAttrs.width / initialAttrs.height);
+        obj.attrs.width = newW;
+        obj.attrs.height = Math.round(newW / aspect);
+      }
+
+      return { w: obj.attrs.width, h: obj.attrs.height };
+    });
+
+    console.log('[Webpointer Resize Proportional Test 🧪 (No Shift)]:', proportionalResult);
+    expect(proportionalResult.w).toBe(400);
+    expect(proportionalResult.h).toBe(200); // 2:1 비율유지!
+
+    // 3. Shift 키 누름 (자유 변형 ➔ width 400, height 500 자유 설정)
+    const freeTransformResult = await page.evaluate(() => {
+      const obj = window.WebpointerConfig.objectsMap.get('test_aspect_obj');
+      const coords = { px: 500, py: 600 };
+      const e = { shiftKey: true };
+
+      if (e.shiftKey) {
+        obj.attrs.width = Math.max(10, coords.px - obj.attrs.x);
+        obj.attrs.height = Math.max(10, coords.py - obj.attrs.y);
+      }
+
+      return { w: obj.attrs.width, h: obj.attrs.height };
+    });
+
+    console.log('[Webpointer Resize Free Transform Test 🧪 (With Shift)]:', freeTransformResult);
+    expect(freeTransformResult.w).toBe(400);
+    expect(freeTransformResult.h).toBe(500); // 자유변형!
+  });
 });

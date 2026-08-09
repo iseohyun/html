@@ -4060,57 +4060,77 @@
     var objectsGroup = document.getElementById('objectsGroup');
     if (!objectsGroup) return;
 
-    var id = (type === 'svg' ? 'svg_' : 'img_') + Date.now();
-    var cx = (cfg.SVG_WIDTH || 960) / 2;
-    var cy = (cfg.SVG_HEIGHT || 540) / 2;
-    var w = 320;
-    var h = 320;
+    var tempImg = new Image();
+    tempImg.onload = function() {
+      var nw = tempImg.naturalWidth || 320;
+      var nh = tempImg.naturalHeight || 320;
 
-    var el = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-    el.setAttribute('id', id);
-    el.setAttribute('x', Math.round(cx - w / 2));
-    el.setAttribute('y', Math.round(cy - h / 2));
-    el.setAttribute('width', w);
-    el.setAttribute('height', h);
-    el.setAttribute('href', dataUrl);
-    el.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', dataUrl);
-    el.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+      var maxDim = 360;
+      var w = maxDim;
+      var h = maxDim;
 
-    el.setAttribute('stroke', cfg.strokeColor || '#041e49');
-    el.setAttribute('stroke-width', cfg.strokeWidth || 2);
-    el.setAttribute('fill', cfg.fillColor || 'none');
-
-    objectsGroup.appendChild(el);
-
-    var newObj = {
-      id: id,
-      type: 'image',
-      name: name || '드롭 객체',
-      el: el,
-      attrs: {
-        x: Math.round(cx - w / 2),
-        y: Math.round(cy - h / 2),
-        width: w,
-        height: h,
-        href: dataUrl,
-        preserveAspectRatio: 'xMidYMid meet'
-      },
-      style: {
-        strokeColor: cfg.strokeColor || '#041e49',
-        fillColor: cfg.fillColor || 'none',
-        strokeWidth: cfg.strokeWidth || 2
+      if (nw && nh) {
+        if (nw >= nh) {
+          w = maxDim;
+          h = Math.round(maxDim * (nh / nw));
+        } else {
+          h = maxDim;
+          w = Math.round(maxDim * (nw / nh));
+        }
       }
+
+      var id = (type === 'svg' ? 'svg_' : 'img_') + Date.now();
+      var cx = (cfg.SVG_WIDTH || 960) / 2;
+      var cy = (cfg.SVG_HEIGHT || 540) / 2;
+
+      var el = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+      el.setAttribute('id', id);
+      el.setAttribute('x', Math.round(cx - w / 2));
+      el.setAttribute('y', Math.round(cy - h / 2));
+      el.setAttribute('width', w);
+      el.setAttribute('height', h);
+      el.setAttribute('href', dataUrl);
+      el.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', dataUrl);
+      el.setAttribute('preserveAspectRatio', 'none');
+
+      el.setAttribute('stroke', cfg.strokeColor || '#041e49');
+      el.setAttribute('stroke-width', cfg.strokeWidth || 2);
+      el.setAttribute('fill', cfg.fillColor || 'none');
+
+      objectsGroup.appendChild(el);
+
+      var newObj = {
+        id: id,
+        type: 'image',
+        name: name || '드롭 객체',
+        el: el,
+        attrs: {
+          x: Math.round(cx - w / 2),
+          y: Math.round(cy - h / 2),
+          width: w,
+          height: h,
+          href: dataUrl,
+          aspectRatio: (nw && nh) ? (nw / nh) : (w / h),
+          preserveAspectRatio: 'none'
+        },
+        style: {
+          strokeColor: cfg.strokeColor || '#041e49',
+          fillColor: cfg.fillColor || 'none',
+          strokeWidth: cfg.strokeWidth || 2
+        }
+      };
+
+      cfg.objectsMap.set(id, newObj);
+      state.selectedIds = [id];
+      cfg.currentTool = 'select';
+
+      if (window.WebpointerRender) {
+        if (window.WebpointerRender.renderCanvas) window.WebpointerRender.renderCanvas();
+        if (window.WebpointerRender.renderUI) window.WebpointerRender.renderUI();
+      }
+      if (window.pushHistoryState) window.pushHistoryState();
     };
-
-    cfg.objectsMap.set(id, newObj);
-    state.selectedIds = [id];
-    cfg.currentTool = 'select';
-
-    if (window.WebpointerRender) {
-      if (window.WebpointerRender.renderCanvas) window.WebpointerRender.renderCanvas();
-      if (window.WebpointerRender.renderUI) window.WebpointerRender.renderUI();
-    }
-    if (window.pushHistoryState) window.pushHistoryState();
+    tempImg.src = dataUrl;
   }
 
   function initCanvasDragAndDrop() {
