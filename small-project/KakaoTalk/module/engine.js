@@ -238,13 +238,13 @@
     const cleanDialogs = dialogs.filter(d => d.person && d.person.trim() !== '');
     const visibleDialogs = cleanDialogs.slice(startIdx - 1, progressVal);
 
+    // ==========================================
+    // 사용자 정의 9단계 파이프라인 수직 레이아웃 연산
+    // ==========================================
     visibleDialogs.forEach((dialog) => {
-      if (!dialog.person || dialog.person.trim() === '') return;
-
-      // 날짜 구분선 위치 계산
+      // 날짜 구분선 처리
       if (dialog.person.startsWith('=')) {
-        lastSpeaker = ''; // 날짜 구분선 출현 시 연속 화자 정보 리셋 (간격 불일치 예방)
-        lastPosY += 50;
+        lastSpeaker = '';
         const dateVal = dialog.person.slice(1);
         let displayDate = dateVal;
         try {
@@ -253,14 +253,11 @@
             const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
             displayDate = dateObj.toLocaleDateString('ko-KR', options);
           }
-        } catch (e) {
-          // 예외 폴백
-        }
+        } catch (e) {}
 
         ctx.font = `bold 40px ${selectedFont}`;
         const dateWidth = ctx.measureText(displayDate).width + 100;
-        const halfEmDate = 24;
-        const datePosY = lastPosY + halfEmDate;
+        const datePosY = lastPosY + 24; // 0.5em 간격
         tempPositions.push({
           isDate: true,
           posY: datePosY,
@@ -268,16 +265,36 @@
           text: displayDate
         });
 
-        lastPosY = datePosY + 60;
+        lastPosY = datePosY + 60; // 캡슐 높이 60px
         return;
       }
 
-      // 말풍선 줄바꿈 계산 (글꼴 크기에 비례)
+      // 1. 대화 폰트 및 em 기초 단위 연산
+      const meName = config['me'] || config['me-name'] || '나';
+      const isMe = (dialog.person === meName);
+
+      const baseFontSize = Math.round(fontSize * (8.47 / 5.43));
+      const prevFontSize = Math.round(baseFontSize * 0.9) - 1;
+      const activeFontSize = Math.round(prevFontSize * (38 / 44)); // 48px
+
+      const halfEm = Math.round(activeFontSize * 0.5); // 24px (0.5em)
+      const oneEm = Math.round(activeFontSize * 1.0);  // 48px (1.0em)
+
+      // 2. 새 채팅 여부 판별
+      const isNewChat = (dialog.person !== lastSpeaker);
+      if (isNewChat) {
+        lastSpeaker = dialog.person;
+      }
+
+      // 3. 간격 벌림 (새 채팅 = 1.0em, 연속 채팅 = 0.5em)
+      const gap = isNewChat ? oneEm : halfEm;
+      lastPosY += gap;
+
+      // 4. 채팅 넓이/높이 구하기
       const words = dialog.message.split(' ');
       let line = '';
       const lines = [];
       let lineCount = 0;
-      const posY = lastPosY + 58;
 
       words.forEach((word) => {
         if (word === '\\') {
@@ -285,24 +302,16 @@
           lines.push(line);
           line = '';
         } else if (line.length + word.length > Math.max(12, Math.floor(720 / fontSize))) {
-          if (word.startsWith('\\')) {
-            word = word.slice(1);
-          }
+          if (word.startsWith('\\')) word = word.slice(1);
           lineCount++;
           lines.push(line);
           line = word;
         } else {
-          if (word.startsWith('\\')) {
-            word = word.slice(1);
-          }
+          if (word.startsWith('\\')) word = word.slice(1);
           line += (line ? ' ' : '') + word;
         }
       });
       lines.push(line);
-
-      const baseFontSize = Math.round(fontSize * (8.47 / 5.43));
-      const prevFontSize = Math.round(baseFontSize * 0.9) - 1;
-      const activeFontSize = Math.round(prevFontSize * (38 / 44)); // 48px
 
       ctx.font = `${isBold}${activeFontSize}px ${selectedFont}`;
       let maxWidth = 0;
@@ -311,49 +320,66 @@
         if (w > maxWidth) maxWidth = w;
       });
 
-      // 말풍선 크기: 채팅 최대넓이 + 1em (양쪽 0.5em 여백)
-      const oneEm = Math.round(activeFontSize * 1.0);
-      const halfEm = Math.round(activeFontSize * 0.5);
-
       const bubbleWidth = Math.round(maxWidth + oneEm);
       const bubbleHeight = Math.round(40 + lineSpacing * lineCount);
 
-      // Y축 배치 연산 (사용자 정의 간격 순서 및 기준점 엄격 반영)
-      // 1. 간격 시작: 윗채팅.bottom (lastPosY)
-      // 2. 새채팅여부 확인: gap = isContinuous ? 0.5em (24px) : 1.0em (48px)
-      // 3. 간격 끝: targetTop = lastPosY + gap (내 채팅.top 또는 초상화.top 중 높은 것)
-      let isContinuous = (dialog.person === lastSpeaker);
-      if (!isContinuous) {
-        lastSpeaker = dialog.person;
+      // 5~9. 좌표 선점 및 currentY (lastPosY) 갱신
+      let mePosY, adjustedPosY, avatarTop, bubbleBottom;
+
+      if (isMe) {
+        mePosY = lastPosY;
+        bubbleBottom = mePosY + bubbleHeight + 40;
+        lastPosY = bubbleBottom;
+
+        tempPositions.push({
+          isDate: false,
+          isMe: true,
+          posY: mePosY,
+          width: bubbleWidth,
+          height: bubbleHeight,
+          lines: lines,
+          lineCount: lineCount,
+          isContinuous: !isNewChat,
+          person: dialog.person,
+          time: dialog.time || extractTimeStr(dialog.rawTime || config['capture-time'])
+        });
+      } else if (isNewChat) {
+        avatarTop = lastPosY;
+        adjustedPosY = avatarTop + 44;
+        bubbleBottom = adjustedPosY + bubbleHeight + 40;
+        lastPosY = bubbleBottom;
+
+        tempPositions.push({
+          isDate: false,
+          isMe: false,
+          avatarTop: avatarTop,
+          posY: adjustedPosY,
+          width: bubbleWidth,
+          height: bubbleHeight,
+          lines: lines,
+          lineCount: lineCount,
+          isContinuous: false,
+          person: dialog.person,
+          time: dialog.time || extractTimeStr(dialog.rawTime || config['capture-time'])
+        });
+      } else {
+        adjustedPosY = lastPosY;
+        bubbleBottom = adjustedPosY + bubbleHeight + 40;
+        lastPosY = bubbleBottom;
+
+        tempPositions.push({
+          isDate: false,
+          isMe: false,
+          posY: adjustedPosY,
+          width: bubbleWidth,
+          height: bubbleHeight,
+          lines: lines,
+          lineCount: lineCount,
+          isContinuous: true,
+          person: dialog.person,
+          time: dialog.time || extractTimeStr(dialog.rawTime || config['capture-time'])
+        });
       }
-
-      const gap = isContinuous ? halfEm : oneEm;
-      const targetTop = lastPosY + gap;
-
-      const isMe = (dialog.person === (config['me'] || config['me-name'] || '나'));
-      let actualPosY = targetTop;
-      let nextLastPosY = targetTop + bubbleHeight + 52; // mePosY(12) + bubbleHeight + 40
-
-      if (!isMe && !isContinuous) {
-        // 상대방 새 채팅: targetTop = 초상화.top (48px 간격)
-        // 말풍선 top = targetTop + 44
-        // 말풍선 bottom = targetTop + 44 + bubbleHeight + 40
-        nextLastPosY = targetTop + 44 + bubbleHeight + 40;
-      }
-
-      lastPosY = nextLastPosY;
-
-      tempPositions.push({
-        isDate: false,
-        posY: actualPosY,
-        width: bubbleWidth,
-        height: bubbleHeight,
-        lines: lines,
-        lineCount: lineCount,
-        isContinuous: isContinuous,
-        person: dialog.person,
-        time: dialog.time || extractTimeStr(dialog.rawTime || config['capture-time'])
-      });
     });
 
     // 시각 생략 연산 (아래 채팅이 존재하고, 동일 화자이고, 동일 시각인 경우 현재 채팅의 시각 생략)
@@ -393,48 +419,22 @@
       window._shouldLogInit = true;
     }
 
+    // 대화 요소 정밀 바운딩 로그용 인덱스 초기화
     let chatIdx = 0;
 
+    // 6. 메인 렌더링 루프
     visibleDialogs.forEach((dialog, index) => {
       const pos = tempPositions[index];
       if (!pos) return;
 
-      const isLastItem = (index === visibleDialogs.length - 1);
-
-      // 애니메이션 진행 경과값 매핑
-      let itemOpacity = 1.0;
-      let itemTranslateX = 0;
-      let itemTranslateY = 0;
-      let itemBlur = 0;
-      let typingProgress = 1.0;
-
-      if (isLastItem && animState.active) {
-        const p = animState.progress;
-        if (animState.effect === 'opacity') {
-          itemOpacity = p;
-        } else if (animState.effect === 'blur') {
-          itemOpacity = p;
-          itemBlur = (1.0 - p) * 12;
-        } else if (animState.effect === 'slide') {
-          itemOpacity = p;
-          if (pos.isDate) {
-            itemTranslateY = (1.0 - p) * 40;
-          } else if (dialog.person === config['me']) {
-            itemTranslateX = (1.0 - p) * 80;
-          } else {
-            itemTranslateX = -(1.0 - p) * 80;
-          }
-        } else if (animState.effect === 'typing') {
-          typingProgress = p;
-        }
-      }
-
+      // 애니메이션 적용
       ctx.save();
-      ctx.globalAlpha = itemOpacity;
-      ctx.translate(itemTranslateX, itemTranslateY);
-
-      if (itemBlur > 0) {
-        ctx.filter = `blur(${itemBlur}px)`;
+      if (animState.active && index === visibleDialogs.length - 1) {
+        if (animState.effect === 'slide') {
+          const slideOffset = (1.0 - animState.progress) * 50;
+          ctx.translate(0, slideOffset);
+        }
+        ctx.globalAlpha = animState.progress;
       }
 
       // 날짜 구분선 렌더링
@@ -457,13 +457,12 @@
       const meName = config['me'] || config['me-name'] || '나';
       const isMe = (dialog.person === meName);
 
-      // 공통 폰트 크기 및 em 단위 계산 (48px)
       const baseFontSize = Math.round(fontSize * (8.47 / 5.43));
-      const prevFontSize = Math.round(baseFontSize * 0.9) - 1; // 55px
-      const activeFontSize = Math.round(prevFontSize * (38 / 44)); // 48px
+      const prevFontSize = Math.round(baseFontSize * 0.9) - 1;
+      const activeFontSize = Math.round(prevFontSize * (38 / 44));
 
-      const halfEm = Math.round(activeFontSize * 0.5); // 0.5em (24px)
-      const oneEm = Math.round(activeFontSize * 1.0);  // 1.0em (48px)
+      const halfEm = Math.round(activeFontSize * 0.5);
+      const oneEm = Math.round(activeFontSize * 1.0);
 
       const userArcRadius = (config && config['bubble-round'] !== undefined) ? parseInt(config['bubble-round'], 10) : 32;
       const isBold = (config['font-bold'] === 'true' || config['font-bold'] === true) ? 'bold ' : '';
@@ -473,13 +472,13 @@
         const meWidth = Math.max(20, pos.width);
 
         const bx = width - meWidth - meRightMargin;
-        const mePosY = pos.posY + 12;
+        const mePosY = pos.posY;
         const meHeight = pos.height + 40;
 
         ctx.fillStyle = meBubbleColor;
         drawSpeechBubbleWithTail(ctx, bx, mePosY, meWidth, meHeight, 32, true, !pos.isContinuous, undefined, userArcRadius);
 
-        // 규칙 2 (나 시각): 시각.right + 0.5em = 말풍선.left, 말풍선.bottom + 0.25em = 시각.bottom (1em = 시각 폰트 크기)
+        // 시각
         const timeFontSize = Math.floor(fontSize * 0.7);
         const timeHalfEm = Math.round(timeFontSize * 0.5);
         const timeQuarterEm = Math.round(timeFontSize * 0.25);
@@ -500,16 +499,15 @@
         const textH = pos.lines.length * lineSpacing - (lineSpacing - activeFontSize);
         const textY = Math.round(bubbleCenterY - textH / 2);
 
-        // 내 채팅: 오른쪽 정렬 (오른쪽 안쪽 여백 0.5em)
         ctx.fillStyle = meTextColor;
         ctx.font = `${isBold}${activeFontSize}px ${selectedFont}`;
         ctx.textAlign = 'right';
         ctx.textBaseline = 'top';
 
         const textX_me = bx + meWidth - halfEm;
-        drawWrappedText(ctx, pos.lines, textX_me, textY, typingProgress, activeFontSize, lineSpacing);
+        drawWrappedText(ctx, pos.lines, textX_me, textY, 1.0, activeFontSize, lineSpacing);
 
-        // 콘솔 로그 (말풍선, 채팅, 시각 바운딩 박스)
+        // 콘솔 로그
         if (window._shouldLogInit) {
           chatIdx++;
           const textW = Math.round(pos.lines.reduce((max, l) => Math.max(max, ctx.measureText(l).width), 0));
@@ -540,24 +538,18 @@
           console.log(`${msgPrefix}말풍선(${bX1}, ${bY1}, ${bX2}, ${bY2}, ${meWidth}, ${meHeight}), 채팅(${cX1}, ${cY1}, ${cX2}, ${cY2}, ${textW}, ${textH_val}), 시각(${tX1}, ${tY1}, ${tX2}, ${tY2}, ${tW}, ${tH_val})`);
         }
       } else {
-        // 상대방 메시지 요소 em 기반 좌표 정밀 연산
         const oppLayout = calculateOpponentLayout(activeFontSize, fontSize);
-        const avatarDiameter = 116;
-        const bx = oppLayout.bx; // 176px (말풍선 0.8em 우측 이동)
-        const shiftUpByHeight = Math.round(119 * (7 / 99)); // ~8px
+        const bx = oppLayout.bx; // 160px
+        const adjustedPosY = pos.posY;
 
-        const adjustedPosY = pos.isContinuous 
-          ? (pos.posY + 12) 
-          : (pos.posY - Math.round(avatarDiameter * (2 / 5)) + 119 - shiftUpByHeight);
-
-        // 초상화 (모서리 둥근 사각형) - 오른쪽으로 "상대방" 글씨 1em(32px) 이동
+        // 초상화 및 이름 라벨
         if (!pos.isContinuous) {
-          const cx = oppLayout.cx; // 105px
-          const cy = pos.posY - 10 + 58;
-          const size = Math.round(116 * 0.9);
-          const avatarRadius = 46;
+          const cx = oppLayout.cx; // 73px
+          const size = 104;
+          const cy = pos.avatarTop + size / 2;
+          const avatarRadius = 42;
           const ax = cx - size / 2;
-          const ay = cy - size / 2;
+          const ay = pos.avatarTop;
 
           ctx.save();
           drawRoundRect(ctx, ax, ay, size, size, avatarRadius);
@@ -585,18 +577,16 @@
           }
           ctx.restore();
 
-          // 상대방 이름 라벨 - 오른쪽으로 "상대방" 글씨 1em(32px) 이동
           if (!isDirectChat) {
             const nameFontSize = oppLayout.nameFontSize;
             ctx.fillStyle = youNameColor;
             ctx.font = `${nameFontSize}px ${selectedFont}`;
             ctx.textAlign = 'left';
             ctx.textBaseline = 'top';
-            ctx.fillText(dialog.person, oppLayout.nameX, pos.posY + 13 - shiftUpByHeight);
+            ctx.fillText(dialog.person, oppLayout.nameX, pos.avatarTop + 4);
           }
         }
 
-        // 규칙 2 (상대 시각): 시각.left = 말풍선.right + 0.5em, 말풍선.bottom + 0.25em = 시각.bottom (1em = 시각 폰트 크기)
         const youHeight = pos.height + 40;
         ctx.fillStyle = youBubbleColor;
         drawSpeechBubbleWithTail(ctx, bx, adjustedPosY, pos.width, youHeight, 32, false, !pos.isContinuous, undefined, userArcRadius);
@@ -616,9 +606,7 @@
           ctx.fillText(pos.time, timeX_you, timeY_you);
         }
 
-        // 상대방 채팅 텍스트 em 기반 정밀 위치 선점 (textX = 181px)
         const textX = oppLayout.textX;
-
         const bubbleCenterY = adjustedPosY + youHeight / 2;
         const textH = pos.lines.length * lineSpacing - (lineSpacing - activeFontSize);
         const textY = Math.round(bubbleCenterY - textH / 2);
@@ -628,9 +616,9 @@
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
 
-        drawWrappedText(ctx, pos.lines, textX, textY, typingProgress, activeFontSize, lineSpacing);
+        drawWrappedText(ctx, pos.lines, textX, textY, 1.0, activeFontSize, lineSpacing);
 
-        // 콘솔 로그 (말풍선, 채팅, 시각 바운딩 박스)
+        // 콘솔 로그
         if (window._shouldLogInit) {
           chatIdx++;
           const textW = Math.round(pos.lines.reduce((max, l) => Math.max(max, ctx.measureText(l).width), 0));
@@ -1009,6 +997,24 @@
       const prevFontSize = Math.round(baseFontSize * 0.9) - 1;
       const activeFontSize = Math.round(prevFontSize * (38 / 44)); // 48px
 
+      // 1. 대화 폰트 및 em 기초 단위 연산
+      const meName = config['me'] || config['me-name'] || '나';
+      const isMe = (dialog.person === meName);
+
+      const halfEm = Math.round(activeFontSize * 0.5); // 24px (0.5em)
+      const oneEm = Math.round(activeFontSize * 1.0);  // 48px (1.0em)
+
+      // 2. 새 채팅 여부 판별
+      const isNewChat = (dialog.person !== lastSpeaker);
+      if (isNewChat) {
+        lastSpeaker = dialog.person;
+      }
+
+      // 3. 간격 벌림 (새 채팅 = 1.0em, 연속 채팅 = 0.5em)
+      const gap = isNewChat ? oneEm : halfEm;
+      lastPosY += gap;
+
+      // 4. 채팅 넓이/높이 구하기
       if (ctx) ctx.font = `${isBoldStr ? 'bold ' : ''}${activeFontSize}px ${selectedFont}`;
       let maxWidth = 0;
       lines.forEach((l) => {
@@ -1016,41 +1022,66 @@
         if (w > maxWidth) maxWidth = w;
       });
 
-      const oneEm = Math.round(activeFontSize * 1.0);
-      const halfEm = Math.round(activeFontSize * 0.5);
-
       const bubbleWidth = Math.round(maxWidth + oneEm);
       const bubbleHeight = Math.round(40 + lineSpacing * lineCount);
 
-      let isContinuous = (dialog.person === lastSpeaker);
-      if (!isContinuous) {
-        lastSpeaker = dialog.person;
+      // 5~9. 좌표 선점 및 currentY (lastPosY) 갱신
+      let mePosY, adjustedPosY, avatarTop, bubbleBottom;
+
+      if (isMe) {
+        mePosY = lastPosY;
+        bubbleBottom = mePosY + bubbleHeight + 40;
+        lastPosY = bubbleBottom;
+
+        tempPositions.push({
+          isDate: false,
+          isMe: true,
+          posY: mePosY,
+          width: bubbleWidth,
+          height: bubbleHeight,
+          lines: lines,
+          lineCount: lineCount,
+          isContinuous: !isNewChat,
+          person: dialog.person,
+          time: dialog.time || extractTimeStr(dialog.rawTime || config['capture-time'])
+        });
+      } else if (isNewChat) {
+        avatarTop = lastPosY;
+        adjustedPosY = avatarTop + 44;
+        bubbleBottom = adjustedPosY + bubbleHeight + 40;
+        lastPosY = bubbleBottom;
+
+        tempPositions.push({
+          isDate: false,
+          isMe: false,
+          avatarTop: avatarTop,
+          posY: adjustedPosY,
+          width: bubbleWidth,
+          height: bubbleHeight,
+          lines: lines,
+          lineCount: lineCount,
+          isContinuous: false,
+          person: dialog.person,
+          time: dialog.time || extractTimeStr(dialog.rawTime || config['capture-time'])
+        });
+      } else {
+        adjustedPosY = lastPosY;
+        bubbleBottom = adjustedPosY + bubbleHeight + 40;
+        lastPosY = bubbleBottom;
+
+        tempPositions.push({
+          isDate: false,
+          isMe: false,
+          posY: adjustedPosY,
+          width: bubbleWidth,
+          height: bubbleHeight,
+          lines: lines,
+          lineCount: lineCount,
+          isContinuous: true,
+          person: dialog.person,
+          time: dialog.time || extractTimeStr(dialog.rawTime || config['capture-time'])
+        });
       }
-
-      const gap = isContinuous ? halfEm : oneEm;
-      const targetTop = lastPosY + gap;
-
-      const isMe = (dialog.person === (config['me'] || config['me-name'] || '나'));
-      let actualPosY = targetTop;
-      let nextLastPosY = targetTop + bubbleHeight + 52;
-
-      if (!isMe && !isContinuous) {
-        nextLastPosY = targetTop + 44 + bubbleHeight + 40;
-      }
-
-      lastPosY = nextLastPosY;
-
-      tempPositions.push({
-        isDate: false,
-        posY: actualPosY,
-        width: bubbleWidth,
-        height: bubbleHeight,
-        lines: lines,
-        lineCount: lineCount,
-        isContinuous: isContinuous,
-        person: dialog.person,
-        time: dialog.time || extractTimeStr(dialog.rawTime || config['capture-time'])
-      });
     });
 
     // 시각 생략 연산 (아래 채팅이 존재하고, 동일 화자이고, 동일 시각인 경우 현재 채팅의 시각 생략)
@@ -1102,7 +1133,7 @@
         const meWidth = Math.max(20, Math.round(pos.width));
 
         const rx = Math.round(width - meWidth - meRightMargin);
-        const mePosY = Math.round(pos.posY + 12);
+        const mePosY = Math.round(pos.posY);
         const meHeight = Math.round(pos.height + 40);
 
         const userArcRadius = (config && config['bubble-round'] !== undefined) ? parseInt(config['bubble-round'], 10) : 32;
