@@ -375,36 +375,52 @@
         } else if (hType === 'end') {
           a.x2 = coords.px; a.y2 = coords.py;
         } else if (hType === 'top_left') {
-          var oldRight = initialAttrs.x + initialAttrs.width;
-          var oldBottom = initialAttrs.y + initialAttrs.height;
-          var newX = Math.min(oldRight - 10, coords.px);
-          var newW = oldRight - newX;
+          var hasCrop = initialAttrs.cropLeft || initialAttrs.cropRight || initialAttrs.cropTop || initialAttrs.cropBottom;
+          var cropVisibleWRatio = 1 - (initialAttrs.cropLeft || 0) - (initialAttrs.cropRight || 0);
+          var cropVisibleHRatio = 1 - (initialAttrs.cropTop || 0) - (initialAttrs.cropBottom || 0);
+          var initMaxX = initialAttrs.x + initialAttrs.width * (1 - (initialAttrs.cropRight || 0));
+          var initMaxY = initialAttrs.y + initialAttrs.height * (1 - (initialAttrs.cropBottom || 0));
+
+          var newVisibleW = Math.max(10, initMaxX - coords.px);
+          var newFullW = Math.round(newVisibleW / cropVisibleWRatio);
           var isShiftPressed = e.shiftKey;
+
+          a.width = newFullW;
+          a.x = initMaxX - Math.round(newFullW * (1 - (initialAttrs.cropRight || 0)));
 
           if (!isShiftPressed && initialAttrs.width > 0 && initialAttrs.height > 0) {
             var aspect = initialAttrs.aspectRatio || (initialAttrs.width / initialAttrs.height);
-            var newH = Math.round(newW / aspect);
-            a.x = newX;
-            a.y = oldBottom - newH;
-            a.width = newW;
-            a.height = newH;
+            a.height = Math.round(a.width / aspect);
+            a.y = initMaxY - Math.round(a.height * (1 - (initialAttrs.cropBottom || 0)));
           } else {
-            a.x = newX;
-            a.y = Math.min(oldBottom - 10, coords.py);
-            a.width = newW;
-            a.height = oldBottom - a.y;
+            var newVisibleH = Math.max(10, initMaxY - coords.py);
+            var newFullH = Math.round(newVisibleH / cropVisibleHRatio);
+            a.height = newFullH;
+            a.y = initMaxY - Math.round(newFullH * (1 - (initialAttrs.cropBottom || 0)));
           }
         } else if (hType === 'bottom_right') {
-          var newW = Math.max(10, coords.px - a.x);
+          var hasCrop = initialAttrs.cropLeft || initialAttrs.cropRight || initialAttrs.cropTop || initialAttrs.cropBottom;
+          var cropVisibleWRatio = 1 - (initialAttrs.cropLeft || 0) - (initialAttrs.cropRight || 0);
+          var cropVisibleHRatio = 1 - (initialAttrs.cropTop || 0) - (initialAttrs.cropBottom || 0);
+          var initMinX = initialAttrs.x + initialAttrs.width * (initialAttrs.cropLeft || 0);
+          var initMinY = initialAttrs.y + initialAttrs.height * (initialAttrs.cropTop || 0);
+
+          var newVisibleW = Math.max(10, coords.px - initMinX);
+          var newFullW = Math.round(newVisibleW / cropVisibleWRatio);
           var isShiftPressed = e.shiftKey;
+
+          a.width = newFullW;
+          a.x = initMinX - Math.round(newFullW * (initialAttrs.cropLeft || 0));
 
           if (!isShiftPressed && initialAttrs.width > 0 && initialAttrs.height > 0) {
             var aspect = initialAttrs.aspectRatio || (initialAttrs.width / initialAttrs.height);
-            a.width = newW;
-            a.height = Math.round(newW / aspect);
+            a.height = Math.round(a.width / aspect);
+            a.y = initMinY - Math.round(a.height * (initialAttrs.cropTop || 0));
           } else {
-            a.width = newW;
-            a.height = Math.max(10, coords.py - a.y);
+            var newVisibleH = Math.max(10, coords.py - initMinY);
+            var newFullH = Math.round(newVisibleH / cropVisibleHRatio);
+            a.height = newFullH;
+            a.y = initMinY - Math.round(newFullH * (initialAttrs.cropTop || 0));
           }
         } else if (hType === 'corner_rx') {
           a.rx = Math.max(0, Math.min(a.width / 2, coords.px - a.x));

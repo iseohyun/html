@@ -106,8 +106,21 @@
       minX = Math.min(a.x1, a.x2); maxX = Math.max(a.x1, a.x2);
       minY = Math.min(a.y1, a.y2); maxY = Math.max(a.y1, a.y2);
     } else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'image') {
-      minX = a.x; maxX = a.x + a.width;
-      minY = a.y; maxY = a.y + a.height;
+      var state = window.WebpointerState || {};
+      var hasCrop = a.cropLeft || a.cropRight || a.cropTop || a.cropBottom;
+      if (hasCrop && !state.isCropModeActive) {
+        var cL = a.cropLeft || 0;
+        var cR = a.cropRight || 0;
+        var cT = a.cropTop || 0;
+        var cB = a.cropBottom || 0;
+        minX = a.x + a.width * cL;
+        maxX = a.x + a.width * (1 - cR);
+        minY = a.y + a.height * cT;
+        maxY = a.y + a.height * (1 - cB);
+      } else {
+        minX = a.x; maxX = a.x + a.width;
+        minY = a.y; maxY = a.y + a.height;
+      }
     } else if (obj.type === 'text') {
       var hasBBox = false;
       try {

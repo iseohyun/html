@@ -400,10 +400,11 @@
         minY = Math.min(minY, a.y1, a.y2);
         maxY = Math.max(maxY, a.y1, a.y2);
       } else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'image') {
-        minX = Math.min(minX, a.x);
-        maxX = Math.max(maxX, a.x + a.width);
-        minY = Math.min(minY, a.y);
-        maxY = Math.max(maxY, a.y + a.height);
+        var b = window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(obj) : { minX: a.x, maxX: a.x + a.width, minY: a.y, maxY: a.y + a.height };
+        minX = Math.min(minX, b.minX);
+        maxX = Math.max(maxX, b.maxX);
+        minY = Math.min(minY, b.minY);
+        maxY = Math.max(maxY, b.maxY);
       } else if (obj.type === 'ellipse' || obj.type === 'arc') {
         minX = Math.min(minX, a.cx - a.rx);
         maxX = Math.max(maxX, a.cx + a.rx);
@@ -554,13 +555,15 @@
         createHandleNode(a.x1, a.y1, id, 'start', 1, false);
         createHandleNode(a.x2, a.y2, id, 'end', 2, false);
       } else if (obj.type === 'rect' || obj.type === 'image') {
-        createHandleNode(a.x, a.y, id, 'top_left', 1, false);
-        createHandleNode(a.x + a.width, a.y + a.height, id, 'bottom_right', 2, false);
+        var bounds = window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(obj) : { minX: a.x, maxX: a.x + a.width, minY: a.y, maxY: a.y + a.height };
+        createHandleNode(bounds.minX, bounds.minY, id, 'top_left', 1, false);
+        createHandleNode(bounds.maxX, bounds.maxY, id, 'bottom_right', 2, false);
       } else if (obj.type === 'rounded') {
+        var bounds = window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(obj) : { minX: a.x, maxX: a.x + a.width, minY: a.y, maxY: a.y + a.height };
         var cornerRx = a.rx !== undefined ? a.rx : 15;
-        createHandleNode(a.x, a.y, id, 'top_left', 1, false);
-        createHandleNode(a.x + a.width, a.y + a.height, id, 'bottom_right', 2, false);
-        createHandleNode(a.x + cornerRx, a.y, id, 'corner_rx', 3, true);
+        createHandleNode(bounds.minX, bounds.minY, id, 'top_left', 1, false);
+        createHandleNode(bounds.maxX, bounds.maxY, id, 'bottom_right', 2, false);
+        createHandleNode(bounds.minX + cornerRx, bounds.minY, id, 'corner_rx', 3, true);
       }
 
       if (obj.attrs && obj.attrs.fill && typeof obj.attrs.fill === 'string' && obj.attrs.fill.indexOf('url(#grad_') !== -1) {
