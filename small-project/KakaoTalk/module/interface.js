@@ -176,15 +176,70 @@
         helpModalBody.innerHTML = helpContentHtml;
         helpModal.style.display = 'flex';
       });
+    }
 
-      btnCloseHelp.addEventListener('click', () => {
-        helpModal.style.display = 'none';
-      });
+    // ======================================================
+    // 모든 모달 닫기 버튼 및 배경 클릭 이벤트 종합 핸들러
+    // ======================================================
+    const bindModalClose = (modalId, closeBtnId, cancelBtnId) => {
+      const modal = document.getElementById(modalId);
+      if (!modal) return;
 
-      helpModal.addEventListener('click', (e) => {
-        if (e.target === helpModal) {
-          helpModal.style.display = 'none';
+      if (closeBtnId) {
+        const closeBtn = document.getElementById(closeBtnId);
+        if (closeBtn) {
+          closeBtn.addEventListener('click', () => { modal.style.display = 'none'; });
         }
+      }
+      if (cancelBtnId) {
+        const cancelBtn = document.getElementById(cancelBtnId);
+        if (cancelBtn) {
+          cancelBtn.addEventListener('click', () => { modal.style.display = 'none'; });
+        }
+      }
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.style.display = 'none';
+        }
+      });
+    };
+
+    bindModalClose('download-modal', 'btn-close-download');
+    bindModalClose('mobile-save-modal', 'btn-close-mobile-save', 'btn-close-mobile-save-confirm');
+    bindModalClose('avatar-modal', 'btn-close-modal');
+    bindModalClose('help-modal', 'btn-close-help');
+    bindModalClose('theme-detail-modal', 'btn-close-theme-modal', 'btn-cancel-theme-modal');
+
+    // 다운로드 옵션 카드의 다운로드 액션 연결
+    const downloadModal = document.getElementById('download-modal');
+    const optDownloadStatic = document.getElementById('opt-download-static');
+    const optDownloadSvg = document.getElementById('opt-download-svg');
+    const optDownloadAnimation = document.getElementById('opt-download-animation');
+    const optDownloadFull = document.getElementById('opt-download-full');
+
+    if (optDownloadStatic) {
+      optDownloadStatic.addEventListener('click', () => {
+        if (downloadModal) downloadModal.style.display = 'none';
+        if (btnDownload) btnDownload.click();
+      });
+    }
+    if (optDownloadSvg) {
+      optDownloadSvg.addEventListener('click', () => {
+        if (downloadModal) downloadModal.style.display = 'none';
+        downloadCanvasSVG();
+      });
+    }
+    if (optDownloadAnimation) {
+      optDownloadAnimation.addEventListener('click', () => {
+        if (downloadModal) downloadModal.style.display = 'none';
+        const btnPlay = document.getElementById('btn-play');
+        if (btnPlay) btnPlay.click();
+      });
+    }
+    if (optDownloadFull) {
+      optDownloadFull.addEventListener('click', () => {
+        if (downloadModal) downloadModal.style.display = 'none';
+        if (btnDownload) btnDownload.click();
       });
     }
 
@@ -260,6 +315,164 @@
     document.querySelectorAll('input[name="effect"], #input-auto-scroll, #input-tts').forEach((el) => {
       el.addEventListener('change', () => { if (triggerUpdateCallback) triggerUpdateCallback(true); });
     });
+
+    // ======================================================
+    // 우측 SPA 네비게이션 바 & 슬라이딩 드로어 이벤트 연동
+    // ======================================================
+    const btnIconLoad = document.getElementById('btn-icon-load');
+    const btnIconDownload = document.getElementById('btn-icon-download');
+    const btnIconHelp = document.getElementById('btn-icon-help');
+
+    const btnIconAnim = document.getElementById('btn-icon-anim');
+    const btnIconSettings = document.getElementById('btn-icon-settings');
+    const btnIconRaw = document.getElementById('btn-icon-raw');
+
+    const slidingDrawer = document.getElementById('sliding-drawer-panel');
+    const drawerTitle = document.getElementById('drawer-title');
+    const btnCloseDrawer = document.getElementById('btn-close-drawer');
+    const rightSpaNav = document.getElementById('right-spa-nav');
+
+    // 1. 즉시 실행 아이콘 바인딩
+    if (btnIconLoad) {
+      btnIconLoad.addEventListener('click', () => {
+        if (fileLoader) fileLoader.click();
+      });
+    }
+
+    if (btnIconDownload) {
+      btnIconDownload.addEventListener('click', () => {
+        const downloadModal = document.getElementById('download-modal');
+        if (downloadModal) {
+          downloadModal.style.display = 'flex';
+        } else if (btnDownload) {
+          btnDownload.click();
+        }
+      });
+    }
+
+    if (btnIconHelp) {
+      btnIconHelp.addEventListener('click', () => {
+        if (btnHelp) btnHelp.click();
+      });
+    }
+
+    // 2. 드로어 패널 탭 switching 및 열기/닫기
+    const articleElem = document.getElementById('kakaotalk-article');
+
+    const openDrawerTab = (tabId, titleText, activeBtn) => {
+      if (!slidingDrawer) return;
+
+      const isCurrentActive = activeBtn && activeBtn.classList.contains('active');
+      const isClosed = slidingDrawer.classList.contains('drawer-closed');
+
+      if (isCurrentActive && !isClosed) {
+        closeDrawer();
+        return;
+      }
+
+      document.querySelectorAll('.drawer-tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+
+      const targetTab = document.getElementById(tabId);
+      if (targetTab) targetTab.classList.add('active');
+      if (activeBtn) activeBtn.classList.add('active');
+      if (drawerTitle) drawerTitle.textContent = titleText;
+
+      slidingDrawer.classList.remove('drawer-closed');
+      if (rightSpaNav) rightSpaNav.classList.add('drawer-open');
+
+      if (articleElem && rightSpaNav && !rightSpaNav.classList.contains('nav-overlay-mode')) {
+        articleElem.classList.add('drawer-push-active');
+      }
+
+      if (triggerUpdateCallback) triggerUpdateCallback(true);
+    };
+
+    const closeDrawer = () => {
+      if (slidingDrawer) slidingDrawer.classList.add('drawer-closed');
+      if (rightSpaNav) rightSpaNav.classList.remove('drawer-open');
+      document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+      if (articleElem) articleElem.classList.remove('drawer-push-active');
+      if (triggerUpdateCallback) triggerUpdateCallback(true);
+    };
+
+    if (btnIconAnim) {
+      btnIconAnim.addEventListener('click', () => openDrawerTab('drawer-tab-anim', '🎬 애니메이션 설정', btnIconAnim));
+    }
+    if (btnIconSettings) {
+      btnIconSettings.addEventListener('click', () => openDrawerTab('drawer-tab-settings', '⚙️ 환경설정', btnIconSettings));
+    }
+    if (btnIconRaw) {
+      btnIconRaw.addEventListener('click', () => openDrawerTab('drawer-tab-raw', '📄 원문 보기 / 실시간 에디터', btnIconRaw));
+    }
+    if (btnCloseDrawer) {
+      btnCloseDrawer.addEventListener('click', closeDrawer);
+    }
+
+    // 3. 패널 표시 모드 (Push vs Overlay) 토글
+    document.querySelectorAll('input[name="panel-mode-toggle"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        if (!rightSpaNav) return;
+        if (e.target.value === 'overlay') {
+          rightSpaNav.classList.remove('nav-push-mode');
+          rightSpaNav.classList.add('nav-overlay-mode');
+        } else {
+          rightSpaNav.classList.remove('nav-overlay-mode');
+          rightSpaNav.classList.add('nav-push-mode');
+        }
+        if (triggerUpdateCallback) triggerUpdateCallback(true);
+      });
+    });
+
+    // 4. 모바일 네비게이션 숨김 토글
+    const btnMobileNavToggle = document.getElementById('btn-mobile-nav-toggle');
+    if (btnMobileNavToggle && rightSpaNav) {
+      btnMobileNavToggle.addEventListener('click', () => {
+        rightSpaNav.classList.toggle('mobile-collapsed');
+      });
+    }
+
+    // 5. 스크롤 위치 감지 & 다시 펼치기(▼)/접기(▲) 상태 핸들링
+    let isNavPinned = false;
+    const btnReexpandNav = document.getElementById('btn-reexpand-nav');
+    const btnFoldNav = document.getElementById('btn-fold-nav');
+
+    const handleScrollNavState = () => {
+      if (!rightSpaNav) return;
+      const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+
+      if (isNavPinned) {
+        // '다시 펼치기(▼)'로 펼쳐진 고정 상태: '다시 접기(▲)'를 누르기 전까지 스크롤해도 펼침 유지
+        rightSpaNav.classList.remove('nav-scrolled-up');
+        if (btnReexpandNav) btnReexpandNav.style.display = 'none';
+        return;
+      }
+
+      if (scrollY > 30) {
+        rightSpaNav.classList.add('nav-scrolled-up');
+        if (btnReexpandNav) btnReexpandNav.style.display = 'flex';
+      } else {
+        rightSpaNav.classList.remove('nav-scrolled-up');
+        if (btnReexpandNav) btnReexpandNav.style.display = 'none';
+      }
+    };
+
+    if (btnReexpandNav) {
+      btnReexpandNav.addEventListener('click', () => {
+        isNavPinned = true;
+        handleScrollNavState();
+      });
+    }
+
+    if (btnFoldNav) {
+      btnFoldNav.addEventListener('click', () => {
+        isNavPinned = false;
+        handleScrollNavState();
+      });
+    }
+
+    window.addEventListener('scroll', handleScrollNavState, { passive: true });
+    handleScrollNavState();
 
     // 카테고리 아코디언 Open/Close
     document.querySelectorAll('.category-header').forEach((header) => {

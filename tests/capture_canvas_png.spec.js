@@ -29,6 +29,9 @@ test('Capture canvas PNG and evaluate alignment, Ctrl guide, and Ctrl+Click copy
 2026년 7월 22일 오후 4:22, 정재현 : 고성이랑 양양은 한시간 거린데
 2026년 7월 22일 오후 4:23, 구인호 : 일단 만석닭강정은 감`;
 
+  await page.locator('#btn-icon-raw').click();
+  await page.waitForTimeout(300);
+
   const textarea = page.locator('#chat-input');
   await textarea.fill(sampleText);
   await textarea.dispatchEvent('input');

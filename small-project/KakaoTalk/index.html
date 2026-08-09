@@ -10,222 +10,260 @@
 <body>
   <article>
     <div id="kakaotalk-article">
-      <canvas id="chat-canvas" width="1080" height="2340"></canvas>
-      <div id="controll-box">
-      <div class="button-group">
-        <button id="btn-load-example">대화내용 불러오기</button>
-        <input type="file" id="file-loader" style="display: none;">
-        <div class="tooltip-wrapper">
-          <button id="btn-download">그림 다운로드</button>
-          <div class="tooltip-below">+ctrl : .svg</div>
-        </div>
-        <button id="btn-help"
-          style="background-color: #f1f5f9; border: 1px solid #cbd5e1; color: #1e293b;">도움말(?)</button>
+      <div id="canvas-container">
+        <canvas id="chat-canvas" width="1080" height="2340"></canvas>
       </div>
 
-      <div class="category">
-        <div class="category-header">
-          <span class="category-title">애니메이션 설정 <span class="accordion-icon">▲</span></span>
-          <div class="animation-controls" style="display: flex; gap: 4px;">
-            <button id="btn-prev" title="이전 스텝">⎸◀</button>
-            <button id="btn-play" title="시뮬레이션 재생 / 일시정지">▶</button>
-            <button id="btn-step" title="한 스텝 재생">▶⎸</button>
+      <!-- 숨김 파일 로더 및 컨트롤 호환 요소 -->
+      <input type="file" id="file-loader" style="display: none;">
+      <input type="file" id="setting-file-loader" accept="*" style="display: none;">
+      <!-- 하위 호환 가상 버튼 레거시 바인딩용 -->
+      <div style="display: none;">
+        <button id="btn-load-example"></button>
+        <button id="btn-download"></button>
+        <button id="btn-help"></button>
+      </div>
+
+      <!-- 오른쪽 코너 48x48 밀착 다시 펼치기 버튼 (아래 화살표 ▼) -->
+      <button type="button" id="btn-reexpand-nav" class="floating-reexpand-btn" title="메뉴 바 다시 펼치기 (▼)" style="display: none;">
+        ▼
+      </button>
+
+      <!-- 우측 SPA 네비게이션 & 슬라이딩 드로어 컴포넌트 -->
+      <div id="right-spa-nav" class="nav-push-mode">
+        <!-- 1. 슬라이딩 드로어 패널 -->
+        <div id="sliding-drawer-panel" class="drawer-closed">
+          <div class="drawer-header">
+            <h3 id="drawer-title">⚙️ 환경설정</h3>
+            <button type="button" id="btn-close-drawer" class="btn-close-drawer" title="패널 닫기">&times;</button>
           </div>
-        </div>
-        <div class="category-content">
-          <div class="control-row">
-            <label>대화 범위</label>
-            <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
-              <div class="double-slider-container">
-                <div class="double-slider-track"></div>
-                <div id="double-slider-range" class="double-slider-range"></div>
-                
-                <div id="slider-handle-start" class="double-slider-handle">
-                  <div class="slider-tooltip"></div>
+          <div class="drawer-content">
+            
+            <!-- Tab 1: 🎬 애니메이션 설정 -->
+            <div id="drawer-tab-anim" class="drawer-tab-content">
+              <div class="category-header" style="background: none; padding: 0; margin-bottom: 8px;">
+                <span class="category-title" style="font-size: 1.05rem;">재생 제어</span>
+                <div class="animation-controls" style="display: flex; gap: 6px;">
+                  <button id="btn-prev" title="이전 스텝">⎸◀</button>
+                  <button id="btn-play" title="시뮬레이션 재생 / 일시정지">▶</button>
+                  <button id="btn-step" title="한 스텝 재생">▶⎸</button>
                 </div>
-                
-                <div id="slider-handle-end" class="double-slider-handle">
-                  <div class="slider-tooltip"></div>
+              </div>
+
+              <div class="control-row">
+                <label>대화 범위</label>
+                <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
+                  <div class="double-slider-container">
+                    <div class="double-slider-track"></div>
+                    <div id="double-slider-range" class="double-slider-range"></div>
+                    <div id="slider-handle-start" class="double-slider-handle"><div class="slider-tooltip"></div></div>
+                    <div id="slider-handle-end" class="double-slider-handle"><div class="slider-tooltip"></div></div>
+                  </div>
+                  <span id="label-double-range" style="width: 75px; text-align: right; font-size: 0.85em; font-weight: bold; color: #475569;">1 ~ 0</span>
                 </div>
               </div>
-              <span id="label-double-range" style="width: 75px; text-align: right; font-size: 0.85em; font-weight: bold; color: #475569;">1 ~ 0</span>
+
+              <div class="control-row">
+                <label for="input-progress">대화 진행률</label>
+                <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
+                  <input type="range" id="input-progress" min="0" max="100" value="100" style="flex: 1;">
+                  <span id="label-progress" style="width: 75px; text-align: right; font-size: 0.85em; font-weight: bold; color: #475569;">0 / 0개</span>
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label for="input-speed">대화 속도</label>
+                <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
+                  <input type="range" id="input-speed" min="0" max="2" step="0.1" value="0.5" style="flex: 1;">
+                  <span id="label-speed" style="width: 75px; text-align: right; font-size: 0.85em; font-weight: bold; color: #475569;">0.5초</span>
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label for="input-duration">등장 시간</label>
+                <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
+                  <input type="range" id="input-duration" min="0" max="2" step="0.1" value="0.5" style="flex: 1;">
+                  <span id="label-duration" style="width: 75px; text-align: right; font-size: 0.85em; font-weight: bold; color: #475569;">0.5초</span>
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label>등장 효과</label>
+                <div class="radio-group">
+                  <label><input type="radio" name="effect" value="opacity" checked> 투명도</label>
+                  <label><input type="radio" name="effect" value="typing"> 타이핑</label>
+                  <label><input type="radio" name="effect" value="blur"> 흐리게</label>
+                  <label><input type="radio" name="effect" value="slide"> 밀어내기</label>
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label>부가 기능</label>
+                <div style="display: flex; gap: 16px; align-items: center;">
+                  <label style="display: flex; align-items: center; gap: 4px; font-weight: normal; cursor: pointer;"><input type="checkbox" id="input-auto-scroll" checked>스크롤 고정</label>
+                  <label style="display: flex; align-items: center; gap: 4px; font-weight: normal; cursor: pointer;"><input type="checkbox" id="input-tts"> 읽어주기</label>
+                </div>
+              </div>
             </div>
-          </div>
-          <div class="control-row">
-            <label for="input-progress">대화 진행률</label>
-            <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
-              <input type="range" id="input-progress" min="0" max="100" value="100" style="flex: 1;">
-              <span id="label-progress"
-                style="width: 75px; text-align: right; font-size: 0.85em; font-weight: bold; color: #475569;">0 /
-                0개</span>
+
+            <!-- Tab 2: ⚙️ 환경설정 -->
+            <div id="drawer-tab-settings" class="drawer-tab-content">
+              <div class="category-header" style="background: none; padding: 0; margin-bottom: 8px;">
+                <span class="category-title" style="font-size: 1.05rem;">설정 관리</span>
+                <div class="setting-controls">
+                  <button id="btn-reset-settings" title="설정 초기화">↺</button>
+                  <button id="btn-save-settings" title="설정 저장">⬇</button>
+                  <button id="btn-load-settings" title="설정 불러오기">⬆</button>
+                </div>
+              </div>
+
+              <!-- 새로 추가된 패널 표시 모드 (Push vs Overlay) -->
+              <div class="control-row" style="background: #f1f5f9; padding: 10px; border-radius: 8px;">
+                <label style="font-weight: bold; color: #0f172a;">패널 표시 모드</label>
+                <div class="radio-group" style="margin-top: 4px;">
+                  <label><input type="radio" name="panel-mode-toggle" value="push" checked> 캔버스 밀어내기 (Push)</label>
+                  <label><input type="radio" name="panel-mode-toggle" value="overlay"> 캔버스 위 덮기 (Overlay)</label>
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label for="input-me-name">내 이름 (나)</label>
+                <select id="input-me-name" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9em; color: #334155; outline: none; background-color: #fff; cursor: pointer; width: 100%;">
+                  <option value="">없음</option>
+                </select>
+              </div>
+
+              <div class="control-row">
+                <label for="input-capture-time">캡처 시간</label>
+                <input type="datetime-local" id="input-capture-time">
+              </div>
+
+              <div class="control-row">
+                <label for="input-your-name">대화방 이름</label>
+                <input type="text" id="input-your-name" value="그룹채팅">
+              </div>
+
+              <div class="control-row">
+                <label for="select-theme">대화방 테마</label>
+                <div style="display: flex; gap: 6px; width: 100%; box-sizing: border-box; align-items: center;">
+                  <select id="select-theme" style="flex: 1; min-width: 0; padding: 6px 8px; font-size: 0.9em; font-weight: bold; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #ffffff; cursor: pointer; box-sizing: border-box;">
+                    <option value="light">기본 테마 (Light)</option>
+                    <option value="dark">다크 테마 (Dark)</option>
+                    <option value="custom">사용자 지정 (Custom)</option>
+                  </select>
+                  <button type="button" id="btn-open-theme-modal" title="색상 상세보기 및 상세변경" style="flex: none; padding: 6px 10px; font-size: 0.85em; background-color: #fee500; color: #191919; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; white-space: nowrap; box-sizing: border-box;">
+                    상세보기 ⚙️
+                  </button>
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label for="input-battery">배터리 상태</label>
+                <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
+                  <input type="range" id="input-battery" min="0" max="100" value="83" style="flex: 1;">
+                  <span id="label-battery" style="width: 45px; text-align: right; font-size: 0.9em; font-weight: bold; color: #475569;">83%</span>
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label for="input-wifi">와이파이 상태</label>
+                <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
+                  <input type="range" id="input-wifi" min="0" max="4" value="4" style="flex: 1;">
+                  <span id="label-wifi" style="width: 45px; text-align: right; font-size: 0.9em; font-weight: bold; color: #475569;">100%</span>
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label for="input-cell">셀 상태</label>
+                <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
+                  <input type="range" id="input-cell" min="0" max="4" value="4" style="flex: 1;">
+                  <span id="label-cell" style="width: 45px; text-align: right; font-size: 0.9em; font-weight: bold; color: #475569;">100%</span>
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label for="input-font">글꼴</label>
+                <select id="input-font" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9em; color: #334155; outline: none; background-color: #fff; cursor: pointer;">
+                  <option value="sans-serif">기본 산세리프 (sans-serif)</option>
+                  <option value="맑은 고딕, Malgun Gothic">맑은 고딕</option>
+                  <option value="나눔고딕, NanumGothic">나눔고딕</option>
+                  <option value="굴림, Gulim">굴림</option>
+                  <option value="돋움, Dotum">돋움</option>
+                  <option value="Apple SD Gothic Neo">Apple SD 산돌고딕 Neo</option>
+                  <option value="serif">세리프 (serif)</option>
+                  <option value="monospace">고정폭 (monospace)</option>
+                </select>
+              </div>
+
+              <div class="control-row">
+                <label>글꼴 상세</label>
+                <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                  <div style="display: flex; align-items: center; gap: 4px;">
+                    크기: <input type="number" id="input-font-size" value="38" min="20" max="60" style="width: 65px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px;"> px
+                  </div>
+                  <label style="display: flex; align-items: center; gap: 4px; font-weight: normal; cursor: pointer;">
+                    <input type="checkbox" id="input-font-bold"> 굵게
+                  </label>
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label>말풍선 라운드</label>
+                <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+                  <input type="range" id="input-bubble-round" min="0" max="60" value="32" style="flex: 1;">
+                  <span id="label-bubble-round" style="width: 45px; text-align: right; font-size: 0.9em; font-weight: bold; color: #475569;">32 px</span>
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label>대화상대 초상화</label>
+                <button id="btn-open-avatar-modal" style="width: 100%; padding: 10px; font-size: 0.9em; font-weight: bold; background-color: #e2e8f0; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; transition: background-color 0.2s;">상세 설정 열기</button>
+              </div>
+
+              <div class="control-row">
+                <label>화면 비율</label>
+                <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.9em; width: 100%;">
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <input type="number" id="input-width" style="width: 80px;" value="1080"> x
+                    <input type="number" id="input-height" style="width: 80px;" value="2340">
+                  </div>
+                  <div style="font-size: 0.85em; color: #64748b; font-weight: bold;">
+                    가로: <span id="label-width">1080</span>px / 세로: <span id="label-height">2340</span>px
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-          <div class="control-row">
-            <label for="input-speed">대화 속도</label>
-            <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
-              <input type="range" id="input-speed" min="0" max="2" step="0.1" value="0.5" style="flex: 1;">
-              <span id="label-speed"
-                style="width: 75px; text-align: right; font-size: 0.85em; font-weight: bold; color: #475569;">0.5초</span>
+
+            <!-- Tab 3: 📄 원문 보기 실시간 에디터 -->
+            <div id="drawer-tab-raw" class="drawer-tab-content">
+              <label for="chat-input" style="font-weight: bold; color: #0f172a; font-size: 0.95em;">실시간 대화 에디터 (텍스트 입력 시 즉시 캔버스 반영)</label>
+              <textarea id="chat-input" rows="22" style="width: 100%; box-sizing: border-box; padding: 12px; font-family: monospace; font-size: 0.9em; border: 1px solid #cbd5e1; border-radius: 8px; line-height: 1.5; resize: vertical;" placeholder="여기에 대화 내용을 입력하세요..."></textarea>
             </div>
+
           </div>
-          <div class="control-row">
-            <label for="input-duration">등장 시간</label>
-            <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
-              <input type="range" id="input-duration" min="0" max="2" step="0.1" value="0.5" style="flex: 1;">
-              <span id="label-duration"
-                style="width: 75px; text-align: right; font-size: 0.85em; font-weight: bold; color: #475569;">0.5초</span>
-            </div>
-          </div>
-          <div class="control-row">
-            <label>등장 효과</label>
-            <div class="radio-group">
-              <label><input type="radio" name="effect" value="opacity" checked> 투명도</label>
-              <label><input type="radio" name="effect" value="typing"> 타이핑</label>
-              <label><input type="radio" name="effect" value="blur"> 흐리게</label>
-              <label><input type="radio" name="effect" value="slide"> 밀어내기</label>
-            </div>
-          </div>
-          <div class="control-row">
-            <label>부가 기능</label>
-            <div style="display: flex; gap: 16px; align-items: center;">
-              <label style="display: flex; align-items: center; gap: 4px; font-weight: normal; cursor: pointer;"><input
-                  type="checkbox" id="input-auto-scroll" checked>스크롤 고정</label>
-              <label style="display: flex; align-items: center; gap: 4px; font-weight: normal; cursor: pointer;"><input
-                  type="checkbox" id="input-tts"> 읽어주기</label>
-            </div>
-          </div>
+        </div>
+
+        <!-- 2. 우측 슬림 아이콘 사이드바 (넓이 48px) -->
+        <div id="right-icon-bar">
+          <!-- 즉시 실행 기능 아이콘 -->
+          <button type="button" id="btn-icon-load" class="icon-nav-btn" title="대화내용 불러오기 (📂)">📂</button>
+          <button type="button" id="btn-icon-download" class="icon-nav-btn" title="그림/SVG 다운로드 (💾)">💾</button>
+          <button type="button" id="btn-icon-help" class="icon-nav-btn" title="도움말 (❓)">❓</button>
+
+          <div class="icon-nav-divider"></div>
+
+          <!-- 토글 패널 아이콘 -->
+          <button type="button" id="btn-icon-anim" class="icon-nav-btn toggle-btn" title="애니메이션 설정 (🎬)">🎬</button>
+          <button type="button" id="btn-icon-settings" class="icon-nav-btn toggle-btn" title="환경설정 (⚙️)">⚙️</button>
+          <button type="button" id="btn-icon-raw" class="icon-nav-btn toggle-btn" title="원문 보기 / 실시간 에디터 (📄)">📄</button>
+
+          <!-- 모바일 숨김 토글 버튼 -->
+          <button type="button" id="btn-mobile-nav-toggle" class="icon-nav-btn mobile-only-btn" title="네비게이션 열기/닫기">☰</button>
+
+          <!-- 최하단 다시 접기 버튼 (위쪽 화살표 ▲) -->
+          <button type="button" id="btn-fold-nav" class="icon-nav-btn fold-nav-btn" title="메뉴 바 다시 접기 (▲)" style="margin-top: auto;">▲</button>
         </div>
       </div>
-
-      <div class="category">
-        <div class="category-header">
-          <span class="category-title">환경설정 <span class="accordion-icon">▲</span></span>
-          <div class="setting-controls">
-            <button id="btn-reset-settings" title="설정 초기화">↺</button>
-            <button id="btn-save-settings" title="설정 저장">⬇</button>
-            <button id="btn-load-settings" title="설정 불러오기">⬆</button>
-            <input type="file" id="setting-file-loader" accept="*" style="display: none;">
-          </div>
-        </div>
-        <div class="category-content">
-          <!-- 7. 내 이름 (대화 상대 중 select) -->
-          <div class="control-row">
-            <label for="input-me-name">내 이름 (나)</label>
-            <select id="input-me-name"
-              style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9em; color: #334155; outline: none; background-color: #fff; cursor: pointer; width: 100%;">
-              <option value="">없음</option>
-            </select>
-          </div>
-          <div class="control-row">
-            <label for="input-capture-time">캡처 시간</label>
-            <input type="datetime-local" id="input-capture-time">
-          </div>
-          <!-- v0.0.9-patch: 누락된 대화방 이름 입력란 복구 -->
-          <div class="control-row">
-            <label for="input-your-name">대화방 이름</label>
-            <input type="text" id="input-your-name" value="그룹채팅">
-          </div>
-          <!-- v1.3.0: 색상 옵션 단일화 테마 콤보박스 및 상세보기 모달 연동 -->
-          <div class="control-row">
-            <label for="select-theme">대화방 테마</label>
-            <div style="display: flex; gap: 6px; width: 100%; box-sizing: border-box; align-items: center;">
-              <select id="select-theme" style="flex: 1; min-width: 0; padding: 6px 8px; font-size: 0.9em; font-weight: bold; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #ffffff; cursor: pointer; box-sizing: border-box;">
-                <option value="light">기본 테마 (Light)</option>
-                <option value="dark">다크 테마 (Dark)</option>
-                <option value="custom">사용자 지정 (Custom)</option>
-              </select>
-              <button type="button" id="btn-open-theme-modal" title="색상 상세보기 및 상세변경" style="flex: none; padding: 6px 10px; font-size: 0.85em; background-color: #fee500; color: #191919; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; white-space: nowrap; box-sizing: border-box;">
-                상세보기 ⚙️
-              </button>
-            </div>
-          </div>
-          <!-- 4. 배터리 상태 -->
-          <div class="control-row">
-            <label for="input-battery">배터리 상태</label>
-            <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
-              <input type="range" id="input-battery" min="0" max="100" value="83" style="flex: 1;">
-              <span id="label-battery"
-                style="width: 45px; text-align: right; font-size: 0.9em; font-weight: bold; color: #475569;">83%</span>
-            </div>
-          </div>
-          <!-- 5. 와이파이 상태 (5단계) -->
-          <div class="control-row">
-            <label for="input-wifi">와이파이 상태</label>
-            <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
-              <input type="range" id="input-wifi" min="0" max="4" value="4" style="flex: 1;">
-              <span id="label-wifi"
-                style="width: 45px; text-align: right; font-size: 0.9em; font-weight: bold; color: #475569;">100%</span>
-            </div>
-          </div>
-
-          <div class="control-row">
-            <label for="input-cell">셀 상태</label>
-            <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
-              <input type="range" id="input-cell" min="0" max="4" value="4" style="flex: 1;">
-              <span id="label-cell"
-                style="width: 45px; text-align: right; font-size: 0.9em; font-weight: bold; color: #475569;">100%</span>
-            </div>
-          </div>
-
-          <div class="control-row">
-            <label for="input-font">글꼴</label>
-            <select id="input-font"
-              style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9em; color: #334155; outline: none; background-color: #fff; cursor: pointer;">
-              <option value="sans-serif">기본 산세리프 (sans-serif)</option>
-              <option value="맑은 고딕, Malgun Gothic">맑은 고딕</option>
-              <option value="나눔고딕, NanumGothic">나눔고딕</option>
-              <option value="굴림, Gulim">굴림</option>
-              <option value="돋움, Dotum">돋움</option>
-              <option value="Apple SD Gothic Neo">Apple SD 산돌고딕 Neo</option>
-              <option value="serif">세리프 (serif)</option>
-              <option value="monospace">고정폭 (monospace)</option>
-            </select>
-          </div>
-
-          <div class="control-row">
-            <label>글꼴 상세</label>
-            <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
-              <div style="display: flex; align-items: center; gap: 4px;">
-                크기: <input type="number" id="input-font-size" value="38" min="20" max="60"
-                  style="width: 65px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px;"> px
-              </div>
-              <label style="display: flex; align-items: center; gap: 4px; font-weight: normal; cursor: pointer;">
-                <input type="checkbox" id="input-font-bold"> 굵게
-              </label>
-            </div>
-          </div>
-
-          <div class="control-row">
-            <label>말풍선 라운드</label>
-            <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
-              <input type="range" id="input-bubble-round" min="0" max="60" value="32" style="flex: 1;">
-              <span id="label-bubble-round" style="width: 45px; text-align: right; font-size: 0.9em; font-weight: bold; color: #475569;">32 px</span>
-            </div>
-          </div>
-
-          <div class="control-row">
-            <label>대화상대 초상화</label>
-            <button id="btn-open-avatar-modal"
-              style="width: 100%; padding: 10px; font-size: 0.9em; font-weight: bold; background-color: #e2e8f0; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; transition: background-color 0.2s;">상세
-              설정 열기</button>
-          </div>
-
-          <div class="control-row">
-            <label>화면 비율</label>
-            <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.9em; width: 100%;">
-              <div style="display: flex; gap: 8px; align-items: center;">
-                <input type="number" id="input-width" style="width: 80px;" value="1080"> x
-                <input type="number" id="input-height" style="width: 80px;" value="2340">
-              </div>
-              <div style="font-size: 0.85em; color: #64748b; font-weight: bold;">
-                가로: <span id="label-width">1080</span>px / 세로: <span id="label-height">2340</span>px
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <textarea id="chat-input" rows="12" style="height: 35vh;" placeholder="여기에 대화 내용을 입력하세요..."></textarea>
     </div>
 
     <div id="avatar-modal" class="modal" style="display: none;">
@@ -264,13 +302,19 @@
           <span id="btn-close-download" class="modal-close">&times;</span>
         </div>
         <div class="modal-body" style="padding: 20px;">
-          <p style="font-size: 0.9em; color: #64748b; margin-bottom: 20px; text-align: center;">어떤 상태로 대화방을 저장할까요?</p>
           <div class="download-options-grid">
             <div id="opt-download-static" class="download-option-card">
               <div class="card-icon">📷</div>
               <div class="card-info">
                 <h4>현재 화면 저장</h4>
                 <p>지금 노출된 화면을 PNG 이미지 파일로 저장합니다.</p>
+              </div>
+            </div>
+            <div id="opt-download-svg" class="download-option-card">
+              <div class="card-icon">📐</div>
+              <div class="card-info">
+                <h4>SVG 저장</h4>
+                <p>벡터 그래픽 형태의 SVG 파일로 깨끗하게 저장합니다.</p>
               </div>
             </div>
             <div id="opt-download-animation" class="download-option-card">
@@ -331,7 +375,7 @@
         const basePath = isStandalone ? 'module/' : '/small-project/KakaoTalk/module/';
 
         Promise.resolve()
-          .then(() => loadScript(basePath + 'engine.js'))
+          .then(() => loadScript(basePath + 'chat-render.js'))
           .then(() => loadScript(basePath + 'interface.js'))
           .then(() => loadScript(basePath + 'main.js'))
           .then(() => {
