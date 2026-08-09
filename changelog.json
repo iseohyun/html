@@ -26,6 +26,12 @@
     "date": "2026-08-08",
     "updates": [
       {
+        "type": "Added",
+        "projectName": "Webpointer",
+        "projectPath": "/small-project/Webpointer/index.html",
+        "summary": "v0.7.1: 삽입 > 도형 카테고리에 그림/심볼 삽입 버튼(Alt+I) 추가 및 캔버스 중앙 생성 / 확대·축소 선택 변형 조종점 모드 자동 진입 대기 구현"
+      },
+      {
         "type": "Changed",
         "projectName": "Webpointer",
         "projectPath": "/small-project/Webpointer/index.html",
