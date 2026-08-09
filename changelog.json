@@ -13,6 +13,12 @@
         "projectName": "KanaLoop",
         "projectPath": "/small-project/KanaLoop/index.html",
         "summary": "v1.0.3: UI개선, 다양한 음성지원, 음성 딜레이 개선, 서버 통신 방법 개선"
+      },
+      {
+        "type": "Changed",
+        "projectName": "카카오톡 대화 생성기",
+        "projectPath": "/small-project/KakaoTalk/index.html",
+        "summary": "v1.2.2: 카카오톡 실물 캡처본(다크모드) 기준 말풍선/배경 100% 완벽 동기화 — 딥 블랙 배경(#000000), 내 말풍선(#fee500/글자 #000000), 상대 말풍선(#2a2a2a/글자 #ffffff), 상대 닉네임(#d1d1d6), 대화 시간(#8e8e93) 및 곡률/꼬리 라인 정밀 반영"
       }
     ]
   },
