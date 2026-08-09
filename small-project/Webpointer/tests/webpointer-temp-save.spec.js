@@ -81,22 +81,22 @@ test.describe('Webpointer 캔버스 임시저장(Temporary Save / File Slot Stor
     expect(restoredState.size).toBeGreaterThan(0);
   });
 
-  test('TC-TEMP-SAVE-02: saveFileToWeb(웹 빠른 임시저장) 호출 시 로컬스토리지 및 Slot 1 자동 동기화 저장 검증', async ({ page }) => {
+  test('TC-TEMP-SAVE-02: saveFileToWeb(저장하기) 호출 시 임시저장 슬롯 관리자 모달 팝업 검증', async ({ page }) => {
     await page.evaluate(() => {
-      const circleObj = {
-        id: 'temp_circle_202',
-        type: 'ellipse',
-        attrs: { cx: 300, cy: 300, rx: 60, ry: 60, fill: '#ef4444' }
-      };
-      window.WebpointerConfig.objectsMap.set(circleObj.id, circleObj);
       if (typeof window.saveFileToWeb === 'function') {
         window.saveFileToWeb();
       }
     });
 
-    const webSavedDoc = await page.evaluate(() => localStorage.getItem('webpointer_saved_doc'));
-    expect(webSavedDoc).not.toBeNull();
-    expect(webSavedDoc).toContain('temp_circle_202');
+    await page.waitForTimeout(300);
+
+    const isModalOpen = await page.evaluate(() => {
+      const modal = document.getElementById('fileSlotsModal');
+      return modal && modal.classList.contains('show');
+    });
+
+    console.log('[Webpointer Save File To Web Test 🧪 - Opens Slot Modal]:', isModalOpen);
+    expect(isModalOpen).toBe(true);
   });
 
   test('TC-TEMP-SAVE-03: 그림/심볼(type === image) 객체가 포함된 캔버스의 임시저장 ➔ 슬롯 복원 시 <image> 태그 100% 정상 복구 검증', async ({ page }) => {

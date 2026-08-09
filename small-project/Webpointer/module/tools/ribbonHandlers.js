@@ -1649,13 +1649,8 @@
   }
 
   function saveFileToWeb() {
-    try {
-      var snap = captureSnapshot();
-      localStorage.setItem('webpointer_saved_doc', snap);
-      localStorage.setItem('webpointer_saved_canvas', snap);
-      saveToFileSlot('1');
-    } catch(e) {
-      console.error('웹 임시저장 실패:', e);
+    if (typeof openFileSlotsModal === 'function') {
+      openFileSlotsModal();
     }
   }
 

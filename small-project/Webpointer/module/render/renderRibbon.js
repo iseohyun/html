@@ -46,19 +46,18 @@
 
     if (cfg.currentTab === 'file') {
       var openFileBtn  = '<button class="tool-btn" onclick="openFile()" style="width:34px; height:34px;"><span class="alt-badge">O</span>' + (icons.openFile || '') + '<span class="tooltip-text">불러오기 (.json / .webpointer / .svg)</span></button>';
-      var saveWebBtn   = '<button class="tool-btn" onclick="saveFileToWeb()" style="width:34px; height:34px;"><span class="alt-badge">S</span>' + (icons.saveFile || '') + '<span class="tooltip-text">저장하기 (웹 LocalStorage)</span></button>';
+      var saveWebBtn   = '<button class="tool-btn" onclick="openFileSlotsModal()" style="width:34px; height:34px;"><span class="alt-badge">S</span>' + (icons.saveFile || '') + '<span class="tooltip-text">저장하기 (슬롯 임시저장 관리자)</span></button>';
       var downloadBtn  = '<button class="tool-btn" onclick="downloadFile()" style="width:34px; height:34px;"><span class="alt-badge">D</span>' + (icons.downloadFile || '') + '<span class="tooltip-text">다운로드 (.json 프로젝트 / .svg 이미지)</span></button>';
 
       var fileOpsTools = [openFileBtn, saveWebBtn, downloadBtn];
       var fileOpsContent = build3RowGridHtml(fileOpsTools);
 
-      var halfSaveBtn  = '<button class="tool-btn" onclick="openFileSlotsModal()"><span class="alt-badge">L</span>' + (icons.halfDiskIcon || icons.saveFile || '') + '<span class="tooltip-text">임시저장 (슬롯 관리자: 3개 이상 확장)</span></button>';
       var symbolBtn    = '<button class="tool-btn" onclick="openSymbolManagerModal()"><span class="alt-badge">M</span>' + (icons.smileyIcon || icons.shapes || '') + '<span class="tooltip-text">심볼 (Symbol Manager)</span></button>';
       var markerBtn    = '<button class="tool-btn" onclick="openMarkerManagerModal()"><span class="alt-badge">K</span>' + (icons.markerIcon || icons.line || '') + '<span class="tooltip-text">마커 (화살표/원/다이아몬드/사용자1,2,3)</span></button>';
       var gradientBtn  = '<button class="tool-btn" onclick="openGradientManagerModal()"><span class="alt-badge">G</span>' + (icons.gradientPresetIcon || icons.targetFill || '') + '<span class="tooltip-text">그라데이션 (3가지 기본 프리셋)</span></button>';
       var pathBtn      = '<button class="tool-btn" onclick="openPathManagerModal()"><span class="alt-badge">P</span>' + (icons.mobiusStripIcon || '') + '<span class="tooltip-text">경로 관리 (뫼비우스 띠: Path 데이터 검증 및 저장)</span></button>';
 
-      var metadataTools = [halfSaveBtn, symbolBtn, markerBtn, gradientBtn, pathBtn];
+      var metadataTools = [symbolBtn, markerBtn, gradientBtn, pathBtn];
       var metadataContent = build3RowGridHtml(metadataTools);
 
       var undoBtn = '<button class="tool-btn" onclick="undo()" style="width:34px; height:34px;"><span class="alt-badge">Ctrl+Z</span>' + (icons.undo || '') + '<span class="tooltip-text">뒤로가기 (Ctrl + Z)</span></button>';

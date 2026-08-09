@@ -242,16 +242,20 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     expect(pageErrors).toEqual([]);
   });
 
-  test('TC11: File Operations Suite (Web LocalStorage Save & File Modal)', async ({ page }) => {
+  test('TC11: File Operations Suite (Web Save Click Opens File Slots Modal)', async ({ page }) => {
     // Switch to File Tab ("파일")
     await page.click('.tab-btn:has-text("파일")');
 
-    // Click Web LocalStorage Save
+    // Click Web Save Button (saveFileToWeb)
     await page.evaluate(() => window.saveFileToWeb());
+    await page.waitForTimeout(300);
 
-    // Verify localStorage item is written
-    const savedDoc = await page.evaluate(() => localStorage.getItem('webpointer_saved_doc'));
-    expect(savedDoc).not.toBeNull();
+    // Verify file slot modal opens
+    const isModalOpen = await page.evaluate(() => {
+      const modal = document.getElementById('fileSlotsModal');
+      return modal && modal.classList.contains('show');
+    });
+    expect(isModalOpen).toBe(true);
 
     expect(pageErrors).toEqual([]);
   });
