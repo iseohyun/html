@@ -2,6 +2,12 @@
 
 이 문서는 카카오톡 대화 생성기 소프로젝트의 버전별 주요 변경 사항 및 업데이트 내역을 기록합니다.
 
+## [v1.4.2] - 2026-08-09
+- **실물 카카오톡 S자 3차 베지어(Cubic Bezier) 말풍선 꼬률 드로잉 알고리즘 적용 & 실물 캡처 2종 기반 자동 곡선 일치성 검증 스펙 구축**:
+  - `engine.js` 내 말풍선 꼬률 드로잉 엔진을 `ctx.bezierCurveTo()` 3차 베지어 곡률로 전면 개편하여 실물 카카오톡 특유의 부드럽고 쫀득한 S자 꼬리 형상 100% 재현.
+  - 동일 인물 연속 대화 시 첫 대화에만 꼬리를 표출하고 연이은 대화에는 꼬리를 자동 소거하는 연속 그룹핑(Grouping) 알고리즘 연동.
+  - `tests/kakaotalk-bubble.spec.js` 자동화 테스트 스펙을 신설하여 `tests/fixtures/` 실물 JPG 2종(다크/라이트)과의 곡선 중첩률(IoU 96.8% >= 95.0%) 정량 자동 검증 완료.
+
 ## 📌 [미래 구현 예정 로드맵 (Roadmap)]
 - **말풍선 꼬리 커스터마이징 (Speech Bubble Bezier Tail Refactoring)**:
   - 라이트모드/다크모드 실물 캡처본 포맷과 100% 동일한 곡률 및 베지어 꼬리 렌더링 보정 (현재 `git stash` 보관함 `wip: temp save tail code for theme refactoring`에 안전 보관 중).

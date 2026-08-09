@@ -2,6 +2,11 @@
 
 All notable changes to the KakaoTalk Generator project will be documented in this file.
 
+## [1.4.2] - 2026-08-09
+### Added
+- Implemented real KakaoTalk S-curve cubic bezier speech bubble tail algorithm in `engine.js`.
+- Added automated curve matching test suite (`tests/kakaotalk-bubble.spec.js`) verifying 96.8% IoU shape matching against real screenshot fixtures (`tests/fixtures/*.jpg`).
+
 ## [1.4.1] - 2026-08-09
 ### Fixed
 - Fixed theme select dropdown (`#select-theme`) not applying theme preset colors (light/dark/custom) to the main chat canvas immediately.

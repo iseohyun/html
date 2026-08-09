@@ -342,12 +342,15 @@
         drawRoundRect(ctx, bx, pos.posY, pos.width, pos.height + 40, 32);
         ctx.fill();
 
-        // 카톡 말풍선 오른쪽 꼬리 드로잉
-        ctx.beginPath();
-        ctx.moveTo(bx + pos.width - 15, pos.posY);
-        ctx.quadraticCurveTo(bx + pos.width + 12, pos.posY - 1, bx + pos.width + 18, pos.posY + 10);
-        ctx.quadraticCurveTo(bx + pos.width + 8, pos.posY + 25, bx + pos.width - 15, pos.posY + 30);
-        ctx.fill();
+        // 실물 카톡 내 말풍선 오른쪽 S자 3차 베지어(Cubic Bezier) 꼬리 드로잉 (첫 대화일 때만 표출)
+        if (!pos.isContinuous) {
+          ctx.beginPath();
+          ctx.moveTo(bx + pos.width - 20, pos.posY);
+          ctx.bezierCurveTo(bx + pos.width - 4, pos.posY - 1, bx + pos.width + 14, pos.posY - 2, bx + pos.width + 16, pos.posY + 12);
+          ctx.bezierCurveTo(bx + pos.width + 10, pos.posY + 26, bx + pos.width - 6, pos.posY + 28, bx + pos.width - 25, pos.posY + 28);
+          ctx.closePath();
+          ctx.fill();
+        }
 
         // 대화 시간 표시
         ctx.fillStyle = timeColor;
@@ -371,12 +374,15 @@
         drawRoundRect(ctx, bx, pos.posY, pos.width, pos.height + 40, 32);
         ctx.fill();
 
-        // 카톡 말풍선 왼쪽 꼬리 드로잉
-        ctx.beginPath();
-        ctx.moveTo(bx + 15, pos.posY);
-        ctx.quadraticCurveTo(bx - 12, pos.posY - 1, bx - 18, pos.posY + 10);
-        ctx.quadraticCurveTo(bx - 8, pos.posY + 25, bx + 15, pos.posY + 30);
-        ctx.fill();
+        // 실물 카톡 상대방 말풍선 왼쪽 S자 3차 베지어(Cubic Bezier) 꼬리 드로잉 (첫 대화일 때만 표출)
+        if (!pos.isContinuous) {
+          ctx.beginPath();
+          ctx.moveTo(bx + 20, pos.posY);
+          ctx.bezierCurveTo(bx + 4, pos.posY - 1, bx - 14, pos.posY - 2, bx - 16, pos.posY + 12);
+          ctx.bezierCurveTo(bx - 10, pos.posY + 26, bx + 6, pos.posY + 28, bx + 25, pos.posY + 28);
+          ctx.closePath();
+          ctx.fill();
+        }
 
         // 초상화 및 이름 라벨 드로잉 (연속 메시지일 경우 생략)
         if (!pos.isContinuous) {
