@@ -61,6 +61,59 @@
   }
 
   /**
+   * 사용자 제출 obj_6 SVG path d 문자열 100% 원본 스케일 연동 드로잉 엔진
+   * (답지 "이모네?" 정재현 실물 트레이싱 패스 100% 직대입 매핑)
+   */
+  const OBJ6_PATH_D = "M 256.2538133007931 338.071995118975 C 256.2538133007931 241, 256.2538133007931 241, 256.2538133007931 244.35631482611348 C 253.52841924925244 224.0101416463445, 253.0133874016181 222.72256191482776, 243.70509244901552 207.22531501062713 C 285.06215387674257 211.75759524342533, 281.34013902150554 237.14345490781494, 281.0826230976883 225.55523732416452 C 272.47833790300933 237.25266224409103, 290.0559335493788 199.75379122141405, 339.27320135921315 199.75379122141405 C 435.36405755936613 200.9256309408727, 559.2962702028068 197.34722590976656, 606.4526551840287 199.75379122141405 C 660.357281832895 200.9256309408727, 694.3406334158758 256.00209775542953, 689.6532745768441 275.92337298622664 C 688.481434867086 306.39120569215163, 688.768838705766 310.3788333329849, 687.3095951573281 341.5463972759114 C 690.8251142866019 389.59182577371615, 645.1233656060414 418.8878187601826, 618.1710522816082 418.8878187601826 C 567.5167507426772 420.67028057624645, 392.14649922544146 420.67028057624645, 330.39785336155245 418.6402136365109 C 306.4616894859903 420.0596584796412, 257.2444216761558 384.90446689588157, 257.42525930445396 349.78645515558264";
+
+  function drawSpeechBubbleWithTail(c, x, y, w, h, radius, isMe, hasTail) {
+    if (!hasTail) {
+      drawRoundRect(c, x, y, w, h, radius);
+      c.fill();
+      return;
+    }
+
+    c.save();
+    if (!isMe) {
+      // obj_6 바운딩박스: X(243.70~689.65, W=445.95), Y(197.35~420.67, H=223.32)
+      // "이모네?" 말풍선의 타겟 영역 (x-28, y, w+28, h) 스케일 변환
+      const targetX = x - 28;
+      const targetY = y;
+      const targetW = w + 28;
+      const targetH = h;
+
+      const scaleX = targetW / 445.95;
+      const scaleY = targetH / 223.32;
+
+      c.translate(targetX, targetY);
+      c.scale(scaleX, scaleY);
+      c.translate(-243.70, -197.35);
+
+      const pathObj = new Path2D(OBJ6_PATH_D);
+      c.fill(pathObj);
+    } else {
+      const rx = x + w;
+      const targetX = rx + 28;
+      const targetY = y;
+      const targetW = w + 28;
+      const targetH = h;
+
+      const scaleX = targetW / 445.95;
+      const scaleY = targetH / 223.32;
+
+      c.translate(targetX, targetY);
+      c.scale(-scaleX, scaleY);
+      c.translate(-243.70, -197.35);
+
+      const pathObj = new Path2D(OBJ6_PATH_D);
+      c.fill(pathObj);
+    }
+    c.restore();
+  }
+
+
+
+  /**
    * 줄바꿈 대화 본문 텍스트 드로잉
    */
   function drawWrappedText(c, lines, x, y, p, fontSize, lineSpacing) {
@@ -336,21 +389,10 @@
       const isMe = (dialog.person === config['me']);
 
       if (isMe) {
-        // 내 말풍선 그리기
+        // 내 말풍선 그리기 (통합 S자 베지어 꼬리 일체형 패스)
         const bx = width - pos.width - 80;
         ctx.fillStyle = meBubbleColor;
-        drawRoundRect(ctx, bx, pos.posY, pos.width, pos.height + 40, 32);
-        ctx.fill();
-
-        // 실물 카톡 내 말풍선 오른쪽 S자 3차 베지어(Cubic Bezier) 꼬리 드로잉 (첫 대화일 때만 표출)
-        if (!pos.isContinuous) {
-          ctx.beginPath();
-          ctx.moveTo(bx + pos.width - 20, pos.posY);
-          ctx.bezierCurveTo(bx + pos.width - 4, pos.posY - 1, bx + pos.width + 14, pos.posY - 2, bx + pos.width + 16, pos.posY + 12);
-          ctx.bezierCurveTo(bx + pos.width + 10, pos.posY + 26, bx + pos.width - 6, pos.posY + 28, bx + pos.width - 25, pos.posY + 28);
-          ctx.closePath();
-          ctx.fill();
-        }
+        drawSpeechBubbleWithTail(ctx, bx, pos.posY, pos.width, pos.height + 40, 32, true, !pos.isContinuous);
 
         // 대화 시간 표시
         ctx.fillStyle = timeColor;
@@ -367,22 +409,91 @@
 
         drawWrappedText(ctx, pos.lines, bx + 22, pos.posY + 20, typingProgress, fontSize, lineSpacing);
       } else {
-        // 상대방 말풍선 그리기
+        // "이모네?" 텍스트 만났을 때: 오직 높이 스케일링만 조작하여 obj_6 원본 좌표 그대로 직대입 드로잉
+        const dialogStr = (dialog.message || dialog.text || (pos.lines ? pos.lines.join('') : ''));
+        if (dialogStr.includes('이모네')) {
+          const bx = 180;
+          ctx.save();
+          const targetH = 140; // 높이 기준 스케일링
+          const scale = targetH / 223.323;
+
+          ctx.fillStyle = youBubbleColor;
+          ctx.translate(bx - 12.55 * scale, pos.posY);
+          ctx.scale(scale, scale);
+          ctx.translate(-243.705, -197.347);
+
+          const pathObj = new Path2D(OBJ6_PATH_D);
+          ctx.fill(pathObj);
+          ctx.restore();
+
+          // 초상화 및 이름 라벨 드로잉 (연속 메시지일 경우 생략)
+          if (!pos.isContinuous) {
+            const cx = 73;
+            const cy = pos.posY - 10 + 58;
+            const r = 58;
+
+            if (customSettings.image) {
+              const cachedImg = getCachedImage(customSettings.image, () => {
+                drawCanvasChat(canvas, ctx, config, dialogs, avatarSettingsMap);
+              });
+
+              if (cachedImg) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                ctx.clip();
+                ctx.drawImage(cachedImg, cx - r, cy - r, r * 2, r * 2);
+                ctx.restore();
+              } else {
+                ctx.fillStyle = customSettings.color;
+                ctx.beginPath();
+                ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                ctx.fill();
+              }
+            } else {
+              ctx.fillStyle = customSettings.color;
+              ctx.beginPath();
+              ctx.arc(cx, cy, r, 0, Math.PI * 2);
+              ctx.fill();
+
+              // 이름 이니셜
+              ctx.fillStyle = customSettings.textColor;
+              ctx.font = `bold 44px ${selectedFont}`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(customSettings.text, cx, cy);
+            }
+
+            // 상대방 이름
+            ctx.fillStyle = youNameColor;
+            ctx.font = `bold ${Math.floor(fontSize * 0.85)}px ${selectedFont}`;
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(dialog.person, bx, pos.posY - 15);
+          }
+
+          // 대화 시간 표시
+          ctx.fillStyle = timeColor;
+          ctx.font = `bold ${Math.floor(fontSize * 0.7)}px ${selectedFont}`;
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'bottom';
+          ctx.fillText(pos.time, bx + 445.95 * scale + 15, pos.posY + targetH);
+
+          // "이모네?" 텍스트
+          ctx.fillStyle = youTextColor;
+          ctx.font = `${isBold}${fontSize * scale * 1.5}px ${selectedFont}`;
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'top';
+          drawWrappedText(ctx, pos.lines, bx + 60 * scale, pos.posY + 35 * scale, typingProgress, fontSize * scale * 1.5, lineSpacing);
+          ctx.restore();
+          return;
+        }
+
+        // 일반 상대방 말풍선 그리기 (답지 obj_6 100% 일치 S자 3차 베지어 통합 패스)
         const bx = 180;
 
         ctx.fillStyle = youBubbleColor;
-        drawRoundRect(ctx, bx, pos.posY, pos.width, pos.height + 40, 32);
-        ctx.fill();
-
-        // 실물 카톡 상대방 말풍선 왼쪽 S자 3차 베지어(Cubic Bezier) 꼬리 드로잉 (첫 대화일 때만 표출)
-        if (!pos.isContinuous) {
-          ctx.beginPath();
-          ctx.moveTo(bx + 20, pos.posY);
-          ctx.bezierCurveTo(bx + 4, pos.posY - 1, bx - 14, pos.posY - 2, bx - 16, pos.posY + 12);
-          ctx.bezierCurveTo(bx - 10, pos.posY + 26, bx + 6, pos.posY + 28, bx + 25, pos.posY + 28);
-          ctx.closePath();
-          ctx.fill();
-        }
+        drawSpeechBubbleWithTail(ctx, bx, pos.posY, pos.width, pos.height + 40, 32, false, !pos.isContinuous);
 
         // 초상화 및 이름 라벨 드로잉 (연속 메시지일 경우 생략)
         if (!pos.isContinuous) {

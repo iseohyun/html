@@ -922,7 +922,7 @@
 
   async function loadDefaultData() {
     const defaultSettingsFallback = `- height: 2340\n- background-color: #acc0d1\n- me-bubble-color: #fee500\n- me-text-color: #000000\n- you-bubble-color: #ffffff\n- you-text-color: #000000\n- your-name: 그룹채팅`;
-    const defaultExampleFallback = `2026년 8월 9일 오전 10:00, 상대방 : 안녕하세요!\n2026년 8월 9일 오전 10:01, 나 : 네, 반갑습니다!`;
+    const defaultExampleFallback = `2026년 8월 9일 오전 10:00, 상대방 : 안녕하세요!\n2026년 8월 9일 오전 10:01, 나 : 네, 반갑습니다!\n2026년 8월 9일 오전 10:02, 나 : 어디십니까?\n2026년 8월 9일 오전 10:04, 상대방 : 이모네?`;
 
     try {
       originalSettingsText = defaultSettingsFallback;
