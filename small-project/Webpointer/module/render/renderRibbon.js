@@ -46,19 +46,18 @@
 
     if (cfg.currentTab === 'file') {
       var openFileBtn  = '<button class="tool-btn" onclick="openFile()" style="width:34px; height:34px;"><span class="alt-badge">O</span>' + (icons.openFile || '') + '<span class="tooltip-text">불러오기 (.json / .webpointer / .svg)</span></button>';
-      var saveWebBtn   = '<button class="tool-btn" onclick="saveFileToWeb()" style="width:34px; height:34px;"><span class="alt-badge">S</span>' + (icons.saveFile || '') + '<span class="tooltip-text">저장하기 (웹 LocalStorage)</span></button>';
+      var saveWebBtn   = '<button class="tool-btn" onclick="openFileSlotsModal()" style="width:34px; height:34px;"><span class="alt-badge">S</span>' + (icons.saveFile || '') + '<span class="tooltip-text">저장하기 (슬롯 임시저장 관리자)</span></button>';
       var downloadBtn  = '<button class="tool-btn" onclick="downloadFile()" style="width:34px; height:34px;"><span class="alt-badge">D</span>' + (icons.downloadFile || '') + '<span class="tooltip-text">다운로드 (.json 프로젝트 / .svg 이미지)</span></button>';
 
       var fileOpsTools = [openFileBtn, saveWebBtn, downloadBtn];
       var fileOpsContent = build3RowGridHtml(fileOpsTools);
 
-      var halfSaveBtn  = '<button class="tool-btn" onclick="openFileSlotsModal()"><span class="alt-badge">L</span>' + (icons.halfDiskIcon || icons.saveFile || '') + '<span class="tooltip-text">임시저장 (슬롯 관리자: 3개 이상 확장)</span></button>';
       var symbolBtn    = '<button class="tool-btn" onclick="openSymbolManagerModal()"><span class="alt-badge">M</span>' + (icons.smileyIcon || icons.shapes || '') + '<span class="tooltip-text">심볼 (Symbol Manager)</span></button>';
       var markerBtn    = '<button class="tool-btn" onclick="openMarkerManagerModal()"><span class="alt-badge">K</span>' + (icons.markerIcon || icons.line || '') + '<span class="tooltip-text">마커 (화살표/원/다이아몬드/사용자1,2,3)</span></button>';
       var gradientBtn  = '<button class="tool-btn" onclick="openGradientManagerModal()"><span class="alt-badge">G</span>' + (icons.gradientPresetIcon || icons.targetFill || '') + '<span class="tooltip-text">그라데이션 (3가지 기본 프리셋)</span></button>';
       var pathBtn      = '<button class="tool-btn" onclick="openPathManagerModal()"><span class="alt-badge">P</span>' + (icons.mobiusStripIcon || '') + '<span class="tooltip-text">경로 관리 (뫼비우스 띠: Path 데이터 검증 및 저장)</span></button>';
 
-      var metadataTools = [halfSaveBtn, symbolBtn, markerBtn, gradientBtn, pathBtn];
+      var metadataTools = [symbolBtn, markerBtn, gradientBtn, pathBtn];
       var metadataContent = build3RowGridHtml(metadataTools);
 
       var undoBtn = '<button class="tool-btn" onclick="undo()" style="width:34px; height:34px;"><span class="alt-badge">Ctrl+Z</span>' + (icons.undo || '') + '<span class="tooltip-text">뒤로가기 (Ctrl + Z)</span></button>';
@@ -77,6 +76,7 @@
       var shapeTools = [
         '<button class="tool-btn ' + (cfg.currentTool==='pan'?'active':'') + '" onclick="setTool(\'pan\')"><span class="alt-badge">H</span>' + (icons.pan || '') + '<span class="tooltip-text">캔버스 화면 잡아서 밀기 (손/팬 도구 - H)</span></button>',
         '<button class="tool-btn ' + (cfg.currentTool==='select'?'active':'') + '" onclick="setTool(\'select\')"><span class="alt-badge">V</span>' + (icons.select || '') + '<span class="tooltip-text">선택 도구 (V)</span></button>',
+        '<button class="tool-btn" onclick="openImageSymbolPickerModal()"><span class="alt-badge">I</span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg><span class="tooltip-text">그림/심볼 삽입 (I) - 중앙에 그림 삽입 및 선택 변형</span></button>',
         '<button class="tool-btn ' + (cfg.currentTool==='text'?'active':'') + '" onclick="setTool(\'text\')"><span class="alt-badge">T</span>' + (icons.addText || '') + '<span class="tooltip-text">텍스트 상자 도구 (T)</span></button>',
         '<button class="tool-btn ' + (cfg.currentTool==='point'?'active':'') + '" onclick="setTool(\'point\')"><span class="alt-badge">P</span>' + (icons.point || '') + '<span class="tooltip-text">점 도구 (P)</span></button>',
         '<button class="tool-btn ' + (cfg.currentTool==='line'?'active':'') + '" onclick="setTool(\'line\')"><span class="alt-badge">L</span>' + (icons.line || '') + '<span class="tooltip-text">직선 도구 (L)</span></button>',

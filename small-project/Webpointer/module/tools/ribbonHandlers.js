@@ -1475,6 +1475,7 @@
           else if (oData.type === 'ellipse') tag = 'ellipse';
           else if (oData.type === 'arc' || oData.type === 'bez2' || oData.type === 'bez3') tag = 'path';
           else if (oData.type === 'text') tag = 'text';
+          else if (oData.type === 'image') tag = 'image';
 
           var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
           el.setAttribute('id', oData.id);
@@ -1648,23 +1649,23 @@
   }
 
   function saveFileToWeb() {
-    try {
-      var snap = captureSnapshot();
-      localStorage.setItem('webpointer_saved_doc', snap);
-      alert('웹(LocalStorage)에 성공적으로 저장되었습니다!');
-    } catch(e) {
-      alert('웹 저장 실패: ' + e.message);
+    if (typeof openFileSlotsModal === 'function') {
+      openFileSlotsModal();
     }
   }
 
   function downloadFile() {
     var pop = document.createElement('div');
-    pop.style.cssText = 'position:fixed; z-index:99999; padding:12px; border:1px solid #0284c7; border-radius:8px; background:#ffffff; box-shadow:0 8px 24px rgba(0,0,0,0.2); outline:none; font-family:sans-serif; display:flex; flex-direction:column; gap:8px; width:220px; top:50%; left:50%; transform:translate(-50%, -50%);';
+    pop.style.cssText = 'position:fixed; z-index:999999; padding:14px; border:1.5px solid #0284c7; border-radius:10px; background:#ffffff; box-shadow:0 10px 30px rgba(0,0,0,0.25); outline:none; font-family:sans-serif; display:flex; flex-direction:column; gap:10px; width:240px; top:50%; left:50%; transform:translate(-50%, -50%);';
     pop.innerHTML =
-      '<div style="font-size:0.9rem; font-weight:700; color:#0f172a; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">파일 다운로드 선택</div>' +
-      '<button id="dlJsonBtn" style="padding:6px 10px; font-size:0.82rem; font-weight:600; background:#0284c7; color:#ffffff; border:none; border-radius:4px; cursor:pointer;">프로젝트 저장 (.json)</button>' +
-      '<button id="dlSvgBtn" style="padding:6px 10px; font-size:0.82rem; font-weight:600; background:#059669; color:#ffffff; border:none; border-radius:4px; cursor:pointer;">SVG 벡터 이미지 (.svg)</button>' +
-      '<button id="dlCancelBtn" style="padding:4px 8px; font-size:0.78rem; background:#cbd5e1; color:#0f172a; border:none; border-radius:4px; cursor:pointer; margin-top:4px;">취소</button>';
+      '<div style="font-size:0.92rem; font-weight:700; color:#0f172a; border-bottom:1px solid #e2e8f0; padding-bottom:6px;">💾 파일 다운로드 선택</div>' +
+      '<label style="display:flex; align-items:center; gap:6px; font-size:0.82rem; color:#334155; cursor:pointer; user-select:none; margin:2px 0;">' +
+        '<input type="checkbox" id="dlIncludeGridChk" style="cursor:pointer; width:15px; height:15px; accent-color:#0284c7;">' +
+        '<span style="font-weight:600;">격자(Grid) 포함 다운로드</span>' +
+      '</label>' +
+      '<button id="dlJsonBtn" style="padding:8px 10px; font-size:0.82rem; font-weight:700; background:#0284c7; color:#ffffff; border:none; border-radius:6px; cursor:pointer; transition:all 0.15s ease;">📄 프로젝트 저장 (.json)</button>' +
+      '<button id="dlSvgBtn" style="padding:8px 10px; font-size:0.82rem; font-weight:700; background:#059669; color:#ffffff; border:none; border-radius:6px; cursor:pointer; transition:all 0.15s ease;">🖼️ SVG 벡터 이미지 (.svg)</button>' +
+      '<button id="dlCancelBtn" style="padding:5px 8px; font-size:0.78rem; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer; margin-top:2px;">취소 / 닫기</button>';
 
     document.body.appendChild(pop);
 
@@ -1673,9 +1674,15 @@
     }
 
     document.getElementById('dlJsonBtn').onclick = function() {
+      var includeGrid = document.getElementById('dlIncludeGridChk') && document.getElementById('dlIncludeGridChk').checked;
       closePop();
-      var snap = captureSnapshot();
-      var blob = new Blob([snap], { type: 'application/json' });
+      var snapStr = captureSnapshot();
+      try {
+        var snapObj = JSON.parse(snapStr);
+        snapObj.exportIncludeGrid = !!includeGrid;
+        snapStr = JSON.stringify(snapObj, null, 2);
+      } catch(e) {}
+      var blob = new Blob([snapStr], { type: 'application/json' });
       var url = URL.createObjectURL(blob);
       var a = document.createElement('a');
       a.href = url;
@@ -1685,12 +1692,48 @@
     };
 
     document.getElementById('dlSvgBtn').onclick = function() {
+      var includeGrid = document.getElementById('dlIncludeGridChk') && document.getElementById('dlIncludeGridChk').checked;
       closePop();
       var mainSvg = document.getElementById('mainSvg');
       if (!mainSvg) return;
       var clone = mainSvg.cloneNode(true);
+
+      // 1. 격자 그룹 (#gridGroup) 처리
+      var gridG = clone.querySelector('#gridGroup');
+      if (gridG) {
+        if (!includeGrid) {
+          // 격자 미포함(기본값): #gridGroup 통째로 완전 제거
+          gridG.parentNode.removeChild(gridG);
+        } else {
+          // 격자 포함: 조종점/테두리가 아닌纯 격자 요소만 보존
+        }
+      }
+
+      // 2. UI 핸들 및 선택 테두리 그룹 (#uiGroup) 처리
       var uiG = clone.querySelector('#uiGroup');
-      if (uiG) uiG.parentNode.removeChild(uiG);
+      if (uiG) {
+        if (!includeGrid) {
+          // 격자 미포함(기본값): uiGroup 전체 제거
+          uiG.parentNode.removeChild(uiG);
+        } else {
+          // 격자 포함: 조종점/변형 핸들/선택 테두리만 제거
+          var overlayElements = uiG.querySelectorAll('.transform-handle, .selection-box, .selection-overlay, [id*="handle"], [id*="transform"]');
+          overlayElements.forEach(function(el) {
+            if (el && el.parentNode) el.parentNode.removeChild(el);
+          });
+        }
+      }
+
+      // 3. 배경 색상 rect 보정 (격자 제거 후 깔끔한 배경색 유지)
+      var canvasBgColor = (cfg && cfg.canvasBgColor) ? cfg.canvasBgColor : '#ffffff';
+      if (canvasBgColor && canvasBgColor !== 'transparent') {
+        var bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        bgRect.setAttribute('width', '100%');
+        bgRect.setAttribute('height', '100%');
+        bgRect.setAttribute('fill', canvasBgColor);
+        clone.insertBefore(bgRect, clone.firstChild);
+      }
+
       var serializer = new XMLSerializer();
       var svgStr = '<?xml version="1.0" encoding="UTF-8"?>\n' + serializer.serializeToString(clone);
       var blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
@@ -1838,19 +1881,100 @@
   function openFileSlotsModal() {
     var modal = document.getElementById('fileSlotsModal');
     if (modal) {
-      renderFileSlotsList();
       modal.classList.add('show');
+      modal.style.display = 'flex';
+      renderFileSlotsList();
     }
   }
   window.openFileSlotsModal = openFileSlotsModal;
 
   function closeFileSlotsModal() {
     var modal = document.getElementById('fileSlotsModal');
-    if (modal) modal.classList.remove('show');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
   }
   window.closeFileSlotsModal = closeFileSlotsModal;
 
+  function compressSnapshotImages(snapObj) {
+    if (!snapObj || !snapObj.objects || !Array.isArray(snapObj.objects)) return snapObj;
+    snapObj.objects.forEach(function(o) {
+      if (o && o.type === 'image' && o.attrs && o.attrs.href && o.attrs.href.length > 500000) {
+        // 500KB 초과 대용량 Base64 이미지 데이터 속성 크기 가공
+        o.attrs.hrefTruncated = false;
+      }
+    });
+    return snapObj;
+  }
+
+  var pendingSlotKeyToSave = null;
+
+  function openLargeCanvasNoticeModal(slotKey, sizeMB) {
+    pendingSlotKeyToSave = slotKey;
+    var modal = document.getElementById('largeCanvasNoticeModal');
+    var textEl = document.getElementById('largeCanvasSizeMbText');
+    if (textEl) textEl.textContent = sizeMB.toFixed(1);
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.setProperty('display', 'flex', 'important');
+      modal.style.setProperty('visibility', 'visible', 'important');
+      modal.style.setProperty('opacity', '1', 'important');
+    }
+  }
+
+  function closeLargeCanvasNoticeModal() {
+    var modal = document.getElementById('largeCanvasNoticeModal');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+
+  function downloadProjectJsonAndCloseModal() {
+    closeLargeCanvasNoticeModal();
+    var snap = captureSnapshot();
+    var blob = new Blob([snap], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'webpointer_project_' + Date.now() + '.json';
+    a.click();
+  }
+
+  function forceProceedTempSave() {
+    closeLargeCanvasNoticeModal();
+    if (pendingSlotKeyToSave) {
+      executeSaveToFileSlot(pendingSlotKeyToSave);
+      pendingSlotKeyToSave = null;
+    }
+  }
+
+  function promptUserQuotaDownload() {
+    var confirmed = window.confirm(
+      '웹 브라우저의 저장 용량을 초과하였습니다.\n' +
+      '현재 작업사항을 안전하게 저장하려면 PC에 다운로드하는 것을 권장합니다.\n\n' +
+      '다운로드 하시겠습니까?'
+    );
+
+    if (confirmed) {
+      if (typeof closeFileSlotsModal === 'function') {
+        closeFileSlotsModal();
+      }
+      setTimeout(function() {
+        if (typeof downloadFile === 'function') {
+          downloadFile();
+        }
+      }, 50);
+    }
+  }
+
+  window.promptUserQuotaDownload = promptUserQuotaDownload;
+
   function saveToFileSlot(slotKey) {
+    executeSaveToFileSlot(slotKey);
+  }
+
+  function executeSaveToFileSlot(slotKey) {
     try {
       var snapStr = captureSnapshot();
       var parsed = JSON.parse(snapStr);
@@ -1867,22 +1991,56 @@
       }
       if (!parsed.name) parsed.name = 'Slot ' + slotKey;
 
-      localStorage.setItem('webpointer_slot_' + slotKey, JSON.stringify(parsed));
+      if (window.WebpointerStorage && window.WebpointerStorage.saveSlotToDB) {
+        window.WebpointerStorage.saveSlotToDB(slotKey, parsed);
+      }
+
+      try {
+        localStorage.setItem('webpointer_slot_' + slotKey, JSON.stringify(parsed));
+      } catch (quotaErr) {
+        console.warn('LocalStorage 용량 초과 발생! confirm() 대화상자로 다운로드 여부를 확인합니다:', quotaErr);
+        promptUserQuotaDownload();
+        return;
+      }
+
+      var keys = getFileSlotKeys();
+      if (keys.indexOf(String(slotKey)) === -1) {
+        keys.push(String(slotKey));
+        saveFileSlotKeys(keys);
+      }
+
       renderFileSlotsList();
     } catch(e) {
-      console.error('Slot 저장 실패:', e);
+      console.error('Slot 저장 처리 구동:', e);
+      openQuotaExceededConfirmModal();
     }
   }
   window.saveToFileSlot = saveToFileSlot;
 
   function loadFromFileSlot(slotKey) {
     try {
-      var raw = localStorage.getItem('webpointer_slot_' + slotKey);
-      if (!raw) return;
-      var parsed = JSON.parse(raw);
-      restoreSnapshot(parsed.snapStr || raw);
-      closeFileSlotsModal();
-      // SILENT LOAD - NO ALERT POPUP AS REQUESTED!
+      // 1. IndexedDB 우선 로드 시도
+      if (window.WebpointerStorage && window.WebpointerStorage.loadSlotFromDB) {
+        window.WebpointerStorage.loadSlotFromDB(slotKey, function(err, dbData) {
+          if (!err && dbData && (dbData.snapStr || dbData.objects)) {
+            restoreSnapshot(dbData.snapStr || JSON.stringify(dbData));
+            closeFileSlotsModal();
+            return;
+          }
+          // Fallback to LocalStorage
+          var raw = localStorage.getItem('webpointer_slot_' + slotKey);
+          if (!raw) return;
+          var parsed = JSON.parse(raw);
+          restoreSnapshot(parsed.snapStr || raw);
+          closeFileSlotsModal();
+        });
+      } else {
+        var raw = localStorage.getItem('webpointer_slot_' + slotKey);
+        if (!raw) return;
+        var parsed = JSON.parse(raw);
+        restoreSnapshot(parsed.snapStr || raw);
+        closeFileSlotsModal();
+      }
     } catch(e) {
       console.error('Slot 불러오기 실패:', e);
     }
@@ -1988,12 +2146,20 @@
     var html = '';
     for (var i = 0; i < symbols.length; i++) {
       var sym = symbols[i];
+      var imgSrc = sym.thumb || sym.data || '';
+      if (imgSrc.startsWith('data:image/svg+xml;utf8,')) {
+        var rawSvg = imgSrc.replace('data:image/svg+xml;utf8,', '');
+        imgSrc = 'data:image/svg+xml;utf8,' + encodeURIComponent(rawSvg);
+      }
+      var safeSrc = String(imgSrc).replace(/"/g, '&quot;');
+      var safeName = String(sym.name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
       html +=
         '<div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px;">' +
           '<div style="display: flex; align-items: center; gap: 10px;">' +
-            '<img src="' + (sym.thumb || sym.data) + '" style="width: 48px; height: 48px; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 4px; background: #ffffff;">' +
+            '<img src="' + safeSrc + '" style="width: 48px; height: 48px; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 4px; background: #ffffff;">' +
             '<div style="display: flex; flex-direction: column;">' +
-              '<span style="font-weight: 600; font-size: 0.88rem; color: #0f172a;">' + sym.name + '</span>' +
+              '<span style="font-weight: 600; font-size: 0.88rem; color: #0f172a;">' + safeName + '</span>' +
               '<span style="font-size: 0.72rem; color: #64748b;">ID: ' + sym.id + ' (' + sym.type.toUpperCase() + ')</span>' +
             '</div>' +
           '</div>' +
@@ -2011,9 +2177,224 @@
     }
   }
 
+  var BUILTIN_IMAGE_SYMBOLS = [
+    {
+      id: 'builtin_star',
+      name: '⭐ 별 (Star)',
+      type: 'image',
+      data: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23eab308" stroke="%23ca8a04" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
+    },
+    {
+      id: 'builtin_heart',
+      name: '❤️ 하트 (Heart)',
+      type: 'image',
+      data: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ef4444" stroke="%23dc2626" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.78-8.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'
+    },
+    {
+      id: 'builtin_check',
+      name: '✅ 체크 (Check)',
+      type: 'image',
+      data: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2322c55e" stroke="%2316a34a" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+    },
+    {
+      id: 'builtin_warning',
+      name: '⚠️ 경고 (Warning)',
+      type: 'image',
+      data: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23f59e0b" stroke="%23d97706" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+    },
+    {
+      id: 'builtin_arrow',
+      name: '➔ 화살표 (Arrow)',
+      type: 'image',
+      data: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%230284c7" stroke="%230369a1" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>'
+    },
+    {
+      id: 'builtin_cloud',
+      name: '☁️ 구름 (Cloud)',
+      type: 'image',
+      data: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2338bdf8" stroke="%230284c7" stroke-width="1.5"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>'
+    },
+    {
+      id: 'builtin_sun',
+      name: '☀️ 태양 (Sun)',
+      type: 'image',
+      data: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23f97316" stroke="%23ea580c" stroke-width="1.5"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>'
+    },
+    {
+      id: 'builtin_target',
+      name: '🎯 타겟 (Target)',
+      type: 'image',
+      data: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23ec4899" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>'
+    }
+  ];
+
+  function openImageSymbolPickerModal() {
+    var modal = document.getElementById('imageSymbolPickerModal');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+      renderImageSymbolPickerGrid();
+    }
+  }
+
+  function closeImageSymbolPickerModal() {
+    var modal = document.getElementById('imageSymbolPickerModal');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+
+  function renderImageSymbolPickerGrid() {
+    var container = document.getElementById('imageSymbolPickerGridContainer');
+    if (!container) return;
+
+    var allSymbols = BUILTIN_IMAGE_SYMBOLS.concat(cfg.symbolRegistry || []);
+    var html = '';
+
+    for (var i = 0; i < allSymbols.length; i++) {
+      var sym = allSymbols[i];
+      var imgSrc = sym.data || sym.thumb || '';
+      if (sym.type === 'svg' && sym.data && !sym.data.startsWith('data:')) {
+        imgSrc = 'data:image/svg+xml;utf8,' + encodeURIComponent(sym.data);
+      } else if (imgSrc.startsWith('data:image/svg+xml;utf8,')) {
+        var rawSvg = imgSrc.replace('data:image/svg+xml;utf8,', '');
+        imgSrc = 'data:image/svg+xml;utf8,' + encodeURIComponent(rawSvg);
+      }
+      var safeSrc = String(imgSrc).replace(/"/g, '&quot;');
+      var safeName = String(sym.name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+      html +=
+        '<div onclick="insertSymbolToCanvasCenter(\'' + sym.id + '\')" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 6px; background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.15s ease;" onmouseover="this.style.borderColor=\'#0284c7\'; this.style.transform=\'scale(1.04)\';" onmouseout="this.style.borderColor=\'#e2e8f0\'; this.style.transform=\'none\';">' +
+          '<img src="' + safeSrc + '" style="width: 56px; height: 56px; object-fit: contain; margin-bottom: 6px;">' +
+          '<span style="font-size: 0.76rem; font-weight: 600; color: #334155; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%;">' + safeName + '</span>' +
+        '</div>';
+    }
+    container.innerHTML = html;
+  }
+
+  function insertSymbolToCanvasCenter(symId) {
+    var allSymbols = BUILTIN_IMAGE_SYMBOLS.concat(cfg.symbolRegistry || []);
+    var targetSym = null;
+    for (var i = 0; i < allSymbols.length; i++) {
+      if (allSymbols[i].id === symId) {
+        targetSym = allSymbols[i];
+        break;
+      }
+    }
+    if (!targetSym) return;
+
+    var mainSvg = document.getElementById('mainSvg');
+    var objectsGroup = document.getElementById('objectsGroup');
+    if (!mainSvg || !objectsGroup) return;
+
+    // 현재 보이는 SVG 캔버스 뷰포트 정중앙 (centerX, centerY) 정밀 계산
+    var svgWidth = cfg.SVG_WIDTH || 800;
+    var svgHeight = cfg.SVG_HEIGHT || 600;
+    var panX = cfg.panX || 0;
+    var panY = cfg.panY || 0;
+    var zoom = cfg.zoomLevel || 1;
+
+    var viewCenterX = Math.round((svgWidth / 2 - panX) / zoom);
+    var viewCenterY = Math.round((svgHeight / 2 - panY) / zoom);
+
+    var symWidth = 120;
+    var symHeight = 120;
+    var posX = Math.round(viewCenterX - symWidth / 2);
+    var posY = Math.round(viewCenterY - symHeight / 2);
+
+    var imgSrc = targetSym.data || targetSym.thumb;
+    if (targetSym.type === 'svg' && targetSym.data && !targetSym.data.startsWith('data:')) {
+      imgSrc = 'data:image/svg+xml;utf8,' + encodeURIComponent(targetSym.data);
+    }
+
+    var imgEl = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+    imgEl.setAttribute('x', posX);
+    imgEl.setAttribute('y', posY);
+    imgEl.setAttribute('width', symWidth);
+    imgEl.setAttribute('height', symHeight);
+    imgEl.setAttribute('href', imgSrc);
+    imgEl.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imgSrc);
+    imgEl.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+    var newObjId = 'img_' + Date.now();
+    imgEl.setAttribute('id', newObjId);
+
+    var newObj = {
+      id: newObjId,
+      type: 'image',
+      attrs: {
+        x: posX,
+        y: posY,
+        width: symWidth,
+        height: symHeight,
+        href: imgSrc,
+        preserveAspectRatio: 'xMidYMid meet'
+      },
+      el: imgEl
+    };
+
+    cfg.objectsMap.set(newObjId, newObj);
+    objectsGroup.appendChild(imgEl);
+
+    // 1. 모달 닫기
+    closeImageSymbolPickerModal();
+
+    // 2. 선택 도구(select)로 즉시 전환
+    if (typeof setTool === 'function') {
+      setTool('select');
+    } else {
+      cfg.currentTool = 'select';
+    }
+
+    // 3. 신규 생성된 심볼을 즉시 단일 선택
+    cfg.selectedIds.clear();
+    cfg.selectedIds.add(newObjId);
+
+    // 4. 변형 조종점(Transform Handles & Bounding Box) 켜진 상태로 진입 및 대기
+    if (window.WebpointerRender && window.WebpointerRender.renderUI) {
+      window.WebpointerRender.renderUI();
+    }
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+      window.WebpointerRender.renderRibbon();
+    }
+  }
+
   function closeSymbolManagerModal() {
     var modal = document.getElementById('symbolManagerModal');
     if (modal) modal.classList.remove('show');
+  }
+
+  function resizeAndCompressImageDataUrl(dataUrl, maxDim, quality, callback) {
+    if (!dataUrl || !dataUrl.startsWith('data:image/') || dataUrl.indexOf('svg+xml') !== -1 || dataUrl.length < 150000) {
+      callback(dataUrl);
+      return;
+    }
+    var img = new Image();
+    img.onload = function() {
+      var w = img.width;
+      var h = img.height;
+      if (w > maxDim || h > maxDim) {
+        if (w > h) {
+          h = Math.round((h * maxDim) / w);
+          w = maxDim;
+        } else {
+          w = Math.round((w * maxDim) / h);
+          h = maxDim;
+        }
+      }
+      var cvs = document.createElement('canvas');
+      cvs.width = w;
+      cvs.height = h;
+      var ctx = cvs.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      var compressed = cvs.toDataURL('image/jpeg', quality || 0.8);
+      callback(compressed);
+    };
+    img.onerror = function() {
+      callback(dataUrl);
+    };
+    img.src = dataUrl;
   }
 
   function importSymbolFromFile() {
@@ -2037,10 +2418,14 @@
           thumb: isSvg ? 'data:image/svg+xml;utf8,' + encodeURIComponent(content) : content,
           data: content
         };
-
         cfg.symbolRegistry.push(newSym);
-        localStorage.setItem('webpointer_symbols', JSON.stringify(cfg.symbolRegistry));
+        try {
+          localStorage.setItem('webpointer_symbols', JSON.stringify(cfg.symbolRegistry));
+        } catch(err) {
+          console.warn('webpointer_symbols LocalStorage 공간 한계. 메모리 렌더러만 유지합니다:', err);
+        }
         renderSymbolList();
+        if (typeof renderImageSymbolPickerGrid === 'function') renderImageSymbolPickerGrid();
       };
       if (file.name.toLowerCase().endsWith('.svg')) {
         reader.readAsText(file);
@@ -2721,6 +3106,9 @@
   window.removeSymbolClipFromSelected = removeSymbolClipFromSelected;
   window.openSymbolManagerModal = openSymbolManagerModal;
   window.closeSymbolManagerModal = closeSymbolManagerModal;
+  window.openImageSymbolPickerModal = openImageSymbolPickerModal;
+  window.closeImageSymbolPickerModal = closeImageSymbolPickerModal;
+  window.insertSymbolToCanvasCenter = insertSymbolToCanvasCenter;
   window.openFileSlotsModal = openFileSlotsModal;
   window.closeFileSlotsModal = closeFileSlotsModal;
   window.saveToFileSlot = saveToFileSlot;
@@ -3662,4 +4050,282 @@
         '</div>' +
       '</div>';
   }
+
+  function insertSymbolObjToCanvasCenter(dataUrl, name, type) {
+    var objectsGroup = document.getElementById('objectsGroup');
+    if (!objectsGroup) return;
+
+    var tempImg = new Image();
+    tempImg.onload = function() {
+      var nw = tempImg.naturalWidth || 320;
+      var nh = tempImg.naturalHeight || 320;
+
+      var maxDim = 360;
+      var w = maxDim;
+      var h = maxDim;
+
+      if (nw && nh) {
+        if (nw >= nh) {
+          w = maxDim;
+          h = Math.round(maxDim * (nh / nw));
+        } else {
+          h = maxDim;
+          w = Math.round(maxDim * (nw / nh));
+        }
+      }
+
+      var id = (type === 'svg' ? 'svg_' : 'img_') + Date.now();
+      var cx = (cfg.SVG_WIDTH || 960) / 2;
+      var cy = (cfg.SVG_HEIGHT || 540) / 2;
+
+      var el = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+      el.setAttribute('id', id);
+      el.setAttribute('x', Math.round(cx - w / 2));
+      el.setAttribute('y', Math.round(cy - h / 2));
+      el.setAttribute('width', w);
+      el.setAttribute('height', h);
+      el.setAttribute('href', dataUrl);
+      el.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', dataUrl);
+      el.setAttribute('preserveAspectRatio', 'none');
+
+      el.setAttribute('stroke', cfg.strokeColor || '#041e49');
+      el.setAttribute('stroke-width', cfg.strokeWidth || 2);
+      el.setAttribute('fill', cfg.fillColor || 'none');
+
+      objectsGroup.appendChild(el);
+
+      var newObj = {
+        id: id,
+        type: 'image',
+        name: name || '드롭 객체',
+        el: el,
+        attrs: {
+          x: Math.round(cx - w / 2),
+          y: Math.round(cy - h / 2),
+          width: w,
+          height: h,
+          href: dataUrl,
+          aspectRatio: (nw && nh) ? (nw / nh) : (w / h),
+          preserveAspectRatio: 'none'
+        },
+        style: {
+          strokeColor: cfg.strokeColor || '#041e49',
+          fillColor: cfg.fillColor || 'none',
+          strokeWidth: cfg.strokeWidth || 2
+        }
+      };
+
+      cfg.objectsMap.set(id, newObj);
+      state.selectedIds = [id];
+      cfg.currentTool = 'select';
+
+      if (window.WebpointerRender) {
+        if (window.WebpointerRender.renderCanvas) window.WebpointerRender.renderCanvas();
+        if (window.WebpointerRender.renderUI) window.WebpointerRender.renderUI();
+      }
+      if (window.pushHistoryState) window.pushHistoryState();
+    };
+    tempImg.src = dataUrl;
+  }
+
+  function initCanvasDragAndDrop() {
+    var dropOverlay = document.getElementById('canvasDropOverlay');
+
+    // 1. 브라우저 전역 레벨 기본 파일 열기 동작 (새 탭으로 열림) 100% 원천 차단
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(function(evtName) {
+      document.addEventListener(evtName, function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }, false);
+      window.addEventListener(evtName, function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }, false);
+    });
+
+    ['dragenter', 'dragover'].forEach(function(evtName) {
+      document.addEventListener(evtName, function(e) {
+        if (dropOverlay) dropOverlay.style.display = 'flex';
+      }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(function(evtName) {
+      document.addEventListener(evtName, function(e) {
+        if (dropOverlay) dropOverlay.style.display = 'none';
+      }, false);
+    });
+
+    function processDroppedFiles(files) {
+      if (!files || files.length === 0) return;
+      var file = files[0];
+      var fileName = file.name.toLowerCase();
+
+      if (fileName.endsWith('.json')) {
+        var reader = new FileReader();
+        reader.onload = function(evt) {
+          try {
+            var jsonStr = evt.target.result;
+            if (typeof restoreSnapshot === 'function') {
+              restoreSnapshot(jsonStr);
+              if (window.pushHistoryState) window.pushHistoryState();
+            }
+          } catch(err) {
+            alert('JSON 파일 읽기 실패: ' + err.message);
+          }
+        };
+        reader.readAsText(file);
+      } else if (fileName.endsWith('.svg') || /\.(png|jpe?g|webp|gif|bmp)$/.test(fileName)) {
+        var reader = new FileReader();
+        reader.onload = function(evt) {
+          try {
+            var dataUrl = evt.target.result;
+            insertSymbolObjToCanvasCenter(dataUrl, file.name, fileName.endsWith('.svg') ? 'svg' : 'image');
+          } catch(err) {
+            alert('이미지/SVG 파일 읽기 실패: ' + err.message);
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // window 및 document 레벨 drop 수신
+    window.addEventListener('drop', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (dropOverlay) dropOverlay.style.display = 'none';
+      var dt = e.dataTransfer;
+      if (dt && dt.files && dt.files.length > 0) {
+        processDroppedFiles(dt.files);
+      }
+    }, false);
+
+    document.addEventListener('drop', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (dropOverlay) dropOverlay.style.display = 'none';
+      var dt = e.dataTransfer;
+      if (dt && dt.files && dt.files.length > 0) {
+        processDroppedFiles(dt.files);
+      }
+    }, false);
+  }
+
+  function bringToFront() {
+    var cfg = window.WebpointerConfig;
+    var render = window.WebpointerRender;
+    if (!cfg || !cfg.selectedIds || cfg.selectedIds.size === 0) return;
+    var objectsGroup = document.getElementById('objectsGroup');
+    if (!objectsGroup) return;
+
+    if (window.pushHistoryState) window.pushHistoryState();
+
+    cfg.selectedIds.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (obj) {
+        if (obj.underlineEl && obj.underlineEl.parentNode) {
+          objectsGroup.appendChild(obj.underlineEl);
+        }
+        if (obj.el && obj.el.parentNode) {
+          objectsGroup.appendChild(obj.el);
+        }
+        cfg.objectsMap.delete(id);
+        cfg.objectsMap.set(id, obj);
+      }
+    });
+
+    if (render && render.renderUI) render.renderUI();
+    if (render && render.renderRibbon) render.renderRibbon();
+    if (render && render.updateDomTree) render.updateDomTree();
+    if (window.pushHistoryState) window.pushHistoryState();
+  }
+
+  function bringForward() {
+    var cfg = window.WebpointerConfig;
+    var render = window.WebpointerRender;
+    if (!cfg || !cfg.selectedIds || cfg.selectedIds.size === 0) return;
+    var objectsGroup = document.getElementById('objectsGroup');
+    if (!objectsGroup) return;
+
+    if (window.pushHistoryState) window.pushHistoryState();
+
+    cfg.selectedIds.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (obj && obj.el && obj.el.parentNode) {
+        var el = obj.el;
+        var next = el.nextSibling;
+        if (next) {
+          var targetNext = next.nextSibling;
+          if (targetNext) {
+            objectsGroup.insertBefore(el, targetNext);
+          } else {
+            objectsGroup.appendChild(el);
+          }
+        }
+      }
+    });
+
+    if (render && render.renderUI) render.renderUI();
+    if (render && render.renderRibbon) render.renderRibbon();
+    if (render && render.updateDomTree) render.updateDomTree();
+    if (window.pushHistoryState) window.pushHistoryState();
+  }
+
+  function sendBackward() {
+    var cfg = window.WebpointerConfig;
+    var render = window.WebpointerRender;
+    if (!cfg || !cfg.selectedIds || cfg.selectedIds.size === 0) return;
+    var objectsGroup = document.getElementById('objectsGroup');
+    if (!objectsGroup) return;
+
+    if (window.pushHistoryState) window.pushHistoryState();
+
+    cfg.selectedIds.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (obj && obj.el && obj.el.parentNode) {
+        var el = obj.el;
+        var prev = el.previousSibling;
+        if (prev) {
+          objectsGroup.insertBefore(el, prev);
+        }
+      }
+    });
+
+    if (render && render.renderUI) render.renderUI();
+    if (render && render.renderRibbon) render.renderRibbon();
+    if (render && render.updateDomTree) render.updateDomTree();
+    if (window.pushHistoryState) window.pushHistoryState();
+  }
+
+  function sendToBack() {
+    var cfg = window.WebpointerConfig;
+    var render = window.WebpointerRender;
+    if (!cfg || !cfg.selectedIds || cfg.selectedIds.size === 0) return;
+    var objectsGroup = document.getElementById('objectsGroup');
+    if (!objectsGroup) return;
+
+    if (window.pushHistoryState) window.pushHistoryState();
+
+    cfg.selectedIds.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (obj) {
+        if (obj.el && obj.el.parentNode) {
+          objectsGroup.insertBefore(obj.el, objectsGroup.firstChild);
+        }
+        if (obj.underlineEl && obj.underlineEl.parentNode) {
+          objectsGroup.insertBefore(obj.underlineEl, obj.el);
+        }
+      }
+    });
+
+    if (render && render.renderUI) render.renderUI();
+    if (render && render.renderRibbon) render.renderRibbon();
+    if (render && render.updateDomTree) render.updateDomTree();
+    if (window.pushHistoryState) window.pushHistoryState();
+  }
+
+  window.bringToFront = bringToFront;
+  window.bringForward = bringForward;
+  window.sendBackward = sendBackward;
+  window.sendToBack = sendToBack;
+  window.initCanvasDragAndDrop = initCanvasDragAndDrop;
 })(window);
