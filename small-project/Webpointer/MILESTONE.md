@@ -1,15 +1,8 @@
-# Webpointer Milestone Roadmap
-
-Milestone status document for Webpointer Vector CAD Editor.
-All planned core and extended milestones (Milestone 1 through 17, 8-Step SMIL Animation Suite, Canvas Height Resizing, Pan Tool, etc.) are **100% fully implemented and verified**.
-
----
-
-## 🏁 Milestone Status (All Completed)
-
-> [!NOTE]
-> All 17 milestones across Phase 1, Phase 2, and Phase 3, along with 29 E2E test suites (`TC01`~`TC29`), have been successfully completed. Completed roadmap checklists have been consolidated. Please refer to [IMPLEMENTATION.md](file:///c:/git/html/small-project/webpointer/IMPLEMENTATION.md) for full technical architectural specifications.
-
-- **Future Maintenance & Optional Extensions**:
-  - Additional SVG filter preset suite expansions (if needed)
-  - Custom font (.ttf/.woff2) drag-and-drop importer (if needed)
+- Bugs
+	- Object Selection: Selection is unreliable and sometimes requires two or three attempts or double-clicking to select.
+	- Handle Manipulation: Dragging handles occasionally fails or stutters during transformation.
+	- Animation Playback: Animation effects added to elements do not play upon playback.
+- Feature Roadmap
+	- Connector Lines: Support for Quick Connectors, Rounded Connectors, Right-Angle Connectors, and Smooth PPT-style Connectors.
+	- Closed Shapes: Automatically terminate drawing and recognize as closed shapes when line or curve endpoints meet the starting point.
+	- Freeform Curves: Toggle next segment between straight line, arc, or curve dynamically using hotkeys during line drawing.

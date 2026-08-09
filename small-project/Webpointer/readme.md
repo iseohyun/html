@@ -1,29 +1,22 @@
-# Webpointer Vector CAD Editor (v0.7.2)
+# Webpointer Vector CAD Editor
 
-**Webpointer** is a modern, high-performance web-based vector CAD editor designed on a 16:9 canvas with real-time **SVG DOM tags** and an accurate **Grid Snap Engine** for precise vector graphic drawing, manipulation, SMIL animation, and picture styling.
+**Webpointer**는 16:9 비율의 캔버스 위에서 **481 × 271 Step 근사 격자 스냅(Grid Snap)**과 실제 **SVG DOM 태그**를 기반으로 실시간 벡터 그래픽을 드로잉하고 변형할 수 있는 웹 기반 벡터 CAD 에디터입니다.
 
 ---
 
-## 🌟 Key Functional Features
+## 🌟 주요 기능 명세
 
-1. **MS Office Style Ribbon UI**:
-   - **File Tab**: Web 3-Slot Temporary Save/Load modal (`#fileSlotsModal`) with quota overflow download protection, `.webpointer` JSON project & clean `.svg` export, and Undo/Redo (`Ctrl+Z` / `Ctrl+Y`).
-   - **Insert Tab**:
-     - **Pan Tool (`Alt+H`)**: Drag-to-pan canvas viewport.
-     - **Shape Drawing**: Point, Line, Rectangle, Ellipse, Arc, Quadratic Bezier (`bez2`), Cubic Bezier (`bez3`), Rounded Rect, and Text.
-     - **Symbol / Picture Insertion (`Alt+I` / `I`)**: Insert 8 built-in symbols, custom registry symbols, or local images into viewport center with active transform handles.
-     - **Layer Ordering**: Bring to Front (`Shift+]`), Bring Forward (`]`), Send Backward (`[`), and Send to Back (`Shift+[`).
-     - **Grouping & Alignment**: Group (`Ctrl+G`), Ungroup (`Ctrl+Shift+G`), 6-way geometric alignment, and 4-way flip/rotation.
-   - **Picture Format Tab**:
-     - **Color & Fill Palette**: 27-slot UniPalette, 3 image fill modes (Stretch, Tile, Single), and Multi-Stop Gradient Editor.
-     - **Line Ends, Cap & Join**: Arrow/Circle/Diamond markers, stroke cap toggle (`butt`/`round`/`square`), and stroke join toggle (`miter`/`round`/`bevel`).
-     - **Filter Stack & Compact Crop (`TC16`)**: Stacked picture filters (brightness, contrast, blur, shadow, etc.) and compact selection handles on cropped objects.
-   - **Text Format Tab**: Font family, font size (`+/-` hotkeys), bold, italic, strikethrough, 4-way horizontal & 3-way vertical text alignment, and 6 custom SVG underline styles.
-   - **Animation Tab**: 8-step SVG SMIL animation suite with keyframes, timing triggers, and repeat conditions.
+1. **MS Office 스타일 탭 및 리본 바 UI**:
+   * **`삽입` 탭**: 도형 8종 (점, 선, 사각, 타원, 호, 2차 베지어, 3차 베지어, 둥근사각), 레이어 순서, 그룹화(`<g>`), 정렬 도구
+   * **`보기` 탭**: 격자 토글, 격자 밀도 변경, 캔버스 크기/비율 변경, 캔버스 배경색 설정
+   * **`그림 서식` 탭**: 시작/끝 모양 마커 (화살표, 동그라미, 다이아몬드) 및 마커 크기 조정, 선 두께/색상/채우기
+   * **`글 서식` & `애니메이션` 탭**: 텍스트 추가 및 Path 그리기 애니메이션 미리보기
 
-2. **Bezier Curve Engine & Control Point Visualization**:
-   - Quadratic (`bez2`) and Cubic (`bez3`) Bezier curves with interactive control point handles and dashed line guides connecting handles to adjacent vertices.
-   - Immediate `ESC` key drawing termination and `TypeError: c2` null-safety guards.
+2. **481 × 271 Step 근사 스냅 엔진**:
+   * 16:9 비율 상에서 가로 481개 지점($0 \sim 480$), 세로 271개 지점($0 \sim 270$)으로 모든 마우스 드로잉 및 핸들 이동이 정밀 반올림 스냅됩니다.
 
-3. **32 Automated E2E Test Suite (32/32 PASSED)**:
-   - Full Playwright E2E test coverage verifying app initialization, SVG import/export, SMIL animations, NaN error prevention, and layer ordering operations.
+3. **실시간 조종점 핸들 (Control Handles)**:
+   * 2차 베지어(1 핸들) 및 3차 베지어(2 핸들)의 곡률 조종 앵커 노드를 마우스로 드래그하여 실시간 곡선을 편집할 수 있습니다.
+
+4. **표준 SPC 모듈화 구조**:
+   * `config.js`, `render.js`, `main.js` 구조로 관리를 분리하여 SPA 프레임워크 환경에서 뛰어난 안정성과 재선언 오류 방지를 제공합니다.

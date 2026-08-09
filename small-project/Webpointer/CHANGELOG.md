@@ -1,45 +1,134 @@
 # Webpointer Changelog
 
-Changelog document tracking major updates, feature additions, and bug fixes for the Webpointer Vector CAD Editor.
-
-## [v0.7.2] - 2026-08-09
-### Major Bug Fixes & Feature Refinements
-- **Compact Selection Box & Resize Handles for Cropped Objects (`TC16`)**:
-  - When an image or shape object with crop attributes is selected while crop mode is inactive, the selection bounding box and resize handles (`top_left`, `bottom_right`) now fit tightly and compactly around the **visible cropped region**, ignoring hidden cropped space.
-- **Bezier `c2` TypeError Null-Safety Guard & Immediate `ESC` Key Drawing Termination (`TC30`)**:
-  - Applied null-safety guards in `buildContinuousBezierPathD` for `ctrls3` segment control points, completely eliminating the `TypeError: Cannot read properties of undefined (reading 'c2')` exception stack overflow.
-  - Bound `ESC` key press in `keydown` listener to trigger `bezier.finishMultiBezier()` and switch to selection mode immediately.
-- **Restored Bezier Control Point Handle Nodes & Dashed Line Guides**:
-  - Quadratic Bezier (`bez2`): Restored control point node (`bez2_ctrl`) and dashed guide line visualization connecting to adjacent vertices (`P0` and `P1`).
-  - Cubic Bezier (`bez3`): Restored control point 1 and 2 nodes (`bez3_c1`, `bez3_c2`) per segment and dashed guide lines connecting each control point to its nearest vertex (`pStart` and `pEnd`).
-- **Selection Box `NaN` Console Error Prevention & Fixture SVG Import Test (`TC31`)**:
-  - Added `isFinite` and `!isNaN` guards in `getObjectBounds` to completely prevent `<rect> attribute x: Expected length, "NaN"` console errors.
-  - Added E2E test `TC31` verifying successful loading of `webpointer_drawing_1786256123897.svg`, 0 NaN errors, and valid handle node rendering.
-- **Layer Ordering Operations & Hotkey Bindings (`TC32`)**:
-  - Implemented 4 layer ordering functions and bound them to global `window` scope: `bringToFront` (Shift + ] or }), `bringForward` (]), `sendToBack` (Shift + [ or {), and `sendBackward` ([).
+All notable changes to the Webpointer Vector CAD Editor project are documented in this file.
 
 ## [v0.7.1] - 2026-08-09
-### Image & Symbol Insertion Suite
-- **Picture / Symbol Insert Button & Viewport Center Placement (Hotkey `I`)**:
-  - Added **🖼️ Insert Symbol** button in Ribbon (`Insert` > `Shapes` category) and bound `Alt+I` / `I` hotkey.
-  - Built `#imageSymbolPickerModal` supporting 8 built-in vector symbols, user registry symbols, and local file auto-loader.
-  - Sized new dropped symbols at 120x120px in viewport center and auto-activated selection transform mode.
+### Added
+- Added Image/Symbol Insertion Tool button in `Insert` > `Shapes` ribbon category with modal picker (`#imageSymbolPickerModal`).
+- Implemented centered symbol placement on viewport `(centerX, centerY)` and automatic entry into Selection Transform Mode with active transform handles.
 
 ## [v0.7.0] - 2026-07-31
-### SMIL Animation Suite & Canvas Vertical Resizing
-- **8-Step SMIL SVG Animation Suite (Animation Ribbon Tab)**:
-  - Multi-track parallel/series animation creator with support for `fill`, `stroke`, `stroke-width`, `opacity`, `transform`, and path `d` keyframes.
-- **Vertical Canvas Resizer & Drag Handle**:
-  - Added bottom canvas drag handle bar (`═══ Canvas Resize Height ═══`) and natural aspect ratio auto-expansion.
-- **Pan Tool & Redesigned Layer Ordering Icons**:
-  - Added Pan Tool (`Alt+H`) for canvas dragging and updated layer stack icons with gold highlight paper graphics.
+### Added & Improved (8-Step SMIL Animation Specification Suite & Canvas Resizing)
+- **8-Step SMIL SVG Animation Ribbon Suite**:
+  - **1. Target & Attribute Type**: Displays selected object ID (`targetId`) and supports `fill`, `stroke`, `stroke-width`, `opacity`, `transform:translate/scale/rotate`, `d` (path morph).
+  - **2. Values & Coordinates**: `from`, `to`, and multi-step `values="v1;v2;v3"` input fields.
+  - **3. Trigger & Duration**: `begin` (`0s`, `click`, `mouseover`, `mouseleave`, `anim1.end` sequence), `dur` (1-cycle duration), `repeatCount` (`indefinite`, `1`, `2`, `3`, `5`).
+  - **4. Limits & End Conditions**: `max` (absolute max time limit), `restart` (`always`, `whenNotActive`, `never`), `end` (forced termination trigger).
+  - **5. Multi-Track Stacking & Preset Manager**: Add multiple parallel/serial animation tracks to a single object (`addCustomSmilAnimation`), clear all tracks (`removeAllAnimationsFromSelected`), 11 quick presets, and stop all.
+- **Canvas Aspect-Ratio Auto-Height & Bottom Resize Handle**:
+  - Auto-scales height on SVG import (`성경요약.svg`, etc.) matching native viewBox aspect ratio 1:1.
+  - Added bottom mouse drag resize handle (`═══ 캔버스 세로 높이 조절 ═══`).
+- **Pan Tool (1st Row 1st Col)**: Added Pan hand tool in Insert > Shapes tab (Alt+H) for real-time canvas dragging and panning.
+- **Updated Layer Ordering Icons**: Redesigned `bringToFront`, `bringForward`, `sendBackward`, `sendToBack` with white paper (#ffffff) and gold highlight paper stacking graphics.
 
 ## [v0.6.0] - 2026-07-31
-### Milestone 6 ~ 17 Full Completion
-- **3-Slot Temporary Save & Protection Modal (`TC24`)**.
-- **Extended Image Fill Modes: Stretch, Tile, Single (`TC25`)**.
-- **Multi-Stop Gradient Ramp & 2-Point Interactive Handles (`TC26`)**.
-- **In-Shape Text Alignment Auto-Calculations (`TC27`)**.
-- **Live Filter Preview & Reordering Stack (`TC28`)**.
-- **11 SMIL Animation Presets & Zoom / Flip / Hotkeys (`TC29`)**.
-- **All 29 Automated E2E Tests Passed (29/29 PASSED)**.
+### Major Improvements (Milestone 6 ~ 17 Full Completion)
+- **3-Slot Auto-Save & Defensive Import Modal (`TC24`)**: Rotating local storage slots and dirty canvas defense dialog.
+- **Image Fill Modes (`TC25`)**: Stretch, Tile (repeat), and Single (contain) image patterns.
+- **Multi-Stop Gradient & 2-Point Handles (`TC26`)**: Multi-stop ramp editor with interactive canvas handles.
+- **Shape Text In-Box Alignment (`TC27`)**: Calculated horizontal and vertical in-box alignment.
+- **Live Filter Preview & Stack Reordering (`TC28`)**: Instant filter slider preview and ▲/▼ stack order reordering.
+- **Single Cycling Buttons (Milestone 11)**: `cycleStartMarker`, `cycleEndMarker`, `cycleStrokeCap`, `cycleStrokeJoin`.
+- **UI Consolidation (Milestone 12, 13)**: Filter popovers integrated into Edit tab; alpha sliders streamlined.
+- **SMIL Animation & Hotkeys (`TC29`)**: 11 SMIL animation presets, canvas wheel zoom, `Ctrl+A` select all, rotation/flip tests.
+- **29/29 E2E Test Suite Passed (100%)**.
+
+## [v0.5.5] - 2026-07-30
+### Added & Improved
+- **File Menu Tab**: Added `"File"` (`파일`) tab with `openFile`, `saveFileToWeb`, and `downloadFile`.
+- **Undo / Redo History Manager**: Implemented `undo` (`Ctrl+Z`) and `redo` (`Ctrl+Y` / `Ctrl+Shift+Z`).
+- **Global Floating Tooltip Manager**: `#webpointerGlobalTooltip` with fixed body positioning.
+
+## [v0.5.4] - 2026-07-30
+### Added & Improved
+- **Ribbon Layout & Settings Tab Refactoring**: Removed menubar gap, right-aligned `"설정"` (`Settings`) tab.
+- **Grid & Canvas Fixes**: Kept `bgRect` visible when grid is disabled; real-time updates for step size and canvas color.
+
+## [v0.5.3] - 2026-07-30
+### Added & Improved
+- **Text Ribbon Tab Upgrades**: Single cycling alignment buttons, 3-way text auto-fit mode toggle, custom SVG underline renderer (6 styles).
+
+## [v0.5.2] - 2026-07-30
+### Added & Improved
+- **Shape-Text Auto-Grouping**: Grouped shape and overlay text automatically with isolated formatting controls.
+- **Swatch Color Palette Popovers**: Converted color pickers to popovers with UniPalette swatches.
+
+## [v0.5.1] - 2026-07-30
+### Added & Improved
+- **Text Editing Hotkeys & Inline Edit**: Double-click, `F2`, and text tool inline canvas text editing.
+
+## [v0.5.0] - 2026-07-30
+### Added & Improved
+- **Text Ribbon Tab Major Enhancement**: Added font family, font size, font weight, font style, line height, text color, and background highlight controls.
+
+## [v0.4.6] - 2026-07-30
+### Refactored & Improved
+- SVG Icon Asset Modularization into `icons/` folder and `module/render/icons.js`.
+
+## [v0.4.5] - 2026-07-30
+### Refactored & Improved
+- Restored Ribbon Bar UI & SVG Icons; expanded `.content-area` to 100% full-width layout.
+
+## [v0.4.4] - 2026-07-30
+### Refactored & Improved
+- Modularized codebase into `core/objects.js`, `core/selection.js`, `core/bezier.js`, `tools/textTool.js`, `tools/ribbonHandlers.js`, `render/renderRibbon.js`, `render/renderCanvas.js`.
+
+## [v0.4.3] - 2026-07-30
+### Fixed & Improved
+- Text selection bounding box accuracy and caret position fixes.
+
+## [v0.4.2] - 2026-07-30
+### Added & Improved
+- Direct in-canvas text typing mode with blinking caret line (`.blinking-caret`).
+
+## [v0.4.1] - 2026-07-30
+### Added & Fixed
+- Interactive in-place text editing workflow and live typing preview.
+
+## [v0.4.0] - 2026-07-30
+### Added & Updated
+- Picture format category reordering and new Cap & Join category (`strokeCap`, `strokeJoin`).
+
+## [v0.3.6] - 2026-07-30
+### Fixed
+- Line category dash style & pattern management fixes.
+
+## [v0.3.5] - 2026-07-30
+### Added & Updated
+- Line Ends category redesign (Start/End markers with solid/hollow fill styles).
+
+## [v0.3.4] - 2026-07-30
+### Added & Updated
+- UniPalette 24-color preset and popup modal.
+
+## [v0.3.3] - 2026-07-30
+### Added
+- Style Ribbon redesign (27-slot color palette grid, target selectors).
+
+## [v0.3.2] - 2026-07-30
+### Fixed
+- Real-time color updates on canvas.
+
+## [v0.3.1] - 2026-07-30
+### Added
+- Rotation & Flip transformation system (`flipH`, `flipV`, `rotate90`, `rotateNeg90`).
+
+## [v0.3.0] - 2026-07-30
+### Added
+- Precision geometric boundary alignment engine (6-way alignment).
+
+## [v0.2.1] - 2026-07-30
+### Added
+- Ctrl + Click object/group deselection system.
+
+## [v0.2.0] - 2026-07-30
+### Added
+- Hierarchical multi-level grouping (`Group`, `Ungroup`).
+
+## [v0.1.9] - 2026-07-30
+### Added
+- 2nd-order (Quadratic) & 3rd-order (Cubic) Bezier curve control handle system.
+
+## [v0.1.0] ~ [v0.1.8] - 2026-07-30
+### Initial Baseline
+- 16:9 Vector CAD Editor, 481x271 step grid snapping engine, MS Office ribbon UI, shape tools, proximity selection, and E2E automation suite.
