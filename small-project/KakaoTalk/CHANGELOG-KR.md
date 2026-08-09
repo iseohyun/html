@@ -1,6 +1,14 @@
-# 변경 이력 (CHANGELOG-KR.md)
+# 📜 카카오톡 대화 생성기 (KakaoTalk Generator) 변경 이력 문서
 
 이 문서는 카카오톡 대화 생성기 소프로젝트의 버전별 주요 변경 사항 및 업데이트 내역을 기록합니다.
+
+## 📌 [미래 구현 예정 로드맵 (Roadmap)]
+- **말풍선 꼬리 커스터마이징 (Speech Bubble Bezier Tail Refactoring)**:
+  - 라이트모드/다크모드 실물 캡처본 포맷과 100% 동일한 곡률 및 베지어 꼬리 렌더링 보정 (현재 `git stash` 보관함 `wip: temp save tail code for theme refactoring`에 안전 보관 중).
+- **컬러 피커 위치 및 팝업 최적화 (Custom Color Picker Position)**:
+  - 입력 컴포넌트 하단 위치 지정 및 브라우저 기본 피커 미지원 시 커스텀 피커 포맷 대응.
+- **스마트 헤더 고정 스크롤 정밀 조율 (Smart Scroll Guard)**:
+  - 대화명을 포함한 고정 헤더 상단 영역(Y: 0~240px)의 레이아웃을 엄격 유지하며 마지막 말풍선 기준으로 가상 스크롤 이동.
 
 ## [v1.4.1] - 2026-08-09
 - **대화방 테마 드롭다운 콤보박스(`select-theme`) 선택 시 메인 캔버스 100% 즉시 적용 완치**:
