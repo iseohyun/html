@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1080" height="2340" viewBox="0 0 1080 2340">
+<defs>
+  <clipPath id="viewport-clip">
+    <rect y="240" width="1080" height="2100" />
+  </clipPath>
+</defs>
+<style>
+  text { font-family: sans-serif; }
+</style>
+<g transform="scale(1, 1)">
+<rect width="100%" height="100%" fill="#acc0d1" />
+<g clip-path="url(#viewport-clip)">
+<g transform="translate(0, 0)">
+<path d="M 145 488 c 0 -53, 0 -53, 0 -52 c -2 -11, -2 -12, -7 -20 c 23 2, 21 17, 21 10 c -5 7, 5 -14, 32 -14 h 258 a 32 32 0 0 1 32 32 v 34 a 32 32 0 0 1 -32 32 h -272 a 32 32 0 0 1 -32 -32" fill="#ffffff" />
+<rect x="21" y="364" width="104" height="104" rx="46" ry="46" fill="#DE8" />
+<text x="73" y="416" font-size="46" font-weight="bold" fill="#ffffff" text-anchor="middle" dominant-baseline="central">상</text>
+<text x="149" y="373" font-size="32" fill="#374151" dominant-baseline="hanging">상대방</text>
+<text x="470.984375" y="518" font-size="26" font-weight="bold" fill="#64748b" text-anchor="start" dominant-baseline="alphabetic">오전 10:00</text>
+<text x="198" y="457" font-size="33"  fill="#000000" dominant-baseline="hanging"><tspan x="198" dy="0">안녕하세요!</tspan></text>
+<g transform="translate(1790.34375, 0) scale(-1, 1)">
+            <path d="M 737 660 c 0 -53, 0 -53, 0 -52 c -2 -11, -2 -12, -7 -20 c 23 2, 21 17, 21 10 c -5 7, 5 -14, 32 -14 h 318 a 32 32 0 0 1 32 32 v 38 a 32 32 0 0 1 -32 32 h -332 a 32 32 0 0 1 -32 -32" fill="#fee500" />
+          </g>
+<text x="677.34375" y="620" font-size="26" font-weight="bold" fill="#64748b" text-anchor="end" dominant-baseline="alphabetic">오전 10:01</text>
+<text x="747.34375" y="564" font-size="33"  fill="#000000" dominant-baseline="hanging"><tspan x="747.34375" dy="0">네, 반갑습니다!</tspan></text>
+<rect x="762.521484375" y="652" width="285.478515625" height="80" rx="32" ry="32" fill="#fee500" />
+<text x="737.521484375" y="732" font-size="26" font-weight="bold" fill="#64748b" text-anchor="end" dominant-baseline="alphabetic">오전 10:02</text>
+<text x="767.521484375" y="676" font-size="33"  fill="#000000" dominant-baseline="hanging"><tspan x="767.521484375" dy="0">어디십니까?</tspan></text>
+<path d="M 145 918 c 0 -53, 0 -53, 0 -52 c -2 -11, -2 -12, -7 -20 c 23 2, 21 17, 21 10 c -5 7, 5 -14, 32 -14 h 188 a 32 32 0 0 1 32 32 v 34 a 32 32 0 0 1 -32 32 h -202 a 32 32 0 0 1 -32 -32" fill="#ffffff" />
+<rect x="21" y="794" width="104" height="104" rx="46" ry="46" fill="#DE8" />
+<text x="73" y="846" font-size="46" font-weight="bold" fill="#ffffff" text-anchor="middle" dominant-baseline="central">상</text>
+<text x="149" y="803" font-size="32" fill="#374151" dominant-baseline="hanging">상대방</text>
+<text x="401.478515625" y="948" font-size="26" font-weight="bold" fill="#64748b" text-anchor="start" dominant-baseline="alphabetic">오전 10:04</text>
+<text x="198" y="887" font-size="33"  fill="#000000" dominant-baseline="hanging"><tspan x="198" dy="0">이모네?</tspan></text>
+</g>
+</g>
+<g id="header-bar">
+      <rect width="1080" height="240" fill="#acc0d1" />
+      <rect y="236" width="1080" height="4" fill="rgba(0,0,0,0.06)" />
+      <text x="60" y="52" font-size="36" font-weight="bold" fill="#000000" dominant-baseline="central">오후 3:18</text>
+      <text x="60" y="160" font-size="54" font-weight="bold" fill="#000000" dominant-baseline="central">그룹채팅</text>
+      <circle cx="870" cy="160" r="18" fill="none" stroke="#000000" stroke-width="5" />
+      <line x1="883" y1="173" x2="902" y2="192" stroke="#000000" stroke-width="5" />
+      <line x1="965" y1="142" x2="1025" y2="142" stroke="#000000" stroke-width="5" />
+      <line x1="965" y1="168" x2="1025" y2="168" stroke="#000000" stroke-width="5" />
+      <line x1="965" y1="194" x2="1025" y2="194" stroke="#000000" stroke-width="5" />
+    </g>
+</g>
+</svg>
