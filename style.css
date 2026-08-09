@@ -55,6 +55,7 @@
 
 html {
   scroll-behavior: smooth;
+  font-size: 80% !important;
 }
 
 body {
@@ -69,6 +70,7 @@ body {
   justify-content: space-between;
   text-align: left;
   font-family: var(--font-main);
+  font-size: 1rem !important;
   color: #444;
   line-height: 1.8em;
   word-break: keep-all;
