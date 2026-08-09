@@ -2011,6 +2011,183 @@
     }
   }
 
+  var BUILTIN_IMAGE_SYMBOLS = [
+    {
+      id: 'builtin_star',
+      name: '⭐ 별 (Star)',
+      type: 'image',
+      data: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23eab308" stroke="%23ca8a04" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
+    },
+    {
+      id: 'builtin_heart',
+      name: '❤️ 하트 (Heart)',
+      type: 'image',
+      data: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ef4444" stroke="%23dc2626" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.78-8.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'
+    },
+    {
+      id: 'builtin_check',
+      name: '✅ 체크 (Check)',
+      type: 'image',
+      data: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2322c55e" stroke="%2316a34a" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+    },
+    {
+      id: 'builtin_warning',
+      name: '⚠️ 경고 (Warning)',
+      type: 'image',
+      data: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23f59e0b" stroke="%23d97706" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+    },
+    {
+      id: 'builtin_arrow',
+      name: '➔ 화살표 (Arrow)',
+      type: 'image',
+      data: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%230284c7" stroke="%230369a1" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>'
+    },
+    {
+      id: 'builtin_cloud',
+      name: '☁️ 구름 (Cloud)',
+      type: 'image',
+      data: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2338bdf8" stroke="%230284c7" stroke-width="1.5"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>'
+    },
+    {
+      id: 'builtin_sun',
+      name: '☀️ 태양 (Sun)',
+      type: 'image',
+      data: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23f97316" stroke="%23ea580c" stroke-width="1.5"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>'
+    },
+    {
+      id: 'builtin_target',
+      name: '🎯 타겟 (Target)',
+      type: 'image',
+      data: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23ec4899" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>'
+    }
+  ];
+
+  function openImageSymbolPickerModal() {
+    var modal = document.getElementById('imageSymbolPickerModal');
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.display = 'flex';
+      renderImageSymbolPickerGrid();
+    }
+  }
+
+  function closeImageSymbolPickerModal() {
+    var modal = document.getElementById('imageSymbolPickerModal');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+
+  function renderImageSymbolPickerGrid() {
+    var container = document.getElementById('imageSymbolPickerGridContainer');
+    if (!container) return;
+
+    var allSymbols = BUILTIN_IMAGE_SYMBOLS.concat(cfg.symbolRegistry || []);
+    var html = '';
+
+    for (var i = 0; i < allSymbols.length; i++) {
+      var sym = allSymbols[i];
+      var imgSrc = sym.data || sym.thumb;
+      if (sym.type === 'svg' && sym.data && !sym.data.startsWith('data:')) {
+        imgSrc = 'data:image/svg+xml;utf8,' + encodeURIComponent(sym.data);
+      }
+      html +=
+        '<div onclick="insertSymbolToCanvasCenter(\'' + sym.id + '\')" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 6px; background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.15s ease;" onmouseover="this.style.borderColor=\'#0284c7\'; this.style.transform=\'scale(1.04)\';" onmouseout="this.style.borderColor=\'#e2e8f0\'; this.style.transform=\'none\';">' +
+          '<img src="' + imgSrc + '" style="width: 56px; height: 56px; object-fit: contain; margin-bottom: 6px;">' +
+          '<span style="font-size: 0.76rem; font-weight: 600; color: #334155; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%;">' + sym.name + '</span>' +
+        '</div>';
+    }
+    container.innerHTML = html;
+  }
+
+  function insertSymbolToCanvasCenter(symId) {
+    var allSymbols = BUILTIN_IMAGE_SYMBOLS.concat(cfg.symbolRegistry || []);
+    var targetSym = null;
+    for (var i = 0; i < allSymbols.length; i++) {
+      if (allSymbols[i].id === symId) {
+        targetSym = allSymbols[i];
+        break;
+      }
+    }
+    if (!targetSym) return;
+
+    var mainSvg = document.getElementById('mainSvg');
+    var objectsGroup = document.getElementById('objectsGroup');
+    if (!mainSvg || !objectsGroup) return;
+
+    // 현재 보이는 SVG 캔버스 뷰포트 정중앙 (centerX, centerY) 정밀 계산
+    var svgWidth = cfg.SVG_WIDTH || 800;
+    var svgHeight = cfg.SVG_HEIGHT || 600;
+    var panX = cfg.panX || 0;
+    var panY = cfg.panY || 0;
+    var zoom = cfg.zoomLevel || 1;
+
+    var viewCenterX = Math.round((svgWidth / 2 - panX) / zoom);
+    var viewCenterY = Math.round((svgHeight / 2 - panY) / zoom);
+
+    var symWidth = 120;
+    var symHeight = 120;
+    var posX = Math.round(viewCenterX - symWidth / 2);
+    var posY = Math.round(viewCenterY - symHeight / 2);
+
+    var imgSrc = targetSym.data || targetSym.thumb;
+    if (targetSym.type === 'svg' && targetSym.data && !targetSym.data.startsWith('data:')) {
+      imgSrc = 'data:image/svg+xml;utf8,' + encodeURIComponent(targetSym.data);
+    }
+
+    var imgEl = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+    imgEl.setAttribute('x', posX);
+    imgEl.setAttribute('y', posY);
+    imgEl.setAttribute('width', symWidth);
+    imgEl.setAttribute('height', symHeight);
+    imgEl.setAttribute('href', imgSrc);
+    imgEl.setAttributeNS('http://www.w3.org/1999/xlink', 'href', imgSrc);
+    imgEl.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+    var newObjId = 'img_' + Date.now();
+    imgEl.setAttribute('id', newObjId);
+
+    var newObj = {
+      id: newObjId,
+      type: 'image',
+      attrs: {
+        x: posX,
+        y: posY,
+        width: symWidth,
+        height: symHeight,
+        href: imgSrc,
+        preserveAspectRatio: 'xMidYMid meet'
+      },
+      el: imgEl
+    };
+
+    cfg.objectsMap.set(newObjId, newObj);
+    objectsGroup.appendChild(imgEl);
+
+    // 1. 모달 닫기
+    closeImageSymbolPickerModal();
+
+    // 2. 선택 도구(select)로 즉시 전환
+    if (typeof setTool === 'function') {
+      setTool('select');
+    } else {
+      cfg.currentTool = 'select';
+    }
+
+    // 3. 신규 생성된 심볼을 즉시 단일 선택
+    cfg.selectedIds.clear();
+    cfg.selectedIds.add(newObjId);
+
+    // 4. 변형 조종점(Transform Handles & Bounding Box) 켜진 상태로 진입 및 대기
+    if (window.WebpointerRender && window.WebpointerRender.renderUI) {
+      window.WebpointerRender.renderUI();
+    }
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+      window.WebpointerRender.renderRibbon();
+    }
+  }
+
   function closeSymbolManagerModal() {
     var modal = document.getElementById('symbolManagerModal');
     if (modal) modal.classList.remove('show');
@@ -2721,6 +2898,9 @@
   window.removeSymbolClipFromSelected = removeSymbolClipFromSelected;
   window.openSymbolManagerModal = openSymbolManagerModal;
   window.closeSymbolManagerModal = closeSymbolManagerModal;
+  window.openImageSymbolPickerModal = openImageSymbolPickerModal;
+  window.closeImageSymbolPickerModal = closeImageSymbolPickerModal;
+  window.insertSymbolToCanvasCenter = insertSymbolToCanvasCenter;
   window.openFileSlotsModal = openFileSlotsModal;
   window.closeFileSlotsModal = closeFileSlotsModal;
   window.saveToFileSlot = saveToFileSlot;

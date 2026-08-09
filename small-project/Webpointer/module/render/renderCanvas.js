@@ -553,7 +553,7 @@
       } else if (obj.type === 'line') {
         createHandleNode(a.x1, a.y1, id, 'start', 1, false);
         createHandleNode(a.x2, a.y2, id, 'end', 2, false);
-      } else if (obj.type === 'rect') {
+      } else if (obj.type === 'rect' || obj.type === 'image') {
         createHandleNode(a.x, a.y, id, 'top_left', 1, false);
         createHandleNode(a.x + a.width, a.y + a.height, id, 'bottom_right', 2, false);
       } else if (obj.type === 'rounded') {

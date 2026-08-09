@@ -20,14 +20,22 @@
     } else if (type === 'line') {
       el = document.createElementNS('http://www.w3.org/2000/svg', 'line');
       attrs = { x1: px1, y1: py1, x2: px2, y2: py2, stepX1: stepStart.stepX, stepY1: stepStart.stepY, stepX2: stepEnd.stepX, stepY2: stepEnd.stepY };
-    } else if (type === 'rect' || type === 'rounded') {
-      el = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    } else if (type === 'rect' || type === 'rounded' || type === 'image') {
+      if (type === 'image') {
+        el = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+      } else {
+        el = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      }
       var x = Math.min(px1, px2);
       var y = Math.min(py1, py2);
       var w = Math.max(10, Math.abs(px2 - px1));
       var h = Math.max(10, Math.abs(py2 - py1));
       var rx = type === 'rounded' ? 15 : 0;
       attrs = { x: x, y: y, width: w, height: h, rx: rx, stepX: Math.min(stepStart.stepX, stepEnd.stepX), stepY: Math.min(stepStart.stepY, stepEnd.stepY), stepW: Math.abs(stepEnd.stepX - stepStart.stepX), stepH: Math.abs(stepEnd.stepY - stepStart.stepY) };
+      if (type === 'image' && extraData) {
+        attrs.href = extraData;
+        attrs.preserveAspectRatio = 'xMidYMid meet';
+      }
     } else if (type === 'ellipse') {
       el = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
       var cx = (px1 + px2) / 2;

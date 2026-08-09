@@ -322,6 +322,29 @@
       </div>
     </div>
 
+    <!-- Image / Symbol Picker Modal for Insertion -->
+    <div class="palette-modal-backdrop" id="imageSymbolPickerModal" onclick="if(event.target===this)closeImageSymbolPickerModal()">
+      <div class="palette-modal-content" style="width: 540px; max-width: 92vw; padding: 20px; border-radius: 12px; background: #ffffff; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">
+          <h3 style="margin: 0; font-size: 1.15rem; color: #0f172a; font-weight: 700; display: flex; align-items: center; gap: 8px;">🖼️ 그림/심볼 선택 및 캔버스 중앙 삽입</h3>
+          <button onclick="closeImageSymbolPickerModal()" style="background: none; border: none; font-size: 1.3rem; cursor: pointer; color: #64748b; font-weight: 700;">✕</button>
+        </div>
+        <div style="font-size: 0.84rem; color: #475569; margin-bottom: 12px; background: #f1f5f9; padding: 8px 12px; border-radius: 6px;">
+          💡 원하는 그림/심볼을 클릭하면 캔버스 <b>화면 정중앙에 즉시 배치</b>되고, <b>확대/축소 변형 조종점(Transform Handles)이 켜진 상태로 대기</b>합니다.
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <span style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">선택 가능한 심볼 라이브러리</span>
+          <button class="palette-modal-btn primary" onclick="importSymbolFromFile()" style="padding: 5px 12px; font-size: 0.8rem; background: #0284c7; color: #ffffff; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">➕ 파일에서 새 심볼 불러오기</button>
+        </div>
+        <div id="imageSymbolPickerGridContainer" style="flex: 1; overflow-y: auto; max-height: 320px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #f8fafc;">
+          <!-- Dynamically rendered builtin & custom symbol cards -->
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px;">
+          <button class="palette-modal-btn secondary" onclick="closeImageSymbolPickerModal()" style="padding: 6px 16px; font-size: 0.85rem;">취소 / 닫기</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Symbol Cookie-Cutter Clip Popover -->
     <div class="filter-popover" id="symbolClipPopover" style="display:none; width: 320px;">
       <div class="popover-title" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">

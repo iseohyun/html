@@ -720,7 +720,8 @@
       if (e.altKey) {
         var key = e.key.toUpperCase();
         if (key === 'H') handlers.setTool('pan');
-        else if (key === 'S') handlers.setTool('select');
+        else if (key === 'S' || key === 'V') handlers.setTool('select');
+        else if (key === 'I') { if (window.openImageSymbolPickerModal) window.openImageSymbolPickerModal(); }
         else if (key === 'R') handlers.setTool('rect');
         else if (key === 'U') handlers.setTool('rounded');
         else if (key === 'E') handlers.setTool('ellipse');

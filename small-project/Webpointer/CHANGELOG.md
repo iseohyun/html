@@ -2,6 +2,11 @@
 
 All notable changes to the Webpointer Vector CAD Editor project are documented in this file.
 
+## [v0.7.1] - 2026-08-09
+### Added
+- Added Image/Symbol Insertion Tool button in `Insert` > `Shapes` ribbon category with modal picker (`#imageSymbolPickerModal`).
+- Implemented centered symbol placement on viewport `(centerX, centerY)` and automatic entry into Selection Transform Mode with active transform handles.
+
 ## [v0.7.0] - 2026-07-31
 ### Added & Improved (8-Step SMIL Animation Specification Suite & Canvas Resizing)
 - **8-Step SMIL SVG Animation Ribbon Suite**:
