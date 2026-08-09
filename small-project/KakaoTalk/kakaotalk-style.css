@@ -38,8 +38,11 @@
   gap: 12px;
 }
 
-button {
+.button-group button {
   flex: 1;
+}
+
+button {
   padding: 12px;
   font-size: 0.95em;
   font-weight: bold;

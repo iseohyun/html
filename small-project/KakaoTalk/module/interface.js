@@ -254,12 +254,29 @@
         chatInput.value = text;
 
         // v0.0.10 피드백: 파일 로드 시 파싱된 대화방 이름을 UI 인풋에 연동
-        const { config: parsedConfig } = parseInputText(text);
+        const { config: parsedConfig, dialogs: rawDialogs } = parseInputText(text);
         if (parsedConfig['your-name']) {
           const yourNameEl = document.getElementById('input-your-name');
           if (yourNameEl) {
             yourNameEl.value = parsedConfig['your-name'];
           }
+        }
+
+        // 불러온 대화 개수에 맞게 대화 범위(1 ~ totalCount) 및 슬라이더 자동 재조정
+        const cleanDialogs = rawDialogs.filter(d => d.person && d.person.trim() !== '');
+        const totalCount = cleanDialogs.length;
+        if (totalCount > 0) {
+          startRangeIndex = 1;
+          endRangeIndex = totalCount;
+          const progressEl = document.getElementById('input-progress');
+          if (progressEl) {
+            progressEl.min = 1;
+            progressEl.max = totalCount;
+            progressEl.value = totalCount;
+          }
+        } else {
+          startRangeIndex = 1;
+          endRangeIndex = 0;
         }
 
         syncMeNameDropdown(text);
@@ -447,22 +464,25 @@
         hourStr = hour.toString().padStart(2, '0');
         minStr = min;
       }
-      document.getElementById('input-capture-time').value = `${year}-${month}-${day}T${hourStr}:${minStr}`;
+      const timeEl = document.getElementById('input-capture-time');
+      if (timeEl) timeEl.value = `${year}-${month}-${day}T${hourStr}:${minStr}`;
     }
     if (config['battery']) {
       const batteryVal = config['battery'].replace('%', '').trim();
-      document.getElementById('input-battery').value = batteryVal;
+      const batteryEl = document.getElementById('input-battery');
+      if (batteryEl) batteryEl.value = batteryVal;
     }
     const yourNameEl = document.getElementById('input-your-name');
     if (yourNameEl && config['your-name']) {
       yourNameEl.value = config['your-name'];
     }
     if (config['background-color']) {
-      document.getElementById('input-bg-color').value = rgbToHex(config['background-color']);
+      const bgColorEl = document.getElementById('input-bg-color');
+      if (bgColorEl) bgColorEl.value = rgbToHex(config['background-color']);
     }
     if (config['me']) {
       loadedConfig['me'] = config['me'];
-      inputMeName.value = config['me'];
+      if (inputMeName) inputMeName.value = config['me'];
     }
     const inputFont = document.getElementById('input-font');
     if (config['font'] && inputFont) {
@@ -519,28 +539,38 @@
       config['capture-time'] = '오후 3:18';
     }
 
-    const batteryVal = document.getElementById('input-battery').value || '83';
-    document.getElementById('label-battery').textContent = batteryVal + '%';
+    const batteryEl = document.getElementById('input-battery');
+    const batteryVal = batteryEl ? (batteryEl.value || '83') : '83';
+    const labelBatteryEl = document.getElementById('label-battery');
+    if (labelBatteryEl) labelBatteryEl.textContent = batteryVal + '%';
     config['battery'] = batteryVal + '%';
 
     const yourNameEl = document.getElementById('input-your-name');
     config['your-name'] = yourNameEl ? (yourNameEl.value || '그룹채팅') : '그룹채팅';
 
-    const hexBgColor = document.getElementById('input-bg-color').value || '#acc0d1';
+    const bgColorEl = document.getElementById('input-bg-color');
+    const selThemeEl = document.getElementById('select-theme');
+    const selTheme = selThemeEl ? selThemeEl.value : 'light';
+    const fallbackBg = (typeof THEME_PRESETS !== 'undefined' && THEME_PRESETS[selTheme]) ? THEME_PRESETS[selTheme]['setting-bgcolor'] : '#acc0d1';
+    const hexBgColor = bgColorEl ? (bgColorEl.value || fallbackBg) : fallbackBg;
     config['background-color'] = hexBgColor;
 
-    config['me'] = inputMeName.value || '나';
+    config['me'] = inputMeName ? (inputMeName.value || '나') : '나';
 
-    config['wifi'] = parseInt(document.getElementById('input-wifi').value);
-    document.getElementById('label-wifi').textContent = (config['wifi'] * 25) + '%';
+    const wifiEl = document.getElementById('input-wifi');
+    config['wifi'] = wifiEl ? parseInt(wifiEl.value || '4') : 4;
+    const labelWifiEl = document.getElementById('label-wifi');
+    if (labelWifiEl) labelWifiEl.textContent = (config['wifi'] * 25) + '%';
 
-    config['cell'] = parseInt(document.getElementById('input-cell').value);
-    document.getElementById('label-cell').textContent = (config['cell'] * 25) + '%';
+    const cellEl = document.getElementById('input-cell');
+    config['cell'] = cellEl ? parseInt(cellEl.value || '4') : 4;
+    const labelCellEl = document.getElementById('label-cell');
+    if (labelCellEl) labelCellEl.textContent = (config['cell'] * 25) + '%';
 
     const inputW = document.getElementById('input-width');
     const inputH = document.getElementById('input-height');
-    config['width'] = inputW ? (parseInt(inputW.value) || 1080) : 1080;
-    config['height'] = inputH ? (parseInt(inputH.value) || 2000) : 2000;
+    config['width'] = inputW ? (parseInt(inputW.value) || 1080) : (loadedConfig['width'] || 1080);
+    config['height'] = inputH ? (parseInt(inputH.value) || 2340) : (loadedConfig['height'] || 2340);
 
     const progressEl = document.getElementById('input-progress');
 
@@ -841,27 +871,28 @@
   }
 
   async function loadDefaultData() {
+    const defaultSettingsFallback = `- height: 2340\n- background-color: #acc0d1\n- me-bubble-color: #fee500\n- me-text-color: #000000\n- you-bubble-color: #ffffff\n- you-text-color: #000000\n- your-name: 그룹채팅`;
+    const defaultExampleFallback = `2026년 8월 9일 오전 10:00, 상대방 : 안녕하세요!\n2026년 8월 9일 오전 10:01, 나 : 네, 반갑습니다!`;
+
     try {
-      const [settingsRes, exampleRes] = await Promise.all([
-        fetch(getAbsoluteUrl('src/default-setting.md')),
-        fetch(getAbsoluteUrl('example/example1.txt'))
-      ]);
-
-      if (!settingsRes.ok) throw new Error('default-setting.md 로드 실패');
-      if (!exampleRes.ok) throw new Error('example1.txt 로드 실패');
-
-      originalSettingsText = await settingsRes.text();
-      const exampleText = await exampleRes.text();
-
+      originalSettingsText = defaultSettingsFallback;
       const settings = parseSettings(originalSettingsText);
       applySettingsToUI(settings);
 
-      chatInput.value = exampleText.trim();
-      syncMeNameDropdown(exampleText);
-      await parseAndApplyDateHeader(exampleText);
+      if (chatInput && (!chatInput.value || chatInput.value.trim() === '')) {
+        chatInput.value = defaultExampleFallback;
+        const { dialogs: rawDialogs } = parseInputText(defaultExampleFallback);
+        const cleanDialogs = rawDialogs.filter(d => d.person && d.person.trim() !== '');
+        const totalCount = cleanDialogs.length;
+        startRangeIndex = 1;
+        endRangeIndex = totalCount || 2;
+        syncMeNameDropdown(defaultExampleFallback);
+        await parseAndApplyDateHeader(defaultExampleFallback);
+      }
+
       if (triggerUpdateCallback) triggerUpdateCallback(true);
     } catch (error) {
-      console.error('기본 데이터 초기화 실패:', error);
+      console.warn('기본 데이터 초기화 경고:', error);
     }
   }
 
