@@ -37,6 +37,9 @@ test.describe('카카오톡 대화 생성기 (small-project/KakaoTalk)', () => {
     await page.goto('/small-project/KakaoTalk/index.html');
     await page.waitForTimeout(1000);
 
+    await page.locator('#btn-icon-settings').click();
+    await page.waitForTimeout(300);
+
     const btnOpenThemeModal = page.locator('#btn-open-theme-modal');
     await expect(btnOpenThemeModal).toBeVisible();
 
