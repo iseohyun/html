@@ -47,6 +47,8 @@
           border-radius: 6px 6px 0 0 !important; cursor: pointer !important;
           transition: all 0.15s ease !important; position: relative !important; outline: none !important;
         }
+        .palette-modal-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.6); z-index: 99999; align-items: center; justify-content: center; }
+        .palette-modal-backdrop.show { display: flex !important; visibility: visible !important; opacity: 1 !important; }
         .webpointer-app .tab-btn:hover { color: #0f172a !important; background-color: #cbd5e1 !important; }
         .webpointer-app .tab-btn.active {
           color: #0284c7 !important; background-color: #ffffff !important;
@@ -177,12 +179,12 @@
 
       <!-- === Menu Bar (Gray Background, Width 100%) === -->
       <div class="menu-bar">
-        <button class="tab-btn" onclick="switchTab('file')">파일</button>
-        <button class="tab-btn active" onclick="switchTab('insert')">삽입</button>
-        <button class="tab-btn" onclick="switchTab('style')">그림 서식</button>
-        <button class="tab-btn" onclick="switchTab('text')">글 서식</button>
-        <button class="tab-btn" onclick="switchTab('anim')">애니메이션</button>
-        <button class="tab-btn tab-align-right" onclick="switchTab('view')">설정</button>
+        <button class="tab-btn" onclick="if(typeof switchTab==='function')switchTab('file')">파일</button>
+        <button class="tab-btn active" onclick="if(typeof switchTab==='function')switchTab('insert')">삽입</button>
+        <button class="tab-btn" onclick="if(typeof switchTab==='function')switchTab('style')">그림 서식</button>
+        <button class="tab-btn" onclick="if(typeof switchTab==='function')switchTab('text')">글 서식</button>
+        <button class="tab-btn" onclick="if(typeof switchTab==='function')switchTab('anim')">애니메이션</button>
+        <button class="tab-btn tab-align-right" onclick="if(typeof switchTab==='function')switchTab('view')">설정</button>
       </div>
 
       <!-- === Ribbon Bar (White Background, Width 100%, Horizontal Categories) === -->
@@ -418,12 +420,11 @@
           <button class="palette-modal-btn secondary" onclick="closeSlotSelectionModal()">취소</button>
         </div>
       </div>
-    </div>
-
   </article>
 
   <!-- Standard SPC Modular JS Layer -->
   <script src="module/config.js"></script>
+  <script src="module/core/storageManager.js"></script>
   <script src="module/core/objects.js"></script>
   <script src="module/core/selection.js"></script>
   <script src="module/core/bezier.js"></script>

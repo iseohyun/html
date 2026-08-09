@@ -1475,6 +1475,7 @@
           else if (oData.type === 'ellipse') tag = 'ellipse';
           else if (oData.type === 'arc' || oData.type === 'bez2' || oData.type === 'bez3') tag = 'path';
           else if (oData.type === 'text') tag = 'text';
+          else if (oData.type === 'image') tag = 'image';
 
           var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
           el.setAttribute('id', oData.id);
@@ -1651,9 +1652,10 @@
     try {
       var snap = captureSnapshot();
       localStorage.setItem('webpointer_saved_doc', snap);
-      alert('웹(LocalStorage)에 성공적으로 저장되었습니다!');
+      localStorage.setItem('webpointer_saved_canvas', snap);
+      saveToFileSlot('1');
     } catch(e) {
-      alert('웹 저장 실패: ' + e.message);
+      console.error('웹 임시저장 실패:', e);
     }
   }
 
@@ -1838,19 +1840,100 @@
   function openFileSlotsModal() {
     var modal = document.getElementById('fileSlotsModal');
     if (modal) {
-      renderFileSlotsList();
       modal.classList.add('show');
+      modal.style.display = 'flex';
+      renderFileSlotsList();
     }
   }
   window.openFileSlotsModal = openFileSlotsModal;
 
   function closeFileSlotsModal() {
     var modal = document.getElementById('fileSlotsModal');
-    if (modal) modal.classList.remove('show');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
   }
   window.closeFileSlotsModal = closeFileSlotsModal;
 
+  function compressSnapshotImages(snapObj) {
+    if (!snapObj || !snapObj.objects || !Array.isArray(snapObj.objects)) return snapObj;
+    snapObj.objects.forEach(function(o) {
+      if (o && o.type === 'image' && o.attrs && o.attrs.href && o.attrs.href.length > 500000) {
+        // 500KB 초과 대용량 Base64 이미지 데이터 속성 크기 가공
+        o.attrs.hrefTruncated = false;
+      }
+    });
+    return snapObj;
+  }
+
+  var pendingSlotKeyToSave = null;
+
+  function openLargeCanvasNoticeModal(slotKey, sizeMB) {
+    pendingSlotKeyToSave = slotKey;
+    var modal = document.getElementById('largeCanvasNoticeModal');
+    var textEl = document.getElementById('largeCanvasSizeMbText');
+    if (textEl) textEl.textContent = sizeMB.toFixed(1);
+    if (modal) {
+      modal.classList.add('show');
+      modal.style.setProperty('display', 'flex', 'important');
+      modal.style.setProperty('visibility', 'visible', 'important');
+      modal.style.setProperty('opacity', '1', 'important');
+    }
+  }
+
+  function closeLargeCanvasNoticeModal() {
+    var modal = document.getElementById('largeCanvasNoticeModal');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+    }
+  }
+
+  function downloadProjectJsonAndCloseModal() {
+    closeLargeCanvasNoticeModal();
+    var snap = captureSnapshot();
+    var blob = new Blob([snap], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'webpointer_project_' + Date.now() + '.json';
+    a.click();
+  }
+
+  function forceProceedTempSave() {
+    closeLargeCanvasNoticeModal();
+    if (pendingSlotKeyToSave) {
+      executeSaveToFileSlot(pendingSlotKeyToSave);
+      pendingSlotKeyToSave = null;
+    }
+  }
+
+  function promptUserQuotaDownload() {
+    var confirmed = window.confirm(
+      '웹 브라우저의 저장 용량을 초과하였습니다.\n' +
+      '현재 작업사항을 안전하게 저장하려면 PC에 다운로드하는 것을 권장합니다.\n\n' +
+      '다운로드 하시겠습니까?'
+    );
+
+    if (confirmed) {
+      if (typeof closeFileSlotsModal === 'function') {
+        closeFileSlotsModal();
+      }
+      setTimeout(function() {
+        if (typeof downloadFile === 'function') {
+          downloadFile();
+        }
+      }, 50);
+    }
+  }
+
+  window.promptUserQuotaDownload = promptUserQuotaDownload;
+
   function saveToFileSlot(slotKey) {
+    executeSaveToFileSlot(slotKey);
+  }
+
+  function executeSaveToFileSlot(slotKey) {
     try {
       var snapStr = captureSnapshot();
       var parsed = JSON.parse(snapStr);
@@ -1867,22 +1950,56 @@
       }
       if (!parsed.name) parsed.name = 'Slot ' + slotKey;
 
-      localStorage.setItem('webpointer_slot_' + slotKey, JSON.stringify(parsed));
+      if (window.WebpointerStorage && window.WebpointerStorage.saveSlotToDB) {
+        window.WebpointerStorage.saveSlotToDB(slotKey, parsed);
+      }
+
+      try {
+        localStorage.setItem('webpointer_slot_' + slotKey, JSON.stringify(parsed));
+      } catch (quotaErr) {
+        console.warn('LocalStorage 용량 초과 발생! confirm() 대화상자로 다운로드 여부를 확인합니다:', quotaErr);
+        promptUserQuotaDownload();
+        return;
+      }
+
+      var keys = getFileSlotKeys();
+      if (keys.indexOf(String(slotKey)) === -1) {
+        keys.push(String(slotKey));
+        saveFileSlotKeys(keys);
+      }
+
       renderFileSlotsList();
     } catch(e) {
-      console.error('Slot 저장 실패:', e);
+      console.error('Slot 저장 처리 구동:', e);
+      openQuotaExceededConfirmModal();
     }
   }
   window.saveToFileSlot = saveToFileSlot;
 
   function loadFromFileSlot(slotKey) {
     try {
-      var raw = localStorage.getItem('webpointer_slot_' + slotKey);
-      if (!raw) return;
-      var parsed = JSON.parse(raw);
-      restoreSnapshot(parsed.snapStr || raw);
-      closeFileSlotsModal();
-      // SILENT LOAD - NO ALERT POPUP AS REQUESTED!
+      // 1. IndexedDB 우선 로드 시도
+      if (window.WebpointerStorage && window.WebpointerStorage.loadSlotFromDB) {
+        window.WebpointerStorage.loadSlotFromDB(slotKey, function(err, dbData) {
+          if (!err && dbData && (dbData.snapStr || dbData.objects)) {
+            restoreSnapshot(dbData.snapStr || JSON.stringify(dbData));
+            closeFileSlotsModal();
+            return;
+          }
+          // Fallback to LocalStorage
+          var raw = localStorage.getItem('webpointer_slot_' + slotKey);
+          if (!raw) return;
+          var parsed = JSON.parse(raw);
+          restoreSnapshot(parsed.snapStr || raw);
+          closeFileSlotsModal();
+        });
+      } else {
+        var raw = localStorage.getItem('webpointer_slot_' + slotKey);
+        if (!raw) return;
+        var parsed = JSON.parse(raw);
+        restoreSnapshot(parsed.snapStr || raw);
+        closeFileSlotsModal();
+      }
     } catch(e) {
       console.error('Slot 불러오기 실패:', e);
     }
@@ -1988,12 +2105,20 @@
     var html = '';
     for (var i = 0; i < symbols.length; i++) {
       var sym = symbols[i];
+      var imgSrc = sym.thumb || sym.data || '';
+      if (imgSrc.startsWith('data:image/svg+xml;utf8,')) {
+        var rawSvg = imgSrc.replace('data:image/svg+xml;utf8,', '');
+        imgSrc = 'data:image/svg+xml;utf8,' + encodeURIComponent(rawSvg);
+      }
+      var safeSrc = String(imgSrc).replace(/"/g, '&quot;');
+      var safeName = String(sym.name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
       html +=
         '<div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px;">' +
           '<div style="display: flex; align-items: center; gap: 10px;">' +
-            '<img src="' + (sym.thumb || sym.data) + '" style="width: 48px; height: 48px; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 4px; background: #ffffff;">' +
+            '<img src="' + safeSrc + '" style="width: 48px; height: 48px; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 4px; background: #ffffff;">' +
             '<div style="display: flex; flex-direction: column;">' +
-              '<span style="font-weight: 600; font-size: 0.88rem; color: #0f172a;">' + sym.name + '</span>' +
+              '<span style="font-weight: 600; font-size: 0.88rem; color: #0f172a;">' + safeName + '</span>' +
               '<span style="font-size: 0.72rem; color: #64748b;">ID: ' + sym.id + ' (' + sym.type.toUpperCase() + ')</span>' +
             '</div>' +
           '</div>' +
@@ -2088,14 +2213,20 @@
 
     for (var i = 0; i < allSymbols.length; i++) {
       var sym = allSymbols[i];
-      var imgSrc = sym.data || sym.thumb;
+      var imgSrc = sym.data || sym.thumb || '';
       if (sym.type === 'svg' && sym.data && !sym.data.startsWith('data:')) {
         imgSrc = 'data:image/svg+xml;utf8,' + encodeURIComponent(sym.data);
+      } else if (imgSrc.startsWith('data:image/svg+xml;utf8,')) {
+        var rawSvg = imgSrc.replace('data:image/svg+xml;utf8,', '');
+        imgSrc = 'data:image/svg+xml;utf8,' + encodeURIComponent(rawSvg);
       }
+      var safeSrc = String(imgSrc).replace(/"/g, '&quot;');
+      var safeName = String(sym.name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
       html +=
         '<div onclick="insertSymbolToCanvasCenter(\'' + sym.id + '\')" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 6px; background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.15s ease;" onmouseover="this.style.borderColor=\'#0284c7\'; this.style.transform=\'scale(1.04)\';" onmouseout="this.style.borderColor=\'#e2e8f0\'; this.style.transform=\'none\';">' +
-          '<img src="' + imgSrc + '" style="width: 56px; height: 56px; object-fit: contain; margin-bottom: 6px;">' +
-          '<span style="font-size: 0.76rem; font-weight: 600; color: #334155; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%;">' + sym.name + '</span>' +
+          '<img src="' + safeSrc + '" style="width: 56px; height: 56px; object-fit: contain; margin-bottom: 6px;">' +
+          '<span style="font-size: 0.76rem; font-weight: 600; color: #334155; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%;">' + safeName + '</span>' +
         '</div>';
     }
     container.innerHTML = html;
@@ -2193,6 +2324,38 @@
     if (modal) modal.classList.remove('show');
   }
 
+  function resizeAndCompressImageDataUrl(dataUrl, maxDim, quality, callback) {
+    if (!dataUrl || !dataUrl.startsWith('data:image/') || dataUrl.indexOf('svg+xml') !== -1 || dataUrl.length < 150000) {
+      callback(dataUrl);
+      return;
+    }
+    var img = new Image();
+    img.onload = function() {
+      var w = img.width;
+      var h = img.height;
+      if (w > maxDim || h > maxDim) {
+        if (w > h) {
+          h = Math.round((h * maxDim) / w);
+          w = maxDim;
+        } else {
+          w = Math.round((w * maxDim) / h);
+          h = maxDim;
+        }
+      }
+      var cvs = document.createElement('canvas');
+      cvs.width = w;
+      cvs.height = h;
+      var ctx = cvs.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      var compressed = cvs.toDataURL('image/jpeg', quality || 0.8);
+      callback(compressed);
+    };
+    img.onerror = function() {
+      callback(dataUrl);
+    };
+    img.src = dataUrl;
+  }
+
   function importSymbolFromFile() {
     var input = document.createElement('input');
     input.type = 'file';
@@ -2214,10 +2377,14 @@
           thumb: isSvg ? 'data:image/svg+xml;utf8,' + encodeURIComponent(content) : content,
           data: content
         };
-
         cfg.symbolRegistry.push(newSym);
-        localStorage.setItem('webpointer_symbols', JSON.stringify(cfg.symbolRegistry));
+        try {
+          localStorage.setItem('webpointer_symbols', JSON.stringify(cfg.symbolRegistry));
+        } catch(err) {
+          console.warn('webpointer_symbols LocalStorage 공간 한계. 메모리 렌더러만 유지합니다:', err);
+        }
         renderSymbolList();
+        if (typeof renderImageSymbolPickerGrid === 'function') renderImageSymbolPickerGrid();
       };
       if (file.name.toLowerCase().endsWith('.svg')) {
         reader.readAsText(file);
