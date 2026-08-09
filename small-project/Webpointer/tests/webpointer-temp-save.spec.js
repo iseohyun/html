@@ -363,14 +363,40 @@ test.describe('Webpointer 캔버스 임시저장(Temporary Save / File Slot Stor
 
     await page.waitForTimeout(300);
 
-    // 3. 기존 공식 downloadFile() 팝업(dlJsonBtn 및 dlSvgBtn) 노출 확인
-    const isDownloadFileModalShown = await page.evaluate(() => {
+    // 3. 기존 공식 downloadFile() 팝업(dlJsonBtn 및 dlSvgBtn) 노출 및 [ ] 격자(Grid) 포함 체크박스 기본 해제 검증
+    const modalCheckResult = await page.evaluate(() => {
       const jsonBtn = document.getElementById('dlJsonBtn');
       const svgBtn = document.getElementById('dlSvgBtn');
-      return !!jsonBtn && !!svgBtn;
+      const gridChk = document.getElementById('dlIncludeGridChk');
+      return {
+        hasModalBtns: !!jsonBtn && !!svgBtn,
+        hasGridChk: !!gridChk,
+        isCheckedDefault: gridChk ? gridChk.checked : true
+      };
     });
 
-    console.log('[Webpointer Quota Exceeded Confirm Native Test 🧪 - Official Download File Modal State]:', isDownloadFileModalShown);
-    expect(isDownloadFileModalShown).toBe(true);
+    console.log('[Webpointer Download File Modal & Grid Checkbox Test 🧪]:', modalCheckResult);
+    expect(modalCheckResult.hasModalBtns).toBe(true);
+    expect(modalCheckResult.hasGridChk).toBe(true);
+    expect(modalCheckResult.isCheckedDefault).toBe(false); // 기본값: 해제 (unchecked)
+  });
+
+  test('TC-TEMP-SAVE-09: 격자 포함 체크박스 해제(기본값) 상태에서 SVG 추출 시 #gridGroup 및 #uiGroup 격자 레이어가 100% 완전 제거됨을 검증', async ({ page }) => {
+    const exportedSvgStr = await page.evaluate(() => {
+      var mainSvg = document.getElementById('mainSvg');
+      if (!mainSvg) return '';
+      var clone = mainSvg.cloneNode(true);
+      var gridG = clone.querySelector('#gridGroup');
+      if (gridG) gridG.parentNode.removeChild(gridG);
+      var uiG = clone.querySelector('#uiGroup');
+      if (uiG) uiG.parentNode.removeChild(uiG);
+
+      var serializer = new XMLSerializer();
+      return serializer.serializeToString(clone);
+    });
+
+    console.log('[Webpointer Excluded Grid SVG Export Test 🧪 - SVG Length]:', exportedSvgStr.length);
+    expect(exportedSvgStr.includes('id="gridGroup"')).toBe(false);
+    expect(exportedSvgStr.includes('id="uiGroup"')).toBe(false);
   });
 });

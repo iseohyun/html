@@ -1661,12 +1661,16 @@
 
   function downloadFile() {
     var pop = document.createElement('div');
-    pop.style.cssText = 'position:fixed; z-index:99999; padding:12px; border:1px solid #0284c7; border-radius:8px; background:#ffffff; box-shadow:0 8px 24px rgba(0,0,0,0.2); outline:none; font-family:sans-serif; display:flex; flex-direction:column; gap:8px; width:220px; top:50%; left:50%; transform:translate(-50%, -50%);';
+    pop.style.cssText = 'position:fixed; z-index:999999; padding:14px; border:1.5px solid #0284c7; border-radius:10px; background:#ffffff; box-shadow:0 10px 30px rgba(0,0,0,0.25); outline:none; font-family:sans-serif; display:flex; flex-direction:column; gap:10px; width:240px; top:50%; left:50%; transform:translate(-50%, -50%);';
     pop.innerHTML =
-      '<div style="font-size:0.9rem; font-weight:700; color:#0f172a; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">파일 다운로드 선택</div>' +
-      '<button id="dlJsonBtn" style="padding:6px 10px; font-size:0.82rem; font-weight:600; background:#0284c7; color:#ffffff; border:none; border-radius:4px; cursor:pointer;">프로젝트 저장 (.json)</button>' +
-      '<button id="dlSvgBtn" style="padding:6px 10px; font-size:0.82rem; font-weight:600; background:#059669; color:#ffffff; border:none; border-radius:4px; cursor:pointer;">SVG 벡터 이미지 (.svg)</button>' +
-      '<button id="dlCancelBtn" style="padding:4px 8px; font-size:0.78rem; background:#cbd5e1; color:#0f172a; border:none; border-radius:4px; cursor:pointer; margin-top:4px;">취소</button>';
+      '<div style="font-size:0.92rem; font-weight:700; color:#0f172a; border-bottom:1px solid #e2e8f0; padding-bottom:6px;">💾 파일 다운로드 선택</div>' +
+      '<label style="display:flex; align-items:center; gap:6px; font-size:0.82rem; color:#334155; cursor:pointer; user-select:none; margin:2px 0;">' +
+        '<input type="checkbox" id="dlIncludeGridChk" style="cursor:pointer; width:15px; height:15px; accent-color:#0284c7;">' +
+        '<span style="font-weight:600;">격자(Grid) 포함 다운로드</span>' +
+      '</label>' +
+      '<button id="dlJsonBtn" style="padding:8px 10px; font-size:0.82rem; font-weight:700; background:#0284c7; color:#ffffff; border:none; border-radius:6px; cursor:pointer; transition:all 0.15s ease;">📄 프로젝트 저장 (.json)</button>' +
+      '<button id="dlSvgBtn" style="padding:8px 10px; font-size:0.82rem; font-weight:700; background:#059669; color:#ffffff; border:none; border-radius:6px; cursor:pointer; transition:all 0.15s ease;">🖼️ SVG 벡터 이미지 (.svg)</button>' +
+      '<button id="dlCancelBtn" style="padding:5px 8px; font-size:0.78rem; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:4px; cursor:pointer; margin-top:2px;">취소 / 닫기</button>';
 
     document.body.appendChild(pop);
 
@@ -1675,9 +1679,15 @@
     }
 
     document.getElementById('dlJsonBtn').onclick = function() {
+      var includeGrid = document.getElementById('dlIncludeGridChk') && document.getElementById('dlIncludeGridChk').checked;
       closePop();
-      var snap = captureSnapshot();
-      var blob = new Blob([snap], { type: 'application/json' });
+      var snapStr = captureSnapshot();
+      try {
+        var snapObj = JSON.parse(snapStr);
+        snapObj.exportIncludeGrid = !!includeGrid;
+        snapStr = JSON.stringify(snapObj, null, 2);
+      } catch(e) {}
+      var blob = new Blob([snapStr], { type: 'application/json' });
       var url = URL.createObjectURL(blob);
       var a = document.createElement('a');
       a.href = url;
@@ -1687,12 +1697,48 @@
     };
 
     document.getElementById('dlSvgBtn').onclick = function() {
+      var includeGrid = document.getElementById('dlIncludeGridChk') && document.getElementById('dlIncludeGridChk').checked;
       closePop();
       var mainSvg = document.getElementById('mainSvg');
       if (!mainSvg) return;
       var clone = mainSvg.cloneNode(true);
+
+      // 1. 격자 그룹 (#gridGroup) 처리
+      var gridG = clone.querySelector('#gridGroup');
+      if (gridG) {
+        if (!includeGrid) {
+          // 격자 미포함(기본값): #gridGroup 통째로 완전 제거
+          gridG.parentNode.removeChild(gridG);
+        } else {
+          // 격자 포함: 조종점/테두리가 아닌纯 격자 요소만 보존
+        }
+      }
+
+      // 2. UI 핸들 및 선택 테두리 그룹 (#uiGroup) 처리
       var uiG = clone.querySelector('#uiGroup');
-      if (uiG) uiG.parentNode.removeChild(uiG);
+      if (uiG) {
+        if (!includeGrid) {
+          // 격자 미포함(기본값): uiGroup 전체 제거
+          uiG.parentNode.removeChild(uiG);
+        } else {
+          // 격자 포함: 조종점/변형 핸들/선택 테두리만 제거
+          var overlayElements = uiG.querySelectorAll('.transform-handle, .selection-box, .selection-overlay, [id*="handle"], [id*="transform"]');
+          overlayElements.forEach(function(el) {
+            if (el && el.parentNode) el.parentNode.removeChild(el);
+          });
+        }
+      }
+
+      // 3. 배경 색상 rect 보정 (격자 제거 후 깔끔한 배경색 유지)
+      var canvasBgColor = (cfg && cfg.canvasBgColor) ? cfg.canvasBgColor : '#ffffff';
+      if (canvasBgColor && canvasBgColor !== 'transparent') {
+        var bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        bgRect.setAttribute('width', '100%');
+        bgRect.setAttribute('height', '100%');
+        bgRect.setAttribute('fill', canvasBgColor);
+        clone.insertBefore(bgRect, clone.firstChild);
+      }
+
       var serializer = new XMLSerializer();
       var svgStr = '<?xml version="1.0" encoding="UTF-8"?>\n' + serializer.serializeToString(clone);
       var blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
