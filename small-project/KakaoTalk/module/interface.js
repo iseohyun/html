@@ -217,10 +217,23 @@
       'input-font',
       'input-font-size', // 글꼴 크기 연동
       'input-font-bold', // 글꼴 굵기 연동
+      'input-bubble-round', // 말풍선 라운드 크기 연동
       'input-me-bubble-color', // 내 말풍선 색 피커 연동
       'input-you-bubble-color', // 상대 말풍선 색 피커 연동
       'input-time-color' // 대화 시간 색 피커 연동
     ].forEach(bindLiveUpdate);
+
+    // 말풍선 라운드 슬라이더 값 변경 시 라벨 갱신 연동
+    const inputBubbleRound = document.getElementById('input-bubble-round');
+    const labelBubbleRound = document.getElementById('label-bubble-round');
+    if (inputBubbleRound && labelBubbleRound) {
+      const updateRoundLabel = () => {
+        labelBubbleRound.textContent = inputBubbleRound.value + ' px';
+        if (triggerUpdateCallback) triggerUpdateCallback(true);
+      };
+      inputBubbleRound.addEventListener('input', updateRoundLabel);
+      inputBubbleRound.addEventListener('change', updateRoundLabel);
+    }
 
     // 등장시간 슬라이더 값 변경 시 라벨 갱신 연동
     const inputDuration = document.getElementById('input-duration');
@@ -373,8 +386,6 @@
         const colorVal = row.querySelector(`#avatar-color-${person}`).value;
         const textColorVal = row.querySelector(`#avatar-textcolor-${person}`).value;
         const base64ImageVal = row.querySelector(`#avatar-image-data-${person}`).value || '';
-        const voiceURIVal = row.querySelector(`#avatar-voice-${person}`).value || '';
-
         avatarSettingsMap[person] = {
           color: colorVal,
           text: textVal,
@@ -388,7 +399,24 @@
       if (triggerUpdateCallback) triggerUpdateCallback(true);
     });
 
-    btnDownload.addEventListener('click', downloadCanvasImage);
+    // SPA 라우팅(http://127.0.0.1/#/small-project/KakaoTalk/index.html) 대응 전역 이벤트 위임 (v1.4.0)
+    // 일반 클릭: PNG 저장 / Ctrl+클릭: SVG 즉시 저장 (팝업 없음)
+    document.addEventListener('click', (e) => {
+      const btnDownloadTarget = e.target ? e.target.closest('#btn-download') : null;
+      if (btnDownloadTarget) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Ctrl 키 또는 Cmd(Mac) 키가 누른 채 클릭한 경우 -> SVG 파일 즉시 저장!
+        if (e.ctrlKey || e.metaKey) {
+          downloadCanvasSVG();
+          return;
+        }
+
+        // 일반 클릭 -> PNG 이미지 즉시 저장!
+        downloadCanvasImage();
+      }
+    }, true);
 
     // v1.3.0 테마 상세보기 모달 이벤트 기동
     setupThemeModalEvents();
@@ -521,6 +549,12 @@
     }
     if (config['font-bold'] !== undefined && inputFontBold) {
       inputFontBold.checked = (config['font-bold'] === 'true' || config['font-bold'] === true);
+    }
+    const inputBubbleRoundRestore = document.getElementById('input-bubble-round');
+    const labelBubbleRoundRestore = document.getElementById('label-bubble-round');
+    if (config['bubble-round'] && inputBubbleRoundRestore) {
+      inputBubbleRoundRestore.value = config['bubble-round'];
+      if (labelBubbleRoundRestore) labelBubbleRoundRestore.textContent = config['bubble-round'] + ' px';
     }
     if (config['me-bubble-color'] && inputMeBubbleColor) {
       inputMeBubbleColor.value = config['me-bubble-color'];
@@ -678,6 +712,10 @@
     }
     if (inputFontBold) {
       config['font-bold'] = inputFontBold.checked;
+    }
+    const inputBubbleRoundEl = document.getElementById('input-bubble-round');
+    if (inputBubbleRoundEl) {
+      config['bubble-round'] = parseInt(inputBubbleRoundEl.value, 10);
     }
     if (inputMeBubbleColor) {
       config['me-bubble-color'] = inputMeBubbleColor.value;
@@ -896,7 +934,8 @@
     
     // v0.0.10 직렬화 세이브
     settingText += `-font-size: ${uiConfig['font-size'] || '38'}\n`;
-    settingText += `-font-bold: ${uiConfig['font-bold'] !== undefined ? uiConfig['font-bold'] : 'true'}\n`;
+    settingText += `-font-bold: ${uiConfig['font-bold'] !== undefined ? uiConfig['font-bold'] : 'false'}\n`;
+    settingText += `-bubble-round: ${uiConfig['bubble-round'] !== undefined ? uiConfig['bubble-round'] : '32'}\n`;
     settingText += `-me-bubble-color: ${uiConfig['me-bubble-color'] || '#fee500'}\n`;
     settingText += `-you-bubble-color: ${uiConfig['you-bubble-color'] || '#2a2a2a'}\n`;
     settingText += `-time-color: ${uiConfig['time-color'] || '#8e8e93'}\n`;
@@ -921,8 +960,8 @@
   }
 
   async function loadDefaultData() {
-    const defaultSettingsFallback = `- height: 2340\n- background-color: #acc0d1\n- me-bubble-color: #fee500\n- me-text-color: #000000\n- you-bubble-color: #ffffff\n- you-text-color: #000000\n- your-name: 그룹채팅`;
-    const defaultExampleFallback = `2026년 8월 9일 오전 10:00, 상대방 : 안녕하세요!\n2026년 8월 9일 오전 10:01, 나 : 네, 반갑습니다!\n2026년 8월 9일 오전 10:02, 나 : 어디십니까?\n2026년 8월 9일 오전 10:04, 상대방 : 이모네?`;
+    const defaultSettingsFallback = `- height: 2340\n- background-color: #acc0d1\n- me-bubble-color: #fee500\n- me-text-color: #000000\n- you-bubble-color: #ffffff\n- you-text-color: #000000\n- me-name: 구인호\n- your-name: 그룹채팅`;
+    const defaultExampleFallback = `2026년 7월 19일 오전 11:37, 구인호 : 재현아 우리 양양 갔을 때 먹었던 가오리찜 가게 이름이 뭐냐\n\n2026년 7월 22일 오전 11:35\n2026년 7월 22일 오전 11:35, 정재현 : 황가네\n2026년 7월 22일 오전 11:36, 구인호 : 빠르네 ㅋㅋㅋ\n2026년 7월 22일 오전 11:46, 최경은 : ㅋㅋㅋㅋㅋ\n2026년 7월 22일 오전 11:47, 구인호 : 우리가 가려던 식당인 듯하군\n2026년 7월 22일 오전 11:47, 구인호 : 그런느낌\n2026년 7월 22일 오전 11:49, 구인호 : 다른곳이라고 답이 옴 ㅋㅋ\n2026년 7월 22일 오후 2:16, 정재현 : 이모네?\n2026년 7월 22일 오후 2:16, 정재현 : 거긴 매콤하고 황가네는 좀 달콤하고\n2026년 7월 22일 오후 2:17, 정재현 : 근데 거긴 속촌데 양양은 모르겠다\n2026년 7월 22일 오후 2:23, 구인호 : 숙소가 고성이라 속초 양양 어디로 갈지는 모름\n2026년 7월 22일 오후 4:22, 정재현 : 고성이랑 양양은 한시간 거린데\n2026년 7월 22일 오후 4:23, 구인호 : 일단 만석닭강정은 감`;
 
     try {
       originalSettingsText = defaultSettingsFallback;
@@ -935,7 +974,13 @@
         const cleanDialogs = rawDialogs.filter(d => d.person && d.person.trim() !== '');
         const totalCount = cleanDialogs.length;
         startRangeIndex = 1;
-        endRangeIndex = totalCount || 2;
+        endRangeIndex = totalCount || 4;
+        const progressEl = document.getElementById('input-progress');
+        if (progressEl) {
+          progressEl.min = 1;
+          progressEl.max = totalCount || 4;
+          progressEl.value = totalCount || 4;
+        }
         syncMeNameDropdown(defaultExampleFallback);
         await parseAndApplyDateHeader(defaultExampleFallback);
       }
@@ -1059,10 +1104,37 @@
     const url = canvas.toDataURL('image/png');
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'capture.png';
+    a.download = 'kakaotalk_chat.png';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+  }
+
+  function downloadCanvasSVG() {
+    if (!canvas) return;
+    const inputVal = chatInput ? chatInput.value : '';
+    const { config: parsedConfig, dialogs } = parseInputText(inputVal);
+    const fullConfig = gatherConfigFromUI(parsedConfig);
+
+    let svgString = '';
+    if (window.ChatEngine && window.ChatEngine.exportTrueSVG) {
+      svgString = window.ChatEngine.exportTrueSVG(canvas, fullConfig, dialogs, avatarSettingsMap);
+    }
+
+    if (!svgString) {
+      console.error('SVG 내보내기 실패: ChatEngine.exportTrueSVG가 결과물을 생성하지 못했습니다.');
+      return;
+    }
+
+    const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'kakaotalk_chat.svg';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   function updateDoubleSliderUI(totalCount) {

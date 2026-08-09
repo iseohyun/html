@@ -11,7 +11,8 @@
 -setting-bgcolor: #acc0d1
 -font: sans-serif
 -font-size: 38
--font-bold: true
+-font-bold: false
+-bubble-round: 32
 -me-bubble-color: #fee500
 -me-text-color: #000000
 -you-bubble-color: #ffffff

@@ -269,6 +269,74 @@
         }
       }, { passive: false });
 
+      // Ctrl 키 누른 채 마우스 호버 가로/세로 보조선 및 최하단 좌표 툴팁 연동
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Control' || e.ctrlKey) {
+          if (!window._isCtrlGuideActive) {
+            window._isCtrlGuideActive = true;
+            triggerCanvasUpdate(false);
+          }
+        }
+      });
+
+      window.addEventListener('keyup', (e) => {
+        if (e.key === 'Control' || !e.ctrlKey) {
+          if (window._isCtrlGuideActive) {
+            window._isCtrlGuideActive = false;
+            triggerCanvasUpdate(false);
+          }
+        }
+      });
+
+      canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        window._guideMouseX = Math.round((e.clientX - rect.left) * scaleX);
+        window._guideMouseY = Math.round((e.clientY - rect.top) * scaleY);
+        window._isCtrlGuideActive = e.ctrlKey;
+        triggerCanvasUpdate(false);
+      });
+
+      canvas.addEventListener('mouseleave', () => {
+        if (window._isCtrlGuideActive) {
+          window._isCtrlGuideActive = false;
+          triggerCanvasUpdate(false);
+        }
+      });
+
+      // Ctrl + 마우스 클릭 시 현재 정밀 픽셀 좌표 클립보드 복사 및 토스트 알림 연동
+      let copyToastTimeout = null;
+      canvas.addEventListener('click', (e) => {
+        if (e.ctrlKey || window._isCtrlGuideActive) {
+          const mX = window._guideMouseX || 0;
+          const mY = window._guideMouseY || 0;
+          const coordStr = `X: ${mX}, Y: ${mY}`;
+
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(coordStr).catch(() => {});
+          } else {
+            try {
+              const textAttr = document.createElement('textarea');
+              textAttr.value = coordStr;
+              document.body.appendChild(textAttr);
+              textAttr.select();
+              document.execCommand('copy');
+              document.body.removeChild(textAttr);
+            } catch (err) {}
+          }
+
+          window._copyNotificationText = `클립보드 복사 완료! (${coordStr})`;
+          triggerCanvasUpdate(false);
+
+          if (copyToastTimeout) clearTimeout(copyToastTimeout);
+          copyToastTimeout = setTimeout(() => {
+            window._copyNotificationText = null;
+            triggerCanvasUpdate(false);
+          }, 1500);
+        }
+      });
+
       // 2. 캔버스 60fps 렌더 루프 개시
       window.ChatEngine.startRenderLoop(
         () => window.ChatEngine.isAnimActive(),

@@ -15,7 +15,10 @@
       <div class="button-group">
         <button id="btn-load-example">대화내용 불러오기</button>
         <input type="file" id="file-loader" style="display: none;">
-        <button id="btn-download">그림 다운로드</button>
+        <div class="tooltip-wrapper">
+          <button id="btn-download">그림 다운로드</button>
+          <div class="tooltip-below">+ctrl : .svg</div>
+        </div>
         <button id="btn-help"
           style="background-color: #f1f5f9; border: 1px solid #cbd5e1; color: #1e293b;">도움말(?)</button>
       </div>
@@ -187,8 +190,16 @@
                   style="width: 65px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px;"> px
               </div>
               <label style="display: flex; align-items: center; gap: 4px; font-weight: normal; cursor: pointer;">
-                <input type="checkbox" id="input-font-bold" checked> 굵게
+                <input type="checkbox" id="input-font-bold"> 굵게
               </label>
+            </div>
+          </div>
+
+          <div class="control-row">
+            <label>말풍선 라운드</label>
+            <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+              <input type="range" id="input-bubble-round" min="0" max="60" value="32" style="flex: 1;">
+              <span id="label-bubble-round" style="width: 45px; text-align: right; font-size: 0.9em; font-weight: bold; color: #475569;">32 px</span>
             </div>
           </div>
 
