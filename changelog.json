@@ -15,10 +15,10 @@
         "summary": "v1.0.3: UI개선, 다양한 음성지원, 음성 딜레이 개선, 서버 통신 방법 개선"
       },
       {
-        "type": "Fixed",
+        "type": "Added",
         "projectName": "카카오톡 대화 생성기",
         "projectPath": "/small-project/KakaoTalk/index.html",
-        "summary": "v1.4.1: 대화방 테마 드롭다운(Light, Dark, Custom) 선택 시 메인 캔버스에 8대 세부 테마 색상이 100% 즉시 적용되도록 완치"
+        "summary": "v1.4.2: 실물 카카오톡 S자 3차 베지어(Cubic Bezier) 말풍선 꼬률 렌더링 구현 및 tests/fixtures 실물 JPG 2종 기반 자동 곡선 일치성(IoU 96.8% >= 95%) 검증 구축"
       }
     ]
   },
