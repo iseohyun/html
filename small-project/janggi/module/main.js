@@ -646,9 +646,18 @@ function startNewGame() {
 }
 
 // ----------------------------------------------------
-// Save/Load Slots Logic
+// Save/Load Slots Logic (activeSlot은 settings.js에서 관리)
 // ----------------------------------------------------
-let activeSlot = 1;
+
+// 글로벌 전역 액션 함수 익스포트
+window.toggleNation = toggleNation;
+window.disalbeSettingBox = disalbeSettingBox;
+window.enalbeSettingBox = enalbeSettingBox;
+window.prev = prev;
+window.next = next;
+window.download = download;
+window.toggleCoordinates = toggleCoordinates;
+window.changeCharim = changeCharim;
 
 // 게임 초기화 실행부
 function initGame() {

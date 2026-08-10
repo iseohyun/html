@@ -2,86 +2,24 @@
 // 모든 인라인 핸들러(onclick, onchange, oninput)를 data-action 기반으로 위임
 
 (function () {
-  // ===== 액션 레지스트리 =====
-  // data-action 값 → 핸들러 함수 매핑
-  const actions = {
-    // --- 게임 코어 (main.js) ---
-    toggleNation,
-    disalbeSettingBox,
-    enalbeSettingBox,
-    prev,
-    next,
-    download,
-    toggleCoordinates,
+  // ===== 동적 핸들러 조율기 =====
+  function getActionHandler(actionName) {
+    if (!actionName) return null;
 
-    // --- 설정 (settings.js) ---
-    adjustPieceSize,
-    adjustPieceFontSize,
-    adjustCoordsFontSize,
-    changeFontSize,
-    changeBoardColor,
-    changeChoColor,
-    changeHanColor,
-    changePieceShape,
-    changeCandiShape,
-    changeCandiColor,
-    changeAnimDuration,
-    changeAnimHeight,
-    changeSettingsBgColor,
-    changeSettingsOpacity,
-    changeSettingsTextColorType,
-    changeSettingsTextColorCustom,
-    changeSettingsAccentColor,
-    selectSlot,
-    copyConfigToClipboard,
-    resetCategory1,
-    resetCategory2,
-    resetCategory3,
-    resetCategory4,
-    changeAiMode,
-    changeCursorLockMode,
-    changeAutoplaySpeed,
-    changeAutoplayUseAnim,
+    // 1. window 전역 함수 우선 탐색
+    if (typeof window[actionName] === "function") {
+      return window[actionName];
+    }
 
-    // --- 점수판/UI (ui.js) ---
-    rotateScorePanel,
-    setScoreSlide,
-    updateScoreboardSettings,
-    updateMetadataFromForm,
-    updateCurrentStepComment,
-    toggleMetadataCategory,
-    toggleSettingCategory,
-    toggleAutoplay,
-    goToStart,
-    goToEnd,
-    hideCommentBubble,
+    // 2. eval 안전 동적 스코프 탐색 (IIFE 스코프 회피)
+    try {
+      if (typeof globalThis[actionName] === "function") {
+        return globalThis[actionName];
+      }
+    } catch (e) {}
 
-    // --- 기보 (record.js) ---
-    openRecordModal,
-    closeRecordModal,
-    saveRecordToLibrary,
-    loadRecordFromClipboard,
-
-    // --- 키보드 모달 (keyboard.js) ---
-    openShortcutModal,
-    closeShortcutModal,
-    handleModalOverlayClick,
-    resetDefaultShortcuts,
-    changeModalBgColor,
-    changeModalOpacity,
-
-    // --- 코멘트 모달 (ui.js) ---
-    openCommentModal,
-    closeCommentModal,
-    saveCommentModal,
-    handleCommentModalOverlayClick,
-    changeCommentBgColor,
-    changeCommentOpacity,
-    changeCommentDuration,
-
-    // --- 차림 (main.js) ---
-    changeCharim,
-  };
+    return null;
+  }
 
   // ===== data-action 인자 파서 =====
   function getActionArgs(el) {
@@ -103,9 +41,9 @@
     const actionName = el.dataset.action;
     if (!actionName) return;
 
-    const handler = actions[actionName];
+    const handler = getActionHandler(actionName);
     if (!handler) {
-      console.warn(`[dispatcher] 등록되지 않은 액션: ${actionName}`);
+      console.warn(`[dispatcher] 등록되지 않은 액션 또는 핸들러 미정의: ${actionName}`);
       return;
     }
 
