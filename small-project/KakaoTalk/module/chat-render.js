@@ -11,20 +11,21 @@
     AVATAR_SIZE_DEFAULT: 104,
     AVATAR_ROUND_DEFAULT: 42,
     FONT_SIZE_DEFAULT: 28,
-    BUBBLE_ROUND_DEFAULT: 32,
+    BUBBLE_ROUND_DEFAULT: 25,
     OPPONENT_BUBBLE_X: 160,
     STATUS_BAR_TIME_X: 60,
     STATUS_BAR_TIME_Y: 52,
     CHAT_ROOM_NAME_X: 60,
     CHAT_ROOM_NAME_Y: 160,
-    NAME_FONT_RATIO_DEFAULT: 0.85,
+    NAME_FONT_RATIO_DEFAULT: 1.20,
     NAME_X_REF_DEFAULT: 180,
     CHAT_START_Y_DEFAULT: 240,
     CHAT_GAP_DEFAULT: 24,
     OPPONENT_BUBBLE_TOP_OFFSET_DEFAULT: 44,
     DATE_FONT_SIZE_DEFAULT: 36,
     DATE_HEIGHT_DEFAULT: 60,
-    DATE_Y_OFFSET_DEFAULT: 24
+    DATE_Y_OFFSET_DEFAULT: 24,
+    ME_TEXT_RIGHT_OFFSET_DEFAULT: 10
   });
 
   const MARGIN = 160;
@@ -147,7 +148,7 @@
       c.fill(pathObj);
     } else {
       const bubbleCenterX = x + w / 2;
-      const startX_me = Math.round(x + 9);
+      const startX_me = Math.round(x - 1);
       const pathD_me = generateSpeechBubblePathWithTail(startX_me, startY, wOffset, hOffset, aVal);
 
       c.save();
@@ -261,12 +262,14 @@
     const avatarRound = (config && config['avatar-round'] !== undefined) ? parseInt(config['avatar-round'], 10) : LAYOUT_DEFAULTS.AVATAR_ROUND_DEFAULT;
     const dateHeight = (config && config['date-height'] !== undefined) ? parseInt(config['date-height'], 10) : LAYOUT_DEFAULTS.DATE_HEIGHT_DEFAULT;
     const dateYOffset = (config && config['date-y-offset'] !== undefined) ? parseInt(config['date-y-offset'], 10) : LAYOUT_DEFAULTS.DATE_Y_OFFSET_DEFAULT;
+    const meTextRightOffset = (config && config['me-text-right-offset'] !== undefined) ? parseInt(config['me-text-right-offset'], 10) : LAYOUT_DEFAULTS.ME_TEXT_RIGHT_OFFSET_DEFAULT;
 
     window._nameHandleRegions = [];
     window._avatarHandleRegions = [];
     window._chatGapHandleRegions = [];
     window._oppBubbleTopHandleRegions = [];
     window._dateHandleRegions = [];
+    window._meTextRightOffsetHandleRegions = [];
 
     let lastSpeaker = '';
     const tempPositions = [];
@@ -618,7 +621,7 @@
         ctx.textAlign = 'right';
         ctx.textBaseline = 'top';
 
-        const textX_me = bx + meWidth - halfEm;
+        const textX_me = bx + meWidth - halfEm - meTextRightOffset;
         let renderLines_me = pos.lines;
         if (animState.active && index === visibleDialogs.length - 1 && animState.effect === 'typing') {
           const fullText = pos.lines.join('\n');
@@ -626,6 +629,39 @@
           renderLines_me = fullText.slice(0, revealedLen).split('\n');
         }
         drawWrappedText(ctx, renderLines_me, textX_me, textY, 1.0, activeFontSize, lineSpacing);
+
+        // LAYOUT_EDIT 모드일 때 내 글자 우측 오프셋 가이드 수직선 및 드래그 핸들 그리기
+        if (window.APP_MODE === 'LAYOUT_EDIT') {
+          ctx.save();
+          // 1. 가이드 수직선 (보라색 #8b5cf6)
+          ctx.strokeStyle = '#8b5cf6';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.moveTo(textX_me, mePosY);
+          ctx.lineTo(textX_me, mePosY + meHeight);
+          ctx.stroke();
+
+          // 2. 수직선 드래그 핸들 (원형 노드)
+          const handleY = mePosY + meHeight / 2;
+          ctx.fillStyle = '#8b5cf6';
+          ctx.beginPath();
+          ctx.arc(textX_me, handleY, 10, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.restore();
+
+          window._meTextRightOffsetHandleRegions.push({
+            lineX: textX_me,
+            lineY1: mePosY - currentScrollY,
+            lineY2: mePosY + meHeight - currentScrollY,
+            handleY: handleY - currentScrollY,
+            offset: meTextRightOffset,
+            bx: bx,
+            meWidth: meWidth,
+            halfEm: halfEm
+          });
+        }
 
         const textW = Math.round(pos.lines.reduce((max, l) => Math.max(max, ctx.measureText(l).width), 0));
         hitRegions.unshift({
@@ -1503,7 +1539,7 @@
         const startY = Math.round(mePosY + 140);
 
         const bubbleCenterX = Math.round(rx + meWidth / 2);
-        const startX_me = Math.round(rx + 9);
+        const startX_me = Math.round(rx - 1);
         const pathD = generateSpeechBubblePathWithTail(startX_me, startY, wOffset, hOffset, userArcRadius);
 
         if (!pos.isContinuous) {
@@ -1524,7 +1560,8 @@
           svgElements.push(`<text x="${timeX_me}" y="${timeY_me}" font-size="${timeFontSize}" font-weight="bold" fill="${escapeXml(timeColor)}" text-anchor="end" dominant-baseline="alphabetic">${escapeXml(pos.time)}</text>`);
         }
 
-        const textX = Math.round(rx + meWidth - halfEm);
+        const meTextRightOffset = (config && config['me-text-right-offset'] !== undefined) ? parseInt(config['me-text-right-offset'], 10) : LAYOUT_DEFAULTS.ME_TEXT_RIGHT_OFFSET_DEFAULT;
+        const textX = Math.round(rx + meWidth - halfEm - meTextRightOffset);
         const bubbleCenterY = Math.round(mePosY + meHeight / 2);
         const textH = pos.lines.length * lineSpacing - (lineSpacing - activeFontSize);
         const textY = Math.round(bubbleCenterY - textH / 2);

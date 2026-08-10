@@ -298,7 +298,8 @@
       'input-date-y-offset', // 날짜 상단 간격 연동
       'input-bubble-top-offset', // 대화상자 상오프셋 연동
       'input-bubble-padding', // 버블 패딩 연동
-      'input-bubble-margin' // 버블 마진 연동
+      'input-bubble-margin', // 버블 마진 연동
+      'input-me-text-right-offset' // 내 글자 우측 오프셋 연동
     ].forEach(bindLiveUpdate);
 
     // 이름 글꼴 비율 슬라이더 값 변경 시 라벨 갱신 연동
@@ -322,6 +323,18 @@
       };
       inputBubbleRound.addEventListener('input', updateRoundLabel);
       inputBubbleRound.addEventListener('change', updateRoundLabel);
+    }
+
+    // 내 글자 우측 오프셋 슬라이더 값 변경 시 라벨 갱신 연동
+    const inputMeTextRightOffset = document.getElementById('input-me-text-right-offset');
+    const labelMeTextRightOffset = document.getElementById('label-me-text-right-offset');
+    if (inputMeTextRightOffset && labelMeTextRightOffset) {
+      const updateMeTextOffsetLabel = () => {
+        labelMeTextRightOffset.textContent = inputMeTextRightOffset.value + ' px';
+        if (triggerUpdateCallback) triggerUpdateCallback(true);
+      };
+      inputMeTextRightOffset.addEventListener('input', updateMeTextOffsetLabel);
+      inputMeTextRightOffset.addEventListener('change', updateMeTextOffsetLabel);
     }
 
     // 초상화 라운드 슬라이더 값 변경 시 라벨 갱신 연동
@@ -752,6 +765,10 @@
     let startDateHeightDragMouseY = 0;
     let startDateHeightVal = 60;
 
+    let isDraggingMeTextRightOffsetLine = false;
+    let hoveringMeTextRightOffsetLine = null;
+    let activeMeTextOffsetLine = null;
+
     let lastHighlightedInputId = null;
 
     /**
@@ -865,6 +882,11 @@
         isDraggingDateHeight = false;
         changedInputId = 'input-date-height';
       }
+      if (isDraggingMeTextRightOffsetLine) {
+        isDraggingMeTextRightOffsetLine = false;
+        activeMeTextOffsetLine = null;
+        changedInputId = 'input-me-text-right-offset';
+      }
 
       if (changedInputId) {
         highlightUIInput(changedInputId);
@@ -975,6 +997,18 @@
         hoveringDateYOffsetLine = nearDateYOffsetLine;
         hoveringDateHeightHandle = hoveringDateYOffsetLine ? null : nearDateHeightHandle;
 
+        // 내 글자 우측 오프셋 가이드 수직선 검출
+        let nearMeTextOffsetLine = null;
+        if (window.APP_MODE === 'LAYOUT_EDIT' && window._meTextRightOffsetHandleRegions) {
+          for (const r of window._meTextRightOffsetHandleRegions) {
+            if (Math.abs(cX - r.lineX) < 18) {
+              nearMeTextOffsetLine = r;
+              break;
+            }
+          }
+        }
+        hoveringMeTextRightOffsetLine = nearMeTextOffsetLine;
+
         // 이름 크기 조절 핸들 및 바디 감지 로직
         let nearNameHandle = null;
         let nearNameBody = null;
@@ -1004,6 +1038,18 @@
           if (inputAvatarCenterX) {
             inputAvatarCenterX.value = newCx;
             loadedConfig['avatar-center-x'] = newCx;
+          }
+          if (triggerUpdateCallback) triggerUpdateCallback(false);
+        } else if (isDraggingMeTextRightOffsetLine && activeMeTextOffsetLine) {
+          activeDragInputId = 'input-me-text-right-offset';
+          const basePos = activeMeTextOffsetLine.bx + activeMeTextOffsetLine.meWidth - activeMeTextOffsetLine.halfEm;
+          const newOffset = Math.max(0, Math.min(80, Math.round(basePos - cX)));
+          const inputMeTextRightOffset = document.getElementById('input-me-text-right-offset');
+          if (inputMeTextRightOffset) {
+            inputMeTextRightOffset.value = newOffset;
+            const labelMeTextRightOffset = document.getElementById('label-me-text-right-offset');
+            if (labelMeTextRightOffset) labelMeTextRightOffset.textContent = newOffset + ' px';
+            loadedConfig['me-text-right-offset'] = newOffset;
           }
           if (triggerUpdateCallback) triggerUpdateCallback(false);
         } else if (isDraggingNameHandle && activeNameHandle) {
@@ -1133,7 +1179,7 @@
             canvas.style.cursor = 'move'; // 위치 이동 커서
           } else if (hoveringChatStartY || hoveringChatGapLine || hoveringOppBubbleTopLine || hoveringDateYOffsetLine || hoveringDateHeightHandle) {
             canvas.style.cursor = 'ns-resize'; // 수직 조절 커서
-          } else if (isNearAvatarLine || isNearBubbleLine) {
+          } else if (isNearAvatarLine || isNearBubbleLine || hoveringMeTextRightOffsetLine) {
             canvas.style.cursor = 'ew-resize';
           } else {
             canvas.style.cursor = 'crosshair';
@@ -1157,7 +1203,12 @@
         const chatStartY = inputChatStartY ? (parseInt(inputChatStartY.value, 10) || defaultChatStartY) : defaultChatStartY;
 
         if (window.APP_MODE === 'LAYOUT_EDIT') {
-          if (hoveringAvatarSizeHandle) {
+          if (hoveringMeTextRightOffsetLine) {
+            isDraggingMeTextRightOffsetLine = true;
+            activeMeTextOffsetLine = hoveringMeTextRightOffsetLine;
+            e.preventDefault();
+            e.stopPropagation();
+          } else if (hoveringAvatarSizeHandle) {
             isDraggingAvatarSize = true;
             startAvatarSizeDragX = cX;
             const inputAvatarSize = document.getElementById('input-avatar-size');
@@ -2092,7 +2143,7 @@
     }
 
     const inputNameFontRatio = document.getElementById('input-name-font-ratio');
-    if (inputNameFontRatio) config['name-font-ratio'] = parseFloat(inputNameFontRatio.value) || 0.85;
+    if (inputNameFontRatio) config['name-font-ratio'] = parseFloat(inputNameFontRatio.value) || 1.20;
 
     const inputNameOffset = document.getElementById('input-name-offset');
     if (inputNameOffset) config['name-offset'] = parseInt(inputNameOffset.value) || 0;
@@ -2111,6 +2162,9 @@
 
     const inputBubbleMargin = document.getElementById('input-bubble-margin');
     if (inputBubbleMargin) config['bubble-margin'] = parseInt(inputBubbleMargin.value) || 0;
+
+    const inputMeTextRightOffset = document.getElementById('input-me-text-right-offset');
+    if (inputMeTextRightOffset) config['me-text-right-offset'] = (inputMeTextRightOffset.value !== '') ? parseInt(inputMeTextRightOffset.value, 10) : 10;
 
     const selectTimeAlign = document.getElementById('select-time-align');
     if (selectTimeAlign) config['time-align'] = selectTimeAlign.value;
