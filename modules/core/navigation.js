@@ -85,6 +85,32 @@ window.SiteModules.Navigation = (function () {
     let sidebarContainer = document.getElementById("sidebar-container");
     if (!sidebarContainer) {
       const body = document.querySelector("body");
+
+      // C. 모바일 전용 상단 고정 헤더
+      let mobileHeader = document.getElementById("mobile-header");
+      if (!mobileHeader) {
+        mobileHeader = document.createElement("div");
+        mobileHeader.setAttribute("id", "mobile-header");
+        mobileHeader.innerHTML = `
+          <div id="mobile-logo">
+            <img src="/source/icon_seohyun.svg" alt="iseohyun.com 로고" id="mobile-logo-img">
+            <span id="mobile-logo-text">iseohyun.com</span>
+          </div>
+          <div id="mobile-menu-btn" data-tooltip="메뉴">
+            <span class="material-symbols-outlined">menu</span>
+          </div>
+        `;
+        body.insertBefore(mobileHeader, body.firstChild);
+      }
+
+      // D. 모바일 어두운 배경 오버레이
+      let sidebarOverlay = document.getElementById("sidebar-overlay");
+      if (!sidebarOverlay) {
+        sidebarOverlay = document.createElement("div");
+        sidebarOverlay.setAttribute("id", "sidebar-overlay");
+        body.appendChild(sidebarOverlay);
+      }
+
       sidebarContainer = document.createElement("div");
       sidebarContainer.setAttribute("id", "sidebar-container");
       body.appendChild(sidebarContainer);
@@ -103,15 +129,15 @@ window.SiteModules.Navigation = (function () {
             </svg>
           </div>
           <div class="nav-item" id="nav-sitemap" data-tab="tab-sitemap" data-tooltip="Site Map">
-            <span class="material-symbols-outlined" data-icon="account_tree"></span>
+            <span class="material-symbols-outlined">account_tree</span>
             <span class="keybind-badge">1</span>
           </div>
           <div class="nav-item" id="nav-toc" data-tab="tab-toc" data-tooltip="목차">
-            <span class="material-symbols-outlined" data-icon="toc"></span>
+            <span class="material-symbols-outlined">toc</span>
             <span class="keybind-badge">2</span>
           </div>
           <div class="nav-item" id="nav-search" data-tab="tab-search" data-tooltip="검색">
-            <span class="material-symbols-outlined" data-icon="search"></span>
+            <span class="material-symbols-outlined">search</span>
             <span class="keybind-badge">3</span>
           </div>
         </div>
@@ -121,13 +147,13 @@ window.SiteModules.Navigation = (function () {
         
         <div class="nav-group">
           <div class="nav-item" id="nav-login" data-tooltip="게스트">
-            <span class="material-symbols-outlined" data-icon="account_circle"></span>
+            <span class="material-symbols-outlined">account_circle</span>
           </div>
           <div class="nav-item" id="nav-help" data-tooltip="질의 응답 / 인터페이스 소개">
-            <span class="material-symbols-outlined" data-icon="help"></span>
+            <span class="material-symbols-outlined">help</span>
           </div>
           <div class="nav-item" id="nav-info" data-tooltip="사이트 소개">
-            <span class="material-symbols-outlined" data-icon="info"></span>
+            <span class="material-symbols-outlined">info</span>
           </div>
         </div>
       `;
@@ -200,8 +226,8 @@ window.SiteModules.Navigation = (function () {
       .then(list => {
         window.SiteModules.hierarchyListCached = list;
 
-        // 메인 진입 시 수백 개 HTML 무차별 사전 fetch 로딩 100% 원천 차단 (F12 Network 0건 정돈)
-        // buildSearchCache(list);
+        // 백그라운드 검색 인덱서 탑재
+        buildSearchCache(list);
 
         let directory = state.currentPath.split('/').join('/');
         if (directory.startsWith('/')) {
@@ -443,7 +469,9 @@ window.SiteModules.Navigation = (function () {
 
     if (isMobile) {
       const container = document.getElementById("sidebar-container");
+      const overlay = document.getElementById("sidebar-overlay");
       if (container) container.classList.remove("active");
+      if (overlay) overlay.classList.remove("active");
     }
 
     if (!hash || hash === "#" || hash === "#/" || hash === "#/index.html" || hash === "#index.html") {
@@ -739,13 +767,6 @@ window.SiteModules.Navigation = (function () {
     });
   }
 
-  function updateHeaderTitle(titleText) {
-    const headerTitleEl = document.getElementById("header-doc-title");
-    if (headerTitleEl) {
-      headerTitleEl.textContent = titleText || "iseohyun.com";
-    }
-  }
-
   function postLoadPageActions(isHome, urlPath, docTitle) {
     const state = window.SiteModules.state;
 
@@ -756,7 +777,6 @@ window.SiteModules.Navigation = (function () {
       state.prv_doc = { title: "", dir: "", file: "" };
       state.next_doc = { title: "", dir: "", file: "" };
       document.title = "iseohyun.com";
-      updateHeaderTitle("iseohyun.com");
       document.body.classList.remove("admin-mode");
     } else {
       state.currentPath = urlPath;
@@ -765,9 +785,6 @@ window.SiteModules.Navigation = (function () {
       if (list) {
         findAndPopulateState(list, state.currentPath);
       }
-
-      const displayTitle = (state.cur_doc && state.cur_doc.title) || docTitle || document.title || "iseohyun.com";
-      updateHeaderTitle(displayTitle);
 
       // admin 페이지 여부에 따라 body.admin-mode 클래스 토글
       const isAdminPage = urlPath.endsWith("/admin.html") || urlPath.endsWith("/admin.htm");
@@ -1146,64 +1163,32 @@ window.SiteModules.Navigation = (function () {
   }
 
   function bindSidebarEvents() {
-    // [당장 구현할 사항.md 주의사항 2번] 헤더의 왼쪽 아이콘(사이트맵) 클릭 시 항상 등장하여 열림
-    const headerNavToggle = document.getElementById("header-nav-toggle");
-    if (headerNavToggle) {
-      headerNavToggle.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const container = document.getElementById("sidebar-container");
-        const isMobile = window.innerWidth <= 768;
+    const mobileHeader = document.getElementById("mobile-header");
+    const sidebarOverlay = document.getElementById("sidebar-overlay");
+    const sidebarContainer = document.getElementById("sidebar-container");
 
-        if (isMobile) {
-          if (container && !container.classList.contains("active")) {
-            container.classList.add("active");
-          } else if (container) {
-            container.classList.toggle("active");
-          }
-        } else {
-          setPanelCollapsed(false);
-        }
+    function toggleMobileMenu() {
+      if (!sidebarContainer) return;
+      const isActive = sidebarContainer.classList.toggle("active");
+      if (sidebarOverlay) {
+        sidebarOverlay.classList.toggle("active", isActive);
+      }
+      if (isActive) {
+        // 모바일 메뉴가 열릴 때 패널이 접혀 있다면 펼쳐서 메뉴 항목을 활성화
+        setPanelCollapsed(false);
+      }
+    }
 
-        const sitemapBtn = document.getElementById("nav-sitemap");
-        if (sitemapBtn) {
-          sitemapBtn.classList.add("active");
-          const paneEl = document.getElementById("tab-sitemap");
-          if (paneEl) {
-            document.querySelectorAll("#sidebar-panel .tab-pane").forEach(pane => pane.classList.remove("active"));
-            paneEl.classList.add("active");
-          }
-        }
+    if (mobileHeader) {
+      mobileHeader.addEventListener("click", () => {
+        toggleMobileMenu();
       });
     }
 
-    // [당장 구현할 사항.md 새로 추가된 주의사항] 헤더의 오른쪽 아이콘은 목차 아이콘이다. 클릭 시 항상 등장하여 목차 탭(tab-toc)으로 열림
-    const headerTocToggle = document.getElementById("header-toc-toggle");
-    if (headerTocToggle) {
-      headerTocToggle.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const container = document.getElementById("sidebar-container");
-        const isMobile = window.innerWidth <= 768;
-
-        if (isMobile) {
-          if (container && !container.classList.contains("active")) {
-            container.classList.add("active");
-          } else if (container) {
-            container.classList.toggle("active");
-          }
-        } else {
-          setPanelCollapsed(false);
-        }
-
-        const tocBtn = document.getElementById("nav-toc");
-        if (tocBtn) {
-          document.querySelectorAll("#sidebar-panel .nav-item").forEach(item => item.classList.remove("active"));
-          tocBtn.classList.add("active");
-          const paneEl = document.getElementById("tab-toc");
-          if (paneEl) {
-            document.querySelectorAll("#sidebar-panel .tab-pane").forEach(pane => pane.classList.remove("active"));
-            paneEl.classList.add("active");
-          }
-        }
+    if (sidebarOverlay) {
+      sidebarOverlay.addEventListener("click", () => {
+        if (sidebarContainer) sidebarContainer.classList.remove("active");
+        sidebarOverlay.classList.remove("active");
       });
     }
 
@@ -1550,10 +1535,7 @@ window.SiteModules.Navigation = (function () {
         const page = pages[pageIndex];
 
         try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 3000); // 3초의 넉넉한 타임아웃으로 정상 문서 100% 로드 보장
-          const res = await fetch(page.url, { signal: controller.signal });
-          clearTimeout(timeoutId);
+          const res = await fetch(page.url);
           if (!res.ok) continue;
           const htmlText = await res.text();
           const parser = new DOMParser();
@@ -1580,7 +1562,7 @@ window.SiteModules.Navigation = (function () {
             hasArticle: !!articleEl
           });
         } catch (err) {
-          // 콘솔 경고 노이즈 전면 소멸: 404 및 취소 에러 조용히 무시
+          console.warn(`Failed to index page ${page.url}:`, err);
         }
       }
     }
@@ -1629,7 +1611,7 @@ window.SiteModules.Navigation = (function () {
       tutorialBtn.className = "nav-item";
       tutorialBtn.id = "sidebar-tutorial-toggle";
       tutorialBtn.setAttribute("data-tooltip", "튜토리얼 표시 토글");
-      tutorialBtn.innerHTML = `<span class="material-symbols-outlined" data-icon="school"></span>`;
+      tutorialBtn.innerHTML = `<span class="material-symbols-outlined">school</span>`;
 
       let anyVisible = false;
       tutorials.forEach(t => {
