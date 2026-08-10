@@ -264,6 +264,14 @@
       primaryKey: 'Ctrl + Y',
       defaultSecondary: 'Ctrl + Shift + Z',
       secondaryKey: 'Ctrl + Shift + Z'
+    },
+    cycleMeName: {
+      id: 'cycleMeName',
+      label: '내 이름 순환 (ㄱㄴㄷ순)',
+      defaultPrimary: '~',
+      primaryKey: '~',
+      defaultSecondary: '`',
+      secondaryKey: '`'
     }
   };
 
@@ -673,6 +681,50 @@
       }
       return;
     }
+
+    // 5. ~ 또는 ` 키: 대화 참여자 중 ㄱㄴㄷ순으로 다음 사람을 내 이름으로 선택
+    if (key === '~' || key === '`' || e.code === 'Backquote') {
+      e.preventDefault();
+      cycleNextMeName();
+      return;
+    }
+  }
+
+  /**
+   * 대화 참여자 중에서 ㄱㄴㄷ순으로 다음 사람을 내 이름으로 자동 선택
+   */
+  function cycleNextMeName() {
+    const inputMeName = document.getElementById('input-me-name');
+    if (!inputMeName) return;
+
+    // input-me-name 옵션 목록에서 빈값 제외 참여자 이름 수집
+    const options = Array.from(inputMeName.options);
+    const names = options
+      .map(opt => opt.value ? opt.value.trim() : '')
+      .filter(val => val !== '');
+
+    if (names.length === 0) {
+      showToastNotification('대화 참여자가 없습니다.', false);
+      return;
+    }
+
+    // ㄱㄴㄷ (한글 순서) 정렬
+    names.sort((a, b) => a.localeCompare(b, 'ko'));
+
+    const currentVal = inputMeName.value ? inputMeName.value.trim() : '';
+    const currentIndex = names.indexOf(currentVal);
+
+    let nextIndex = 0;
+    if (currentIndex !== -1) {
+      nextIndex = (currentIndex + 1) % names.length;
+    }
+
+    const nextName = names[nextIndex];
+    inputMeName.value = nextName;
+    inputMeName.dispatchEvent(new Event('change', { bubbles: true }));
+    inputMeName.dispatchEvent(new Event('input', { bubbles: true }));
+
+    showToastNotification(`내 이름: [ ${nextName} ] (ㄱㄴㄷ순 선택)`, false);
   }
 
   /**

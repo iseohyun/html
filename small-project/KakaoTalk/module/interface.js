@@ -2229,8 +2229,11 @@
 
     const currentValue = inputMeName.value;
     inputMeName.innerHTML = '<option value="">없음</option>';
+
+    // ㄱㄴㄷ순(한글 알파벳순)으로 참여자 목록 정렬
+    const personsArr = Array.from(persons).sort((a, b) => a.localeCompare(b, 'ko'));
     
-    persons.forEach(person => {
+    personsArr.forEach(person => {
       const option = document.createElement('option');
       option.value = person;
       option.textContent = person;
@@ -2239,7 +2242,6 @@
 
     const yourNameEl = document.getElementById('input-your-name');
     const roomName = yourNameEl ? yourNameEl.value.trim() : '';
-    const personsArr = Array.from(persons);
 
     // 참여자 3명 이상일 때 실물 캡처처럼 "그룹채팅 5" 자동 인원수 표시 연동
     if (personsArr.length >= 3 && yourNameEl && (!roomName || roomName === '그룹채팅' || roomName.startsWith('그룹채팅'))) {
@@ -2259,6 +2261,10 @@
     const targetMe = currentValue || loadedConfig['me'];
     if (targetMe && persons.has(targetMe)) {
       inputMeName.value = targetMe;
+    } else if (personsArr.length > 0) {
+      // 기본 선택 시 ㄱㄴㄷ순으로 가장 빠른 사람을 내 이름으로 자동 설정
+      inputMeName.value = personsArr[0];
+      loadedConfig['me'] = personsArr[0];
     } else {
       inputMeName.value = '';
     }

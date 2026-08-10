@@ -10,7 +10,7 @@
     AVATAR_CENTER_X_DEFAULT: 73,
     AVATAR_SIZE_DEFAULT: 104,
     AVATAR_ROUND_DEFAULT: 42,
-    FONT_SIZE_DEFAULT: 38,
+    FONT_SIZE_DEFAULT: 28,
     BUBBLE_ROUND_DEFAULT: 32,
     OPPONENT_BUBBLE_X: 160,
     STATUS_BAR_TIME_X: 60,
@@ -89,7 +89,8 @@
     const a = (arcRadius !== undefined && !isNaN(arcRadius)) ? Math.max(0, Math.round(arcRadius)) : 32;
     const diff = 44 - a;
     const w = Math.max(10, Math.round(wOffset + 2 * diff));
-    const h = Math.max(10, Math.round(hOffset + 2 * diff));
+    // 꼬리 상단 8px 돌출을 감안하여 v 수직 길이를 8px 차감 (-6px)
+    const h = Math.max(10, Math.round(hOffset + 2 * diff) - 6);
     const returnOffset = 2 + diff;
     return `M ${startX} ${startY} c 0 -53, 0 -53, 0 -52 c -2 -11, -2 -12, -7 -20 c 23 2, 21 17, 21 10 c -5 7, 5 -14, 32 -14 h ${w} a ${a} ${a} 0 0 1 ${a} ${a} v ${h} a ${a} ${a} 0 0 1 -${a} ${a} h -${w + returnOffset} a ${a} ${a} 0 0 1 -${a} -${a}`;
   }
@@ -119,18 +120,26 @@
   }
 
   function drawSpeechBubbleWithTail(c, x, y, w, h, radius, isMe, hasTail, posY, arcRadius) {
+    // ------------------------------------------------------------------
+    // [1단계: 구조 분리] 1. 연속 채팅 말풍선 구역 (꼬리 없음, hasTail === false)
+    // ------------------------------------------------------------------
     if (!hasTail) {
       drawRoundRect(c, x, y, w, h, radius);
       c.fill();
       return;
     }
 
+    // ------------------------------------------------------------------
+    // [2단계: 꼬리 돌출 8px 보정] 최초 채팅 말풍선 꼬리 전용 구역 (hasTail === true)
+    // 1) 꼬리 상단 8px 돌출 대비 startY를 8px 아래로 보정 (132 + 8 = 140)
+    // 2) v(h) 수직 세그먼트 길이를 8px 차감하여 연속 채팅 높이와 100% 동기화
+    // ------------------------------------------------------------------
     c.save();
     const basePosY = (posY !== undefined) ? posY : (y - 65);
-    const startY = Math.round(basePosY + 132);
+    const startY = Math.round(basePosY + 140);
     const aVal = (arcRadius !== undefined) ? arcRadius : 32;
     const wOffset = Math.max(10, Math.round(w - 120 + aVal));
-    const hOffset = Math.max(10, Math.round(h - 90));
+    const hOffset = Math.max(0, Math.round(h - 90));
 
     if (!isMe) {
       const pathD = generateSpeechBubblePathWithTail(x - 1, startY, wOffset, hOffset, aVal);
@@ -633,28 +642,16 @@
           rect: { x: bx, y: mePosY - currentScrollY, width: meWidth, height: meHeight }
         });
 
-        // 콘솔 로그
+        // 콘솔 로그 (렌더링 당 1회만 노출)
         if (window._shouldLogInit) {
           chatIdx++;
-          const cX1 = bx + meWidth - halfEm - textW;
-          const cY1 = textY;
-          const cX2 = bx + meWidth - halfEm;
-          const cY2 = textY + textH;
+          const bX1 = Math.round(bx);
+          const bY1 = Math.round(mePosY);
+          const bX2 = Math.round(bx + meWidth);
+          const bY2 = Math.round(mePosY + (pos.isContinuous ? pos.height : (pos.height + 40)));
+          const heightDiff = bY2 - bY1;
 
-          const timeFS = Math.floor(fontSize * 0.7);
-          ctx.font = `bold ${timeFS}px ${selectedFont}`;
-          const tW = Math.round(ctx.measureText(pos.time).width);
-          const tH_val = timeFS;
-          const tX1 = timeX_me - tW;
-          const tY1 = timeY_me - tH_val;
-          const tX2 = timeX_me;
-          const tY2 = timeY_me;
-
-          const bX1 = bx;
-          const bY1 = mePosY;
-          const bX2 = bx + meWidth;
-          const bY2 = mePosY + meHeight;
-
+          console.log(`[ChatLog] 텍스트: "${dialog.person}: ${pos.lines.join(' ')}" | x1: ${bX1}, y1: ${bY1}, x2: ${bX2}, y2: ${bY2} | (y2 - y1) = ${heightDiff}px | textHeight: ${textH}px | isContinuous: ${pos.isContinuous}`);
         }
       } else {
         const oppLayout = calculateOpponentLayout(activeFontSize, fontSize, config);
@@ -865,44 +862,16 @@
           rect: { x: bx, y: adjustedPosY - currentScrollY, width: pos.width, height: youHeight }
         });
 
-        // 콘솔 로그
+        // 콘솔 로그 (렌더링 당 1회만 노출)
         if (window._shouldLogInit) {
           chatIdx++;
-          const cX1 = textX;
-          const cY1 = textY;
-          const cX2 = textX + textW;
-          const cY2 = textY + textH;
+          const bX1 = Math.round(bx);
+          const bY1 = Math.round(adjustedPosY);
+          const bX2 = Math.round(bx + pos.width);
+          const bY2 = Math.round(adjustedPosY + (pos.isContinuous ? pos.height : (pos.height + 40)));
+          const heightDiff = bY2 - bY1;
 
-          const timeFS = Math.floor(fontSize * 0.7);
-          ctx.font = `bold ${timeFS}px ${selectedFont}`;
-          const tW = Math.round(ctx.measureText(pos.time).width);
-          const tH_val = timeFS;
-          const tX1 = timeX_you;
-          const tY1 = timeY_you - tH_val;
-          const tX2 = timeX_you + tW;
-          const tY2 = timeY_you;
-
-          // 본체 알맹이 사각형 정밀 바운딩 박스 (말꼬리 팁 픽셀 제외 본체 크기)
-          let bX1, bY1, bX2, bY2, bW_real, bH_real;
-          const youHeight = pos.height + 40;
-          const diff = 44 - userArcRadius;
-          const extraW = 54 + 2 * diff;
-          const extraH = 20 + 2 * diff;
-
-          if (!pos.isContinuous) {
-            bX1 = bx + 4;
-            bY1 = adjustedPosY - 8;
-            bX2 = bX1 + pos.width + extraW;
-            bY2 = bY1 + youHeight + extraH;
-          } else {
-            bX1 = bx;
-            bY1 = adjustedPosY;
-            bX2 = bx + pos.width;
-            bY2 = adjustedPosY + youHeight;
-          }
-          bW_real = bX2 - bX1;
-          bH_real = bY2 - bY1;
-
+          console.log(`[ChatLog] 텍스트: "${dialog.person}: ${pos.lines.join(' ')}" | x1: ${bX1}, y1: ${bY1}, x2: ${bX2}, y2: ${bY2} | (y2 - y1) = ${heightDiff}px | textHeight: ${textH}px | isContinuous: ${pos.isContinuous}`);
         }
       }
 
@@ -1530,8 +1499,8 @@
         const returnOffset = 2 + diff;
 
         const wOffset = Math.max(10, Math.round(meWidth - 120 + userArcRadius));
-        const hOffset = Math.max(10, Math.round(meHeight - 90));
-        const startY = Math.round(mePosY + 132);
+        const hOffset = Math.max(0, Math.round(meHeight - 90));
+        const startY = Math.round(mePosY + 140);
 
         const bubbleCenterX = Math.round(rx + meWidth / 2);
         const startX_me = Math.round(rx + 9);
@@ -1584,10 +1553,11 @@
           ? Math.round(pos.posY + 12)
           : Math.round(pos.posY - Math.round(avatarDiameter * (2 / 5)) + 119 - shiftUpByHeight);
 
+        const youHeight = Math.round(pos.height + 40);
         const startX = bx - 1;
-        const startY = Math.round(pos.posY + 132);
+        const startY = Math.round(pos.posY + 140);
         const wOffset = Math.max(10, Math.round(pos.width - 120 + userArcRadius));
-        const hOffset = Math.max(10, Math.round(pos.height - 90));
+        const hOffset = Math.max(0, Math.round(youHeight - 90));
         const pathD = generateSpeechBubblePathWithTail(startX, startY, wOffset, hOffset, userArcRadius);
 
         if (!pos.isContinuous) {
