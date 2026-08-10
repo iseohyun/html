@@ -8,6 +8,13 @@
         "projectPath": "/small-project/KakaoTalk/index.html",
         "version": "1.5.0",
         "summary": "색상 및 레이아웃 실시간 편집, 편집 히스토리 관리, 컬러피커 제작, 통일된 UI 구축"
+      },
+      {
+        "type": "Fixed",
+        "projectName": "웹 장기",
+        "projectPath": "/small-project/janggi/index.html",
+        "version": "2.0.1",
+        "summary": "모듈화 개편 후 발생한 전역 변수/함수 참조 에러(activeSlot, toggleNation, currentScoreSlideIndex, boardAnimating, drawCandidates) 완전 복구 및 index.html UTF-8 인코딩 정상화"
       }
     ]
   },
