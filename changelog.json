@@ -1,5 +1,17 @@
 [
   {
+    "date": "2026-08-11",
+    "updates": [
+      {
+        "type": "Changed",
+        "projectName": "카카오톡 대화 생성기",
+        "projectPath": "/small-project/KakaoTalk/index.html",
+        "version": "1.5.0",
+        "summary": "색상 및 레이아웃 실시간 편집, 편집 히스토리 관리, 컬러피커 제작, 통일된 UI 구축"
+      }
+    ]
+  },
+  {
     "date": "2026-08-09",
     "updates": [
       {
@@ -63,7 +75,6 @@
       }
     ]
   },
-
   {
     "date": "2026-7-30",
     "updates": [
