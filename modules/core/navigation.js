@@ -85,6 +85,32 @@ window.SiteModules.Navigation = (function () {
     let sidebarContainer = document.getElementById("sidebar-container");
     if (!sidebarContainer) {
       const body = document.querySelector("body");
+
+      // C. 모바일 전용 상단 고정 헤더
+      let mobileHeader = document.getElementById("mobile-header");
+      if (!mobileHeader) {
+        mobileHeader = document.createElement("div");
+        mobileHeader.setAttribute("id", "mobile-header");
+        mobileHeader.innerHTML = `
+          <div id="mobile-logo">
+            <img src="/source/icon_seohyun.svg" alt="iseohyun.com 로고" id="mobile-logo-img">
+            <span id="mobile-logo-text">iseohyun.com</span>
+          </div>
+          <div id="mobile-menu-btn" data-tooltip="메뉴">
+            <span class="material-symbols-outlined">menu</span>
+          </div>
+        `;
+        body.insertBefore(mobileHeader, body.firstChild);
+      }
+
+      // D. 모바일 어두운 배경 오버레이
+      let sidebarOverlay = document.getElementById("sidebar-overlay");
+      if (!sidebarOverlay) {
+        sidebarOverlay = document.createElement("div");
+        sidebarOverlay.setAttribute("id", "sidebar-overlay");
+        body.appendChild(sidebarOverlay);
+      }
+
       sidebarContainer = document.createElement("div");
       sidebarContainer.setAttribute("id", "sidebar-container");
       body.appendChild(sidebarContainer);
@@ -464,7 +490,9 @@ window.SiteModules.Navigation = (function () {
 
     if (isMobile) {
       const container = document.getElementById("sidebar-container");
+      const overlay = document.getElementById("sidebar-overlay");
       if (container) container.classList.remove("active");
+      if (overlay) overlay.classList.remove("active");
     }
 
     if (!hash || hash === "#" || hash === "#/" || hash === "#/index.html" || hash === "#index.html") {
@@ -1156,6 +1184,35 @@ window.SiteModules.Navigation = (function () {
   }
 
   function bindSidebarEvents() {
+    const mobileHeader = document.getElementById("mobile-header");
+    const sidebarOverlay = document.getElementById("sidebar-overlay");
+    const sidebarContainer = document.getElementById("sidebar-container");
+
+    function toggleMobileMenu() {
+      if (!sidebarContainer) return;
+      const isActive = sidebarContainer.classList.toggle("active");
+      if (sidebarOverlay) {
+        sidebarOverlay.classList.toggle("active", isActive);
+      }
+      if (isActive) {
+        // 모바일 메뉴가 열릴 때 패널이 접혀 있다면 펼쳐서 메뉴 항목을 활성화
+        setPanelCollapsed(false);
+      }
+    }
+
+    if (mobileHeader) {
+      mobileHeader.addEventListener("click", () => {
+        toggleMobileMenu();
+      });
+    }
+
+    if (sidebarOverlay) {
+      sidebarOverlay.addEventListener("click", () => {
+        if (sidebarContainer) sidebarContainer.classList.remove("active");
+        sidebarOverlay.classList.remove("active");
+      });
+    }
+
     const navHomeBtn = document.getElementById("nav-home");
     if (navHomeBtn) {
       navHomeBtn.addEventListener("click", () => {

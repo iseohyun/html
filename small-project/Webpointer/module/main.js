@@ -25,6 +25,7 @@
       setupMouseEvents();
       setupKeyboardEvents();
       setupWindowResize();
+      if (typeof window.initCanvasDragAndDrop === 'function') window.initCanvasDragAndDrop();
 
       if (window.pushHistoryState) window.pushHistoryState();
 
@@ -374,15 +375,53 @@
         } else if (hType === 'end') {
           a.x2 = coords.px; a.y2 = coords.py;
         } else if (hType === 'top_left') {
-          var oldRight = initialAttrs.x + initialAttrs.width;
-          var oldBottom = initialAttrs.y + initialAttrs.height;
-          a.x = Math.min(oldRight - 10, coords.px);
-          a.y = Math.min(oldBottom - 10, coords.py);
-          a.width = oldRight - a.x;
-          a.height = oldBottom - a.y;
+          var hasCrop = initialAttrs.cropLeft || initialAttrs.cropRight || initialAttrs.cropTop || initialAttrs.cropBottom;
+          var cropVisibleWRatio = 1 - (initialAttrs.cropLeft || 0) - (initialAttrs.cropRight || 0);
+          var cropVisibleHRatio = 1 - (initialAttrs.cropTop || 0) - (initialAttrs.cropBottom || 0);
+          var initMaxX = initialAttrs.x + initialAttrs.width * (1 - (initialAttrs.cropRight || 0));
+          var initMaxY = initialAttrs.y + initialAttrs.height * (1 - (initialAttrs.cropBottom || 0));
+
+          var newVisibleW = Math.max(10, initMaxX - coords.px);
+          var newFullW = Math.round(newVisibleW / cropVisibleWRatio);
+          var isShiftPressed = e.shiftKey;
+
+          a.width = newFullW;
+          a.x = initMaxX - Math.round(newFullW * (1 - (initialAttrs.cropRight || 0)));
+
+          if (!isShiftPressed && initialAttrs.width > 0 && initialAttrs.height > 0) {
+            var aspect = initialAttrs.aspectRatio || (initialAttrs.width / initialAttrs.height);
+            a.height = Math.round(a.width / aspect);
+            a.y = initMaxY - Math.round(a.height * (1 - (initialAttrs.cropBottom || 0)));
+          } else {
+            var newVisibleH = Math.max(10, initMaxY - coords.py);
+            var newFullH = Math.round(newVisibleH / cropVisibleHRatio);
+            a.height = newFullH;
+            a.y = initMaxY - Math.round(newFullH * (1 - (initialAttrs.cropBottom || 0)));
+          }
         } else if (hType === 'bottom_right') {
-          a.width = Math.max(10, coords.px - a.x);
-          a.height = Math.max(10, coords.py - a.y);
+          var hasCrop = initialAttrs.cropLeft || initialAttrs.cropRight || initialAttrs.cropTop || initialAttrs.cropBottom;
+          var cropVisibleWRatio = 1 - (initialAttrs.cropLeft || 0) - (initialAttrs.cropRight || 0);
+          var cropVisibleHRatio = 1 - (initialAttrs.cropTop || 0) - (initialAttrs.cropBottom || 0);
+          var initMinX = initialAttrs.x + initialAttrs.width * (initialAttrs.cropLeft || 0);
+          var initMinY = initialAttrs.y + initialAttrs.height * (initialAttrs.cropTop || 0);
+
+          var newVisibleW = Math.max(10, coords.px - initMinX);
+          var newFullW = Math.round(newVisibleW / cropVisibleWRatio);
+          var isShiftPressed = e.shiftKey;
+
+          a.width = newFullW;
+          a.x = initMinX - Math.round(newFullW * (initialAttrs.cropLeft || 0));
+
+          if (!isShiftPressed && initialAttrs.width > 0 && initialAttrs.height > 0) {
+            var aspect = initialAttrs.aspectRatio || (initialAttrs.width / initialAttrs.height);
+            a.height = Math.round(a.width / aspect);
+            a.y = initMinY - Math.round(a.height * (initialAttrs.cropTop || 0));
+          } else {
+            var newVisibleH = Math.max(10, coords.py - initMinY);
+            var newFullH = Math.round(newVisibleH / cropVisibleHRatio);
+            a.height = newFullH;
+            a.y = initMinY - Math.round(newFullH * (initialAttrs.cropTop || 0));
+          }
         } else if (hType === 'corner_rx') {
           a.rx = Math.max(0, Math.min(a.width / 2, coords.px - a.x));
         } else if (hType === 'ellipse_center') {
@@ -709,18 +748,41 @@
         }
       }
 
-      if (e.key === 'Enter') {
-        if (state.isMultiBezierActive) {
-          bezier.finishMultiBezier();
-          render.renderUI();
-          render.renderRibbon();
+      if (e.key === 'Enter' || e.key === 'Escape' || e.key === 'Esc') {
+        if (state.isMultiBezierActive && bezier) {
+          if (bezier.finishMultiBezier) bezier.finishMultiBezier();
+          if (handlers && handlers.setTool) handlers.setTool('select');
+          if (render && render.renderUI) render.renderUI();
+          if (render && render.renderRibbon) render.renderRibbon();
+        } else if (e.key === 'Escape' || e.key === 'Esc') {
+          cfg.selectedIds.clear();
+          if (handlers && handlers.setTool) handlers.setTool('select');
+          if (render && render.renderUI) render.renderUI();
+          if (render && render.renderRibbon) render.renderRibbon();
+        }
+      }
+
+      if (e.key === ']' || e.key === '}') {
+        e.preventDefault();
+        if (e.shiftKey || e.key === '}') {
+          if (window.bringToFront) window.bringToFront();
+        } else {
+          if (window.bringForward) window.bringForward();
+        }
+      } else if (e.key === '[' || e.key === '{') {
+        e.preventDefault();
+        if (e.shiftKey || e.key === '{') {
+          if (window.sendToBack) window.sendToBack();
+        } else {
+          if (window.sendBackward) window.sendBackward();
         }
       }
 
       if (e.altKey) {
         var key = e.key.toUpperCase();
         if (key === 'H') handlers.setTool('pan');
-        else if (key === 'S') handlers.setTool('select');
+        else if (key === 'S' || key === 'V') handlers.setTool('select');
+        else if (key === 'I') { if (window.openImageSymbolPickerModal) window.openImageSymbolPickerModal(); }
         else if (key === 'R') handlers.setTool('rect');
         else if (key === 'U') handlers.setTool('rounded');
         else if (key === 'E') handlers.setTool('ellipse');

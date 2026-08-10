@@ -6,4 +6,5 @@ functions
 commit.log
 **/PixelRun/**
 **/KakaoTalk/example/**
-node_modules/
+node_modules/
+당장 구현할 사항.md

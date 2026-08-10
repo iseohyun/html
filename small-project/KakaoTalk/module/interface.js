@@ -817,9 +817,9 @@
     // v0.0.10 직렬화 세이브
     settingText += `-font-size: ${uiConfig['font-size'] || '38'}\n`;
     settingText += `-font-bold: ${uiConfig['font-bold'] !== undefined ? uiConfig['font-bold'] : 'true'}\n`;
-    settingText += `-me-bubble-color: ${uiConfig['me-bubble-color'] || '#ffeb34'}\n`;
-    settingText += `-you-bubble-color: ${uiConfig['you-bubble-color'] || '#ffffff'}\n`;
-    settingText += `-time-color: ${uiConfig['time-color'] || '#cccccc'}\n`;
+    settingText += `-me-bubble-color: ${uiConfig['me-bubble-color'] || '#fee500'}\n`;
+    settingText += `-you-bubble-color: ${uiConfig['you-bubble-color'] || '#2a2a2a'}\n`;
+    settingText += `-time-color: ${uiConfig['time-color'] || '#8e8e93'}\n`;
     
     const inputDuration = document.getElementById('input-duration');
     settingText += `-duration: ${inputDuration ? inputDuration.value : '0.5'}\n`;
