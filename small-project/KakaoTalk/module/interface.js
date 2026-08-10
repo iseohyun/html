@@ -381,6 +381,12 @@
       slidingDrawer.classList.remove('drawer-closed');
       if (rightSpaNav) rightSpaNav.classList.add('drawer-open');
 
+      if (tabId === 'drawer-tab-raw') {
+        slidingDrawer.classList.add('raw-tab-active');
+      } else {
+        slidingDrawer.classList.remove('raw-tab-active');
+      }
+
       if (articleElem && rightSpaNav && !rightSpaNav.classList.contains('nav-overlay-mode')) {
         articleElem.classList.add('drawer-push-active');
       }
@@ -389,7 +395,10 @@
     };
 
     const closeDrawer = () => {
-      if (slidingDrawer) slidingDrawer.classList.add('drawer-closed');
+      if (slidingDrawer) {
+        slidingDrawer.classList.add('drawer-closed');
+        slidingDrawer.classList.remove('raw-tab-active');
+      }
       if (rightSpaNav) rightSpaNav.classList.remove('drawer-open');
       document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
       if (articleElem) articleElem.classList.remove('drawer-push-active');
@@ -409,20 +418,58 @@
       btnCloseDrawer.addEventListener('click', closeDrawer);
     }
 
-    // 3. 패널 표시 모드 (Push vs Overlay) 토글
-    document.querySelectorAll('input[name="panel-mode-toggle"]').forEach(radio => {
-      radio.addEventListener('change', (e) => {
-        if (!rightSpaNav) return;
-        if (e.target.value === 'overlay') {
-          rightSpaNav.classList.remove('nav-push-mode');
-          rightSpaNav.classList.add('nav-overlay-mode');
+    // 3. 패널 표시 모드 (고정 Push ↔ 고정 해제 Overlay) 토글 핸들러
+    let currentPanelMode = 'push'; // 'push' (고정) | 'overlay' (고정 해제)
+    const btnDrawerModeToggle = document.getElementById('btn-drawer-mode-toggle');
+
+    const updatePanelModeUI = () => {
+      const isPush = currentPanelMode === 'push';
+      const titleText = isPush 
+        ? '패널 고정 모드 (Push) - 클릭하여 고정 해제(Overlay 모드)로 전환' 
+        : '패널 고정 해제 모드 (Overlay) - 클릭하여 고정(Push 모드)로 전환';
+
+      if (btnDrawerModeToggle) {
+        btnDrawerModeToggle.innerHTML = '📌';
+        btnDrawerModeToggle.setAttribute('title', titleText);
+        if (isPush) {
+          btnDrawerModeToggle.classList.remove('unpinned');
+          btnDrawerModeToggle.style.filter = 'none';
         } else {
+          btnDrawerModeToggle.classList.add('unpinned');
+          btnDrawerModeToggle.style.filter = 'grayscale(100%) opacity(0.55)';
+        }
+      }
+
+      if (rightSpaNav) {
+        if (isPush) {
           rightSpaNav.classList.remove('nav-overlay-mode');
           rightSpaNav.classList.add('nav-push-mode');
+        } else {
+          rightSpaNav.classList.remove('nav-push-mode');
+          rightSpaNav.classList.add('nav-overlay-mode');
         }
-        if (triggerUpdateCallback) triggerUpdateCallback(true);
-      });
-    });
+      }
+
+      if (articleElem && rightSpaNav && rightSpaNav.classList.contains('drawer-open')) {
+        if (isPush) {
+          const w = slidingDrawer ? slidingDrawer.offsetWidth : 380;
+          articleElem.style.paddingRight = w + 'px';
+          articleElem.classList.add('drawer-push-active');
+        } else {
+          articleElem.style.paddingRight = '0px';
+          articleElem.classList.remove('drawer-push-active');
+        }
+      }
+
+      if (triggerUpdateCallback) triggerUpdateCallback(true);
+    };
+
+    const togglePanelMode = () => {
+      currentPanelMode = currentPanelMode === 'push' ? 'overlay' : 'push';
+      updatePanelModeUI();
+    };
+
+    if (btnDrawerModeToggle) btnDrawerModeToggle.addEventListener('click', togglePanelMode);
 
     // 4. 모바일 네비게이션 숨김 토글
     const btnMobileNavToggle = document.getElementById('btn-mobile-nav-toggle');
@@ -473,6 +520,516 @@
 
     window.addEventListener('scroll', handleScrollNavState, { passive: true });
     handleScrollNavState();
+
+    // 6. 환경설정 접이식 카테고리 (Accordion) Open/Close 토글 핸들러
+    document.querySelectorAll('.setting-accordion-header').forEach((header) => {
+      header.addEventListener('click', () => {
+        const accordion = header.closest('.setting-accordion');
+        if (accordion) {
+          accordion.classList.toggle('collapsed');
+        }
+      });
+    });
+
+    // 7. 캔버스 직접 선택 색상 변경 모드 (🎯) 핸들러
+    let isCanvasPickerActive = false;
+    const btnCanvasPickerMode = document.getElementById('btn-canvas-picker-mode');
+    const canvasPickerTooltip = document.getElementById('canvas-picker-tooltip');
+
+    const setCanvasPickerMode = (active) => {
+      isCanvasPickerActive = active;
+      if (btnCanvasPickerMode) {
+        if (active) {
+          btnCanvasPickerMode.classList.add('active');
+          if (canvas) canvas.style.cursor = 'crosshair';
+          console.log('🎯 [캔버스 직접 선택 색상 변경 모드 ON] 캔버스 위 마우스 호버 시 툴팁이 노출됩니다.');
+        } else {
+          btnCanvasPickerMode.classList.remove('active');
+          if (canvas) canvas.style.cursor = 'default';
+          if (canvasPickerTooltip) canvasPickerTooltip.style.display = 'none';
+          console.log('🎯 [캔버스 직접 선택 색상 변경 모드 OFF]');
+        }
+      }
+    };
+
+    if (btnCanvasPickerMode) {
+      btnCanvasPickerMode.addEventListener('click', (e) => {
+        e.stopPropagation(); // 아코디언 접힘 방지
+        setCanvasPickerMode(!isCanvasPickerActive);
+
+        if (isCanvasPickerActive) {
+          // 색상 설정 아코디언 펼치기
+          const colorAccordion = btnCanvasPickerMode.closest('.setting-accordion');
+          if (colorAccordion && colorAccordion.classList.contains('collapsed')) {
+            colorAccordion.classList.remove('collapsed');
+          }
+        }
+      });
+    }
+
+    // ESC 키 누르면 캔버스 직접 선택 모드 해제
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isCanvasPickerActive) {
+        setCanvasPickerMode(false);
+      }
+    });
+
+    const getCanvasHitObject = (e) => {
+      if (!canvas || !window._canvasHitRegions) return null;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = (canvas.width || 1080) / rect.width;
+      const scaleY = (canvas.height || 2340) / rect.height;
+      const cX = (e.clientX - rect.left) * scaleX;
+      const cY = (e.clientY - rect.top) * scaleY;
+
+      for (const region of window._canvasHitRegions) {
+        const { x, y, width, height } = region.rect;
+        if (cX >= x && cX <= x + width && cY >= y && cY <= y + height) {
+          return region;
+        }
+      }
+      return null;
+    };
+
+    let lastLoggedTooltipText = '';
+
+    if (canvas) {
+      canvas.addEventListener('mousemove', (e) => {
+        const hit = getCanvasHitObject(e);
+
+        if (hit) {
+          let labelText = hit.type === 'avatar' ? `👤 ${hit.person} 초상화` : `🎨 ${hit.label}`;
+          if (lastLoggedTooltipText !== labelText) {
+            lastLoggedTooltipText = labelText;
+            console.log('💬 [캔버스 오브젝트 감지]:', labelText, `(targetId: ${hit.targetId || 'avatar'})`);
+          }
+        } else {
+          lastLoggedTooltipText = '';
+        }
+
+        const isPickerOpen = customColorPickerModal && customColorPickerModal.style.display !== 'none';
+        if (!isCanvasPickerActive && !isPickerOpen) return;
+
+        if (hit && canvasPickerTooltip) {
+          let tooltipText = hit.type === 'avatar' ? `👤 ${hit.person} 초상화 (클릭 시 아바타 변경 모달 이동)` : `🎨 ${hit.label} (클릭 시 색상 변경)`;
+          canvasPickerTooltip.textContent = tooltipText;
+          canvasPickerTooltip.style.left = (e.clientX + 16) + 'px';
+          canvasPickerTooltip.style.top = (e.clientY + 16) + 'px';
+          canvasPickerTooltip.style.display = 'block';
+          canvas.style.cursor = 'crosshair';
+        } else if (canvasPickerTooltip) {
+          canvasPickerTooltip.style.display = 'none';
+          if (!isCanvasPickerActive) canvas.style.cursor = 'default';
+        }
+      });
+
+      canvas.addEventListener('mouseleave', () => {
+        if (canvasPickerTooltip) canvasPickerTooltip.style.display = 'none';
+      });
+
+      canvas.addEventListener('click', (e) => {
+        const isPickerOpen = customColorPickerModal && customColorPickerModal.style.display !== 'none';
+        if (!isCanvasPickerActive && !isPickerOpen) return;
+
+        const hit = getCanvasHitObject(e);
+        if (!hit) return;
+
+        e.stopPropagation();
+
+        if (hit.type === 'avatar') {
+          if (btnOpenAvatarModal) {
+            btnOpenAvatarModal.click();
+            setTimeout(() => {
+              const avatarSpeakerSelect = document.getElementById('avatar-speaker-select');
+              if (avatarSpeakerSelect) avatarSpeakerSelect.value = hit.person;
+              const targetRow = avatarSettingsList ? avatarSettingsList.querySelector(`.avatar-item-row[data-speaker="${hit.person}"]`) : null;
+              if (targetRow) {
+                targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                targetRow.classList.add('avatar-row-highlight');
+                setTimeout(() => targetRow.classList.remove('avatar-row-highlight'), 2500);
+              }
+            }, 200);
+          }
+        } else if (hit.targetId) {
+          const colorInput = document.getElementById(hit.targetId);
+          if (colorInput) {
+            const rightSpaNav = document.getElementById('right-spa-nav');
+            if (rightSpaNav && !rightSpaNav.classList.contains('drawer-open')) {
+              rightSpaNav.classList.add('drawer-open');
+            }
+
+            const colorAccordion = colorInput.closest('.setting-accordion');
+            if (colorAccordion && colorAccordion.classList.contains('collapsed')) {
+              colorAccordion.classList.remove('collapsed');
+            }
+
+            colorInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            openCustomColorPicker(colorInput, hit.label);
+          }
+        }
+      });
+    }
+
+    // ----------------------------------------------------
+    // 초콤팩트 메뉴얼 컬러 피커 모달 (210x180 2D Canvas: 위 흰색, 아래 검은색 + NxN Mosaic Grid)
+    // ----------------------------------------------------
+    const customColorPickerModal = document.getElementById('custom-color-picker-modal');
+    const colorMapCanvas = document.getElementById('custom-color-map-canvas');
+    const colorMapCursor = document.getElementById('custom-color-map-cursor');
+    const pickerMosaicSlider = document.getElementById('input-picker-mosaic');
+    const btnPickerDefault = document.getElementById('btn-picker-default-color');
+    const btnPickerCancel = document.getElementById('btn-picker-cancel');
+    const btnPickerConfirm = document.getElementById('btn-picker-confirm');
+
+    let currentTargetColorInput = null;
+    let initialColorValue = '#FFFFFF';
+    let currentPointX = 105, currentPointY = 90;
+    let isColorMapDragging = false;
+
+    const defaultColorMap = {
+      'color-bg': '#acc0d1',
+      'color-me-bubble': '#fee500',
+      'color-me-text': '#000000',
+      'color-other-bubble': '#ffffff',
+      'color-other-text': '#000000',
+      'color-other-name': '#333333',
+      'color-time-text': '#556677',
+      'color-date-bg': '#b1c3d5',
+      'color-date-text': '#ffffff',
+      'color-footer-bg': '#ffffff',
+      'color-footer-text': '#000000',
+      'color-footer-border': '#e2e8f0'
+    };
+
+    function hexToRgb(hex) {
+      hex = hex ? hex.replace('#', '') : 'FFFFFF';
+      if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+      const num = parseInt(hex, 16);
+      return isNaN(num) ? { r: 255, g: 255, b: 255 } : { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+    }
+
+    function rgbToHex(r, g, b) {
+      return '#' + [r, g, b].map(x => {
+        const h = Math.max(0, Math.min(255, Math.round(x))).toString(16);
+        return h.length === 1 ? '0' + h : h;
+      }).join('').toUpperCase();
+    }
+
+    function hslToRgb(h, s, l) {
+      h = (h % 360 + 360) % 360;
+      if (s === 0) {
+        const val = Math.round(l * 255);
+        return { r: val, g: val, b: val };
+      }
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      const hue2rgb = (p, q, t) => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1/6) return p + (q - p) * 6 * t;
+        if (t < 1/2) return q;
+        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+        return p;
+      };
+      const hk = h / 360;
+      return {
+        r: Math.round(hue2rgb(p, q, hk + 1/3) * 255),
+        g: Math.round(hue2rgb(p, q, hk) * 255),
+        b: Math.round(hue2rgb(p, q, hk - 1/3) * 255)
+      };
+    }
+
+    function getCanvasPixelRgb(x, y, w = 210, h = 180) {
+      const hVal = (x / w) * 360;
+      const yN = Math.max(0, Math.min(1, y / h));
+      let sVal, lVal;
+
+      if (yN <= 0.5) {
+        sVal = yN * 2;
+        lVal = 1.0 - yN;
+      } else {
+        sVal = 1.0;
+        lVal = 1.0 - yN;
+      }
+
+      return hslToRgb(hVal, sVal, lVal);
+    }
+
+    function render2DColorMap(mosaicSize = 1) {
+      if (!colorMapCanvas) return;
+      const ctx = colorMapCanvas.getContext('2d');
+      const w = 210;
+      const h = 180;
+
+      mosaicSize = Math.max(1, Math.min(30, mosaicSize));
+
+      if (mosaicSize === 1) {
+        const imgData = ctx.createImageData(w, h);
+        const data = imgData.data;
+
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            const rgb = getCanvasPixelRgb(x, y, w, h);
+            const idx = (y * w + x) * 4;
+            data[idx] = rgb.r;
+            data[idx + 1] = rgb.g;
+            data[idx + 2] = rgb.b;
+            data[idx + 3] = 255;
+          }
+        }
+        ctx.putImageData(imgData, 0, 0);
+      } else {
+        ctx.clearRect(0, 0, w, h);
+        const step = mosaicSize;
+
+        for (let y = 0; y < h; y += step) {
+          const blockH = Math.min(step, h - y);
+          const cy = y + blockH / 2;
+
+          for (let x = 0; x < w; x += step) {
+            const blockW = Math.min(step, w - x);
+            const cx = x + blockW / 2;
+
+            const rgb = getCanvasPixelRgb(cx, cy, w, h);
+            const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+
+            ctx.fillStyle = hex;
+            ctx.fillRect(x, y, blockW, blockH);
+          }
+        }
+      }
+    }
+
+    function findPointFromHex(hex) {
+      const targetRgb = hexToRgb(hex);
+      let bestX = 105, bestY = 90, minDiff = Infinity;
+      for (let y = 0; y <= 180; y += 4) {
+        for (let x = 0; x <= 210; x += 4) {
+          const rgb = getCanvasPixelRgb(x, y, 210, 180);
+          const diff = Math.abs(rgb.r - targetRgb.r) + Math.abs(rgb.g - targetRgb.g) + Math.abs(rgb.b - targetRgb.b);
+          if (diff < minDiff) {
+            minDiff = diff;
+            bestX = x;
+            bestY = y;
+          }
+        }
+      }
+      return { x: bestX, y: bestY };
+    }
+
+    function updateColorPickerFromPoint(x, y, updateCanvas = true) {
+      x = Math.max(0, Math.min(210, x));
+      y = Math.max(0, Math.min(180, y));
+
+      const mosaicVal = parseInt(pickerMosaicSlider ? pickerMosaicSlider.value : 1) || 1;
+
+      let sampleX = x;
+      let sampleY = y;
+
+      if (mosaicVal > 1) {
+        const step = mosaicVal;
+        const blockX = Math.floor(x / step) * step;
+        const blockY = Math.floor(y / step) * step;
+        const blockW = Math.min(step, 210 - blockX);
+        const blockH = Math.min(step, 180 - blockY);
+        sampleX = blockX + blockW / 2;
+        sampleY = blockY + blockH / 2;
+      }
+
+      currentPointX = sampleX;
+      currentPointY = sampleY;
+
+      if (colorMapCursor) {
+        colorMapCursor.style.left = currentPointX + 'px';
+        colorMapCursor.style.top = currentPointY + 'px';
+      }
+
+      render2DColorMap(mosaicVal);
+
+      const rgb = getCanvasPixelRgb(sampleX, sampleY, 210, 180);
+      const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+
+      if (currentTargetColorInput && updateCanvas) {
+        currentTargetColorInput.value = hex;
+        if (triggerUpdateCallback) triggerUpdateCallback(true);
+      }
+    }
+
+    function openCustomColorPicker(targetInput, targetLabel = '색상 선택') {
+      if (!targetInput) return;
+      currentTargetColorInput = targetInput;
+      initialColorValue = targetInput.value || '#ffffff';
+
+      const defColor = defaultColorMap[targetInput.id] || '#acc0d1';
+      if (btnPickerDefault) {
+        btnPickerDefault.style.backgroundColor = defColor;
+      }
+
+      if (pickerMosaicSlider) {
+        pickerMosaicSlider.min = 1;
+        pickerMosaicSlider.max = 30;
+        pickerMosaicSlider.value = window._mosaicSize || 1;
+      }
+
+      const pt = findPointFromHex(initialColorValue);
+
+      if (customColorPickerModal) customColorPickerModal.style.display = 'flex';
+      updateColorPickerFromPoint(pt.x, pt.y, false);
+    }
+
+    if (colorMapCanvas) {
+      const handleColorMapPointer = (e) => {
+        const rect = colorMapCanvas.getBoundingClientRect();
+        const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+        const y = Math.max(0, Math.min(rect.height, e.clientY - rect.top));
+        updateColorPickerFromPoint(x, y, true);
+      };
+
+      colorMapCanvas.addEventListener('mousedown', (e) => {
+        isColorMapDragging = true;
+        handleColorMapPointer(e);
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (isColorMapDragging) handleColorMapPointer(e);
+      });
+
+      window.addEventListener('mouseup', () => {
+        isColorMapDragging = false;
+      });
+    }
+
+    if (pickerMosaicSlider) {
+      pickerMosaicSlider.addEventListener('input', () => {
+        const val = parseInt(pickerMosaicSlider.value) || 1;
+        window._mosaicSize = val;
+        render2DColorMap(val);
+        if (triggerUpdateCallback) triggerUpdateCallback(true);
+      });
+    }
+
+    if (btnPickerDefault) {
+      btnPickerDefault.addEventListener('click', () => {
+        if (!currentTargetColorInput) return;
+        const defVal = defaultColorMap[currentTargetColorInput.id] || '#ffffff';
+        const pt = findPointFromHex(defVal);
+        updateColorPickerFromPoint(pt.x, pt.y, true);
+      });
+    }
+
+    if (btnPickerCancel) {
+      btnPickerCancel.addEventListener('click', () => {
+        if (currentTargetColorInput) {
+          currentTargetColorInput.value = initialColorValue;
+          if (triggerUpdateCallback) triggerUpdateCallback(true);
+        }
+        if (customColorPickerModal) customColorPickerModal.style.display = 'none';
+      });
+    }
+
+    if (btnPickerConfirm) {
+      btnPickerConfirm.addEventListener('click', () => {
+        if (customColorPickerModal) customColorPickerModal.style.display = 'none';
+      });
+    }
+
+    function makeElementDraggable(headerElem, containerElem) {
+      if (!headerElem || !containerElem) return;
+      let isDragging = false;
+      let offsetX = 0, offsetY = 0;
+
+      headerElem.style.cursor = 'grab';
+
+      headerElem.addEventListener('mousedown', (e) => {
+        if (e.target.classList.contains('modal-close') || e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.tagName === 'CANVAS') return;
+
+        isDragging = true;
+
+        const rect = containerElem.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+
+        containerElem.style.position = 'fixed';
+        containerElem.style.left = rect.left + 'px';
+        containerElem.style.top = rect.top + 'px';
+        containerElem.style.right = 'auto';
+        containerElem.style.bottom = 'auto';
+        containerElem.style.margin = '0';
+
+        headerElem.style.cursor = 'grabbing';
+        document.body.style.cursor = 'grabbing';
+
+        e.preventDefault();
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const newLeft = e.clientX - offsetX;
+        const newTop = e.clientY - offsetY;
+        containerElem.style.left = newLeft + 'px';
+        containerElem.style.top = newTop + 'px';
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (isDragging) {
+          isDragging = false;
+          headerElem.style.cursor = 'grab';
+          document.body.style.cursor = '';
+        }
+      });
+    }
+
+    makeElementDraggable(document.getElementById('avatar-modal-header'), document.querySelector('#avatar-modal .modal-content'));
+    makeElementDraggable(document.querySelector('#custom-color-picker-modal .modal-content'), document.getElementById('custom-color-picker-modal'));
+
+    window.openCustomColorPicker = openCustomColorPicker;
+
+    document.querySelectorAll('.setting-accordion input[type="color"]').forEach((colorInput) => {
+      const handleOpenPicker = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const labelElem = colorInput.closest('.control-row')?.querySelector('label');
+        const labelText = labelElem ? labelElem.textContent : '색상 선택';
+        openCustomColorPicker(colorInput, labelText);
+      };
+
+      colorInput.addEventListener('click', handleOpenPicker);
+      colorInput.addEventListener('pointerdown', handleOpenPicker);
+    });
+
+    // 8. 슬라이딩 드로어 패널 좌측 테두리 드래그 폭(width) 조절
+    const drawerResizer = document.getElementById('drawer-resizer-handle');
+    let isResizingDrawer = false;
+
+    if (drawerResizer && slidingDrawer) {
+      drawerResizer.addEventListener('mousedown', (e) => {
+        isResizingDrawer = true;
+        drawerResizer.classList.add('resizing');
+        document.body.style.cursor = 'ew-resize';
+        document.body.style.userSelect = 'none';
+        e.preventDefault();
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isResizingDrawer) return;
+        const newWidth = Math.max(260, Math.min(800, window.innerWidth - e.clientX));
+        slidingDrawer.style.width = newWidth + 'px';
+
+        if (articleElem && rightSpaNav && !rightSpaNav.classList.contains('nav-overlay-mode') && rightSpaNav.classList.contains('drawer-open')) {
+          articleElem.style.paddingRight = newWidth + 'px';
+        }
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (isResizingDrawer) {
+          isResizingDrawer = false;
+          if (drawerResizer) drawerResizer.classList.remove('resizing');
+          document.body.style.cursor = '';
+          document.body.style.userSelect = '';
+          if (triggerUpdateCallback) triggerUpdateCallback(true);
+        }
+      });
+    }
 
     // 카테고리 아코디언 Open/Close
     document.querySelectorAll('.category-header').forEach((header) => {
@@ -779,6 +1336,26 @@
       inputTimeColor.value = config['time-color'];
     }
     
+    // 색상 복원
+    ['color-bg', 'color-me-bubble', 'color-me-text', 'color-other-bubble', 'color-other-text', 'color-other-name', 'color-time-text', 'color-date-text', 'color-date-bg', 'color-footer-bg', 'color-footer-text', 'color-footer-border'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && config[id]) el.value = config[id];
+    });
+
+    // 레이아웃 복원
+    ['avatar-left-offset', 'name-offset', 'bubble-left-offset', 'bubble-top-offset', 'bubble-padding', 'bubble-margin', 'time-margin'].forEach(key => {
+      const el = document.getElementById(`input-${key}`);
+      if (el && config[key] !== undefined) el.value = config[key];
+    });
+    if (config['time-align']) {
+      const el = document.getElementById('select-time-align');
+      if (el) el.value = config['time-align'];
+    }
+    if (config['show-footer'] !== undefined) {
+      const el = document.getElementById('input-show-footer');
+      if (el) el.checked = (config['show-footer'] === 'true' || config['show-footer'] === true);
+    }
+
     const inputDuration = document.getElementById('input-duration');
     const labelDuration = document.getElementById('label-duration');
     if (config['duration'] && inputDuration) {
@@ -845,7 +1422,72 @@
       config['date-text-color'] = loadedConfig['date-text-color'] || preset['date-text-color'];
     }
 
-    config['me'] = inputMeName ? (inputMeName.value || '나') : '나';
+    config['me'] = inputMeName ? inputMeName.value : '';
+
+    // 개별 색상 컨트롤 오버라이드
+    const colorBg = document.getElementById('color-bg');
+    if (colorBg) config['background-color'] = colorBg.value;
+
+    const colorMeBubble = document.getElementById('color-me-bubble');
+    if (colorMeBubble) config['me-bubble-color'] = colorMeBubble.value;
+
+    const colorMeText = document.getElementById('color-me-text');
+    if (colorMeText) config['me-text-color'] = colorMeText.value;
+
+    const colorOtherBubble = document.getElementById('color-other-bubble');
+    if (colorOtherBubble) config['you-bubble-color'] = colorOtherBubble.value;
+
+    const colorOtherText = document.getElementById('color-other-text');
+    if (colorOtherText) config['you-text-color'] = colorOtherText.value;
+
+    const colorOtherName = document.getElementById('color-other-name');
+    if (colorOtherName) config['you-name-color'] = colorOtherName.value;
+
+    const colorTimeText = document.getElementById('color-time-text');
+    if (colorTimeText) config['time-color'] = colorTimeText.value;
+
+    const colorDateText = document.getElementById('color-date-text');
+    if (colorDateText) config['date-text-color'] = colorDateText.value;
+
+    const colorDateBg = document.getElementById('color-date-bg');
+    if (colorDateBg) config['date-bg-color'] = colorDateBg.value;
+
+    const colorFooterBg = document.getElementById('color-footer-bg');
+    if (colorFooterBg) config['color-footer-bg'] = colorFooterBg.value;
+
+    const colorFooterText = document.getElementById('color-footer-text');
+    if (colorFooterText) config['color-footer-text'] = colorFooterText.value;
+
+    const colorFooterBorder = document.getElementById('color-footer-border');
+    if (colorFooterBorder) config['color-footer-border'] = colorFooterBorder.value;
+
+    const inputShowFooter = document.getElementById('input-show-footer');
+    if (inputShowFooter) config['show-footer'] = inputShowFooter.checked;
+
+    // 레이아웃 상세 오프셋 오버라이드
+    const inputAvatarLeftOffset = document.getElementById('input-avatar-left-offset');
+    if (inputAvatarLeftOffset) config['avatar-left-offset'] = parseInt(inputAvatarLeftOffset.value) || 0;
+
+    const inputNameOffset = document.getElementById('input-name-offset');
+    if (inputNameOffset) config['name-offset'] = parseInt(inputNameOffset.value) || 0;
+
+    const inputBubbleLeftOffset = document.getElementById('input-bubble-left-offset');
+    if (inputBubbleLeftOffset) config['bubble-left-offset'] = parseInt(inputBubbleLeftOffset.value) || 0;
+
+    const inputBubbleTopOffset = document.getElementById('input-bubble-top-offset');
+    if (inputBubbleTopOffset) config['bubble-top-offset'] = parseInt(inputBubbleTopOffset.value) || 0;
+
+    const inputBubblePadding = document.getElementById('input-bubble-padding');
+    if (inputBubblePadding) config['bubble-padding'] = parseInt(inputBubblePadding.value) || 0;
+
+    const inputBubbleMargin = document.getElementById('input-bubble-margin');
+    if (inputBubbleMargin) config['bubble-margin'] = parseInt(inputBubbleMargin.value) || 0;
+
+    const selectTimeAlign = document.getElementById('select-time-align');
+    if (selectTimeAlign) config['time-align'] = selectTimeAlign.value;
+
+    const inputTimeMargin = document.getElementById('input-time-margin');
+    if (inputTimeMargin) config['time-margin'] = parseInt(inputTimeMargin.value) || 0;
 
     const wifiEl = document.getElementById('input-wifi');
     const parsedWifi = wifiEl ? parseInt(wifiEl.value) : NaN;
@@ -1025,10 +1667,25 @@
     avatarSettingsList.innerHTML = '';
     initKoreanVoices();
 
+    const avatarSpeakerSelect = document.getElementById('avatar-speaker-select');
+    if (avatarSpeakerSelect) {
+      avatarSpeakerSelect.innerHTML = persons.map(p => `<option value="${p}">${p}</option>`).join('');
+      avatarSpeakerSelect.onchange = () => {
+        const selectedPerson = avatarSpeakerSelect.value;
+        const targetRow = avatarSettingsList ? avatarSettingsList.querySelector(`.avatar-item-row[data-speaker="${selectedPerson}"]`) : null;
+        if (targetRow) {
+          targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          targetRow.classList.add('avatar-row-highlight');
+          setTimeout(() => targetRow.classList.remove('avatar-row-highlight'), 2000);
+        }
+      };
+    }
+
     persons.forEach(person => {
       const settings = getOrRegisterAvatarSettings(person);
       const row = document.createElement('div');
       row.className = 'avatar-item-row';
+      row.setAttribute('data-speaker', person);
 
       const voiceOptions = koreanVoices.map(v => 
         `<option value="${v.voiceURI}" ${settings.voiceURI === v.voiceURI ? 'selected' : ''}>${v.name}</option>`

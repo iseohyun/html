@@ -232,6 +232,7 @@
     let lastPosY = 220;
     let lastSpeaker = '';
     const tempPositions = [];
+    const hitRegions = [];
 
     const startIdx = parseInt(config['start-index']) || 1;
     const progressVal = parseInt(config['progress']) || 0;
@@ -270,8 +271,8 @@
       }
 
       // 1. 대화 폰트 및 em 기초 단위 연산
-      const meName = config['me'] || config['me-name'] || '나';
-      const isMe = (dialog.person === meName);
+      const meName = (config['me'] !== undefined && config['me'] !== null) ? config['me'] : ((config['me-name'] !== undefined && config['me-name'] !== null) ? config['me-name'] : '');
+      const isMe = (dialog.person === meName && meName !== '');
 
       const baseFontSize = Math.round(fontSize * (8.47 / 5.43));
       const prevFontSize = Math.round(baseFontSize * 0.9) - 1;
@@ -395,6 +396,7 @@
 
     // 5. 스크롤 목표 스크롤 Y 좌표 갱신 (현재 진행률 대화 메시지 하단 밀착)
     const viewportBottomLimit = height - 280;
+    const scrollY = currentScrollY;
     maxScrollY = Math.max(0, lastPosY - viewportBottomLimit);
 
     // 새 대화 파일 로드 또는 스크롤 동기화
@@ -448,14 +450,22 @@
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(pos.text, width / 2, pos.posY + 30);
+        
+        hitRegions.push({
+          type: 'date',
+          targetId: 'color-date-bg',
+          label: '날짜 배경/글씨 색상',
+          rect: { x: bx, y: pos.posY - currentScrollY, width: pos.width, height: 60 }
+        });
+
         ctx.restore();
         return;
       }
 
       // 말풍선 렌더링
       const customSettings = avatarSettingsMap[dialog.person] || { color: '#DE8', text: dialog.person.charAt(0), textColor: '#ffffff' };
-      const meName = config['me'] || config['me-name'] || '나';
-      const isMe = (dialog.person === meName);
+      const meName = (config['me'] !== undefined && config['me'] !== null) ? config['me'] : ((config['me-name'] !== undefined && config['me-name'] !== null) ? config['me-name'] : '');
+      const isMe = (dialog.person === meName && meName !== '');
 
       const baseFontSize = Math.round(fontSize * (8.47 / 5.43));
       const prevFontSize = Math.round(baseFontSize * 0.9) - 1;
@@ -492,6 +502,15 @@
           ctx.textAlign = 'right';
           ctx.textBaseline = 'bottom';
           ctx.fillText(pos.time, timeX_me, timeY_me);
+
+          ctx.font = `bold ${timeFontSize}px ${selectedFont}`;
+          const tW = Math.round(ctx.measureText(pos.time).width);
+          hitRegions.unshift({
+            type: 'time',
+            targetId: 'color-time-text',
+            label: '대화 시간 색상',
+            rect: { x: timeX_me - tW, y: timeY_me - timeFontSize - currentScrollY, width: tW, height: timeFontSize + 10 }
+          });
         }
 
         // 세로 중앙 일치 연산
@@ -507,15 +526,28 @@
         const textX_me = bx + meWidth - halfEm;
         drawWrappedText(ctx, pos.lines, textX_me, textY, 1.0, activeFontSize, lineSpacing);
 
+        const textW = Math.round(pos.lines.reduce((max, l) => Math.max(max, ctx.measureText(l).width), 0));
+        hitRegions.unshift({
+          type: 'me-text',
+          targetId: 'color-me-text',
+          label: '내 글씨 색상',
+          rect: { x: textX_me - textW - 14, y: textY - currentScrollY - 8, width: textW + 28, height: textH + 16 }
+        });
+
+        hitRegions.push({
+          type: 'me-bubble',
+          targetId: 'color-me-bubble',
+          label: '내 말풍선 색상',
+          rect: { x: bx, y: mePosY - currentScrollY, width: meWidth, height: meHeight }
+        });
+
         // 콘솔 로그
         if (window._shouldLogInit) {
           chatIdx++;
-          const textW = Math.round(pos.lines.reduce((max, l) => Math.max(max, ctx.measureText(l).width), 0));
-          const textH_val = textH;
           const cX1 = bx + meWidth - halfEm - textW;
           const cY1 = textY;
           const cX2 = bx + meWidth - halfEm;
-          const cY2 = textY + textH_val;
+          const cY2 = textY + textH;
 
           const timeFS = Math.floor(fontSize * 0.7);
           ctx.font = `bold ${timeFS}px ${selectedFont}`;
@@ -535,7 +567,7 @@
           const preview = msgStr.length > 5 ? `${msgStr.slice(0, 5)}...` : msgStr;
           const msgPrefix = `"${preview}"의 `;
 
-          console.log(`${msgPrefix}말풍선(${bX1}, ${bY1}, ${bX2}, ${bY2}, ${meWidth}, ${meHeight}), 채팅(${cX1}, ${cY1}, ${cX2}, ${cY2}, ${textW}, ${textH_val}), 시각(${tX1}, ${tY1}, ${tX2}, ${tY2}, ${tW}, ${tH_val})`);
+          console.log(`${msgPrefix}말풍선(${bX1}, ${bY1}, ${bX2}, ${bY2}, ${meWidth}, ${meHeight}), 채팅(${cX1}, ${cY1}, ${cX2}, ${cY2}, ${textW}, ${textH}), 시각(${tX1}, ${tY1}, ${tX2}, ${tY2}, ${tW}, ${tH_val})`);
         }
       } else {
         const oppLayout = calculateOpponentLayout(activeFontSize, fontSize);
@@ -577,6 +609,13 @@
           }
           ctx.restore();
 
+          hitRegions.unshift({
+            type: 'avatar',
+            person: pos.person,
+            label: `초상화 (${pos.person})`,
+            rect: { x: ax, y: ay - currentScrollY, width: size, height: size }
+          });
+
           if (!isDirectChat) {
             const nameFontSize = oppLayout.nameFontSize;
             ctx.fillStyle = youNameColor;
@@ -584,6 +623,15 @@
             ctx.textAlign = 'left';
             ctx.textBaseline = 'top';
             ctx.fillText(dialog.person, oppLayout.nameX, pos.avatarTop + 4);
+
+            const nameW = Math.round(ctx.measureText(dialog.person).width);
+            hitRegions.unshift({
+              type: 'name',
+              person: dialog.person,
+              targetId: 'color-other-name',
+              label: '상대 닉네임 색상',
+              rect: { x: oppLayout.nameX - 10, y: pos.avatarTop + 4 - currentScrollY - 6, width: nameW + 20, height: nameFontSize + 16 }
+            });
           }
         }
 
@@ -604,6 +652,15 @@
           ctx.textAlign = 'left';
           ctx.textBaseline = 'bottom';
           ctx.fillText(pos.time, timeX_you, timeY_you);
+
+          ctx.font = `bold ${timeFontSize}px ${selectedFont}`;
+          const tW = Math.round(ctx.measureText(pos.time).width);
+          hitRegions.unshift({
+            type: 'time',
+            targetId: 'color-time-text',
+            label: '대화 시간 색상',
+            rect: { x: timeX_you - 8, y: timeY_you - timeFontSize - currentScrollY - 6, width: tW + 16, height: timeFontSize + 18 }
+          });
         }
 
         const textX = oppLayout.textX;
@@ -618,15 +675,28 @@
 
         drawWrappedText(ctx, pos.lines, textX, textY, 1.0, activeFontSize, lineSpacing);
 
+        const textW = Math.round(pos.lines.reduce((max, l) => Math.max(max, ctx.measureText(l).width), 0));
+        hitRegions.unshift({
+          type: 'other-text',
+          targetId: 'color-other-text',
+          label: '상대 글씨 색상',
+          rect: { x: textX - 14, y: textY - currentScrollY - 8, width: textW + 28, height: textH + 16 }
+        });
+
+        hitRegions.push({
+          type: 'other-bubble',
+          targetId: 'color-other-bubble',
+          label: '상대 말풍선 색상',
+          rect: { x: bx, y: adjustedPosY - currentScrollY, width: pos.width, height: youHeight }
+        });
+
         // 콘솔 로그
         if (window._shouldLogInit) {
           chatIdx++;
-          const textW = Math.round(pos.lines.reduce((max, l) => Math.max(max, ctx.measureText(l).width), 0));
-          const textH_val = textH;
           const cX1 = textX;
           const cY1 = textY;
           const cX2 = textX + textW;
-          const cY2 = textY + textH_val;
+          const cY2 = textY + textH;
 
           const timeFS = Math.floor(fontSize * 0.7);
           ctx.font = `bold ${timeFS}px ${selectedFont}`;
@@ -662,7 +732,7 @@
           const preview = msgStr.length > 5 ? `${msgStr.slice(0, 5)}...` : msgStr;
           const msgPrefix = `"${preview}"의 `;
 
-          console.log(`${msgPrefix}말풍선(${bX1}, ${bY1}, ${bX2}, ${bY2}, ${bW_real}, ${bH_real}), 채팅(${cX1}, ${cY1}, ${cX2}, ${cY2}, ${textW}, ${textH_val}), 시각(${tX1}, ${tY1}, ${tX2}, ${tY2}, ${tW}, ${tH_val})`);
+          console.log(`${msgPrefix}말풍선(${bX1}, ${bY1}, ${bX2}, ${bY2}, ${bW_real}, ${bH_real}), 채팅(${cX1}, ${cY1}, ${cX2}, ${cY2}, ${textW}, ${textH}), 시각(${tX1}, ${tY1}, ${tX2}, ${tY2}, ${tW}, ${tH_val})`);
         }
       }
 
@@ -809,6 +879,22 @@
 
       ctx.restore();
     }
+
+    hitRegions.push({
+      type: 'footer',
+      targetId: 'color-footer-bg',
+      label: '메시지 입력창 색상',
+      rect: { x: 0, y: height - 120, width: width, height: 120 }
+    });
+
+    hitRegions.push({
+      type: 'background',
+      targetId: 'color-bg',
+      label: '대화방 배경색',
+      rect: { x: 0, y: 0, width: width, height: height }
+    });
+
+    window._canvasHitRegions = hitRegions;
 
     ctx.restore(); // scale 복원
   }
