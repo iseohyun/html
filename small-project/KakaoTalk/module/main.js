@@ -1,6 +1,5 @@
 /**
  * KakaoTalk Main Bootstrapper & Simulation Controller
- * Version: 0.0.10
  */
 
 (function () {
@@ -11,7 +10,7 @@
   let koreanVoices = [];
   let isAnimating = false; // 자동 재생 진행 활성화 플래그
   let ttsSafetyTimeout = null; // TTS 엔진 락 방지 타임아웃 가드
-  let lastInitializedCanvas = null; // 중복 초기화 및 돔 인스턴스 갱신 감지 가드 (v1.0.6)
+  let lastInitializedCanvas = null; // 중복 초기화 및 돔 인스턴스 갱신 감지 가드
   let renderUpdateRequestId = null; // 동일 프레임 내 중복 렌더링 배칭 ID
   let pendingResetAnimation = false; // 예약된 애니메이션 리셋 여부
 
@@ -58,7 +57,7 @@
 
     const config = window.ChatInterface.gatherConfigFromUI();
     
-    // 폼 설정에 맞춰 캔버스의 물리 해상도를 직접 동기화 (v1.0.6)
+    // 폼 설정에 맞춰 캔버스의 물리 해상도를 직접 동기화
     canvas.width = parseInt(config['width']) || 750;
     canvas.height = parseInt(config['height']) || 1334;
 
@@ -234,7 +233,7 @@
     }
   }
 
-  // DOM 로드 및 초기화 수행 단독 기동 함수 (v0.1.1 2단계)
+  // DOM 로드 및 초기화 수행 단독 기동 함수
   function initKakaoTalkApp() {
     const currentCanvas = document.getElementById('chat-canvas');
     if (!currentCanvas || lastInitializedCanvas === currentCanvas) {
@@ -256,7 +255,7 @@
     if (canvas) {
       const ctx = canvas.getContext('2d');
 
-      // v0.1.0 피드백: 캔버스 내부 마우스 휠 스크롤 연동 (스크롤 고정 ON 상태에서는 휠 스크롤 차단)
+      // 캔버스 내부 마우스 휠 스크롤 연동 (스크롤 고정 ON 상태에서는 휠 스크롤 차단)
       canvas.addEventListener('wheel', (e) => {
         const autoScrollEl = document.getElementById('input-auto-scroll');
         const isScrollLocked = autoScrollEl ? autoScrollEl.checked : true;
@@ -417,7 +416,7 @@
 
   }
 
-  // 저전력 렌더러 즉시 한 프레임 드로잉 업데이트 API (v1.0.5)
+  // 저전력 렌더러 즉시 한 프레임 드로잉 업데이트 API
   function wakeRenderer() {
     triggerCanvasUpdate(false);
   }

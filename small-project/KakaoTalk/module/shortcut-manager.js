@@ -139,18 +139,20 @@
       }
     }
 
-    // 현재 인덱스 이후의 미래 히스토리(Redo 스택) 제거
-    if (historyIndex < historyStack.length - 1) {
+    // 복원 상태(Undo 수행 상태)에서 새 작업을 수행하는 경우 현재 위치 이후(Redo 스택) 모두 삭제 후 새 작업 추가
+    if (historyIndex >= 0 && historyIndex < historyStack.length - 1) {
       historyStack = historyStack.slice(0, historyIndex + 1);
     }
 
     historyStack.push(snapshot);
     if (historyStack.length > MAX_HISTORY) {
       historyStack.shift();
+      historyIndex = historyStack.length - 1;
     } else {
-      historyIndex++;
+      historyIndex = historyStack.length - 1;
     }
 
+    refreshHistoryUIIfOpen();
     updateHistoryButtonStates();
   }
 
@@ -162,15 +164,34 @@
     isInitializingHistory = true;
 
     try {
-      if (snapshot.config && window.ChatInterface.loadConfigToUI) {
-        window.ChatInterface.loadConfigToUI(snapshot.config);
+      const oldCfg = window.ChatInterface.gatherConfigFromUI ? window.ChatInterface.gatherConfigFromUI() : {};
+
+      if (snapshot.config) {
+        if (window.ChatInterface.applySettingsToUI) {
+          window.ChatInterface.applySettingsToUI(snapshot.config);
+        } else if (window.ChatInterface.loadConfigToUI) {
+          window.ChatInterface.loadConfigToUI(snapshot.config);
+        }
       }
-      if (snapshot.chatText !== undefined) {
-        const inputChatText = document.getElementById('input-chat-text');
-        if (inputChatText) inputChatText.value = snapshot.chatText;
+      if (snapshot.chatText !== undefined && window.ChatInterface.setChatInputVal) {
+        window.ChatInterface.setChatInputVal(snapshot.chatText);
       }
-      if (snapshot.avatarMap && window.ChatInterface.loadAvatarSettingsMap) {
-        window.ChatInterface.loadAvatarSettingsMap(snapshot.avatarMap);
+      if (snapshot.avatarMap && window.ChatInterface.setAvatarSettingsMap) {
+        window.ChatInterface.setAvatarSettingsMap(snapshot.avatarMap);
+      }
+
+      if (window.logColorChange && snapshot.config) {
+        const newCfg = snapshot.config;
+        const srcTag = `히스토리 복원 (스냅샷: ${snapshot.label || 'Undo/Redo'})`;
+        if (oldCfg['background-color'] && newCfg['background-color']) {
+          window.logColorChange(srcTag, '대화방 배경색', oldCfg['background-color'], newCfg['background-color']);
+        }
+        if (oldCfg['me-bubble-color'] && newCfg['me-bubble-color']) {
+          window.logColorChange(srcTag, '내 말풍선 색', oldCfg['me-bubble-color'], newCfg['me-bubble-color']);
+        }
+        if (oldCfg['you-bubble-color'] && newCfg['you-bubble-color']) {
+          window.logColorChange(srcTag, '상대방 말풍선 색', oldCfg['you-bubble-color'], newCfg['you-bubble-color']);
+        }
       }
     } finally {
       isInitializingHistory = false;
@@ -188,12 +209,12 @@
       }
     }
 
-    // 언두나 리두가 일어났을 때 관련 sliding-drawer-panel을 열고 내용을 출력
+    // 언두나 리두가 일어났을 때 히스토리 드로어 패널을 열고 상태 업데이트
     if (window.ChatInterface && window.ChatInterface.openDrawerTab) {
-      const btnIconSettings = document.getElementById('btn-icon-settings');
-      window.ChatInterface.openDrawerTab('drawer-tab-settings', '⚙️ 환경설정', btnIconSettings);
+      window.ChatInterface.openDrawerTab('drawer-tab-history', '📜 작업 히스토리', null);
     }
 
+    renderHistoryPanelUI();
     updateHistoryButtonStates();
   }
 
@@ -272,6 +293,14 @@
       primaryKey: '~',
       defaultSecondary: '`',
       secondaryKey: '`'
+    },
+    toggleFontBold: {
+      id: 'toggleFontBold',
+      label: '글꼴 굵게 토글',
+      defaultPrimary: 'Ctrl + B',
+      primaryKey: 'Ctrl + B',
+      defaultSecondary: 'Cmd + B',
+      secondaryKey: 'Cmd + B'
     }
   };
 
@@ -476,6 +505,7 @@
           historyIndex = idx;
           applyHistoryState(historyStack[historyIndex]);
           showToastNotification(`히스토리 복원: [${historyIndex + 1}/${historyStack.length}] ${historyStack[historyIndex].label}`, false);
+          refreshHistoryUIIfOpen();
         }
       });
     });
@@ -488,6 +518,14 @@
     const btnPanelRedo = document.getElementById('btn-panel-redo');
     if (btnPanelRedo && !btnPanelRedo.disabled) {
       btnPanelRedo.addEventListener('click', redo);
+    }
+  }
+
+  function refreshHistoryUIIfOpen() {
+    updateHistoryButtonStates();
+    const historyContainer = document.getElementById('drawer-tab-history-container');
+    if (historyContainer && historyContainer.offsetParent !== null) {
+      renderHistoryPanelUI();
     }
   }
 
@@ -506,7 +544,9 @@
       historyIndex--;
       applyHistoryState(historyStack[historyIndex]);
       showToastNotification(`실행 취소 (Undo) ↩️ [${historyIndex + 1}/${historyStack.length}]`, false);
-      openHistoryPanel();
+      refreshHistoryUIIfOpen();
+    } else {
+      showToastNotification('더 이상 실행 취소할 내역이 없습니다.', false);
     }
   }
 
@@ -518,7 +558,9 @@
       historyIndex++;
       applyHistoryState(historyStack[historyIndex]);
       showToastNotification(`다시 실행 (Redo) ↪️ [${historyIndex + 1}/${historyStack.length}]`, false);
-      openHistoryPanel();
+      refreshHistoryUIIfOpen();
+    } else {
+      showToastNotification('더 이상 다시 실행할 내역이 없습니다.', false);
     }
   }
 
@@ -603,6 +645,13 @@
         if (isInputFocused && e.target.tagName === 'TEXTAREA') return;
         e.preventDefault();
         redo();
+        return;
+      }
+
+      // Ctrl + B: 환경설정 > 글꼴 상세 > 굵게 토글
+      if (keyLower === 'b') {
+        e.preventDefault();
+        toggleFontBold();
         return;
       }
     }
@@ -725,6 +774,21 @@
     inputMeName.dispatchEvent(new Event('input', { bubbles: true }));
 
     showToastNotification(`내 이름: [ ${nextName} ] (ㄱㄴㄷ순 선택)`, false);
+  }
+
+  /**
+   * 환경설정 > 글꼴 상세 > 굵게 토글 연동 함수
+   */
+  function toggleFontBold() {
+    const inputFontBold = document.getElementById('input-font-bold');
+    if (!inputFontBold) return;
+
+    inputFontBold.checked = !inputFontBold.checked;
+    inputFontBold.dispatchEvent(new Event('change', { bubbles: true }));
+    inputFontBold.dispatchEvent(new Event('input', { bubbles: true }));
+
+    const statusStr = inputFontBold.checked ? '적용' : '해제';
+    showToastNotification(`글꼴 굵게 [ ${statusStr} ]`, false);
   }
 
   /**

@@ -1,6 +1,5 @@
 /**
  * KakaoTalk HTML5 Canvas 2D Engine Module
- * Version: 0.0.10
  */
 
 (function () {
@@ -25,7 +24,11 @@
     DATE_FONT_SIZE_DEFAULT: 36,
     DATE_HEIGHT_DEFAULT: 60,
     DATE_Y_OFFSET_DEFAULT: 24,
-    ME_TEXT_RIGHT_OFFSET_DEFAULT: 10
+    ME_TEXT_RIGHT_OFFSET_DEFAULT: 10,
+    OPP_TEXT_LEFT_OFFSET_DEFAULT: 8,
+    TIME_FONT_SIZE_DEFAULT: 26,
+    TIME_OFFSET_GAP_X_DEFAULT: 18,
+    TIME_BOTTOM_DIFF_Y_DEFAULT: -9
   });
 
   const MARGIN = 160;
@@ -34,7 +37,7 @@
   // 60fps 프레임 애니메이션 및 부드러운 스크롤 상태 제어 변수
   let currentScrollY = 0;
   let targetScrollY = 0;
-  let maxScrollY = 0; // 캔버스 내부 스크롤 최대 한계치 (v0.1.0)
+  let maxScrollY = 0; // 캔버스 내부 스크롤 최대 한계치
   let isScrollEasingActive = false;
   let animationFrameId = null;
   let loopRefreshCallback = null; // 렌더루프 제어 콜백 백업용
@@ -139,7 +142,7 @@
     const basePosY = (posY !== undefined) ? posY : (y - 65);
     const startY = Math.round(basePosY + 140);
     const aVal = (arcRadius !== undefined) ? arcRadius : 32;
-    const wOffset = Math.max(10, Math.round(w - 120 + aVal));
+    const wOffset = Math.max(10, Math.round(w - 120 + aVal) - 10);
     const hOffset = Math.max(0, Math.round(h - 90));
 
     if (!isMe) {
@@ -225,13 +228,13 @@
 
     ctx.save();
 
-    // 1. 글꼴 상세 속성 적용 (v0.0.10)
+    // 1. 글꼴 상세 속성 적용
     const selectedFont = config['font'] || 'sans-serif';
     const fontSize = parseInt(config['font-size']) || LAYOUT_DEFAULTS.FONT_SIZE_DEFAULT;
     const isBold = (config['font-bold'] === 'true' || config['font-bold'] === true) ? 'bold ' : '';
     const lineSpacing = fontSize + 22; // 글꼴 크기에 비례한 줄 간격 산출
 
-    // 2. 개별 색상 커스텀 연동 (v1.3.0)
+    // 2. 개별 색상 커스텀 연동
     const meBubbleColor = config['me-bubble-color'] || '#fee500';
     const meTextColor = config['me-text-color'] || '#000000';
     const youBubbleColor = config['you-bubble-color'] || '#ffffff';
@@ -245,7 +248,7 @@
     ctx.fillStyle = config['background-color'] || '#000000';
     ctx.fillRect(0, 0, width, height);
 
-    // v0.0.10 피드백: 대화참여자가 2명이고 대화방 이름이 상대방 이름이면 1:1 개인 대화방으로 지정
+    // 대화참여자가 2명이고 대화방 이름이 상대방 이름이면 1:1 개인 대화방으로 지정
     const speakers = new Set();
     dialogs.forEach(d => {
       if (d.person && !d.person.startsWith('=')) {
@@ -263,6 +266,10 @@
     const dateHeight = (config && config['date-height'] !== undefined) ? parseInt(config['date-height'], 10) : LAYOUT_DEFAULTS.DATE_HEIGHT_DEFAULT;
     const dateYOffset = (config && config['date-y-offset'] !== undefined) ? parseInt(config['date-y-offset'], 10) : LAYOUT_DEFAULTS.DATE_Y_OFFSET_DEFAULT;
     const meTextRightOffset = (config && config['me-text-right-offset'] !== undefined) ? parseInt(config['me-text-right-offset'], 10) : LAYOUT_DEFAULTS.ME_TEXT_RIGHT_OFFSET_DEFAULT;
+    const oppTextLeftOffset = (config && config['opp-text-left-offset'] !== undefined) ? parseInt(config['opp-text-left-offset'], 10) : LAYOUT_DEFAULTS.OPP_TEXT_LEFT_OFFSET_DEFAULT;
+    const timeFontSize = (config && config['time-font-size'] !== undefined) ? parseInt(config['time-font-size'], 10) : LAYOUT_DEFAULTS.TIME_FONT_SIZE_DEFAULT;
+    const timeOffsetGapX = (config && config['time-offset-gap-x'] !== undefined) ? parseInt(config['time-offset-gap-x'], 10) : LAYOUT_DEFAULTS.TIME_OFFSET_GAP_X_DEFAULT;
+    const timeBottomDiffY = (config && config['time-bottom-diff-y'] !== undefined) ? parseInt(config['time-bottom-diff-y'], 10) : LAYOUT_DEFAULTS.TIME_BOTTOM_DIFF_Y_DEFAULT;
 
     window._nameHandleRegions = [];
     window._avatarHandleRegions = [];
@@ -270,6 +277,8 @@
     window._oppBubbleTopHandleRegions = [];
     window._dateHandleRegions = [];
     window._meTextRightOffsetHandleRegions = [];
+    window._oppTextLeftOffsetHandleRegions = [];
+    window._timeOffsetHandleRegions = [];
 
     let lastSpeaker = '';
     const tempPositions = [];
@@ -474,12 +483,7 @@
 
     ctx.translate(0, -currentScrollY);
 
-    if (window._shouldLogInit === undefined) {
-      window._shouldLogInit = true;
-    }
 
-    // 대화 요소 정밀 바운딩 로그용 인덱스 초기화
-    let chatIdx = 0;
 
     // 6. 메인 렌더링 루프
     visibleDialogs.forEach((dialog, index) => {
@@ -586,13 +590,9 @@
         ctx.fillStyle = meBubbleColor;
         drawSpeechBubbleWithTail(ctx, bx, mePosY, meWidth, meHeight, 32, true, !pos.isContinuous, undefined, userArcRadius);
 
-        // 시각
-        const timeFontSize = Math.floor(fontSize * 0.7);
-        const timeHalfEm = Math.round(timeFontSize * 0.5);
-        const timeQuarterEm = Math.round(timeFontSize * 0.25);
-
-        const timeX_me = bx - timeHalfEm;
-        const timeY_me = mePosY + meHeight + timeQuarterEm;
+        // 시각 (직접 파라미터 timeFontSize, timeOffsetGapX, timeBottomDiffY 적용)
+        const timeX_me = bx - timeOffsetGapX;
+        const timeY_me = mePosY + meHeight + timeBottomDiffY;
 
         if (pos.showTime !== false) {
           ctx.fillStyle = timeColor;
@@ -609,6 +609,39 @@
             label: '대화 시간 색상',
             rect: { x: timeX_me - tW, y: timeY_me - timeFontSize - currentScrollY, width: tW, height: timeFontSize + 10 }
           });
+
+          // LAYOUT_EDIT 모드일 때 시간 위치 조절 가이드 노드 및 핸들 영역 등록
+          if (window.APP_MODE === 'LAYOUT_EDIT') {
+            ctx.save();
+            // 시간 배치 가이드십선 (황록색 #10b981)
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([3, 3]);
+            ctx.beginPath();
+            ctx.moveTo(timeX_me, mePosY + meHeight - 10);
+            ctx.lineTo(timeX_me, timeY_me);
+            ctx.stroke();
+
+            const handleX = timeX_me;
+            const handleY = timeY_me;
+            ctx.fillStyle = '#10b981';
+            ctx.beginPath();
+            ctx.arc(handleX, handleY, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            window._timeOffsetHandleRegions.push({
+              isMe: true,
+              handleX: handleX,
+              handleY: handleY - currentScrollY,
+              bx: bx,
+              bubbleRightX: bx + meWidth,
+              bubbleBottomY: mePosY + meHeight,
+              timeFontSize: timeFontSize,
+              timeOffsetGapX: timeOffsetGapX,
+              timeBottomDiffY: timeBottomDiffY
+            });
+          }
         }
 
         // 세로 중앙 일치 연산
@@ -679,16 +712,7 @@
         });
 
         // 콘솔 로그 (렌더링 당 1회만 노출)
-        if (window._shouldLogInit) {
-          chatIdx++;
-          const bX1 = Math.round(bx);
-          const bY1 = Math.round(mePosY);
-          const bX2 = Math.round(bx + meWidth);
-          const bY2 = Math.round(mePosY + (pos.isContinuous ? pos.height : (pos.height + 40)));
-          const heightDiff = bY2 - bY1;
 
-          console.log(`[ChatLog] 텍스트: "${dialog.person}: ${pos.lines.join(' ')}" | x1: ${bX1}, y1: ${bY1}, x2: ${bX2}, y2: ${bY2} | (y2 - y1) = ${heightDiff}px | textHeight: ${textH}px | isContinuous: ${pos.isContinuous}`);
-        }
       } else {
         const oppLayout = calculateOpponentLayout(activeFontSize, fontSize, config);
         const bx = oppLayout.bx; // 160px
@@ -841,12 +865,9 @@
         ctx.fillStyle = youBubbleColor;
         drawSpeechBubbleWithTail(ctx, bx, adjustedPosY, pos.width, youHeight, 32, false, !pos.isContinuous, undefined, userArcRadius);
 
-        const timeFontSize = Math.floor(fontSize * 0.7);
-        const timeHalfEm = Math.round(timeFontSize * 0.5);
-        const timeQuarterEm = Math.round(timeFontSize * 0.25);
-
-        const timeX_you = bx + pos.width + timeHalfEm;
-        const timeY_you = adjustedPosY + youHeight + timeQuarterEm;
+        // 시각 (직접 파라미터 timeFontSize, timeOffsetGapX, timeBottomDiffY 적용)
+        const timeX_you = bx + pos.width + timeOffsetGapX;
+        const timeY_you = adjustedPosY + youHeight + timeBottomDiffY;
 
         if (pos.showTime !== false) {
           ctx.fillStyle = timeColor;
@@ -863,9 +884,42 @@
             label: '대화 시간 색상',
             rect: { x: timeX_you - 8, y: timeY_you - timeFontSize - currentScrollY - 6, width: tW + 16, height: timeFontSize + 18 }
           });
+
+          // LAYOUT_EDIT 모드일 때 시간 위치 조절 가이드 노드 및 핸들 영역 등록
+          if (window.APP_MODE === 'LAYOUT_EDIT') {
+            ctx.save();
+            // 시간 배치 가이드십선 (황록색 #10b981)
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([3, 3]);
+            ctx.beginPath();
+            ctx.moveTo(timeX_you, adjustedPosY + youHeight - 10);
+            ctx.lineTo(timeX_you, timeY_you);
+            ctx.stroke();
+
+            const handleX = timeX_you;
+            const handleY = timeY_you;
+            ctx.fillStyle = '#10b981';
+            ctx.beginPath();
+            ctx.arc(handleX, handleY, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            window._timeOffsetHandleRegions.push({
+              isMe: false,
+              handleX: handleX,
+              handleY: handleY - currentScrollY,
+              bx: bx,
+              bubbleRightX: bx + pos.width,
+              bubbleBottomY: adjustedPosY + youHeight,
+              timeFontSize: timeFontSize,
+              timeOffsetGapX: timeOffsetGapX,
+              timeBottomDiffY: timeBottomDiffY
+            });
+          }
         }
 
-        const textX = oppLayout.textX;
+        const textX = oppLayout.textX + oppTextLeftOffset;
         const bubbleCenterY = adjustedPosY + youHeight / 2;
         const textH = pos.lines.length * lineSpacing - (lineSpacing - activeFontSize);
         const textY = Math.round(bubbleCenterY - textH / 2);
@@ -883,6 +937,38 @@
         }
         drawWrappedText(ctx, renderLines_you, textX, textY, 1.0, activeFontSize, lineSpacing);
 
+        // LAYOUT_EDIT 모드일 때 상대 글자 좌측 오프셋 가이드 수직선 및 드래그 핸들 그리기
+        if (window.APP_MODE === 'LAYOUT_EDIT') {
+          ctx.save();
+          // 1. 가이드 수직선 (파란색 #3b82f6)
+          ctx.strokeStyle = '#3b82f6';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.moveTo(textX, adjustedPosY);
+          ctx.lineTo(textX, adjustedPosY + youHeight);
+          ctx.stroke();
+
+          // 2. 수직선 드래그 핸들 (원형 노드)
+          const handleY = adjustedPosY + youHeight / 2;
+          ctx.fillStyle = '#3b82f6';
+          ctx.beginPath();
+          ctx.arc(textX, handleY, 10, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.restore();
+
+          window._oppTextLeftOffsetHandleRegions.push({
+            lineX: textX,
+            lineY1: adjustedPosY - currentScrollY,
+            lineY2: adjustedPosY + youHeight - currentScrollY,
+            handleY: handleY - currentScrollY,
+            offset: oppTextLeftOffset,
+            bx: bx,
+            halfEm: Math.round(activeFontSize * 0.5)
+          });
+        }
+
         const textW = Math.round(pos.lines.reduce((max, l) => Math.max(max, ctx.measureText(l).width), 0));
         hitRegions.unshift({
           type: 'other-text',
@@ -898,25 +984,13 @@
           rect: { x: bx, y: adjustedPosY - currentScrollY, width: pos.width, height: youHeight }
         });
 
-        // 콘솔 로그 (렌더링 당 1회만 노출)
-        if (window._shouldLogInit) {
-          chatIdx++;
-          const bX1 = Math.round(bx);
-          const bY1 = Math.round(adjustedPosY);
-          const bX2 = Math.round(bx + pos.width);
-          const bY2 = Math.round(adjustedPosY + (pos.isContinuous ? pos.height : (pos.height + 40)));
-          const heightDiff = bY2 - bY1;
 
-          console.log(`[ChatLog] 텍스트: "${dialog.person}: ${pos.lines.join(' ')}" | x1: ${bX1}, y1: ${bY1}, x2: ${bX2}, y2: ${bY2} | (y2 - y1) = ${heightDiff}px | textHeight: ${textH}px | isContinuous: ${pos.isContinuous}`);
-        }
       }
 
       ctx.restore();
     });
 
-    if (window._shouldLogInit) {
-      window._shouldLogInit = false;
-    }
+
 
     ctx.restore(); // 스크롤 클리핑 해제
 
@@ -1225,7 +1299,7 @@
    * requestAnimationFrame 루프 핸들러
    */
   function renderLoop(timestamp, getRefreshStateCallback, drawCallback) {
-    // 카카오톡 캔버스가 DOM에서 소멸했다면 즉시 루프 중단 및 해제! (v1.0.5)
+    // 카카오톡 캔버스가 DOM에서 소멸했다면 즉시 루프 중단 및 해제!
     const activeCanvas = document.getElementById('chat-canvas');
     if (!activeCanvas) {
       if (animationFrameId) {
@@ -1284,7 +1358,7 @@
   }
 
   /**
-   * pure vector & real text SVG exporter (v1.5.0)
+   * pure vector & real text SVG exporter
    * 캔버스 100% 실물 렌더링 상치 및 텍스트(<text>) / 베젤 벡터 패스(<path>) 완전 매핑
    */
   function exportTrueSVG(canvas, config, dialogs, avatarSettingsMap) {
@@ -1551,12 +1625,12 @@
         }
 
         if (pos.showTime !== false) {
-          const timeFontSize = Math.floor(fontSize * 0.7);
-          const timeHalfEm = Math.round(timeFontSize * 0.5);
-          const timeQuarterEm = Math.round(timeFontSize * 0.25);
+          const timeFontSize = (config && config['time-font-size'] !== undefined) ? parseInt(config['time-font-size'], 10) : LAYOUT_DEFAULTS.TIME_FONT_SIZE_DEFAULT;
+          const timeOffsetGapX = (config && config['time-offset-gap-x'] !== undefined) ? parseInt(config['time-offset-gap-x'], 10) : LAYOUT_DEFAULTS.TIME_OFFSET_GAP_X_DEFAULT;
+          const timeBottomDiffY = (config && config['time-bottom-diff-y'] !== undefined) ? parseInt(config['time-bottom-diff-y'], 10) : LAYOUT_DEFAULTS.TIME_BOTTOM_DIFF_Y_DEFAULT;
 
-          const timeX_me = Math.round(rx - timeHalfEm);
-          const timeY_me = Math.round(mePosY + meHeight + timeQuarterEm);
+          const timeX_me = Math.round(rx - timeOffsetGapX);
+          const timeY_me = Math.round(mePosY + meHeight + timeBottomDiffY);
           svgElements.push(`<text x="${timeX_me}" y="${timeY_me}" font-size="${timeFontSize}" font-weight="bold" fill="${escapeXml(timeColor)}" text-anchor="end" dominant-baseline="alphabetic">${escapeXml(pos.time)}</text>`);
         }
 
@@ -1629,16 +1703,17 @@
         }
 
         if (pos.showTime !== false) {
-          const timeFontSize = Math.floor(fontSize * 0.7);
-          const timeHalfEm = Math.round(timeFontSize * 0.5);
-          const timeQuarterEm = Math.round(timeFontSize * 0.25);
+          const timeFontSize = (config && config['time-font-size'] !== undefined) ? parseInt(config['time-font-size'], 10) : LAYOUT_DEFAULTS.TIME_FONT_SIZE_DEFAULT;
+          const timeOffsetGapX = (config && config['time-offset-gap-x'] !== undefined) ? parseInt(config['time-offset-gap-x'], 10) : LAYOUT_DEFAULTS.TIME_OFFSET_GAP_X_DEFAULT;
+          const timeBottomDiffY = (config && config['time-bottom-diff-y'] !== undefined) ? parseInt(config['time-bottom-diff-y'], 10) : LAYOUT_DEFAULTS.TIME_BOTTOM_DIFF_Y_DEFAULT;
 
-          const timeX_you = Math.round(bx + pos.width + timeHalfEm);
-          const timeY_you = Math.round(adjustedPosY + pos.height + 40 + timeQuarterEm);
+          const timeX_you = Math.round(bx + pos.width + timeOffsetGapX);
+          const timeY_you = Math.round(adjustedPosY + pos.height + 40 + timeBottomDiffY);
           svgElements.push(`<text x="${timeX_you}" y="${timeY_you}" font-size="${timeFontSize}" font-weight="bold" fill="${escapeXml(timeColor)}" text-anchor="start" dominant-baseline="alphabetic">${escapeXml(pos.time)}</text>`);
         }
 
-        const textX = Math.round(bx + activeFontSize * 0.5);
+        const oppTextLeftOffset = (config && config['opp-text-left-offset'] !== undefined) ? parseInt(config['opp-text-left-offset'], 10) : LAYOUT_DEFAULTS.OPP_TEXT_LEFT_OFFSET_DEFAULT;
+        const textX = Math.round(bx + activeFontSize * 0.5 + oppTextLeftOffset);
 
         const bubbleCenterY = Math.round(adjustedPosY + (pos.height + 40) / 2);
         const textH = pos.lines.length * lineSpacing - (lineSpacing - activeFontSize);
@@ -1717,7 +1792,7 @@ ${svgElements.join('\n')}
     },
     getAnimProgress: () => animState.progress,
     isAnimActive: () => animState.active,
-    // v0.1.0 피드백 대응 API 노출
+    // API 노출
     getTargetScrollY: () => targetScrollY,
     setTargetScrollY: (val) => {
       targetScrollY = val;

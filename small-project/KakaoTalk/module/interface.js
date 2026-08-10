@@ -1,6 +1,5 @@
 /**
  * KakaoTalk UI Interaction & Controller Module
- * Version: 0.0.10
  */
 
 (function () {
@@ -53,8 +52,8 @@
   let originalSettingsText = '';
   let loadedConfig = {};
   let avatarSettingsMap = {};
-  let startRangeIndex = 1; // v1.1.0 대화 시작 범위
-  let endRangeIndex = 0;   // v1.1.0 대화 끝 범위 (0일 때 totalCount로 대입)
+  let startRangeIndex = 1; // 대화 시작 범위
+  let endRangeIndex = 0;   // 대화 끝 범위 (0일 때 totalCount로 대입)
   const defaultColors = ["#E44D1B", "#C27800", "#669900", "#00A879", "#009DD1", "#4182FB", "#A760E2", "#D94594"];
   let globalColorIndex = 0;
   let globalVoiceIndex = 0;
@@ -68,7 +67,7 @@
   let btnResetSettings, btnSaveSettings, btnLoadSettings, settingFileLoader;
   let inputMeName, avatarModal, btnOpenAvatarModal, btnCloseModal, btnSaveAvatars, avatarSettingsList;
   
-  // v0.0.10 추가 DOM 캐시
+  // 추가 DOM 캐시
   let inputFontSize, inputFontBold, inputMeBubbleColor, inputYouBubbleColor, inputTimeColor;
   let btnHelp, helpModal, btnCloseHelp, helpModalBody;
 
@@ -136,9 +135,9 @@
     if (helpModalBody) helpModalBody.innerHTML = helpContentHtml;
   }
 
-  /**
-   * UI 컨트롤러 초기화 및 이벤트 리스너 바인딩
-   */
+  // 전역 색상 변경 및 출처 추적 테스트 콘솔로그 소거 (no-op 처리)
+  window.logColorChange = function() {};
+
   function initInterface(onUpdateCallback) {
     triggerUpdateCallback = onUpdateCallback;
 
@@ -160,7 +159,7 @@
     btnSaveAvatars = document.getElementById('btn-save-avatars');
     avatarSettingsList = document.getElementById('avatar-settings-list');
 
-    // v0.0.10 DOM 캐싱
+    // DOM 캐싱
     inputFontSize = document.getElementById('input-font-size');
     inputFontBold = document.getElementById('input-font-bold');
     inputMeBubbleColor = document.getElementById('input-me-bubble-color');
@@ -253,13 +252,72 @@
       if (triggerUpdateCallback) triggerUpdateCallback(true);
     });
 
+    const inputLabelMap = {
+      'input-capture-time': '캡처 시간',
+      'input-battery': '배터리 잔량',
+      'input-your-name': '상대방 이름',
+      'input-me-name': '내 이름',
+      'input-wifi': '와이파이 표시',
+      'input-cell': '통신사 안테나',
+      'input-width': '캔버스 가로 너비',
+      'input-height': '캔버스 세로 높이',
+      'input-progress': '다운로드 진행률',
+      'input-speed': '재생 속도',
+      'input-font': '글꼴 종류',
+      'input-font-size': '글꼴 크기',
+      'input-font-bold': '글꼴 굵게',
+      'input-bubble-round': '말풍선 곡률(라운드)',
+      'input-time-color': '대화 시간 색',
+      'input-avatar-center-x': '아바타 세로 중심선',
+      'input-avatar-size': '아바타 크기',
+      'input-avatar-round': '아바타 곡률',
+      'input-name-font-ratio': '이름 글꼴 비율',
+      'input-name-offset': '상대 이름 오프셋',
+      'input-opponent-bubble-x': '상대방 버블 X 오프셋',
+      'input-chat-start-y': '첫 채팅 시작 Y 오프셋',
+      'input-chat-gap': '대화 간격',
+      'input-opp-bubble-top-offset': '상대 첫 버블 상단 오프셋',
+      'input-date-height': '날짜 캡슐 높이',
+      'input-date-y-offset': '날짜 상단 간격',
+      'input-bubble-top-offset': '대화상자 상단 오프셋',
+      'input-bubble-padding': '버블 여백(패딩)',
+      'input-bubble-margin': '버블 마진',
+      'input-me-text-right-offset': '내 글자 우측 오프셋',
+      'input-opp-text-left-offset': '상대 글자 좌측 오프셋',
+      'input-time-font-size': '시간 글꼴 크기',
+      'input-time-offset-gap-x': '시간 X 간격',
+      'input-time-bottom-diff-y': '시간 Y 바닥 정렬 간격',
+      'input-auto-scroll': '스크롤 자동 고정',
+      'select-time-align': '시간 정렬 위치',
+      'select-theme': '대화방 테마'
+    };
+
     const bindLiveUpdate = (id) => {
       const el = document.getElementById(id);
       if (el) {
+        let startVal = el.type === 'checkbox' ? el.checked.toString() : el.value;
+
+        const captureStart = () => {
+          startVal = el.type === 'checkbox' ? el.checked.toString() : el.value;
+        };
+
+        ['pointerdown', 'mousedown', 'focus'].forEach(evt => {
+          el.addEventListener(evt, captureStart);
+        });
+
         el.addEventListener('input', () => { if (triggerUpdateCallback) triggerUpdateCallback(true); });
+
         el.addEventListener('change', () => {
-          if (window.ShortcutManager && window.ShortcutManager.pushHistoryState) {
-            window.ShortcutManager.pushHistoryState(`설정 변경: ${id}`);
+          const newVal = el.type === 'checkbox' ? el.checked.toString() : el.value;
+          if (startVal !== newVal) {
+            const labelStr = inputLabelMap[id] || id;
+            const logSourceTag = `설정 변경 (${id})`;
+            window.logColorChange(logSourceTag, labelStr, startVal, newVal);
+
+            if (window.ShortcutManager && window.ShortcutManager.pushHistoryState) {
+              window.ShortcutManager.pushHistoryState(`"${labelStr}","${startVal}","${newVal}"`);
+            }
+            startVal = newVal;
           }
           if (triggerUpdateCallback) triggerUpdateCallback(true);
         });
@@ -270,7 +328,6 @@
       'input-capture-time',
       'input-battery',
       'input-your-name',
-      'input-bg-color',
       'input-me-name',
       'input-wifi',
       'input-cell',
@@ -282,8 +339,6 @@
       'input-font-size', // 글꼴 크기 연동
       'input-font-bold', // 글꼴 굵기 연동
       'input-bubble-round', // 말풍선 라운드 크기 연동
-      'input-me-bubble-color', // 내 말풍선 색 피커 연동
-      'input-you-bubble-color', // 상대 말풍선 색 피커 연동
       'input-time-color', // 대화 시간 색 피커 연동
       'input-avatar-center-x', // 초상화 세로 중심선 연동
       'input-avatar-size', // 초상화 크기 연동
@@ -299,8 +354,107 @@
       'input-bubble-top-offset', // 대화상자 상오프셋 연동
       'input-bubble-padding', // 버블 패딩 연동
       'input-bubble-margin', // 버블 마진 연동
-      'input-me-text-right-offset' // 내 글자 우측 오프셋 연동
+      'input-me-text-right-offset', // 내 글자 우측 오프셋 연동
+      'input-opp-text-left-offset', // 상대 글자 좌측 오프셋 연동
+      'input-time-font-size', // 시간 글꼴 크기 연동
+      'input-time-offset-gap-x', // 시간 X 오프셋 간격 연동
+      'input-time-bottom-diff-y' // 시간 Y 바닥 정렬 간격 연동
     ].forEach(bindLiveUpdate);
+
+    // 색상 피커 ↔ 환경설정 색상 인풋 양방향 실시간 동기화
+    const syncColors = (pickerId, inputId) => {
+      const picker = document.getElementById(pickerId);
+      const input = document.getElementById(inputId);
+      if (picker && input) {
+        picker.addEventListener('input', () => { input.value = picker.value; });
+        input.addEventListener('input', () => { picker.value = input.value; });
+      }
+    };
+    syncColors('color-bg', 'input-bg-color');
+    syncColors('color-me-bubble', 'input-me-bubble-color');
+    syncColors('color-other-bubble', 'input-you-bubble-color');
+    syncColors('color-time-text', 'input-time-color');
+
+    // Color Picker 및 인풋 선택 시 출처 추적 로깅 코드
+    const colorPickerLogMap = [
+      { id: 'color-bg', altId: 'input-bg-color', label: '대화방 배경색' },
+      { id: 'color-me-bubble', altId: 'input-me-bubble-color', label: '내 말풍선 색' },
+      { id: 'color-me-text', label: '내 글자 색' },
+      { id: 'color-other-bubble', altId: 'input-you-bubble-color', label: '상대방 말풍선 색' },
+      { id: 'color-other-text', label: '상대방 글자 색' },
+      { id: 'color-other-name', label: '상대방 이름 색' },
+      { id: 'color-time-text', altId: 'input-time-color', label: '대화 시간 색' },
+      { id: 'color-date-text', label: '날짜 글자 색' },
+      { id: 'color-date-bg', label: '날짜 배경 색' },
+      { id: 'color-footer-bg', label: '하단 배경 색' },
+      { id: 'color-footer-text', label: '하단 글자 색' },
+      { id: 'color-footer-border', label: '하단 테두리 색' }
+    ];
+
+    colorPickerLogMap.forEach(({ id, altId, label }) => {
+      const targets = [document.getElementById(id), altId ? document.getElementById(altId) : null].filter(Boolean);
+      if (targets.length === 0) return;
+
+      let pickerStartColor = targets[0].value;
+
+      targets.forEach(el => {
+        const captureStart = () => {
+          if (el.value) pickerStartColor = el.value;
+        };
+
+        ['pointerdown', 'mousedown', 'focus', 'click'].forEach(evt => {
+          el.addEventListener(evt, captureStart);
+        });
+
+        // change 이벤트: 사용자가 픽커 선택/확인을 누르는 정밀 순간 로그 발생 및 히스토리 스냅샷 저장
+        el.addEventListener('change', () => {
+          try {
+            const finalColor = el.value;
+            if (finalColor && pickerStartColor && pickerStartColor.toLowerCase() !== finalColor.toLowerCase()) {
+              const srcTag = `컬러피커 선택 완료 (${el.id})`;
+              // 메시지 출력을 후속 상태 변경보다 최우선 수행
+              window.logColorChange(srcTag, label, pickerStartColor, finalColor);
+              pickerStartColor = finalColor;
+
+              if (window.ShortcutManager && window.ShortcutManager.pushHistoryState) {
+                window.ShortcutManager.pushHistoryState(`"${label}","${pickerStartColor.toUpperCase()}","${finalColor.toUpperCase()}"`);
+              }
+            }
+          } catch (err) {
+            console.error('[ColorLog Error Guard] 컬러피커 선택 핸들러 에러:', err);
+          } finally {
+            if (triggerUpdateCallback) triggerUpdateCallback(true);
+          }
+        });
+      });
+    });
+
+    // 대화방 테마 선택 변경 시 색상 추적 로거
+    const selectThemeElem = document.getElementById('select-theme');
+    if (selectThemeElem) {
+      let lastThemeBg = loadedConfig['setting-bgcolor'] || '#acc0d1';
+      let lastThemeMe = loadedConfig['me-bubble-color'] || '#fee500';
+      let lastThemeYou = loadedConfig['you-bubble-color'] || '#ffffff';
+
+      selectThemeElem.addEventListener('change', () => {
+        const themeVal = selectThemeElem.value;
+        const currentCfg = gatherConfigFromUI();
+        const srcTag = `테마드롭다운 (select-theme: ${themeVal})`;
+
+        if (currentCfg['background-color']) {
+          window.logColorChange(srcTag, '대화방 배경색', lastThemeBg, currentCfg['background-color']);
+          lastThemeBg = currentCfg['background-color'];
+        }
+        if (currentCfg['me-bubble-color']) {
+          window.logColorChange(srcTag, '내 말풍선 색', lastThemeMe, currentCfg['me-bubble-color']);
+          lastThemeMe = currentCfg['me-bubble-color'];
+        }
+        if (currentCfg['you-bubble-color']) {
+          window.logColorChange(srcTag, '상대방 말풍선 색', lastThemeYou, currentCfg['you-bubble-color']);
+          lastThemeYou = currentCfg['you-bubble-color'];
+        }
+      });
+    }
 
     // 이름 글꼴 비율 슬라이더 값 변경 시 라벨 갱신 연동
     const inputNameFontRatio = document.getElementById('input-name-font-ratio');
@@ -337,6 +491,54 @@
       inputMeTextRightOffset.addEventListener('change', updateMeTextOffsetLabel);
     }
 
+    // 상대 글자 좌측 오프셋 슬라이더 값 변경 시 라벨 갱신 연동
+    const inputOppTextLeftOffset = document.getElementById('input-opp-text-left-offset');
+    const labelOppTextLeftOffset = document.getElementById('label-opp-text-left-offset');
+    if (inputOppTextLeftOffset && labelOppTextLeftOffset) {
+      const updateOppTextOffsetLabel = () => {
+        labelOppTextLeftOffset.textContent = inputOppTextLeftOffset.value + ' px';
+        if (triggerUpdateCallback) triggerUpdateCallback(true);
+      };
+      inputOppTextLeftOffset.addEventListener('input', updateOppTextOffsetLabel);
+      inputOppTextLeftOffset.addEventListener('change', updateOppTextOffsetLabel);
+    }
+
+    // 시간 글꼴 크기 슬라이더 라벨 연동
+    const inputTimeFontSize = document.getElementById('input-time-font-size');
+    const labelTimeFontSize = document.getElementById('label-time-font-size');
+    if (inputTimeFontSize && labelTimeFontSize) {
+      const updateFn = () => {
+        labelTimeFontSize.textContent = inputTimeFontSize.value + ' px';
+        if (triggerUpdateCallback) triggerUpdateCallback(true);
+      };
+      inputTimeFontSize.addEventListener('input', updateFn);
+      inputTimeFontSize.addEventListener('change', updateFn);
+    }
+
+    // 시간 X 오프셋 간격 슬라이더 라벨 연동
+    const inputTimeOffsetGapX = document.getElementById('input-time-offset-gap-x');
+    const labelTimeOffsetGapX = document.getElementById('label-time-offset-gap-x');
+    if (inputTimeOffsetGapX && labelTimeOffsetGapX) {
+      const updateFn = () => {
+        labelTimeOffsetGapX.textContent = inputTimeOffsetGapX.value + ' px';
+        if (triggerUpdateCallback) triggerUpdateCallback(true);
+      };
+      inputTimeOffsetGapX.addEventListener('input', updateFn);
+      inputTimeOffsetGapX.addEventListener('change', updateFn);
+    }
+
+    // 시간 Y 바닥 정렬 간격 슬라이더 라벨 연동
+    const inputTimeBottomDiffY = document.getElementById('input-time-bottom-diff-y');
+    const labelTimeBottomDiffY = document.getElementById('label-time-bottom-diff-y');
+    if (inputTimeBottomDiffY && labelTimeBottomDiffY) {
+      const updateFn = () => {
+        labelTimeBottomDiffY.textContent = inputTimeBottomDiffY.value + ' px';
+        if (triggerUpdateCallback) triggerUpdateCallback(true);
+      };
+      inputTimeBottomDiffY.addEventListener('input', updateFn);
+      inputTimeBottomDiffY.addEventListener('change', updateFn);
+    }
+
     // 초상화 라운드 슬라이더 값 변경 시 라벨 갱신 연동
     const inputAvatarRound = document.getElementById('input-avatar-round');
     const labelAvatarRound = document.getElementById('label-avatar-round');
@@ -360,7 +562,7 @@
       inputDuration.addEventListener('input', updateDurationLabel);
       inputDuration.addEventListener('change', updateDurationLabel);
     }
-    // 대화 속도 슬라이더 값 변경 시 라벨 갱신 연동 (v0.1.0)
+    // 대화 속도 슬라이더 값 변경 시 라벨 갱신 연동
     const inputSpeed = document.getElementById('input-speed');
     const labelSpeed = document.getElementById('label-speed');
     if (inputSpeed && labelSpeed) {
@@ -769,7 +971,20 @@
     let hoveringMeTextRightOffsetLine = null;
     let activeMeTextOffsetLine = null;
 
+    let isDraggingOppTextLeftOffsetLine = false;
+    let hoveringOppTextLeftOffsetLine = null;
+    let activeOppTextOffsetLine = null;
+
+    let isDraggingTimeOffsetHandle = false;
+    let hoveringTimeOffsetHandle = null;
+    let activeTimeOffsetHandle = null;
+    let startTimeDragMouseX = 0;
+    let startTimeDragMouseY = 0;
+    let startTimeOffsetGapXVal = 18;
+    let startTimeBottomDiffYVal = -9;
+
     let lastHighlightedInputId = null;
+    let dragStartVal = '';
 
     /**
      * 설정값 하이라이트 연한 붉은색 배경 애니메이션만 실행
@@ -887,11 +1102,31 @@
         activeMeTextOffsetLine = null;
         changedInputId = 'input-me-text-right-offset';
       }
+      if (isDraggingOppTextLeftOffsetLine) {
+        isDraggingOppTextLeftOffsetLine = false;
+        activeOppTextOffsetLine = null;
+        changedInputId = 'input-opp-text-left-offset';
+      }
+      if (isDraggingTimeOffsetHandle) {
+        isDraggingTimeOffsetHandle = false;
+        activeTimeOffsetHandle = null;
+        changedInputId = 'input-time-offset-gap-x';
+      }
 
       if (changedInputId) {
         highlightUIInput(changedInputId);
-        if (window.ShortcutManager && window.ShortcutManager.pushHistoryState) {
-          window.ShortcutManager.pushHistoryState(`드래그 변경: ${changedInputId}`);
+        const el = document.getElementById(changedInputId);
+        const endVal = el ? el.value : '';
+        const labelStr = inputLabelMap[changedInputId] || changedInputId;
+        const startValStr = (typeof dragStartVal !== 'undefined' && dragStartVal !== null) ? dragStartVal.toString() : '';
+
+        if (startValStr !== endVal.toString()) {
+          const logSourceTag = `레이아웃 드래그 (${changedInputId})`;
+          window.logColorChange(logSourceTag, labelStr, startValStr, endVal);
+
+          if (window.ShortcutManager && window.ShortcutManager.pushHistoryState) {
+            window.ShortcutManager.pushHistoryState(`"${labelStr}","${startValStr}","${endVal}"`);
+          }
         }
         if (triggerUpdateCallback) triggerUpdateCallback(true);
       }
@@ -1009,6 +1244,32 @@
         }
         hoveringMeTextRightOffsetLine = nearMeTextOffsetLine;
 
+        // 상대 글자 좌측 오프셋 가이드 수직선 검출
+        let nearOppTextOffsetLine = null;
+        if (window.APP_MODE === 'LAYOUT_EDIT' && window._oppTextLeftOffsetHandleRegions) {
+          for (const r of window._oppTextLeftOffsetHandleRegions) {
+            if (Math.abs(cX - r.lineX) < 18) {
+              nearOppTextOffsetLine = r;
+              break;
+            }
+          }
+        }
+        hoveringOppTextLeftOffsetLine = nearOppTextOffsetLine;
+
+        // 대화 시간 위치 조절 핸들 감지 로직
+        let nearTimeOffsetHandle = null;
+        if (window.APP_MODE === 'LAYOUT_EDIT' && window._timeOffsetHandleRegions) {
+          for (const r of window._timeOffsetHandleRegions) {
+            const dx = cX - r.handleX;
+            const dy = cY - r.handleY;
+            if (Math.abs(dx) < 20 && Math.abs(dy) < 20) {
+              nearTimeOffsetHandle = r;
+              break;
+            }
+          }
+        }
+        hoveringTimeOffsetHandle = nearTimeOffsetHandle;
+
         // 이름 크기 조절 핸들 및 바디 감지 로직
         let nearNameHandle = null;
         let nearNameBody = null;
@@ -1051,6 +1312,45 @@
             if (labelMeTextRightOffset) labelMeTextRightOffset.textContent = newOffset + ' px';
             loadedConfig['me-text-right-offset'] = newOffset;
           }
+          if (triggerUpdateCallback) triggerUpdateCallback(false);
+        } else if (isDraggingOppTextLeftOffsetLine && activeOppTextOffsetLine) {
+          activeDragInputId = 'input-opp-text-left-offset';
+          const basePos = activeOppTextOffsetLine.bx + activeOppTextOffsetLine.halfEm;
+          const newOffset = Math.max(-30, Math.min(60, Math.round(cX - basePos)));
+          const inputOppTextLeftOffset = document.getElementById('input-opp-text-left-offset');
+          if (inputOppTextLeftOffset) {
+            inputOppTextLeftOffset.value = newOffset;
+            const labelOppTextLeftOffset = document.getElementById('label-opp-text-left-offset');
+            if (labelOppTextLeftOffset) labelOppTextLeftOffset.textContent = newOffset + ' px';
+            loadedConfig['opp-text-left-offset'] = newOffset;
+          }
+          if (triggerUpdateCallback) triggerUpdateCallback(false);
+        } else if (isDraggingTimeOffsetHandle && activeTimeOffsetHandle) {
+          activeDragInputId = 'input-time-offset-gap-x';
+          let newGapX = 10;
+          if (activeTimeOffsetHandle.isMe) {
+            newGapX = Math.max(0, Math.min(50, Math.round(activeTimeOffsetHandle.bx - cX)));
+          } else {
+            newGapX = Math.max(0, Math.min(50, Math.round(cX - activeTimeOffsetHandle.bubbleRightX)));
+          }
+          const newDiffY = Math.max(-20, Math.min(40, Math.round(cY - activeTimeOffsetHandle.bubbleBottomY)));
+
+          const inputTimeOffsetGapX = document.getElementById('input-time-offset-gap-x');
+          if (inputTimeOffsetGapX) {
+            inputTimeOffsetGapX.value = newGapX;
+            const labelTimeOffsetGapX = document.getElementById('label-time-offset-gap-x');
+            if (labelTimeOffsetGapX) labelTimeOffsetGapX.textContent = newGapX + ' px';
+            loadedConfig['time-offset-gap-x'] = newGapX;
+          }
+
+          const inputTimeBottomDiffY = document.getElementById('input-time-bottom-diff-y');
+          if (inputTimeBottomDiffY) {
+            inputTimeBottomDiffY.value = newDiffY;
+            const labelTimeBottomDiffY = document.getElementById('label-time-bottom-diff-y');
+            if (labelTimeBottomDiffY) labelTimeBottomDiffY.textContent = newDiffY + ' px';
+            loadedConfig['time-bottom-diff-y'] = newDiffY;
+          }
+
           if (triggerUpdateCallback) triggerUpdateCallback(false);
         } else if (isDraggingNameHandle && activeNameHandle) {
           activeDragInputId = 'input-name-font-ratio';
@@ -1179,7 +1479,9 @@
             canvas.style.cursor = 'move'; // 위치 이동 커서
           } else if (hoveringChatStartY || hoveringChatGapLine || hoveringOppBubbleTopLine || hoveringDateYOffsetLine || hoveringDateHeightHandle) {
             canvas.style.cursor = 'ns-resize'; // 수직 조절 커서
-          } else if (isNearAvatarLine || isNearBubbleLine || hoveringMeTextRightOffsetLine) {
+          } else if (hoveringTimeOffsetHandle) {
+            canvas.style.cursor = 'move'; // 시간 핸들 자유 이동 커서
+          } else if (isNearAvatarLine || isNearBubbleLine || hoveringMeTextRightOffsetLine || hoveringOppTextLeftOffsetLine) {
             canvas.style.cursor = 'ew-resize';
           } else {
             canvas.style.cursor = 'crosshair';
@@ -1203,9 +1505,44 @@
         const chatStartY = inputChatStartY ? (parseInt(inputChatStartY.value, 10) || defaultChatStartY) : defaultChatStartY;
 
         if (window.APP_MODE === 'LAYOUT_EDIT') {
-          if (hoveringMeTextRightOffsetLine) {
+          let dragTargetId = null;
+          if (hoveringTimeOffsetHandle) dragTargetId = 'input-time-offset-gap-x';
+          else if (hoveringMeTextRightOffsetLine) dragTargetId = 'input-me-text-right-offset';
+          else if (hoveringOppTextLeftOffsetLine) dragTargetId = 'input-opp-text-left-offset';
+          else if (hoveringAvatarSizeHandle) dragTargetId = 'input-avatar-size';
+          else if (hoveringAvatarRoundHandle) dragTargetId = 'input-avatar-round';
+          else if (hoveringChatGapLine) dragTargetId = 'input-chat-gap';
+          else if (hoveringOppBubbleTopLine) dragTargetId = 'input-opp-bubble-top-offset';
+          else if (hoveringDateYOffsetLine) dragTargetId = 'input-date-y-offset';
+          else if (hoveringDateHeightHandle) dragTargetId = 'input-date-height';
+          else if (hoveringNameHandle) dragTargetId = 'input-name-font-ratio';
+          else if (hoveringNameBody) dragTargetId = 'input-name-offset';
+          else if (hoveringChatStartY) dragTargetId = 'input-chat-start-y';
+          else if (hoveringAvatarLine) dragTargetId = 'input-avatar-center-x';
+          else if (hoveringBubbleLine) dragTargetId = 'input-opponent-bubble-x';
+
+          if (dragTargetId) {
+            const startEl = document.getElementById(dragTargetId);
+            dragStartVal = startEl ? startEl.value : '';
+          }
+
+          if (hoveringTimeOffsetHandle) {
+            isDraggingTimeOffsetHandle = true;
+            activeTimeOffsetHandle = hoveringTimeOffsetHandle;
+            startTimeDragMouseX = cX;
+            startTimeDragMouseY = cY;
+            startTimeOffsetGapXVal = activeTimeOffsetHandle.timeOffsetGapX;
+            startTimeBottomDiffYVal = activeTimeOffsetHandle.timeBottomDiffY;
+            e.preventDefault();
+            e.stopPropagation();
+          } else if (hoveringMeTextRightOffsetLine) {
             isDraggingMeTextRightOffsetLine = true;
             activeMeTextOffsetLine = hoveringMeTextRightOffsetLine;
+            e.preventDefault();
+            e.stopPropagation();
+          } else if (hoveringOppTextLeftOffsetLine) {
+            isDraggingOppTextLeftOffsetLine = true;
+            activeOppTextOffsetLine = hoveringOppTextLeftOffsetLine;
             e.preventDefault();
             e.stopPropagation();
           } else if (hoveringAvatarSizeHandle) {
@@ -1592,7 +1929,32 @@
 
     if (btnPickerConfirm) {
       btnPickerConfirm.addEventListener('click', () => {
-        if (customColorPickerModal) customColorPickerModal.style.display = 'none';
+        try {
+          if (currentTargetColorInput) {
+            const finalValue = currentTargetColorInput.value;
+            if (initialColorValue && initialColorValue.toLowerCase() !== finalValue.toLowerCase()) {
+              const colorLabelMap = {
+                'color-bg': '대화방 배경색', 'color-me-bubble': '내 말풍선 색', 'color-me-text': '내 글자 색',
+                'color-other-bubble': '상대방 말풍선 색', 'color-other-text': '상대방 글자 색', 'color-other-name': '상대방 이름 색',
+                'color-time-text': '대화 시간 색', 'color-date-text': '날짜 글자 색', 'color-date-bg': '날짜 배경 색',
+                'color-footer-bg': '하단 배경 색', 'color-footer-text': '하단 글자 색', 'color-footer-border': '하단 테두리 색'
+              };
+              const labelStr = colorLabelMap[currentTargetColorInput.id] || currentTargetColorInput.id;
+              const srcTag = `2D 모달 피커 선택 완료 (${currentTargetColorInput.id})`;
+              
+              // 메시지 생성을 최우선 수행 (후속 작업 에러로 인한 사망 차단)
+              window.logColorChange(srcTag, labelStr, initialColorValue, finalValue);
+
+              if (window.ShortcutManager && window.ShortcutManager.pushHistoryState) {
+                window.ShortcutManager.pushHistoryState(`"${labelStr}","${initialColorValue.toUpperCase()}","${finalValue.toUpperCase()}"`);
+              }
+            }
+          }
+        } catch (err) {
+          console.error('[ColorLog Error Guard] 2D 피커 선택 완료 처리 중 예외 발생:', err);
+        } finally {
+          if (customColorPickerModal) customColorPickerModal.style.display = 'none';
+        }
       });
     }
 
@@ -1722,7 +2084,7 @@
         const text = event.target.result;
         chatInput.value = text;
 
-        // v0.0.10 피드백: 파일 로드 시 파싱된 대화방 이름을 UI 인풋에 연동
+        // 피드백: 파일 로드 시 파싱된 대화방 이름을 UI 인풋에 연동
         const { config: parsedConfig, dialogs: rawDialogs } = parseInputText(text);
         if (parsedConfig['your-name']) {
           const yourNameEl = document.getElementById('input-your-name');
@@ -1834,7 +2196,7 @@
       if (triggerUpdateCallback) triggerUpdateCallback(true);
     });
 
-    // SPA 라우팅(http://127.0.0.1/#/small-project/KakaoTalk/index.html) 대응 전역 이벤트 위임 (v1.4.0)
+    // SPA 라우팅(http://127.0.0.1/#/small-project/KakaoTalk/index.html) 대응 전역 이벤트 위임
     // 일반 클릭: PNG 저장 / Ctrl+클릭: SVG 즉시 저장 (팝업 없음)
     document.addEventListener('click', (e) => {
       const btnDownloadTarget = e.target ? e.target.closest('#btn-download') : null;
@@ -1853,7 +2215,7 @@
       }
     }, true);
 
-    // v1.3.0 테마 상세보기 모달 이벤트 기동
+    // 테마 상세보기 모달 이벤트 기동
     setupThemeModalEvents();
 
     // 디폴트 데이터 로딩 기동
@@ -1862,7 +2224,7 @@
 
   function rgbToHex(colorStr) {
     if (!colorStr) return '#bacee0';
-    colorStr = colorStr.trim();
+    colorStr = colorStr.toString().replace(/"/g, '').trim();
     if (colorStr.startsWith('#')) return colorStr;
 
     const match = colorStr.match(/rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/);
@@ -1872,7 +2234,7 @@
       const b = parseInt(match[3]).toString(16).padStart(2, '0');
       return `#${r}${g}${b}`;
     }
-    return '#bacee0';
+    return colorStr.startsWith('#') ? colorStr : '#bacee0';
   }
 
   async function parseAndApplyDateHeader(text) {
@@ -1978,7 +2340,7 @@
       inputFont.value = config['font'];
     }
     
-    // v0.0.10 복원 추가
+    // 복원 추가
     if (config['font-size'] && inputFontSize) {
       inputFontSize.value = config['font-size'];
     }
@@ -1991,33 +2353,137 @@
       inputBubbleRoundRestore.value = config['bubble-round'];
       if (labelBubbleRoundRestore) labelBubbleRoundRestore.textContent = config['bubble-round'] + ' px';
     }
-    if (config['me-bubble-color'] && inputMeBubbleColor) {
-      inputMeBubbleColor.value = config['me-bubble-color'];
+    // 색상 복원 (쌍방향 피커 및 인풋 양쪽 모두 100% 동기화 복원 및 loadedConfig 상태 동기화)
+    if (config['background-color']) {
+      const hex = rgbToHex(config['background-color']);
+      loadedConfig['setting-bgcolor'] = hex;
+      loadedConfig['background-color'] = hex;
+      const el1 = document.getElementById('input-bg-color');
+      const el2 = document.getElementById('color-bg');
+      if (el1) el1.value = hex;
+      if (el2) el2.value = hex;
     }
-    if (config['you-bubble-color'] && inputYouBubbleColor) {
-      inputYouBubbleColor.value = config['you-bubble-color'];
+    if (config['me-bubble-color']) {
+      const hex = rgbToHex(config['me-bubble-color']);
+      loadedConfig['me-bubble-color'] = hex;
+      const el1 = document.getElementById('input-me-bubble-color');
+      const el2 = document.getElementById('color-me-bubble');
+      if (el1) el1.value = hex;
+      if (el2) el2.value = hex;
     }
-    if (config['time-color'] && inputTimeColor) {
-      inputTimeColor.value = config['time-color'];
+    if (config['me-text-color']) {
+      const hex = rgbToHex(config['me-text-color']);
+      loadedConfig['me-text-color'] = hex;
+      const el = document.getElementById('color-me-text');
+      if (el) el.value = hex;
     }
-    
-    // 색상 복원
-    ['color-bg', 'color-me-bubble', 'color-me-text', 'color-other-bubble', 'color-other-text', 'color-other-name', 'color-time-text', 'color-date-text', 'color-date-bg', 'color-footer-bg', 'color-footer-text', 'color-footer-border'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el && config[id]) el.value = config[id];
-    });
+    if (config['you-bubble-color']) {
+      const hex = rgbToHex(config['you-bubble-color']);
+      loadedConfig['you-bubble-color'] = hex;
+      const el1 = document.getElementById('input-you-bubble-color');
+      const el2 = document.getElementById('color-other-bubble');
+      if (el1) el1.value = hex;
+      if (el2) el2.value = hex;
+    }
+    if (config['you-text-color']) {
+      const hex = rgbToHex(config['you-text-color']);
+      loadedConfig['you-text-color'] = hex;
+      const el = document.getElementById('color-other-text');
+      if (el) el.value = hex;
+    }
+    if (config['you-name-color']) {
+      const hex = rgbToHex(config['you-name-color']);
+      loadedConfig['you-name-color'] = hex;
+      const el = document.getElementById('color-other-name');
+      if (el) el.value = hex;
+    }
+    if (config['time-color']) {
+      const hex = rgbToHex(config['time-color']);
+      loadedConfig['time-color'] = hex;
+      const el1 = document.getElementById('input-time-color');
+      const el2 = document.getElementById('color-time-text');
+      if (el1) el1.value = hex;
+      if (el2) el2.value = hex;
+    }
+    if (config['date-text-color']) {
+      const hex = rgbToHex(config['date-text-color']);
+      const el = document.getElementById('color-date-text');
+      if (el) el.value = hex;
+    }
+    if (config['date-bg-color']) {
+      const hex = rgbToHex(config['date-bg-color']);
+      const el = document.getElementById('color-date-bg');
+      if (el) el.value = hex;
+    }
+    if (config['color-footer-bg']) {
+      const hex = rgbToHex(config['color-footer-bg']);
+      const el = document.getElementById('color-footer-bg');
+      if (el) el.value = hex;
+    }
+    if (config['color-footer-text']) {
+      const hex = rgbToHex(config['color-footer-text']);
+      const el = document.getElementById('color-footer-text');
+      if (el) el.value = hex;
+    }
+    if (config['color-footer-border']) {
+      const hex = rgbToHex(config['color-footer-border']);
+      const el = document.getElementById('color-footer-border');
+      if (el) el.value = hex;
+    }
 
-    // 레이아웃 복원
-    ['avatar-center-x', 'name-offset', 'opponent-bubble-x', 'chat-start-y', 'bubble-top-offset', 'bubble-padding', 'bubble-margin', 'time-margin'].forEach(key => {
+    // 레이아웃 및 세부 수치 복원
+    ['avatar-center-x', 'name-offset', 'opponent-bubble-x', 'chat-start-y', 'bubble-top-offset', 'bubble-padding', 'bubble-margin', 'time-margin', 'avatar-size', 'avatar-round', 'chat-gap', 'opp-bubble-top-offset', 'date-height', 'date-y-offset', 'width', 'height'].forEach(key => {
       const el = document.getElementById(`input-${key}`);
       if (el && config[key] !== undefined) el.value = config[key];
     });
+
+    if (config['me-text-right-offset'] !== undefined) {
+      const el = document.getElementById('input-me-text-right-offset');
+      if (el) el.value = config['me-text-right-offset'];
+      const lbl = document.getElementById('label-me-text-right-offset');
+      if (lbl) lbl.textContent = config['me-text-right-offset'] + ' px';
+    }
+
+    if (config['opp-text-left-offset'] !== undefined) {
+      const el = document.getElementById('input-opp-text-left-offset');
+      if (el) el.value = config['opp-text-left-offset'];
+      const lbl = document.getElementById('label-opp-text-left-offset');
+      if (lbl) lbl.textContent = config['opp-text-left-offset'] + ' px';
+    }
+
+    if (config['time-font-size'] !== undefined) {
+      const el = document.getElementById('input-time-font-size');
+      if (el) el.value = config['time-font-size'];
+      const lbl = document.getElementById('label-time-font-size');
+      if (lbl) lbl.textContent = config['time-font-size'] + ' px';
+    }
+
+    if (config['time-offset-gap-x'] !== undefined) {
+      const el = document.getElementById('input-time-offset-gap-x');
+      if (el) el.value = config['time-offset-gap-x'];
+      const lbl = document.getElementById('label-time-offset-gap-x');
+      if (lbl) lbl.textContent = config['time-offset-gap-x'] + ' px';
+    }
+
+    if (config['time-bottom-diff-y'] !== undefined) {
+      const el = document.getElementById('input-time-bottom-diff-y');
+      if (el) el.value = config['time-bottom-diff-y'];
+      const lbl = document.getElementById('label-time-bottom-diff-y');
+      if (lbl) lbl.textContent = config['time-bottom-diff-y'] + ' px';
+    }
+
+    if (config['avatar-round'] !== undefined) {
+      const lbl = document.getElementById('label-avatar-round');
+      if (lbl) lbl.textContent = config['avatar-round'] + ' px';
+    }
+
     if (config['name-font-ratio'] !== undefined) {
       const el = document.getElementById('input-name-font-ratio');
       if (el) el.value = config['name-font-ratio'];
       const lbl = document.getElementById('label-name-font-ratio');
-      if (lbl) lbl.textContent = config['name-font-ratio'];
+      if (lbl) lbl.textContent = parseFloat(config['name-font-ratio']).toFixed(2);
     }
+
     if (config['time-align']) {
       const el = document.getElementById('select-time-align');
       if (el) el.value = config['time-align'];
@@ -2166,6 +2632,18 @@
     const inputMeTextRightOffset = document.getElementById('input-me-text-right-offset');
     if (inputMeTextRightOffset) config['me-text-right-offset'] = (inputMeTextRightOffset.value !== '') ? parseInt(inputMeTextRightOffset.value, 10) : 10;
 
+    const inputOppTextLeftOffset = document.getElementById('input-opp-text-left-offset');
+    if (inputOppTextLeftOffset) config['opp-text-left-offset'] = (inputOppTextLeftOffset.value !== '') ? parseInt(inputOppTextLeftOffset.value, 10) : 8;
+
+    const inputTimeFontSize = document.getElementById('input-time-font-size');
+    if (inputTimeFontSize) config['time-font-size'] = (inputTimeFontSize.value !== '') ? parseInt(inputTimeFontSize.value, 10) : 26;
+
+    const inputTimeOffsetGapX = document.getElementById('input-time-offset-gap-x');
+    if (inputTimeOffsetGapX) config['time-offset-gap-x'] = (inputTimeOffsetGapX.value !== '') ? parseInt(inputTimeOffsetGapX.value, 10) : 18;
+
+    const inputTimeBottomDiffY = document.getElementById('input-time-bottom-diff-y');
+    if (inputTimeBottomDiffY) config['time-bottom-diff-y'] = (inputTimeBottomDiffY.value !== '') ? parseInt(inputTimeBottomDiffY.value, 10) : -9;
+
     const selectTimeAlign = document.getElementById('select-time-align');
     if (selectTimeAlign) config['time-align'] = selectTimeAlign.value;
 
@@ -2191,13 +2669,13 @@
 
     const progressEl = document.getElementById('input-progress');
 
-    // v0.0.10: [현재 대화 / 전체 개수] 진행 라벨 세부 매핑
+    // [현재 대화 / 전체 개수] 진행 라벨 세부 매핑
     const chatInputVal = chatInput ? chatInput.value : '';
     const { dialogs: rawDialogs } = parseInputText(chatInputVal);
     const cleanDialogs = rawDialogs.filter(d => d.person && d.person.trim() !== '');
     const totalCount = cleanDialogs.length;
 
-    // v1.1.0 대화 범위 안전 조정 및 초기화
+    // 대화 범위 안전 조정 및 초기화
     if (totalCount > 0) {
       if (endRangeIndex === 0 || endRangeIndex > totalCount) {
         endRangeIndex = totalCount;
@@ -2244,7 +2722,7 @@
       config['font'] = inputFont.value;
     }
     
-    // v0.0.10 수집 추가
+    // 수집 추가
     if (inputFontSize) {
       config['font-size'] = inputFontSize.value;
     }
@@ -2519,7 +2997,7 @@
     settingText += `-me: ${uiConfig['me']}\n`;
     settingText += `-font: ${uiConfig['font'] || 'sans-serif'}\n`;
     
-    // v0.0.10 직렬화 세이브
+    // 직렬화 세이브
     settingText += `-font-size: ${uiConfig['font-size'] || '38'}\n`;
     settingText += `-font-bold: ${uiConfig['font-bold'] !== undefined ? uiConfig['font-bold'] : 'false'}\n`;
     settingText += `-bubble-round: ${uiConfig['bubble-round'] !== undefined ? uiConfig['bubble-round'] : '32'}\n`;
@@ -2579,7 +3057,7 @@
   }
 
   /**
-   * 대화 데이터 파싱 및 시간 메타데이터 정밀 추출 (v0.0.10)
+   * 대화 데이터 파싱 및 시간 메타데이터 정밀 추출
    */
   function parseInputText(text) {
     const lines = text.split('\n');
@@ -2838,7 +3316,7 @@
   }
 
   /**
-   * 테마 모달 실시간 예시 미리보기 전용 미니 렌더러 (v1.3.0)
+   * 테마 모달 실시간 예시 미리보기 전용 미니 렌더러
    * 360x460 규격에 맞춰 7개 세부 색상을 실제 카카오톡 화면처럼 정교하고 아름답게 렌더링
    */
   function drawThemePreviewCanvas(canvas, ctx, colors) {
@@ -2968,7 +3446,7 @@
   }
 
   /**
-   * 대화방 테마 상세보기 모달 제어 및 실시간 캔버스 미리보기 연동 (v1.3.0)
+   * 대화방 테마 상세보기 모달 제어 및 실시간 캔버스 미리보기 연동
    * SPA 해시 라우팅 (/#/small-project/KakaoTalk/index.html) 환경 대응: 이벤트 위임 & body 텔레포트 적용
    */
   function setupThemeModalEvents() {
@@ -3118,11 +3596,18 @@
   window.ChatInterface = {
     initInterface,
     gatherConfigFromUI,
+    applySettingsToUI,
+    loadConfigToUI: applySettingsToUI, // 히스토리 복원 호환용 에일리어스
     parseInputText,
     getAvatarSettingsMap: () => avatarSettingsMap,
+    setAvatarSettingsMap: (map) => { if (map) avatarSettingsMap = map; },
     getChatInputVal: () => {
       const el = document.getElementById('chat-input') || document.getElementById('input-chat-text');
       return el ? el.value : '';
+    },
+    setChatInputVal: (val) => {
+      const el = document.getElementById('chat-input') || document.getElementById('input-chat-text');
+      if (el) el.value = val;
     },
     openDrawerTab: (tabId, titleText, activeBtn) => {
       const slidingDrawer = document.getElementById('sliding-drawer-panel');

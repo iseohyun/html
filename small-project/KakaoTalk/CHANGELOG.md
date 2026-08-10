@@ -2,6 +2,15 @@
 
 All notable changes to the KakaoTalk Generator project will be documented in this file.
 
+## [1.5.0] - 2026-08-11
+### Added & Fixed
+- Added global `window.logColorChange` fail-safe logging system with explicit source tags (`[출처: ...]`).
+- Fixed 2D modal picker and native color pickers to log on selection confirmation rather than mousemove dragging.
+- Added `try-catch-finally` error protection around log handlers and UI callbacks to ensure fail-safe execution.
+- Restored `applySettingsToUI` export on `window.ChatInterface` namespace, fixing color and layout state restoration during Undo/Redo.
+- Added automatic Redo stack truncation and branching when performing a new action after Undo.
+- Unified all layout and general setting changes into standard `"변경내용","변경전 값","변경후 값"` history format.
+
 ## [1.4.2] - 2026-08-09
 ### Added
 - Implemented real KakaoTalk S-curve cubic bezier speech bubble tail algorithm in `engine.js`.

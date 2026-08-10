@@ -326,6 +326,38 @@
                   </div>
 
                   <div class="control-row">
+                    <label for="input-opp-text-left-offset">상대 글자 좌측 오프셋</label>
+                    <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+                      <input type="range" id="input-opp-text-left-offset" min="-30" max="60" value="8" style="flex: 1;">
+                      <span id="label-opp-text-left-offset" style="width: 45px; text-align: right; font-size: 0.9em; font-weight: bold; color: #475569;">8 px</span>
+                    </div>
+                  </div>
+
+                  <div class="control-row">
+                    <label for="input-time-font-size">시간 글꼴 크기</label>
+                    <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+                      <input type="range" id="input-time-font-size" min="10" max="45" value="26" style="flex: 1;">
+                      <span id="label-time-font-size" style="width: 45px; text-align: right; font-size: 0.9em; font-weight: bold; color: #475569;">26 px</span>
+                    </div>
+                  </div>
+
+                  <div class="control-row">
+                    <label for="input-time-offset-gap-x">시간 X 오프셋 간격</label>
+                    <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+                      <input type="range" id="input-time-offset-gap-x" min="0" max="50" value="18" style="flex: 1;">
+                      <span id="label-time-offset-gap-x" style="width: 45px; text-align: right; font-size: 0.9em; font-weight: bold; color: #475569;">18 px</span>
+                    </div>
+                  </div>
+
+                  <div class="control-row">
+                    <label for="input-time-bottom-diff-y">시간 Y 바닥 정렬 간격</label>
+                    <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+                      <input type="range" id="input-time-bottom-diff-y" min="-20" max="40" value="-9" style="flex: 1;">
+                      <span id="label-time-bottom-diff-y" style="width: 45px; text-align: right; font-size: 0.9em; font-weight: bold; color: #475569;">-9 px</span>
+                    </div>
+                  </div>
+
+                  <div class="control-row">
                     <label for="input-avatar-center-x">초상화 세로 중심선</label>
                     <input type="number" id="input-avatar-center-x" value="73" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px;">
                   </div>
@@ -547,7 +579,7 @@
       </div>
     </div>
 
-    <!-- 다운로드 옵션 선택 모달 (v1.2.0) -->
+    <!-- 다운로드 옵션 선택 모달 -->
     <div id="download-modal" class="modal" style="display: none;">
       <div class="modal-content" style="max-width: 480px;">
         <div class="modal-header">
@@ -589,10 +621,10 @@
       </div>
     </div>
 
-    <!-- 모바일 길게 누르기 안내 및 팝업 모달 (v1.2.0) -->
+    <!-- 모바일 길게 누르기 안내 및 팝업 모달 -->
     <div id="mobile-save-modal" class="modal" style="display: none;">
       <div class="modal-content" style="max-width: 420px; text-align: center;">
-    <!-- 순차 모듈 로더 및 명시적 이니셜라이즈 기동 체인 (v0.1.1 2단계) -->
+    <!-- 순차 모듈 로더 및 명시적 이니셜라이즈 기동 체인 -->
     <script>
       (function () {
         function loadScript(src) {
