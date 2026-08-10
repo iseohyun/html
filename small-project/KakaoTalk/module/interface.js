@@ -277,12 +277,31 @@
       'input-you-bubble-color', // 상대 말풍선 색 피커 연동
       'input-time-color', // 대화 시간 색 피커 연동
       'input-avatar-center-x', // 초상화 세로 중심선 연동
+      'input-avatar-size', // 초상화 크기 연동
+      'input-avatar-round', // 초상화 라운드 연동
+      'input-name-font-ratio', // 이름 글꼴 비율 연동
       'input-name-offset', // 상대이름 오프셋 연동
-      'input-bubble-left-offset', // 대화상자 좌오프셋 연동
+      'input-opponent-bubble-x', // 상대방 버블 좌측 정렬 연동
+      'input-chat-start-y', // 첫 채팅 시작 Y 연동
+      'input-chat-gap', // 대화 간격 연동
+      'input-opp-bubble-top-offset', // 상대 첫 버블 상단 Y 연동
+      'input-date-height', // 날짜 캡슐 높이 연동
+      'input-date-y-offset', // 날짜 상단 간격 연동
       'input-bubble-top-offset', // 대화상자 상오프셋 연동
       'input-bubble-padding', // 버블 패딩 연동
       'input-bubble-margin' // 버블 마진 연동
     ].forEach(bindLiveUpdate);
+
+    // 이름 글꼴 비율 슬라이더 값 변경 시 라벨 갱신 연동
+    const inputNameFontRatio = document.getElementById('input-name-font-ratio');
+    const labelNameFontRatio = document.getElementById('label-name-font-ratio');
+    if (inputNameFontRatio && labelNameFontRatio) {
+      const updateRatioLabel = () => {
+        labelNameFontRatio.textContent = parseFloat(inputNameFontRatio.value).toFixed(2);
+      };
+      inputNameFontRatio.addEventListener('input', updateRatioLabel);
+      inputNameFontRatio.addEventListener('change', updateRatioLabel);
+    }
 
     // 말풍선 라운드 슬라이더 값 변경 시 라벨 갱신 연동
     const inputBubbleRound = document.getElementById('input-bubble-round');
@@ -294,6 +313,18 @@
       };
       inputBubbleRound.addEventListener('input', updateRoundLabel);
       inputBubbleRound.addEventListener('change', updateRoundLabel);
+    }
+
+    // 초상화 라운드 슬라이더 값 변경 시 라벨 갱신 연동
+    const inputAvatarRound = document.getElementById('input-avatar-round');
+    const labelAvatarRound = document.getElementById('label-avatar-round');
+    if (inputAvatarRound && labelAvatarRound) {
+      const updateAvatarRoundLabel = () => {
+        labelAvatarRound.textContent = inputAvatarRound.value + ' px';
+        if (triggerUpdateCallback) triggerUpdateCallback(true);
+      };
+      inputAvatarRound.addEventListener('input', updateAvatarRoundLabel);
+      inputAvatarRound.addEventListener('change', updateAvatarRoundLabel);
     }
 
     // 등장시간 슬라이더 값 변경 시 라벨 갱신 연동
@@ -542,6 +573,7 @@
     let previousAppMode = 'NORMAL';
 
     const btnCanvasPickerMode = document.getElementById('btn-canvas-picker-mode');
+    const btnLayoutEditMode = document.getElementById('btn-layout-edit-mode');
     const canvasPickerTooltip = document.getElementById('canvas-picker-tooltip');
 
     window.setAppMode = (newMode) => {
@@ -556,11 +588,16 @@
       if (btnCanvasPickerMode) {
         if (newMode === 'COLOR_EDIT') {
           btnCanvasPickerMode.classList.add('active');
-          console.log('🎯 [앱 모드 전환 ➔ COLOR_EDIT (색 편집 모드)]');
         } else {
           btnCanvasPickerMode.classList.remove('active');
-          if (newMode === 'NORMAL') console.log('🎯 [앱 모드 전환 ➔ NORMAL (일반 모드)]');
-          else if (newMode === 'LAYOUT_EDIT') console.log('🎯 [앱 모드 전환 ➔ LAYOUT_EDIT (레이아웃 보조선 모드)]');
+        }
+      }
+
+      if (btnLayoutEditMode) {
+        if (newMode === 'LAYOUT_EDIT') {
+          btnLayoutEditMode.classList.add('active');
+        } else {
+          btnLayoutEditMode.classList.remove('active');
         }
       }
 
@@ -596,6 +633,23 @@
       });
     }
 
+    if (btnLayoutEditMode) {
+      btnLayoutEditMode.addEventListener('click', (e) => {
+        e.stopPropagation(); // 아코디언 접힘 방지
+        const targetMode = window.APP_MODE === 'LAYOUT_EDIT' ? 'NORMAL' : 'LAYOUT_EDIT';
+        window.setAppMode(targetMode);
+        window._isCtrlGuideActive = (targetMode === 'LAYOUT_EDIT');
+
+        if (targetMode === 'LAYOUT_EDIT') {
+          const layoutAccordion = btnLayoutEditMode.closest('.setting-accordion');
+          if (layoutAccordion && layoutAccordion.classList.contains('collapsed')) {
+            layoutAccordion.classList.remove('collapsed');
+          }
+        }
+        if (triggerUpdateCallback) triggerUpdateCallback(false);
+      });
+    }
+
     // ESC 키 다단계 닫기 계층 구조 (1단계: 컬러피커 닫기, 2단계: COLOR_EDIT 모드 끄기)
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
@@ -628,11 +682,95 @@
     let lastLoggedTooltipText = '';
     let isDraggingAvatarLine = false;
     let hoveringAvatarLine = false;
+    let isDraggingNameHandle = false;
+    let hoveringNameHandle = null;
+    let activeNameHandle = null;
+    let isDraggingBubbleLine = false;
+    let hoveringBubbleLine = false;
+    let isDraggingNameOffset = false;
+    let hoveringNameBody = null;
+    let startNameDragX = 0;
+    let startNameDragOffset = 0;
+    let isDraggingChatStartY = false;
+    let hoveringChatStartY = false;
+    let startChatDragMouseY = 0;
+    let startChatStartYVal = 0;
+
+    let isDraggingAvatarSize = false;
+    let hoveringAvatarSizeHandle = null;
+    let startAvatarSizeDragX = 0;
+    let startAvatarSizeVal = 104;
+
+    let isDraggingAvatarRound = false;
+    let hoveringAvatarRoundHandle = null;
+    let activeAvatarRoundRegion = null;
+    let startAvatarRoundVal = 42;
+
+    let isDraggingChatGap = false;
+    let hoveringChatGapLine = null;
+    let startChatGapDragY = 0;
+    let startChatGapVal = 24;
+
+    let isDraggingOppBubbleTop = false;
+    let hoveringOppBubbleTopLine = null;
+    let startOppBubbleTopDragY = 0;
+    let startOppBubbleTopVal = 44;
+
+    let isDraggingDateYOffset = false;
+    let hoveringDateYOffsetLine = null;
+    let startDateYOffsetDragMouseY = 0;
+    let startDateYOffsetVal = 24;
+
+    let isDraggingDateHeight = false;
+    let hoveringDateHeightHandle = null;
+    let startDateHeightDragMouseY = 0;
+    let startDateHeightVal = 60;
 
     window.addEventListener('mouseup', () => {
       if (isDraggingAvatarLine) {
         isDraggingAvatarLine = false;
-        // 드래그 해제 시 최종 스냅샷 렌더링 및 캐시 커밋
+        if (triggerUpdateCallback) triggerUpdateCallback(true);
+      }
+      if (isDraggingNameHandle) {
+        isDraggingNameHandle = false;
+        activeNameHandle = null;
+        if (triggerUpdateCallback) triggerUpdateCallback(true);
+      }
+      if (isDraggingBubbleLine) {
+        isDraggingBubbleLine = false;
+        if (triggerUpdateCallback) triggerUpdateCallback(true);
+      }
+      if (isDraggingNameOffset) {
+        isDraggingNameOffset = false;
+        if (triggerUpdateCallback) triggerUpdateCallback(true);
+      }
+      if (isDraggingChatStartY) {
+        isDraggingChatStartY = false;
+        if (triggerUpdateCallback) triggerUpdateCallback(true);
+      }
+      if (isDraggingAvatarSize) {
+        isDraggingAvatarSize = false;
+        if (triggerUpdateCallback) triggerUpdateCallback(true);
+      }
+      if (isDraggingAvatarRound) {
+        isDraggingAvatarRound = false;
+        activeAvatarRoundRegion = null;
+        if (triggerUpdateCallback) triggerUpdateCallback(true);
+      }
+      if (isDraggingChatGap) {
+        isDraggingChatGap = false;
+        if (triggerUpdateCallback) triggerUpdateCallback(true);
+      }
+      if (isDraggingOppBubbleTop) {
+        isDraggingOppBubbleTop = false;
+        if (triggerUpdateCallback) triggerUpdateCallback(true);
+      }
+      if (isDraggingDateYOffset) {
+        isDraggingDateYOffset = false;
+        if (triggerUpdateCallback) triggerUpdateCallback(true);
+      }
+      if (isDraggingDateHeight) {
+        isDraggingDateHeight = false;
         if (triggerUpdateCallback) triggerUpdateCallback(true);
       }
     });
@@ -641,15 +779,121 @@
       canvas.addEventListener('mousemove', (e) => {
         const rect = canvas.getBoundingClientRect();
         const scaleX = (canvas.width || 1080) / rect.width;
+        const scaleY = (canvas.height || 2340) / rect.height;
         const cX = (e.clientX - rect.left) * scaleX;
+        const cY = (e.clientY - rect.top) * scaleY;
 
-        // 초상화 세로 중심선 X값 읽기 (기본값 73)
+        // 초상화 세로 중심선 X값 읽기
         const inputAvatarCenterX = document.getElementById('input-avatar-center-x');
-        const avatarCX = inputAvatarCenterX ? (parseInt(inputAvatarCenterX.value, 10) || 73) : 73;
+        const defaultAvatarCX = window.ChatEngine?.LAYOUT_DEFAULTS?.AVATAR_CENTER_X_DEFAULT || 73;
+        const avatarCX = inputAvatarCenterX ? (parseInt(inputAvatarCenterX.value, 10) || defaultAvatarCX) : defaultAvatarCX;
 
         // 마우스 포인터가 세로 중심선 근처(±24 픽셀)에 위치해 있는지 검출
         const isNearAvatarLine = window.APP_MODE === 'LAYOUT_EDIT' && Math.abs(cX - avatarCX) < 24;
         hoveringAvatarLine = isNearAvatarLine;
+
+        // 상대방 버블 좌측 정렬 X값 읽기
+        const inputOpponentBubbleX = document.getElementById('input-opponent-bubble-x');
+        const defaultBubbleX = window.ChatEngine?.LAYOUT_DEFAULTS?.OPPONENT_BUBBLE_X || 160;
+        const bubbleX = inputOpponentBubbleX ? (parseInt(inputOpponentBubbleX.value, 10) || defaultBubbleX) : defaultBubbleX;
+
+        // 마우스 포인터가 버블 좌측 정렬선 근처(±24 픽셀)에 위치해 있는지 검출
+        const isNearBubbleLine = window.APP_MODE === 'LAYOUT_EDIT' && Math.abs(cX - bubbleX) < 24;
+        hoveringBubbleLine = isNearBubbleLine;
+
+        // 첫 채팅 시작 Y값 읽기 및 가상 핸들러 클램핑 위치 호버 검출
+        const inputChatStartY = document.getElementById('input-chat-start-y');
+        const defaultChatStartY = window.ChatEngine?.LAYOUT_DEFAULTS?.CHAT_START_Y_DEFAULT || 240;
+        const chatStartY = inputChatStartY ? (parseInt(inputChatStartY.value, 10) || defaultChatStartY) : defaultChatStartY;
+        const currentScrollY = window.ChatEngine?.getScrollY ? window.ChatEngine.getScrollY() : 0;
+
+        const targetScreenY = chatStartY - currentScrollY;
+        const isClamped = (currentScrollY > 0 && targetScreenY < chatStartY);
+        const visibleGuideY = Math.max(chatStartY, targetScreenY);
+
+        // 마우스 Y 좌표가 스크롤 보정된 첫 채팅 시작 Y선 근처(±24 픽셀)에 위치해 있는지 검출
+        const isNearChatStartY = window.APP_MODE === 'LAYOUT_EDIT' && Math.abs(cY - visibleGuideY) < 24;
+        hoveringChatStartY = isNearChatStartY;
+
+        // 아바타 크기/라운드 핸들 검출
+        let nearAvatarSizeHandle = null;
+        let nearAvatarRoundHandle = null;
+        if (window.APP_MODE === 'LAYOUT_EDIT' && window._avatarHandleRegions) {
+          for (const r of window._avatarHandleRegions) {
+            if (Math.abs(cX - r.sizeHandleX) < 24 && Math.abs(cY - r.sizeHandleY) < 24) {
+              nearAvatarSizeHandle = r;
+              break;
+            }
+            if (Math.abs(cX - r.roundHandleX) < 24 && Math.abs(cY - r.roundHandleY) < 24) {
+              nearAvatarRoundHandle = r;
+              break;
+            }
+          }
+        }
+        hoveringAvatarSizeHandle = nearAvatarSizeHandle;
+        hoveringAvatarRoundHandle = nearAvatarSizeHandle ? null : nearAvatarRoundHandle;
+
+        // 대화 간격 가이드선 검출
+        let nearChatGapLine = null;
+        if (window.APP_MODE === 'LAYOUT_EDIT' && window._chatGapHandleRegions) {
+          for (const r of window._chatGapHandleRegions) {
+            if (Math.abs(cY - r.lineY) < 18) {
+              nearChatGapLine = r;
+              break;
+            }
+          }
+        }
+        hoveringChatGapLine = nearChatGapLine;
+
+        // 상대방 최초 버블 상단 Y 오프셋 가이드선 검출
+        let nearOppBubbleTopLine = null;
+        if (window.APP_MODE === 'LAYOUT_EDIT' && window._oppBubbleTopHandleRegions) {
+          for (const r of window._oppBubbleTopHandleRegions) {
+            if (Math.abs(cY - r.lineY) < 18) {
+              nearOppBubbleTopLine = r;
+              break;
+            }
+          }
+        }
+        hoveringOppBubbleTopLine = nearOppBubbleTopLine;
+
+        // 날짜 간격 가이드선 및 캡슐 높이 노드 검출
+        let nearDateYOffsetLine = null;
+        let nearDateHeightHandle = null;
+        if (window.APP_MODE === 'LAYOUT_EDIT' && window._dateHandleRegions) {
+          for (const r of window._dateHandleRegions) {
+            if (Math.abs(cY - r.lineY) < 18) {
+              nearDateYOffsetLine = r;
+              break;
+            }
+            if (Math.abs(cX - r.heightHandleX) < 24 && Math.abs(cY - r.heightHandleY) < 24) {
+              nearDateHeightHandle = r;
+              break;
+            }
+          }
+        }
+        hoveringDateYOffsetLine = nearDateYOffsetLine;
+        hoveringDateHeightHandle = hoveringDateYOffsetLine ? null : nearDateHeightHandle;
+
+        // 이름 크기 조절 핸들 및 바디 감지 로직
+        let nearNameHandle = null;
+        let nearNameBody = null;
+        if (window.APP_MODE === 'LAYOUT_EDIT' && window._nameHandleRegions) {
+          for (const r of window._nameHandleRegions) {
+            const dx = cX - r.handleX;
+            const dy = cY - r.handleY;
+            if (Math.abs(dx) < 24 && Math.abs(dy) < 24) {
+              nearNameHandle = r;
+              break;
+            }
+            if (cX >= r.nameX && cX <= r.nameX + r.nameW &&
+                cY >= r.nameY && cY <= r.nameY + r.nameH) {
+              nearNameBody = r;
+            }
+          }
+        }
+        hoveringNameHandle = nearNameHandle;
+        hoveringNameBody = hoveringNameHandle ? null : nearNameBody;
 
         // 드래그 중인 경우 값 업데이트
         if (isDraggingAvatarLine) {
@@ -658,44 +902,209 @@
             inputAvatarCenterX.value = newCx;
             loadedConfig['avatar-center-x'] = newCx;
           }
-          if (triggerUpdateCallback) triggerUpdateCallback(false); // 드래그 중에는 가볍게 캔버스 컨텍스트만 갱신
+          if (triggerUpdateCallback) triggerUpdateCallback(false);
+        } else if (isDraggingNameHandle && activeNameHandle) {
+          const dy = activeNameHandle.handleY - cY;
+          const newFontSize = Math.max(10, Math.min(100, activeNameHandle.nameFontSize + dy));
+          const newRatio = parseFloat((newFontSize / activeNameHandle.fontSize).toFixed(2));
+          const inputNameFontRatio = document.getElementById('input-name-font-ratio');
+          if (inputNameFontRatio) {
+            inputNameFontRatio.value = newRatio;
+            const labelNameFontRatio = document.getElementById('label-name-font-ratio');
+            if (labelNameFontRatio) labelNameFontRatio.textContent = newRatio.toFixed(2);
+            loadedConfig['name-font-ratio'] = newRatio;
+          }
+          if (triggerUpdateCallback) triggerUpdateCallback(false);
+        } else if (isDraggingBubbleLine) {
+          const newBx = Math.max(0, Math.min(1080, Math.round(cX)));
+          if (inputOpponentBubbleX) {
+            inputOpponentBubbleX.value = newBx;
+            loadedConfig['opponent-bubble-x'] = newBx;
+          }
+          if (triggerUpdateCallback) triggerUpdateCallback(false);
+        } else if (isDraggingNameOffset) {
+          const dx = cX - startNameDragX;
+          const newOffset = Math.max(-500, Math.min(500, startNameDragOffset + Math.round(dx)));
+          const inputNameOffset = document.getElementById('input-name-offset');
+          if (inputNameOffset) {
+            inputNameOffset.value = newOffset;
+            loadedConfig['name-offset'] = newOffset;
+          }
+          if (triggerUpdateCallback) triggerUpdateCallback(false);
+        } else if (isDraggingChatStartY) {
+          const deltaY = cY - startChatDragMouseY;
+          const newStartY = Math.max(0, Math.min(2340, Math.round(startChatStartYVal + deltaY)));
+          if (inputChatStartY) {
+            inputChatStartY.value = newStartY;
+            loadedConfig['chat-start-y'] = newStartY;
+          }
+          if (triggerUpdateCallback) triggerUpdateCallback(false);
+        } else if (isDraggingAvatarSize) {
+          const deltaX = cX - startAvatarSizeDragX;
+          const newSize = Math.max(40, Math.min(300, Math.round(startAvatarSizeVal + deltaX)));
+          const inputAvatarSize = document.getElementById('input-avatar-size');
+          if (inputAvatarSize) {
+            inputAvatarSize.value = newSize;
+            loadedConfig['avatar-size'] = newSize;
+          }
+          if (triggerUpdateCallback) triggerUpdateCallback(false);
+        } else if (isDraggingAvatarRound && activeAvatarRoundRegion) {
+          // 노란색 핸들: 아바타 오른쪽 변에서 상하 이동으로 라운드 크기 조절
+          const dy = cY - activeAvatarRoundRegion.ay;
+          const maxRound = Math.floor((activeAvatarRoundRegion.size || 104) / 2);
+          const newRound = Math.max(0, Math.min(maxRound, Math.round(dy)));
+          const inputAvatarRound = document.getElementById('input-avatar-round');
+          if (inputAvatarRound) {
+            inputAvatarRound.value = newRound;
+            const labelAvatarRound = document.getElementById('label-avatar-round');
+            if (labelAvatarRound) labelAvatarRound.textContent = newRound + ' px';
+            loadedConfig['avatar-round'] = newRound;
+          }
+          if (triggerUpdateCallback) triggerUpdateCallback(false);
+        } else if (isDraggingChatGap) {
+          const deltaY = cY - startChatGapDragY;
+          const newGap = Math.max(0, Math.min(200, Math.round(startChatGapVal + deltaY)));
+          const inputChatGap = document.getElementById('input-chat-gap');
+          if (inputChatGap) {
+            inputChatGap.value = newGap;
+            loadedConfig['chat-gap'] = newGap;
+          }
+          if (triggerUpdateCallback) triggerUpdateCallback(false);
+        } else if (isDraggingOppBubbleTop) {
+          const deltaY = cY - startOppBubbleTopDragY;
+          const newOffset = Math.max(0, Math.min(200, Math.round(startOppBubbleTopVal + deltaY)));
+          const inputOppBubbleTop = document.getElementById('input-opp-bubble-top-offset');
+          if (inputOppBubbleTop) {
+            inputOppBubbleTop.value = newOffset;
+            loadedConfig['opp-bubble-top-offset'] = newOffset;
+          }
+          if (triggerUpdateCallback) triggerUpdateCallback(false);
+        } else if (isDraggingDateYOffset) {
+          const deltaY = cY - startDateYOffsetDragMouseY;
+          const newOffset = Math.max(0, Math.min(300, Math.round(startDateYOffsetVal + deltaY)));
+          const inputDateYOffset = document.getElementById('input-date-y-offset');
+          if (inputDateYOffset) {
+            inputDateYOffset.value = newOffset;
+            loadedConfig['date-y-offset'] = newOffset;
+          }
+          if (triggerUpdateCallback) triggerUpdateCallback(false);
+        } else if (isDraggingDateHeight) {
+          const deltaY = cY - startDateHeightDragMouseY;
+          const newHeight = Math.max(30, Math.min(200, Math.round(startDateHeightVal + deltaY)));
+          const inputDateHeight = document.getElementById('input-date-height');
+          if (inputDateHeight) {
+            inputDateHeight.value = newHeight;
+            loadedConfig['date-height'] = newHeight;
+          }
+          if (triggerUpdateCallback) triggerUpdateCallback(false);
         }
 
-        // 마우스 커서 처리
         if (window.APP_MODE === 'COLOR_EDIT') {
           canvas.style.cursor = 'eyedropper';
+          window._guideMouseX = cX;
+          window._guideMouseY = cY;
+          if (canvasPickerTooltip) canvasPickerTooltip.style.display = 'none';
+          if (triggerUpdateCallback) triggerUpdateCallback(false);
         } else if (window.APP_MODE === 'LAYOUT_EDIT') {
-          canvas.style.cursor = isNearAvatarLine ? 'ew-resize' : 'crosshair';
+          if (hoveringAvatarSizeHandle) {
+            canvas.style.cursor = 'nwse-resize'; // 초상화 크기 대각선 커서
+          } else if (hoveringAvatarRoundHandle) {
+            canvas.style.cursor = 'ns-resize'; // 초상화 노란색 라운드 상하 조절 커서
+          } else if (hoveringNameHandle) {
+            canvas.style.cursor = 'nesw-resize'; // 우상단 대각선 크기조절 커서
+          } else if (hoveringNameBody) {
+            canvas.style.cursor = 'move'; // 위치 이동 커서
+          } else if (hoveringChatStartY || hoveringChatGapLine || hoveringOppBubbleTopLine || hoveringDateYOffsetLine || hoveringDateHeightHandle) {
+            canvas.style.cursor = 'ns-resize'; // 수직 조절 커서
+          } else if (isNearAvatarLine || isNearBubbleLine) {
+            canvas.style.cursor = 'ew-resize';
+          } else {
+            canvas.style.cursor = 'crosshair';
+          }
+          if (canvasPickerTooltip) canvasPickerTooltip.style.display = 'none';
         } else {
           canvas.style.cursor = 'default';
-        }
-
-        const hit = getCanvasHitObject(e);
-        if (hit) {
-          let labelText = hit.type === 'avatar' ? `👤 ${hit.person} 초상화` : `🎨 ${hit.label}`;
-          if (lastLoggedTooltipText !== labelText) {
-            lastLoggedTooltipText = labelText;
-            console.log('💬 [캔버스 오브젝트 감지]:', labelText, `(targetId: ${hit.targetId || 'avatar'})`);
-          }
-
-          if (window.APP_MODE === 'COLOR_EDIT' && canvasPickerTooltip) {
-            let tooltipText = hit.type === 'avatar' ? `👤 ${hit.person} 초상화 (클릭 시 아바타 변경 모달 이동)` : `🎨 ${hit.label} (클릭 시 색상 변경)`;
-            canvasPickerTooltip.textContent = tooltipText;
-            canvasPickerTooltip.style.left = (e.clientX + 16) + 'px';
-            canvasPickerTooltip.style.top = (e.clientY + 16) + 'px';
-            canvasPickerTooltip.style.display = 'block';
-          }
-        } else {
-          lastLoggedTooltipText = '';
           if (canvasPickerTooltip) canvasPickerTooltip.style.display = 'none';
         }
       });
 
       canvas.addEventListener('mousedown', (e) => {
-        if (window.APP_MODE === 'LAYOUT_EDIT' && hoveringAvatarLine) {
-          isDraggingAvatarLine = true;
-          e.preventDefault();
-          e.stopPropagation();
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = (canvas.width || 1080) / rect.width;
+        const scaleY = (canvas.height || 2340) / rect.height;
+        const cX = (e.clientX - rect.left) * scaleX;
+        const cY = (e.clientY - rect.top) * scaleY;
+
+        if (window.APP_MODE === 'LAYOUT_EDIT') {
+          if (hoveringAvatarSizeHandle) {
+            isDraggingAvatarSize = true;
+            startAvatarSizeDragX = cX;
+            const inputAvatarSize = document.getElementById('input-avatar-size');
+            startAvatarSizeVal = inputAvatarSize ? (parseInt(inputAvatarSize.value, 10) || 104) : 104;
+            e.preventDefault();
+            e.stopPropagation();
+          } else if (hoveringAvatarRoundHandle) {
+            isDraggingAvatarRound = true;
+            activeAvatarRoundRegion = hoveringAvatarRoundHandle;
+            const inputAvatarRound = document.getElementById('input-avatar-round');
+            startAvatarRoundVal = inputAvatarRound ? (parseInt(inputAvatarRound.value, 10) || 42) : 42;
+            e.preventDefault();
+            e.stopPropagation();
+          } else if (hoveringChatGapLine) {
+            isDraggingChatGap = true;
+            startChatGapDragY = cY;
+            const inputChatGap = document.getElementById('input-chat-gap');
+            startChatGapVal = inputChatGap ? (parseInt(inputChatGap.value, 10) || 24) : 24;
+            e.preventDefault();
+            e.stopPropagation();
+          } else if (hoveringOppBubbleTopLine) {
+            isDraggingOppBubbleTop = true;
+            startOppBubbleTopDragY = cY;
+            const inputOppBubbleTop = document.getElementById('input-opp-bubble-top-offset');
+            startOppBubbleTopVal = inputOppBubbleTop ? (parseInt(inputOppBubbleTop.value, 10) || 44) : 44;
+            e.preventDefault();
+            e.stopPropagation();
+          } else if (hoveringDateYOffsetLine) {
+            isDraggingDateYOffset = true;
+            startDateYOffsetDragMouseY = cY;
+            const inputDateYOffset = document.getElementById('input-date-y-offset');
+            startDateYOffsetVal = inputDateYOffset ? (parseInt(inputDateYOffset.value, 10) || 24) : 24;
+            e.preventDefault();
+            e.stopPropagation();
+          } else if (hoveringDateHeightHandle) {
+            isDraggingDateHeight = true;
+            startDateHeightDragMouseY = cY;
+            const inputDateHeight = document.getElementById('input-date-height');
+            startDateHeightVal = inputDateHeight ? (parseInt(inputDateHeight.value, 10) || 60) : 60;
+            e.preventDefault();
+            e.stopPropagation();
+          } else if (hoveringNameHandle) {
+            isDraggingNameHandle = true;
+            activeNameHandle = hoveringNameHandle;
+            e.preventDefault();
+            e.stopPropagation();
+          } else if (hoveringNameBody) {
+            isDraggingNameOffset = true;
+            startNameDragX = cX;
+            const inputNameOffset = document.getElementById('input-name-offset');
+            startNameDragOffset = inputNameOffset ? (parseInt(inputNameOffset.value, 10) || 0) : 0;
+            e.preventDefault();
+            e.stopPropagation();
+          } else if (hoveringChatStartY) {
+            isDraggingChatStartY = true;
+            startChatDragMouseY = cY;
+            startChatStartYVal = chatStartY;
+            e.preventDefault();
+            e.stopPropagation();
+          } else if (hoveringAvatarLine) {
+            isDraggingAvatarLine = true;
+            e.preventDefault();
+            e.stopPropagation();
+          } else if (hoveringBubbleLine) {
+            isDraggingBubbleLine = true;
+            e.preventDefault();
+            e.stopPropagation();
+          }
         }
       });
 
@@ -1437,10 +1846,16 @@
     });
 
     // 레이아웃 복원
-    ['avatar-center-x', 'name-offset', 'bubble-left-offset', 'bubble-top-offset', 'bubble-padding', 'bubble-margin', 'time-margin'].forEach(key => {
+    ['avatar-center-x', 'name-offset', 'opponent-bubble-x', 'chat-start-y', 'bubble-top-offset', 'bubble-padding', 'bubble-margin', 'time-margin'].forEach(key => {
       const el = document.getElementById(`input-${key}`);
       if (el && config[key] !== undefined) el.value = config[key];
     });
+    if (config['name-font-ratio'] !== undefined) {
+      const el = document.getElementById('input-name-font-ratio');
+      if (el) el.value = config['name-font-ratio'];
+      const lbl = document.getElementById('label-name-font-ratio');
+      if (lbl) lbl.textContent = config['name-font-ratio'];
+    }
     if (config['time-align']) {
       const el = document.getElementById('select-time-align');
       if (el) el.value = config['time-align'];
@@ -1560,13 +1975,22 @@
 
     // 레이아웃 상세 오프셋 오버라이드
     const inputAvatarCenterX = document.getElementById('input-avatar-center-x');
-    if (inputAvatarCenterX) config['avatar-center-x'] = (inputAvatarCenterX.value !== '') ? parseInt(inputAvatarCenterX.value, 10) : 73;
+    if (inputAvatarCenterX) {
+      const defaultAvatarCX = window.ChatEngine?.LAYOUT_DEFAULTS?.AVATAR_CENTER_X_DEFAULT || 73;
+      config['avatar-center-x'] = (inputAvatarCenterX.value !== '') ? parseInt(inputAvatarCenterX.value, 10) : defaultAvatarCX;
+    }
+
+    const inputNameFontRatio = document.getElementById('input-name-font-ratio');
+    if (inputNameFontRatio) config['name-font-ratio'] = parseFloat(inputNameFontRatio.value) || 0.85;
 
     const inputNameOffset = document.getElementById('input-name-offset');
     if (inputNameOffset) config['name-offset'] = parseInt(inputNameOffset.value) || 0;
 
-    const inputBubbleLeftOffset = document.getElementById('input-bubble-left-offset');
-    if (inputBubbleLeftOffset) config['bubble-left-offset'] = parseInt(inputBubbleLeftOffset.value) || 0;
+    const inputOpponentBubbleX = document.getElementById('input-opponent-bubble-x');
+    if (inputOpponentBubbleX) config['opponent-bubble-x'] = (inputOpponentBubbleX.value !== '') ? parseInt(inputOpponentBubbleX.value, 10) : 160;
+
+    const inputChatStartY = document.getElementById('input-chat-start-y');
+    if (inputChatStartY) config['chat-start-y'] = (inputChatStartY.value !== '') ? parseInt(inputChatStartY.value, 10) : 220;
 
     const inputBubbleTopOffset = document.getElementById('input-bubble-top-offset');
     if (inputBubbleTopOffset) config['bubble-top-offset'] = parseInt(inputBubbleTopOffset.value) || 0;

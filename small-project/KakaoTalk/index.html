@@ -280,7 +280,10 @@
               <div class="setting-accordion collapsed">
                 <div class="setting-accordion-header">
                   <span>📐 레이아웃 상세 설정</span>
-                  <span class="setting-accordion-arrow">▼</span>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <button type="button" id="btn-layout-edit-mode" class="icon-nav-btn btn-layout-picker" title="레이아웃 편집 모드 (📐)" style="width: 26px; height: 26px; font-size: 0.85rem; background: #cbd5e1; color: #475569; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.15); transition: all 0.2s ease;">📐</button>
+                    <span class="setting-accordion-arrow">▼</span>
+                  </div>
                 </div>
                 <div class="setting-accordion-body">
                   <div class="control-row">
@@ -309,12 +312,50 @@
                     <input type="number" id="input-avatar-center-x" value="73" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px;">
                   </div>
                   <div class="control-row">
+                    <label for="input-avatar-size">초상화 크기</label>
+                    <input type="number" id="input-avatar-size" value="104" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                  </div>
+                  <div class="control-row">
+                    <label for="input-avatar-round">초상화 라운드</label>
+                    <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+                      <input type="range" id="input-avatar-round" min="0" max="60" value="42" style="flex: 1;">
+                      <span id="label-avatar-round" style="width: 45px; text-align: right; font-size: 0.9em; font-weight: bold; color: #475569;">42 px</span>
+                    </div>
+                  </div>
+                  <div class="control-row">
+                    <label for="input-name-font-ratio">이름 글꼴 비율</label>
+                    <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+                      <input type="range" id="input-name-font-ratio" min="0.3" max="2.0" step="0.05" value="0.85" style="flex: 1;">
+                      <span id="label-name-font-ratio" style="width: 45px; text-align: right; font-size: 0.9em; font-weight: bold; color: #475569;">0.85</span>
+                    </div>
+                  </div>
+                  <div class="control-row">
                     <label for="input-name-offset">상대이름 오프셋</label>
                     <input type="number" id="input-name-offset" value="0" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px;">
                   </div>
                   <div class="control-row">
-                    <label for="input-bubble-left-offset">대화상자 좌오프셋</label>
-                    <input type="number" id="input-bubble-left-offset" value="0" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                    <label for="input-opponent-bubble-x">상대방 버블 좌측 정렬 (X)</label>
+                    <input type="number" id="input-opponent-bubble-x" value="160" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                  </div>
+                  <div class="control-row">
+                    <label for="input-chat-start-y">첫 채팅 시작 Y</label>
+                    <input type="number" id="input-chat-start-y" value="240" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                  </div>
+                  <div class="control-row">
+                    <label for="input-chat-gap">대화 간격 (0.5em)</label>
+                    <input type="number" id="input-chat-gap" value="24" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                  </div>
+                  <div class="control-row">
+                    <label for="input-opp-bubble-top-offset">상대 첫 버블 상단 Y</label>
+                    <input type="number" id="input-opp-bubble-top-offset" value="44" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                  </div>
+                  <div class="control-row">
+                    <label for="input-date-height">날짜 캡슐 높이</label>
+                    <input type="number" id="input-date-height" value="60" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                  </div>
+                  <div class="control-row">
+                    <label for="input-date-y-offset">날짜 상단 간격</label>
+                    <input type="number" id="input-date-y-offset" value="24" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px;">
                   </div>
                   <div class="control-row">
                     <label for="input-bubble-top-offset">대화상자 상오프셋</label>
