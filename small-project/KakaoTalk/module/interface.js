@@ -603,23 +603,19 @@
             lastLoggedTooltipText = labelText;
             console.log('💬 [캔버스 오브젝트 감지]:', labelText, `(targetId: ${hit.targetId || 'avatar'})`);
           }
+
+          if (canvasPickerTooltip) {
+            let tooltipText = hit.type === 'avatar' ? `👤 ${hit.person} 초상화 (클릭 시 아바타 변경 모달 이동)` : `🎨 ${hit.label} (클릭 시 색상 변경)`;
+            canvasPickerTooltip.textContent = tooltipText;
+            canvasPickerTooltip.style.left = (e.clientX + 16) + 'px';
+            canvasPickerTooltip.style.top = (e.clientY + 16) + 'px';
+            canvasPickerTooltip.style.display = 'block';
+            canvas.style.cursor = 'pointer';
+          }
         } else {
           lastLoggedTooltipText = '';
-        }
-
-        const isPickerOpen = customColorPickerModal && customColorPickerModal.style.display !== 'none';
-        if (!isCanvasPickerActive && !isPickerOpen) return;
-
-        if (hit && canvasPickerTooltip) {
-          let tooltipText = hit.type === 'avatar' ? `👤 ${hit.person} 초상화 (클릭 시 아바타 변경 모달 이동)` : `🎨 ${hit.label} (클릭 시 색상 변경)`;
-          canvasPickerTooltip.textContent = tooltipText;
-          canvasPickerTooltip.style.left = (e.clientX + 16) + 'px';
-          canvasPickerTooltip.style.top = (e.clientY + 16) + 'px';
-          canvasPickerTooltip.style.display = 'block';
-          canvas.style.cursor = 'crosshair';
-        } else if (canvasPickerTooltip) {
-          canvasPickerTooltip.style.display = 'none';
-          if (!isCanvasPickerActive) canvas.style.cursor = 'default';
+          if (canvasPickerTooltip) canvasPickerTooltip.style.display = 'none';
+          canvas.style.cursor = 'default';
         }
       });
 
@@ -628,9 +624,6 @@
       });
 
       canvas.addEventListener('click', (e) => {
-        const isPickerOpen = customColorPickerModal && customColorPickerModal.style.display !== 'none';
-        if (!isCanvasPickerActive && !isPickerOpen) return;
-
         const hit = getCanvasHitObject(e);
         if (!hit) return;
 
@@ -641,14 +634,18 @@
             btnOpenAvatarModal.click();
             setTimeout(() => {
               const avatarSpeakerSelect = document.getElementById('avatar-speaker-select');
-              if (avatarSpeakerSelect) avatarSpeakerSelect.value = hit.person;
+              if (avatarSpeakerSelect) {
+                avatarSpeakerSelect.value = hit.person;
+                avatarSpeakerSelect.dispatchEvent(new Event('change', { bubbles: true }));
+              }
+              const avatarSettingsList = document.getElementById('avatar-settings-list');
               const targetRow = avatarSettingsList ? avatarSettingsList.querySelector(`.avatar-item-row[data-speaker="${hit.person}"]`) : null;
               if (targetRow) {
                 targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 targetRow.classList.add('avatar-row-highlight');
                 setTimeout(() => targetRow.classList.remove('avatar-row-highlight'), 2500);
               }
-            }, 200);
+            }, 150);
           }
         } else if (hit.targetId) {
           const colorInput = document.getElementById(hit.targetId);
@@ -664,7 +661,7 @@
             }
 
             colorInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            openCustomColorPicker(colorInput, hit.label);
+            openCustomColorPicker(colorInput, hit.label, { x: e.clientX, y: e.clientY });
           }
         }
       });
@@ -855,7 +852,7 @@
       }
     }
 
-    function openCustomColorPicker(targetInput, targetLabel = '색상 선택') {
+    function openCustomColorPicker(targetInput, targetLabel = '색상 선택', anchorPos = null) {
       if (!targetInput) return;
       currentTargetColorInput = targetInput;
       initialColorValue = targetInput.value || '#ffffff';
@@ -873,7 +870,19 @@
 
       const pt = findPointFromHex(initialColorValue);
 
-      if (customColorPickerModal) customColorPickerModal.style.display = 'flex';
+      if (customColorPickerModal) {
+        if (anchorPos && typeof anchorPos.x === 'number' && typeof anchorPos.y === 'number') {
+          const targetLeft = Math.min(window.innerWidth - 230, Math.max(10, anchorPos.x + 20));
+          const targetTop = Math.min(window.innerHeight - 250, Math.max(10, anchorPos.y - 30));
+          customColorPickerModal.style.position = 'fixed';
+          customColorPickerModal.style.left = targetLeft + 'px';
+          customColorPickerModal.style.top = targetTop + 'px';
+          customColorPickerModal.style.right = 'auto';
+          customColorPickerModal.style.bottom = 'auto';
+          customColorPickerModal.style.margin = '0';
+        }
+        customColorPickerModal.style.display = 'flex';
+      }
       updateColorPickerFromPoint(pt.x, pt.y, false);
     }
 
