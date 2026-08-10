@@ -258,24 +258,25 @@
 
       // v0.1.0 피드백: 캔버스 내부 마우스 휠 스크롤 연동 (상단 헤더 고정 본문 스크롤)
       canvas.addEventListener('wheel', (e) => {
-        e.preventDefault();
         if (window.ChatEngine) {
-          const scrollSpeed = 0.8;
           const maxScroll = window.ChatEngine.getMaxScrollY();
-          let currentTarget = window.ChatEngine.getTargetScrollY();
-          currentTarget = Math.min(maxScroll, Math.max(0, currentTarget + e.deltaY * scrollSpeed));
-          window.ChatEngine.setTargetScrollY(currentTarget);
-          triggerCanvasUpdate(false);
+          if (maxScroll > 0) {
+            e.preventDefault();
+            const scrollSpeed = 0.8;
+            let currentTarget = window.ChatEngine.getTargetScrollY();
+            currentTarget = Math.min(maxScroll, Math.max(0, currentTarget + e.deltaY * scrollSpeed));
+            window.ChatEngine.setTargetScrollY(currentTarget);
+            triggerCanvasUpdate(false);
+          }
         }
       }, { passive: false });
 
       // Ctrl 키 누른 채 마우스 호버 가로/세로 보조선 및 최하단 좌표 툴팁 연동
       window.addEventListener('keydown', (e) => {
-        if (e.key === 'Control' || e.ctrlKey) {
-          if (!window._isCtrlGuideActive) {
-            window._isCtrlGuideActive = true;
-            triggerCanvasUpdate(false);
-          }
+        if (e.key === 'Control' && !window._isCtrlGuideActive) {
+          window._isCtrlGuideActive = true;
+          if (window.setAppMode) window.setAppMode('LAYOUT_EDIT');
+          triggerCanvasUpdate(false);
         }
       });
 
@@ -283,6 +284,7 @@
         if (e.key === 'Control' || !e.ctrlKey) {
           if (window._isCtrlGuideActive) {
             window._isCtrlGuideActive = false;
+            if (window.restorePreviousAppMode) window.restorePreviousAppMode();
             triggerCanvasUpdate(false);
           }
         }
@@ -294,13 +296,20 @@
         const scaleY = canvas.height / rect.height;
         window._guideMouseX = Math.round((e.clientX - rect.left) * scaleX);
         window._guideMouseY = Math.round((e.clientY - rect.top) * scaleY);
-        window._isCtrlGuideActive = e.ctrlKey;
-        triggerCanvasUpdate(false);
+
+        if (e.ctrlKey) {
+          if (!window._isCtrlGuideActive) {
+            window._isCtrlGuideActive = true;
+            if (window.setAppMode) window.setAppMode('LAYOUT_EDIT');
+          }
+          triggerCanvasUpdate(false);
+        }
       });
 
       canvas.addEventListener('mouseleave', () => {
         if (window._isCtrlGuideActive) {
           window._isCtrlGuideActive = false;
+          if (window.restorePreviousAppMode) window.restorePreviousAppMode();
           triggerCanvasUpdate(false);
         }
       });

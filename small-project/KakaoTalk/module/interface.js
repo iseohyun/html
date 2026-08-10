@@ -275,7 +275,13 @@
       'input-bubble-round', // 말풍선 라운드 크기 연동
       'input-me-bubble-color', // 내 말풍선 색 피커 연동
       'input-you-bubble-color', // 상대 말풍선 색 피커 연동
-      'input-time-color' // 대화 시간 색 피커 연동
+      'input-time-color', // 대화 시간 색 피커 연동
+      'input-avatar-center-x', // 초상화 세로 중심선 연동
+      'input-name-offset', // 상대이름 오프셋 연동
+      'input-bubble-left-offset', // 대화상자 좌오프셋 연동
+      'input-bubble-top-offset', // 대화상자 상오프셋 연동
+      'input-bubble-padding', // 버블 패딩 연동
+      'input-bubble-margin' // 버블 마진 연동
     ].forEach(bindLiveUpdate);
 
     // 말풍선 라운드 슬라이더 값 변경 시 라벨 갱신 연동
@@ -531,34 +537,57 @@
       });
     });
 
-    // 7. 캔버스 직접 선택 색상 변경 모드 (🎯) 핸들러
-    let isCanvasPickerActive = false;
+    // 7. 유한 상태 머신 (FSM) 기반 캔버스 앱 모드 제어 (window.APP_MODE = 'NORMAL' | 'COLOR_EDIT' | 'LAYOUT_EDIT')
+    window.APP_MODE = 'NORMAL';
+    let previousAppMode = 'NORMAL';
+
     const btnCanvasPickerMode = document.getElementById('btn-canvas-picker-mode');
     const canvasPickerTooltip = document.getElementById('canvas-picker-tooltip');
 
-    const setCanvasPickerMode = (active) => {
-      isCanvasPickerActive = active;
+    window.setAppMode = (newMode) => {
+      if (window.APP_MODE === newMode) return;
+
+      if (newMode === 'LAYOUT_EDIT') {
+        previousAppMode = window.APP_MODE;
+      }
+
+      window.APP_MODE = newMode;
+
       if (btnCanvasPickerMode) {
-        if (active) {
+        if (newMode === 'COLOR_EDIT') {
           btnCanvasPickerMode.classList.add('active');
-          if (canvas) canvas.style.cursor = 'crosshair';
-          console.log('🎯 [캔버스 직접 선택 색상 변경 모드 ON] 캔버스 위 마우스 호버 시 툴팁이 노출됩니다.');
+          console.log('🎯 [앱 모드 전환 ➔ COLOR_EDIT (색 편집 모드)]');
         } else {
           btnCanvasPickerMode.classList.remove('active');
-          if (canvas) canvas.style.cursor = 'default';
-          if (canvasPickerTooltip) canvasPickerTooltip.style.display = 'none';
-          console.log('🎯 [캔버스 직접 선택 색상 변경 모드 OFF]');
+          if (newMode === 'NORMAL') console.log('🎯 [앱 모드 전환 ➔ NORMAL (일반 모드)]');
+          else if (newMode === 'LAYOUT_EDIT') console.log('🎯 [앱 모드 전환 ➔ LAYOUT_EDIT (레이아웃 보조선 모드)]');
         }
       }
+
+      if (canvas) {
+        if (newMode === 'COLOR_EDIT') {
+          canvas.style.cursor = 'eyedropper';
+        } else if (newMode === 'LAYOUT_EDIT') {
+          canvas.style.cursor = 'crosshair';
+          if (canvasPickerTooltip) canvasPickerTooltip.style.display = 'none';
+        } else {
+          canvas.style.cursor = 'default';
+          if (canvasPickerTooltip) canvasPickerTooltip.style.display = 'none';
+        }
+      }
+    };
+
+    window.restorePreviousAppMode = () => {
+      window.setAppMode(previousAppMode || 'NORMAL');
     };
 
     if (btnCanvasPickerMode) {
       btnCanvasPickerMode.addEventListener('click', (e) => {
         e.stopPropagation(); // 아코디언 접힘 방지
-        setCanvasPickerMode(!isCanvasPickerActive);
+        const targetMode = window.APP_MODE === 'COLOR_EDIT' ? 'NORMAL' : 'COLOR_EDIT';
+        window.setAppMode(targetMode);
 
-        if (isCanvasPickerActive) {
-          // 색상 설정 아코디언 펼치기
+        if (targetMode === 'COLOR_EDIT') {
           const colorAccordion = btnCanvasPickerMode.closest('.setting-accordion');
           if (colorAccordion && colorAccordion.classList.contains('collapsed')) {
             colorAccordion.classList.remove('collapsed');
@@ -567,10 +596,15 @@
       });
     }
 
-    // ESC 키 누르면 캔버스 직접 선택 모드 해제
+    // ESC 키 다단계 닫기 계층 구조 (1단계: 컬러피커 닫기, 2단계: COLOR_EDIT 모드 끄기)
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && isCanvasPickerActive) {
-        setCanvasPickerMode(false);
+      if (e.key === 'Escape') {
+        const isPickerVisible = customColorPickerModal && customColorPickerModal.style.display !== 'none';
+        if (isPickerVisible) {
+          customColorPickerModal.style.display = 'none';
+        } else if (window.APP_MODE === 'COLOR_EDIT') {
+          window.setAppMode('NORMAL');
+        }
       }
     });
 
@@ -592,11 +626,51 @@
     };
 
     let lastLoggedTooltipText = '';
+    let isDraggingAvatarLine = false;
+    let hoveringAvatarLine = false;
+
+    window.addEventListener('mouseup', () => {
+      if (isDraggingAvatarLine) {
+        isDraggingAvatarLine = false;
+        // 드래그 해제 시 최종 스냅샷 렌더링 및 캐시 커밋
+        if (triggerUpdateCallback) triggerUpdateCallback(true);
+      }
+    });
 
     if (canvas) {
       canvas.addEventListener('mousemove', (e) => {
-        const hit = getCanvasHitObject(e);
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = (canvas.width || 1080) / rect.width;
+        const cX = (e.clientX - rect.left) * scaleX;
 
+        // 초상화 세로 중심선 X값 읽기 (기본값 73)
+        const inputAvatarCenterX = document.getElementById('input-avatar-center-x');
+        const avatarCX = inputAvatarCenterX ? (parseInt(inputAvatarCenterX.value, 10) || 73) : 73;
+
+        // 마우스 포인터가 세로 중심선 근처(±24 픽셀)에 위치해 있는지 검출
+        const isNearAvatarLine = window.APP_MODE === 'LAYOUT_EDIT' && Math.abs(cX - avatarCX) < 24;
+        hoveringAvatarLine = isNearAvatarLine;
+
+        // 드래그 중인 경우 값 업데이트
+        if (isDraggingAvatarLine) {
+          const newCx = Math.max(0, Math.min(1080, Math.round(cX)));
+          if (inputAvatarCenterX) {
+            inputAvatarCenterX.value = newCx;
+            loadedConfig['avatar-center-x'] = newCx;
+          }
+          if (triggerUpdateCallback) triggerUpdateCallback(false); // 드래그 중에는 가볍게 캔버스 컨텍스트만 갱신
+        }
+
+        // 마우스 커서 처리
+        if (window.APP_MODE === 'COLOR_EDIT') {
+          canvas.style.cursor = 'eyedropper';
+        } else if (window.APP_MODE === 'LAYOUT_EDIT') {
+          canvas.style.cursor = isNearAvatarLine ? 'ew-resize' : 'crosshair';
+        } else {
+          canvas.style.cursor = 'default';
+        }
+
+        const hit = getCanvasHitObject(e);
         if (hit) {
           let labelText = hit.type === 'avatar' ? `👤 ${hit.person} 초상화` : `🎨 ${hit.label}`;
           if (lastLoggedTooltipText !== labelText) {
@@ -604,18 +678,24 @@
             console.log('💬 [캔버스 오브젝트 감지]:', labelText, `(targetId: ${hit.targetId || 'avatar'})`);
           }
 
-          if (canvasPickerTooltip) {
+          if (window.APP_MODE === 'COLOR_EDIT' && canvasPickerTooltip) {
             let tooltipText = hit.type === 'avatar' ? `👤 ${hit.person} 초상화 (클릭 시 아바타 변경 모달 이동)` : `🎨 ${hit.label} (클릭 시 색상 변경)`;
             canvasPickerTooltip.textContent = tooltipText;
             canvasPickerTooltip.style.left = (e.clientX + 16) + 'px';
             canvasPickerTooltip.style.top = (e.clientY + 16) + 'px';
             canvasPickerTooltip.style.display = 'block';
-            canvas.style.cursor = 'pointer';
           }
         } else {
           lastLoggedTooltipText = '';
           if (canvasPickerTooltip) canvasPickerTooltip.style.display = 'none';
-          canvas.style.cursor = 'default';
+        }
+      });
+
+      canvas.addEventListener('mousedown', (e) => {
+        if (window.APP_MODE === 'LAYOUT_EDIT' && hoveringAvatarLine) {
+          isDraggingAvatarLine = true;
+          e.preventDefault();
+          e.stopPropagation();
         }
       });
 
@@ -624,6 +704,9 @@
       });
 
       canvas.addEventListener('click', (e) => {
+        // 철통 가드: COLOR_EDIT 모드가 아닐 경우 캔버스 클릭에 의한 피커 열기 엄격 차단
+        if (window.APP_MODE !== 'COLOR_EDIT') return;
+
         const hit = getCanvasHitObject(e);
         if (!hit) return;
 
@@ -1165,6 +1248,8 @@
         const colorVal = row.querySelector(`#avatar-color-${person}`).value;
         const textColorVal = row.querySelector(`#avatar-textcolor-${person}`).value;
         const base64ImageVal = row.querySelector(`#avatar-image-data-${person}`).value || '';
+        const voiceSelect = row.querySelector(`#avatar-voice-${person}`);
+        const voiceURIVal = voiceSelect ? voiceSelect.value : '';
         avatarSettingsMap[person] = {
           color: colorVal,
           text: textVal,
@@ -1352,7 +1437,7 @@
     });
 
     // 레이아웃 복원
-    ['avatar-left-offset', 'name-offset', 'bubble-left-offset', 'bubble-top-offset', 'bubble-padding', 'bubble-margin', 'time-margin'].forEach(key => {
+    ['avatar-center-x', 'name-offset', 'bubble-left-offset', 'bubble-top-offset', 'bubble-padding', 'bubble-margin', 'time-margin'].forEach(key => {
       const el = document.getElementById(`input-${key}`);
       if (el && config[key] !== undefined) el.value = config[key];
     });
@@ -1474,8 +1559,8 @@
     if (inputShowFooter) config['show-footer'] = inputShowFooter.checked;
 
     // 레이아웃 상세 오프셋 오버라이드
-    const inputAvatarLeftOffset = document.getElementById('input-avatar-left-offset');
-    if (inputAvatarLeftOffset) config['avatar-left-offset'] = parseInt(inputAvatarLeftOffset.value) || 0;
+    const inputAvatarCenterX = document.getElementById('input-avatar-center-x');
+    if (inputAvatarCenterX) config['avatar-center-x'] = (inputAvatarCenterX.value !== '') ? parseInt(inputAvatarCenterX.value, 10) : 73;
 
     const inputNameOffset = document.getElementById('input-name-offset');
     if (inputNameOffset) config['name-offset'] = parseInt(inputNameOffset.value) || 0;
@@ -1673,24 +1758,36 @@
   }
 
   function renderAvatarModalContent(persons) {
+    const personsArr = Array.from(persons); // Set 또는 Array 모두 호환되도록 배열 변환
     avatarSettingsList.innerHTML = '';
     initKoreanVoices();
 
     const avatarSpeakerSelect = document.getElementById('avatar-speaker-select');
-    if (avatarSpeakerSelect) {
-      avatarSpeakerSelect.innerHTML = persons.map(p => `<option value="${p}">${p}</option>`).join('');
-      avatarSpeakerSelect.onchange = () => {
-        const selectedPerson = avatarSpeakerSelect.value;
-        const targetRow = avatarSettingsList ? avatarSettingsList.querySelector(`.avatar-item-row[data-speaker="${selectedPerson}"]`) : null;
-        if (targetRow) {
-          targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          targetRow.classList.add('avatar-row-highlight');
-          setTimeout(() => targetRow.classList.remove('avatar-row-highlight'), 2000);
-        }
-      };
-    }
+    
+    // 현재 모달에 활성화되어 있는 유저의 입력을 임시 저장하는 헬퍼 함수
+    const saveCurrentActiveSpeaker = () => {
+      const activeRow = avatarSettingsList.querySelector('.avatar-item-row');
+      if (activeRow) {
+        const activePerson = activeRow.getAttribute('data-speaker');
+        const textVal = activeRow.querySelector(`#avatar-text-${activePerson}`).value || activePerson.charAt(0);
+        const colorVal = activeRow.querySelector(`#avatar-color-${activePerson}`).value;
+        const textColorVal = activeRow.querySelector(`#avatar-textcolor-${activePerson}`).value;
+        const base64ImageVal = activeRow.querySelector(`#avatar-image-data-${activePerson}`).value || '';
+        const voiceSelect = activeRow.querySelector(`#avatar-voice-${activePerson}`);
+        const voiceURIVal = voiceSelect ? voiceSelect.value : '';
+        avatarSettingsMap[activePerson] = {
+          color: colorVal,
+          text: textVal,
+          textColor: textColorVal,
+          image: base64ImageVal,
+          voiceURI: voiceURIVal
+        };
+      }
+    };
 
-    persons.forEach(person => {
+    // 특정 유저의 한 프로필만 렌더링하는 함수
+    const renderSpeakerRow = (person) => {
+      avatarSettingsList.innerHTML = '';
       const settings = getOrRegisterAvatarSettings(person);
       const row = document.createElement('div');
       row.className = 'avatar-item-row';
@@ -1797,7 +1894,23 @@
           refreshPreview();
         });
       });
-    });
+    };
+
+    if (avatarSpeakerSelect) {
+      avatarSpeakerSelect.innerHTML = personsArr.map(p => `<option value="${p}">${p}</option>`).join('');
+      avatarSpeakerSelect.onchange = () => {
+        // 셀렉트 변경 전 현재 화면의 데이터 임시 보존
+        saveCurrentActiveSpeaker();
+        const selectedPerson = avatarSpeakerSelect.value;
+        renderSpeakerRow(selectedPerson);
+      };
+    }
+
+    // 기본적으로 첫 번째 사람을 모달에 바로 로드하여 보여줌
+    if (personsArr.length > 0) {
+      const initialSpeaker = avatarSpeakerSelect ? avatarSpeakerSelect.value : personsArr[0];
+      renderSpeakerRow(initialSpeaker);
+    }
   }
 
   function saveSettingsToFile() {

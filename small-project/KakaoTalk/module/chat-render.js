@@ -79,9 +79,9 @@
    * 2. 채팅 글자(textX): 기본 위치(205px) 100% 원위치 고정 (이동 안함)
    * 3. 초상화(cx = 73px) & 닉네임(nameX = 149px): 기본 위치 100% 원위치 고정 (이동 안함)
    */
-  function calculateOpponentLayout(activeFontSize, fontSize) {
+  function calculateOpponentLayout(activeFontSize, fontSize, config) {
     const bx = 160; // 상대방 연속 채팅 말풍선 기준 X = 160px
-    const cx = 73;  // 초상화 중심 X = 73px
+    const cx = (config && config['avatar-center-x'] !== undefined) ? parseInt(config['avatar-center-x'], 10) : 73;  // 초상화 중심 X = 73px
     const nameFontSize = Math.floor(fontSize * 0.85);
     const nameX = Math.round(180 - nameFontSize) + 1; // 149px
     const textX = bx + Math.round(activeFontSize * 0.5); // 160 + 0.5em = 184px
@@ -184,20 +184,11 @@
     lastRenderedDialogs = dialogs;
     lastRenderedAvatarMap = avatarSettingsMap;
 
-    // UI에서 설정한 도면 기준의 가상 디자인 해상도 (750x1334 오리지널 복원)
-    const designW = parseInt(config['width']) || 750;
-    const designH = parseInt(config['height']) || 1334;
-
-    // 실제 설정된 캔버스 물리 해상도 (외부 ResizeObserver 세팅 대응)
-    const realW = canvas.width || designW;
-    const realH = canvas.height || designH;
-
-    // 기존 드로잉 연산 코드는 가로/세로를 designW, designH 기준으로 그리므로 고정 상수로 매핑
-    const width = designW;
-    const height = designH;
+    // 1:1 캔버스 물리 해상도 직결 연산
+    const width = canvas.width || 1080;
+    const height = canvas.height || 2340;
 
     ctx.save();
-    ctx.scale(realW / designW, realH / designH);
 
     // 1. 글꼴 상세 속성 적용 (v0.0.10)
     const selectedFont = config['font'] || 'sans-serif';
@@ -409,10 +400,10 @@
     }
     isScrollEasingActive = true;
 
-    // 6. 스크롤 뷰포트 클리핑 및 드로잉 (240px 헤더 아래만 렌더링)
+    // 6. 스크롤 뷰포트 클리핑 및 드로잉 (캔버스 전체 영역 허용)
     ctx.save();
     ctx.beginPath();
-    ctx.rect(0, 240, width, height - 240);
+    ctx.rect(0, 0, width, height);
     ctx.clip();
 
     ctx.translate(0, -currentScrollY);
@@ -570,7 +561,7 @@
           console.log(`${msgPrefix}말풍선(${bX1}, ${bY1}, ${bX2}, ${bY2}, ${meWidth}, ${meHeight}), 채팅(${cX1}, ${cY1}, ${cX2}, ${cY2}, ${textW}, ${textH}), 시각(${tX1}, ${tY1}, ${tX2}, ${tY2}, ${tW}, ${tH_val})`);
         }
       } else {
-        const oppLayout = calculateOpponentLayout(activeFontSize, fontSize);
+        const oppLayout = calculateOpponentLayout(activeFontSize, fontSize, config);
         const bx = oppLayout.bx; // 160px
         const adjustedPosY = pos.posY;
 
@@ -835,7 +826,30 @@
       const mX = window._guideMouseX || 0;
       const mY = window._guideMouseY || 0;
 
-      // 빨간색 점선 가로/세로 보조선
+      // 1. 초상화 세로 중심선 (주황색 점선 & 레이블)
+      const avatarCX = (config && config['avatar-center-x'] !== undefined) ? parseInt(config['avatar-center-x'], 10) : 73;
+      ctx.strokeStyle = '#f97316'; // 주황색
+      ctx.lineWidth = 3;
+      ctx.setLineDash([8, 4]);
+      ctx.beginPath();
+      ctx.moveTo(avatarCX, 0);
+      ctx.lineTo(avatarCX, height);
+      ctx.stroke();
+
+      // 초상화 세로 중심선 텍스트 레이블 (헤더 영역 아래에 깔끔하게 표시)
+      ctx.fillStyle = '#f97316';
+      ctx.font = 'bold 24px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const labelText = `초상화 중심 (X: ${avatarCX}px)`;
+      const labelW = ctx.measureText(labelText).width + 24;
+      const labelH = 40;
+      drawRoundRect(ctx, Math.round(avatarCX - labelW / 2), 280, labelW, labelH, 8);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(labelText, avatarCX, 280 + labelH / 2);
+
+      // 2. 빨간색 점선 마우스 가로/세로 보조선
       ctx.strokeStyle = 'rgba(239, 68, 68, 0.85)';
       ctx.lineWidth = 2;
       ctx.setLineDash([8, 6]);
@@ -982,15 +996,10 @@
 
     if (!canvas) return '';
 
-    const designW = parseInt(config['width']) || 750;
-    const designH = parseInt(config['height']) || 1334;
-    const realW = canvas.width || designW;
-    const realH = canvas.height || designH;
-
-    const width = designW;
-    const height = designH;
-    const scaleXRatio = realW / designW;
-    const scaleYRatio = realH / designH;
+    const width = canvas.width || 1080;
+    const height = canvas.height || 2340;
+    const scaleXRatio = 1.0;
+    const scaleYRatio = 1.0;
 
     const selectedFont = config['font'] || 'sans-serif';
     const fontSize = parseInt(config['font-size']) || 38;
@@ -1275,6 +1284,7 @@
         const userArcRadius = (config && config['bubble-round'] !== undefined) ? parseInt(config['bubble-round'], 10) : 32;
 
         const bx = 160; // 상대방 말풍선 기준 X = 160px
+        const avatarDiameter = 116;
         const shiftUpByHeight = Math.round(119 * (7 / 99));
         const adjustedPosY = pos.isContinuous
           ? Math.round(pos.posY + 12)
@@ -1289,7 +1299,7 @@
         if (!pos.isContinuous) {
           svgElements.push(`<path d="${pathD}" fill="${escapeXml(youBubbleColor)}" />`);
 
-          const cx = 73;
+          const cx = (config && config['avatar-center-x'] !== undefined) ? parseInt(config['avatar-center-x'], 10) : 73;
           const cy = pos.posY - 10 + 58;
           const size = Math.round(116 * 0.9);
           const ax = Math.round(cx - size / 2);
@@ -1359,7 +1369,7 @@
     return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${realW}" height="${realH}" viewBox="0 0 ${realW} ${realH}">
 <defs>
   <clipPath id="viewport-clip">
-    <rect y="240" width="${width}" height="${height - 240}" />
+    <rect y="0" width="${width}" height="${height}" />
   </clipPath>
 </defs>
 <style>
