@@ -1,7 +1,8 @@
-﻿// ui.js - 점수판, 코멘트, 자동재생, 탐색, 레이아웃 유틸리티
+// ui.js - 점수판, 코멘트, 자동재생, 탐색, 레이아웃 유틸리티
 
 var scoreRotationInterval = null;
 var scoreboardTimerInterval = null;
+var currentScoreSlideIndex = 0;
 
 function initScoreboardRotation() {
   applyScoreboardConfig();
