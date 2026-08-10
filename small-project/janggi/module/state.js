@@ -91,6 +91,7 @@ const candiBoxList = new Array(); // 생성된 이동가능 경로들을 관리�
 var kbCursorX = 5;
 var kbCursorY = 4;
 var kbCursorActive = false;
+var boardAnimating = false;
 
 // ===== [game] 게임 진행 상태 =====
 const pieces = new Array(32); // 장기말은 고유의 ID를 가지고 있습니다.
