@@ -33,26 +33,79 @@ test.describe('카카오톡 대화 생성기 (small-project/KakaoTalk)', () => {
     }
   });
 
-  test('테마 상세보기 버튼 클릭 시 테마 상세 설정 모달 팝업 및 미리보기 캔버스 렌더링 검증', async ({ page }) => {
+  test('대화방 테마 선택 및 개별 색상 설정 변경 렌더링 검증', async ({ page }) => {
     await page.goto('/small-project/KakaoTalk/index.html');
     await page.waitForTimeout(1000);
 
     await page.locator('#btn-icon-settings').click();
     await page.waitForTimeout(300);
 
-    const btnOpenThemeModal = page.locator('#btn-open-theme-modal');
-    await expect(btnOpenThemeModal).toBeVisible();
+    const colorAccordionHeader = page.locator('.setting-accordion-header').filter({ hasText: '색상 설정' });
+    await colorAccordionHeader.click();
+    await page.waitForTimeout(200);
 
-    await btnOpenThemeModal.click();
-    await page.waitForTimeout(500);
+    const selectTheme = page.locator('#select-theme');
+    await expect(selectTheme).toBeVisible();
 
-    const isModalFlex = await page.evaluate(() => {
-      const modal = document.getElementById('theme-detail-modal');
-      return modal ? window.getComputedStyle(modal).display === 'flex' : false;
+    await selectTheme.selectOption('dark');
+    await page.waitForTimeout(300);
+
+    const canvas = page.locator('#chat-canvas');
+    await expect(canvas).toBeVisible();
+  });
+
+  test('캔버스 직접 선택 색상 변경 모드 (🎯) 버튼 토글 및 마우스 호버 툴팁 검증', async ({ page }) => {
+    await page.goto('/small-project/KakaoTalk/index.html');
+    await page.waitForTimeout(1000);
+
+    await page.locator('#btn-icon-settings').click();
+    await page.waitForTimeout(300);
+
+    const btnCanvasPicker = page.locator('#btn-canvas-picker-mode');
+    await expect(btnCanvasPicker).toBeVisible();
+
+    await btnCanvasPicker.click();
+    await page.waitForTimeout(200);
+
+    const isPickerActive = await btnCanvasPicker.evaluate(el => el.classList.contains('active'));
+    expect(isPickerActive).toBe(true);
+
+    const canvas = page.locator('#chat-canvas');
+    const box = await canvas.boundingBox();
+    if (box) {
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      await page.waitForTimeout(300);
+
+      const tooltip = page.locator('#canvas-picker-tooltip');
+      await expect(tooltip).toBeVisible();
+    }
+  });
+
+  test('커스텀 메뉴얼 컬러 피커 모달 (2D Hue-Value Map + 모자이크 슬라이더) 검증', async ({ page }) => {
+    await page.goto('/small-project/KakaoTalk/index.html');
+    await page.waitForTimeout(1000);
+
+    await page.locator('#btn-icon-settings').click();
+    await page.waitForTimeout(300);
+
+    const colorAccordionHeader = page.locator('.setting-accordion-header').filter({ hasText: '색상 설정' });
+    await colorAccordionHeader.click();
+    await page.waitForTimeout(200);
+
+    const colorBgInput = page.locator('#color-bg');
+    await page.evaluate(() => {
+      window.openCustomColorPicker(document.getElementById('color-bg'), '대화방 배경색');
     });
-    expect(isModalFlex).toBe(true);
+    await page.waitForTimeout(300);
 
-    const previewCanvas = page.locator('#theme-preview-canvas');
-    await expect(previewCanvas).toBeVisible();
+    const customPickerModal = page.locator('#custom-color-picker-modal');
+    await expect(customPickerModal).toBeVisible();
+
+    const mosaicSlider = page.locator('#input-picker-mosaic');
+    await expect(mosaicSlider).toBeVisible();
+
+    await page.locator('#btn-picker-confirm').click();
+    await page.waitForTimeout(200);
+    await expect(customPickerModal).toBeHidden();
   });
 });
