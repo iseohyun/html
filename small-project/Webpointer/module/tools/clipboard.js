@@ -71,6 +71,7 @@
           else if (newObj.type === 'ellipse') el = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
           else if (newObj.type === 'line') el = document.createElementNS('http://www.w3.org/2000/svg', 'line');
           else if (newObj.type === 'text') el = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          else if (newObj.type === 'image') el = document.createElementNS('http://www.w3.org/2000/svg', 'image');
           else el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
 
           el.setAttribute('id', newObj.id);

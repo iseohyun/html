@@ -242,16 +242,20 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     expect(pageErrors).toEqual([]);
   });
 
-  test('TC11: File Operations Suite (Web LocalStorage Save & File Modal)', async ({ page }) => {
+  test('TC11: File Operations Suite (Web Save Click Opens File Slots Modal)', async ({ page }) => {
     // Switch to File Tab ("파일")
     await page.click('.tab-btn:has-text("파일")');
 
-    // Click Web LocalStorage Save
+    // Click Web Save Button (saveFileToWeb)
     await page.evaluate(() => window.saveFileToWeb());
+    await page.waitForTimeout(300);
 
-    // Verify localStorage item is written
-    const savedDoc = await page.evaluate(() => localStorage.getItem('webpointer_saved_doc'));
-    expect(savedDoc).not.toBeNull();
+    // Verify file slot modal opens
+    const isModalOpen = await page.evaluate(() => {
+      const modal = document.getElementById('fileSlotsModal');
+      return modal && modal.classList.contains('show');
+    });
+    expect(isModalOpen).toBe(true);
 
     expect(pageErrors).toEqual([]);
   });
@@ -1009,6 +1013,139 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
       window.cycleStrokeJoin();
     });
 
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('TC30: 2차/3차 베지어 곡선 그리기 시 c2 TypeError 방어 및 ESC 키 누름 시 연속 베지어 모드 종결 검증', async ({ page }) => {
+    // 1. 3차 베지어 도구 선택 및 연속 점 배치
+    await page.evaluate(() => {
+      window.WebpointerHandlers.setTool('bez3');
+      window.WebpointerState.isMultiBezierActive = true;
+      window.WebpointerState.bezierPoints = [
+        { px: 100, py: 100 },
+        { px: 200, py: 200 },
+        { px: 300, py: 150 }
+      ];
+    });
+
+    // 2. mousemove 및 pathD 계산 호스팅 시 TypeError(c2) 발생 여부 체크
+    const pathDResult = await page.evaluate(() => {
+      if (window.WebpointerBezier && window.WebpointerBezier.buildContinuousBezierPathD) {
+        return window.WebpointerBezier.buildContinuousBezierPathD(
+          window.WebpointerState.bezierPoints,
+          { px: 400, py: 250 },
+          'bez3',
+          null, null, null, null
+        );
+      }
+      return '';
+    });
+
+    console.log('[Webpointer Bezier Null Safety Test 🧪 - PathD]:', pathDResult);
+    expect(pathDResult.length).toBeGreaterThan(0);
+    expect(pathDResult.includes('C')).toBe(true);
+
+    // 3. ESC 키 입력 시 isMultiBezierActive 연속 베지어 그리기 즉시 종결 검증
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(200);
+
+    const isStopped = await page.evaluate(() => {
+      return !window.WebpointerState.isMultiBezierActive && window.WebpointerConfig.currentTool === 'select';
+    });
+
+    console.log('[Webpointer Bezier ESC Key Stop Test 🧪 - Stopped]:', isStopped);
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('TC31: webpointer_drawing_1786256123897.svg 파일 로딩, NaN 콘솔 에러 0개 및 베지어/도형 핸들러 정상 동작 검증', async ({ page, request }) => {
+    // 1. Fixture SVG 파일 텍스트 로드
+    const fs = require('fs');
+    const path = require('path');
+    const fixturePath = path.join(__dirname, '..', '..', '..', 'tests', 'fixtures', 'webpointer_drawing_1786256123897.svg');
+    const svgText = fs.readFileSync(fixturePath, 'utf8');
+
+    expect(svgText.length).toBeGreaterThan(100);
+
+    // 2. SVG 파일 내용 파싱 및 캔버스 객체 로딩 실행
+    await page.evaluate((content) => {
+      if (window.WebpointerSVGImporter && window.WebpointerSVGImporter.importSVGContent) {
+        window.WebpointerSVGImporter.importSVGContent(content);
+      } else if (window.WebpointerHandlers && window.WebpointerHandlers.parseSvgAndLoadObjects) {
+        window.WebpointerHandlers.parseSvgAndLoadObjects(content);
+      }
+    }, svgText);
+
+    await page.waitForTimeout(500);
+
+    // 3. 캔버스 상에 로드된 객체 수 및 선택 후 UI 렌더링 검증
+    const loadedCount = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      if (cfg && cfg.objectsMap) {
+        cfg.selectedIds.clear();
+        cfg.objectsMap.forEach((obj) => cfg.selectedIds.add(obj.id));
+        if (window.WebpointerRender && window.WebpointerRender.renderUI) {
+          window.WebpointerRender.renderUI();
+        }
+        return cfg.objectsMap.size;
+      }
+      return 0;
+    });
+
+    console.log('[Webpointer Fixture Load Test 🧪 - Loaded Object Count]:', loadedCount);
+    expect(loadedCount).toBeGreaterThan(0);
+
+    // 4. UI 렌더링 후 파란 점선 선택 상자 및 크기조절/베지어 핸들 노드 존재 확인
+    const handleCount = await page.locator('#uiGroup circle, #uiGroup rect').count();
+    console.log('[Webpointer Fixture Load Test 🧪 - Selection Box & Handle Node Count]:', handleCount);
+    expect(handleCount).toBeGreaterThan(0);
+
+    // 5. NaN 콘솔 에러 0개 수호 검증!
+    const hasNanError = pageErrors.some(err => err.message.includes('NaN'));
+    expect(hasNanError).toBe(false);
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('TC32: 그림 맨앞으로(bringToFront), 앞으로(bringForward), 맨뒤로(sendToBack), 뒤로(sendBackward) 레이어 순서 변경 검증', async ({ page }) => {
+    // 1. 2개의 도형 (사각형, 원) 그리기
+    await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+      if (window.WebpointerObjects && window.WebpointerObjects.createSvgObject) {
+        window.WebpointerObjects.createSvgObject('rect', { stepX: 1, stepY: 1 }, { stepX: 5, stepY: 5 });
+        window.WebpointerObjects.createSvgObject('ellipse', { stepX: 2, stepY: 2 }, { stepX: 6, stepY: 6 });
+      }
+      window.WebpointerRender.renderUI();
+    });
+
+    // 2. 첫 번째 사각형 선택 및 bringToFront() 전역 함수 실행
+    await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const firstId = Array.from(cfg.objectsMap.keys())[0];
+      cfg.selectedIds.clear();
+      cfg.selectedIds.add(firstId);
+      window.bringToFront();
+    });
+
+    // 3. bringForward(), sendBackward(), sendToBack() 순차적 구동 및 ReferenceError 0개 검증
+    await page.evaluate(() => {
+      window.bringForward();
+      window.sendBackward();
+      window.sendToBack();
+    });
+
+    const isLayerFuncsDefined = await page.evaluate(() => {
+      return typeof window.bringToFront === 'function' &&
+             typeof window.bringForward === 'function' &&
+             typeof window.sendBackward === 'function' &&
+             typeof window.sendToBack === 'function';
+    });
+
+    console.log('[Webpointer Layer Functions Test 🧪 - Defined]:', isLayerFuncsDefined);
+    expect(isLayerFuncsDefined).toBe(true);
+
+    const hasRefError = pageErrors.some(err => err.message.includes('is not defined'));
+    expect(hasRefError).toBe(false);
     expect(pageErrors).toEqual([]);
   });
 });

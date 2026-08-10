@@ -16,21 +16,30 @@
     "updates": [
       {
         "type": "Changed",
+        "projectName": "Webpointer",
+        "projectPath": "/small-project/Webpointer/index.html",
+        "version": "0.7.2",
+        "summary": "자르기 개선, 늘리기 개선, 각종 버그 수정"
+      },
+      {
+        "type": "Changed",
         "projectName": "공통 모듈",
         "projectPath": "/",
         "summary": "모바일 버전에서 상단 메뉴 추가"
       },
       {
-        "type": "Added",
+        "type": "Changed",
         "projectName": "KanaLoop",
         "projectPath": "/small-project/KanaLoop/index.html",
-        "summary": "v1.0.3: UI개선, 다양한 음성지원, 음성 딜레이 개선, 서버 통신 방법 개선"
+        "version": "1.0.3",
+        "summary": "UI개선, 다양한 음성지원, 음성 딜레이 개선, 서버 통신 방법 개선"
       },
       {
-        "type": "Added",
+        "type": "Changed",
         "projectName": "카카오톡 대화 생성기",
         "projectPath": "/small-project/KakaoTalk/index.html",
-        "summary": "v1.4.2: 실물 카카오톡 S자 3차 베지어(Cubic Bezier) 말풍선 꼬률 렌더링 구현 및 tests/fixtures 실물 JPG 2종 기반 자동 곡선 일치성(IoU 96.8% >= 95%) 검증 구축"
+        "version": "1.2.2",
+        "summary": "테마(다크/라이트), 색 상세 모달"
       }
     ]
   },
@@ -41,22 +50,24 @@
         "type": "Changed",
         "projectName": "Webpointer",
         "projectPath": "/small-project/Webpointer/index.html",
-        "summary": "v0.7.0: SMIL 애니메이션 8단계 구현, 텍스트 인라인 편집 (캐럿/선택/키보드), 5단계 애니메이션 위자드, 무한 슬롯 매니저, 뫼비우스 패스 매니저, MS 리본 UI 전면 고도화 (1x3 그리드, 접이식 카테고리, 글꼴/밑줄/필터), 캔버스 팬/줌, 파일 열기/저장/다운로드, Undo/Redo, 그라디언트/마커/필터 편집기, E2E 테스트 29종 전원 통과"
+        "version": "0.7.1",
+        "summary": "그림 추가 기능, 애니메이션 위지드, 줌 인, 파일열기/저장, Undo/Redo, 자가진단 모듈"
       },
       {
         "type": "Changed",
         "projectName": "웹 장기",
         "projectPath": "/small-project/janggi/",
-        "summary": "v2.0.0: 아키텍처 대규모 리팩터링 — main.js(4942행)를 11개 모듈(ai, board, dispatcher, flip, keyboard, record, rules, settings, state, ui)로 해체, style.css를 8개 도메인별 CSS로 분리, 109개 인라인 핸들러를 data-action 이벤트 위임으로 전환, 60개 글로벌 노출 제거"
+        "version": "2.0.0",
+        "summary": "아키텍처 대규모 리팩터링 — main.js(4942행)를 11개 모듈(ai, board, dispatcher, flip, keyboard, record, rules, settings, state, ui)로 해체, style.css를 8개 도메인별 CSS로 분리, 109개 인라인 핸들러를 data-action 이벤트 위임으로 전환, 60개 글로벌 노출 제거"
       },
       {
         "type": "Fixed",
         "projectName": "공통 모듈",
+        "version": "1.1.3",
         "summary": ".gitignore 정비: .gemini 로컬 AI 설정 폴더 추적 제외 처리"
       }
     ]
   },
-
   {
     "date": "2026-7-30",
     "updates": [
@@ -64,7 +75,8 @@
         "type": "Added",
         "projectName": "Webpointer",
         "projectPath": "/small-project/Webpointer/index.html",
-        "summary": "v0.2.1: 연속 베지어 곡선 모든 중간 제어점 노란색 핸들 표시 및 선택 도구 손가락(pointer)/이동(move) 마우스 커서 스타일 적용"
+        "version": "0.2.1",
+        "summary": "연속 베지어 곡선 모든 중간 제어점 노란색 핸들 표시 및 선택 도구 손가락(pointer)/이동(move) 마우스 커서 스타일 적용"
       }
     ]
   },
@@ -82,7 +94,7 @@
         "type": "Changed",
         "projectName": "베지어 시뮬레이터",
         "version": "1.0.3",
-        "summary": "- 좌표 눈금자(Ruler) 및 드래그 십자 가이드라인(Guideline) 제공<br> -  제어점 추가 상한선 해제",
+        "summary": "좌표 눈금자(Ruler) 및 드래그 십자 가이드라인(Guideline) 제공<br> -  제어점 추가 상한선 해제",
         "projectPath": "/small-project/Bezier/"
       },
       {

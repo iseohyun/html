@@ -101,5 +101,15 @@
   };
 
   window.WebpointerConfig = WebpointerConfig;
+
+  // ReferenceError 차단을 위한 전역 switchTab 세이프가드 잇점 배치
+  if (typeof window.switchTab !== 'function') {
+    window.switchTab = function(tabKey) {
+      if (window.WebpointerConfig) window.WebpointerConfig.currentTab = tabKey;
+      if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+        window.WebpointerRender.renderRibbon();
+      }
+    };
+  }
   window.WebpointerState = WebpointerState;
 })();

@@ -37,11 +37,11 @@
         var pEnd = fullPts[seg + 1];
         var ctrl1, ctrl2;
 
-        if (ctrls3Arr[seg]) {
+        if (ctrls3Arr[seg] && ctrls3Arr[seg].c1 && ctrls3Arr[seg].c2) {
           ctrl1 = ctrls3Arr[seg].c1;
           ctrl2 = ctrls3Arr[seg].c2;
         } else {
-          if (seg === 0) {
+          if (seg === 0 || !ctrls3Arr[seg - 1] || !ctrls3Arr[seg - 1].c2) {
             ctrl1 = { x: pStart.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
             ctrl2 = { x: pEnd.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
           } else {
