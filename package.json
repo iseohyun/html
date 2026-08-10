@@ -1,0 +1,13 @@
+{
+  "name": "iseohyun-html-portal",
+  "version": "2.0.0",
+  "description": "iseohyun.com web portal & small projects monorepo",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:heading": "playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1"
+  }
+}
