@@ -466,6 +466,15 @@ function renderCandidateMarkers(i, moves) {
   }
 }
 
+/**
+ * 지정된 기물 ID의 이동 가능 경로(후보지)를 계산하여 판 위에 그립니다.
+ * @param {number} i - 선택된 기물 ID (0~31)
+ */
+function drawCandidates(i) {
+  const moves = getCandidateMoves(i);
+  renderCandidateMarkers(i, moves);
+}
+
 // 장기알 서예 글씨 이미지의 크기와 정렬 오프셋을 동적으로 갱신합니다.
 function updatePieceGraphics() {
   for (let i = 0; i < 32; i++) {
