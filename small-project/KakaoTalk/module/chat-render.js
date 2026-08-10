@@ -199,7 +199,7 @@
   /**
    * HTML5 Canvas 2D 그래픽 렌더링 엔진 코어
    */
-  function drawCanvasChat(canvas, ctx, config, dialogs, avatarSettingsMap) {
+  function drawCanvasChat(canvas, ctx, config, dialogs, avatarSettingsMap, resetAnim = false) {
     if (!canvas || !ctx) return;
 
     lastRenderedCanvas = canvas;
@@ -434,11 +434,18 @@
 
     // 5. 스크롤 목표 스크롤 Y 좌표 갱신 (현재 진행률 대화 메시지 하단 밀착)
     const viewportBottomLimit = height - 280;
-    const scrollY = currentScrollY;
     maxScrollY = Math.max(0, lastPosY - viewportBottomLimit);
 
-    // 새 대화 파일 로드 또는 스크롤 동기화
-    targetScrollY = maxScrollY;
+    // 스크롤 고정 (Auto-Scroll) 옵션 확인 (기본값 true)
+    const isAutoScroll = !config || config['auto-scroll'] !== false;
+
+    if (resetAnim || isAutoScroll) {
+      targetScrollY = maxScrollY;
+    } else {
+      // 스크롤 고정 OFF 상태: 유저가 마우스 휠이나 단축키로 이동시킨 targetScrollY 유지 (유효 범위 0 ~ maxScrollY)
+      targetScrollY = Math.min(maxScrollY, Math.max(0, targetScrollY));
+    }
+
     if (maxScrollY === 0) {
       currentScrollY = 0;
       targetScrollY = 0;
@@ -467,14 +474,25 @@
       const pos = tempPositions[index];
       if (!pos) return;
 
-      // 애니메이션 적용
+      // 애니메이션 효과 적용
       ctx.save();
       if (animState.active && index === visibleDialogs.length - 1) {
         if (animState.effect === 'slide') {
-          const slideOffset = (1.0 - animState.progress) * 50;
+          const slideOffset = (1.0 - animState.progress) * 45;
           ctx.translate(0, slideOffset);
+          ctx.globalAlpha = animState.progress;
+        } else if (animState.effect === 'blur') {
+          const blurPx = Math.max(0, (1.0 - animState.progress) * 12).toFixed(1);
+          try {
+            ctx.filter = `blur(${blurPx}px)`;
+          } catch (e) {}
+          ctx.globalAlpha = animState.progress;
+        } else if (animState.effect === 'typing') {
+          ctx.globalAlpha = 1.0;
+        } else {
+          // opacity (기본 투명도)
+          ctx.globalAlpha = animState.progress;
         }
-        ctx.globalAlpha = animState.progress;
       }
 
       // 날짜 구분선 렌더링
@@ -592,7 +610,13 @@
         ctx.textBaseline = 'top';
 
         const textX_me = bx + meWidth - halfEm;
-        drawWrappedText(ctx, pos.lines, textX_me, textY, 1.0, activeFontSize, lineSpacing);
+        let renderLines_me = pos.lines;
+        if (animState.active && index === visibleDialogs.length - 1 && animState.effect === 'typing') {
+          const fullText = pos.lines.join('\n');
+          const revealedLen = Math.max(1, Math.floor(fullText.length * animState.progress));
+          renderLines_me = fullText.slice(0, revealedLen).split('\n');
+        }
+        drawWrappedText(ctx, renderLines_me, textX_me, textY, 1.0, activeFontSize, lineSpacing);
 
         const textW = Math.round(pos.lines.reduce((max, l) => Math.max(max, ctx.measureText(l).width), 0));
         hitRegions.unshift({
@@ -631,11 +655,6 @@
           const bX2 = bx + meWidth;
           const bY2 = mePosY + meHeight;
 
-          const msgStr = pos.lines[0] || '';
-          const preview = msgStr.length > 5 ? `${msgStr.slice(0, 5)}...` : msgStr;
-          const msgPrefix = `"${preview}"의 `;
-
-          console.log(`${msgPrefix}말풍선(${bX1}, ${bY1}, ${bX2}, ${bY2}, ${meWidth}, ${meHeight}), 채팅(${cX1}, ${cY1}, ${cX2}, ${cY2}, ${textW}, ${textH}), 시각(${tX1}, ${tY1}, ${tX2}, ${tY2}, ${tW}, ${tH_val})`);
         }
       } else {
         const oppLayout = calculateOpponentLayout(activeFontSize, fontSize, config);
@@ -823,7 +842,13 @@
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
 
-        drawWrappedText(ctx, pos.lines, textX, textY, 1.0, activeFontSize, lineSpacing);
+        let renderLines_you = pos.lines;
+        if (animState.active && index === visibleDialogs.length - 1 && animState.effect === 'typing') {
+          const fullText = pos.lines.join('\n');
+          const revealedLen = Math.max(1, Math.floor(fullText.length * animState.progress));
+          renderLines_you = fullText.slice(0, revealedLen).split('\n');
+        }
+        drawWrappedText(ctx, renderLines_you, textX, textY, 1.0, activeFontSize, lineSpacing);
 
         const textW = Math.round(pos.lines.reduce((max, l) => Math.max(max, ctx.measureText(l).width), 0));
         hitRegions.unshift({
@@ -878,11 +903,6 @@
           bW_real = bX2 - bX1;
           bH_real = bY2 - bY1;
 
-          const msgStr = pos.lines[0] || '';
-          const preview = msgStr.length > 5 ? `${msgStr.slice(0, 5)}...` : msgStr;
-          const msgPrefix = `"${preview}"의 `;
-
-          console.log(`${msgPrefix}말풍선(${bX1}, ${bY1}, ${bX2}, ${bY2}, ${bW_real}, ${bH_real}), 채팅(${cX1}, ${cY1}, ${cX2}, ${cY2}, ${textW}, ${textH}), 시각(${tX1}, ${tY1}, ${tX2}, ${tY2}, ${tW}, ${tH_val})`);
         }
       }
 

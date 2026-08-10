@@ -130,6 +130,10 @@
       console.warn('도움말 로드 실패:', e);
       helpContentHtml = '도움말 파일(help.html)을 가져올 수 없습니다.';
     }
+    const helpDrawerBody = document.getElementById('help-drawer-body');
+    if (helpDrawerBody) helpDrawerBody.innerHTML = helpContentHtml;
+    const helpModalBody = document.getElementById('help-modal-body');
+    if (helpModalBody) helpModalBody.innerHTML = helpContentHtml;
   }
 
   /**
@@ -253,7 +257,12 @@
       const el = document.getElementById(id);
       if (el) {
         el.addEventListener('input', () => { if (triggerUpdateCallback) triggerUpdateCallback(true); });
-        el.addEventListener('change', () => { if (triggerUpdateCallback) triggerUpdateCallback(true); });
+        el.addEventListener('change', () => {
+          if (window.ShortcutManager && window.ShortcutManager.pushHistoryState) {
+            window.ShortcutManager.pushHistoryState(`설정 변경: ${id}`);
+          }
+          if (triggerUpdateCallback) triggerUpdateCallback(true);
+        });
       }
     };
 
@@ -378,18 +387,14 @@
 
     if (btnIconDownload) {
       btnIconDownload.addEventListener('click', () => {
-        const downloadModal = document.getElementById('download-modal');
-        if (downloadModal) {
-          downloadModal.style.display = 'flex';
-        } else if (btnDownload) {
-          btnDownload.click();
-        }
+        openDrawerTab('drawer-tab-download', '💾 이미지 및 파일 저장', btnIconDownload);
       });
     }
 
     if (btnIconHelp) {
       btnIconHelp.addEventListener('click', () => {
-        if (btnHelp) btnHelp.click();
+        openDrawerTab('drawer-tab-help', '❓ 사용자 도움말', btnIconHelp);
+        fetchHelpContent();
       });
     }
 
@@ -408,21 +413,20 @@
       }
 
       document.querySelectorAll('.drawer-tab-content').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.icon-nav-btn, .toggle-btn').forEach(btn => btn.classList.remove('active'));
 
       const targetTab = document.getElementById(tabId);
       if (targetTab) targetTab.classList.add('active');
       if (activeBtn) activeBtn.classList.add('active');
       if (drawerTitle) drawerTitle.textContent = titleText;
 
+      const settingsActions = document.getElementById('drawer-header-settings-actions');
+      if (settingsActions) {
+        settingsActions.style.display = (tabId === 'drawer-tab-settings') ? 'flex' : 'none';
+      }
+
       slidingDrawer.classList.remove('drawer-closed');
       if (rightSpaNav) rightSpaNav.classList.add('drawer-open');
-
-      if (tabId === 'drawer-tab-raw') {
-        slidingDrawer.classList.add('raw-tab-active');
-      } else {
-        slidingDrawer.classList.remove('raw-tab-active');
-      }
 
       if (articleElem && rightSpaNav && !rightSpaNav.classList.contains('nav-overlay-mode')) {
         articleElem.classList.add('drawer-push-active');
@@ -434,10 +438,9 @@
     const closeDrawer = () => {
       if (slidingDrawer) {
         slidingDrawer.classList.add('drawer-closed');
-        slidingDrawer.classList.remove('raw-tab-active');
       }
       if (rightSpaNav) rightSpaNav.classList.remove('drawer-open');
-      document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.icon-nav-btn, .toggle-btn').forEach(btn => btn.classList.remove('active'));
       if (articleElem) articleElem.classList.remove('drawer-push-active');
       if (triggerUpdateCallback) triggerUpdateCallback(true);
     };
@@ -450,6 +453,10 @@
     }
     if (btnIconRaw) {
       btnIconRaw.addEventListener('click', () => openDrawerTab('drawer-tab-raw', '📄 원문 보기 / 실시간 에디터', btnIconRaw));
+    }
+    const btnOpenShortcutModal = document.getElementById('btn-open-shortcut-modal');
+    if (btnOpenShortcutModal) {
+      btnOpenShortcutModal.addEventListener('click', () => openDrawerTab('drawer-tab-shortcut', '⌨️ 키보드 단축키 안내', btnOpenShortcutModal));
     }
     if (btnCloseDrawer) {
       btnCloseDrawer.addEventListener('click', closeDrawer);
@@ -493,7 +500,7 @@
           articleElem.style.paddingRight = w + 'px';
           articleElem.classList.add('drawer-push-active');
         } else {
-          articleElem.style.paddingRight = '0px';
+          articleElem.style.paddingRight = '';
           articleElem.classList.remove('drawer-push-active');
         }
       }
@@ -650,14 +657,33 @@
       });
     }
 
-    // ESC 키 다단계 닫기 계층 구조 (1단계: 컬러피커 닫기, 2단계: COLOR_EDIT 모드 끄기)
+    // ESC 키 다단계 닫기 계층 구조 (1단계: 모달 닫기, 2단계: 편집 모드 해제, 3단계: 슬라이딩 드로어 패널 닫기)
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
-        const isPickerVisible = customColorPickerModal && customColorPickerModal.style.display !== 'none';
-        if (isPickerVisible) {
-          customColorPickerModal.style.display = 'none';
-        } else if (window.APP_MODE === 'COLOR_EDIT') {
-          window.setAppMode('NORMAL');
+        // 1단계: 열려있는 모달 팝업 닫기
+        const openModals = Array.from(document.querySelectorAll('.modal')).filter(m => {
+          const style = window.getComputedStyle(m);
+          return style.display !== 'none' && style.visibility !== 'hidden';
+        });
+
+        if (openModals.length > 0) {
+          openModals.forEach(m => {
+            m.style.display = 'none';
+          });
+          return;
+        }
+
+        // 2단계: COLOR_EDIT / LAYOUT_EDIT 모드 끄기
+        if (window.APP_MODE === 'COLOR_EDIT' || window.APP_MODE === 'LAYOUT_EDIT') {
+          if (typeof window.setAppMode === 'function') {
+            window.setAppMode('NORMAL');
+          }
+          return;
+        }
+
+        // 3단계: 슬라이딩 드로어 패널 닫기
+        if (slidingDrawer && !slidingDrawer.classList.contains('drawer-closed')) {
+          closeDrawer();
         }
       }
     });
@@ -726,51 +752,125 @@
     let startDateHeightDragMouseY = 0;
     let startDateHeightVal = 60;
 
+    let lastHighlightedInputId = null;
+
+    /**
+     * 설정값 하이라이트 연한 붉은색 배경 애니메이션만 실행
+     */
+    function triggerHighlightAnimation(inputId) {
+      if (!inputId) return;
+      const inputEl = document.getElementById(inputId);
+      if (!inputEl) return;
+
+      const isNumberInput = inputEl.getAttribute('type') === 'number' || inputEl.type === 'number';
+      if (isNumberInput) {
+        inputEl.classList.remove('input-highlight-fade');
+        void inputEl.offsetWidth; // reflow 트릭으로 애니메이션 재시작
+        inputEl.classList.add('input-highlight-fade');
+      }
+    }
+
+    /**
+     * 캔버스 조작으로 레이아웃/컬러 설정값이 변경되었을 때 우측 서랍(메뉴)과 아코디언 카테고리를 열고
+     * 해당 항목으로 부드럽게 스크롤하며, number 타입 입력창은 연한 붉은색 배경 애니메이션(1초 서서히 사라짐) 부여
+     * - 동일한 항목의 연속 변경 시에는 스크롤/이동 없이 배경색 애니메이션만 실행
+     */
+    function highlightUIInput(inputId) {
+      if (!inputId) return;
+      const inputEl = document.getElementById(inputId);
+      if (!inputEl) return;
+
+      if (lastHighlightedInputId === inputId) {
+        triggerHighlightAnimation(inputId);
+        return;
+      }
+
+      lastHighlightedInputId = inputId;
+
+      // 1. 우측 SPA 내비 서랍(메뉴) 및 해당 탭 펼치기
+      const slidingDrawer = document.getElementById('sliding-drawer-panel');
+      const rightSpaNav = document.getElementById('right-spa-nav');
+      if (slidingDrawer && slidingDrawer.classList.contains('drawer-closed')) {
+        slidingDrawer.classList.remove('drawer-closed');
+      }
+      if (rightSpaNav && !rightSpaNav.classList.contains('drawer-open')) {
+        rightSpaNav.classList.add('drawer-open');
+      }
+
+      const parentTab = inputEl.closest('.drawer-tab-content');
+      if (parentTab && !parentTab.classList.contains('active')) {
+        document.querySelectorAll('.drawer-tab-content').forEach(el => el.classList.remove('active'));
+        parentTab.classList.add('active');
+      }
+
+      // 2. 해당 설정이 속한 아코디언 카테고리 펼치기
+      const accordion = inputEl.closest('.setting-accordion');
+      if (accordion && accordion.classList.contains('collapsed')) {
+        accordion.classList.remove('collapsed');
+      }
+
+      // 3. 해당 내용 위치로 부드럽게 스크롤
+      inputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      // 4. 배경색 애니메이션 실행
+      triggerHighlightAnimation(inputId);
+    }
+
     window.addEventListener('mouseup', () => {
+      let changedInputId = null;
+
       if (isDraggingAvatarLine) {
         isDraggingAvatarLine = false;
-        if (triggerUpdateCallback) triggerUpdateCallback(true);
+        changedInputId = 'input-avatar-center-x';
       }
       if (isDraggingNameHandle) {
         isDraggingNameHandle = false;
         activeNameHandle = null;
-        if (triggerUpdateCallback) triggerUpdateCallback(true);
+        changedInputId = 'input-name-font-ratio';
       }
       if (isDraggingBubbleLine) {
         isDraggingBubbleLine = false;
-        if (triggerUpdateCallback) triggerUpdateCallback(true);
+        changedInputId = 'input-opponent-bubble-x';
       }
       if (isDraggingNameOffset) {
         isDraggingNameOffset = false;
-        if (triggerUpdateCallback) triggerUpdateCallback(true);
+        changedInputId = 'input-name-offset';
       }
       if (isDraggingChatStartY) {
         isDraggingChatStartY = false;
-        if (triggerUpdateCallback) triggerUpdateCallback(true);
+        changedInputId = 'input-chat-start-y';
       }
       if (isDraggingAvatarSize) {
         isDraggingAvatarSize = false;
-        if (triggerUpdateCallback) triggerUpdateCallback(true);
+        changedInputId = 'input-avatar-size';
       }
       if (isDraggingAvatarRound) {
         isDraggingAvatarRound = false;
         activeAvatarRoundRegion = null;
-        if (triggerUpdateCallback) triggerUpdateCallback(true);
+        changedInputId = 'input-avatar-round';
       }
       if (isDraggingChatGap) {
         isDraggingChatGap = false;
-        if (triggerUpdateCallback) triggerUpdateCallback(true);
+        changedInputId = 'input-chat-gap';
       }
       if (isDraggingOppBubbleTop) {
         isDraggingOppBubbleTop = false;
-        if (triggerUpdateCallback) triggerUpdateCallback(true);
+        changedInputId = 'input-opp-bubble-top-offset';
       }
       if (isDraggingDateYOffset) {
         isDraggingDateYOffset = false;
-        if (triggerUpdateCallback) triggerUpdateCallback(true);
+        changedInputId = 'input-date-y-offset';
       }
       if (isDraggingDateHeight) {
         isDraggingDateHeight = false;
+        changedInputId = 'input-date-height';
+      }
+
+      if (changedInputId) {
+        highlightUIInput(changedInputId);
+        if (window.ShortcutManager && window.ShortcutManager.pushHistoryState) {
+          window.ShortcutManager.pushHistoryState(`드래그 변경: ${changedInputId}`);
+        }
         if (triggerUpdateCallback) triggerUpdateCallback(true);
       }
     });
@@ -895,8 +995,11 @@
         hoveringNameHandle = nearNameHandle;
         hoveringNameBody = hoveringNameHandle ? null : nearNameBody;
 
-        // 드래그 중인 경우 값 업데이트
+        // 드래그 중인 경우 값 업데이트 및 실시간 서랍 강조
+        let activeDragInputId = null;
+
         if (isDraggingAvatarLine) {
+          activeDragInputId = 'input-avatar-center-x';
           const newCx = Math.max(0, Math.min(1080, Math.round(cX)));
           if (inputAvatarCenterX) {
             inputAvatarCenterX.value = newCx;
@@ -904,6 +1007,7 @@
           }
           if (triggerUpdateCallback) triggerUpdateCallback(false);
         } else if (isDraggingNameHandle && activeNameHandle) {
+          activeDragInputId = 'input-name-font-ratio';
           const dy = activeNameHandle.handleY - cY;
           const newFontSize = Math.max(10, Math.min(100, activeNameHandle.nameFontSize + dy));
           const newRatio = parseFloat((newFontSize / activeNameHandle.fontSize).toFixed(2));
@@ -916,6 +1020,7 @@
           }
           if (triggerUpdateCallback) triggerUpdateCallback(false);
         } else if (isDraggingBubbleLine) {
+          activeDragInputId = 'input-opponent-bubble-x';
           const newBx = Math.max(0, Math.min(1080, Math.round(cX)));
           if (inputOpponentBubbleX) {
             inputOpponentBubbleX.value = newBx;
@@ -923,6 +1028,7 @@
           }
           if (triggerUpdateCallback) triggerUpdateCallback(false);
         } else if (isDraggingNameOffset) {
+          activeDragInputId = 'input-name-offset';
           const dx = cX - startNameDragX;
           const newOffset = Math.max(-500, Math.min(500, startNameDragOffset + Math.round(dx)));
           const inputNameOffset = document.getElementById('input-name-offset');
@@ -932,6 +1038,7 @@
           }
           if (triggerUpdateCallback) triggerUpdateCallback(false);
         } else if (isDraggingChatStartY) {
+          activeDragInputId = 'input-chat-start-y';
           const deltaY = cY - startChatDragMouseY;
           const newStartY = Math.max(0, Math.min(2340, Math.round(startChatStartYVal + deltaY)));
           if (inputChatStartY) {
@@ -940,6 +1047,7 @@
           }
           if (triggerUpdateCallback) triggerUpdateCallback(false);
         } else if (isDraggingAvatarSize) {
+          activeDragInputId = 'input-avatar-size';
           const deltaX = cX - startAvatarSizeDragX;
           const newSize = Math.max(40, Math.min(300, Math.round(startAvatarSizeVal + deltaX)));
           const inputAvatarSize = document.getElementById('input-avatar-size');
@@ -949,6 +1057,7 @@
           }
           if (triggerUpdateCallback) triggerUpdateCallback(false);
         } else if (isDraggingAvatarRound && activeAvatarRoundRegion) {
+          activeDragInputId = 'input-avatar-round';
           // 노란색 핸들: 아바타 오른쪽 변에서 상하 이동으로 라운드 크기 조절
           const dy = cY - activeAvatarRoundRegion.ay;
           const maxRound = Math.floor((activeAvatarRoundRegion.size || 104) / 2);
@@ -962,6 +1071,7 @@
           }
           if (triggerUpdateCallback) triggerUpdateCallback(false);
         } else if (isDraggingChatGap) {
+          activeDragInputId = 'input-chat-gap';
           const deltaY = cY - startChatGapDragY;
           const newGap = Math.max(0, Math.min(200, Math.round(startChatGapVal + deltaY)));
           const inputChatGap = document.getElementById('input-chat-gap');
@@ -971,6 +1081,7 @@
           }
           if (triggerUpdateCallback) triggerUpdateCallback(false);
         } else if (isDraggingOppBubbleTop) {
+          activeDragInputId = 'input-opp-bubble-top-offset';
           const deltaY = cY - startOppBubbleTopDragY;
           const newOffset = Math.max(0, Math.min(200, Math.round(startOppBubbleTopVal + deltaY)));
           const inputOppBubbleTop = document.getElementById('input-opp-bubble-top-offset');
@@ -980,6 +1091,7 @@
           }
           if (triggerUpdateCallback) triggerUpdateCallback(false);
         } else if (isDraggingDateYOffset) {
+          activeDragInputId = 'input-date-y-offset';
           const deltaY = cY - startDateYOffsetDragMouseY;
           const newOffset = Math.max(0, Math.min(300, Math.round(startDateYOffsetVal + deltaY)));
           const inputDateYOffset = document.getElementById('input-date-y-offset');
@@ -989,6 +1101,7 @@
           }
           if (triggerUpdateCallback) triggerUpdateCallback(false);
         } else if (isDraggingDateHeight) {
+          activeDragInputId = 'input-date-height';
           const deltaY = cY - startDateHeightDragMouseY;
           const newHeight = Math.max(30, Math.min(200, Math.round(startDateHeightVal + deltaY)));
           const inputDateHeight = document.getElementById('input-date-height');
@@ -997,6 +1110,10 @@
             loadedConfig['date-height'] = newHeight;
           }
           if (triggerUpdateCallback) triggerUpdateCallback(false);
+        }
+
+        if (activeDragInputId) {
+          highlightUIInput(activeDragInputId);
         }
 
         if (window.APP_MODE === 'COLOR_EDIT') {
@@ -1034,6 +1151,10 @@
         const scaleY = (canvas.height || 2340) / rect.height;
         const cX = (e.clientX - rect.left) * scaleX;
         const cY = (e.clientY - rect.top) * scaleY;
+
+        const inputChatStartY = document.getElementById('input-chat-start-y');
+        const defaultChatStartY = window.ChatEngine?.LAYOUT_DEFAULTS?.CHAT_START_Y_DEFAULT || 240;
+        const chatStartY = inputChatStartY ? (parseInt(inputChatStartY.value, 10) || defaultChatStartY) : defaultChatStartY;
 
         if (window.APP_MODE === 'LAYOUT_EDIT') {
           if (hoveringAvatarSizeHandle) {
@@ -1142,17 +1263,7 @@
         } else if (hit.targetId) {
           const colorInput = document.getElementById(hit.targetId);
           if (colorInput) {
-            const rightSpaNav = document.getElementById('right-spa-nav');
-            if (rightSpaNav && !rightSpaNav.classList.contains('drawer-open')) {
-              rightSpaNav.classList.add('drawer-open');
-            }
-
-            const colorAccordion = colorInput.closest('.setting-accordion');
-            if (colorAccordion && colorAccordion.classList.contains('collapsed')) {
-              colorAccordion.classList.remove('collapsed');
-            }
-
-            colorInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            highlightUIInput(hit.targetId);
             openCustomColorPicker(colorInput, hit.label, { x: e.clientX, y: e.clientY });
           }
         }
@@ -2949,7 +3060,58 @@
     gatherConfigFromUI,
     parseInputText,
     getAvatarSettingsMap: () => avatarSettingsMap,
-    getChatInputVal: () => chatInput ? chatInput.value : ''
+    getChatInputVal: () => {
+      const el = document.getElementById('chat-input') || document.getElementById('input-chat-text');
+      return el ? el.value : '';
+    },
+    openDrawerTab: (tabId, titleText, activeBtn) => {
+      const slidingDrawer = document.getElementById('sliding-drawer-panel');
+      const rightSpaNav = document.getElementById('right-spa-nav');
+      const drawerTitle = document.getElementById('drawer-title');
+      const articleElem = document.getElementById('kakaotalk-article');
+      if (!slidingDrawer) return;
+
+      const isCurrentActive = activeBtn && activeBtn.classList.contains('active');
+      const isClosed = slidingDrawer.classList.contains('drawer-closed');
+
+      if (isCurrentActive && !isClosed) {
+        if (window.ChatInterface.closeDrawer) window.ChatInterface.closeDrawer();
+        return;
+      }
+
+      document.querySelectorAll('.drawer-tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+
+      const targetTab = document.getElementById(tabId);
+      if (targetTab) targetTab.classList.add('active');
+      if (activeBtn) activeBtn.classList.add('active');
+      if (drawerTitle) drawerTitle.textContent = titleText;
+
+      slidingDrawer.classList.remove('drawer-closed');
+      if (rightSpaNav) rightSpaNav.classList.add('drawer-open');
+
+      if (tabId === 'drawer-tab-raw') {
+        slidingDrawer.classList.add('raw-tab-active');
+      } else {
+        slidingDrawer.classList.remove('raw-tab-active');
+      }
+
+      if (articleElem && rightSpaNav && !rightSpaNav.classList.contains('nav-overlay-mode')) {
+        articleElem.classList.add('drawer-push-active');
+      }
+    },
+    closeDrawer: () => {
+      const slidingDrawer = document.getElementById('sliding-drawer-panel');
+      const rightSpaNav = document.getElementById('right-spa-nav');
+      const articleElem = document.getElementById('kakaotalk-article');
+      if (slidingDrawer) {
+        slidingDrawer.classList.add('drawer-closed');
+        slidingDrawer.classList.remove('raw-tab-active');
+      }
+      if (rightSpaNav) rightSpaNav.classList.remove('drawer-open');
+      document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+      if (articleElem) articleElem.classList.remove('drawer-push-active');
+    }
   };
 
 })();

@@ -256,8 +256,17 @@
     if (canvas) {
       const ctx = canvas.getContext('2d');
 
-      // v0.1.0 피드백: 캔버스 내부 마우스 휠 스크롤 연동 (상단 헤더 고정 본문 스크롤)
+      // v0.1.0 피드백: 캔버스 내부 마우스 휠 스크롤 연동 (스크롤 고정 ON 상태에서는 휠 스크롤 차단)
       canvas.addEventListener('wheel', (e) => {
+        const autoScrollEl = document.getElementById('input-auto-scroll');
+        const isScrollLocked = autoScrollEl ? autoScrollEl.checked : true;
+
+        if (isScrollLocked) {
+          // 스크롤 고정 ON 상태: 휠 스크롤 동작을 완전히 차단하고 최하단 고정 유지
+          e.preventDefault();
+          return;
+        }
+
         if (window.ChatEngine) {
           const maxScroll = window.ChatEngine.getMaxScrollY();
           if (maxScroll > 0) {

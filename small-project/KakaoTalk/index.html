@@ -38,10 +38,12 @@
           <div class="drawer-header">
             <h3 id="drawer-title">⚙️ 환경설정</h3>
             <div style="display: flex; gap: 6px; align-items: center;">
-              <button type="button" id="btn-reset-settings" class="icon-nav-btn" title="설정 초기화" style="width: 28px; height: 28px; font-size: 0.9rem;">↺</button>
-              <button type="button" id="btn-save-settings" class="icon-nav-btn" title="설정 저장" style="width: 28px; height: 28px; font-size: 0.9rem;">⬇</button>
-              <button type="button" id="btn-load-settings" class="icon-nav-btn" title="설정 불러오기" style="width: 28px; height: 28px; font-size: 0.9rem;">⬆</button>
-              <div style="width: 1px; height: 16px; background: #cbd5e1; margin: 0 4px;"></div>
+              <div id="drawer-header-settings-actions" style="display: flex; gap: 6px; align-items: center;">
+                <button type="button" id="btn-reset-settings" class="icon-nav-btn" title="설정 초기화" style="width: 28px; height: 28px; font-size: 0.9rem;">↺</button>
+                <button type="button" id="btn-save-settings" class="icon-nav-btn" title="설정 저장" style="width: 28px; height: 28px; font-size: 0.9rem;">⬇</button>
+                <button type="button" id="btn-load-settings" class="icon-nav-btn" title="설정 불러오기" style="width: 28px; height: 28px; font-size: 0.9rem;">⬆</button>
+                <div style="width: 1px; height: 16px; background: #cbd5e1; margin: 0 4px;"></div>
+              </div>
               <button type="button" id="btn-drawer-mode-toggle" class="icon-nav-btn" title="패널 고정/고정 해제 전환 (📌/🔓)" style="width: 28px; height: 28px; font-size: 0.9rem;">📌</button>
               <button type="button" id="btn-close-drawer" class="btn-close-drawer" title="패널 닫기">&times;</button>
             </div>
@@ -50,67 +52,75 @@
             
             <!-- Tab 1: 🎬 애니메이션 설정 -->
             <div id="drawer-tab-anim" class="drawer-tab-content">
-              <div class="category-header" style="background: none; padding: 0; margin-bottom: 8px;">
-                <span class="category-title" style="font-size: 1.05rem;">재생 제어</span>
-                <div class="animation-controls" style="display: flex; gap: 6px;">
-                  <button id="btn-prev" title="이전 스텝">⎸◀</button>
-                  <button id="btn-play" title="시뮬레이션 재생 / 일시정지">▶</button>
-                  <button id="btn-step" title="한 스텝 재생">▶⎸</button>
+              <div class="setting-accordion">
+                <div class="setting-accordion-header">
+                  <span>🎬 재생 제어</span>
+                  <span class="setting-accordion-arrow">▼</span>
                 </div>
-              </div>
-
-              <div class="control-row">
-                <label>대화 범위</label>
-                <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
-                  <div class="double-slider-container">
-                    <div class="double-slider-track"></div>
-                    <div id="double-slider-range" class="double-slider-range"></div>
-                    <div id="slider-handle-start" class="double-slider-handle"><div class="slider-tooltip"></div></div>
-                    <div id="slider-handle-end" class="double-slider-handle"><div class="slider-tooltip"></div></div>
+                <div class="setting-accordion-body">
+                  <div class="control-row">
+                    <label>재생 조작</label>
+                    <div class="animation-controls" style="display: flex; gap: 6px;">
+                      <button type="button" id="btn-prev" title="이전 스텝">⎸◀</button>
+                      <button type="button" id="btn-play" title="시뮬레이션 재생 / 일시정지">▶</button>
+                      <button type="button" id="btn-step" title="한 스텝 재생">▶⎸</button>
+                    </div>
                   </div>
-                  <span id="label-double-range" style="width: 75px; text-align: right; font-size: 0.85em; font-weight: bold; color: #475569;">1 ~ 0</span>
-                </div>
-              </div>
 
-              <div class="control-row">
-                <label for="input-progress">대화 진행률</label>
-                <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
-                  <input type="range" id="input-progress" min="0" max="100" value="100" style="flex: 1;">
-                  <span id="label-progress" style="width: 75px; text-align: right; font-size: 0.85em; font-weight: bold; color: #475569;">0 / 0개</span>
-                </div>
-              </div>
+                  <div class="control-row">
+                    <label>대화 범위</label>
+                    <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
+                      <div class="double-slider-container">
+                        <div class="double-slider-track"></div>
+                        <div id="double-slider-range" class="double-slider-range"></div>
+                        <div id="slider-handle-start" class="double-slider-handle"><div class="slider-tooltip"></div></div>
+                        <div id="slider-handle-end" class="double-slider-handle"><div class="slider-tooltip"></div></div>
+                      </div>
+                      <span id="label-double-range" style="width: 75px; text-align: right; font-size: 0.85em; font-weight: bold; color: #475569;">1 ~ 0</span>
+                    </div>
+                  </div>
 
-              <div class="control-row">
-                <label for="input-speed">대화 속도</label>
-                <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
-                  <input type="range" id="input-speed" min="0" max="2" step="0.1" value="0.5" style="flex: 1;">
-                  <span id="label-speed" style="width: 75px; text-align: right; font-size: 0.85em; font-weight: bold; color: #475569;">0.5초</span>
-                </div>
-              </div>
+                  <div class="control-row">
+                    <label for="input-progress">대화 진행률</label>
+                    <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
+                      <input type="range" id="input-progress" min="0" max="100" value="100" style="flex: 1;">
+                      <span id="label-progress" style="width: 75px; text-align: right; font-size: 0.85em; font-weight: bold; color: #475569;">0 / 0개</span>
+                    </div>
+                  </div>
 
-              <div class="control-row">
-                <label for="input-duration">등장 시간</label>
-                <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
-                  <input type="range" id="input-duration" min="0" max="2" step="0.1" value="0.5" style="flex: 1;">
-                  <span id="label-duration" style="width: 75px; text-align: right; font-size: 0.85em; font-weight: bold; color: #475569;">0.5초</span>
-                </div>
-              </div>
+                  <div class="control-row">
+                    <label for="input-speed">대화 속도</label>
+                    <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
+                      <input type="range" id="input-speed" min="0" max="2" step="0.1" value="0.5" style="flex: 1;">
+                      <span id="label-speed" style="width: 75px; text-align: right; font-size: 0.85em; font-weight: bold; color: #475569;">0.5초</span>
+                    </div>
+                  </div>
 
-              <div class="control-row">
-                <label>등장 효과</label>
-                <div class="radio-group">
-                  <label><input type="radio" name="effect" value="opacity" checked> 투명도</label>
-                  <label><input type="radio" name="effect" value="typing"> 타이핑</label>
-                  <label><input type="radio" name="effect" value="blur"> 흐리게</label>
-                  <label><input type="radio" name="effect" value="slide"> 밀어내기</label>
-                </div>
-              </div>
+                  <div class="control-row">
+                    <label for="input-duration">등장 시간</label>
+                    <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
+                      <input type="range" id="input-duration" min="0" max="2" step="0.1" value="0.5" style="flex: 1;">
+                      <span id="label-duration" style="width: 75px; text-align: right; font-size: 0.85em; font-weight: bold; color: #475569;">0.5초</span>
+                    </div>
+                  </div>
 
-              <div class="control-row">
-                <label>부가 기능</label>
-                <div style="display: flex; gap: 16px; align-items: center;">
-                  <label style="display: flex; align-items: center; gap: 4px; font-weight: normal; cursor: pointer;"><input type="checkbox" id="input-auto-scroll" checked>스크롤 고정</label>
-                  <label style="display: flex; align-items: center; gap: 4px; font-weight: normal; cursor: pointer;"><input type="checkbox" id="input-tts"> 읽어주기</label>
+                  <div class="control-row">
+                    <label>등장 효과</label>
+                    <div class="radio-group">
+                      <label><input type="radio" name="effect" value="opacity" checked> 투명도</label>
+                      <label><input type="radio" name="effect" value="typing"> 타이핑</label>
+                      <label><input type="radio" name="effect" value="blur"> 흐리게</label>
+                      <label><input type="radio" name="effect" value="slide"> 밀어내기</label>
+                    </div>
+                  </div>
+
+                  <div class="control-row">
+                    <label>부가 기능</label>
+                    <div style="display: flex; gap: 16px; align-items: center;">
+                      <label style="display: flex; align-items: center; gap: 4px; font-weight: normal; cursor: pointer;"><input type="checkbox" id="input-auto-scroll" checked>스크롤 고정</label>
+                      <label style="display: flex; align-items: center; gap: 4px; font-weight: normal; cursor: pointer;"><input type="checkbox" id="input-tts"> 읽어주기</label>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -134,7 +144,7 @@
 
                   <div class="control-row">
                     <label for="input-capture-time">캡처 시간</label>
-                    <input type="datetime-local" id="input-capture-time" style="width: 100%; box-sizing: border-box; padding: 5px 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.78em; color: #334155; outline: none; background-color: #fff;">
+                    <input type="datetime-local" id="input-capture-time" style="width: 96%; box-sizing: border-box; padding: 5px 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.78em; color: #334155; outline: none; background-color: #fff;">
                   </div>
 
                   <div class="control-row">
@@ -308,7 +318,7 @@
                   </div>
 
                   <div class="control-row">
-                    <label for="input-avatar-center-x">초상화 세로 중심선 (X)</label>
+                    <label for="input-avatar-center-x">초상화 세로 중심선</label>
                     <input type="number" id="input-avatar-center-x" value="73" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px;">
                   </div>
                   <div class="control-row">
@@ -334,7 +344,7 @@
                     <input type="number" id="input-name-offset" value="0" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px;">
                   </div>
                   <div class="control-row">
-                    <label for="input-opponent-bubble-x">상대방 버블 좌측 정렬 (X)</label>
+                    <label for="input-opponent-bubble-x">상대방 버블 좌측 정렬</label>
                     <input type="number" id="input-opponent-bubble-x" value="160" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px;">
                   </div>
                   <div class="control-row">
@@ -342,7 +352,7 @@
                     <input type="number" id="input-chat-start-y" value="240" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px;">
                   </div>
                   <div class="control-row">
-                    <label for="input-chat-gap">대화 간격 (0.5em)</label>
+                    <label for="input-chat-gap">대화 간격</label>
                     <input type="number" id="input-chat-gap" value="24" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px;">
                   </div>
                   <div class="control-row">
@@ -391,28 +401,89 @@
               <textarea id="chat-input" placeholder="여기에 대화 내용을 입력하세요..."></textarea>
             </div>
 
+            <!-- Tab 4: ⌨️ 키보드 단축키 안내 -->
+            <div id="drawer-tab-shortcut" class="drawer-tab-content">
+              <div id="drawer-tab-shortcut-container" class="drawer-tab-zero-container">
+              </div>
+            </div>
+
+            <!-- Tab 5: 📜 작업 히스토리 패널 -->
+            <div id="drawer-tab-history" class="drawer-tab-content">
+              <div id="drawer-tab-history-container" class="drawer-tab-padded-container">
+              </div>
+            </div>
+
+            <!-- Tab 6: 💾 이미지 및 파일 저장 패널 -->
+            <div id="drawer-tab-download" class="drawer-tab-content">
+              <div class="drawer-tab-padded-container">
+                <div class="download-options-grid">
+                  <div id="opt-download-static" class="download-option-card">
+                    <div class="card-icon">📷</div>
+                    <div class="card-info">
+                      <h4>현재 화면 저장</h4>
+                      <p>지금 노출된 화면을 PNG 이미지 파일로 저장합니다.</p>
+                    </div>
+                  </div>
+                  <div id="opt-download-svg" class="download-option-card">
+                    <div class="card-icon">📐</div>
+                    <div class="card-info">
+                      <h4>SVG 저장</h4>
+                      <p>벡터 그래픽 형태의 SVG 파일로 깨끗하게 저장합니다.</p>
+                    </div>
+                  </div>
+                  <div id="opt-download-animation" class="download-option-card">
+                    <div class="card-icon">🎬</div>
+                    <div class="card-info">
+                      <h4>애니메이션 저장</h4>
+                      <p>대화가 순서대로 재생되는 과정을 무음 MP4 비디오로 저장합니다.</p>
+                    </div>
+                  </div>
+                  <div id="opt-download-full" class="download-option-card">
+                    <div class="card-icon">📜</div>
+                    <div class="card-info">
+                      <h4>전체 대화방 저장</h4>
+                      <p>전체 대화를 아래로 길게 캡처해 이미지로 저장합니다.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab 7: ❓ 사용자 도움말 패널 -->
+            <div id="drawer-tab-help" class="drawer-tab-content">
+              <div id="help-drawer-body">
+              </div>
+            </div>
+
           </div>
         </div>
 
         <!-- 2. 우측 슬림 아이콘 사이드바 (넓이 48px) -->
         <div id="right-icon-bar">
-          <!-- 즉시 실행 기능 아이콘 -->
-          <button type="button" id="btn-icon-load" class="icon-nav-btn" title="대화내용 불러오기 (📂)">📂</button>
-          <button type="button" id="btn-icon-download" class="icon-nav-btn" title="그림/SVG 다운로드 (💾)">💾</button>
-          <button type="button" id="btn-icon-help" class="icon-nav-btn" title="도움말 (❓)">❓</button>
+          <!-- 1번째 그룹: 즉시 실행 기능 아이콘 -->
+          <button type="button" id="btn-icon-load" class="icon-nav-btn" title="대화내용 불러오기">📂</button>
+          <button type="button" id="btn-icon-download" class="icon-nav-btn toggle-btn" title="그림/SVG 다운로드">💾</button>
+          <button type="button" id="btn-icon-help" class="icon-nav-btn toggle-btn" title="도움말">❓</button>
 
           <div class="icon-nav-divider"></div>
 
-          <!-- 토글 패널 아이콘 -->
-          <button type="button" id="btn-icon-anim" class="icon-nav-btn toggle-btn" title="애니메이션 설정 (🎬)">🎬</button>
-          <button type="button" id="btn-icon-settings" class="icon-nav-btn toggle-btn" title="환경설정 (⚙️)">⚙️</button>
-          <button type="button" id="btn-icon-raw" class="icon-nav-btn toggle-btn" title="원문 보기 / 실시간 에디터 (📄)">📄</button>
+          <!-- 2번째 그룹: 토글 패널 아이콘 -->
+          <button type="button" id="btn-icon-anim" class="icon-nav-btn toggle-btn" title="애니메이션 설정">🎬</button>
+          <button type="button" id="btn-icon-settings" class="icon-nav-btn toggle-btn" title="환경설정">⚙️</button>
+          <button type="button" id="btn-icon-raw" class="icon-nav-btn toggle-btn" title="원문 보기">📄</button>
+
+          <div class="icon-nav-divider"></div>
+
+          <!-- 3번째 그룹: 히스토리 및 단축키 아이콘 그룹 -->
+          <button type="button" id="btn-undo-history" class="icon-nav-btn" title="실행 취소" disabled>↩️</button>
+          <button type="button" id="btn-redo-history" class="icon-nav-btn" title="다시 실행" disabled>↪️</button>
+          <button type="button" id="btn-open-shortcut-modal" class="icon-nav-btn toggle-btn" title="단축키 안내">⌨️</button>
 
           <!-- 모바일 숨김 토글 버튼 -->
           <button type="button" id="btn-mobile-nav-toggle" class="icon-nav-btn mobile-only-btn" title="네비게이션 열기/닫기">☰</button>
 
           <!-- 최하단 다시 접기 버튼 (위쪽 화살표 ▲) -->
-          <button type="button" id="btn-fold-nav" class="icon-nav-btn fold-nav-btn" title="메뉴 바 다시 접기 (▲)" style="margin-top: auto;">▲</button>
+          <button type="button" id="btn-fold-nav" class="icon-nav-btn fold-nav-btn" title="메뉴 바 다시 접기" style="margin-top: auto;">▲</button>
         </div>
       </div>
     </div>
@@ -538,6 +609,7 @@
         Promise.resolve()
           .then(() => loadScript(basePath + 'chat-render.js?v=' + version))
           .then(() => loadScript(basePath + 'interface.js?v=' + version))
+          .then(() => loadScript(basePath + 'shortcut-manager.js?v=' + version))
           .then(() => loadScript(basePath + 'main.js?v=' + version))
           .then(() => {
             if (window.KakaoTalkMain && typeof window.KakaoTalkMain.init === 'function') {
