@@ -1,6 +1,5 @@
 /**
  * KakaoTalk Main Bootstrapper & Simulation Controller
- * Version: 0.0.10
  */
 
 (function () {
@@ -11,7 +10,7 @@
   let koreanVoices = [];
   let isAnimating = false; // 자동 재생 진행 활성화 플래그
   let ttsSafetyTimeout = null; // TTS 엔진 락 방지 타임아웃 가드
-  let lastInitializedCanvas = null; // 중복 초기화 및 돔 인스턴스 갱신 감지 가드 (v1.0.6)
+  let lastInitializedCanvas = null; // 중복 초기화 및 돔 인스턴스 갱신 감지 가드
   let renderUpdateRequestId = null; // 동일 프레임 내 중복 렌더링 배칭 ID
   let pendingResetAnimation = false; // 예약된 애니메이션 리셋 여부
 
@@ -58,7 +57,7 @@
 
     const config = window.ChatInterface.gatherConfigFromUI();
     
-    // 폼 설정에 맞춰 캔버스의 물리 해상도를 직접 동기화 (v1.0.6)
+    // 폼 설정에 맞춰 캔버스의 물리 해상도를 직접 동기화
     canvas.width = parseInt(config['width']) || 750;
     canvas.height = parseInt(config['height']) || 1334;
 
@@ -234,7 +233,7 @@
     }
   }
 
-  // DOM 로드 및 초기화 수행 단독 기동 함수 (v0.1.1 2단계)
+  // DOM 로드 및 초기화 수행 단독 기동 함수
   function initKakaoTalkApp() {
     const currentCanvas = document.getElementById('chat-canvas');
     if (!currentCanvas || lastInitializedCanvas === currentCanvas) {
@@ -256,18 +255,104 @@
     if (canvas) {
       const ctx = canvas.getContext('2d');
 
-      // v0.1.0 피드백: 캔버스 내부 마우스 휠 스크롤 연동 (상단 헤더 고정 본문 스크롤)
+      // 캔버스 내부 마우스 휠 스크롤 연동 (스크롤 고정 ON 상태에서는 휠 스크롤 차단)
       canvas.addEventListener('wheel', (e) => {
-        e.preventDefault();
+        const autoScrollEl = document.getElementById('input-auto-scroll');
+        const isScrollLocked = autoScrollEl ? autoScrollEl.checked : true;
+
+        if (isScrollLocked) {
+          // 스크롤 고정 ON 상태: 휠 스크롤 동작을 완전히 차단하고 최하단 고정 유지
+          e.preventDefault();
+          return;
+        }
+
         if (window.ChatEngine) {
-          const scrollSpeed = 0.8;
           const maxScroll = window.ChatEngine.getMaxScrollY();
-          let currentTarget = window.ChatEngine.getTargetScrollY();
-          currentTarget = Math.min(maxScroll, Math.max(0, currentTarget + e.deltaY * scrollSpeed));
-          window.ChatEngine.setTargetScrollY(currentTarget);
-          triggerCanvasUpdate(false);
+          if (maxScroll > 0) {
+            e.preventDefault();
+            const scrollSpeed = 0.8;
+            let currentTarget = window.ChatEngine.getTargetScrollY();
+            currentTarget = Math.min(maxScroll, Math.max(0, currentTarget + e.deltaY * scrollSpeed));
+            window.ChatEngine.setTargetScrollY(currentTarget);
+            triggerCanvasUpdate(false);
+          }
         }
       }, { passive: false });
+
+      // Ctrl 키 누른 채 마우스 호버 가로/세로 보조선 및 최하단 좌표 툴팁 연동
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Control' && !window._isCtrlGuideActive) {
+          window._isCtrlGuideActive = true;
+          if (window.setAppMode) window.setAppMode('LAYOUT_EDIT');
+          triggerCanvasUpdate(false);
+        }
+      });
+
+      window.addEventListener('keyup', (e) => {
+        if (e.key === 'Control' || !e.ctrlKey) {
+          if (window._isCtrlGuideActive) {
+            window._isCtrlGuideActive = false;
+            if (window.restorePreviousAppMode) window.restorePreviousAppMode();
+            triggerCanvasUpdate(false);
+          }
+        }
+      });
+
+      canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        window._guideMouseX = Math.round((e.clientX - rect.left) * scaleX);
+        window._guideMouseY = Math.round((e.clientY - rect.top) * scaleY);
+
+        if (e.ctrlKey) {
+          if (!window._isCtrlGuideActive) {
+            window._isCtrlGuideActive = true;
+            if (window.setAppMode) window.setAppMode('LAYOUT_EDIT');
+          }
+          triggerCanvasUpdate(false);
+        }
+      });
+
+      canvas.addEventListener('mouseleave', () => {
+        if (window._isCtrlGuideActive) {
+          window._isCtrlGuideActive = false;
+          if (window.restorePreviousAppMode) window.restorePreviousAppMode();
+          triggerCanvasUpdate(false);
+        }
+      });
+
+      // Ctrl + 마우스 클릭 시 현재 정밀 픽셀 좌표 클립보드 복사 및 토스트 알림 연동
+      let copyToastTimeout = null;
+      canvas.addEventListener('click', (e) => {
+        if (e.ctrlKey || window._isCtrlGuideActive) {
+          const mX = window._guideMouseX || 0;
+          const mY = window._guideMouseY || 0;
+          const coordStr = `X: ${mX}, Y: ${mY}`;
+
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(coordStr).catch(() => {});
+          } else {
+            try {
+              const textAttr = document.createElement('textarea');
+              textAttr.value = coordStr;
+              document.body.appendChild(textAttr);
+              textAttr.select();
+              document.execCommand('copy');
+              document.body.removeChild(textAttr);
+            } catch (err) {}
+          }
+
+          window._copyNotificationText = `클립보드 복사 완료! (${coordStr})`;
+          triggerCanvasUpdate(false);
+
+          if (copyToastTimeout) clearTimeout(copyToastTimeout);
+          copyToastTimeout = setTimeout(() => {
+            window._copyNotificationText = null;
+            triggerCanvasUpdate(false);
+          }, 1500);
+        }
+      });
 
       // 2. 캔버스 60fps 렌더 루프 개시
       window.ChatEngine.startRenderLoop(
@@ -328,14 +413,10 @@
       });
     }
 
-    // 물리적 scrollTop에 의한 상단 잘림 원천 봉쇄 방지
-    const svgBox = document.getElementById('svg-box');
-    if (svgBox) {
-      svgBox.scrollTop = 0;
-    }
+
   }
 
-  // 저전력 렌더러 즉시 한 프레임 드로잉 업데이트 API (v1.0.5)
+  // 저전력 렌더러 즉시 한 프레임 드로잉 업데이트 API
   function wakeRenderer() {
     triggerCanvasUpdate(false);
   }
