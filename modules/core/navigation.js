@@ -85,6 +85,32 @@ window.SiteModules.Navigation = (function () {
     let sidebarContainer = document.getElementById("sidebar-container");
     if (!sidebarContainer) {
       const body = document.querySelector("body");
+
+      // C. 모바일 전용 상단 고정 헤더
+      let mobileHeader = document.getElementById("mobile-header");
+      if (!mobileHeader) {
+        mobileHeader = document.createElement("div");
+        mobileHeader.setAttribute("id", "mobile-header");
+        mobileHeader.innerHTML = `
+          <div id="mobile-logo">
+            <img src="/source/icon_seohyun.svg" alt="iseohyun.com 로고" id="mobile-logo-img">
+            <span id="mobile-logo-text">iseohyun.com</span>
+          </div>
+          <div id="mobile-menu-btn" data-tooltip="메뉴">
+            <span class="material-symbols-outlined">menu</span>
+          </div>
+        `;
+        body.insertBefore(mobileHeader, body.firstChild);
+      }
+
+      // D. 모바일 어두운 배경 오버레이
+      let sidebarOverlay = document.getElementById("sidebar-overlay");
+      if (!sidebarOverlay) {
+        sidebarOverlay = document.createElement("div");
+        sidebarOverlay.setAttribute("id", "sidebar-overlay");
+        body.appendChild(sidebarOverlay);
+      }
+
       sidebarContainer = document.createElement("div");
       sidebarContainer.setAttribute("id", "sidebar-container");
       body.appendChild(sidebarContainer);
@@ -189,6 +215,27 @@ window.SiteModules.Navigation = (function () {
 
       createModals();
       bindSidebarEvents();
+
+      // C. 모바일 스크린 상단 헤더 (header) 100% 동적 렌더링 주입
+      let siteHeader = document.querySelector("header");
+      if (!siteHeader) {
+        siteHeader = document.createElement("header");
+        siteHeader.className = "site-header";
+        siteHeader.innerHTML = `
+          <div id="headerIcons">
+            <div id="header-home" onclick="window.location.href='/'" title="홈으로" style="cursor:pointer; display:flex; align-items:center;">
+              <span class="material-symbols-outlined" style="color:#2563eb; font-size:22px;">home</span>
+            </div>
+            <div id="header-sitemap" onclick="document.getElementById('nav-sitemap')?.click()" title="사이트맵" style="cursor:pointer; display:flex; align-items:center;">
+              <span class="material-symbols-outlined" style="color:#475569; font-size:22px;">account_tree</span>
+            </div>
+            <div id="header-search" onclick="document.getElementById('nav-search')?.click()" title="검색" style="cursor:pointer; display:flex; align-items:center;">
+              <span class="material-symbols-outlined" style="color:#475569; font-size:22px;">search</span>
+            </div>
+          </div>
+        `;
+        document.body.prepend(siteHeader);
+      }
     }
 
     baseUl = document.getElementById("sitemap-tree");
@@ -253,8 +300,9 @@ window.SiteModules.Navigation = (function () {
     function search(items, currentDir) {
       for (const item of items) {
         const itemDir = currentDir + (item.디렉토리 || "");
-        if (item.파일명) {
-          const fullPath = itemDir + item.파일명;
+        const fileName = item.파일명 || (item.목록 ? null : "index.html");
+        if (fileName) {
+          const fullPath = itemDir + fileName;
           if (fullPath === cleanTargetPath) {
             return true;
           }
@@ -442,7 +490,9 @@ window.SiteModules.Navigation = (function () {
 
     if (isMobile) {
       const container = document.getElementById("sidebar-container");
+      const overlay = document.getElementById("sidebar-overlay");
       if (container) container.classList.remove("active");
+      if (overlay) overlay.classList.remove("active");
     }
 
     if (!hash || hash === "#" || hash === "#/" || hash === "#/index.html" || hash === "#index.html") {
@@ -518,10 +568,6 @@ window.SiteModules.Navigation = (function () {
 
     // 구조 빌드
     article.innerHTML = `
-      <div id="site-intro">
-        <img id="site-icon" src="/source/icon_seohyun.svg">
-        <div id="site-name">iseohyun.com</div>
-      </div>
       <ul id="site-history"></ul>
     `;
 
@@ -605,6 +651,36 @@ window.SiteModules.Navigation = (function () {
     const article = document.querySelector("article");
     if (!article) return;
 
+    // SPA 페이지 전환 시 잔존하는 ResizeObserver 및 윈도우 스냅 리스너 일괄 청소
+    if (window.activeResizeObservers) {
+      window.activeResizeObservers.forEach(obs => {
+        try { obs.disconnect(); } catch (e) {}
+      });
+      window.activeResizeObservers = [];
+    }
+    if (window.activeWindowListeners) {
+      window.activeWindowListeners.forEach(item => {
+        try { window.removeEventListener(item.type, item.fn); } catch (e) {}
+      });
+      window.activeWindowListeners = [];
+    }
+
+    // SPA 페이지 전환 시 이전 소프로젝트 잔존 전역 함수 및 변수 일괄 소거 (네임스페이스 충돌 방어)
+    const globalsToClean = [
+      "init", "initApp", "rebuildGrid", "positionTooltip", "guide", "stepsData", "inputs",
+      "cur_step", "cur_line", "language", "isFin", "isGreating", "stateHistory", "state",
+      "EuclideanGridInput", "SqrtGridInput", "GridInput", "V", "titleText", "sentences",
+      "activeCells", "clearGridRow", "highlightActiveStep", "nextStep", "prevStep", "initKeybindings",
+      "triggerRandomStart", "resetToStart",
+      "initChart", "redrawChart", "startChartAnimation", "drawBars", "updateChartRealtime",
+      "triggerMathRendering", "setupDualInputBindings", "handleRunSimulation", "cleanupActiveWorker", "updateResultUI",
+      "coordinatesToSvg", "svgToCoordinates", "multiplyComplex", "drawRulers", "handleReload", "drawAnimatePath",
+      "drawCoordinateAxes", "drawConcentricCircles", "drawControlPath", "updateDragGuideLine", "setBackgroundSize", "T"
+    ];
+    globalsToClean.forEach(key => {
+      try { delete window[key]; } catch(e) {}
+    });
+
     try {
       const response = await fetch(urlPath);
       if (!response.ok) {
@@ -669,7 +745,13 @@ window.SiteModules.Navigation = (function () {
         return;
       }
 
-      if (src && document.querySelector(`script[src="${src}"]`)) {
+      // 소프로젝트 하위의 페이지 종속 스크립트들은 재진입 시 항상 새로 실행하도록 기존 캐시 태그 노드 제거
+      if (src && (src.includes("/small-project/") || src.includes("/modules/features/"))) {
+        const existingScript = document.querySelector(`script[src="${src}"]`);
+        if (existingScript) {
+          existingScript.remove();
+        }
+      } else if (src && document.querySelector(`script[src="${src}"]`)) {
         return; // 이미 로드된 스크립트 실행 생략
       }
 
@@ -693,7 +775,12 @@ window.SiteModules.Navigation = (function () {
           };
         }
       } else {
-        newScript.textContent = oldScript.textContent;
+        // 일반 인라인 스크립트의 경우, const/let 재선언 SyntaxError를 방지하기 위해 IIFE로 래핑하여 실행
+        if (scriptType !== "module") {
+          newScript.textContent = `(function(){\n${oldScript.textContent}\n})();`;
+        } else {
+          newScript.textContent = oldScript.textContent;
+        }
         document.body.appendChild(newScript);
         // type=module 스크립트는 append 후에도 DOM에 남겨야 실행되므로 remove() 생략
         if (scriptType !== "module") newScript.remove();
@@ -902,9 +989,11 @@ window.SiteModules.Navigation = (function () {
         const listItem = document.createElement('li');
         const currentDirectory = item.디렉토리 || "";
 
-        if (item.hasOwnProperty('파일명')) {
+        const hasFile = item.hasOwnProperty('파일명') || !item.hasOwnProperty('목록');
+        if (hasFile) {
+          const fileName = item.hasOwnProperty('파일명') ? item.파일명 : "index.html";
           const anchor = document.createElement('a');
-          anchor.href = `/${parentDirectories}${currentDirectory}${item.파일명}`;
+          anchor.href = `/${parentDirectories}${currentDirectory}${fileName}`;
           anchor.textContent = item.주제;
           listItem.appendChild(anchor);
 
@@ -1095,6 +1184,35 @@ window.SiteModules.Navigation = (function () {
   }
 
   function bindSidebarEvents() {
+    const mobileHeader = document.getElementById("mobile-header");
+    const sidebarOverlay = document.getElementById("sidebar-overlay");
+    const sidebarContainer = document.getElementById("sidebar-container");
+
+    function toggleMobileMenu() {
+      if (!sidebarContainer) return;
+      const isActive = sidebarContainer.classList.toggle("active");
+      if (sidebarOverlay) {
+        sidebarOverlay.classList.toggle("active", isActive);
+      }
+      if (isActive) {
+        // 모바일 메뉴가 열릴 때 패널이 접혀 있다면 펼쳐서 메뉴 항목을 활성화
+        setPanelCollapsed(false);
+      }
+    }
+
+    if (mobileHeader) {
+      mobileHeader.addEventListener("click", () => {
+        toggleMobileMenu();
+      });
+    }
+
+    if (sidebarOverlay) {
+      sidebarOverlay.addEventListener("click", () => {
+        if (sidebarContainer) sidebarContainer.classList.remove("active");
+        sidebarOverlay.classList.remove("active");
+      });
+    }
+
     const navHomeBtn = document.getElementById("nav-home");
     if (navHomeBtn) {
       navHomeBtn.addEventListener("click", () => {
@@ -1411,8 +1529,10 @@ window.SiteModules.Navigation = (function () {
         const title = item.주제 || "";
         const dir = item.디렉토리 || "";
         const pathDesc = currentBreadcrumb ? `${currentBreadcrumb} > ${title}` : title;
-        if (item.hasOwnProperty('파일명')) {
-          const fullUrl = `/${currentPath}${dir}${item.파일명}`;
+        const hasFile = item.hasOwnProperty('파일명') || !item.hasOwnProperty('목록');
+        if (hasFile) {
+          const fileName = item.hasOwnProperty('파일명') ? item.파일명 : "index.html";
+          const fullUrl = `/${currentPath}${dir}${fileName}`;
           pages.push({
             title: title,
             url: fullUrl,
@@ -1479,8 +1599,10 @@ window.SiteModules.Navigation = (function () {
       const dir = item.디렉토리 || "";
       const pathDesc = currentBreadcrumb ? `${currentBreadcrumb} > ${title}` : title;
 
-      if (item.hasOwnProperty('파일명')) {
-        const fullUrl = `/${currentPath}${dir}${item.파일명}`;
+      const hasFile = item.hasOwnProperty('파일명') || !item.hasOwnProperty('목록');
+      if (hasFile) {
+        const fileName = item.hasOwnProperty('파일명') ? item.파일명 : "index.html";
+        const fullUrl = `/${currentPath}${dir}${fileName}`;
         if (title.toLowerCase().includes(query.toLowerCase())) {
           results.push({
             title: title,
@@ -1566,13 +1688,15 @@ window.SiteModules.Navigation = (function () {
       const currentDir = item.디렉토리 || "";
       const pathDesc = currentBreadcrumb ? `${currentBreadcrumb} >> ${item.주제}` : item.주제;
 
-      if (item.hasOwnProperty('파일명')) {
-        const resolvedPath = `/${parentDirectories}${currentDir}${item.파일명}`;
+      const hasFile = item.hasOwnProperty('파일명') || !item.hasOwnProperty('목록');
+      if (hasFile) {
+        const fileName = item.hasOwnProperty('파일명') ? item.파일명 : "index.html";
+        const resolvedPath = `/${parentDirectories}${currentDir}${fileName}`;
         if (resolvedPath === cleanTarget) {
           const state = window.SiteModules.state;
           state.cur_doc.title = item.주제;
           state.cur_doc.dir = item.디렉토리;
-          state.cur_doc.file = item.파일명;
+          state.cur_doc.file = fileName;
           state.category = currentBreadcrumb;
 
           // 이전글 설정
@@ -1580,7 +1704,7 @@ window.SiteModules.Navigation = (function () {
             const prev = data[i - 1];
             state.prv_doc.title = prev.주제;
             state.prv_doc.dir = prev.디렉토리;
-            state.prv_doc.file = prev.파일명;
+            state.prv_doc.file = prev.hasOwnProperty('파일명') ? prev.파일명 : (prev.hasOwnProperty('목록') ? "" : "index.html");
             state.prv_doc.parentDirs = parentDirectories;
           } else {
             state.prv_doc = { title: "", dir: "", file: "" };
@@ -1591,7 +1715,7 @@ window.SiteModules.Navigation = (function () {
             const next = data[i + 1];
             state.next_doc.title = next.주제;
             state.next_doc.dir = next.디렉토리;
-            state.next_doc.file = next.파일명;
+            state.next_doc.file = next.hasOwnProperty('파일명') ? next.파일명 : (next.hasOwnProperty('목록') ? "" : "index.html");
             state.next_doc.parentDirs = parentDirectories;
           } else {
             state.next_doc = { title: "", dir: "", file: "" };
@@ -1624,8 +1748,9 @@ window.SiteModules.Navigation = (function () {
             hierarchy = item.목록;
             found = true;
             break;
-          } else if (item.파일명) {
-            return path + item.파일명;
+          } else {
+            const fileName = item.hasOwnProperty('파일명') ? item.파일명 : "index.html";
+            return path + fileName;
           }
         }
       }
@@ -1638,8 +1763,26 @@ window.SiteModules.Navigation = (function () {
   }
 
   function getPageKey(path) {
-    const cleanPath = path.startsWith('/') ? path.substring(1) : path;
-    const parts = cleanPath.replace('.html', '').split('/');
+    if (!path) return "@home";
+
+    // 1. 쿼리 파라미터 분리 제거
+    let cleanPath = path.split('?')[0];
+
+    // 2. 앞뒤 슬래시 정리 및 확장자 제거
+    if (cleanPath.startsWith('/')) cleanPath = cleanPath.substring(1);
+    if (cleanPath.endsWith('/')) cleanPath = cleanPath.substring(0, cleanPath.length - 1);
+    cleanPath = cleanPath.replace(/\.html?$/i, '');
+
+    // 3. 파일명이 'index' 인 경우 소프로젝트 범주로 취합하기 위해 떼어냄
+    const parts = cleanPath.split('/');
+    if (parts.length > 0 && parts[parts.length - 1].toLowerCase() === 'index') {
+      parts.pop();
+    }
+
+    if (parts.length === 0 || (parts.length === 1 && parts[0] === '')) {
+      return '@home';
+    }
+
     return '@' + parts.join('>');
   }
 

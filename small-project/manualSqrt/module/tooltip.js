@@ -1,6 +1,6 @@
 // guide.js - Interactive Popover Guide and Practice Challenge Management
 
-let isHidden = false;
+var isHidden = false;
 
 function getPostposition(digit, type) {
   const d = parseInt(digit);

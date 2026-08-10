@@ -45,19 +45,12 @@ service cloud.firestore {
       allow write: if true; // 게스트 등록 지원
     }
 
-    // 5. 사용자 환경설정 문서 규칙
+    // 5. 사용자 환경설정 및 서브컬렉션 통합 규칙 (모든 서브컬렉션 재귀 허용)
     match /users/{uid} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
       allow read, write: if request.auth == null && uid.matches('^GUEST_.*');
       
-      // 사용자 진행 상태 서브컬렉션
-      match /progress/{charId} {
-        allow read, write: if request.auth != null && request.auth.uid == uid;
-        allow read, write: if request.auth == null && uid.matches('^GUEST_.*');
-      }
-
-      // 사용자 복습통계 서브컬렉션
-      match /study_stats/{dayStr} {
+      match /{document=**} {
         allow read, write: if request.auth != null && request.auth.uid == uid;
         allow read, write: if request.auth == null && uid.matches('^GUEST_.*');
       }

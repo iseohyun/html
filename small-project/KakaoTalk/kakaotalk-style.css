@@ -1,35 +1,522 @@
+/* 글로벌 style.css의 h2:before 번호 카운터 비활성화 (이 프로젝트 한정) */
+h2::before,
+h2:before {
+  content: none !important;
+  display: none !important;
+}
+
+/* ======================================================
+   스크롤바 감추기 (이 사이트 한정: 스크롤 기능은 정상 동작)
+   ====================================================== */
+html, body {
+  -ms-overflow-style: none !important;  /* IE / Edge */
+  scrollbar-width: none !important;  /* Firefox */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
 #kakaotalk-article {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
   align-items: flex-start;
+  gap: 20px;
   width: 100%;
+  max-width: 1600px;
+  margin: 0 auto 60px auto; /* 아래 질문 및 건의 영역과의 간격 확보 */
+  padding-right: 48px; /* 48px 사이드바 공간 확보 */
+  position: relative;
+  box-sizing: border-box;
+  transition: padding-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-#svg-target {
-  width: 100%;
+#kakaotalk-article.drawer-push-active {
+  padding-right: 380px; /* 드로어 선택 시 아이콘 숨겨지고 380px 폭 밀어내기 */
+}
+
+/* 캔버스 컨테이너 */
+#canvas-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden; /* 강제 축소 시 스크롤바 미노출 */
+  padding: 16px;
+  box-sizing: border-box;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#chat-canvas {
+  height: 95vh; /* 뷰포트 높이의 95%로 지정하여 화면 세로 맞춤 최적화 */
+  width: auto;  /* 종횡비(1080x2340) 유지하며 가로 비율 맞춤 */
   max-width: 100%;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e2e8f0;
+  aspect-ratio: 1080 / 2340; /* 캔버스 물리 해상도 종횡비 강제 고정 */
+  flex-shrink: 0;
+  display: block;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.15), 0 4px 10px -2px rgba(0, 0, 0, 0.08);
+  border: 1px solid #cbd5e1;
+  overflow: hidden;
+  box-sizing: border-box;
+  background-color: #acc0d1;
 }
 
-#controll-box {
-  width: 100%;
+/* ======================================================
+   오른쪽 코너 48x48 밀착 다시 펼치기 버튼 (아래 화살표 ▼)
+   ====================================================== */
+/* ======================================================
+   오른쪽 코너 48x48 밀착 다시 펼치기 버튼 (아래 화살표 ▼)
+   ====================================================== */
+.floating-reexpand-btn {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 48px;
+  height: 48px;
+  z-index: 220;
+  background: #0f172a;
+  color: #f8fafc;
+  border: none;
+  border-radius: 0;
+  font-size: 1.2rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: -2px 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+}
+
+.floating-reexpand-btn:hover {
+  background: #1e293b;
+  color: #fee500;
+  transform: scale(1.05);
+}
+
+/* 오른쪽 메뉴바 최하단 다시 접기 버튼 (위쪽 화살표 ▲) */
+.fold-nav-btn {
+  margin-top: auto !important;
+  color: #fee500 !important;
+  font-weight: bold;
+}
+
+.fold-nav-btn:hover {
+  background: #fee500 !important;
+  color: #191919 !important;
+}
+
+/* ======================================================
+   우측 SPA 네비게이션 바 & 전체 높이(100vh) 슬라이딩 드로어 (직각 디자인)
+   ====================================================== */
+#right-spa-nav {
+  display: flex;
+  flex-direction: row;
+  position: fixed;
+  right: 0;
+  top: 0;
+  height: 100vh;
+  z-index: 200;
+  box-sizing: border-box;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+}
+
+/* 스크롤이 최상단이 아닐 때 위로 말려 올라가는 모션 */
+#right-spa-nav.nav-scrolled-up {
+  transform: translateY(-120%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 드로어가 열렸을 때에도 48px 아이콘 바 상시 유지 */
+#right-spa-nav.drawer-open #right-icon-bar {
+  display: flex !important;
+}
+
+/* Overlay 모드 처리 */
+#right-spa-nav.nav-overlay-mode #sliding-drawer-panel {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100vh;
+  box-shadow: -10px 0 30px rgba(15, 23, 42, 0.25);
+}
+
+/* 우측 슬림 아이콘 사이드바 (전체 높이 100vh, 넓이 48px) */
+#right-icon-bar {
+  width: 48px;
+  height: 100vh;
+  background: #0f172a;
+  border-radius: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  background-color: #ffffff;
-  padding: 24px;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-  border: 1px solid #e2e8f0;
+  align-items: center;
+  padding: 15px 0;
+  gap: 12px;
+  z-index: 210;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
   box-sizing: border-box;
 }
 
-@media (max-width: 768px) {
+.icon-nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 1.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+}
+
+.icon-nav-btn:hover {
+  background: #1e293b;
+  color: #f8fafc;
+  transform: scale(1.08);
+}
+
+.icon-nav-btn.active {
+  background: #fee500;
+  color: #191919;
+  box-shadow: 0 0 12px rgba(254, 229, 0, 0.4);
+}
+
+.icon-nav-divider {
+  width: 28px;
+  height: 1px;
+  background: #334155;
+  margin: 4px 0;
+}
+
+/* 슬라이딩 드로어 패널 (반투명 글라스모드 Glassmorphism & 폭 조절 핸들) */
+#sliding-drawer-panel {
+  width: 380px;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.40) !important;
+  backdrop-filter: blur(5px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+  border-radius: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: -8px 0 32px rgba(15, 23, 42, 0.12);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  transform: translateX(0);
+  opacity: 1;
+  box-sizing: border-box;
+}
+
+/* 좌측 테두리 드래그 리사이저 핸들 */
+.drawer-resizer-handle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 8px;
+  height: 100%;
+  cursor: ew-resize;
+  z-index: 250;
+  background: transparent;
+  transition: background 0.2s ease;
+}
+
+.drawer-resizer-handle:hover,
+.drawer-resizer-handle.resizing {
+  background: #fee500;
+  box-shadow: 2px 0 8px rgba(254, 229, 0, 0.6);
+}
+
+#sliding-drawer-panel.drawer-closed {
+  transform: translateX(100%);
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  margin-right: 0;
+  border: none;
+}
+
+.drawer-header {
+  padding: 16px 20px;
+  background: rgba(240, 243, 246, 0.55) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid rgba(203, 213, 225, 0.5);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.drawer-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-close-drawer {
+  background: transparent;
+  border: none;
+  font-size: 1.3rem;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  border-radius: 6px;
+}
+
+.btn-close-drawer:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.drawer-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 !important;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ======================================================
+   환경설정 접이식 카테고리 (Accordion)
+   ====================================================== */
+.setting-accordion {
+  border-top: 1px solid rgba(203, 213, 225, 0.4);
+  overflow: hidden;
+}
+
+.setting-accordion-header {
+  padding: 12px 14px;
+  background: rgba(241, 245, 249, 0.45) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  font-weight: bold;
+  font-size: 0.95rem;
+  color: #0f172a;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s ease;
+}
+
+.setting-accordion-header:hover {
+  background: rgba(226, 232, 240, 0.65) !important;
+}
+
+.setting-accordion-body {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid rgba(226, 232, 240, 0.5);
+}
+
+.setting-accordion.collapsed .setting-accordion-body {
+  display: none !important;
+}
+
+.setting-accordion-arrow {
+  font-size: 0.8rem;
+  color: #64748b;
+  transition: transform 0.2s ease;
+}
+
+.setting-accordion.collapsed .setting-accordion-arrow {
+  transform: rotate(-90deg);
+}
+
+/* 캔버스 직접 색상/오브젝트 선택 모드 (🎯) 버튼 및 툴팁 스타일 */
+.btn-canvas-picker {
+  background: #cbd5e1 !important;
+  color: #475569 !important;
+  transition: all 0.2s ease;
+}
+
+.btn-canvas-picker.active {
+  background: #ff7d00 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(255, 125, 0, 0.45) !important;
+  transform: scale(1.1);
+  transition: all 0.2s ease;
+}
+
+.avatar-item-row.avatar-row-highlight {
+  border: 2px solid #f59e0b !important;
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.35) !important;
+  background-color: #fefce8 !important;
+  transition: all 0.3s ease;
+}
+
+
+.drawer-tab-content {
+  display: none !important;
+  flex-direction: column;
+}
+
+.drawer-tab-content.active {
+  display: flex !important;
+}
+
+/* 서랍 패널 탭 공통 컨테이너 스타일 */
+.drawer-tab-padded-container {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.drawer-tab-zero-container {
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+/* 다운로드 옵션 카드 그리드 및 카드 스타일 */
+.download-options-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.download-option-card {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.download-option-card:hover {
+  border-color: #3b82f6;
+  background: #f8fafc;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.download-option-card .card-icon {
+  font-size: 1.8rem;
+}
+
+.download-option-card .card-info h4 {
+  margin: 0 0 4px 0;
+  color: #0f172a;
+  font-size: 0.95rem;
+}
+
+.download-option-card .card-info p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.82rem;
+}
+
+/* 도움말 서랍 본문 스타일 */
+#help-drawer-body {
+  padding: 16px;
+  line-height: 1.7;
+  font-size: 0.9em;
+  color: #334155;
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+#help-drawer-body h2:first-child,
+#help-modal-body h2:first-child {
+  margin-top: 0 !important;
+  padding-top: 10px !important;
+}
+
+#drawer-tab-raw {
+  display: none !important;
+}
+
+#drawer-tab-raw.active {
+  display: flex !important;
+  flex: 1;
+  height: 100%;
+  width: 100%;
+  flex-direction: column;
+}
+
+#drawer-tab-raw #chat-input {
+  flex: 1;
+  width: 100%;
+  height: 100% !important;
+  min-height: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  font-family: monospace;
+  font-size: 0.9em;
+  line-height: 1.5;
+  resize: none;
+  border: none;
+  border-radius: 0;
+  outline: none;
+}
+
+/* 모바일 전용 수직 숨김 토글 */
+.mobile-only-btn {
+  display: none;
+}
+
+@media (max-width: 900px) {
   #kakaotalk-article {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #right-spa-nav {
+    position: fixed;
+    right: 12px;
+    bottom: 20px;
+    top: auto;
+    height: auto;
+    max-height: 80vh;
+  }
+
+  #right-icon-bar {
+    flex-direction: column;
+  }
+
+  .mobile-only-btn {
+    display: flex;
+  }
+
+  #right-spa-nav.mobile-collapsed #sliding-drawer-panel,
+  #right-spa-nav.mobile-collapsed .icon-nav-btn:not(.mobile-only-btn),
+  #right-spa-nav.mobile-collapsed .icon-nav-divider {
+    display: none;
   }
 }
 
@@ -38,8 +525,11 @@
   gap: 12px;
 }
 
-button {
+.button-group button {
   flex: 1;
+}
+
+button {
   padding: 12px;
   font-size: 0.95em;
   font-weight: bold;
@@ -67,6 +557,55 @@ button {
 #btn-download:hover {
   background-color: #1e293b;
   box-shadow: 0 4px 12px rgba(51, 65, 85, 0.2);
+}
+
+.tooltip-wrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+}
+
+.tooltip-wrapper button {
+  width: 100%;
+}
+
+.tooltip-below {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 8px;
+  background-color: #0f172a;
+  color: #f8fafc;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+  z-index: 1000;
+}
+
+.tooltip-below::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent #0f172a transparent;
+}
+
+.tooltip-wrapper:hover .tooltip-below,
+.tooltip-wrapper:focus-within .tooltip-below {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(2px);
 }
 
 button:active {
@@ -209,25 +748,6 @@ button:active {
   backdrop-filter: blur(4px);
 }
 
-#svg-box {
-  width: 100%;
-  height: 800px;
-  overflow: hidden;
-  border-radius: 12px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  background-color: #acc0d1; /* 카카오톡 배경색 기본 지정 */
-  border: 1px solid #cbd5e1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-#chat-canvas {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  display: block;
-}
 
 .modal-content {
   background-color: #ffffff;
@@ -242,8 +762,27 @@ button:active {
 }
 
 @keyframes modalFadeIn {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes slideUpSheet {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .modal-header {
@@ -383,7 +922,7 @@ button:active {
   height: 22px;
   border-radius: 50%;
   cursor: pointer;
-  border: 1px solid rgba(0,0,0,0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   transition: transform 0.1s;
 }
 
@@ -495,7 +1034,9 @@ button:active {
 
 .control-row input[type="text"],
 .control-row input[type="number"],
-.control-row input[type="time"] {
+.control-row input[type="time"],
+.control-row input[type="datetime-local"],
+.control-row select {
   padding: 8px 12px;
   font-size: 0.9em;
   border: 1px solid #cbd5e1;
@@ -505,13 +1046,28 @@ button:active {
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
   box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
 }
 
 .control-row input[type="text"]:focus,
 .control-row input[type="number"]:focus,
-.control-row input[type="time"]:focus {
+.control-row input[type="time"]:focus,
+.control-row input[type="datetime-local"]:focus,
+.control-row select:focus {
   border-color: #94a3b8;
   box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.1);
+}
+
+.control-row input[type="datetime-local"] {
+  font-size: 0.78em !important;
+  padding: 5px 6px !important;
+}
+
+.control-row input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
 }
 
 .control-row input[type="range"] {
@@ -549,16 +1105,18 @@ textarea {
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-/* 커스텀 더블 슬라이더 (v1.1.0) */
+/* 커스텀 더블 슬라이더 */
 .double-slider-container {
-  touch-action: none; /* 모바일 드래그 충돌 방지 */
+  touch-action: none;
+  /* 모바일 드래그 충돌 방지 */
   flex: 1;
   position: relative;
   height: 24px;
   display: flex;
   align-items: center;
   user-select: none;
-  margin: 0 4px; /* input range와의 완벽한 좌우 정렬 일치를 위한 여백 보정 */
+  margin: 0 4px;
+  /* input range와의 완벽한 좌우 정렬 일치를 위한 여백 보정 */
 }
 
 .double-slider-track {
@@ -587,7 +1145,8 @@ textarea {
   width: 14px;
   height: 14px;
   background-color: #fee500 !important;
-  border: none !important; /* 헨들러 테두리(border) 제거 */
+  border: none !important;
+  /* 헨들러 테두리(border) 제거 */
   border-radius: 50%;
   cursor: pointer;
   transform: translateX(-50%);
@@ -645,7 +1204,7 @@ textarea:focus {
   box-shadow: 0 0 0 3px rgba(254, 229, 0, 0.15);
 }
 
-/* 다운로드 옵션 선택 모달 관련 스타일 (v1.2.0) */
+/* 다운로드 옵션 선택 모달 관련 스타일 */
 .download-options-grid {
   display: flex;
   flex-direction: column;
@@ -711,4 +1270,21 @@ textarea:focus {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   border: 1px solid #e2e8f0;
   object-fit: contain;
+}
+
+@keyframes softRedHighlightFade {
+  0% {
+    background-color: #fee2e2;
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3);
+  }
+  100% {
+    background-color: #ffffff;
+    border-color: #cbd5e1;
+    box-shadow: none;
+  }
+}
+
+.input-highlight-fade {
+  animation: softRedHighlightFade 1s ease-out forwards !important;
 }

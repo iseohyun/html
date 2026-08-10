@@ -17,6 +17,7 @@ import { ALPHABETS } from './engine.js';
 // 내부 상주 변수 및 도메인별 다차원 메모리 캐시 구조화
 let currentUserUid = null;
 let progressCache = {};
+let progressMeta = {};
 
 /**
  * 게스트용 고유 기기 ID 생성 및 반환
@@ -28,6 +29,43 @@ const _getOrCreateGuestId = () => {
     localStorage.setItem('GUEST_ID', guestId);
   }
   return guestId;
+};
+
+/**
+ * 로컬 localStorage 스토리지에 캐시 및 타임스탬프 동기화 보존
+ */
+const _saveLocalProgressCache = () => {
+  if (!currentUserUid) return;
+  try {
+    const cacheKey = `KANALOOP_PROGRESS_CACHE_${currentUserUid}`;
+    const metaKey = `KANALOOP_PROGRESS_META_${currentUserUid}`;
+    localStorage.setItem(cacheKey, JSON.stringify(progressCache));
+    localStorage.setItem(metaKey, JSON.stringify(progressMeta));
+  } catch (e) {
+    console.warn("[LocalFirst] localStorage 동기화 저장 실패:", e);
+  }
+};
+
+/**
+ * 로컬 localStorage 스토리지에서 캐시 및 타임스탬프 복원
+ */
+const _loadLocalProgressCache = () => {
+  if (!currentUserUid) return false;
+  try {
+    const cacheKey = `KANALOOP_PROGRESS_CACHE_${currentUserUid}`;
+    const metaKey = `KANALOOP_PROGRESS_META_${currentUserUid}`;
+    const cachedData = localStorage.getItem(cacheKey);
+    const cachedMeta = localStorage.getItem(metaKey);
+
+    if (cachedData) {
+      progressCache = JSON.parse(cachedData);
+      progressMeta = cachedMeta ? JSON.parse(cachedMeta) : {};
+      return true;
+    }
+  } catch (e) {
+    console.warn("[LocalFirst] localStorage 복원 실패:", e);
+  }
+  return false;
 };
 
 /**
@@ -43,27 +81,59 @@ export const initUser = async (uid) => {
 };
 
 /**
- * DB에서 지원하는 모든 도메인의 학습 내역을 통합 수집하여 메모리 캐시 갱신
+ * DB/로컬에서 지원하는 모든 도메인의 학습 내역을 통합 수집하여 메모리 캐시 갱신 (서버 데이터 100% 수급 & 지능형 병합)
  */
 export const refreshProgressCache = async () => {
   if (!currentUserUid) return;
 
-  // 캐시 메모리 구조 초기화
-  progressCache = {};
   const domains = Object.keys(ALPHABETS);
-  domains.forEach(d => progressCache[d] = {});
 
-  // 최신 v10 getDocs 및 구조화 경로 매핑 적용
-  await Promise.all(domains.map(async (domain) => {
-    const charsRef = collection(db, 'users', currentUserUid, 'progress', domain, 'chars');
-    const snapshot = await getDocs(charsRef);
-
-    snapshot.forEach(doc => {
-      progressCache[domain][doc.id] = doc.data();
+  // 1. 브라우저 localStorage 캐시 0ms 즉시 복원
+  const hasLocalCache = _loadLocalProgressCache();
+  if (!hasLocalCache) {
+    progressCache = {};
+    progressMeta = {};
+    domains.forEach(d => {
+      progressCache[d] = {};
+      progressMeta[d] = 0;
     });
-  }));
+  }
 
-  console.log("Progress 다차원 캐시 동기화 완료. ID:", currentUserUid);
+  // 2. 서버 DB의 전체 도메인 데이터를 1회 읽어와 로컬 데이터와 양방향 지능형 병합 (Smart Bidirectional Merge)
+  try {
+    let updatedDomainCount = 0;
+
+    await Promise.all(domains.map(async (domain) => {
+      const charsRef = collection(db, 'users', currentUserUid, 'progress', domain, 'chars');
+      const snapshot = await getDocs(charsRef);
+
+      if (!progressCache[domain]) progressCache[domain] = {};
+
+      if (!snapshot.empty) {
+        updatedDomainCount++;
+        snapshot.forEach(docSnap => {
+          const serverCharData = docSnap.data();
+          const localCharData = progressCache[domain][docSnap.id];
+
+          // 서버 데이터가 존재하고, 로컬이 없거나 서버의 최신 시각(lastSessionTime / updatedAt)이 더 최신/동일하면 서버 데이터 반영
+          const serverTime = serverCharData.lastSessionTime || serverCharData.updatedAt || 0;
+          const localTime = localCharData ? (localCharData.lastSessionTime || localCharData.updatedAt || 0) : -1;
+
+          if (!localCharData || serverTime >= localTime) {
+            progressCache[domain][docSnap.id] = serverCharData;
+          }
+        });
+      }
+
+      progressMeta[domain] = Date.now();
+    }));
+
+    // 3. 병합 완료된 양방향 진도 데이터를 localStorage에 정밀 동기화
+    _saveLocalProgressCache();
+    console.log(`[LocalFirst] 서버 DB 데이터 양방향 동기화 및 병합 완료 (${updatedDomainCount}개 도메인 서버 수급 완료). ID:`, currentUserUid);
+  } catch (err) {
+    console.warn("[LocalFirst] 서버 동기화 생략 (로컬 캐시 모드로 안전 구동):", err.message);
+  }
 };
 
 /**
@@ -97,57 +167,91 @@ export const getProgress = async (domain, charId) => {
 };
 
 /**
- * 정산 완료된 단일 단어 스키마 상태를 캐시 및 Firestore DB에 동기화 저장
+ * 정산 완료된 단일 단어 스키마 상태를 로컬 캐시 및 localStorage에 0ms 실시간 반영 (서버 통신 0건)
  */
 export const updateProgress = async (domain, charId, updatedItem) => {
   if (!currentUserUid) return;
 
   const key = charId.toString();
   if (!progressCache[domain]) progressCache[domain] = {};
+  
+  updatedItem.updatedAt = Date.now();
   progressCache[domain][key] = updatedItem;
+  progressMeta[domain] = Date.now();
 
-  // v10 setDoc 구조 모델 적용
-  const docRef = doc(db, 'users', currentUserUid, 'progress', domain, 'chars', key);
-  await setDoc(docRef, updatedItem);
+  // 100% 로컬 0ms 실시간 저장 (네트워크 Write 쿼리 발생 안함)
+  _saveLocalProgressCache();
 };
 
 /**
- * 세션 풀에 참여한 10개 단어들의 일련 변동 상태를 일괄 트랜잭션 동기화
+ * 세션 완료 시 세션 풀 단어들의 상태를 로컬 정산하고, 서버에 지연 배치 1회 전송 (Lazy Batch Sync)
  */
 export const saveSessionPoolState = async (domain, sessionPool) => {
   if (!currentUserUid || !sessionPool || sessionPool.length === 0) return;
 
-  // 구형 db.batch() 철폐 후 최신 writeBatch(db) 바인딩
-  const batch = writeBatch(db);
+  const now = Date.now();
+  if (!progressCache[domain]) progressCache[domain] = {};
+  progressMeta[domain] = now;
 
+  // 1. 로컬 메모리 & localStorage 0ms 실시간 반영
   sessionPool.forEach(item => {
     const key = item.charId.toString();
-    if (!progressCache[domain]) progressCache[domain] = {};
+    item.updatedAt = now;
     progressCache[domain][key] = item;
-
-    const docRef = doc(db, 'users', currentUserUid, 'progress', domain, 'chars', key);
-    batch.set(docRef, item);
   });
+  _saveLocalProgressCache();
 
-  await batch.commit();
-  console.log(`세션 풀 스트릭 데이터 일괄 동기화 완료 (${sessionPool.length}개)`);
+  // 2. 비동기 지연 배치 Write 1회로 서버에 전송 (Lazy Batch Sync)
+  try {
+    const batch = writeBatch(db);
+
+    sessionPool.forEach(item => {
+      const key = item.charId.toString();
+      const docRef = doc(db, 'users', currentUserUid, 'progress', domain, 'chars', key);
+      batch.set(docRef, item);
+    });
+
+    // 메타 타임스탬프 업로드 (users/{uid} 루트 문서 연동)
+    const userDocRef = doc(db, 'users', currentUserUid);
+    batch.set(userDocRef, { progressMeta: { [domain]: now } }, { merge: true });
+
+    await batch.commit();
+    console.log(`[LocalFirst] 세션 배치 동기화 1회 완료 (${sessionPool.length}개 단어 DB 저장)`);
+  } catch (err) {
+    console.warn("[LocalFirst] 비동기 세션 배치 DB 저장 실패 (로컬 스토리지 보존):", err.message);
+  }
 };
 
 /**
- * 세션 타임오버 시 일일 학습 시간 누계 업데이트 기록
+ * 세션 타임오버 시 일일 학습 시간 누계 업데이트 기록 (로컬 퍼스트)
  */
 export const updateDailyStudyTime = async (seconds, domain) => {
   if (!currentUserUid || !domain) return;
 
   const today = new Date().toISOString().split('T')[0];
-  const docRef = doc(db, 'users', currentUserUid, 'study_stats', today);
+  const storageKey = `KANALOOP_STUDY_STATS_${currentUserUid}`;
 
-  const updates = {};
-  updates[domain] = increment(seconds);
-  updates.lastUpdated = Date.now();
+  // 1. 로컬 localStorage 0ms 실시간 누계 기록
+  try {
+    const rawStats = localStorage.getItem(storageKey);
+    const statsObj = rawStats ? JSON.parse(rawStats) : {};
+    if (!statsObj[today]) statsObj[today] = {};
+    statsObj[today][domain] = (statsObj[today][domain] || 0) + seconds;
+    localStorage.setItem(storageKey, JSON.stringify(statsObj));
+  } catch (e) {
+    console.warn("[LocalFirst] 일일 학습시간 로컬 저장 실패:", e);
+  }
 
-  // firebase.firestore 글로벌 네임스페이스 제거 후 최신 독립형 increment 수급 적용
-  await setDoc(docRef, updates, { merge: true });
+  // 2. 비동기 백그라운드 서버 저장
+  try {
+    const docRef = doc(db, 'users', currentUserUid, 'study_stats', today);
+    const updates = {};
+    updates[domain] = increment(seconds);
+    updates.lastUpdated = Date.now();
+    await setDoc(docRef, updates, { merge: true });
+  } catch (err) {
+    console.warn("[LocalFirst] 일일 학습시간 DB 백그라운드 저장 생략 (로컬 스토리지 보존):", err.message);
+  }
 };
 
 /**
@@ -254,58 +358,93 @@ export const getGlobalRankings = async (limitCount = 10, targetDomain = 'all') =
 };
 
 /**
- * 사용자 커스텀 기획 환경설정 제어 아카이브 저장
+ * 사용자 커스텀 기획 환경설정 제어 아카이브 저장 (로컬 퍼스트 & 지능형 백그라운드 싱크)
  */
 export const saveUserConfig = async (config) => {
   if (!currentUserUid) return;
-  const docRef = doc(db, 'users', currentUserUid);
-  await setDoc(docRef, { config }, { merge: true });
+
+  // 1. 로컬 0ms 즉시 보존
+  try {
+    localStorage.setItem(`KANALOOP_CONFIG_${currentUserUid}`, JSON.stringify(config));
+  } catch (e) {
+    console.warn("[LocalFirst] Config 로컬 저장 실패:", e);
+  }
+
+  // 2. 백그라운드 지연 DB 저장
+  try {
+    const docRef = doc(db, 'users', currentUserUid);
+    await setDoc(docRef, { config, configUpdatedAt: Date.now() }, { merge: true });
+  } catch (e) {
+    console.warn("[LocalFirst] Config DB 백그라운드 저장 실패 (로컬 스토리지 보존):", e.message);
+  }
 };
 
 export const getUserConfig = async () => {
   if (!currentUserUid) return null;
 
-  // v10 단일 문서 조회를 위한 getDoc 함수 처리
-  const docRef = doc(db, 'users', currentUserUid);
-  const docSnap = await getDoc(docRef);
+  // 1. 로컬 localStorage 0ms 즉시 수급 시도
+  try {
+    const cachedConfig = localStorage.getItem(`KANALOOP_CONFIG_${currentUserUid}`);
+    if (cachedConfig) {
+      return JSON.parse(cachedConfig);
+    }
+  } catch (e) {
+    console.warn("[LocalFirst] Config 로컬 복원 실패:", e);
+  }
 
-  return docSnap.exists() ? docSnap.data().config : null;
+  // 2. 로컬에 없는 경우 서버 getDoc 수급
+  try {
+    const docRef = doc(db, 'users', currentUserUid);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists() && docSnap.data().config) {
+      const config = docSnap.data().config;
+      localStorage.setItem(`KANALOOP_CONFIG_${currentUserUid}`, JSON.stringify(config));
+      return config;
+    }
+  } catch (e) {
+    console.warn("[LocalFirst] Config 서버 수급 실패:", e.message);
+  }
+
+  return null;
 };
 
 /**
- * 최근 7일간의 학습 통계 가져오기
+ * 최근 7일간의 학습 통계 가져오기 (100% 로컬 퍼스트 - 서버 Read 0건)
  */
 export const getWeeklyStats = async (domain) => {
   if (!currentUserUid || !domain) return { total: 0, history: {} };
 
   const stats = { total: 0, history: {} };
-  const promises = [];
   const days = [];
 
-  // 최근 7일(오늘 포함)의 날짜 문자열(YYYY-MM-DD) 생성
   for (let i = 6; i >= 0; i--) {
     const d = new Date();
     d.setDate(d.getDate() - i);
     const dayStr = d.toISOString().split('T')[0];
     days.push(dayStr);
-
-    const docRef = doc(db, 'users', currentUserUid, 'study_stats', dayStr);
-    promises.push(getDoc(docRef));
   }
 
-  // 7일 치 문서를 병렬로 한 번에 조회
-  const snapshots = await Promise.all(promises);
-  snapshots.forEach((snap, idx) => {
-    const seconds = snap.exists() ? (snap.data()[domain] || 0) : 0;
-    stats.history[days[idx]] = seconds;
-    stats.total += seconds;
-  });
+  // 로컬 localStorage 스토리지에서 0ms 정산 (서버 getDoc 7회 쿼리 완전 제거)
+  try {
+    const storageKey = `KANALOOP_STUDY_STATS_${currentUserUid}`;
+    const rawStats = localStorage.getItem(storageKey);
+    const statsObj = rawStats ? JSON.parse(rawStats) : {};
+
+    days.forEach(dayStr => {
+      const seconds = (statsObj[dayStr] && statsObj[dayStr][domain]) || 0;
+      stats.history[dayStr] = seconds;
+      stats.total += seconds;
+    });
+  } catch (e) {
+    console.warn("[LocalFirst] 주간 학습통계 로컬 계산 실패:", e);
+  }
 
   return stats;
 };
 
 /**
- * 학습 모드 랭킹 기록 등록
+ * 학습 모드 랭킹 기록 등록 (예외 방어)
  * @returns {Promise<boolean>} 새로운 기록으로 갱신되었는지 여부
  */
 export const submitStudyRanking = async (domain, correctCount, elapsedTime, accuracy, customName = null) => {
@@ -352,7 +491,7 @@ export const submitStudyRanking = async (domain, correctCount, elapsedTime, accu
     }
     return false;
   } catch (error) {
-    console.error("[DB Error] 학습모드 랭킹 저장 실패:", error);
+    console.warn("[LocalFirst] 학습모드 랭킹 DB 저장 생략 (로컬 구동 유지):", error.message);
     return false;
   }
 };

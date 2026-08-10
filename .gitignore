@@ -1,7 +1,12 @@
 .agents
+.gemini
 .obsidian
 .vscode
 functions
 commit.log
 **/PixelRun/**
 **/KakaoTalk/example/**
+node_modules/
+당장 구현할 사항.md
+test-results/
+tests/fixtures/

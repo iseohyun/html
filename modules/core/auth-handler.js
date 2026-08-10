@@ -159,6 +159,20 @@ window.SiteModules.Auth = (function() {
     }
   }
 
+  function getNormalizedPageKey() {
+    let hashPath = window.location.hash.split('?')[0] || ""; // "#/small-project/Bezier/index.html"
+    if (hashPath.startsWith('#/')) {
+      hashPath = hashPath.substring(2); // "small-project/Bezier/index.html"
+    }
+
+    const parts = hashPath.split('/');
+    if (parts[0] === "small-project" && parts.length >= 2) {
+      return `@small-project>${parts[1]}`;
+    }
+
+    return hashPath || "home";
+  }
+
   async function submitSuggestion(text) {
     await window.SiteModules.FirebaseConfig.loadSDKs();
     const auth = window.SiteModules.FirebaseConfig.getAuth();
@@ -182,9 +196,12 @@ window.SiteModules.Auth = (function() {
     const docSnap = await docRef.get();
     const existingData = docSnap.exists ? docSnap.data() : {};
 
+    const pageKey = getNormalizedPageKey();
+
     const suggestionHistory = existingData.suggestionHistory || [];
     suggestionHistory.push({
       text: text,
+      page: pageKey,
       timestamp: Date.now()
     });
 
@@ -193,6 +210,7 @@ window.SiteModules.Auth = (function() {
       name: displayName,
       email: email,
       suggestion: text,
+      page: pageKey,
       suggestionHistory: suggestionHistory,
       reply: existingData.reply || "",
       updatedAt: Date.now()

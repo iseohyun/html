@@ -15,5 +15,5 @@
 │   └── frame.xml             # SVG 레이아웃 템플릿 XML
 ├── index.html                # 메인 UI 인터페이스
 ├── kakaotalk-style.css       # 그리드 및 UI 스타일시트
-└── version.md                # 버전 및 요구사항 이력 관리
+└── CHANGELOG.md              # 버전 및 요구사항 이력 관리
 ```

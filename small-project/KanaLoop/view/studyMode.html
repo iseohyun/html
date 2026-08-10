@@ -194,30 +194,29 @@
   }
 </style>
 <div id="quiz-game-layer" style="padding: 10px;">
-  <div class="quiz-header"
-    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-    <h2 id="current-mode-title" style="margin: 0;">학습 모드</h2>
-    <button class="pause-btn" onclick="pauseGameTrigger()" style="background: none; border: none; cursor: pointer;">
-      <span class="material-symbols-outlined">pause</span>
-    </button>
-  </div>
-  <div class="timer-bar-container"
-    style="width: 100%; height: 10px; background: #eee; border-radius: 5px; overflow: hidden; margin-bottom: 15px;">
-    <div id="timer-progress-bar" style="height: 100%; width: 100%; background: #4CAF50; transition: width 1s linear;">
+  <div class="quiz-header">
+    <div class="mode-badge study">
+      <span class="material-symbols-outlined" style="font-size: 1.1rem;">school</span>
+      <span id="current-mode-title">학습 모드</span>
     </div>
-  </div>
-  <div class="dashboard"
-    style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
-    <div id="weight-display" style="font-size: 14px; font-weight: bold; color: #555; display: flex; gap: 6px; flex-wrap: wrap;"></div>
-    <div id="history-bar" style="display: flex; gap: 5px; justify-content: flex-start; min-height: 36px; width: 100%;"></div>
-  </div>
-  <div class="play-area"
-    style="text-align: center; height:100%; display: flex; text-align: center; flex-direction: column; align-items: center;">
-    <button id="audio-trigger"
-      style="margin-bottom: 30px; background: #f0f0f0; border: none; border-radius: 50%; width: 80px; height: 80px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-      <span class="material-symbols-outlined" style="font-size: 40px; color: #333;">volume_up</span>
+    <button class="pause-btn" onclick="pauseGameTrigger()" aria-label="일시정지">
+      <span class="material-symbols-outlined" style="font-size: 1.3rem;">pause</span>
     </button>
-    <div id="options" class="options-grid"
-      style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; flex: 1; width: 100%;"></div>
+  </div>
+
+  <div class="timer-bar-container">
+    <div id="timer-progress-bar"></div>
+  </div>
+
+  <div class="dashboard">
+    <div id="weight-display"></div>
+    <div id="history-bar"></div>
+  </div>
+
+  <div class="play-area">
+    <button id="audio-trigger" title="발음 듣기">
+      <span class="material-symbols-outlined">volume_up</span>
+    </button>
+    <div id="options" class="options-grid"></div>
   </div>
 </div>

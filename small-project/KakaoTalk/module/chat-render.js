@@ -1,0 +1,1804 @@
+/**
+ * KakaoTalk HTML5 Canvas 2D Engine Module
+ */
+
+(function () {
+  'use strict';
+
+  const LAYOUT_DEFAULTS = Object.freeze({
+    AVATAR_CENTER_X_DEFAULT: 73,
+    AVATAR_SIZE_DEFAULT: 104,
+    AVATAR_ROUND_DEFAULT: 42,
+    FONT_SIZE_DEFAULT: 28,
+    BUBBLE_ROUND_DEFAULT: 25,
+    OPPONENT_BUBBLE_X: 160,
+    STATUS_BAR_TIME_X: 60,
+    STATUS_BAR_TIME_Y: 52,
+    CHAT_ROOM_NAME_X: 60,
+    CHAT_ROOM_NAME_Y: 160,
+    NAME_FONT_RATIO_DEFAULT: 1.20,
+    NAME_X_REF_DEFAULT: 180,
+    CHAT_START_Y_DEFAULT: 240,
+    CHAT_GAP_DEFAULT: 24,
+    OPPONENT_BUBBLE_TOP_OFFSET_DEFAULT: 44,
+    DATE_FONT_SIZE_DEFAULT: 36,
+    DATE_HEIGHT_DEFAULT: 60,
+    DATE_Y_OFFSET_DEFAULT: 24,
+    ME_TEXT_RIGHT_OFFSET_DEFAULT: 10,
+    OPP_TEXT_LEFT_OFFSET_DEFAULT: 8,
+    TIME_FONT_SIZE_DEFAULT: 26,
+    TIME_OFFSET_GAP_X_DEFAULT: 18,
+    TIME_BOTTOM_DIFF_Y_DEFAULT: -9
+  });
+
+  const MARGIN = 160;
+  const imageObjCache = {};
+
+  // 60fps 프레임 애니메이션 및 부드러운 스크롤 상태 제어 변수
+  let currentScrollY = 0;
+  let targetScrollY = 0;
+  let maxScrollY = 0; // 캔버스 내부 스크롤 최대 한계치
+  let isScrollEasingActive = false;
+  let animationFrameId = null;
+  let loopRefreshCallback = null; // 렌더루프 제어 콜백 백업용
+  let loopDrawCallback = null;    // 렌더루프 그리기 콜백 백업용
+
+  const animState = {
+    progress: 1.0, // 0.0 ~ 1.0
+    duration: 500, // ms
+    startTime: 0,
+    active: false,
+    effect: 'opacity'
+  };
+
+  /**
+   * Base64 이미지 리소스를 메모리에 로딩하여 고속 캔버스 틱에 즉시 제공하는 캐시 헬퍼
+   */
+  function getCachedImage(base64Str, callback) {
+    if (!base64Str) return null;
+    if (imageObjCache[base64Str]) {
+      return imageObjCache[base64Str];
+    }
+    const img = new Image();
+    img.onload = () => {
+      imageObjCache[base64Str] = img;
+      if (callback) callback();
+    };
+    img.src = base64Str;
+    return null;
+  }
+
+  /**
+   * 둥근 사각형 드로잉 헬퍼
+   */
+  function drawRoundRect(c, x, y, width, height, radius) {
+    c.beginPath();
+    c.moveTo(x + radius, y);
+    c.lineTo(x + width - radius, y);
+    c.quadraticCurveTo(x + width, y, x + width, y + radius);
+    c.lineTo(x + width, y + height - radius);
+    c.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    c.lineTo(x + radius, y + height);
+    c.quadraticCurveTo(x, y + height, x, y + height - radius);
+    c.lineTo(x, y + radius);
+    c.quadraticCurveTo(x, y, x + radius, y);
+    c.closePath();
+  }
+
+  /**
+   * 사용자 고유 동적 수식 생성 함수 (Option A)
+   * M startX startY c 0 -53 ... h wOffset a 44 44 0 0 1 44 44 v hOffset a 44 44 0 0 1 -44 44 h -(wOffset+1) a 44 44 0 0 1 -44 -44
+   */
+  function generateSpeechBubblePathWithTail(startX, startY, wOffset, hOffset, arcRadius) {
+    const a = (arcRadius !== undefined && !isNaN(arcRadius)) ? Math.max(0, Math.round(arcRadius)) : 32;
+    const diff = 44 - a;
+    const w = Math.max(10, Math.round(wOffset + 2 * diff));
+    // 꼬리 상단 8px 돌출을 감안하여 v 수직 길이를 8px 차감 (-6px)
+    const h = Math.max(10, Math.round(hOffset + 2 * diff) - 6);
+    const returnOffset = 2 + diff;
+    return `M ${startX} ${startY} c 0 -53, 0 -53, 0 -52 c -2 -11, -2 -12, -7 -20 c 23 2, 21 17, 21 10 c -5 7, 5 -14, 32 -14 h ${w} a ${a} ${a} 0 0 1 ${a} ${a} v ${h} a ${a} ${a} 0 0 1 -${a} ${a} h -${w + returnOffset} a ${a} ${a} 0 0 1 -${a} -${a}`;
+  }
+
+  /**
+   * 상대방 메시지 요소 em 기반 좌표 정밀 연산 함수
+   * 1. 말풍선(bx): 기본 위치(150px) + "상대방" 글씨 폰트 크기(nameFontSize = Math.floor(fontSize * 0.85))의 0.8em(+26px) 이동 (176px)
+   * 2. 채팅 글자(textX): 기본 위치(205px) 100% 원위치 고정 (이동 안함)
+   * 3. 초상화(cx = 73px) & 닉네임(nameX = 149px): 기본 위치 100% 원위치 고정 (이동 안함)
+   */
+  function calculateOpponentLayout(activeFontSize, fontSize, config) {
+    const bx = (config && config['opponent-bubble-x'] !== undefined) ? parseInt(config['opponent-bubble-x'], 10) : LAYOUT_DEFAULTS.OPPONENT_BUBBLE_X; // 상대방 연속 채팅 말풍선 기준 X = 160px
+    const cx = (config && config['avatar-center-x'] !== undefined) ? parseInt(config['avatar-center-x'], 10) : LAYOUT_DEFAULTS.AVATAR_CENTER_X_DEFAULT;  // 초상화 중심 X = 73px
+    const nameFontRatio = (config && config['name-font-ratio'] !== undefined) ? parseFloat(config['name-font-ratio']) : LAYOUT_DEFAULTS.NAME_FONT_RATIO_DEFAULT;
+    const nameFontSize = Math.floor(fontSize * nameFontRatio);
+    const nameOffset = (config && config['name-offset'] !== undefined) ? parseInt(config['name-offset'], 10) : 0;
+    const nameX = Math.round(LAYOUT_DEFAULTS.NAME_X_REF_DEFAULT - nameFontSize) + 1 + nameOffset;
+    const textX = bx + Math.round(activeFontSize * 0.5); // bx + 0.5em
+
+    return {
+      bx,
+      cx,
+      textX,
+      nameX,
+      nameFontSize
+    };
+  }
+
+  function drawSpeechBubbleWithTail(c, x, y, w, h, radius, isMe, hasTail, posY, arcRadius) {
+    // ------------------------------------------------------------------
+    // [1단계: 구조 분리] 1. 연속 채팅 말풍선 구역 (꼬리 없음, hasTail === false)
+    // ------------------------------------------------------------------
+    if (!hasTail) {
+      drawRoundRect(c, x, y, w, h, radius);
+      c.fill();
+      return;
+    }
+
+    // ------------------------------------------------------------------
+    // [2단계: 꼬리 돌출 8px 보정] 최초 채팅 말풍선 꼬리 전용 구역 (hasTail === true)
+    // 1) 꼬리 상단 8px 돌출 대비 startY를 8px 아래로 보정 (132 + 8 = 140)
+    // 2) v(h) 수직 세그먼트 길이를 8px 차감하여 연속 채팅 높이와 100% 동기화
+    // ------------------------------------------------------------------
+    c.save();
+    const basePosY = (posY !== undefined) ? posY : (y - 65);
+    const startY = Math.round(basePosY + 140);
+    const aVal = (arcRadius !== undefined) ? arcRadius : 32;
+    const wOffset = Math.max(10, Math.round(w - 120 + aVal) - 10);
+    const hOffset = Math.max(0, Math.round(h - 90));
+
+    if (!isMe) {
+      const pathD = generateSpeechBubblePathWithTail(x - 1, startY, wOffset, hOffset, aVal);
+      const pathObj = new Path2D(pathD);
+      c.fill(pathObj);
+    } else {
+      const bubbleCenterX = x + w / 2;
+      const startX_me = Math.round(x - 1);
+      const pathD_me = generateSpeechBubblePathWithTail(startX_me, startY, wOffset, hOffset, aVal);
+
+      c.save();
+      c.translate(2 * bubbleCenterX, 0);
+      c.scale(-1, 1);
+      const pathObj = new Path2D(pathD_me);
+      c.fill(pathObj);
+      c.restore();
+    }
+    c.restore();
+  }
+
+
+
+  /**
+   * 줄바꿈 대화 본문 텍스트 드로잉
+   */
+  function drawWrappedText(c, lines, x, y, p, fontSize, lineSpacing) {
+    const totalChars = lines.join('').length;
+    const showCharsCount = Math.floor(totalChars * p);
+    
+    let charsPrinted = 0;
+    for (let i = 0; i < lines.length; i++) {
+      const lineText = lines[i];
+      const remaining = showCharsCount - charsPrinted;
+      
+      if (remaining <= 0) break;
+
+      if (remaining >= lineText.length) {
+        c.fillText(lineText, x, y + (i * lineSpacing));
+        charsPrinted += lineText.length;
+      } else {
+        c.fillText(lineText.substring(0, remaining), x, y + (i * lineSpacing));
+        break;
+      }
+    }
+  }
+
+  /**
+   * 전체 캡처 시간에서 hh:mm 텍스트만 파싱 추출하는 헬퍼
+   */
+  function extractTimeStr(captureTime) {
+    if (!captureTime) return '15:18';
+    
+    // "오후 3:18" -> "3:18" 또는 "15:18" 형태의 순수 시간만 추출
+    const match = captureTime.match(/(\d{1,2}):(\d{2})/);
+    if (match) {
+      return `${match[1]}:${match[2]}`;
+    }
+    return '15:18';
+  }
+
+  let lastRenderedCanvas = null;
+  let lastRenderedConfig = null;
+  let lastRenderedDialogs = null;
+  let lastRenderedAvatarMap = null;
+
+  /**
+   * HTML5 Canvas 2D 그래픽 렌더링 엔진 코어
+   */
+  function drawCanvasChat(canvas, ctx, config, dialogs, avatarSettingsMap, resetAnim = false) {
+    if (!canvas || !ctx) return;
+
+    lastRenderedCanvas = canvas;
+    lastRenderedConfig = config;
+    lastRenderedDialogs = dialogs;
+    lastRenderedAvatarMap = avatarSettingsMap;
+
+    window._nameHandleRegions = [];
+
+    // 1:1 캔버스 물리 해상도 직결 연산
+    const width = canvas.width || 1080;
+    const height = canvas.height || 2340;
+
+    ctx.save();
+
+    // 1. 글꼴 상세 속성 적용
+    const selectedFont = config['font'] || 'sans-serif';
+    const fontSize = parseInt(config['font-size']) || LAYOUT_DEFAULTS.FONT_SIZE_DEFAULT;
+    const isBold = (config['font-bold'] === 'true' || config['font-bold'] === true) ? 'bold ' : '';
+    const lineSpacing = fontSize + 22; // 글꼴 크기에 비례한 줄 간격 산출
+
+    // 2. 개별 색상 커스텀 연동
+    const meBubbleColor = config['me-bubble-color'] || '#fee500';
+    const meTextColor = config['me-text-color'] || '#000000';
+    const youBubbleColor = config['you-bubble-color'] || '#ffffff';
+    const youTextColor = config['you-text-color'] || '#000000';
+    const youNameColor = config['you-name-color'] || '#2c3e50';
+    const timeColor = config['time-color'] || '#555555';
+    const dateTextColor = config['date-text-color'] || '#444444';
+
+    // 3. 캔버스 배경 칠하기
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = config['background-color'] || '#000000';
+    ctx.fillRect(0, 0, width, height);
+
+    // 대화참여자가 2명이고 대화방 이름이 상대방 이름이면 1:1 개인 대화방으로 지정
+    const speakers = new Set();
+    dialogs.forEach(d => {
+      if (d.person && !d.person.startsWith('=')) {
+        speakers.add(d.person);
+      }
+    });
+    const isDirectChat = (speakers.size === 2 && Array.from(speakers).includes(config['your-name']));
+
+    // 4. 대화방 말풍선 위치/크기 정적 계산 및 캐싱
+    let lastPosY = (config && config['chat-start-y'] !== undefined) ? parseInt(config['chat-start-y'], 10) : LAYOUT_DEFAULTS.CHAT_START_Y_DEFAULT;
+    const userChatGap = (config && config['chat-gap'] !== undefined) ? parseInt(config['chat-gap'], 10) : LAYOUT_DEFAULTS.CHAT_GAP_DEFAULT;
+    const oppBubbleTopOffset = (config && config['opp-bubble-top-offset'] !== undefined) ? parseInt(config['opp-bubble-top-offset'], 10) : LAYOUT_DEFAULTS.OPPONENT_BUBBLE_TOP_OFFSET_DEFAULT;
+    const avatarSize = (config && config['avatar-size'] !== undefined) ? parseInt(config['avatar-size'], 10) : LAYOUT_DEFAULTS.AVATAR_SIZE_DEFAULT;
+    const avatarRound = (config && config['avatar-round'] !== undefined) ? parseInt(config['avatar-round'], 10) : LAYOUT_DEFAULTS.AVATAR_ROUND_DEFAULT;
+    const dateHeight = (config && config['date-height'] !== undefined) ? parseInt(config['date-height'], 10) : LAYOUT_DEFAULTS.DATE_HEIGHT_DEFAULT;
+    const dateYOffset = (config && config['date-y-offset'] !== undefined) ? parseInt(config['date-y-offset'], 10) : LAYOUT_DEFAULTS.DATE_Y_OFFSET_DEFAULT;
+    const meTextRightOffset = (config && config['me-text-right-offset'] !== undefined) ? parseInt(config['me-text-right-offset'], 10) : LAYOUT_DEFAULTS.ME_TEXT_RIGHT_OFFSET_DEFAULT;
+    const oppTextLeftOffset = (config && config['opp-text-left-offset'] !== undefined) ? parseInt(config['opp-text-left-offset'], 10) : LAYOUT_DEFAULTS.OPP_TEXT_LEFT_OFFSET_DEFAULT;
+    const timeFontSize = (config && config['time-font-size'] !== undefined) ? parseInt(config['time-font-size'], 10) : LAYOUT_DEFAULTS.TIME_FONT_SIZE_DEFAULT;
+    const timeOffsetGapX = (config && config['time-offset-gap-x'] !== undefined) ? parseInt(config['time-offset-gap-x'], 10) : LAYOUT_DEFAULTS.TIME_OFFSET_GAP_X_DEFAULT;
+    const timeBottomDiffY = (config && config['time-bottom-diff-y'] !== undefined) ? parseInt(config['time-bottom-diff-y'], 10) : LAYOUT_DEFAULTS.TIME_BOTTOM_DIFF_Y_DEFAULT;
+
+    window._nameHandleRegions = [];
+    window._avatarHandleRegions = [];
+    window._chatGapHandleRegions = [];
+    window._oppBubbleTopHandleRegions = [];
+    window._dateHandleRegions = [];
+    window._meTextRightOffsetHandleRegions = [];
+    window._oppTextLeftOffsetHandleRegions = [];
+    window._timeOffsetHandleRegions = [];
+
+    let lastSpeaker = '';
+    const tempPositions = [];
+    const hitRegions = [];
+
+    const startIdx = parseInt(config['start-index']) || 1;
+    const progressVal = parseInt(config['progress']) || 0;
+    const cleanDialogs = dialogs.filter(d => d.person && d.person.trim() !== '');
+    const visibleDialogs = cleanDialogs.slice(startIdx - 1, progressVal);
+
+    // ==========================================
+    // 사용자 정의 9단계 파이프라인 수직 레이아웃 연산
+    // ==========================================
+    visibleDialogs.forEach((dialog) => {
+      // 날짜 구분선 처리
+      if (dialog.person.startsWith('=')) {
+        lastSpeaker = '';
+        const dateVal = dialog.person.slice(1);
+        let displayDate = dateVal;
+        try {
+          const dateObj = new Date(dateVal);
+          if (!isNaN(dateObj.getTime())) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            displayDate = dateObj.toLocaleDateString('ko-KR', options);
+          }
+        } catch (e) {}
+
+        const dateFontSize = (config && config['date-font-size'] !== undefined) ? parseInt(config['date-font-size'], 10) : LAYOUT_DEFAULTS.DATE_FONT_SIZE_DEFAULT;
+        ctx.font = `bold ${dateFontSize}px ${selectedFont}`;
+        const dateWidth = ctx.measureText(displayDate).width + 100;
+        const datePosY = lastPosY + dateYOffset;
+        tempPositions.push({
+          isDate: true,
+          posY: datePosY,
+          width: dateWidth,
+          height: dateHeight,
+          text: displayDate
+        });
+
+        lastPosY = datePosY + dateHeight;
+        return;
+      }
+
+      // 1. 대화 폰트 및 em 기초 단위 연산
+      const meName = (config['me'] !== undefined && config['me'] !== null) ? config['me'] : ((config['me-name'] !== undefined && config['me-name'] !== null) ? config['me-name'] : '');
+      const isMe = (dialog.person === meName && meName !== '');
+
+      const baseFontSize = Math.round(fontSize * (8.47 / 5.43));
+      const prevFontSize = Math.round(baseFontSize * 0.9) - 1;
+      const activeFontSize = Math.round(prevFontSize * (38 / 44)); // 48px
+
+      const halfEm = userChatGap; // 대화 간격 (기본 24px)
+      const oneEm = Math.round(userChatGap * 2); // 1.0em (기본 48px)
+
+      // 2. 새 채팅 여부 판별
+      const isNewChat = (dialog.person !== lastSpeaker);
+      if (isNewChat) {
+        lastSpeaker = dialog.person;
+      }
+
+      // 3. 간격 벌림 (새 채팅 = 2.0 * chatGap, 연속 채팅 = 1.0 * chatGap)
+      const gap = isNewChat ? (userChatGap * 2) : userChatGap;
+      lastPosY += gap;
+
+      if (window.APP_MODE === 'LAYOUT_EDIT') {
+        window._chatGapHandleRegions.push({
+          lineY: (lastPosY - gap / 2) - currentScrollY,
+          gap: userChatGap
+        });
+      }
+
+      // 4. 채팅 넓이/높이 구하기
+      const words = dialog.message.split(' ');
+      let line = '';
+      const lines = [];
+      let lineCount = 0;
+
+      words.forEach((word) => {
+        if (word === '\\') {
+          lineCount++;
+          lines.push(line);
+          line = '';
+        } else if (line.length + word.length > Math.max(12, Math.floor(720 / fontSize))) {
+          if (word.startsWith('\\')) word = word.slice(1);
+          lineCount++;
+          lines.push(line);
+          line = word;
+        } else {
+          if (word.startsWith('\\')) word = word.slice(1);
+          line += (line ? ' ' : '') + word;
+        }
+      });
+      lines.push(line);
+
+      ctx.font = `${isBold}${activeFontSize}px ${selectedFont}`;
+      let maxWidth = 0;
+      lines.forEach((l) => {
+        const w = ctx.measureText(l).width;
+        if (w > maxWidth) maxWidth = w;
+      });
+
+      const bubbleWidth = Math.round(maxWidth + oneEm);
+      const bubbleHeight = Math.round(40 + lineSpacing * lineCount);
+
+      // 5~9. 좌표 선점 및 currentY (lastPosY) 갱신
+      let mePosY, adjustedPosY, avatarTop, bubbleBottom;
+
+      if (isMe) {
+        mePosY = lastPosY;
+        bubbleBottom = mePosY + bubbleHeight + 40;
+        lastPosY = bubbleBottom;
+
+        tempPositions.push({
+          isDate: false,
+          isMe: true,
+          posY: mePosY,
+          width: bubbleWidth,
+          height: bubbleHeight,
+          lines: lines,
+          lineCount: lineCount,
+          isContinuous: !isNewChat,
+          person: dialog.person,
+          time: dialog.time || extractTimeStr(dialog.rawTime || config['capture-time'])
+        });
+      } else if (isNewChat) {
+        avatarTop = lastPosY;
+        adjustedPosY = avatarTop + oppBubbleTopOffset;
+        bubbleBottom = adjustedPosY + bubbleHeight + 40;
+        lastPosY = bubbleBottom;
+
+        tempPositions.push({
+          isDate: false,
+          isMe: false,
+          avatarTop: avatarTop,
+          posY: adjustedPosY,
+          width: bubbleWidth,
+          height: bubbleHeight,
+          lines: lines,
+          lineCount: lineCount,
+          isContinuous: false,
+          person: dialog.person,
+          time: dialog.time || extractTimeStr(dialog.rawTime || config['capture-time'])
+        });
+      } else {
+        adjustedPosY = lastPosY;
+        bubbleBottom = adjustedPosY + bubbleHeight + 40;
+        lastPosY = bubbleBottom;
+
+        tempPositions.push({
+          isDate: false,
+          isMe: false,
+          posY: adjustedPosY,
+          width: bubbleWidth,
+          height: bubbleHeight,
+          lines: lines,
+          lineCount: lineCount,
+          isContinuous: true,
+          person: dialog.person,
+          time: dialog.time || extractTimeStr(dialog.rawTime || config['capture-time'])
+        });
+      }
+    });
+
+    // 시각 생략 연산 (아래 채팅이 존재하고, 동일 화자이고, 동일 시각인 경우 현재 채팅의 시각 생략)
+    tempPositions.forEach((pos, idx) => {
+      if (pos.isDate) return;
+      const nextItem = tempPositions[idx + 1];
+      if (nextItem && !nextItem.isDate && nextItem.person === pos.person && nextItem.time === pos.time) {
+        pos.showTime = false;
+      } else {
+        pos.showTime = true;
+      }
+    });
+
+    // 5. 스크롤 목표 스크롤 Y 좌표 갱신 (현재 진행률 대화 메시지 하단 밀착)
+    const viewportBottomLimit = height - 280;
+    maxScrollY = Math.max(0, lastPosY - viewportBottomLimit);
+
+    // 스크롤 고정 (Auto-Scroll) 옵션 확인 (기본값 true)
+    const isAutoScroll = !config || config['auto-scroll'] !== false;
+
+    if (resetAnim || isAutoScroll) {
+      targetScrollY = maxScrollY;
+    } else {
+      // 스크롤 고정 OFF 상태: 유저가 마우스 휠이나 단축키로 이동시킨 targetScrollY 유지 (유효 범위 0 ~ maxScrollY)
+      targetScrollY = Math.min(maxScrollY, Math.max(0, targetScrollY));
+    }
+
+    if (maxScrollY === 0) {
+      currentScrollY = 0;
+      targetScrollY = 0;
+    } else if (Math.abs(currentScrollY - targetScrollY) > 500) {
+      currentScrollY = targetScrollY;
+    }
+    isScrollEasingActive = true;
+
+    // 6. 스크롤 뷰포트 클리핑 및 드로잉 (캔버스 전체 영역 허용)
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, width, height);
+    ctx.clip();
+
+    ctx.translate(0, -currentScrollY);
+
+
+
+    // 6. 메인 렌더링 루프
+    visibleDialogs.forEach((dialog, index) => {
+      const pos = tempPositions[index];
+      if (!pos) return;
+
+      // 애니메이션 효과 적용
+      ctx.save();
+      if (animState.active && index === visibleDialogs.length - 1) {
+        if (animState.effect === 'slide') {
+          const slideOffset = (1.0 - animState.progress) * 45;
+          ctx.translate(0, slideOffset);
+          ctx.globalAlpha = animState.progress;
+        } else if (animState.effect === 'blur') {
+          const blurPx = Math.max(0, (1.0 - animState.progress) * 12).toFixed(1);
+          try {
+            ctx.filter = `blur(${blurPx}px)`;
+          } catch (e) {}
+          ctx.globalAlpha = animState.progress;
+        } else if (animState.effect === 'typing') {
+          ctx.globalAlpha = 1.0;
+        } else {
+          // opacity (기본 투명도)
+          ctx.globalAlpha = animState.progress;
+        }
+      }
+
+      // 날짜 구분선 렌더링
+      if (pos.isDate) {
+        const bx = (width / 2) - pos.width / 2;
+        const h = pos.height || 60;
+        ctx.fillStyle = 'rgb(177,195,213)';
+        drawRoundRect(ctx, bx, pos.posY, pos.width, h, h / 2);
+        ctx.fill();
+
+        ctx.fillStyle = dateTextColor;
+        const dateFontSize = (config && config['date-font-size'] !== undefined) ? parseInt(config['date-font-size'], 10) : LAYOUT_DEFAULTS.DATE_FONT_SIZE_DEFAULT;
+        ctx.font = `bold ${dateFontSize}px ${selectedFont}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(pos.text, width / 2, pos.posY + h / 2);
+
+        if (window.APP_MODE === 'LAYOUT_EDIT') {
+          ctx.save();
+          // 1. 날짜 상단 Y 오프셋 가이드선 (마젠타색 #d946ef 가로선)
+          ctx.strokeStyle = '#d946ef';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([6, 3]);
+          ctx.beginPath();
+          ctx.moveTo(0, pos.posY);
+          ctx.lineTo(width, pos.posY);
+          ctx.stroke();
+
+          // 2. 날짜 캡슐 높이 조절 하단 노드 (마젠타색 동그라미)
+          ctx.fillStyle = '#d946ef';
+          ctx.beginPath();
+          ctx.arc(width / 2, pos.posY + h, 8, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+
+          window._dateHandleRegions.push({
+            lineY: pos.posY - currentScrollY,
+            yOffset: dateYOffset,
+            heightHandleX: width / 2,
+            heightHandleY: pos.posY + h - currentScrollY,
+            height: h
+          });
+        }
+        
+        hitRegions.push({
+          type: 'date',
+          targetId: 'color-date-bg',
+          label: '날짜 배경/글씨 색상',
+          rect: { x: bx, y: pos.posY - currentScrollY, width: pos.width, height: h }
+        });
+
+        ctx.restore();
+        return;
+      }
+
+      // 말풍선 렌더링
+      const customSettings = avatarSettingsMap[dialog.person] || { color: '#DE8', text: dialog.person.charAt(0), textColor: '#ffffff' };
+      const meName = (config['me'] !== undefined && config['me'] !== null) ? config['me'] : ((config['me-name'] !== undefined && config['me-name'] !== null) ? config['me-name'] : '');
+      const isMe = (dialog.person === meName && meName !== '');
+
+      const baseFontSize = Math.round(fontSize * (8.47 / 5.43));
+      const prevFontSize = Math.round(baseFontSize * 0.9) - 1;
+      const activeFontSize = Math.round(prevFontSize * (38 / 44));
+
+      const halfEm = Math.round(activeFontSize * 0.5);
+      const oneEm = Math.round(activeFontSize * 1.0);
+
+      const userArcRadius = (config && config['bubble-round'] !== undefined) ? parseInt(config['bubble-round'], 10) : LAYOUT_DEFAULTS.BUBBLE_ROUND_DEFAULT;
+      const isBold = (config['font-bold'] === 'true' || config['font-bold'] === true) ? 'bold ' : '';
+
+      if (isMe) {
+        const meRightMargin = Math.round(oneEm * 1.0);
+        const meWidth = Math.max(20, pos.width);
+
+        const bx = width - meWidth - meRightMargin;
+        const mePosY = pos.posY;
+        const meHeight = pos.height + 40;
+
+        ctx.fillStyle = meBubbleColor;
+        drawSpeechBubbleWithTail(ctx, bx, mePosY, meWidth, meHeight, 32, true, !pos.isContinuous, undefined, userArcRadius);
+
+        // 시각 (직접 파라미터 timeFontSize, timeOffsetGapX, timeBottomDiffY 적용)
+        const timeX_me = bx - timeOffsetGapX;
+        const timeY_me = mePosY + meHeight + timeBottomDiffY;
+
+        if (pos.showTime !== false) {
+          ctx.fillStyle = timeColor;
+          ctx.font = `bold ${timeFontSize}px ${selectedFont}`;
+          ctx.textAlign = 'right';
+          ctx.textBaseline = 'bottom';
+          ctx.fillText(pos.time, timeX_me, timeY_me);
+
+          ctx.font = `bold ${timeFontSize}px ${selectedFont}`;
+          const tW = Math.round(ctx.measureText(pos.time).width);
+          hitRegions.unshift({
+            type: 'time',
+            targetId: 'color-time-text',
+            label: '대화 시간 색상',
+            rect: { x: timeX_me - tW, y: timeY_me - timeFontSize - currentScrollY, width: tW, height: timeFontSize + 10 }
+          });
+
+          // LAYOUT_EDIT 모드일 때 시간 위치 조절 가이드 노드 및 핸들 영역 등록
+          if (window.APP_MODE === 'LAYOUT_EDIT') {
+            ctx.save();
+            // 시간 배치 가이드십선 (황록색 #10b981)
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([3, 3]);
+            ctx.beginPath();
+            ctx.moveTo(timeX_me, mePosY + meHeight - 10);
+            ctx.lineTo(timeX_me, timeY_me);
+            ctx.stroke();
+
+            const handleX = timeX_me;
+            const handleY = timeY_me;
+            ctx.fillStyle = '#10b981';
+            ctx.beginPath();
+            ctx.arc(handleX, handleY, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            window._timeOffsetHandleRegions.push({
+              isMe: true,
+              handleX: handleX,
+              handleY: handleY - currentScrollY,
+              bx: bx,
+              bubbleRightX: bx + meWidth,
+              bubbleBottomY: mePosY + meHeight,
+              timeFontSize: timeFontSize,
+              timeOffsetGapX: timeOffsetGapX,
+              timeBottomDiffY: timeBottomDiffY
+            });
+          }
+        }
+
+        // 세로 중앙 일치 연산
+        const bubbleCenterY = mePosY + meHeight / 2;
+        const textH = pos.lines.length * lineSpacing - (lineSpacing - activeFontSize);
+        const textY = Math.round(bubbleCenterY - textH / 2);
+
+        ctx.fillStyle = meTextColor;
+        ctx.font = `${isBold}${activeFontSize}px ${selectedFont}`;
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'top';
+
+        const textX_me = bx + meWidth - halfEm - meTextRightOffset;
+        let renderLines_me = pos.lines;
+        if (animState.active && index === visibleDialogs.length - 1 && animState.effect === 'typing') {
+          const fullText = pos.lines.join('\n');
+          const revealedLen = Math.max(1, Math.floor(fullText.length * animState.progress));
+          renderLines_me = fullText.slice(0, revealedLen).split('\n');
+        }
+        drawWrappedText(ctx, renderLines_me, textX_me, textY, 1.0, activeFontSize, lineSpacing);
+
+        // LAYOUT_EDIT 모드일 때 내 글자 우측 오프셋 가이드 수직선 및 드래그 핸들 그리기
+        if (window.APP_MODE === 'LAYOUT_EDIT') {
+          ctx.save();
+          // 1. 가이드 수직선 (보라색 #8b5cf6)
+          ctx.strokeStyle = '#8b5cf6';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.moveTo(textX_me, mePosY);
+          ctx.lineTo(textX_me, mePosY + meHeight);
+          ctx.stroke();
+
+          // 2. 수직선 드래그 핸들 (원형 노드)
+          const handleY = mePosY + meHeight / 2;
+          ctx.fillStyle = '#8b5cf6';
+          ctx.beginPath();
+          ctx.arc(textX_me, handleY, 10, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.restore();
+
+          window._meTextRightOffsetHandleRegions.push({
+            lineX: textX_me,
+            lineY1: mePosY - currentScrollY,
+            lineY2: mePosY + meHeight - currentScrollY,
+            handleY: handleY - currentScrollY,
+            offset: meTextRightOffset,
+            bx: bx,
+            meWidth: meWidth,
+            halfEm: halfEm
+          });
+        }
+
+        const textW = Math.round(pos.lines.reduce((max, l) => Math.max(max, ctx.measureText(l).width), 0));
+        hitRegions.unshift({
+          type: 'me-text',
+          targetId: 'color-me-text',
+          label: '내 글씨 색상',
+          rect: { x: textX_me - textW - 14, y: textY - currentScrollY - 8, width: textW + 28, height: textH + 16 }
+        });
+
+        hitRegions.push({
+          type: 'me-bubble',
+          targetId: 'color-me-bubble',
+          label: '내 말풍선 색상',
+          rect: { x: bx, y: mePosY - currentScrollY, width: meWidth, height: meHeight }
+        });
+
+        // 콘솔 로그 (렌더링 당 1회만 노출)
+
+      } else {
+        const oppLayout = calculateOpponentLayout(activeFontSize, fontSize, config);
+        const bx = oppLayout.bx; // 160px
+        const adjustedPosY = pos.posY;
+
+        // 초상화 및 이름 라벨
+        if (!pos.isContinuous) {
+          const cx = oppLayout.cx; // 73px
+          const size = avatarSize;
+          const cy = pos.avatarTop + size / 2;
+          const avatarRadius = avatarRound;
+          const ax = cx - size / 2;
+          const ay = pos.avatarTop;
+
+          ctx.save();
+          drawRoundRect(ctx, ax, ay, size, size, avatarRadius);
+          ctx.clip();
+
+          if (customSettings.image) {
+            const cachedImg = getCachedImage(customSettings.image, () => {
+              drawCanvasChat(canvas, ctx, config, dialogs, avatarSettingsMap);
+            });
+            if (cachedImg) {
+              ctx.drawImage(cachedImg, ax, ay, size, size);
+            } else {
+              ctx.fillStyle = customSettings.color;
+              ctx.fill();
+            }
+          } else {
+            ctx.fillStyle = customSettings.color;
+            ctx.fill();
+
+            ctx.fillStyle = customSettings.textColor;
+            ctx.font = `bold ${Math.round(size * 0.44)}px ${selectedFont}`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(customSettings.text, cx, cy);
+          }
+          ctx.restore();
+
+          // LAYOUT_EDIT 모드일 때 아바타 크기/라운드/버블상단 핸들 및 가이드 그리기
+          if (window.APP_MODE === 'LAYOUT_EDIT') {
+            ctx.save();
+            // 1. 아바타 크기 조절 테두리 & 우하단 핸들 (시안색 #06b6d4)
+            ctx.strokeStyle = '#06b6d4';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([6, 3]);
+            ctx.strokeRect(ax, ay, size, size);
+
+            ctx.fillStyle = '#06b6d4';
+            ctx.beginPath();
+            ctx.arc(ax + size, ay + size, 8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 2. 아바타 라운드 조절 핸들 (우상단 핑크색 #ec4899)
+            ctx.fillStyle = '#ec4899';
+            ctx.beginPath();
+            ctx.arc(ax + size, ay, 8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 3. 상대방 최초 버블 상단 Y 오프셋 가이드선 (티얼색 #14b8a6)
+            ctx.strokeStyle = '#14b8a6';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(bx, adjustedPosY);
+            ctx.lineTo(bx + pos.width, adjustedPosY);
+            ctx.stroke();
+
+            ctx.fillStyle = '#14b8a6';
+            ctx.beginPath();
+            ctx.arc(bx + pos.width / 2, adjustedPosY, 7, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            window._avatarHandleRegions.push({
+              ax: ax,
+              ay: ay - currentScrollY,
+              size: size,
+              round: avatarRadius,
+              sizeHandleX: ax + size,
+              sizeHandleY: ay + size - currentScrollY,
+              roundHandleX: ax + size,
+              roundHandleY: ay - currentScrollY
+            });
+
+            window._oppBubbleTopHandleRegions.push({
+              lineY: adjustedPosY - currentScrollY,
+              offset: oppBubbleTopOffset
+            });
+          }
+
+          hitRegions.unshift({
+            type: 'avatar',
+            person: pos.person,
+            label: `초상화 (${pos.person})`,
+            rect: { x: ax, y: ay - currentScrollY, width: size, height: size }
+          });
+
+          if (!isDirectChat) {
+            const nameFontSize = oppLayout.nameFontSize;
+            ctx.fillStyle = youNameColor;
+            ctx.font = `${nameFontSize}px ${selectedFont}`;
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.fillText(dialog.person, oppLayout.nameX, pos.avatarTop + 4);
+
+            const nameW = Math.round(ctx.measureText(dialog.person).width);
+
+            // LAYOUT_EDIT 모드일 때 테두리 및 우상단 드래그 핸들 그리기
+            if (window.APP_MODE === 'LAYOUT_EDIT') {
+              ctx.save();
+              ctx.strokeStyle = '#f97316'; // 주황색
+              ctx.lineWidth = 2;
+              ctx.setLineDash([6, 3]);
+              // 이름 텍스트 테두리 그리기
+              ctx.strokeRect(oppLayout.nameX, pos.avatarTop + 4, nameW, nameFontSize);
+
+              // 우상단 드래그 핸들 그리기 (주황색 동그라미)
+              ctx.fillStyle = '#f97316';
+              ctx.beginPath();
+              ctx.arc(oppLayout.nameX + nameW, pos.avatarTop + 4, 8, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.restore();
+
+              // 마우스 드래그 처리를 위해 핸들러 및 바디 영역 좌표 등록 (스크롤 반영된 Y좌표)
+              window._nameHandleRegions.push({
+                nameX: oppLayout.nameX,
+                nameY: pos.avatarTop + 4 - currentScrollY,
+                nameW: nameW,
+                nameH: nameFontSize,
+                handleX: oppLayout.nameX + nameW,
+                handleY: pos.avatarTop + 4 - currentScrollY,
+                nameFontSize: nameFontSize,
+                fontSize: fontSize
+              });
+            }
+
+            hitRegions.unshift({
+              type: 'name',
+              person: dialog.person,
+              targetId: 'color-other-name',
+              label: '상대 닉네임 색상',
+              rect: { x: oppLayout.nameX - 10, y: pos.avatarTop + 4 - currentScrollY - 6, width: nameW + 20, height: nameFontSize + 16 }
+            });
+          }
+        }
+
+        const youHeight = pos.height + 40;
+        ctx.fillStyle = youBubbleColor;
+        drawSpeechBubbleWithTail(ctx, bx, adjustedPosY, pos.width, youHeight, 32, false, !pos.isContinuous, undefined, userArcRadius);
+
+        // 시각 (직접 파라미터 timeFontSize, timeOffsetGapX, timeBottomDiffY 적용)
+        const timeX_you = bx + pos.width + timeOffsetGapX;
+        const timeY_you = adjustedPosY + youHeight + timeBottomDiffY;
+
+        if (pos.showTime !== false) {
+          ctx.fillStyle = timeColor;
+          ctx.font = `bold ${timeFontSize}px ${selectedFont}`;
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'bottom';
+          ctx.fillText(pos.time, timeX_you, timeY_you);
+
+          ctx.font = `bold ${timeFontSize}px ${selectedFont}`;
+          const tW = Math.round(ctx.measureText(pos.time).width);
+          hitRegions.unshift({
+            type: 'time',
+            targetId: 'color-time-text',
+            label: '대화 시간 색상',
+            rect: { x: timeX_you - 8, y: timeY_you - timeFontSize - currentScrollY - 6, width: tW + 16, height: timeFontSize + 18 }
+          });
+
+          // LAYOUT_EDIT 모드일 때 시간 위치 조절 가이드 노드 및 핸들 영역 등록
+          if (window.APP_MODE === 'LAYOUT_EDIT') {
+            ctx.save();
+            // 시간 배치 가이드십선 (황록색 #10b981)
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([3, 3]);
+            ctx.beginPath();
+            ctx.moveTo(timeX_you, adjustedPosY + youHeight - 10);
+            ctx.lineTo(timeX_you, timeY_you);
+            ctx.stroke();
+
+            const handleX = timeX_you;
+            const handleY = timeY_you;
+            ctx.fillStyle = '#10b981';
+            ctx.beginPath();
+            ctx.arc(handleX, handleY, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            window._timeOffsetHandleRegions.push({
+              isMe: false,
+              handleX: handleX,
+              handleY: handleY - currentScrollY,
+              bx: bx,
+              bubbleRightX: bx + pos.width,
+              bubbleBottomY: adjustedPosY + youHeight,
+              timeFontSize: timeFontSize,
+              timeOffsetGapX: timeOffsetGapX,
+              timeBottomDiffY: timeBottomDiffY
+            });
+          }
+        }
+
+        const textX = oppLayout.textX + oppTextLeftOffset;
+        const bubbleCenterY = adjustedPosY + youHeight / 2;
+        const textH = pos.lines.length * lineSpacing - (lineSpacing - activeFontSize);
+        const textY = Math.round(bubbleCenterY - textH / 2);
+
+        ctx.fillStyle = youTextColor;
+        ctx.font = `${isBold}${activeFontSize}px ${selectedFont}`;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+
+        let renderLines_you = pos.lines;
+        if (animState.active && index === visibleDialogs.length - 1 && animState.effect === 'typing') {
+          const fullText = pos.lines.join('\n');
+          const revealedLen = Math.max(1, Math.floor(fullText.length * animState.progress));
+          renderLines_you = fullText.slice(0, revealedLen).split('\n');
+        }
+        drawWrappedText(ctx, renderLines_you, textX, textY, 1.0, activeFontSize, lineSpacing);
+
+        // LAYOUT_EDIT 모드일 때 상대 글자 좌측 오프셋 가이드 수직선 및 드래그 핸들 그리기
+        if (window.APP_MODE === 'LAYOUT_EDIT') {
+          ctx.save();
+          // 1. 가이드 수직선 (파란색 #3b82f6)
+          ctx.strokeStyle = '#3b82f6';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.moveTo(textX, adjustedPosY);
+          ctx.lineTo(textX, adjustedPosY + youHeight);
+          ctx.stroke();
+
+          // 2. 수직선 드래그 핸들 (원형 노드)
+          const handleY = adjustedPosY + youHeight / 2;
+          ctx.fillStyle = '#3b82f6';
+          ctx.beginPath();
+          ctx.arc(textX, handleY, 10, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.restore();
+
+          window._oppTextLeftOffsetHandleRegions.push({
+            lineX: textX,
+            lineY1: adjustedPosY - currentScrollY,
+            lineY2: adjustedPosY + youHeight - currentScrollY,
+            handleY: handleY - currentScrollY,
+            offset: oppTextLeftOffset,
+            bx: bx,
+            halfEm: Math.round(activeFontSize * 0.5)
+          });
+        }
+
+        const textW = Math.round(pos.lines.reduce((max, l) => Math.max(max, ctx.measureText(l).width), 0));
+        hitRegions.unshift({
+          type: 'other-text',
+          targetId: 'color-other-text',
+          label: '상대 글씨 색상',
+          rect: { x: textX - 14, y: textY - currentScrollY - 8, width: textW + 28, height: textH + 16 }
+        });
+
+        hitRegions.push({
+          type: 'other-bubble',
+          targetId: 'color-other-bubble',
+          label: '상대 말풍선 색상',
+          rect: { x: bx, y: adjustedPosY - currentScrollY, width: pos.width, height: youHeight }
+        });
+
+
+      }
+
+      ctx.restore();
+    });
+
+
+
+    ctx.restore(); // 스크롤 클리핑 해제
+
+    // 7. 상단 헤더 영역 고정 그리기 (chat-start-y 연동)
+    const chatStartY = (config && config['chat-start-y'] !== undefined) ? parseInt(config['chat-start-y'], 10) : LAYOUT_DEFAULTS.CHAT_START_Y_DEFAULT;
+    const headerH = chatStartY;
+    const headerLineY = Math.max(0, headerH - 4);
+
+    ctx.fillStyle = config['background-color'] || '#acc0d1';
+    ctx.fillRect(0, 0, width, headerH);
+
+    ctx.fillStyle = 'rgba(0,0,0,0.06)';
+    ctx.fillRect(0, headerLineY, width, 4);
+
+    // 캡처 시간
+    ctx.fillStyle = '#000000';
+    ctx.font = `bold 36px ${selectedFont}`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(config['capture-time'], LAYOUT_DEFAULTS.STATUS_BAR_TIME_X, LAYOUT_DEFAULTS.STATUS_BAR_TIME_Y);
+
+    // 방 이름
+    ctx.font = `bold 54px ${selectedFont}`;
+    ctx.fillText(config['your-name'], LAYOUT_DEFAULTS.CHAT_ROOM_NAME_X, LAYOUT_DEFAULTS.CHAT_ROOM_NAME_Y);
+
+    // 돋보기 아이콘
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.arc(width - 210, 160, 18, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(width - 197, 173);
+    ctx.lineTo(width - 178, 192);
+    ctx.stroke();
+
+    // 햄버거 메뉴 아이콘
+    ctx.beginPath();
+    ctx.moveTo(width - 115, 142); ctx.lineTo(width - 55, 142);
+    ctx.moveTo(width - 115, 168); ctx.lineTo(width - 55, 168);
+    ctx.moveTo(width - 115, 194); ctx.lineTo(width - 55, 194);
+    ctx.stroke();
+
+    // 와이파이 안테나 (0~4단계: 0=0%, 1=25%, 2=50%, 3=75%, 4=100%)
+    const rawWifi = parseInt(config['wifi']);
+    const wifiVal = (!isNaN(rawWifi) && rawWifi >= 0) ? rawWifi : 4;
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 4.5;
+    const wcx = width - 175;
+    const wcy = 58;
+
+    ctx.fillStyle = wifiVal > 0 ? '#000' : 'rgba(0,0,0,0.15)';
+    ctx.beginPath();
+    ctx.arc(wcx, wcy, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    for (let r = 1; r <= 3; r++) {
+      ctx.strokeStyle = wifiVal >= (r + 1) ? '#000' : 'rgba(0,0,0,0.15)';
+      ctx.beginPath();
+      ctx.arc(wcx, wcy, r * 10, -Math.PI * 0.75, -Math.PI * 0.25);
+      ctx.stroke();
+    }
+
+    // 셀 상태 (0~4단계: 0=0%, 1=25%, 2=50%, 3=75%, 4=100%)
+    const rawCell = parseInt(config['cell']);
+    const cellVal = (!isNaN(rawCell) && rawCell >= 0) ? rawCell : 4;
+    const activeBars = cellVal;
+    const barX = width - 268;
+    const barY = 56;
+    for (let i = 1; i <= 4; i++) {
+      ctx.fillStyle = i <= activeBars ? '#000' : 'rgba(0,0,0,0.15)';
+      const barH = i * 7;
+      ctx.fillRect(barX + (i * 9), barY - barH, 5, barH);
+    }
+
+    // 배터리 아이콘
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 4;
+    ctx.fillStyle = '#000000';
+    
+    drawRoundRect(ctx, width - 135, 27, 72, 33, 6);
+    ctx.stroke();
+
+    const batteryPercent = parseInt(config['battery']) || 83;
+    const fillWidth = Math.max(2, Math.floor(62 * (batteryPercent / 100)));
+    drawRoundRect(ctx, width - 130, 31, fillWidth, 25, 3);
+    ctx.fill();
+
+    ctx.fillRect(width - 63, 36, 6, 15);
+
+    // Ctrl 키 누른 채 마우스 호버 시 가로/세로 보조선 및 최하단 좌표 툴팁 출력
+    if (window._isCtrlGuideActive) {
+      ctx.save();
+      const mX = window._guideMouseX || 0;
+      const mY = window._guideMouseY || 0;
+
+      // 1. 초상화 세로 중심선 (주황색 점선 & 레이블)
+      const avatarCX = (config && config['avatar-center-x'] !== undefined) ? parseInt(config['avatar-center-x'], 10) : LAYOUT_DEFAULTS.AVATAR_CENTER_X_DEFAULT;
+      ctx.strokeStyle = '#f97316'; // 주황색
+      ctx.lineWidth = 3;
+      ctx.setLineDash([8, 4]);
+      ctx.beginPath();
+      ctx.moveTo(avatarCX, 0);
+      ctx.lineTo(avatarCX, height);
+      ctx.stroke();
+
+      // 초상화 세로 중심선 텍스트 레이블 (헤더 영역 아래에 깔끔하게 표시)
+      ctx.fillStyle = '#f97316';
+      ctx.font = 'bold 24px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const labelText = `초상화 중심 (X: ${avatarCX}px)`;
+      const labelW = ctx.measureText(labelText).width + 24;
+      const labelH = 40;
+      drawRoundRect(ctx, Math.round(avatarCX - labelW / 2), 280, labelW, labelH, 8);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(labelText, avatarCX, 280 + labelH / 2);
+
+      // 1.5. 상대방 버블 좌측 정렬선 (초록색 점선 & 레이블)
+      const bubbleX = (config && config['opponent-bubble-x'] !== undefined) ? parseInt(config['opponent-bubble-x'], 10) : LAYOUT_DEFAULTS.OPPONENT_BUBBLE_X;
+      ctx.strokeStyle = '#10b981'; // 초록색
+      ctx.lineWidth = 3;
+      ctx.setLineDash([8, 4]);
+      ctx.beginPath();
+      ctx.moveTo(bubbleX, 0);
+      ctx.lineTo(bubbleX, height);
+      ctx.stroke();
+
+      ctx.fillStyle = '#10b981';
+      ctx.font = 'bold 24px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const bubbleLabelText = `버블 시작 (X: ${bubbleX}px)`;
+      const bubbleLabelW = ctx.measureText(bubbleLabelText).width + 24;
+      const bubbleLabelH = 40;
+      drawRoundRect(ctx, Math.round(bubbleX - bubbleLabelW / 2), 340, bubbleLabelW, bubbleLabelH, 8);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(bubbleLabelText, bubbleX, 340 + bubbleLabelH / 2);
+
+      // 1.8. 첫 채팅 시작 Y선 (보라색 점선 & 레이블, 헤더 하단 엣지 클램핑)
+      const chatStartY = (config && config['chat-start-y'] !== undefined) ? parseInt(config['chat-start-y'], 10) : LAYOUT_DEFAULTS.CHAT_START_Y_DEFAULT;
+      const targetScreenY = chatStartY - currentScrollY;
+      const isClamped = (currentScrollY > 0 && targetScreenY < chatStartY);
+      const visibleGuideY = Math.max(chatStartY, targetScreenY);
+
+      ctx.strokeStyle = '#8b5cf6'; // 보라색
+      ctx.lineWidth = 3;
+      ctx.setLineDash([8, 4]);
+      ctx.beginPath();
+      ctx.moveTo(0, visibleGuideY);
+      ctx.lineTo(width, visibleGuideY);
+      ctx.stroke();
+
+      ctx.fillStyle = '#8b5cf6';
+      ctx.font = 'bold 24px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      const chatStartLabelText = `첫 채팅 시작 Y: ${chatStartY}px${isClamped ? ' (화면 고정 핸들러)' : ''}`;
+      const chatStartLabelW = ctx.measureText(chatStartLabelText).width + 24;
+      const chatStartLabelH = 40;
+      drawRoundRect(ctx, 60, visibleGuideY - 20 - chatStartLabelH / 2, chatStartLabelW, chatStartLabelH, 8);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(chatStartLabelText, 72, visibleGuideY - 20);
+
+      // 2. 빨간색 점선 마우스 가로/세로 보조선
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.85)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([8, 6]);
+
+      // 세로 보조선
+      ctx.beginPath();
+      ctx.moveTo(mX, 0);
+      ctx.lineTo(mX, height);
+      ctx.stroke();
+
+      // 가로 보조선
+      ctx.beginPath();
+      ctx.moveTo(0, mY);
+      ctx.lineTo(width, mY);
+      ctx.stroke();
+
+      ctx.setLineDash([]);
+
+      // 캔버스 최하단 좌표 툴팁 (복사 알림 시 초록색 하이라이트)
+      const isCopied = !!window._copyNotificationText;
+      const tooltipText = isCopied ? window._copyNotificationText : `X: ${mX} px  |  Y: ${mY} px`;
+      const tooltipW = isCopied ? 560 : 460;
+      const tooltipH = 64;
+      const tooltipX = Math.round((width - tooltipW) / 2);
+      const tooltipY = height - 90;
+      const radius = 16;
+
+      ctx.fillStyle = isCopied ? 'rgba(16, 185, 129, 0.95)' : 'rgba(15, 23, 42, 0.92)';
+      drawRoundRect(ctx, tooltipX, tooltipY, tooltipW, tooltipH, radius);
+      ctx.fill();
+
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `bold 28px ${selectedFont}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(tooltipText, width / 2, tooltipY + tooltipH / 2);
+
+      ctx.restore();
+    }
+
+    hitRegions.push({
+      type: 'footer',
+      targetId: 'color-footer-bg',
+      label: '메시지 입력창 색상',
+      rect: { x: 0, y: height - 120, width: width, height: 120 }
+    });
+
+    hitRegions.push({
+      type: 'background',
+      targetId: 'color-bg',
+      label: '대화방 배경색',
+      rect: { x: 0, y: 0, width: width, height: height }
+    });
+
+    // 3. COLOR_EDIT 모드에서 감지된 캔버스 오브젝트 최하단 알약 툴팁 렌더링 (LAYOUT_EDIT 좌표 표시 방식과 100% 동일한 디자인)
+    if (window.APP_MODE === 'COLOR_EDIT') {
+      const mX = window._guideMouseX || 0;
+      const mY = window._guideMouseY || 0;
+
+      let hitObj = null;
+      for (const region of hitRegions) {
+        if (region.type === 'background') continue;
+        const { x, y, width: rW, height: rH } = region.rect;
+        if (mX >= x && mX <= x + rW && mY >= y && mY <= y + rH) {
+          hitObj = region;
+          break;
+        }
+      }
+      if (!hitObj) {
+        for (const region of hitRegions) {
+          if (region.type === 'background') {
+            const { x, y, width: rW, height: rH } = region.rect;
+            if (mX >= x && mX <= x + rW && mY >= y && mY <= y + rH) {
+              hitObj = region;
+              break;
+            }
+          }
+        }
+      }
+
+      if (hitObj) {
+        ctx.save();
+        // 감지된 오브젝트 강조 점선 테두리
+        const { x, y, width: rW, height: rH } = hitObj.rect;
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([6, 3]);
+        ctx.strokeRect(x, y, rW, rH);
+
+        // LAYOUT_EDIT 좌표 툴팁과 100% 동일한 디자인의 하단 알약 바
+        const labelText = hitObj.type === 'avatar' ? `👤 ${hitObj.person} 초상화` : `🎨 ${hitObj.label}`;
+        const tooltipText = `${labelText} (클릭하여 편집)`;
+        ctx.font = `bold 28px ${selectedFont}`;
+        const textW = ctx.measureText(tooltipText).width;
+        const tooltipW = Math.max(460, textW + 48);
+        const tooltipH = 64;
+        const tooltipX = Math.round((width - tooltipW) / 2);
+        const tooltipY = height - 90;
+        const radius = 16;
+
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+        drawRoundRect(ctx, tooltipX, tooltipY, tooltipW, tooltipH, radius);
+        ctx.fill();
+
+        ctx.strokeStyle = 'rgba(245, 158, 11, 0.6)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `bold 28px ${selectedFont}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(tooltipText, width / 2, tooltipY + tooltipH / 2);
+        ctx.restore();
+      }
+    }
+
+    window._canvasHitRegions = hitRegions;
+
+    ctx.restore(); // scale 복원
+  }
+
+  /**
+   * requestAnimationFrame 루프 깨우기 헬퍼
+   */
+  function wakeUpRenderLoop() {
+    if (!animationFrameId && loopDrawCallback) {
+      animationFrameId = requestAnimationFrame((t) => renderLoop(t, loopRefreshCallback, loopDrawCallback));
+    }
+  }
+
+  /**
+   * requestAnimationFrame 루프 핸들러
+   */
+  function renderLoop(timestamp, getRefreshStateCallback, drawCallback) {
+    // 카카오톡 캔버스가 DOM에서 소멸했다면 즉시 루프 중단 및 해제!
+    const activeCanvas = document.getElementById('chat-canvas');
+    if (!activeCanvas) {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+      return;
+    }
+
+    let needsRedraw = false;
+
+    // 1. 등장 애니메이션 보간
+    if (animState.active) {
+      let elapsed = timestamp - animState.startTime;
+      let p = elapsed / animState.duration;
+      if (p >= 1.0) {
+        p = 1.0;
+        animState.active = false;
+      }
+      animState.progress = p;
+      needsRedraw = true;
+    }
+
+    // 2. Easing Lerp 스크롤
+    if (isScrollEasingActive) {
+      const diff = targetScrollY - currentScrollY;
+      if (Math.abs(diff) < 0.5) {
+        currentScrollY = targetScrollY;
+        isScrollEasingActive = false;
+      } else {
+        currentScrollY += diff * 0.15;
+        needsRedraw = true;
+      }
+    }
+
+    if (needsRedraw && drawCallback) {
+      drawCallback();
+    }
+
+    // 오직 애니메이션이 활성화되어 있거나 스크롤 보간이 구동 중일 때만 렌더 루프 예약 진행
+    if (animState.active || isScrollEasingActive) {
+      animationFrameId = requestAnimationFrame((t) => renderLoop(t, getRefreshStateCallback, drawCallback));
+    } else {
+      animationFrameId = null; // 루프가 완전히 잠들고 대기 스레드 중단
+    }
+  }
+
+  function escapeXml(str) {
+    if (str === undefined || str === null) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
+  }
+
+  /**
+   * pure vector & real text SVG exporter
+   * 캔버스 100% 실물 렌더링 상치 및 텍스트(<text>) / 베젤 벡터 패스(<path>) 완전 매핑
+   */
+  function exportTrueSVG(canvas, config, dialogs, avatarSettingsMap) {
+    canvas = canvas || lastRenderedCanvas;
+    config = (config && Object.keys(config).length > 0) ? config : (lastRenderedConfig || {});
+    dialogs = (dialogs && dialogs.length > 0) ? dialogs : (lastRenderedDialogs || []);
+    avatarSettingsMap = avatarSettingsMap || lastRenderedAvatarMap || {};
+
+    if (!canvas) return '';
+
+    const width = canvas.width || 1080;
+    const height = canvas.height || 2340;
+    const scaleXRatio = 1.0;
+    const scaleYRatio = 1.0;
+
+    const selectedFont = config['font'] || 'sans-serif';
+    const fontSize = parseInt(config['font-size']) || LAYOUT_DEFAULTS.FONT_SIZE_DEFAULT;
+    const isBoldStr = (config['font-bold'] === 'true' || config['font-bold'] === true) ? 'font-weight="bold"' : '';
+    const lineSpacing = fontSize + 22;
+
+    const bgColor = config['bg-color'] || config['background-color'] || '#abc1d1';
+    const meBubbleColor = config['me-bubble-color'] || '#fee500';
+    const meTextColor = config['me-text-color'] || '#000000';
+    const youBubbleColor = config['you-bubble-color'] || '#ffffff';
+    const youTextColor = config['you-text-color'] || '#000000';
+    const youNameColor = config['you-name-color'] || '#2c3e50';
+    const timeColor = config['time-color'] || '#555555';
+    const dateTextColor = config['date-text-color'] || '#444444';
+
+    const speakers = new Set();
+    dialogs.forEach(d => {
+      if (d.person && !d.person.startsWith('=')) {
+        speakers.add(d.person);
+      }
+    });
+    const isDirectChat = (speakers.size === 2 && Array.from(speakers).includes(config['your-name']));
+
+    const ctx = canvas.getContext('2d');
+
+    let lastPosY = (config && config['chat-start-y'] !== undefined) ? parseInt(config['chat-start-y'], 10) : LAYOUT_DEFAULTS.CHAT_START_Y_DEFAULT;
+    let lastSpeaker = '';
+    const tempPositions = [];
+
+    const startIdx = parseInt(config['start-index']) || 1;
+    const rawProgress = (config['progress'] !== undefined && config['progress'] !== null) ? parseInt(config['progress']) : 0;
+    const progressVal = rawProgress > 0 ? rawProgress : (dialogs ? dialogs.length : 0);
+    const cleanDialogs = dialogs.filter(d => d.person && d.person.trim() !== '');
+    const visibleDialogs = cleanDialogs.slice(startIdx - 1, progressVal);
+
+    visibleDialogs.forEach((dialog) => {
+      if (!dialog.person || dialog.person.trim() === '') return;
+
+      if (dialog.person.startsWith('=')) {
+        lastSpeaker = '';
+        lastPosY += 50;
+        const dateVal = dialog.person.slice(1);
+        let displayDate = dateVal;
+        try {
+          const dateObj = new Date(dateVal);
+          if (!isNaN(dateObj.getTime())) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            displayDate = dateObj.toLocaleDateString('ko-KR', options);
+          }
+        } catch (e) {}
+
+        if (ctx) ctx.font = `bold 40px ${selectedFont}`;
+        const dateWidth = ctx ? ctx.measureText(displayDate).width + 100 : 360;
+        const halfEmDate = 24;
+        const datePosY = lastPosY + halfEmDate;
+        tempPositions.push({
+          isDate: true,
+          posY: datePosY,
+          width: dateWidth,
+          text: displayDate
+        });
+        lastPosY = datePosY + 60;
+        return;
+      }
+
+      const words = dialog.message.split(' ');
+      let line = '';
+      const lines = [];
+      let lineCount = 0;
+      const posY = lastPosY + 58;
+
+      words.forEach((word) => {
+        if (word === '\\') {
+          lineCount++;
+          lines.push(line);
+          line = '';
+        } else if (line.length + word.length > Math.max(12, Math.floor(720 / fontSize))) {
+          if (word.startsWith('\\')) word = word.slice(1);
+          lineCount++;
+          lines.push(line);
+          line = word;
+        } else {
+          if (word.startsWith('\\')) word = word.slice(1);
+          line += (line ? ' ' : '') + word;
+        }
+      });
+      lines.push(line);
+
+      const baseFontSize = Math.round(fontSize * (8.47 / 5.43));
+      const prevFontSize = Math.round(baseFontSize * 0.9) - 1;
+      const activeFontSize = Math.round(prevFontSize * (38 / 44)); // 48px
+
+      // 1. 대화 폰트 및 em 기초 단위 연산
+      const meName = config['me'] || config['me-name'] || '나';
+      const isMe = (dialog.person === meName);
+
+      const halfEm = Math.round(activeFontSize * 0.5); // 24px (0.5em)
+      const oneEm = Math.round(activeFontSize * 1.0);  // 48px (1.0em)
+
+      // 2. 새 채팅 여부 판별
+      const isNewChat = (dialog.person !== lastSpeaker);
+      if (isNewChat) {
+        lastSpeaker = dialog.person;
+      }
+
+      // 3. 간격 벌림 (새 채팅 = 1.0em, 연속 채팅 = 0.5em)
+      const gap = isNewChat ? oneEm : halfEm;
+      lastPosY += gap;
+
+      // 4. 채팅 넓이/높이 구하기
+      if (ctx) ctx.font = `${isBoldStr ? 'bold ' : ''}${activeFontSize}px ${selectedFont}`;
+      let maxWidth = 0;
+      lines.forEach((l) => {
+        const w = ctx ? ctx.measureText(l).width : l.length * activeFontSize * 0.6;
+        if (w > maxWidth) maxWidth = w;
+      });
+
+      const bubbleWidth = Math.round(maxWidth + oneEm);
+      const bubbleHeight = Math.round(40 + lineSpacing * lineCount);
+
+      // 5~9. 좌표 선점 및 currentY (lastPosY) 갱신
+      let mePosY, adjustedPosY, avatarTop, bubbleBottom;
+
+      if (isMe) {
+        mePosY = lastPosY;
+        bubbleBottom = mePosY + bubbleHeight + 40;
+        lastPosY = bubbleBottom;
+
+        tempPositions.push({
+          isDate: false,
+          isMe: true,
+          posY: mePosY,
+          width: bubbleWidth,
+          height: bubbleHeight,
+          lines: lines,
+          lineCount: lineCount,
+          isContinuous: !isNewChat,
+          person: dialog.person,
+          time: dialog.time || extractTimeStr(dialog.rawTime || config['capture-time'])
+        });
+      } else if (isNewChat) {
+        avatarTop = lastPosY;
+        adjustedPosY = avatarTop + 44;
+        bubbleBottom = adjustedPosY + bubbleHeight + 40;
+        lastPosY = bubbleBottom;
+
+        tempPositions.push({
+          isDate: false,
+          isMe: false,
+          avatarTop: avatarTop,
+          posY: adjustedPosY,
+          width: bubbleWidth,
+          height: bubbleHeight,
+          lines: lines,
+          lineCount: lineCount,
+          isContinuous: false,
+          person: dialog.person,
+          time: dialog.time || extractTimeStr(dialog.rawTime || config['capture-time'])
+        });
+      } else {
+        adjustedPosY = lastPosY;
+        bubbleBottom = adjustedPosY + bubbleHeight + 40;
+        lastPosY = bubbleBottom;
+
+        tempPositions.push({
+          isDate: false,
+          isMe: false,
+          posY: adjustedPosY,
+          width: bubbleWidth,
+          height: bubbleHeight,
+          lines: lines,
+          lineCount: lineCount,
+          isContinuous: true,
+          person: dialog.person,
+          time: dialog.time || extractTimeStr(dialog.rawTime || config['capture-time'])
+        });
+      }
+    });
+
+    // 시각 생략 연산 (아래 채팅이 존재하고, 동일 화자이고, 동일 시각인 경우 현재 채팅의 시각 생략)
+    tempPositions.forEach((pos, idx) => {
+      if (pos.isDate) return;
+      const nextItem = tempPositions[idx + 1];
+      if (nextItem && !nextItem.isDate && nextItem.person === pos.person && nextItem.time === pos.time) {
+        pos.showTime = false;
+      } else {
+        pos.showTime = true;
+      }
+    });
+
+    const svgElements = [];
+
+    // 1. 전체 배경 렉트
+    svgElements.push(`<rect width="100%" height="100%" fill="${escapeXml(bgColor)}" />`);
+
+    // 2. 텍스트 및 벡터 레이어 (뷰포트 클리핑 및 렌더링)
+    svgElements.push(`<g clip-path="url(#viewport-clip)">`);
+    svgElements.push(`<g transform="translate(0, ${-currentScrollY})">`);
+
+    visibleDialogs.forEach((dialog, index) => {
+      const pos = tempPositions[index];
+      if (!pos) return;
+
+      if (pos.isDate) {
+        const badgeW = pos.width;
+        const badgeX = (width - badgeW) / 2;
+        svgElements.push(`<rect x="${badgeX}" y="${pos.posY}" width="${badgeW}" height="60" rx="30" ry="30" fill="rgb(177,195,213)" />`);
+        svgElements.push(`<text x="${width / 2}" y="${pos.posY + 30}" font-size="36" font-weight="bold" fill="${escapeXml(dateTextColor)}" text-anchor="middle" dominant-baseline="central">${escapeXml(pos.text)}</text>`);
+        return;
+      }
+
+      const person = dialog.person;
+      const meName = config['me'] || config['me-name'] || '나';
+      const isMe = person === meName;
+
+      const baseFontSize = Math.round(fontSize * (8.47 / 5.43));
+      const prevFontSize = Math.round(baseFontSize * 0.9) - 1;
+      const activeFontSize = Math.round(prevFontSize * (38 / 44)); // 48px
+
+      const halfEm = Math.round(activeFontSize * 0.5); // 0.5em (24px)
+      const oneEm = Math.round(activeFontSize * 1.0);  // 1.0em (48px)
+
+      if (isMe) {
+
+        const meRightMargin = Math.round(oneEm * 1.0);
+        const meWidth = Math.max(20, Math.round(pos.width));
+
+        const rx = Math.round(width - meWidth - meRightMargin);
+        const mePosY = Math.round(pos.posY);
+        const meHeight = Math.round(pos.height + 40);
+
+        const userArcRadius = (config && config['bubble-round'] !== undefined) ? parseInt(config['bubble-round'], 10) : LAYOUT_DEFAULTS.BUBBLE_ROUND_DEFAULT;
+        const diff = 44 - userArcRadius;
+        const returnOffset = 2 + diff;
+
+        const wOffset = Math.max(10, Math.round(meWidth - 120 + userArcRadius));
+        const hOffset = Math.max(0, Math.round(meHeight - 90));
+        const startY = Math.round(mePosY + 140);
+
+        const bubbleCenterX = Math.round(rx + meWidth / 2);
+        const startX_me = Math.round(rx - 1);
+        const pathD = generateSpeechBubblePathWithTail(startX_me, startY, wOffset, hOffset, userArcRadius);
+
+        if (!pos.isContinuous) {
+          svgElements.push(`<g transform="translate(${2 * bubbleCenterX}, 0) scale(-1, 1)">
+            <path d="${pathD}" fill="${escapeXml(meBubbleColor)}" />
+          </g>`);
+        } else {
+          svgElements.push(`<rect x="${rx}" y="${mePosY}" width="${meWidth}" height="${meHeight}" rx="${userArcRadius}" ry="${userArcRadius}" fill="${escapeXml(meBubbleColor)}" />`);
+        }
+
+        if (pos.showTime !== false) {
+          const timeFontSize = (config && config['time-font-size'] !== undefined) ? parseInt(config['time-font-size'], 10) : LAYOUT_DEFAULTS.TIME_FONT_SIZE_DEFAULT;
+          const timeOffsetGapX = (config && config['time-offset-gap-x'] !== undefined) ? parseInt(config['time-offset-gap-x'], 10) : LAYOUT_DEFAULTS.TIME_OFFSET_GAP_X_DEFAULT;
+          const timeBottomDiffY = (config && config['time-bottom-diff-y'] !== undefined) ? parseInt(config['time-bottom-diff-y'], 10) : LAYOUT_DEFAULTS.TIME_BOTTOM_DIFF_Y_DEFAULT;
+
+          const timeX_me = Math.round(rx - timeOffsetGapX);
+          const timeY_me = Math.round(mePosY + meHeight + timeBottomDiffY);
+          svgElements.push(`<text x="${timeX_me}" y="${timeY_me}" font-size="${timeFontSize}" font-weight="bold" fill="${escapeXml(timeColor)}" text-anchor="end" dominant-baseline="alphabetic">${escapeXml(pos.time)}</text>`);
+        }
+
+        const meTextRightOffset = (config && config['me-text-right-offset'] !== undefined) ? parseInt(config['me-text-right-offset'], 10) : LAYOUT_DEFAULTS.ME_TEXT_RIGHT_OFFSET_DEFAULT;
+        const textX = Math.round(rx + meWidth - halfEm - meTextRightOffset);
+        const bubbleCenterY = Math.round(mePosY + meHeight / 2);
+        const textH = pos.lines.length * lineSpacing - (lineSpacing - activeFontSize);
+        const textY = Math.round(bubbleCenterY - textH / 2);
+
+        if (pos.lines.length === 1) {
+          svgElements.push(`<text x="${textX}" y="${textY}" font-size="${activeFontSize}" ${isBoldStr} fill="${escapeXml(meTextColor)}" text-anchor="end" dominant-baseline="hanging">${escapeXml(pos.lines[0])}</text>`);
+        } else {
+          const textSpans = pos.lines.map((l, i) => `<tspan x="${textX}" dy="${i === 0 ? 0 : lineSpacing}">${escapeXml(l)}</tspan>`).join('');
+          svgElements.push(`<text x="${textX}" y="${textY}" font-size="${activeFontSize}" ${isBoldStr} fill="${escapeXml(meTextColor)}" dominant-baseline="hanging">${textSpans}</text>`);
+        }
+
+      } else {
+        const customSettings = (avatarSettingsMap && avatarSettingsMap[person]) || {
+          color: '#DE8',
+          text: person.charAt(0),
+          textColor: '#ffffff',
+          image: ''
+        };
+
+        const userArcRadius = (config && config['bubble-round'] !== undefined) ? parseInt(config['bubble-round'], 10) : LAYOUT_DEFAULTS.BUBBLE_ROUND_DEFAULT;
+
+        const bx = (config && config['opponent-bubble-x'] !== undefined) ? parseInt(config['opponent-bubble-x'], 10) : LAYOUT_DEFAULTS.OPPONENT_BUBBLE_X; // 상대방 말풍선 기준 X = 160px
+        const avatarDiameter = LAYOUT_DEFAULTS.AVATAR_DIAMETER;
+        const shiftUpByHeight = Math.round(119 * (7 / 99));
+        const adjustedPosY = pos.isContinuous
+          ? Math.round(pos.posY + 12)
+          : Math.round(pos.posY - Math.round(avatarDiameter * (2 / 5)) + 119 - shiftUpByHeight);
+
+        const youHeight = Math.round(pos.height + 40);
+        const startX = bx - 1;
+        const startY = Math.round(pos.posY + 140);
+        const wOffset = Math.max(10, Math.round(pos.width - 120 + userArcRadius));
+        const hOffset = Math.max(0, Math.round(youHeight - 90));
+        const pathD = generateSpeechBubblePathWithTail(startX, startY, wOffset, hOffset, userArcRadius);
+
+        if (!pos.isContinuous) {
+          svgElements.push(`<path d="${pathD}" fill="${escapeXml(youBubbleColor)}" />`);
+
+          const cx = (config && config['avatar-center-x'] !== undefined) ? parseInt(config['avatar-center-x'], 10) : LAYOUT_DEFAULTS.AVATAR_CENTER_X_DEFAULT;
+          const cy = pos.posY - 10 + 58;
+          const size = Math.round(LAYOUT_DEFAULTS.AVATAR_DIAMETER * 0.9);
+          const ax = Math.round(cx - size / 2);
+          const ay = Math.round(cy - size / 2);
+
+          if (customSettings.image) {
+            svgElements.push(`<clipPath id="avatar-clip-${index}">
+              <rect x="${ax}" y="${ay}" width="${size}" height="${size}" rx="46" ry="46" />
+            </clipPath>`);
+            svgElements.push(`<image x="${ax}" y="${ay}" width="${size}" height="${size}" href="${escapeXml(customSettings.image)}" clip-path="url(#avatar-clip-${index})" />`);
+          } else {
+            svgElements.push(`<rect x="${ax}" y="${ay}" width="${size}" height="${size}" rx="46" ry="46" fill="${escapeXml(customSettings.color)}" />`);
+            svgElements.push(`<text x="${cx}" y="${cy}" font-size="46" font-weight="bold" fill="${escapeXml(customSettings.textColor)}" text-anchor="middle" dominant-baseline="central">${escapeXml(customSettings.text)}</text>`);
+          }
+
+          if (!isDirectChat) {
+            const nameFontRatio = (config && config['name-font-ratio'] !== undefined) ? parseFloat(config['name-font-ratio']) : LAYOUT_DEFAULTS.NAME_FONT_RATIO_DEFAULT;
+            const nameFontSize = Math.floor(fontSize * nameFontRatio);
+            const nameOffset = (config && config['name-offset'] !== undefined) ? parseInt(config['name-offset'], 10) : 0;
+            const nameX = Math.round((LAYOUT_DEFAULTS.NAME_X_REF_DEFAULT - nameFontSize) + 1) + nameOffset;
+            svgElements.push(`<text x="${nameX}" y="${Math.round(pos.posY + 5)}" font-size="${nameFontSize}" fill="${escapeXml(youNameColor)}" dominant-baseline="hanging">${escapeXml(dialog.person)}</text>`);
+          }
+        } else {
+          const youHeight = Math.round(pos.height + 40);
+          svgElements.push(`<rect x="${bx}" y="${adjustedPosY}" width="${Math.round(pos.width)}" height="${youHeight}" rx="${userArcRadius}" ry="${userArcRadius}" fill="${escapeXml(youBubbleColor)}" />`);
+        }
+
+        if (pos.showTime !== false) {
+          const timeFontSize = (config && config['time-font-size'] !== undefined) ? parseInt(config['time-font-size'], 10) : LAYOUT_DEFAULTS.TIME_FONT_SIZE_DEFAULT;
+          const timeOffsetGapX = (config && config['time-offset-gap-x'] !== undefined) ? parseInt(config['time-offset-gap-x'], 10) : LAYOUT_DEFAULTS.TIME_OFFSET_GAP_X_DEFAULT;
+          const timeBottomDiffY = (config && config['time-bottom-diff-y'] !== undefined) ? parseInt(config['time-bottom-diff-y'], 10) : LAYOUT_DEFAULTS.TIME_BOTTOM_DIFF_Y_DEFAULT;
+
+          const timeX_you = Math.round(bx + pos.width + timeOffsetGapX);
+          const timeY_you = Math.round(adjustedPosY + pos.height + 40 + timeBottomDiffY);
+          svgElements.push(`<text x="${timeX_you}" y="${timeY_you}" font-size="${timeFontSize}" font-weight="bold" fill="${escapeXml(timeColor)}" text-anchor="start" dominant-baseline="alphabetic">${escapeXml(pos.time)}</text>`);
+        }
+
+        const oppTextLeftOffset = (config && config['opp-text-left-offset'] !== undefined) ? parseInt(config['opp-text-left-offset'], 10) : LAYOUT_DEFAULTS.OPP_TEXT_LEFT_OFFSET_DEFAULT;
+        const textX = Math.round(bx + activeFontSize * 0.5 + oppTextLeftOffset);
+
+        const bubbleCenterY = Math.round(adjustedPosY + (pos.height + 40) / 2);
+        const textH = pos.lines.length * lineSpacing - (lineSpacing - activeFontSize);
+        const textY = Math.round(bubbleCenterY - textH / 2);
+
+        if (pos.lines.length === 1) {
+          svgElements.push(`<text x="${textX}" y="${textY}" font-size="${activeFontSize}" ${isBoldStr} fill="${escapeXml(youTextColor)}" dominant-baseline="hanging">${escapeXml(pos.lines[0])}</text>`);
+        } else {
+          const textSpans = pos.lines.map((l, i) => `<tspan x="${textX}" dy="${i === 0 ? 0 : lineSpacing}">${escapeXml(l)}</tspan>`).join('');
+          svgElements.push(`<text x="${textX}" y="${textY}" font-size="${activeFontSize}" ${isBoldStr} fill="${escapeXml(youTextColor)}" dominant-baseline="hanging">${textSpans}</text>`);
+        }
+      }
+    });
+
+    svgElements.push(`</g>`);
+    svgElements.push(`</g>`);
+
+    // 3. 상단 헤더 영역 (chat-start-y 연동)
+    const chatStartY = (config && config['chat-start-y'] !== undefined) ? parseInt(config['chat-start-y'], 10) : LAYOUT_DEFAULTS.CHAT_START_Y_DEFAULT;
+    const headerH = chatStartY;
+    const headerLineY = Math.max(0, headerH - 4);
+
+    svgElements.push(`<g id="header-bar">
+      <rect width="${width}" height="${headerH}" fill="${escapeXml(bgColor)}" />
+      <rect y="${headerLineY}" width="${width}" height="4" fill="rgba(0,0,0,0.06)" />
+      <text x="${LAYOUT_DEFAULTS.STATUS_BAR_TIME_X}" y="${LAYOUT_DEFAULTS.STATUS_BAR_TIME_Y}" font-size="36" font-weight="bold" fill="#000000" dominant-baseline="central">${escapeXml(config['capture-time'] || '오후 12:00')}</text>
+      <text x="${LAYOUT_DEFAULTS.CHAT_ROOM_NAME_X}" y="${LAYOUT_DEFAULTS.CHAT_ROOM_NAME_Y}" font-size="54" font-weight="bold" fill="#000000" dominant-baseline="central">${escapeXml(config['your-name'] || '카카오톡 대화')}</text>
+      <circle cx="${width - 210}" cy="160" r="18" fill="none" stroke="#000000" stroke-width="5" />
+      <line x1="${width - 197}" y1="173" x2="${width - 178}" y2="192" stroke="#000000" stroke-width="5" />
+      <line x1="${width - 115}" y1="142" x2="${width - 55}" y2="142" stroke="#000000" stroke-width="5" />
+      <line x1="${width - 115}" y1="168" x2="${width - 55}" y2="168" stroke="#000000" stroke-width="5" />
+      <line x1="${width - 115}" y1="194" x2="${width - 55}" y2="194" stroke="#000000" stroke-width="5" />
+    </g>`);
+
+    return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${realW}" height="${realH}" viewBox="0 0 ${realW} ${realH}">
+<defs>
+  <clipPath id="viewport-clip">
+    <rect y="0" width="${width}" height="${height}" />
+  </clipPath>
+</defs>
+<style>
+  text { font-family: ${escapeXml(selectedFont)}; }
+</style>
+<g transform="scale(${scaleXRatio}, ${scaleYRatio})">
+${svgElements.join('\n')}
+</g>
+</svg>`;
+  }
+
+  // 글로벌 Engine 네임스페이스 등록
+  window.ChatEngine = {
+    LAYOUT_DEFAULTS,
+    drawCanvasChat,
+    drawRoundRect,
+    drawWrappedText,
+    getCachedImage,
+    exportTrueSVG,
+    getScrollY: () => currentScrollY,
+    startRenderLoop: (getRefreshStateCallback, drawCallback) => {
+      loopRefreshCallback = getRefreshStateCallback;
+      loopDrawCallback = drawCallback;
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      animationFrameId = requestAnimationFrame((t) => renderLoop(t, getRefreshStateCallback, drawCallback));
+    },
+    triggerAnimation: (effect, durationMs) => {
+      animState.active = true;
+      animState.progress = 0.0;
+      animState.startTime = performance.now();
+      animState.duration = durationMs;
+      animState.effect = effect;
+      wakeUpRenderLoop();
+    },
+    stopAnimation: () => {
+      animState.active = false;
+      animState.progress = 1.0;
+    },
+    getAnimProgress: () => animState.progress,
+    isAnimActive: () => animState.active,
+    // API 노출
+    getTargetScrollY: () => targetScrollY,
+    setTargetScrollY: (val) => {
+      targetScrollY = val;
+      isScrollEasingActive = true;
+      wakeUpRenderLoop();
+    },
+    getMaxScrollY: () => maxScrollY
+  };
+})();

@@ -396,31 +396,14 @@
             "주제": "정규표현식",
             "디렉토리": "regularExpress/",
             "파일명": "regularExpress.html"
-          },
-          {
-            "주제": "File Format",
-            "디렉토리": "fileformat/",
-            "display": "hidden",
-            "목록": [
-              {
-                "주제": "표준문서",
-                "디렉토리": "",
-                "파일명": "standard.html"
-              },
-              {
-                "주제": "json",
-                "디렉토리": "",
-                "파일명": "json.html"
-              }
-            ]
           }
         ]
       }
     ]
   },
   {
-    "주제": "문서화",
-    "디렉토리": "documentation/",
+    "주제": "웹 기술",
+    "디렉토리": "web-tech/",
     "목록": [
       {
         "주제": "HTML",
@@ -793,12 +776,6 @@
         ]
       },
       {
-        "주제": "수학 역사",
-        "디렉토리": "mathStory/",
-        "파일명": "mathStory.html",
-        "display": "hidden"
-      },
-      {
         "주제": "수영",
         "디렉토리": "swimming/",
         "목록": [
@@ -837,108 +814,59 @@
     "목록": [
       {
         "주제": "색상 파레트 추출기",
-        "디렉토리": "UniPalette/",
-        "파일명": "UniPalette.html"
+        "디렉토리": "UniPalette/"
       },
       {
         "주제": "초고속 무손실 영상 분할기",
-        "디렉토리": "mp4-trim/",
-        "파일명": "mp4-trim.html"
+        "디렉토리": "mp4-trim/"
       },
       {
         "주제": "일본어 글자 암기",
-        "디렉토리": "KanaLoop/",
-        "파일명": "index.html"
+        "디렉토리": "KanaLoop/"
       },
       {
         "주제": "웹 장기",
-        "디렉토리": "janggi/",
-        "파일명": "index.html"
+        "디렉토리": "janggi/"
       },
       {
         "주제": "로또 시뮬레이터",
-        "디렉토리": "lotto/",
-        "파일명": "index.html"
+        "디렉토리": "lotto/"
       },
       {
         "주제": "카카오톡 시뮬레이터",
-        "디렉토리": "KakaoTalk/",
-        "파일명": "index.html"
-      },
-      {
-        "주제": "신년계획",
-        "디렉토리": "newyear/",
-        "파일명": "chart.html"
+        "디렉토리": "KakaoTalk/"
       },
       {
         "주제": "플로우 차트",
-        "디렉토리": "FlowChart/",
-        "파일명": "FlowChart.html"
+        "디렉토리": "FlowChart/"
       },
       {
         "주제": "수기로 제곱근 구하기",
-        "디렉토리": "manualSqrt/",
-        "파일명": "index.html"
+        "디렉토리": "manualSqrt/"
       },
       {
         "주제": "수기로 유클리드 호제법",
-        "디렉토리": "manualEuclidean/",
-        "파일명": "index.html"
+        "디렉토리": "manualEuclidean/"
       },
       {
         "주제": "베지어 시뮬레이터",
-        "디렉토리": "Bezier/",
-        "파일명": "Bezier.html"
+        "디렉토리": "Bezier/"
       },
       {
         "주제": "복소평면 시뮬레이터",
-        "디렉토리": "imaginary/",
-        "파일명": "imaginary.html"
+        "디렉토리": "imaginary/"
       },
       {
         "주제": "남아선호사상 시뮬레이션",
-        "디렉토리": "SonPrefer/",
-        "파일명": "SonPrefer.html"
-      },
-      {
-        "주제": "빙고",
-        "디렉토리": "Bingo/",
-        "파일명": "Bingo.html"
+        "디렉토리": "SonPrefer/"
       },
       {
         "주제": "유튜브 광고 자동 건너뛰기",
-        "디렉토리": "youtube_skip/",
-        "파일명": "youtube_skip.html"
+        "디렉토리": "youtube_skip/"
       },
       {
-        "주제": "선물꾸러미",
-        "디렉토리": "giftlist/",
-        "파일명": "giftlist.html",
-        "display": "hidden"
-      },
-      {
-        "주제": "계산기",
-        "디렉토리": "Calc1/",
-        "파일명": "calc.html",
-        "display": "hidden"
-      },
-      {
-        "주제": "숫자 맞추기",
-        "디렉토리": "GuessNumber/",
-        "파일명": "GuessNumber.html",
-        "display": "hidden"
-      },
-      {
-        "주제": "음악맞추기",
-        "디렉토리": "guessMusic/",
-        "파일명": "guessMusic.html",
-        "display": "hidden"
-      },
-      {
-        "주제": "퀴즈",
-        "디렉토리": "quiz/",
-        "파일명": "board.html",
-        "display": "hidden"
+        "주제": "Webpointer",
+        "디렉토리": "Webpointer/"
       }
     ]
   }

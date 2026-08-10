@@ -1,26 +1,35 @@
-## 문서 명칭 및 기본 규칙
-- 본 파일(`AI_Coding_Rules.md`)은 향후 **"AI 요구사항"** 또는 **"LLM 요구사항"** 등으로 지칭되더라도 이 파일을 가리키는 것으로 해석하고 모든 규칙을 준수합니다.
-- 모든 작업이 끝난 후에는 **"자동 수락된 내용(사용자 승인 없이 자동 수락 및 실행된 내역)"에 대해 항상 요약**하여 공유합니다.
+# AI Coding Rules & Directives
 
----
+## 1. Versioning & Commit Directives (버전 및 커밋 지침)
+- **Git Push Halt Directive (Git Push 중단)**:
+  - **Do NOT perform automatic `git push`**.
+  - Local `git commit` is permitted after code changes.
+  - Execute `git push` or merge to `main` ONLY when explicitly requested by the user.
+- **User Inspection & Version Delegation Approval Directive (검수 및 버전 정보 위임 후 릴리즈 커밋)**:
+  - Do NOT automatically bump version numbers or write version release commits upon code/design changes.
+  - **The AI MUST wait for the user to inspect and approve the completed work**.
+  - Update version numbers (`CHANGELOG.md`, `CHANGELOG-KR.md`, `changelog.json`) and execute version release commits **ONLY after the user inspects the work and explicitly delegates/assigns the version number (e.g., v1.0.1)**.
+- **Changelog Versioning Directive (체인지로그 전용 버전 관리)**:
+  - **Do NOT create `version.md`**.
+  - Version history and release notes MUST be managed exclusively via standard changelog files (`CHANGELOG.md`, `CHANGELOG-KR.md`, and `changelog.json`).
 
-## Git관련
-- 지정된 scope 이외의 내용 검색 및 수정 금지.
-  - scope가 명확하지 않을 때, 반드시 사용자에게 scope 확인
-- scope 이름으로 git branch관리
-- '구현'->'검증'->'commit' 프로세스 준수. 
-  - 오로지 사용자가 검증을 완료할 때만 commit 수행
-- commit작업 전에 파악되지 않은 변경사항이 있을 때, 반드시 사용자에게 의도된 것인지 확인 작업. 필수
-- push 작업은 오직 사용자가 명시적으로 요청하거나 허가한 경우에만 수행.
+## 2. Response Directives (응답 지침)
+- Append `### 📋 Auto-Accepted Actions` at the end of **every response** detailing all tool invocations or write `- 없음`.
 
----
-## 구현관련
-- 각 scope의 root의 /version.md 참조
-- **SPA/SPC(Small Project) 스타일 선언 규칙**:
-  - 서브프로젝트 개발 시, 개별 CSS 파일에서 `body`와 `article` 태그에 대한 직접적인 레이아웃 관련 스타일(`margin`, `padding`, `display: flex`, `justify-content`, `width`, `max-width`, `height`, `min-height` 등)을 절대 정의하지 마십시오.
-  - 상위 호스트(SPA 사이트)의 고정 메뉴 바 영역 계산 및 전체 레이아웃 렌더링에 오작동을 유발하므로, `body`와 `article`에는 서체 정의(`font-family`)나 `position: relative`와 같이 영향도가 적은 최소한의 스타일 외에는 레이아웃을 덮어씌우는 정의를 일절 금지하며 부모 페이지의 스타일을 상속받도록 해야 합니다.
-  
-  ⚠️ [중요 - 레이아웃 격리 및 스타일 규칙]
-이 소프로젝트(Small Project)는 단독 페이지가 아니라, 상위 SPA 호스트 웹사이트의 <article> 영역 내부에 자식 노드로 동적으로 렌더링될 예정입니다.
-따라서 개별 CSS 파일 작성 시, 상위 사이트의 전체 레이아웃 계산 및 상단 고정 메뉴 바의 가려짐 방지 여백 계산이 깨지지 않도록 body와 article 태그에 대한 직접적인 레이아웃 스타일(margin, padding, width, height, min-height, display, justify-content, box-shadow, background-color 등)을 절대 정의하지 마십시오.
-body와 article에는 서체 지정(font-family)이나 툴팁 배치를 위한 position: relative 정도의 최소한의 규칙만 지정하고, 그 외에는 부모 페이지의 스타일을 자연스럽게 상속받도록(Inherit) 설계하십시오.
+## 3. Project Scoping Rules (프로젝트 범위 지침)
+- Do NOT touch `small-project/janggi/` unless explicitly requested.
+
+## 4. Architecture & Consistency Directives (개발 통일성 및 아키텍처 지침)
+- **Unified Test Automation (루트 단일 테스트 시스템)**:
+  - Do NOT install Playwright or `node_modules` inside sub-projects (`small-project/*`).
+  - All test cases (TC) MUST reside in the root `tests/` directory (e.g., `tests/<project>.spec.js`).
+- **Standardized Change Log Documentation (변경 이력 문서 규격)**:
+  - Do NOT use `version.md`.
+  - Always manage release notes using `CHANGELOG.md` (Global/English) and `CHANGELOG-KR.md` (Korean).
+- **Standardized Project Documentation (설명 문서 규격)**:
+  - Use uppercase `README.md` and `README.ko.md` for sub-project documentations.
+- **Clean Sub-project Directory (서브 디렉터리 청정 유지)**:
+  - Do NOT create `scratch/` or temporary files inside sub-project folders.
+  - Sub-projects MUST remain 100% lightweight pure source code.
+- **Absolute Path Resolution (절대 경로 참조 원칙)**:
+  - All sub-projects MUST import shared assets via root absolute paths (e.g., `/modules/core/...`, `/style.css`).

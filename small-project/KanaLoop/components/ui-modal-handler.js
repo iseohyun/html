@@ -20,16 +20,22 @@ export function getStandardCharCount(domain) {
 }
 
 export function refreshPersonalizedSettings(config) {
+  if (!config) return;
   const listContainer = document.getElementById('personalized-settings-list');
-  if (!listContainer) return;
-  listContainer.innerHTML = `
-    <div style="margin-top:8px;">
-      <b>• 진도 합격 기준 점수:</b> <span style="color:#2196F3; font-weight:bold;">${((config.masteryScore || 0.8) * 100).toFixed(0)}%</span>
-    </div>
-    <div style="margin-top:8px;">
-      <b>• 최대 학습 풀 크기:</b> <span style="color:#4CAF50; font-weight:bold;">${config.MAX_POOL_SIZE || 10}개</span>
-    </div>
-  `;
+  if (listContainer) {
+    listContainer.innerHTML = `
+      <div style="margin-top:8px;">
+        <b>• 진도 합격 기준 점수:</b> <span style="color:#2196F3; font-weight:bold;">${((config.masteryScore || 0.8) * 100).toFixed(0)}%</span>
+      </div>
+      <div style="margin-top:8px;">
+        <b>• 최대 학습 풀 크기:</b> <span style="color:#4CAF50; font-weight:bold;">${config.MAX_POOL_SIZE || 10}개</span>
+      </div>
+    `;
+  }
+  const selectEl = document.getElementById('voice-source');
+  if (selectEl && config.voiceSource) {
+    selectEl.value = config.voiceSource;
+  }
 }
 
 export function renderStudyStatsChart(stats) {

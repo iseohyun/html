@@ -49,6 +49,16 @@
     oninput="updateSpeechFromSlider(this.value)">
   <span id="speech-val-display" style="font-weight:bold; min-width:30px; text-align:right;">{{speechRate}}</span>
 </div>
+
+<div style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; margin-top:20px;">
+  <span style="font-weight: bold;">음성 성우 엔진</span>
+  <select id="voice-source" onchange="changeVoiceSource(this.value)" style="width: 210px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 6px; cursor: pointer; font-size: 12px; background: #ffffff;">
+    <option value="google_mp3">🎵 구글 여성 성우 (Female MP3)</option>
+    <option value="google_male_mp3">👨‍💼 구글 남성 성우 (Male MP3)</option>
+    <option value="haruka_mp3">🌸 Windows Haruka (Haruka MP3)</option>
+    <option value="browser_tts">🎙️ 브라우저 실시간 TTS</option>
+  </select>
+</div>
 <div style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; margin-top:20px;">
   <span style="font-weight: bold;">오답 표시</span>
   <div style="display:flex; gap:8px;">

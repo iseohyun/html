@@ -7,13 +7,19 @@
 -setting-battery: 83%
 -setting-width: 400
 -setting-height: 800
--setting-bgcolor: #bacee0
+-setting-theme: light
+-setting-bgcolor: #acc0d1
 -font: sans-serif
 -font-size: 38
--font-bold: true
--me-bubble-color: #ffeb34
+-font-bold: false
+-bubble-round: 32
+-me-bubble-color: #fee500
+-me-text-color: #000000
 -you-bubble-color: #ffffff
--time-color: #cccccc
+-you-text-color: #000000
+-you-name-color: #2c3e50
+-time-color: #555555
+-date-text-color: #444444
 -duration: 0.5
 
 
