@@ -1,7 +1,7 @@
 // config.js - Configuration, Global State, and History Management
 
-let max_line = 8;
-const inputs = [];
+var max_line = 8;
+var inputs = [];
 var cur_step = 1;
 var cur_line = 0;
 var fStep1_1 = false;
@@ -16,12 +16,12 @@ var N = 2, D, Q;
 var digitGroups = [];
 var numIntegerGroups = 1;
 
-const titleText = [
+var titleText = [
   "Finding Square Roots",
   "제곱근 구하기"
 ];
 
-const sentences = [
+var sentences = [
   [ // 0
     "Find the square root of <em>$init_val</em>.",
     "<em>$init_val</em>의 제곱근을 구합니다.",
@@ -69,27 +69,30 @@ const sentences = [
 ];
 
 // Grid Configuration
-const gridRows = 1 + 2 * max_line; // 17
-let numInputCells = 20;
+var gridRows = 1 + 2 * max_line; // 17
+var numInputCells = 20;
 var stateHistory = [];
-let quotientInput;
+var quotientInput;
 
-class GridInput {
-  constructor(row, type) {
-    this.row = row;
-    this.type = type; // 0: num, 1: divisor, 2: divisor_, 3: quotient, 4: num_
-    this._value = "";
-  }
+if (typeof window.SqrtGridInput === "undefined") {
+  window.SqrtGridInput = class SqrtGridInput {
+    constructor(row, type) {
+      this.row = row;
+      this.type = type; // 0: num, 1: divisor, 2: divisor_, 3: quotient, 4: num_
+      this._value = "";
+    }
 
-  get value() {
-    return this._value === undefined || this._value === null ? "" : this._value.toString();
-  }
+    get value() {
+      return this._value === undefined || this._value === null ? "" : this._value.toString();
+    }
 
-  set value(val) {
-    this._value = val === undefined || val === null ? "" : val.toString();
-    updateGridCellDisplay(this.row, this.type, this._value, true);
-  }
+    set value(val) {
+      this._value = val === undefined || val === null ? "" : val.toString();
+      updateGridCellDisplay(this.row, this.type, this._value, true);
+    }
+  };
 }
+var GridInput = window.SqrtGridInput;
 
 function saveState() {
   const state = {

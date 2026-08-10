@@ -103,9 +103,10 @@ window.SiteModules.UpdateLog = (function() {
         if (activeTag === 'all') {
           matchesTag = true;
         } else {
-          if (activeTag === 'new' && span.classList.contains('new')) matchesTag = true;
-          if (activeTag === 'update' && (span.classList.contains('update') || span.classList.contains('modify'))) matchesTag = true;
-          if (activeTag === 'bugfix' && span.classList.contains('bugfix')) matchesTag = true;
+          if (activeTag === 'added' && (span.classList.contains('added') || span.classList.contains('new'))) matchesTag = true;
+          if (activeTag === 'changed' && (span.classList.contains('changed') || span.classList.contains('modify') || span.classList.contains('update'))) matchesTag = true;
+          if (activeTag === 'fixed' && (span.classList.contains('fixed') || span.classList.contains('bugfix'))) matchesTag = true;
+          if (activeTag === 'removed' && span.classList.contains('removed')) matchesTag = true;
         }
 
         if (matchesTag) {
@@ -180,9 +181,10 @@ window.SiteModules.UpdateLog = (function() {
           <span class="filter-label">분류 선택</span>
           <div class="tag-btn-group">
             <button class="filter-btn" data-filter="tag-all">전체</button>
-            <button class="filter-btn" data-filter="tag-new">신규</button>
-            <button class="filter-btn" data-filter="tag-update">개선</button>
-            <button class="filter-btn" data-filter="tag-bugfix">Bugfix</button>
+            <button class="filter-btn" data-filter="tag-added">✨ 추가</button>
+            <button class="filter-btn" data-filter="tag-changed">📝 수정</button>
+            <button class="filter-btn" data-filter="tag-fixed">🛠️ 개선</button>
+            <button class="filter-btn" data-filter="tag-removed">🗑️ 삭제</button>
           </div>
         </div>
       `;
@@ -210,7 +212,7 @@ window.SiteModules.UpdateLog = (function() {
 
     try {
       // JSON 데이터 가져오기 (async/await 사용)
-      const updatesResponse = await fetch("/update.json");
+      const updatesResponse = await fetch("/changelog.json");
       const updates = await updatesResponse.json();
 
       const hierarchyResponse = await fetch("/hierarchy.json");
@@ -229,7 +231,12 @@ window.SiteModules.UpdateLog = (function() {
         .filter(update => {
           const uDate = parseDateString(update.date);
           const inRange = uDate >= startDate && uDate <= endDate;
-          const matchKeyword = keywords === "" || update.content.some(content => content.includes(keywords));
+          const items = update.updates || update.content || [];
+          const matchKeyword = keywords === "" || items.some(item => {
+            if (typeof item === 'string') return item.includes(keywords);
+            const str = `${item.type} ${item.projectName} ${item.summary || ''} ${item.version || ''}`;
+            return str.includes(keywords);
+          });
           return inRange && matchKeyword;
         })
         .sort((a, b) => parseDateString(b.date) - parseDateString(a.date));
@@ -247,11 +254,19 @@ window.SiteModules.UpdateLog = (function() {
 
         // data-tags 설정
         let tags = [];
-        update.content.forEach(content => {
-          if (content.includes("[신규]")) tags.push("new");
-          if (content.includes("[개선]")) tags.push("update");
-          if (content.includes("[bugfix]")) tags.push("bugfix");
-          if (content.includes("[동영상]")) tags.push("youtube");
+        const items = update.updates || update.content || [];
+        items.forEach(item => {
+          if (typeof item === 'string') {
+            if (item.includes("[신규]") || item.includes("[추가]")) tags.push("added");
+            if (item.includes("[개선]") || item.includes("[수정]")) tags.push("changed");
+            if (item.includes("[bugfix]")) tags.push("fixed");
+            if (item.includes("[삭제]")) tags.push("removed");
+          } else {
+            if (item.type === "Added") tags.push("added");
+            if (item.type === "Changed") tags.push("changed");
+            if (item.type === "Fixed") tags.push("fixed");
+            if (item.type === "Removed") tags.push("removed");
+          }
         });
         listItem.setAttribute("data-tags", tags.join(" "));
 
@@ -268,11 +283,26 @@ window.SiteModules.UpdateLog = (function() {
           const ul = document.createElement("ul");
           ul.className = "recent-visit-list";
 
-          update.content.forEach(origContent => {
+          items.forEach(item => {
             const li = document.createElement("li");
             li.className = "recent-visit-item";
             
-            const formatted = formatSidebarContent(origContent, hierarchy);
+            let formatted;
+            if (typeof item === 'string') {
+              formatted = formatSidebarContent(item, hierarchy);
+            } else {
+              const iconMap = { Added: "✨", Changed: "📝", Fixed: "🛠️", Removed: "🗑️" };
+              const labelMap = { Added: "추가", Changed: "수정", Fixed: "개선", Removed: "삭제" };
+              const icon = iconMap[item.type] || "📝";
+              const label = labelMap[item.type] || "수정";
+              const tagBadge = `<span class="changelog-badge ${item.type.toLowerCase()}" title="${label}">${icon} ${label}</span>`;
+              const ver = item.version ? ` (v${item.version})` : "";
+              const title = item.projectName + ver;
+              const path = item.projectPath || findPath(hierarchy, item.projectName);
+              const linkHtml = path ? `<a href='${path}'>${title}</a>` : title;
+              const summaryHtml = item.summary ? `: ${item.summary}` : "";
+              formatted = `${tagBadge} ${linkHtml}${summaryHtml}`;
+            }
             
             const linkWrapper = document.createElement("div");
             linkWrapper.className = "recent-visit-link-wrapper";
@@ -299,72 +329,30 @@ window.SiteModules.UpdateLog = (function() {
 
           const updateDiv = document.createElement("div");
 
-          let lastTag = "";
-          update.content.forEach(origContent => {
-            let content = origContent;
-
-            const match = content.match(/^(\[[^\]]+\])/);
-            if (match) {
-              lastTag = match[1];
+          items.forEach(item => {
+            let contentSpan = document.createElement("span");
+            if (typeof item === 'string') {
+              let content = item;
+              if (content.startsWith("[신규]") || content.startsWith("[추가]")) contentSpan.className = "added";
+              else if (content.startsWith("[bugfix]") || content.startsWith("[개선]")) contentSpan.className = "fixed";
+              else if (content.startsWith("[수정]")) contentSpan.className = "changed";
+              else if (content.startsWith("[삭제]")) contentSpan.className = "removed";
+              contentSpan.className += " content";
+              contentSpan.innerHTML = formatSidebarContent(content, hierarchy);
+            } else {
+              const iconMap = { Added: "✨", Changed: "📝", Fixed: "🛠️", Removed: "🗑️" };
+              const labelMap = { Added: "추가", Changed: "수정", Fixed: "개선", Removed: "삭제" };
+              const icon = iconMap[item.type] || "📝";
+              const label = labelMap[item.type] || "수정";
+              const tagBadge = `<span class="changelog-badge ${item.type.toLowerCase()}" title="${label}">${icon} ${label}</span>`;
+              contentSpan.className = `${item.type.toLowerCase()} content`;
+              const ver = item.version ? ` (v${item.version})` : "";
+              const title = item.projectName + ver;
+              const path = item.projectPath || findPath(hierarchy, item.projectName);
+              const linkHtml = path ? `<a href='${path}'>${title}</a>` : title;
+              const summaryHtml = item.summary ? `: ${item.summary}` : "";
+              contentSpan.innerHTML = `${tagBadge} ${linkHtml}${summaryHtml}`;
             }
-
-            const contentSpan = document.createElement("span");
-
-            if (content.startsWith("[신규]")) {
-              let endIndex = content.indexOf(":");
-              if (endIndex === -1) {
-                endIndex = content.length;
-              }
-              const title = content.substring(4, endIndex).trim();
-              const path = findPath(hierarchy, title);
-
-              if (path) {
-                let text = "[신규] <a href='" + path + "'>" + title + "</a>";
-                if (endIndex !== content.length) {
-                  text += ": " + content.substring(endIndex + 1).trim();
-                }
-                content = text;
-              }
-              contentSpan.className = "new";
-            } else if (content.startsWith("[동영상]")) {
-              contentSpan.className = "youtube";
-            } else if (content.startsWith("[bugfix]")) {
-              let endIndex = content.indexOf(":");
-              if (endIndex === -1) {
-                endIndex = content.length;
-              }
-              const title = content.substring(8, endIndex).trim();
-              const path = findPath(hierarchy, title);
-
-              if (path) {
-                let text = "[bugfix] <a href='" + path + "'>" + title + "</a>";
-                if (endIndex !== content.length) {
-                  text += ": " + content.substring(endIndex + 1).trim();
-                }
-                content = text;
-              }
-              contentSpan.className = "bugfix";
-            } else if (content.startsWith("[개선]")) {
-              let endIndex = content.indexOf(":");
-              if (endIndex === -1) {
-                endIndex = content.length;
-              }
-              const title = content.substring(4, endIndex).trim();
-              const path = findPath(hierarchy, title);
-
-              if (path) {
-                let text = "[개선] <a href='" + path + "'>" + title + "</a>";
-                if (endIndex !== content.length) {
-                  text += ": " + content.substring(endIndex + 1).trim();
-                }
-                content = text;
-              }
-
-              contentSpan.className = "modify";
-            }
-
-            contentSpan.className += " content";
-            contentSpan.innerHTML = content;
             updateDiv.appendChild(contentSpan);
           });
 
@@ -390,34 +378,12 @@ window.SiteModules.UpdateLog = (function() {
               let cleanHref = href.split(/[?#]/)[0];
               let absolutePath = cleanHref.startsWith("/") ? cleanHref : "/" + cleanHref;
 
-              window.SiteModules.searchCache = window.SiteModules.searchCache || [];
-              const exists = window.SiteModules.searchCache.some(p => p.url === absolutePath);
-              if (!exists) {
-                fetch(absolutePath)
-                  .then(res => {
-                    if (res.ok) return res.text();
-                  })
-                  .then(htmlText => {
-                    if (htmlText) {
-                      const parser = new DOMParser();
-                      const doc = parser.parseFromString(htmlText, "text/html");
-                      const articleEl = doc.querySelector("article");
-
-                      if (!window.SiteModules.searchCache.some(p => p.url === absolutePath)) {
-                        window.SiteModules.searchCache.push({
-                          url: absolutePath,
-                          hasArticle: !!articleEl
-                        });
-                      }
-                    }
-                  })
-                  .catch(err => console.warn("Pre-fetch failed for " + absolutePath, err));
-              }
+              // 최근 업데이트 링크 불필요한 30개 HTML 사전 fetch 다운로드 완전 파기 정돈 (Network 요청 0건)
             }
           });
         }
       } catch (e) {
-        console.warn("Failed to pre-fetch recent update links:", e);
+        // 무시
       }
 
     } catch (error) {
@@ -427,7 +393,8 @@ window.SiteModules.UpdateLog = (function() {
 
   // 계층 경로 찾기 함수
   function findPath(hierarchy, title, currentPath = "") {
-    const titles = title.split('>');
+    const cleanTitle = title.replace(/\s*\(\s*v\d+(?:\.\d+)*\s*\)/gi, "");
+    const titles = cleanTitle.split('>');
     let path = currentPath;
 
     for (const currentTitle of titles) {
@@ -441,8 +408,9 @@ window.SiteModules.UpdateLog = (function() {
             hierarchy = item.목록;
             found = true;
             break;
-          } else if (item.파일명) {
-            return path + item.파일명;
+          } else {
+            const fileName = item.hasOwnProperty('파일명') ? item.파일명 : "index.html";
+            return path + fileName;
           }
         }
       }

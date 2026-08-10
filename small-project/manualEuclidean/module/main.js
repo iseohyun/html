@@ -309,7 +309,7 @@ function triggerRandomStart() {
 window.triggerRandomStart = triggerRandomStart;
 
 // Window resizing adjustments
-let resizeObserver;
+var resizeObserver;
 function initApp() {
   rebuildGrid();
 
@@ -326,6 +326,8 @@ function initApp() {
       positionTooltip();
     });
     resizeObserver.observe(gridContainer);
+    window.activeResizeObservers = window.activeResizeObservers || [];
+    window.activeResizeObservers.push(resizeObserver);
   }
 
   // Bind settings reset all

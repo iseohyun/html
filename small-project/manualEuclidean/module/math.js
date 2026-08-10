@@ -140,8 +140,8 @@ function nextStep() {
   if (typeof guide === "function") guide();
 }
 
-let phaseCEquations = [];
-let actions = [];
+var phaseCEquations = [];
+var actions = [];
 
 function generatePhaseC(startA, startB) {
   phaseCEquations = [];
