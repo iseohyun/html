@@ -53,8 +53,11 @@
       var dX = Math.max(bounds.minX - px, 0, px - bounds.maxX);
       var dY = Math.max(bounds.minY - py, 0, py - bounds.maxY);
       return Math.hypot(dX, dY);
-    } else if (obj.type === 'ellipse' || obj.type === 'arc') {
+    } else if (obj.type === 'ellipse') {
       return Math.hypot(px - a.cx, py - a.cy);
+    } else if (obj.type === 'arc') {
+      var dCenter = Math.hypot(px - a.cx, py - a.cy);
+      return Math.abs(dCenter - (a.rx || 30));
     } else if (obj.type === 'bez2' || obj.type === 'bez3') {
       return getDistanceToBezier(px, py, obj);
     }

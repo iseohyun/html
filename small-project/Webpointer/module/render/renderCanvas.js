@@ -566,11 +566,41 @@
         createHandleNode(a.cx, a.cy, id, 'point_center', 1, false);
       } else if (obj.type === 'arc') {
         createHandleNode(a.cx, a.cy, id, 'ellipse_center', 1, false);
-        var r = a.rx || 30;
-        var startRad = (a.startAngle || 0) * Math.PI / 180;
-        var endRad = (a.endAngle || 180) * Math.PI / 180;
-        createHandleNode(a.cx + r * Math.cos(startRad), a.cy + r * Math.sin(startRad), id, 'arc_start', 2, false);
-        createHandleNode(a.cx + r * Math.cos(endRad), a.cy + r * Math.sin(endRad), id, 'arc_end', 3, false);
+        var rx = a.rx || 30;
+        var ry = a.ry || 30;
+        var rot = a.angle || 0;
+        var sAng = a.startAngle !== undefined ? a.startAngle : -90;
+        var eAng = a.endAngle !== undefined ? a.endAngle : 0;
+
+        function getArcHandlePoint(cx, cy, rx, ry, deg, rotDeg) {
+          var rad = deg * (Math.PI / 180);
+          var rotRad = rotDeg * (Math.PI / 180);
+          var px = rx * Math.cos(rad);
+          var py = ry * Math.sin(rad);
+          var rxRot = px * Math.cos(rotRad) - py * Math.sin(rotRad);
+          var ryRot = px * Math.sin(rotRad) + py * Math.cos(rotRad);
+          return { x: cx + rxRot, y: cy + ryRot };
+        }
+
+        var pStartHandle = getArcHandlePoint(a.cx, a.cy, rx, ry, sAng, rot);
+        var pEndHandle = getArcHandlePoint(a.cx, a.cy, rx, ry, eAng, rot);
+
+        var stemLine1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        stemLine1.setAttribute('x1', a.cx); stemLine1.setAttribute('y1', a.cy);
+        stemLine1.setAttribute('x2', pStartHandle.x); stemLine1.setAttribute('y2', pStartHandle.y);
+        stemLine1.setAttribute('stroke', '#0284c7'); stemLine1.setAttribute('stroke-dasharray', '3,3');
+        stemLine1.setAttribute('stroke-width', '1.2');
+        uiGroup.appendChild(stemLine1);
+
+        var stemLine2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        stemLine2.setAttribute('x1', a.cx); stemLine2.setAttribute('y1', a.cy);
+        stemLine2.setAttribute('x2', pEndHandle.x); stemLine2.setAttribute('y2', pEndHandle.y);
+        stemLine2.setAttribute('stroke', '#f97316'); stemLine2.setAttribute('stroke-dasharray', '3,3');
+        stemLine2.setAttribute('stroke-width', '1.2');
+        uiGroup.appendChild(stemLine2);
+
+        createHandleNode(pStartHandle.x, pStartHandle.y, id, 'arc_start', 2, true, { fill: '#38bdf8', stroke: '#0284c7', r: 6 });
+        createHandleNode(pEndHandle.x, pEndHandle.y, id, 'arc_end', 3, true, { fill: '#f97316', stroke: '#c2410c', r: 6 });
       } else if (obj.type === 'rect' || obj.type === 'image') {
         var bounds = window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(obj) : { minX: a.x, maxX: a.x + a.width, minY: a.y, maxY: a.y + a.height };
         createHandleNode(bounds.minX, bounds.minY, id, 'top_left', 1, false);

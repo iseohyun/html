@@ -45,14 +45,13 @@
       attrs = { cx: cx, cy: cy, rx: rxEl, ry: ryEl, angle: 0, stepCx: Math.round((stepStart.stepX + stepEnd.stepX) / 2), stepCy: Math.round((stepStart.stepY + stepEnd.stepY) / 2), stepRx: Math.abs(stepEnd.stepX - stepStart.stepX) / 2, stepRy: Math.abs(stepEnd.stepY - stepStart.stepY) / 2 };
     } else if (type === 'arc') {
       el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      var rxArc = Math.max(10, Math.abs(px2 - px1));
-      var ryArc = Math.max(10, Math.abs(py2 - py1));
+      var rArc = Math.max(10, Math.hypot(px2 - px1, py2 - py1));
       var initialEndAngle = Math.round(Math.atan2(py2 - py1, px2 - px1) * (180 / Math.PI));
       attrs = {
         cx: px1,
         cy: py1,
-        rx: rxArc,
-        ry: ryArc,
+        rx: rArc,
+        ry: rArc,
         startAngle: -90,
         endAngle: initialEndAngle,
         angle: 0

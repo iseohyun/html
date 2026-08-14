@@ -1426,7 +1426,66 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     expect(result.detectedNearArc).toBe('bez2_proximity_test');
     expect(result.notDetectedFar).toBe(true);
   });
+
+  test('TC38: 호(arc) 도구 오브젝트 생성, startAngle 및 endAngle 핸들러 렌더링 및 드래그 동작 검증', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+
+      const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      document.getElementById('objectsGroup').appendChild(pathEl);
+
+      const arcObj = {
+        id: 'arc_test_obj',
+        type: 'arc',
+        el: pathEl,
+        attrs: {
+          cx: 200,
+          cy: 200,
+          rx: 80,
+          ry: 80,
+          startAngle: -90,
+          endAngle: 45,
+          angle: 0,
+          stroke: '#0284c7',
+          strokeWidth: 2
+        }
+      };
+
+      cfg.currentTool = 'select';
+      cfg.objectsMap.set(arcObj.id, arcObj);
+      cfg.selectedIds.clear();
+      cfg.selectedIds.add(arcObj.id);
+      render.updateElementAttributes(arcObj);
+      render.renderUI();
+
+      // 핸들 노드 렌더링 확인 (ellipse_center, arc_start, arc_end)
+      const handles = Array.from(document.querySelectorAll('.handle-node'));
+      const startHandle = handles.find(h => h.dataset.handleType === 'arc_start');
+      const endHandle = handles.find(h => h.dataset.handleType === 'arc_end');
+
+      // startAngle / endAngle 드래그 업데이트 시뮬레이션
+      arcObj.attrs.startAngle = 0;
+      arcObj.attrs.endAngle = 180;
+      render.updateElementAttributes(arcObj);
+      render.renderUI();
+
+      const pathDAfterUpdate = pathEl.getAttribute('d');
+
+      return {
+        hasStartHandle: !!startHandle,
+        hasEndHandle: !!endHandle,
+        pathDValid: !!pathDAfterUpdate && pathDAfterUpdate.includes('A 80 80')
+      };
+    });
+
+    console.log('[Webpointer Arc Tool & Handles Test 🧪]:', result);
+    expect(result.hasStartHandle).toBe(true);
+    expect(result.hasEndHandle).toBe(true);
+    expect(result.pathDValid).toBe(true);
+  });
 });
+
 
 
 

@@ -370,8 +370,9 @@
           a.rx = Math.max(5, Math.abs(px2 - px1) / 2);
           a.ry = Math.max(5, Math.abs(py2 - py1) / 2);
         } else if (type === 'arc') {
-          a.rx = Math.max(5, Math.abs(px2 - px1));
-          a.ry = Math.max(5, Math.abs(py2 - py1));
+          var rArc = Math.max(5, Math.hypot(px2 - px1, py2 - py1));
+          a.rx = rArc;
+          a.ry = rArc;
           a.endAngle = Math.round(Math.atan2(py2 - py1, px2 - px1) * (180 / Math.PI));
         }
 
@@ -403,6 +404,38 @@
         } else if (hType === 'end') {
           a.x2 = coords.px; a.y2 = coords.py;
         } else if (hType === 'top_left') {
+          a.x = Math.min(coords.px, initialAttrs.x + initialAttrs.width);
+          a.y = Math.min(coords.py, initialAttrs.y + initialAttrs.height);
+          a.width = Math.max(5, Math.abs((initialAttrs.x + initialAttrs.width) - coords.px));
+          a.height = Math.max(5, Math.abs((initialAttrs.y + initialAttrs.height) - coords.py));
+        } else if (hType === 'bottom_right') {
+          a.x = Math.min(initialAttrs.x, coords.px);
+          a.y = Math.min(initialAttrs.y, coords.py);
+          a.width = Math.max(5, Math.abs(coords.px - initialAttrs.x));
+          a.height = Math.max(5, Math.abs(coords.py - initialAttrs.y));
+        } else if (hType === 'corner_rx') {
+          a.rx = Math.max(0, Math.min(a.width / 2, coords.px - a.x));
+        } else if (hType === 'ellipse_center') {
+          a.cx = coords.px; a.cy = coords.py;
+        } else if (hType === 'ellipse_width') {
+          a.rx = Math.max(5, Math.hypot(coords.px - a.cx, coords.py - a.cy));
+        } else if (hType === 'ellipse_height') {
+          a.ry = Math.max(5, Math.hypot(coords.px - a.cx, coords.py - a.cy));
+        } else if (hType === 'ellipse_rotate') {
+          a.angle = Math.round(Math.atan2(coords.py - a.cy, coords.px - a.cx) * (180 / Math.PI)) + 90;
+        } else if (hType === 'arc_start') {
+          var rotStart = a.angle || 0;
+          var angStart = Math.round(Math.atan2(coords.py - a.cy, coords.px - a.cx) * (180 / Math.PI)) - rotStart;
+          a.startAngle = Math.round((angStart % 360 + 360) % 360);
+          var newRStart = Math.max(5, Math.hypot(coords.px - a.cx, coords.py - a.cy));
+          a.rx = newRStart; a.ry = newRStart;
+        } else if (hType === 'arc_end') {
+          var rotEnd = a.angle || 0;
+          var angEnd = Math.round(Math.atan2(coords.py - a.cy, coords.px - a.cx) * (180 / Math.PI)) - rotEnd;
+          a.endAngle = Math.round((angEnd % 360 + 360) % 360);
+          var newREnd = Math.max(5, Math.hypot(coords.px - a.cx, coords.py - a.cy));
+          a.rx = newREnd; a.ry = newREnd;
+        } else if (hType === 'top_left_orig') {
           var hasCrop = initialAttrs.cropLeft || initialAttrs.cropRight || initialAttrs.cropTop || initialAttrs.cropBottom;
           var cropVisibleWRatio = 1 - (initialAttrs.cropLeft || 0) - (initialAttrs.cropRight || 0);
           var cropVisibleHRatio = 1 - (initialAttrs.cropTop || 0) - (initialAttrs.cropBottom || 0);
