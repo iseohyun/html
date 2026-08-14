@@ -474,14 +474,21 @@
             // Already split! Update split control point directly
             a.ctrls2[idx] = { cx: coords.px, cy: coords.py };
           } else {
-            // Virtual handle! Reverse calculate previous control point (prevC = 2 * prevP - refl)
-            var prevP = pts[idx] ? pts[idx] : pts[0];
-            var newPrevC = { cx: 2 * prevP.px - coords.px, cy: 2 * prevP.py - coords.py };
-            if (idx === 1) {
-              a.firstCtrl = newPrevC;
-            } else {
-              a.ctrls2 = a.ctrls2 || [];
-              a.ctrls2[idx - 1] = newPrevC;
+            // Virtual handle! Propagate reverse calculation all the way back through preceding continuous segments
+            var curRefl = { cx: coords.px, cy: coords.py };
+            for (var seg = idx; seg >= 1; seg--) {
+              var prevP = pts[seg] ? pts[seg] : pts[0];
+              var prevCtrl = { cx: 2 * prevP.px - curRefl.cx, cy: 2 * prevP.py - curRefl.cy };
+
+              if (seg - 1 === 0) {
+                a.firstCtrl = prevCtrl;
+                break;
+              } else if (a.ctrls2 && a.ctrls2[seg - 1]) {
+                a.ctrls2[seg - 1] = prevCtrl;
+                break;
+              } else {
+                curRefl = prevCtrl;
+              }
             }
           }
           a.pathD = bezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3, a.ctrls2);

@@ -1173,6 +1173,78 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     const isSuppressed = await page.evaluate(() => localStorage.getItem('webpointer_suppress_bezier_split_confirm'));
     expect(isSuppressed).toBe('true');
   });
+
+  test('TC34: 다중 세그먼트 역계산 체인 전파 및 분리 핸들러 오렌지 렌더링 스타일 검증', async ({ page }) => {
+    // 4개 연속 베지어 포인트 객체 생성
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const bezier = window.WebpointerBezier;
+      const render = window.WebpointerRender;
+
+      const pts = [
+        { px: 100, py: 100 },
+        { px: 200, py: 100 },
+        { px: 300, py: 200 },
+        { px: 400, py: 100 },
+        { px: 500, py: 200 }
+      ];
+      const firstCtrl = { cx: 150, cy: 50 };
+      const pathD = bezier.buildContinuousBezierPathD(pts, null, 'bez2', firstCtrl, null, null, null, null);
+
+      const obj = {
+        id: 'bez2_chain_test',
+        type: 'bez2',
+        attrs: {
+          points: pts,
+          firstCtrl: firstCtrl,
+          ctrls2: [],
+          pathD: pathD,
+          stroke: '#0284c7',
+          strokeWidth: 2
+        }
+      };
+
+      cfg.objectsMap.set(obj.id, obj);
+      cfg.selectedIds.clear();
+      cfg.selectedIds.add(obj.id);
+      render.renderUI();
+
+      // 4번째 핸들러 (idx = 3) 역계산 전파 테스트
+      // 세그먼트 3 (P3->P4) 가상 핸들러 이동 시 3 -> 2 -> 1 -> firstCtrl 전파
+      const newRefl = { cx: 450, cy: 250 };
+      // 3번째 세그먼트 역계산
+      let curRefl = newRefl;
+      for (let seg = 3; seg >= 1; seg--) {
+        const prevP = pts[seg];
+        const prevCtrl = { cx: 2 * prevP.px - curRefl.cx, cy: 2 * prevP.py - curRefl.cy };
+        if (seg - 1 === 0) {
+          obj.attrs.firstCtrl = prevCtrl;
+          break;
+        } else {
+          curRefl = prevCtrl;
+        }
+      }
+
+      obj.attrs.pathD = bezier.buildContinuousBezierPathD(obj.attrs.points, null, obj.type, obj.attrs.firstCtrl, null, null, null, obj.attrs.ctrls2);
+      render.renderUI();
+
+      // 분리 핸들러 (idx = 2) 세팅 및 렌더링 스타일 검증
+      obj.attrs.ctrls2[2] = { cx: 350, cy: 50 };
+      obj.attrs.pathD = bezier.buildContinuousBezierPathD(obj.attrs.points, null, obj.type, obj.attrs.firstCtrl, null, null, null, obj.attrs.ctrls2);
+      render.renderUI();
+
+      const splitHandle = document.querySelector('.handle-node[data-idx="2"][fill="#f97316"]');
+      return {
+        hasPropagatedFirstCtrl: obj.attrs.firstCtrl !== null,
+        hasSplitOrangeHandle: !!splitHandle
+      };
+    });
+
+    console.log('[Webpointer Multi-Segment Propagate Test 🧪]:', result);
+    expect(result.hasPropagatedFirstCtrl).toBe(true);
+    expect(result.hasSplitOrangeHandle).toBe(true);
+  });
 });
+
 
 

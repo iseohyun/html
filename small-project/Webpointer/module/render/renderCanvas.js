@@ -348,17 +348,25 @@
     }
   }
 
-  function createHandleNode(x, y, objId, handleType, idx, isSpecial) {
+  function createHandleNode(x, y, objId, handleType, idx, isSpecial, customStyle) {
     var uiGroup = document.getElementById('uiGroup');
     if (!uiGroup) return;
 
     var handle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     handle.setAttribute('cx', x);
     handle.setAttribute('cy', y);
-    handle.setAttribute('r', isSpecial ? 5 : 4.5);
-    handle.setAttribute('fill', isSpecial ? '#0284c7' : '#ffffff');
-    handle.setAttribute('stroke', '#0284c7');
-    handle.setAttribute('stroke-width', '1.5');
+    var radius = (customStyle && customStyle.r) ? customStyle.r : (isSpecial ? 5 : 4.5);
+    var fillColor = (customStyle && customStyle.fill) ? customStyle.fill : (isSpecial ? '#0284c7' : '#ffffff');
+    var strokeColor = (customStyle && customStyle.stroke) ? customStyle.stroke : '#0284c7';
+    var strokeWidth = (customStyle && customStyle.strokeWidth) ? customStyle.strokeWidth : '1.5';
+
+    handle.setAttribute('r', radius);
+    handle.setAttribute('fill', fillColor);
+    handle.setAttribute('stroke', strokeColor);
+    handle.setAttribute('stroke-width', strokeWidth);
+    if (customStyle && customStyle.dashArray) {
+      handle.setAttribute('stroke-dasharray', customStyle.dashArray);
+    }
     handle.setAttribute('class', 'handle-node');
     handle.dataset.objId = objId;
     handle.dataset.handleType = handleType;
@@ -584,13 +592,13 @@
           var c1x = a.firstCtrl ? a.firstCtrl.cx : Math.round((P0.px + P1.px) / 2);
           var c1y = a.firstCtrl ? a.firstCtrl.cy : (Math.min(P0.py, P1.py) - 100);
 
-          createHandleNode(c1x, c1y, id, 'bez2_ctrl', 0, true);
+          createHandleNode(c1x, c1y, id, 'bez2_ctrl', 0, true, { fill: '#0284c7', stroke: '#0369a1', r: 5 });
 
-          var createDashedLine = function(x1, y1, x2, y2) {
+          var createDashedLine = function(x1, y1, x2, y2, color) {
             var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
             line.setAttribute('x1', x1); line.setAttribute('y1', y1);
             line.setAttribute('x2', x2); line.setAttribute('y2', y2);
-            line.setAttribute('stroke', '#0284c7');
+            line.setAttribute('stroke', color || '#0284c7');
             line.setAttribute('stroke-dasharray', '3,3');
             line.setAttribute('stroke-width', '1.2');
             uiGroup.appendChild(line);
@@ -601,14 +609,27 @@
 
           var prevC = { x: c1x, y: c1y };
           for (var i = 2; i < pts.length; i++) {
+            var segIdx = i - 1;
             var prevP = pts[i - 1];
             var currP = pts[i];
-            var reflX = 2 * prevP.px - prevC.x;
-            var reflY = 2 * prevP.py - prevC.y;
-            createHandleNode(reflX, reflY, id, 'bez2_ctrl', i - 1, true);
-            createDashedLine(prevP.px, prevP.py, reflX, reflY);
-            createDashedLine(reflX, reflY, currP.px, currP.py);
-            prevC = { x: reflX, y: reflY };
+            var isSplit = a.ctrls2 && a.ctrls2[segIdx];
+            var ctrlX, ctrlY;
+
+            if (isSplit) {
+              ctrlX = a.ctrls2[segIdx].cx;
+              ctrlY = a.ctrls2[segIdx].cy;
+              createHandleNode(ctrlX, ctrlY, id, 'bez2_ctrl', segIdx, true, { fill: '#f97316', stroke: '#c2410c', r: 6 });
+              createDashedLine(prevP.px, prevP.py, ctrlX, ctrlY, '#f97316');
+              createDashedLine(ctrlX, ctrlY, currP.px, currP.py, '#f97316');
+              prevC = { x: ctrlX, y: ctrlY };
+            } else {
+              ctrlX = 2 * prevP.px - prevC.x;
+              ctrlY = 2 * prevP.py - prevC.y;
+              createHandleNode(ctrlX, ctrlY, id, 'bez2_ctrl', segIdx, true, { fill: '#38bdf8', stroke: '#0284c7', r: 5 });
+              createDashedLine(prevP.px, prevP.py, ctrlX, ctrlY, '#38bdf8');
+              createDashedLine(ctrlX, ctrlY, currP.px, currP.py, '#38bdf8');
+              prevC = { x: ctrlX, y: ctrlY };
+            }
           }
         }
       } else if (obj.type === 'bez3') {
