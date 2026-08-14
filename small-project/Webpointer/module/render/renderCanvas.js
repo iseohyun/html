@@ -85,8 +85,10 @@
         obj.el.setAttribute('d', 'M ' + a.x1 + ' ' + a.y1 + ' C ' + a.c1x + ' ' + a.c1y + ', ' + a.c2x + ' ' + a.c2y + ', ' + a.x2 + ' ' + a.y2);
       }
     } else if (obj.type === 'text') {
-      obj.el.setAttribute('x', a.x);
-      obj.el.setAttribute('y', a.y);
+      var safeX = (a.x !== undefined && a.x !== null && !isNaN(parseFloat(a.x))) ? parseFloat(a.x) : 0;
+      var safeY = (a.y !== undefined && a.y !== null && !isNaN(parseFloat(a.y))) ? parseFloat(a.y) : 0;
+      obj.el.setAttribute('x', safeX);
+      obj.el.setAttribute('y', safeY);
       var fSize = a.fontSize !== undefined ? a.fontSize : (cfg.fontSize || 20);
       var fFamily = a.fontFamily || cfg.fontFamily || 'sans-serif';
       var fWeight = a.fontWeight || cfg.fontWeight || 'normal';
@@ -151,7 +153,7 @@
         var fontSizeNum = parseInt(fSize, 10);
         lines.forEach(function(lineStr, idx) {
           var tspan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
-          tspan.setAttribute('x', a.x);
+          tspan.setAttribute('x', safeX);
           if (idx === 0) {
             tspan.setAttribute('dy', 0);
           } else {

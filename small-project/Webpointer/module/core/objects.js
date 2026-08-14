@@ -138,8 +138,10 @@
       } catch(e) {}
       if (!hasBBox) {
         var fontSize = parseInt(a.fontSize || 20, 10);
+        if (isNaN(fontSize) || fontSize <= 0) fontSize = 20;
         var approxW = (a.text || '').length * (fontSize * 0.55);
-        var tx = a.x || 0, ty = a.y || 0;
+        var tx = (a.x !== undefined && a.x !== null && !isNaN(parseFloat(a.x))) ? parseFloat(a.x) : 0;
+        var ty = (a.y !== undefined && a.y !== null && !isNaN(parseFloat(a.y))) ? parseFloat(a.y) : 0;
         minX = tx; maxX = tx + approxW;
         minY = ty - fontSize; maxY = ty + 4;
       }

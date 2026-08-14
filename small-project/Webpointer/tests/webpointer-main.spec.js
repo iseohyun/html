@@ -1713,7 +1713,48 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     console.log('[Webpointer Text Pivot Alignment Test 🧪]:', result);
     expect(result.isPivotIdentical).toBe(true);
   });
+
+  test('TC44: <text> 요소의 x, y 속성이 NaN 또는 undefined인 경우 console.error 미발생 및 안전한 0 속성 세팅 검증 수트', async ({ page }) => {
+    const consoleErrors = [];
+    page.on('console', msg => {
+      if (msg.type() === 'error' && msg.text().includes('NaN')) {
+        consoleErrors.push(msg.text());
+      }
+    });
+
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+
+      cfg.objectsMap.clear();
+
+      const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      document.getElementById('objectsGroup').appendChild(textEl);
+      const invalidTextObj = {
+        id: 'nan_text_test',
+        type: 'text',
+        el: textEl,
+        attrs: { x: NaN, y: undefined, text: 'NaN 방어 테스트', fontSize: 20 }
+      };
+      cfg.objectsMap.set(invalidTextObj.id, invalidTextObj);
+      render.updateElementAttributes(invalidTextObj);
+
+      const attrX = textEl.getAttribute('x');
+      const attrY = textEl.getAttribute('y');
+
+      return {
+        attrXIsZero: attrX === '0',
+        attrYIsZero: attrY === '0'
+      };
+    });
+
+    console.log('[Webpointer Text NaN Attribute Defense Test 🧪]:', result);
+    expect(result.attrXIsZero).toBe(true);
+    expect(result.attrYIsZero).toBe(true);
+    expect(consoleErrors.length).toBe(0);
+  });
 });
+
 
 
 

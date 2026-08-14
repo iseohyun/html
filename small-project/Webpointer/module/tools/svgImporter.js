@@ -194,12 +194,15 @@
         attrs.text = textStr.trim();
         var rawTX = node.getAttribute('x');
         var rawTY = node.getAttribute('y');
-        attrs.x = rawTX !== null ? parseFloat(rawTX) : (nodeMatrix ? nodeMatrix[4] : 0);
-        attrs.y = rawTY !== null ? parseFloat(rawTY) : (nodeMatrix ? nodeMatrix[5] : 0);
+        var parsedTX = rawTX !== null ? parseFloat(rawTX) : NaN;
+        var parsedTY = rawTY !== null ? parseFloat(rawTY) : NaN;
+        attrs.x = !isNaN(parsedTX) ? parsedTX : (nodeMatrix && !isNaN(nodeMatrix[4]) ? nodeMatrix[4] : 0);
+        attrs.y = !isNaN(parsedTY) ? parsedTY : (nodeMatrix && !isNaN(nodeMatrix[5]) ? nodeMatrix[5] : 0);
         if (rawTX === null && rawTY === null && nodeMatrix) {
           nodeMatrix = [nodeMatrix[0], nodeMatrix[1], nodeMatrix[2], nodeMatrix[3], 0, 0];
         }
-        attrs.fontSize = parseFloat(node.getAttribute('font-size') || getInheritedStyle(node, 'font-size', '16'));
+        var rawFS = parseFloat(node.getAttribute('font-size') || getInheritedStyle(node, 'font-size', '16'));
+        attrs.fontSize = !isNaN(rawFS) ? rawFS : 16;
         attrs.fontFamily = node.getAttribute('font-family') || getInheritedStyle(node, 'font-family', 'sans-serif');
         attrs.fontWeight = node.getAttribute('font-weight') || getInheritedStyle(node, 'font-weight', 'normal');
         attrs.fontStyle = node.getAttribute('font-style') || getInheritedStyle(node, 'font-style', 'normal');
