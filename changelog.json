@@ -1,5 +1,17 @@
 [
   {
+    "date": "2026-08-14",
+    "updates": [
+      {
+        "type": "Changed",
+        "projectName": "Webpointer",
+        "projectPath": "/small-project/Webpointer/index.html",
+        "version": "0.8.3",
+        "summary": "도형 내 텍스트 통합 연동(F2 편집, 회전 중심축 및 트랜스폼 동기화), 베지어/아크 정밀 근접 선택 알고리즘, 리본 메뉴 수치(너비·높이·각도) 카테고리 추가, 텍스트 수직 정렬 및 자동맞춤 버그 수정"
+      }
+    ]
+  },
+  {
     "date": "2026-08-11",
     "updates": [
       {
