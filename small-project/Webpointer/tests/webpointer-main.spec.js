@@ -1148,5 +1148,31 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     expect(hasRefError).toBe(false);
     expect(pageErrors).toEqual([]);
   });
+
+  test('TC33: 연속 베지어 가상 핸들러 역계산 연동 조절 및 Ctrl 키 핸들러 분리 팝업 모달 검증', async ({ page }) => {
+    const isModalFuncDefined = await page.evaluate(() => {
+      return typeof window.openBezierSplitConfirmModal === 'function';
+    });
+    expect(isModalFuncDefined).toBe(true);
+
+    // openBezierSplitConfirmModal 테스트
+    await page.evaluate(() => {
+      localStorage.removeItem('webpointer_suppress_bezier_split_confirm');
+      window.openBezierSplitConfirmModal('test-obj', 'bez2_ctrl', 1, () => {});
+    });
+
+    const isModalVisible = await page.locator('#bezierSplitModalOverlay').isVisible();
+    expect(isModalVisible).toBe(true);
+    await expect(page.locator('#bezierSplitModalOverlay')).toContainText('연속 베지어 분리');
+    await expect(page.locator('#bezierSplitModalOverlay')).toContainText('다시 보지 않기');
+
+    // 다시 보지 않기 체크 후 확인 클릭
+    await page.locator('#bezierSuppressChk').check();
+    await page.locator('#bezierSplitConfirmBtn').click();
+
+    const isSuppressed = await page.evaluate(() => localStorage.getItem('webpointer_suppress_bezier_split_confirm'));
+    expect(isSuppressed).toBe('true');
+  });
 });
+
 

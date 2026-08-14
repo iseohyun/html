@@ -4323,9 +4323,64 @@
     if (window.pushHistoryState) window.pushHistoryState();
   }
 
+  function openBezierSplitConfirmModal(objId, handleType, idx, onConfirm) {
+    if (localStorage.getItem('webpointer_suppress_bezier_split_confirm') === 'true') {
+      if (onConfirm) onConfirm();
+      return;
+    }
+
+    var existingModal = document.getElementById('bezierSplitModalOverlay');
+    if (existingModal) existingModal.remove();
+
+    var overlay = document.createElement('div');
+    overlay.id = 'bezierSplitModalOverlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.45);backdrop-filter:blur(3px);z-index:99999;display:flex;align-items:center;justify-content:center;';
+
+    var modalHtml = '<div style="background:#ffffff;border-radius:12px;padding:24px;width:380px;box-shadow:0 12px 32px rgba(0,0,0,0.2);font-family:sans-serif;color:#1e293b;">' +
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">' +
+        '<span style="font-size:24px;">✂️</span>' +
+        '<h3 style="margin:0;font-size:18px;font-weight:700;color:#0f172a;">연속 베지어 분리</h3>' +
+      '</div>' +
+      '<p style="margin:0 0 16px 0;font-size:14px;color:#475569;line-height:1.5;">' +
+        '연속 베지어를 해당지점에서 분리하시겠습니까?<br><span style="font-size:12px;color:#64748b;">(분리 시 이후 곡선이 독립 제어점으로 조절됩니다.)</span>' +
+      '</p>' +
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;font-size:13px;color:#334155;">' +
+        '<input type="checkbox" id="bezierSuppressChk" style="width:16px;height:16px;cursor:pointer;">' +
+        '<label for="bezierSuppressChk" style="cursor:pointer;">다시 보지 않기</label>' +
+      '</div>' +
+      '<div style="display:flex;justify-content:flex-end;gap:8px;">' +
+        '<button id="bezierSplitCancelBtn" style="padding:8px 16px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:6px;font-size:13px;font-weight:600;color:#475569;cursor:pointer;">취소</button>' +
+        '<button id="bezierSplitConfirmBtn" style="padding:8px 16px;border:none;background:#0284c7;border-radius:6px;font-size:13px;font-weight:600;color:#ffffff;cursor:pointer;">확인</button>' +
+      '</div>' +
+    '</div>';
+
+    overlay.innerHTML = modalHtml;
+    document.body.appendChild(overlay);
+
+    var cancelBtn = document.getElementById('bezierSplitCancelBtn');
+    var confirmBtn = document.getElementById('bezierSplitConfirmBtn');
+    var suppressChk = document.getElementById('bezierSuppressChk');
+
+    var closeModal = function() {
+      if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    };
+
+    cancelBtn.onclick = closeModal;
+
+    confirmBtn.onclick = function() {
+      if (suppressChk && suppressChk.checked) {
+        localStorage.setItem('webpointer_suppress_bezier_split_confirm', 'true');
+      }
+      closeModal();
+      if (onConfirm) onConfirm();
+    };
+  }
+
+  window.openBezierSplitConfirmModal = openBezierSplitConfirmModal;
   window.bringToFront = bringToFront;
   window.bringForward = bringForward;
   window.sendBackward = sendBackward;
   window.sendToBack = sendToBack;
   window.initCanvasDragAndDrop = initCanvasDragAndDrop;
 })(window);
+

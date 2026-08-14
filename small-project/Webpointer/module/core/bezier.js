@@ -26,14 +26,14 @@
         var segIdx = i - 1;
         var prevP = fullPts[i - 1];
         var currP = fullPts[i];
-        var ctrlPt;
         if (ctrls2Arr && ctrls2Arr[segIdx]) {
-          ctrlPt = { x: ctrls2Arr[segIdx].cx, y: ctrls2Arr[segIdx].cy };
+          var ctrlPt = { x: ctrls2Arr[segIdx].cx, y: ctrls2Arr[segIdx].cy };
+          d += ' Q ' + ctrlPt.x + ' ' + ctrlPt.y + ', ' + currP.px + ' ' + currP.py;
+          prevC = ctrlPt;
         } else {
-          ctrlPt = { x: 2 * prevP.px - prevC.x, y: 2 * prevP.py - prevC.y };
+          d += ' T ' + currP.px + ' ' + currP.py;
+          prevC = { x: 2 * prevP.px - prevC.x, y: 2 * prevP.py - prevC.y };
         }
-        d += ' Q ' + ctrlPt.x + ' ' + ctrlPt.y + ', ' + currP.px + ' ' + currP.py;
-        prevC = ctrlPt;
       }
     } else if (toolType === 'bez3') {
       ctrls3Arr = ctrls3Arr || [];

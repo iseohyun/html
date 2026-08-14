@@ -147,13 +147,41 @@
 
       var handleNode = e.target.closest('.handle-node');
       if (handleNode) {
+        var hObjId = handleNode.dataset.objId;
+        var hType = handleNode.dataset.handleType;
+        var hIdx = parseInt(handleNode.dataset.idx, 10);
+        var activeObj = cfg.objectsMap.get(hObjId);
+        var isCtrlPressed = e.ctrlKey || e.metaKey;
+
+        if (isCtrlPressed && activeObj && (activeObj.type === 'bez2' || activeObj.type === 'bez3') && (hType === 'bez2_ctrl' || hType === 'bez3_c1' || hType === 'bez3_c2')) {
+          var doSplit = function() {
+            state.isDraggingHandle = true;
+            state.activeHandleInfo = { objId: hObjId, handleType: hType, idx: hIdx };
+            if (activeObj) {
+              state.initialObjAttrsMap.clear();
+              state.initialObjAttrsMap.set(activeObj.id, JSON.parse(JSON.stringify(activeObj.attrs)));
+              activeObj.attrs.ctrls2 = activeObj.attrs.ctrls2 || [];
+              activeObj.attrs.ctrls2[hIdx] = { cx: coords.px, cy: coords.py };
+              activeObj.attrs.pathD = bezier.buildContinuousBezierPathD(activeObj.attrs.points, null, activeObj.type, activeObj.attrs.firstCtrl, null, null, activeObj.attrs.ctrls3, activeObj.attrs.ctrls2);
+              render.updateElementAttributes(activeObj);
+              render.renderUI();
+            }
+          };
+
+          if (window.openBezierSplitConfirmModal) {
+            window.openBezierSplitConfirmModal(hObjId, hType, hIdx, doSplit);
+          } else {
+            doSplit();
+          }
+          return;
+        }
+
         state.isDraggingHandle = true;
         state.activeHandleInfo = {
-          objId: handleNode.dataset.objId,
-          handleType: handleNode.dataset.handleType,
-          idx: parseInt(handleNode.dataset.idx, 10)
+          objId: hObjId,
+          handleType: hType,
+          idx: hIdx
         };
-        var activeObj = cfg.objectsMap.get(state.activeHandleInfo.objId);
         if (activeObj) {
           state.initialObjAttrsMap.clear();
           state.initialObjAttrsMap.set(activeObj.id, JSON.parse(JSON.stringify(activeObj.attrs)));
@@ -439,11 +467,22 @@
             a.pathD = bezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3);
           }
         } else if (hType === 'bez2_ctrl') {
+          var pts = a.points || [];
           if (!idx || idx === 0 || isNaN(idx)) {
             a.firstCtrl = { cx: coords.px, cy: coords.py };
-          } else {
-            a.ctrls2 = a.ctrls2 || [];
+          } else if (a.ctrls2 && a.ctrls2[idx]) {
+            // Already split! Update split control point directly
             a.ctrls2[idx] = { cx: coords.px, cy: coords.py };
+          } else {
+            // Virtual handle! Reverse calculate previous control point (prevC = 2 * prevP - refl)
+            var prevP = pts[idx] ? pts[idx] : pts[0];
+            var newPrevC = { cx: 2 * prevP.px - coords.px, cy: 2 * prevP.py - coords.py };
+            if (idx === 1) {
+              a.firstCtrl = newPrevC;
+            } else {
+              a.ctrls2 = a.ctrls2 || [];
+              a.ctrls2[idx - 1] = newPrevC;
+            }
           }
           a.pathD = bezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3, a.ctrls2);
         } else if (hType === 'bez3_c1') {
