@@ -4495,11 +4495,103 @@
     if (render && render.renderUI) render.renderUI();
   }
 
+  function groupSelected() {
+    if (!cfg.selectedIds || cfg.selectedIds.size < 2) return;
+    var objectsGroup = document.getElementById('objectsGroup');
+    if (!objectsGroup) return;
+
+    var gEl = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    var gId = 'group_' + (cfg.nextId++);
+    gEl.setAttribute('id', gId);
+    objectsGroup.appendChild(gEl);
+
+    cfg.selectedIds.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (obj && obj.el && obj.el.parentNode) {
+        gEl.appendChild(obj.el);
+        obj.parentId = gId;
+      }
+    });
+
+    if (window.WebpointerRender && window.WebpointerRender.renderUI) {
+      window.WebpointerRender.renderUI();
+      window.WebpointerRender.renderRibbon();
+    }
+  }
+
+  function ungroupSelected() {
+    if (!cfg.selectedIds || cfg.selectedIds.size === 0) return;
+    var objectsGroup = document.getElementById('objectsGroup');
+    if (!objectsGroup) return;
+
+    cfg.selectedIds.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (obj && obj.el) {
+        var pG = obj.el.parentElement;
+        if (pG && pG !== objectsGroup && pG.tagName && pG.tagName.toLowerCase() === 'g') {
+          objectsGroup.appendChild(obj.el);
+          delete obj.parentId;
+          if (pG.children.length === 0) {
+            pG.remove();
+          }
+        }
+      }
+    });
+
+    if (window.WebpointerRender && window.WebpointerRender.renderUI) {
+      window.WebpointerRender.renderUI();
+      window.WebpointerRender.renderRibbon();
+    }
+  }
+
+  function alignSelected(dir) {
+    if (window.alignSelectedObjects) {
+      window.alignSelectedObjects(dir);
+    }
+  }
+
+  function transformSelected(actionType) {
+    if (!cfg.selectedIds || cfg.selectedIds.size === 0) return;
+    var render = window.WebpointerRender;
+
+    cfg.selectedIds.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (!obj || !obj.attrs) return;
+
+      if (actionType === 'rotate90') {
+        var curAngle = obj.attrs.angle || 0;
+        obj.attrs.angle = Math.round(((curAngle + 90) % 360 + 360) % 360);
+      } else if (actionType === 'rotateNeg90') {
+        var curAngle = obj.attrs.angle || 0;
+        obj.attrs.angle = Math.round(((curAngle - 90) % 360 + 360) % 360);
+      } else if (actionType === 'flipH') {
+        var curAngle = obj.attrs.angle || 0;
+        obj.attrs.angle = Math.round(((180 - curAngle) % 360 + 360) % 360);
+      } else if (actionType === 'flipV') {
+        var curAngle = obj.attrs.angle || 0;
+        obj.attrs.angle = Math.round(((-curAngle) % 360 + 360) % 360);
+      }
+
+      if (render && render.updateElementAttributes) {
+        render.updateElementAttributes(obj);
+      }
+    });
+
+    if (render && render.renderUI) {
+      render.renderUI();
+      render.renderRibbon();
+    }
+  }
+
   window.openBezierSplitConfirmModal = openBezierSplitConfirmModal;
   window.openTextRotateSplitConfirmModal = openTextRotateSplitConfirmModal;
   window.updateSelectedMetricWidth = updateSelectedMetricWidth;
   window.updateSelectedMetricHeight = updateSelectedMetricHeight;
   window.updateSelectedMetricAngle = updateSelectedMetricAngle;
+  window.transformSelected = transformSelected;
+  window.alignSelected = alignSelected;
+  window.groupSelected = groupSelected;
+  window.ungroupSelected = ungroupSelected;
   window.bringToFront = bringToFront;
   window.bringForward = bringForward;
   window.sendBackward = sendBackward;

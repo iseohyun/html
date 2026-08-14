@@ -1942,7 +1942,49 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     await expect(ribbonBar).toContainText('세로:');
     await expect(ribbonBar).toContainText('회전각:');
   });
+
+  test('TC49: transformSelected(rotate90) 90도 회전 도구 및 변형 도구 정상 작동 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'transform_rect',
+        type: 'rect',
+        el: rectEl,
+        attrs: { x: 100, y: 100, width: 100, height: 60, angle: 0 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+      cfg.selectedIds.add(rectObj.id);
+
+      render.updateElementAttributes(rectObj);
+      render.renderUI();
+
+      // 90도 회전 실행
+      window.transformSelected('rotate90');
+      const angleAfterRotate90 = rectObj.attrs.angle;
+
+      // -90도 회전 실행 (원복)
+      window.transformSelected('rotateNeg90');
+      const angleAfterRotateNeg90 = rectObj.attrs.angle;
+
+      return {
+        angleAfterRotate90,
+        angleAfterRotateNeg90
+      };
+    });
+
+    console.log('[Webpointer transformSelected Rotate90 Test 🧪]:', result);
+    expect(result.angleAfterRotate90).toBe(90);
+    expect(result.angleAfterRotateNeg90).toBe(0);
+  });
 });
+
 
 
 
