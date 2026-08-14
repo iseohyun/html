@@ -206,8 +206,9 @@
         }
         if (a.ctrls3) {
           a.ctrls3.forEach(function(cp) {
-            cp.c1.x += deltaX; cp.c1.y += deltaY;
-            cp.c2.x += deltaX; cp.c2.y += deltaY;
+            if (!cp) return;
+            if (cp.c1) { cp.c1.x += deltaX; cp.c1.y += deltaY; }
+            if (cp.c2) { cp.c2.x += deltaX; cp.c2.y += deltaY; }
           });
         }
         if (window.WebpointerBezier && window.WebpointerBezier.buildContinuousBezierPathD) {
@@ -273,10 +274,15 @@
         }
         if (a.ctrls3) {
           a.ctrls3.forEach(function(cp) {
-            var pC1 = rotatePoint(cp.c1.x, cp.c1.y, deg);
-            var pC2 = rotatePoint(cp.c2.x, cp.c2.y, deg);
-            cp.c1.x = pC1.x; cp.c1.y = pC1.y;
-            cp.c2.x = pC2.x; cp.c2.y = pC2.y;
+            if (!cp) return;
+            if (cp.c1) {
+              var pC1 = rotatePoint(cp.c1.x, cp.c1.y, deg);
+              cp.c1.x = pC1.x; cp.c1.y = pC1.y;
+            }
+            if (cp.c2) {
+              var pC2 = rotatePoint(cp.c2.x, cp.c2.y, deg);
+              cp.c2.x = pC2.x; cp.c2.y = pC2.y;
+            }
           });
         }
         if (window.WebpointerBezier && window.WebpointerBezier.buildContinuousBezierPathD) {
@@ -301,7 +307,11 @@
       else if (obj.type === 'bez2' || obj.type === 'bez3') {
         if (a.points) a.points.forEach(function(pt) { pt.px = 2 * cx - pt.px; });
         if (a.firstCtrl) a.firstCtrl.cx = 2 * cx - a.firstCtrl.cx;
-        if (a.ctrls3) a.ctrls3.forEach(function(cp) { cp.c1.x = 2 * cx - cp.c1.x; cp.c2.x = 2 * cx - cp.c2.x; });
+        if (a.ctrls3) a.ctrls3.forEach(function(cp) {
+          if (!cp) return;
+          if (cp.c1) cp.c1.x = 2 * cx - cp.c1.x;
+          if (cp.c2) cp.c2.x = 2 * cx - cp.c2.x;
+        });
         if (window.WebpointerBezier && window.WebpointerBezier.buildContinuousBezierPathD) {
           a.pathD = window.WebpointerBezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3, a.ctrls2);
         }
@@ -313,7 +323,11 @@
       else if (obj.type === 'bez2' || obj.type === 'bez3') {
         if (a.points) a.points.forEach(function(pt) { pt.py = 2 * cy - pt.py; });
         if (a.firstCtrl) a.firstCtrl.cy = 2 * cy - a.firstCtrl.cy;
-        if (a.ctrls3) a.ctrls3.forEach(function(cp) { cp.c1.y = 2 * cy - cp.c1.y; cp.c2.y = 2 * cy - cp.c2.y; });
+        if (a.ctrls3) a.ctrls3.forEach(function(cp) {
+          if (!cp) return;
+          if (cp.c1) cp.c1.y = 2 * cy - cp.c1.y;
+          if (cp.c2) cp.c2.y = 2 * cy - cp.c2.y;
+        });
         if (window.WebpointerBezier && window.WebpointerBezier.buildContinuousBezierPathD) {
           a.pathD = window.WebpointerBezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3, a.ctrls2);
         }

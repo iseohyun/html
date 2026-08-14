@@ -574,9 +574,10 @@
               }
               if (initialAttrs.ctrls3) {
                 a.ctrls3 = initialAttrs.ctrls3.map(function(cp) {
+                  if (!cp) return {};
                   return {
-                    c1: { x: cp.c1.x + deltaPx, y: cp.c1.y + deltaPy },
-                    c2: { x: cp.c2.x + deltaPx, y: cp.c2.y + deltaPy }
+                    c1: cp.c1 ? { x: cp.c1.x + deltaPx, y: cp.c1.y + deltaPy } : null,
+                    c2: cp.c2 ? { x: cp.c2.x + deltaPx, y: cp.c2.y + deltaPy } : null
                   };
                 });
               }
