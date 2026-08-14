@@ -45,14 +45,13 @@
       attrs = { cx: cx, cy: cy, rx: rxEl, ry: ryEl, angle: 0, stepCx: Math.round((stepStart.stepX + stepEnd.stepX) / 2), stepCy: Math.round((stepStart.stepY + stepEnd.stepY) / 2), stepRx: Math.abs(stepEnd.stepX - stepStart.stepX) / 2, stepRy: Math.abs(stepEnd.stepY - stepStart.stepY) / 2 };
     } else if (type === 'arc') {
       el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      var rxArc = Math.max(10, Math.abs(px2 - px1));
-      var ryArc = Math.max(10, Math.abs(py2 - py1));
+      var rArc = Math.max(10, Math.hypot(px2 - px1, py2 - py1));
       var initialEndAngle = Math.round(Math.atan2(py2 - py1, px2 - px1) * (180 / Math.PI));
       attrs = {
         cx: px1,
         cy: py1,
-        rx: rxArc,
-        ry: ryArc,
+        rx: rArc,
+        ry: rArc,
         startAngle: -90,
         endAngle: initialEndAngle,
         angle: 0
@@ -126,23 +125,30 @@
         minY = oy; maxY = oy + oh;
       }
     } else if (obj.type === 'text') {
-      var hasBBox = false;
-      try {
-        if (obj.el) {
-          var bb = obj.el.getBBox();
-          if (bb && bb.width > 0 && bb.height > 0) {
-            minX = bb.x; maxX = bb.x + bb.width;
-            minY = bb.y; maxY = bb.y + bb.height;
-            hasBBox = true;
+      if (a.width && a.height) {
+        minX = a.x; maxX = a.x + a.width;
+        minY = a.y; maxY = a.y + a.height;
+      } else {
+        var hasBBox = false;
+        try {
+          if (obj.el) {
+            var bb = obj.el.getBBox();
+            if (bb && bb.width > 0 && bb.height > 0) {
+              minX = bb.x; maxX = bb.x + bb.width;
+              minY = bb.y; maxY = bb.y + bb.height;
+              hasBBox = true;
+            }
           }
+        } catch(e) {}
+        if (!hasBBox) {
+          var fontSize = parseInt(a.fontSize || 20, 10);
+          if (isNaN(fontSize) || fontSize <= 0) fontSize = 20;
+          var approxW = (a.text || '').length * (fontSize * 0.55);
+          var tx = (a.x !== undefined && a.x !== null && !isNaN(parseFloat(a.x))) ? parseFloat(a.x) : 0;
+          var ty = (a.y !== undefined && a.y !== null && !isNaN(parseFloat(a.y))) ? parseFloat(a.y) : 0;
+          minX = tx; maxX = tx + approxW;
+          minY = ty - fontSize; maxY = ty + 4;
         }
-      } catch(e) {}
-      if (!hasBBox) {
-        var fontSize = parseInt(a.fontSize || 20, 10);
-        var approxW = (a.text || '').length * (fontSize * 0.55);
-        var tx = a.x || 0, ty = a.y || 0;
-        minX = tx; maxX = tx + approxW;
-        minY = ty - fontSize; maxY = ty + 4;
       }
     } else if (obj.type === 'ellipse' || obj.type === 'arc') {
       var ecx = a.cx || 0, ecy = a.cy || 0, erx = a.rx || 30, ery = a.ry || 30;
@@ -206,8 +212,9 @@
         }
         if (a.ctrls3) {
           a.ctrls3.forEach(function(cp) {
-            cp.c1.x += deltaX; cp.c1.y += deltaY;
-            cp.c2.x += deltaX; cp.c2.y += deltaY;
+            if (!cp) return;
+            if (cp.c1) { cp.c1.x += deltaX; cp.c1.y += deltaY; }
+            if (cp.c2) { cp.c2.x += deltaX; cp.c2.y += deltaY; }
           });
         }
         if (window.WebpointerBezier && window.WebpointerBezier.buildContinuousBezierPathD) {
@@ -273,10 +280,15 @@
         }
         if (a.ctrls3) {
           a.ctrls3.forEach(function(cp) {
-            var pC1 = rotatePoint(cp.c1.x, cp.c1.y, deg);
-            var pC2 = rotatePoint(cp.c2.x, cp.c2.y, deg);
-            cp.c1.x = pC1.x; cp.c1.y = pC1.y;
-            cp.c2.x = pC2.x; cp.c2.y = pC2.y;
+            if (!cp) return;
+            if (cp.c1) {
+              var pC1 = rotatePoint(cp.c1.x, cp.c1.y, deg);
+              cp.c1.x = pC1.x; cp.c1.y = pC1.y;
+            }
+            if (cp.c2) {
+              var pC2 = rotatePoint(cp.c2.x, cp.c2.y, deg);
+              cp.c2.x = pC2.x; cp.c2.y = pC2.y;
+            }
           });
         }
         if (window.WebpointerBezier && window.WebpointerBezier.buildContinuousBezierPathD) {
@@ -301,7 +313,11 @@
       else if (obj.type === 'bez2' || obj.type === 'bez3') {
         if (a.points) a.points.forEach(function(pt) { pt.px = 2 * cx - pt.px; });
         if (a.firstCtrl) a.firstCtrl.cx = 2 * cx - a.firstCtrl.cx;
-        if (a.ctrls3) a.ctrls3.forEach(function(cp) { cp.c1.x = 2 * cx - cp.c1.x; cp.c2.x = 2 * cx - cp.c2.x; });
+        if (a.ctrls3) a.ctrls3.forEach(function(cp) {
+          if (!cp) return;
+          if (cp.c1) cp.c1.x = 2 * cx - cp.c1.x;
+          if (cp.c2) cp.c2.x = 2 * cx - cp.c2.x;
+        });
         if (window.WebpointerBezier && window.WebpointerBezier.buildContinuousBezierPathD) {
           a.pathD = window.WebpointerBezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3, a.ctrls2);
         }
@@ -313,7 +329,11 @@
       else if (obj.type === 'bez2' || obj.type === 'bez3') {
         if (a.points) a.points.forEach(function(pt) { pt.py = 2 * cy - pt.py; });
         if (a.firstCtrl) a.firstCtrl.cy = 2 * cy - a.firstCtrl.cy;
-        if (a.ctrls3) a.ctrls3.forEach(function(cp) { cp.c1.y = 2 * cy - cp.c1.y; cp.c2.y = 2 * cy - cp.c2.y; });
+        if (a.ctrls3) a.ctrls3.forEach(function(cp) {
+          if (!cp) return;
+          if (cp.c1) cp.c1.y = 2 * cy - cp.c1.y;
+          if (cp.c2) cp.c2.y = 2 * cy - cp.c2.y;
+        });
         if (window.WebpointerBezier && window.WebpointerBezier.buildContinuousBezierPathD) {
           a.pathD = window.WebpointerBezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3, a.ctrls2);
         }
@@ -324,9 +344,54 @@
     }
   }
 
+  function getObjectCenter(obj) {
+    if (!obj || !obj.attrs) return { x: 0, y: 0 };
+    var a = obj.attrs;
+    if (a.cx !== undefined && a.cy !== undefined) {
+      return { x: a.cx, y: a.cy };
+    }
+    var bounds = getObjectBounds(obj);
+    return { x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 };
+  }
+
+  function syncShapeTextBounds(shapeObj) {
+    if (!shapeObj || shapeObj.type === 'text') return;
+    var cfg = window.WebpointerConfig;
+    if (!cfg) return;
+
+    var bounds = getObjectBounds(shapeObj);
+    var shapeW = Math.max(1, bounds.maxX - bounds.minX);
+    var shapeH = Math.max(1, bounds.maxY - bounds.minY);
+    var shapeAngle = shapeObj.attrs.angle || 0;
+
+    cfg.objectsMap.forEach(function(sObj) {
+      if (sObj.type === 'text') {
+        var isAssociated = false;
+        if (shapeObj.parentId && sObj.parentId === shapeObj.parentId) {
+          isAssociated = true;
+        } else if (cfg.selectedIds && cfg.selectedIds.has(sObj.id) && cfg.selectedIds.has(shapeObj.id)) {
+          isAssociated = true;
+        }
+
+        if (isAssociated) {
+          sObj.attrs.x = bounds.minX;
+          sObj.attrs.y = bounds.minY;
+          sObj.attrs.width = shapeW;
+          sObj.attrs.height = shapeH;
+          sObj.attrs.angle = shapeAngle;
+          if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+            window.WebpointerRender.updateElementAttributes(sObj);
+          }
+        }
+      }
+    });
+  }
+
   window.WebpointerObjects = {
     createSvgObject: createSvgObject,
     getObjectBounds: getObjectBounds,
+    getObjectCenter: getObjectCenter,
+    syncShapeTextBounds: syncShapeTextBounds,
     shiftObject: shiftObject,
     rotatePoint: rotatePoint,
     rotateObject: rotateObject,

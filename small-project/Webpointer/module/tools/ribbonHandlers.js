@@ -602,27 +602,29 @@
     var members = getAllGroupMembers(cfg.selectedIds);
     var textObjs = members.filter(function(m) { return m.type === 'text'; });
 
+    var vAlign = 'top';
+    if (val === 'central' || val === 'middle') {
+      vAlign = 'middle';
+    } else if (val === 'alphabetic' || val === 'bottom') {
+      vAlign = 'bottom';
+    }
+
     textObjs.forEach(function(obj) {
       if (obj && obj.attrs) {
-        var shapeBounds = getParentShapeBounds(obj);
-        var fSize = obj.attrs.fontSize || cfg.fontSize || 20;
+        var shapeObj = null;
+        if (obj.parentId) {
+          cfg.objectsMap.forEach(function(o) {
+            if (o.parentId === obj.parentId && o.type !== 'text') {
+              shapeObj = o;
+            }
+          });
+        }
 
-        if (shapeBounds) {
-          var cy = (shapeBounds.minY + shapeBounds.maxY) / 2;
-          var ty = shapeBounds.minY + (fSize * 0.8) + 4;
-          var by = shapeBounds.maxY - (fSize * 0.2) - 4;
-          var targetY = cy;
-          if (val === 'hanging') {
-            targetY = ty;
-          } else if (val === 'central' || val === 'middle') {
-            targetY = cy + (fSize * 0.35);
-          } else if (val === 'alphabetic' || val === 'bottom') {
-            targetY = by;
-          }
-          obj.attrs.y = Math.round(targetY);
-          obj.attrs.dominantBaseline = val;
+        if (shapeObj && window.WebpointerTextTool && window.WebpointerTextTool.updateShapeTextAlignment) {
+          window.WebpointerTextTool.updateShapeTextAlignment(shapeObj, obj, obj.attrs.textAnchor, vAlign);
         } else {
           obj.attrs.dominantBaseline = val;
+          obj.attrs.verticalAlign = vAlign;
         }
 
         if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
@@ -646,6 +648,65 @@
     setTextVerticalAlign(nextBaseline);
   }
 
+  function setTextPadding(side, val) {
+    var numVal = Math.max(0, Math.min(200, parseInt(val, 10) || 0));
+    if (cfg.padSync) {
+      cfg.padTop = numVal;
+      cfg.padBottom = numVal;
+      cfg.padLeft = numVal;
+      cfg.padRight = numVal;
+    } else {
+      if (side === 'top') cfg.padTop = numVal;
+      if (side === 'bottom') cfg.padBottom = numVal;
+      if (side === 'left') cfg.padLeft = numVal;
+      if (side === 'right') cfg.padRight = numVal;
+    }
+
+    var members = getAllGroupMembers(cfg.selectedIds);
+    var textObjs = members.filter(function(m) { return m.type === 'text'; });
+    textObjs.forEach(function(obj) {
+      if (obj && obj.attrs) {
+        obj.attrs.padTop = cfg.padTop;
+        obj.attrs.padBottom = cfg.padBottom;
+        obj.attrs.padLeft = cfg.padLeft;
+        obj.attrs.padRight = cfg.padRight;
+
+        var shapeObj = null;
+        if (obj.parentId) {
+          cfg.objectsMap.forEach(function(o) {
+            if (o.parentId === obj.parentId && o.type !== 'text') {
+              shapeObj = o;
+            }
+          });
+        }
+        if (shapeObj && window.WebpointerTextTool && window.WebpointerTextTool.updateShapeTextAlignment) {
+          window.WebpointerTextTool.updateShapeTextAlignment(shapeObj, obj, obj.attrs.textAnchor, obj.attrs.verticalAlign || 'top');
+        }
+        if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+          window.WebpointerRender.updateElementAttributes(obj);
+        }
+      }
+    });
+
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+  }
+
+  function toggleTextPaddingSync() {
+    cfg.padSync = !cfg.padSync;
+    if (cfg.padSync) {
+      var syncVal = cfg.padTop;
+      cfg.padBottom = syncVal;
+      cfg.padLeft = syncVal;
+      cfg.padRight = syncVal;
+      setTextPadding('top', syncVal);
+    } else {
+      if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+    }
+  }
+
+  window.setTextPadding = setTextPadding;
+  window.toggleTextPaddingSync = toggleTextPaddingSync;
+
   function cycleTextHorizontalAlign() {
     var cur = cfg.textAnchor || 'start';
     var nextAnchor = 'start';
@@ -664,7 +725,9 @@
   function applyAutoFitToGroup(textObj) {
     if (!textObj || !textObj.parentId) return;
     var mode = textObj.attrs.autoFitMode || cfg.textAutoFitMode || 'fitShapeToText';
-    if (mode === 'none') return;
+
+    var baseFont = textObj.attrs.baseFontSize || textObj.attrs.fontSize || cfg.fontSize || 20;
+    textObj.attrs.baseFontSize = baseFont;
 
     var groupMembers = [];
     cfg.objectsMap.forEach(function(o) {
@@ -673,6 +736,23 @@
       }
     });
     if (groupMembers.length === 0) return;
+
+    var shapeObj = groupMembers[0];
+    var sAttrs = shapeObj.attrs || {};
+
+    var pTop = textObj.attrs.padTop !== undefined ? textObj.attrs.padTop : (cfg.padTop !== undefined ? cfg.padTop : 10);
+    var pBottom = textObj.attrs.padBottom !== undefined ? textObj.attrs.padBottom : (cfg.padBottom !== undefined ? cfg.padBottom : 10);
+    var pLeft = textObj.attrs.padLeft !== undefined ? textObj.attrs.padLeft : (cfg.padLeft !== undefined ? cfg.padLeft : 10);
+    var pRight = textObj.attrs.padRight !== undefined ? textObj.attrs.padRight : (cfg.padRight !== undefined ? cfg.padRight : 10);
+
+    if (mode === 'fitShapeToText' || mode === 'none') {
+      textObj.attrs.fontSize = baseFont;
+      if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+        window.WebpointerRender.updateElementAttributes(textObj);
+      }
+    }
+
+    if (mode === 'none') return;
 
     var textWidth = 100, textHeight = 30;
     try {
@@ -683,19 +763,16 @@
       }
     } catch(e) {}
 
-    var shapeObj = groupMembers[0];
-    var sAttrs = shapeObj.attrs || {};
-
     if (mode === 'fitShapeToText') {
-      var reqWidth = textWidth + 30;
-      var reqHeight = textHeight + 20;
+      var reqWidth = textWidth + pLeft + pRight;
+      var reqHeight = textHeight + pTop + pBottom;
 
       if (shapeObj.type === 'rect' || shapeObj.type === 'rounded') {
-        if ((sAttrs.width || 100) < reqWidth) sAttrs.width = Math.round(reqWidth);
-        if ((sAttrs.height || 60) < reqHeight) sAttrs.height = Math.round(reqHeight);
+        sAttrs.width = Math.max(20, Math.round(reqWidth));
+        sAttrs.height = Math.max(20, Math.round(reqHeight));
       } else if (shapeObj.type === 'ellipse') {
-        if ((sAttrs.rx || 50) * 2 < reqWidth) sAttrs.rx = Math.round(reqWidth / 2);
-        if ((sAttrs.ry || 30) * 2 < reqHeight) sAttrs.ry = Math.round(reqHeight / 2);
+        sAttrs.rx = Math.max(10, Math.round(reqWidth / 2));
+        sAttrs.ry = Math.max(10, Math.round(reqHeight / 2));
       }
       if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
         window.WebpointerRender.updateElementAttributes(shapeObj);
@@ -704,20 +781,28 @@
       var shapeWidth = sAttrs.width || (sAttrs.rx ? sAttrs.rx * 2 : 100);
       var shapeHeight = sAttrs.height || (sAttrs.ry ? sAttrs.ry * 2 : 60);
 
-      var availW = shapeWidth - 20;
-      var availH = shapeHeight - 16;
+      var availW = Math.max(10, shapeWidth - (pLeft + pRight));
+      var availH = Math.max(10, shapeHeight - (pTop + pBottom));
 
       if (textWidth > availW || textHeight > availH) {
         var scale = Math.min(availW / textWidth, availH / textHeight);
         if (scale < 1) {
-          var curFont = textObj.attrs.fontSize || cfg.fontSize || 20;
-          var newFont = Math.max(8, Math.floor(curFont * scale));
+          var newFont = Math.max(8, Math.floor(baseFont * scale));
           textObj.attrs.fontSize = newFont;
           if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
             window.WebpointerRender.updateElementAttributes(textObj);
           }
         }
+      } else {
+        textObj.attrs.fontSize = baseFont;
+        if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+          window.WebpointerRender.updateElementAttributes(textObj);
+        }
       }
+    }
+
+    if (window.WebpointerTextTool && window.WebpointerTextTool.updateShapeTextAlignment) {
+      window.WebpointerTextTool.updateShapeTextAlignment(shapeObj, textObj, textObj.attrs.textAnchor || 'start', textObj.attrs.verticalAlign || 'top');
     }
   }
 
@@ -951,6 +1036,7 @@
       if (obj && obj.attrs) {
         obj.attrs.fontFamily = cfg.fontFamily;
         obj.attrs.fontSize = cfg.fontSize;
+        obj.attrs.baseFontSize = cfg.fontSize;
         obj.attrs.fontWeight = cfg.fontWeight;
         obj.attrs.fontStyle = cfg.fontStyle;
         obj.attrs.textDecoration = cfg.textDecoration || 'none';
@@ -4376,7 +4462,225 @@
     };
   }
 
+  function openTextRotateSplitConfirmModal(onConfirm, onCancel) {
+    if (localStorage.getItem('webpointer_suppress_text_rotate_split_confirm') === 'true') {
+      if (onConfirm) onConfirm();
+      return;
+    }
+
+    var existingModal = document.getElementById('textRotateSplitModalOverlay');
+    if (existingModal) existingModal.remove();
+
+    var overlay = document.createElement('div');
+    overlay.id = 'textRotateSplitModalOverlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.45);backdrop-filter:blur(3px);z-index:99999;display:flex;align-items:center;justify-content:center;';
+
+    var modalHtml = '<div style="background:#ffffff;border-radius:12px;padding:24px;width:380px;box-shadow:0 12px 32px rgba(0,0,0,0.2);font-family:sans-serif;color:#1e293b;">' +
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">' +
+        '<span style="font-size:24px;">🔄</span>' +
+        '<h3 style="margin:0;font-size:18px;font-weight:700;color:#0f172a;">회전 분리</h3>' +
+      '</div>' +
+      '<p style="margin:0 0 16px 0;font-size:14px;color:#475569;line-height:1.5;">' +
+        '도형과 텍스트의 회전을 분리합니다.' +
+      '</p>' +
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;font-size:13px;color:#334155;">' +
+        '<input type="checkbox" id="textRotateSuppressChk" style="width:16px;height:16px;cursor:pointer;">' +
+        '<label for="textRotateSuppressChk" style="cursor:pointer;">앞으로 묻지 않음</label>' +
+      '</div>' +
+      '<div style="display:flex;justify-content:flex-end;gap:8px;">' +
+        '<button id="textRotateSplitCancelBtn" style="padding:8px 16px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:6px;font-size:13px;font-weight:600;color:#475569;cursor:pointer;">취소</button>' +
+        '<button id="textRotateSplitConfirmBtn" style="padding:8px 16px;border:none;background:#0284c7;border-radius:6px;font-size:13px;font-weight:600;color:#ffffff;cursor:pointer;">확인</button>' +
+      '</div>' +
+    '</div>';
+
+    overlay.innerHTML = modalHtml;
+    document.body.appendChild(overlay);
+
+    var cancelBtn = document.getElementById('textRotateSplitCancelBtn');
+    var confirmBtn = document.getElementById('textRotateSplitConfirmBtn');
+    var suppressChk = document.getElementById('textRotateSuppressChk');
+
+    var closeModal = function() {
+      if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    };
+
+    cancelBtn.onclick = function() {
+      closeModal();
+      if (onCancel) onCancel();
+    };
+
+    confirmBtn.onclick = function() {
+      if (suppressChk && suppressChk.checked) {
+        localStorage.setItem('webpointer_suppress_text_rotate_split_confirm', 'true');
+      }
+      closeModal();
+      if (onConfirm) onConfirm();
+    };
+  }
+
+  function updateSelectedMetricWidth(newW) {
+    var render = window.WebpointerRender;
+    var val = parseFloat(newW);
+    if (isNaN(val) || val <= 0) return;
+    cfg.selectedIds.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (obj && obj.attrs) {
+        if (obj.attrs.width !== undefined) {
+          obj.attrs.width = val;
+        } else if (obj.attrs.rx !== undefined && (obj.type === 'ellipse' || obj.type === 'arc')) {
+          obj.attrs.rx = val / 2;
+        } else if (obj.type === 'line') {
+          var currW = Math.abs(obj.attrs.x2 - obj.attrs.x1);
+          if (currW > 0) {
+            var scale = val / currW;
+            obj.attrs.x2 = obj.attrs.x1 + (obj.attrs.x2 - obj.attrs.x1) * scale;
+          }
+        }
+        if (render && render.updateElementAttributes) render.updateElementAttributes(obj);
+      }
+    });
+    if (render && render.renderUI) render.renderUI();
+  }
+
+  function updateSelectedMetricHeight(newH) {
+    var render = window.WebpointerRender;
+    var val = parseFloat(newH);
+    if (isNaN(val) || val <= 0) return;
+    cfg.selectedIds.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (obj && obj.attrs) {
+        if (obj.attrs.height !== undefined) {
+          obj.attrs.height = val;
+        } else if (obj.attrs.ry !== undefined && (obj.type === 'ellipse' || obj.type === 'arc')) {
+          obj.attrs.ry = val / 2;
+        } else if (obj.type === 'line') {
+          var currH = Math.abs(obj.attrs.y2 - obj.attrs.y1);
+          if (currH > 0) {
+            var scale = val / currH;
+            obj.attrs.y2 = obj.attrs.y1 + (obj.attrs.y2 - obj.attrs.y1) * scale;
+          }
+        }
+        if (render && render.updateElementAttributes) render.updateElementAttributes(obj);
+      }
+    });
+    if (render && render.renderUI) render.renderUI();
+  }
+
+  function updateSelectedMetricAngle(newAng) {
+    var render = window.WebpointerRender;
+    var val = parseFloat(newAng);
+    if (isNaN(val)) return;
+    var safeAng = Math.round((val % 360 + 360) % 360);
+    cfg.selectedIds.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (obj && obj.attrs) {
+        obj.attrs.angle = safeAng;
+        if (render && render.updateElementAttributes) render.updateElementAttributes(obj);
+      }
+    });
+    if (render && render.renderUI) render.renderUI();
+  }
+
+  function groupSelected() {
+    if (!cfg.selectedIds || cfg.selectedIds.size < 2) return;
+    var objectsGroup = document.getElementById('objectsGroup');
+    if (!objectsGroup) return;
+
+    var gEl = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    var gId = 'group_' + (cfg.nextId++);
+    gEl.setAttribute('id', gId);
+    objectsGroup.appendChild(gEl);
+
+    cfg.selectedIds.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (obj && obj.el && obj.el.parentNode) {
+        gEl.appendChild(obj.el);
+        obj.parentId = gId;
+      }
+    });
+
+    if (window.WebpointerRender && window.WebpointerRender.renderUI) {
+      window.WebpointerRender.renderUI();
+      window.WebpointerRender.renderRibbon();
+    }
+  }
+
+  function ungroupSelected() {
+    if (!cfg.selectedIds || cfg.selectedIds.size === 0) return;
+    var objectsGroup = document.getElementById('objectsGroup');
+    if (!objectsGroup) return;
+
+    cfg.selectedIds.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (obj && obj.el) {
+        var pG = obj.el.parentElement;
+        if (pG && pG !== objectsGroup && pG.tagName && pG.tagName.toLowerCase() === 'g') {
+          objectsGroup.appendChild(obj.el);
+          delete obj.parentId;
+          if (pG.children.length === 0) {
+            pG.remove();
+          }
+        }
+      }
+    });
+
+    if (window.WebpointerRender && window.WebpointerRender.renderUI) {
+      window.WebpointerRender.renderUI();
+      window.WebpointerRender.renderRibbon();
+    }
+  }
+
+  function alignSelected(dir) {
+    if (window.alignSelectedObjects) {
+      window.alignSelectedObjects(dir);
+    }
+  }
+
+  function transformSelected(actionType) {
+    if (!cfg.selectedIds || cfg.selectedIds.size === 0) return;
+    var render = window.WebpointerRender;
+
+    cfg.selectedIds.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (!obj || !obj.attrs) return;
+
+      if (actionType === 'rotate90') {
+        var curAngle = obj.attrs.angle || 0;
+        obj.attrs.angle = Math.round(((curAngle + 90) % 360 + 360) % 360);
+      } else if (actionType === 'rotateNeg90') {
+        var curAngle = obj.attrs.angle || 0;
+        obj.attrs.angle = Math.round(((curAngle - 90) % 360 + 360) % 360);
+      } else if (actionType === 'flipH') {
+        var curAngle = obj.attrs.angle || 0;
+        obj.attrs.angle = Math.round(((180 - curAngle) % 360 + 360) % 360);
+      } else if (actionType === 'flipV') {
+        var curAngle = obj.attrs.angle || 0;
+        obj.attrs.angle = Math.round(((-curAngle) % 360 + 360) % 360);
+      }
+
+      if (window.WebpointerObjects && window.WebpointerObjects.syncShapeTextBounds) {
+        window.WebpointerObjects.syncShapeTextBounds(obj);
+      }
+      if (render && render.updateElementAttributes) {
+        render.updateElementAttributes(obj);
+      }
+    });
+
+    if (render && render.renderUI) {
+      render.renderUI();
+      render.renderRibbon();
+    }
+  }
+
   window.openBezierSplitConfirmModal = openBezierSplitConfirmModal;
+  window.openTextRotateSplitConfirmModal = openTextRotateSplitConfirmModal;
+  window.updateSelectedMetricWidth = updateSelectedMetricWidth;
+  window.updateSelectedMetricHeight = updateSelectedMetricHeight;
+  window.updateSelectedMetricAngle = updateSelectedMetricAngle;
+  window.transformSelected = transformSelected;
+  window.alignSelected = alignSelected;
+  window.groupSelected = groupSelected;
+  window.ungroupSelected = ungroupSelected;
   window.bringToFront = bringToFront;
   window.bringForward = bringForward;
   window.sendBackward = sendBackward;

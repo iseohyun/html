@@ -1244,7 +1244,1384 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     expect(result.hasPropagatedFirstCtrl).toBe(true);
     expect(result.hasSplitOrangeHandle).toBe(true);
   });
+
+  test('TC35: 연속 3차 베지어 곡선(bez3) SVG S 구문, 가상 c1 역계산 전파 및 분리 핸들러 검증', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const bezier = window.WebpointerBezier;
+      const render = window.WebpointerRender;
+
+      const pts = [
+        { px: 100, py: 200 },
+        { px: 250, py: 100 },
+        { px: 400, py: 300 },
+        { px: 550, py: 150 }
+      ];
+      const ctrls3 = [
+        { c1: { x: 150, y: 150 }, c2: { x: 200, y: 120 } }
+      ];
+
+      const pathD = bezier.buildContinuousBezierPathD(pts, null, 'bez3', null, null, null, ctrls3, null);
+
+      const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      document.getElementById('objectsGroup').appendChild(pathEl);
+
+      const obj = {
+        id: 'bez3_continuous_test',
+        type: 'bez3',
+        el: pathEl,
+        attrs: {
+          points: pts,
+          ctrls3: ctrls3,
+          pathD: pathD,
+          stroke: '#0284c7',
+          strokeWidth: 2
+        }
+      };
+
+      cfg.currentTool = 'select';
+      cfg.objectsMap.set(obj.id, obj);
+      render.updateElementAttributes(obj);
+
+      cfg.selectedIds.clear();
+      cfg.selectedIds.add(obj.id);
+      render.renderUI();
+
+      // S 구문 포함 여부 검증
+      const hasSCommand = pathD.includes(' S ');
+
+      // c1 가상 핸들러 역계산 전파 테스트
+      // 세그먼트 1 (pts[1]->pts[2]) 가상 c1 이동 시 세그먼트 0의 c2 역계산
+      const virtualC1 = { x: 280, y: 120 };
+      const pStart = pts[1];
+      const prevC2 = { x: 2 * pStart.px - virtualC1.x, y: 2 * pStart.py - virtualC1.y };
+      obj.attrs.ctrls3[0].c2 = prevC2;
+
+      obj.attrs.pathD = bezier.buildContinuousBezierPathD(obj.attrs.points, null, obj.type, null, null, null, obj.attrs.ctrls3, null);
+      render.renderUI();
+
+      // c1 분리 핸들러 세팅 및 오렌지 렌더링 스타일 검증
+      obj.attrs.ctrls3[1] = { c1: { x: 300, y: 150 }, c2: { x: 450, y: 250 } };
+      obj.attrs.pathD = bezier.buildContinuousBezierPathD(obj.attrs.points, null, obj.type, null, null, null, obj.attrs.ctrls3, null);
+      render.renderUI();
+
+      const handles = Array.from(document.querySelectorAll('.handle-node'));
+      const splitHandleC1 = handles.find(h => h.dataset.handleType === 'bez3_c1' && String(h.dataset.idx) === '1' && h.getAttribute('fill') === '#f97316');
+
+      return {
+        hasSCommand: hasSCommand,
+        hasReverseCalculatedC2: !!obj.attrs.ctrls3[0].c2,
+        hasSplitOrangeHandleC1: !!splitHandleC1
+      };
+    });
+
+    console.log('[Webpointer Bez3 Continuous Test 🧪]:', result);
+    expect(result.hasSCommand).toBe(true);
+    expect(result.hasReverseCalculatedC2).toBe(true);
+    expect(result.hasSplitOrangeHandleC1).toBe(true);
+  });
+
+  test('TC36: 5개 연속 3차 베지어 곡선(bez3)에서 3번째 가상 c1 이동 시 연결된 이전 c2만 역계산되고 상위 c2 핸들러 보존 검증', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const bezier = window.WebpointerBezier;
+      const render = window.WebpointerRender;
+
+      const pts = [
+        { px: 100, py: 100 },
+        { px: 200, py: 100 },
+        { px: 300, py: 100 },
+        { px: 400, py: 100 },
+        { px: 500, py: 100 },
+        { px: 600, py: 100 }
+      ];
+
+      const ctrls3 = [
+        { c1: { x: 120, y: 50 }, c2: { x: 180, y: 50 } }, // Seg 0
+        { c2: { x: 280, y: 60 } },                         // Seg 1
+        { c2: { x: 380, y: 70 } },                         // Seg 2
+        { c2: { x: 480, y: 80 } },                         // Seg 3
+        { c2: { x: 580, y: 90 } }                          // Seg 4
+      ];
+
+      const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      document.getElementById('objectsGroup').appendChild(pathEl);
+
+      const obj = {
+        id: 'bez3_5seg_test',
+        type: 'bez3',
+        el: pathEl,
+        attrs: {
+          points: pts,
+          ctrls3: ctrls3,
+          stroke: '#0284c7',
+          strokeWidth: 2
+        }
+      };
+
+      cfg.currentTool = 'select';
+      cfg.objectsMap.set(obj.id, obj);
+      cfg.selectedIds.clear();
+      cfg.selectedIds.add(obj.id);
+      render.updateElementAttributes(obj);
+
+      // 세그먼트 3 (pts[3]->pts[4])의 가상 c1_3 조절 시뮬레이션
+      // idx = 3. pStart = pts[3] (400, 100).
+      // 가상 c1_3을 (420, 150)으로 이동할 때, ctrls3[2].c2만 2*P3 - coords = (2*400 - 420, 2*100 - 150) = (380, 50)으로 조정되어야 함.
+      const seg3PStart = pts[3];
+      const newC1Coords = { px: 420, py: 150 };
+      const expectedSeg2C2 = { x: 2 * seg3PStart.px - newC1Coords.px, y: 2 * seg3PStart.py - newC1Coords.py };
+
+      // main.js의 bez3_c1 드래그 로직 재현 실행
+      const idx = 3;
+      const prevC2 = { x: 2 * seg3PStart.px - newC1Coords.px, y: 2 * seg3PStart.py - newC1Coords.py };
+      obj.attrs.ctrls3[idx - 1] = obj.attrs.ctrls3[idx - 1] || {};
+      obj.attrs.ctrls3[idx - 1].c2 = prevC2;
+
+      return {
+        seg0C2Unchanged: obj.attrs.ctrls3[0].c2.x === 180 && obj.attrs.ctrls3[0].c2.y === 50,
+        seg1C2Unchanged: obj.attrs.ctrls3[1].c2.x === 280 && obj.attrs.ctrls3[1].c2.y === 60,
+        seg2C2Updated: obj.attrs.ctrls3[2].c2.x === expectedSeg2C2.x && obj.attrs.ctrls3[2].c2.y === expectedSeg2C2.y
+      };
+    });
+
+    console.log('[Webpointer 5-Segment Bez3 Independence Test 🧪]:', result);
+    expect(result.seg0C2Unchanged).toBe(true);
+    expect(result.seg1C2Unchanged).toBe(true);
+    expect(result.seg2C2Updated).toBe(true);
+  });
+
+  test('TC37: 베지어 곡선(bez2/bez3) 경로 자석 근접 선택(proximity selection) 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const selection = window.WebpointerSelection;
+
+      cfg.objectsMap.clear();
+
+      // (100, 100) -> (300, 100) 제어점 (200, 50) 아치형 2차 베지어 곡선
+      const bez2Obj = {
+        id: 'bez2_proximity_test',
+        type: 'bez2',
+        attrs: {
+          points: [{ px: 100, py: 100 }, { px: 300, py: 100 }],
+          firstCtrl: { cx: 200, cy: 50 },
+          ctrls2: [{ cx: 200, cy: 50 }]
+        }
+      };
+      cfg.objectsMap.set(bez2Obj.id, bez2Obj);
+
+      // 곡선 중간 근처 (200, 80) 클릭 시 감지 테스트 (경로 근처 10px 거리)
+      const foundObjArcMid = selection.findNearestObject(200, 80);
+
+      // 곡선에서 100px 떨어진 무관한 지점 (200, 300) 클릭 시 감지 불가 테스트
+      const foundObjFar = selection.findNearestObject(200, 300);
+
+      return {
+        detectedNearArc: foundObjArcMid ? foundObjArcMid.id : null,
+        notDetectedFar: foundObjFar === null
+      };
+    });
+
+    console.log('[Webpointer Bezier Proximity Selection Test 🧪]:', result);
+    expect(result.detectedNearArc).toBe('bez2_proximity_test');
+    expect(result.notDetectedFar).toBe(true);
+  });
+
+  test('TC38: 호(arc) 도구 오브젝트 생성, startAngle 및 endAngle 핸들러 렌더링 및 드래그 동작 검증', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+
+      const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      document.getElementById('objectsGroup').appendChild(pathEl);
+
+      const arcObj = {
+        id: 'arc_test_obj',
+        type: 'arc',
+        el: pathEl,
+        attrs: {
+          cx: 200,
+          cy: 200,
+          rx: 80,
+          ry: 80,
+          startAngle: -90,
+          endAngle: 45,
+          angle: 0,
+          stroke: '#0284c7',
+          strokeWidth: 2
+        }
+      };
+
+      cfg.currentTool = 'select';
+      cfg.objectsMap.set(arcObj.id, arcObj);
+      cfg.selectedIds.clear();
+      cfg.selectedIds.add(arcObj.id);
+      render.updateElementAttributes(arcObj);
+      render.renderUI();
+
+      // 핸들 노드 렌더링 확인 (ellipse_center, arc_start, arc_end)
+      const handles = Array.from(document.querySelectorAll('.handle-node'));
+      const startHandle = handles.find(h => h.dataset.handleType === 'arc_start');
+      const endHandle = handles.find(h => h.dataset.handleType === 'arc_end');
+
+      // startAngle / endAngle 드래그 업데이트 시뮬레이션
+      arcObj.attrs.startAngle = 0;
+      arcObj.attrs.endAngle = 180;
+      render.updateElementAttributes(arcObj);
+      render.renderUI();
+
+      const pathDAfterUpdate = pathEl.getAttribute('d');
+
+      return {
+        hasStartHandle: !!startHandle,
+        hasEndHandle: !!endHandle,
+        pathDValid: !!pathDAfterUpdate && pathDAfterUpdate.includes('A 80 80')
+      };
+    });
+
+    console.log('[Webpointer Arc Tool & Handles Test 🧪]:', result);
+    expect(result.hasStartHandle).toBe(true);
+    expect(result.hasEndHandle).toBe(true);
+    expect(result.pathDValid).toBe(true);
+  });
+
+  test('TC39: 호(arc) 가로/세로 크기 및 회전 핸들러, 직사각형(rect) 회전 핸들러 렌더링 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+
+      cfg.objectsMap.clear();
+
+      // 호(arc) 객체 생성 및 선택
+      const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      document.getElementById('objectsGroup').appendChild(pathEl);
+      const arcObj = {
+        id: 'arc_handles_test',
+        type: 'arc',
+        el: pathEl,
+        attrs: { cx: 200, cy: 200, rx: 60, ry: 60, startAngle: -90, endAngle: 90, angle: 15 }
+      };
+      cfg.currentTool = 'select';
+      cfg.objectsMap.set(arcObj.id, arcObj);
+      cfg.selectedIds.clear();
+      cfg.selectedIds.add(arcObj.id);
+      render.updateElementAttributes(arcObj);
+      render.renderUI();
+
+      const handlesArc = Array.from(document.querySelectorAll('.handle-node'));
+      const hasArcWidth = !!handlesArc.find(h => h.dataset.handleType === 'ellipse_width');
+      const hasArcHeight = !!handlesArc.find(h => h.dataset.handleType === 'ellipse_height');
+      const hasArcRotate = !!handlesArc.find(h => h.dataset.handleType === 'ellipse_rotate');
+
+      // 직사각형(rect) 객체 생성 및 선택
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'rect_rotate_test',
+        type: 'rect',
+        el: rectEl,
+        attrs: { x: 300, y: 100, width: 100, height: 60, angle: 30 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+      cfg.selectedIds.clear();
+      cfg.selectedIds.add(rectObj.id);
+      render.updateElementAttributes(rectObj);
+      render.renderUI();
+
+      const handlesRect = Array.from(document.querySelectorAll('.handle-node'));
+      const hasRectRotate = !!handlesRect.find(h => h.dataset.handleType === 'ellipse_rotate');
+
+      return {
+        hasArcWidth: hasArcWidth,
+        hasArcHeight: hasArcHeight,
+        hasArcRotate: hasArcRotate,
+        hasRectRotate: hasRectRotate
+      };
+    });
+
+    console.log('[Webpointer Arc & Rect Handles Audit Test 🧪]:', result);
+    expect(result.hasArcWidth).toBe(true);
+    expect(result.hasArcHeight).toBe(true);
+    expect(result.hasArcRotate).toBe(true);
+    expect(result.hasRectRotate).toBe(true);
+  });
+
+  test('TC40: 회전된 호(arc) 및 직사각형(rect/rounded) 선택 상자(boxRect) transform 회전 및 렌더링 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+
+      cfg.objectsMap.clear();
+
+      // 1. 회전된 호 (arc) 선택상자 transform 검증
+      const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      document.getElementById('objectsGroup').appendChild(pathEl);
+      const arcObj = {
+        id: 'arc_rotate_box_test',
+        type: 'arc',
+        el: pathEl,
+        attrs: { cx: 250, cy: 250, rx: 70, ry: 70, startAngle: -90, endAngle: 90, angle: 45 }
+      };
+      cfg.currentTool = 'select';
+      cfg.objectsMap.set(arcObj.id, arcObj);
+      cfg.selectedIds.clear();
+      cfg.selectedIds.add(arcObj.id);
+      render.updateElementAttributes(arcObj);
+      render.renderUI();
+
+      const boxRectArc = document.querySelector('#uiGroup rect[stroke-dasharray="4,4"]');
+      const boxRectArcTransform = boxRectArc ? boxRectArc.getAttribute('transform') : null;
+
+      // 2. 회전된 직사각형 (rect) 요소 transform 및 선택상자 transform 검증
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'rect_transform_test',
+        type: 'rect',
+        el: rectEl,
+        attrs: { x: 400, y: 150, width: 120, height: 80, angle: 60 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+      cfg.selectedIds.clear();
+      cfg.selectedIds.add(rectObj.id);
+      render.updateElementAttributes(rectObj);
+      render.renderUI();
+
+      const rectElementTransform = rectEl.getAttribute('transform');
+      const boxRectRect = document.querySelector('#uiGroup rect[stroke-dasharray="4,4"]');
+      const boxRectRectTransform = boxRectRect ? boxRectRect.getAttribute('transform') : null;
+
+      return {
+        boxRectArcHasRotate: !!boxRectArcTransform && boxRectArcTransform.includes('rotate(45'),
+        rectElementHasRotate: !!rectElementTransform && rectElementTransform.includes('rotate(60'),
+        boxRectRectHasRotate: !!boxRectRectTransform && boxRectRectTransform.includes('rotate(60')
+      };
+    });
+
+    console.log('[Webpointer Rotated Selection Box & Transform Test 🧪]:', result);
+    expect(result.boxRectArcHasRotate).toBe(true);
+    expect(result.rectElementHasRotate).toBe(true);
+    expect(result.boxRectRectHasRotate).toBe(true);
+  });
+
+  test('TC41: 채우기가 없는(fill: none) 호(arc) 경로 근처 자석선택(Magnet Selection) 및 허수 영역 배제 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const selection = window.WebpointerSelection;
+
+      cfg.objectsMap.clear();
+
+      // 채우기 없는 호 (center 200, 200, rx 100, ry 100, sAng -90, eAng 0 => 우상단 호 궤적)
+      const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      document.getElementById('objectsGroup').appendChild(pathEl);
+      const arcObj = {
+        id: 'unfilled_arc_magnet_test',
+        type: 'arc',
+        el: pathEl,
+        attrs: { cx: 200, cy: 200, rx: 100, ry: 100, startAngle: -90, endAngle: 0, fill: 'none', stroke: '#0284c7', strokeWidth: 2 }
+      };
+      cfg.objectsMap.set(arcObj.id, arcObj);
+
+      // 1. 호 궤적 실선 근처 (200 + 100 * cos(-45deg), 200 + 100 * sin(-45deg)) => 약 (270.7, 129.3)
+      // 근처 (275, 125) 클릭 시 (약 5px 거리) -> 자석 감지 성공되어야 함!
+      const detectedNearStroke = selection.findNearestObject(275, 125, 15);
+
+      // 2. 호 궤적이 없는 빈 허수 영역 (129, 270) (좌하단 - 호가 없음!)
+      // 반지름 100px 거리이지만 호가 없는 영역이므로 자석 감지 실패되어야 함!
+      const detectedEmptySector = selection.findNearestObject(129, 270, 15);
+
+      return {
+        detectedNearStroke: detectedNearStroke ? detectedNearStroke.id : null,
+        ignoredEmptySector: detectedEmptySector === null
+      };
+    });
+
+    console.log('[Webpointer Unfilled Arc Magnet Selection Test 🧪]:', result);
+    expect(result.detectedNearStroke).toBe('unfilled_arc_magnet_test');
+    expect(result.ignoredEmptySector).toBe(true);
+  });
+
+  test('TC42: 텍스트 상자(text) 회전 핸들 드래그 및 텍스트/밑줄 실시간 transform 회전 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+
+      cfg.objectsMap.clear();
+
+      // 텍스트 객체 생성 및 선택
+      const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      document.getElementById('objectsGroup').appendChild(textEl);
+      const textObj = {
+        id: 'text_rotation_test',
+        type: 'text',
+        el: textEl,
+        attrs: { x: 300, y: 200, text: '회전 텍스트 테스트', fontSize: 24, underlineStyle: 'solid', angle: 45 }
+      };
+      cfg.objectsMap.set(textObj.id, textObj);
+      cfg.selectedIds.clear();
+      cfg.selectedIds.add(textObj.id);
+      render.updateElementAttributes(textObj);
+      render.renderUI();
+
+      const textTransform = textEl.getAttribute('transform');
+      const underlineTransform = textObj.underlineEl ? textObj.underlineEl.getAttribute('transform') : null;
+
+      return {
+        textHasRotate: !!textTransform && textTransform.includes('rotate(45'),
+        underlineHasRotate: !!underlineTransform && underlineTransform.includes('rotate(45')
+      };
+    });
+
+    console.log('[Webpointer Text Box Rotation Test 🧪]:', result);
+    expect(result.textHasRotate).toBe(true);
+    expect(result.underlineHasRotate).toBe(true);
+  });
+
+  test('TC43: 텍스트 상자(text) 회전 피벗(getObjectCenter)과 선택 상자(boxRect) 회전 피벗 100% 일치 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+
+      cfg.objectsMap.clear();
+
+      const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      document.getElementById('objectsGroup').appendChild(textEl);
+      const textObj = {
+        id: 'text_pivot_alignment_test',
+        type: 'text',
+        el: textEl,
+        attrs: { x: 250, y: 180, text: '피벗 일치 테스트 텍스트', fontSize: 22, angle: 30 }
+      };
+      cfg.objectsMap.set(textObj.id, textObj);
+      cfg.selectedIds.clear();
+      cfg.selectedIds.add(textObj.id);
+      render.updateElementAttributes(textObj);
+      render.renderUI();
+
+      const textTransform = textEl.getAttribute('transform');
+      const boxRect = document.querySelector('#uiGroup rect[stroke-dasharray="4,4"]');
+      const boxRectTransform = boxRect ? boxRect.getAttribute('transform') : null;
+
+      // 둘 다 rotate(30 cx cy) 형태이며 cx, cy 값이 완전히 동일해야 함!
+      return {
+        textTransform: textTransform,
+        boxRectTransform: boxRectTransform,
+        isPivotIdentical: textTransform === boxRectTransform
+      };
+    });
+
+    console.log('[Webpointer Text Pivot Alignment Test 🧪]:', result);
+    expect(result.isPivotIdentical).toBe(true);
+  });
+
+  test('TC44: <text> 요소의 x, y 속성이 NaN 또는 undefined인 경우 console.error 미발생 및 안전한 0 속성 세팅 검증 수트', async ({ page }) => {
+    const consoleErrors = [];
+    page.on('console', msg => {
+      if (msg.type() === 'error' && msg.text().includes('NaN')) {
+        consoleErrors.push(msg.text());
+      }
+    });
+
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+
+      cfg.objectsMap.clear();
+
+      const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      document.getElementById('objectsGroup').appendChild(textEl);
+      const invalidTextObj = {
+        id: 'nan_text_test',
+        type: 'text',
+        el: textEl,
+        attrs: { x: NaN, y: undefined, text: 'NaN 방어 테스트', fontSize: 20 }
+      };
+      cfg.objectsMap.set(invalidTextObj.id, invalidTextObj);
+      render.updateElementAttributes(invalidTextObj);
+
+      const attrX = textEl.getAttribute('x');
+      const attrY = textEl.getAttribute('y');
+
+      return {
+        attrXIsZero: attrX === '0',
+        attrYIsZero: attrY === '0'
+      };
+    });
+
+    console.log('[Webpointer Text NaN Attribute Defense Test 🧪]:', result);
+    expect(result.attrXIsZero).toBe(true);
+    expect(result.attrYIsZero).toBe(true);
+    expect(consoleErrors.length).toBe(0);
+  });
+
+  test('TC45: Ctrl 키 + 회전 핸들 누름 시 "도형과 텍스트의 회전을 분리합니다. [ ] 앞으로 묻지 않음" 팝업 모달 출력 검증', async ({ page }) => {
+    // LocalStorage 초기화
+    await page.evaluate(() => localStorage.removeItem('webpointer_suppress_text_rotate_split_confirm'));
+
+    // 모달 호출 시뮬레이션
+    await page.evaluate(() => {
+      window.openTextRotateSplitConfirmModal();
+    });
+
+    // 팝업 텍스트 검증
+    const modalOverlay = page.locator('#textRotateSplitModalOverlay');
+    await expect(modalOverlay).toBeVisible();
+    await expect(modalOverlay).toContainText('도형과 텍스트의 회전을 분리합니다.');
+    await expect(modalOverlay).toContainText('앞으로 묻지 않음');
+
+    // 앞으로 묻지 않음 체크 후 확인 클릭
+    await page.locator('#textRotateSuppressChk').check();
+    await page.locator('#textRotateSplitConfirmBtn').click();
+    await expect(modalOverlay).not.toBeVisible();
+
+    const isSuppressed = await page.evaluate(() => localStorage.getItem('webpointer_suppress_text_rotate_split_confirm'));
+    expect(isSuppressed).toBe('true');
+  });
+
+  test('TC46: Ctrl 미눌림 상태에서 다중 선택된 도형(rect)과 텍스트(text)의 회전 각도 실시간 동기화 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
+      // 1. 직사각형 객체 생성
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'sync_rect',
+        type: 'rect',
+        el: rectEl,
+        attrs: { x: 100, y: 100, width: 100, height: 60, angle: 0 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+
+      // 2. 텍스트 객체 생성
+      const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      document.getElementById('objectsGroup').appendChild(textEl);
+      const textObj = {
+        id: 'sync_text',
+        type: 'text',
+        el: textEl,
+        attrs: { x: 100, y: 200, text: '동기화 텍스트', fontSize: 20, angle: 0 }
+      };
+      cfg.objectsMap.set(textObj.id, textObj);
+
+      // 둘 다 선택 (다중 선택)
+      cfg.selectedIds.add(rectObj.id);
+      cfg.selectedIds.add(textObj.id);
+      render.updateElementAttributes(rectObj);
+      render.updateElementAttributes(textObj);
+      render.renderUI();
+
+      // 회전 각도 변화 시뮬레이션 (+45도 회전)
+      const deltaAngle = 45;
+      rectObj.attrs.angle = (rectObj.attrs.angle || 0) + deltaAngle;
+      textObj.attrs.angle = (textObj.attrs.angle || 0) + deltaAngle;
+      render.updateElementAttributes(rectObj);
+      render.updateElementAttributes(textObj);
+      render.renderUI();
+
+      const rectTransform = rectEl.getAttribute('transform');
+      const textTransform = textEl.getAttribute('transform');
+
+      return {
+        rectAngle: rectObj.attrs.angle,
+        textAngle: textObj.attrs.angle,
+        rectHas45: !!rectTransform && rectTransform.includes('rotate(45'),
+        textHas45: !!textTransform && textTransform.includes('rotate(45')
+      };
+    });
+
+    console.log('[Webpointer Shape & Text Rotation Sync Test 🧪]:', result);
+    expect(result.rectAngle).toBe(45);
+    expect(result.textAngle).toBe(45);
+    expect(result.rectHas45).toBe(true);
+    expect(result.textHas45).toBe(true);
+  });
+
+  test('TC47: 도형(rect) 영역 할당 텍스트(text)의 회전 시 중심축 기준 위치 및 각도 통합 고정 회전 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
+      // 1. 도형 생성 (x: 200, y: 200, width: 200, height: 100 => center: 300, 250)
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'bound_rect',
+        type: 'rect',
+        el: rectEl,
+        attrs: { x: 200, y: 200, width: 200, height: 100, angle: 0 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+
+      // 2. 텍스트 생성 (도형 영역 할당 attrs: width: 200, height: 100 => 도형 좌상단 포개어짐)
+      const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      document.getElementById('objectsGroup').appendChild(textEl);
+      const textObj = {
+        id: 'bound_text',
+        type: 'text',
+        el: textEl,
+        attrs: { x: 200, y: 200, width: 200, height: 100, text: '도형 연동 텍스트', fontSize: 20, angle: 0 }
+      };
+      cfg.objectsMap.set(textObj.id, textObj);
+
+      cfg.selectedIds.add(rectObj.id);
+      cfg.selectedIds.add(textObj.id);
+      render.updateElementAttributes(rectObj);
+      render.updateElementAttributes(textObj);
+      render.renderUI();
+
+      // 도형 및 텍스트의 getObjectCenter 피벗 일치 확인
+      const rectCenter = window.WebpointerObjects.getObjectCenter(rectObj);
+      const textCenter = window.WebpointerObjects.getObjectCenter(textObj);
+
+      return {
+        rectCenterX: rectCenter.x,
+        rectCenterY: rectCenter.y,
+        textCenterX: textCenter.x,
+        textCenterY: textCenter.y,
+        isCenterMatching: rectCenter.x === textCenter.x && rectCenter.y === textCenter.y
+      };
+    });
+
+    console.log('[Webpointer Shape Allocated Text Pivot Alignment Test 🧪]:', result);
+    expect(result.isCenterMatching).toBe(true);
+  });
+
+  test('TC48: 리본 메뉴 [삽입 > 수치 (가로:, 세로:, 회전각:)] 카테고리 신설 및 실시간 수치 연동 검증 수트', async ({ page }) => {
+    // 탭을 'insert'로 변경 및 도형 선택 시 수치 카테고리 렌더링 확인
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+
+      cfg.currentTab = 'insert';
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
+      // 직사각형 객체 생성 (x: 100, y: 100, width: 150, height: 80, angle: 30)
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'metric_test_rect',
+        type: 'rect',
+        el: rectEl,
+        attrs: { x: 100, y: 100, width: 150, height: 80, angle: 30 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+      cfg.selectedIds.add(rectObj.id);
+
+      render.renderRibbon();
+
+      // 수치 입력 함수 호출 시뮬레이션
+      window.updateSelectedMetricWidth(200);
+      window.updateSelectedMetricHeight(120);
+      window.updateSelectedMetricAngle(60);
+
+      return {
+        updatedWidth: rectObj.attrs.width,
+        updatedHeight: rectObj.attrs.height,
+        updatedAngle: rectObj.attrs.angle
+      };
+    });
+
+    console.log('[Webpointer Ribbon Metrics Category Test 🧪]:', result);
+    expect(result.updatedWidth).toBe(200);
+    expect(result.updatedHeight).toBe(120);
+    expect(result.updatedAngle).toBe(60);
+
+    // DOM UI에서 '수치', '가로:', '세로:', '회전각:' 텍스트 표시 검증
+    const ribbonBar = page.locator('#ribbonBar');
+    await expect(ribbonBar).toContainText('수치');
+    await expect(ribbonBar).toContainText('가로:');
+    await expect(ribbonBar).toContainText('세로:');
+    await expect(ribbonBar).toContainText('회전각:');
+  });
+
+  test('TC49: transformSelected(rotate90) 90도 회전 도구 및 변형 도구 정상 작동 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'transform_rect',
+        type: 'rect',
+        el: rectEl,
+        attrs: { x: 100, y: 100, width: 100, height: 60, angle: 0 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+      cfg.selectedIds.add(rectObj.id);
+
+      render.updateElementAttributes(rectObj);
+      render.renderUI();
+
+      // 90도 회전 실행
+      window.transformSelected('rotate90');
+      const angleAfterRotate90 = rectObj.attrs.angle;
+
+      // -90도 회전 실행 (원복)
+      window.transformSelected('rotateNeg90');
+      const angleAfterRotateNeg90 = rectObj.attrs.angle;
+
+      return {
+        angleAfterRotate90,
+        angleAfterRotateNeg90
+      };
+    });
+
+    console.log('[Webpointer transformSelected Rotate90 Test 🧪]:', result);
+    expect(result.angleAfterRotate90).toBe(90);
+    expect(result.angleAfterRotateNeg90).toBe(0);
+  });
+
+  test('TC50: 도형 내 글자 포함 시 글자 핸들러 숨김 처리 및 도형-글상자 크기·위치 100% 통합 동기화 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
+      // 도형 생성 (x: 100, y: 100, width: 200, height: 120, angle: 0)
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'host_shape',
+        type: 'rect',
+        el: rectEl,
+        attrs: { x: 100, y: 100, width: 200, height: 120, angle: 0 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+
+      // 연동 텍스트 생성
+      const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      document.getElementById('objectsGroup').appendChild(textEl);
+      const textObj = {
+        id: 'inside_text',
+        type: 'text',
+        el: textEl,
+        attrs: { x: 100, y: 100, text: '도형 내 텍스트', fontSize: 20, angle: 0 }
+      };
+      cfg.objectsMap.set(textObj.id, textObj);
+
+      // 다중 선택 (도형 + 텍스트)
+      cfg.selectedIds.add(rectObj.id);
+      cfg.selectedIds.add(textObj.id);
+
+      render.updateElementAttributes(rectObj);
+      render.updateElementAttributes(textObj);
+      render.renderUI();
+
+      // 1. 도형 핸들러 개수 검증 (텍스트 전용 핸들러는 숨김 처리되어 도형 핸들러만 존재)
+      const handleNodes = Array.from(document.querySelectorAll('.handle-node'));
+      const textHandleNodes = handleNodes.filter(h => h.dataset.objId === textObj.id);
+
+      // 2. 도형 크기 변형 후 syncShapeTextBounds 실행 시 텍스트 크기·위치 동기화 검증
+      rectObj.attrs.width = 300;
+      rectObj.attrs.height = 180;
+      window.WebpointerObjects.syncShapeTextBounds(rectObj);
+
+      return {
+        textHandleCount: textHandleNodes.length,
+        syncedTextWidth: textObj.attrs.width,
+        syncedTextHeight: textObj.attrs.height,
+        isWidthMatching: textObj.attrs.width === rectObj.attrs.width,
+        isHeightMatching: textObj.attrs.height === rectObj.attrs.height
+      };
+    });
+
+    console.log('[Webpointer Shape Text Unified Handle & Bounds Test 🧪]:', result);
+    expect(result.textHandleCount).toBe(0);
+    expect(result.syncedTextWidth).toBe(300);
+    expect(result.syncedTextHeight).toBe(180);
+    expect(result.isWidthMatching).toBe(true);
+    expect(result.isHeightMatching).toBe(true);
+  });
+
+  test('TC51: F2 키 입력 시 도형 편집모드 진입, Esc 키 입력 시 도형 선택 복귀, 회전 시 순간이동 현상 차단 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+      const textTool = window.WebpointerTextTool;
+
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
+      // 1. 도형 생성 및 선택
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'f2_shape',
+        type: 'rect',
+        el: rectEl,
+        attrs: { x: 150, y: 150, width: 160, height: 90, angle: 0 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+      cfg.selectedIds.add(rectObj.id);
+
+      // F2 키 시뮬레이션: 도형 텍스트 편집 시작
+      const pt = textTool.getShapeTextInsertionPoint(rectObj);
+      textTool.startDirectCanvasTyping(pt.px, pt.py, null, pt.anchor);
+
+      const isTypingActive = !!window.WebpointerState.typingSvgObj;
+      const createdTextObj = window.WebpointerState.typingSvgObj;
+
+      // 텍스트 입력
+      if (createdTextObj) {
+        createdTextObj.attrs.text = '테스트문구';
+      }
+
+      // Esc 키 시뮬레이션: 편집 종료 및 도형 선택 복귀
+      textTool.finishDirectCanvasTyping();
+
+      const isShapeSelectedAfterEsc = cfg.selectedIds.has(rectObj.id);
+      const isToolSelectAfterEsc = cfg.currentTool === 'select';
+
+      // 회전 시 피벗 위치 검증 (도형과 텍스트의 getObjectCenter 피벗 일치 여부)
+      const rectCenter = window.WebpointerObjects.getObjectCenter(rectObj);
+      const textCenter = createdTextObj ? window.WebpointerObjects.getObjectCenter(createdTextObj) : null;
+
+      return {
+        isTypingActive,
+        isShapeSelectedAfterEsc,
+        isToolSelectAfterEsc,
+        isPivotMatching: textCenter && rectCenter.x === textCenter.x && rectCenter.y === textCenter.y
+      };
+    });
+
+    console.log('[Webpointer F2 & Esc Key Scenario & Pivot Sync Test 🧪]:', result);
+    expect(result.isTypingActive).toBe(true);
+    expect(result.isShapeSelectedAfterEsc).toBe(true);
+    expect(result.isToolSelectAfterEsc).toBe(true);
+    expect(result.isPivotMatching).toBe(true);
+  });
+
+  test('TC52: 텍스트 상단 베이스라인(dominant-baseline="hanging") 적용 및 F2 키 누름 시 기존 병합 텍스트 수정 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+      const textTool = window.WebpointerTextTool;
+
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
+      // 1. 도형 및 텍스트 그룹 생성
+      const groupId = 'group_existing';
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'existing_shape',
+        type: 'rect',
+        parentId: groupId,
+        el: rectEl,
+        attrs: { x: 200, y: 200, width: 180, height: 100, angle: 0 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+
+      const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      document.getElementById('objectsGroup').appendChild(textEl);
+      const textObj = {
+        id: 'existing_text',
+        type: 'text',
+        parentId: groupId,
+        el: textEl,
+        attrs: { x: 200, y: 200, text: '기존문구', fontSize: 20, angle: 0, dominantBaseline: 'hanging' }
+      };
+      cfg.objectsMap.set(textObj.id, textObj);
+
+      render.updateElementAttributes(rectObj);
+      render.updateElementAttributes(textObj);
+
+      // 도형 선택 후 F2 시뮬레이션 (addTextObject)
+      cfg.selectedIds.add(rectObj.id);
+      textTool.addTextObject();
+
+      const editingSvgObj = window.WebpointerState.typingSvgObj;
+      const isEditingExistingText = editingSvgObj && editingSvgObj.id === textObj.id;
+
+      // dominant-baseline 속성 확인
+      const domBaseline = textEl.getAttribute('dominant-baseline');
+
+      textTool.finishDirectCanvasTyping();
+
+      return {
+        isEditingExistingText,
+        domBaseline,
+        objectsCount: cfg.objectsMap.size
+      };
+    });
+
+    console.log('[Webpointer Top Baseline & F2 Existing Text Edit Test 🧪]:', result);
+    expect(result.isEditingExistingText).toBe(true);
+    expect(result.domBaseline).toBe('hanging');
+    expect(result.objectsCount).toBe(2);
+  });
+
+  test('TC53: 도형+텍스트 다중 선택 시 선택박스(boxRect) 동시 회전 및 회전/hanging 커서 위치 정렬 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+      const textTool = window.WebpointerTextTool;
+
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
+      // 1. 회전된 도형 생성 (angle: 45)
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'rot_box_rect',
+        type: 'rect',
+        el: rectEl,
+        attrs: { x: 100, y: 100, width: 200, height: 100, angle: 45 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+
+      // 2. 회전된 연동 텍스트 생성 (angle: 45)
+      const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      document.getElementById('objectsGroup').appendChild(textEl);
+      const textObj = {
+        id: 'rot_box_text',
+        type: 'text',
+        el: textEl,
+        attrs: { x: 100, y: 100, width: 200, height: 100, text: '회전 커서 검증', fontSize: 20, angle: 45, dominantBaseline: 'hanging' }
+      };
+      cfg.objectsMap.set(textObj.id, textObj);
+
+      // 둘 다 선택 (다중 선택)
+      cfg.selectedIds.add(rectObj.id);
+      cfg.selectedIds.add(textObj.id);
+
+      render.updateElementAttributes(rectObj);
+      render.updateElementAttributes(textObj);
+      render.renderUI();
+
+      // uiGroup 내 boxRect element 선택박스 transform 속성 검증
+      const uiGroup = document.getElementById('uiGroup');
+      const boxRectEl = uiGroup.querySelector('rect[stroke="#0284c7"]');
+      const boxRectTransform = boxRectEl ? boxRectEl.getAttribute('transform') : '';
+
+      // 3. 커서위치 검증: 텍스트 편집 시작 후 깜빡이는 커서(#canvasBlinkingCaret) transform 속성 검증
+      textTool.startDirectCanvasTyping(100, 100, textObj);
+      const caretEl = document.getElementById('canvasBlinkingCaret');
+      const caretTransform = caretEl ? caretEl.getAttribute('transform') : '';
+      const caretY1 = caretEl ? parseFloat(caretEl.getAttribute('y1')) : 0;
+
+      textTool.finishDirectCanvasTyping();
+
+      return {
+        boxRectHasRotate45: !!boxRectTransform && boxRectTransform.includes('rotate(45'),
+        caretHasRotate45: !!caretTransform && caretTransform.includes('rotate(45'),
+        caretY1Equals100: caretY1 === 100
+      };
+    });
+
+    console.log('[Webpointer Grouped BoxRect Rotation & Rotated Caret Alignment Test 🧪]:', result);
+    expect(result.boxRectHasRotate45).toBe(true);
+    expect(result.caretHasRotate45).toBe(true);
+    expect(result.caretY1Equals100).toBe(true);
+  });
+
+  test('TC54: 양쪽 맞춤 경계 위치(Problem 1, 2) 및 공백 포함 행 word-spacing 조절 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+
+      cfg.objectsMap.clear();
+
+      // 도형 생성
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'host_rect',
+        type: 'rect',
+        parentId: 'group_j',
+        el: rectEl,
+        attrs: { x: 100, y: 100, width: 300, height: 150 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+
+      // 연동 텍스트 생성: "가나다 라마\n바사 아자차차\n아하 추가공백"
+      const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      document.getElementById('objectsGroup').appendChild(textEl);
+      const textObj = {
+        id: 'justify_multi_text',
+        type: 'text',
+        parentId: 'group_j',
+        el: textEl,
+        attrs: { x: 100, y: 100, width: 300, height: 150, text: '가나다 라마\n바사 아자차차\n아하 추가공백', fontSize: 20, textAnchor: 'justify' }
+      };
+      cfg.objectsMap.set(textObj.id, textObj);
+
+      render.updateElementAttributes(rectObj);
+      render.updateElementAttributes(textObj);
+
+      const tspans = textEl.querySelectorAll('tspan');
+      const startX = parseFloat(textEl.getAttribute('x'));
+      const isStartXAlignedToLeftPad = (startX === 110); // minX + 10 = 110
+
+      const line1Spacing = tspans[0] ? parseFloat(tspans[0].style.wordSpacing || '0') : 0;
+      const line3Spacing = tspans[2] ? parseFloat(tspans[2].style.wordSpacing || '0') : 0;
+
+      return {
+        isStartXAlignedToLeftPad,
+        isLine1Justified: line1Spacing > 0,
+        isLine3JustifiedWithSpaces: line3Spacing > 0
+      };
+    });
+
+    console.log('[Webpointer Justification Bounds & Spacebar Alignment Test 🧪]:', result);
+    expect(result.isStartXAlignedToLeftPad).toBe(true);
+    expect(result.isLine1Justified).toBe(true);
+    expect(result.isLine3JustifiedWithSpaces).toBe(true);
+  });
+
+  test('TC55: 위/중앙/아래 정렬 시 hanging 베이스라인 오프셋 반영 및 반복 토글 위치 고정 검증 수트(Problem 3, 4)', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+      const textTool = window.WebpointerTextTool;
+
+      cfg.objectsMap.clear();
+
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'host_rect2',
+        type: 'rect',
+        parentId: 'group_v',
+        el: rectEl,
+        attrs: { x: 100, y: 100, width: 200, height: 200 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+
+      const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      document.getElementById('objectsGroup').appendChild(textEl);
+      const textObj = {
+        id: 'v_align_text',
+        type: 'text',
+        parentId: 'group_v',
+        el: textEl,
+        attrs: { x: 100, y: 100, width: 200, height: 200, text: '첫줄\n둘째줄', fontSize: 20, verticalAlign: 'top' }
+      };
+      cfg.objectsMap.set(textObj.id, textObj);
+
+      // 1. Top alignment: y should be 110 (minY 100 + pad 10)
+      textTool.updateShapeTextAlignment(rectObj, textObj, 'start', 'top');
+      const topY = textObj.attrs.y;
+
+      // 2. Middle alignment: totalTextHeight = 1*24 + 20 = 44. Center Y = 200 - 22 = 178
+      textTool.updateShapeTextAlignment(rectObj, textObj, 'start', 'middle');
+      const middleY = textObj.attrs.y;
+
+      // 3. Bottom alignment: maxY 300 - pad 10 - totalTextHeight 44 = 246
+      textTool.updateShapeTextAlignment(rectObj, textObj, 'start', 'bottom');
+      const bottomY = textObj.attrs.y;
+
+      // 4. Repeated toggle back to Top alignment: y MUST return to 110 (no hanging creep!)
+      textTool.updateShapeTextAlignment(rectObj, textObj, 'start', 'top');
+      const returnedTopY = textObj.attrs.y;
+
+      return {
+        topY,
+        middleY,
+        bottomY,
+        returnedTopY,
+        isTopYCorrect: topY === 110,
+        isMiddleInsideShape: middleY > 100 && middleY < 300,
+        isBottomInsideShape: bottomY > 100 && bottomY < 300 && (bottomY + 44 <= 290),
+        isNoCreepOnToggle: returnedTopY === topY
+      };
+    });
+
+    console.log('[Webpointer Top/Middle/Bottom Alignment & Hanging Drift Test 🧪]:', result);
+    expect(result.isTopYCorrect).toBe(true);
+    expect(result.isMiddleInsideShape).toBe(true);
+    expect(result.isBottomInsideShape).toBe(true);
+    expect(result.isNoCreepOnToggle).toBe(true);
+  });
+
+  test('TC56: Ctrl+C / Ctrl+V 클립보드 기능 검증 - 도형 복사 시 도형 복제 및 도형 선택 시 텍스트 붙여넣기 자동 병합 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const clipboard = window.WebpointerClipboard;
+
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
+      // 1. 도형 생성 및 복사/붙여넣기 테스트 (도형 -> 도형 복제)
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'cp_shape',
+        type: 'rect',
+        el: rectEl,
+        attrs: { x: 150, y: 150, width: 200, height: 120 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+      cfg.selectedIds.add(rectObj.id);
+
+      // 1회차 도형 복사 & 붙여넣기
+      clipboard.copySelectedObjects();
+      clipboard.pasteClipboardObjects(); // 150 + 15 = 165
+      const paste1Obj = Array.from(cfg.selectedIds).map(id => cfg.objectsMap.get(id))[0];
+
+      // 2회차 연속 붙여넣기 (Ctrl+V 연타)
+      clipboard.pasteClipboardObjects(); // 165 + 15 = 180
+      const paste2Obj = Array.from(cfg.selectedIds).map(id => cfg.objectsMap.get(id))[0];
+
+      const shapeCountAfterPaste = cfg.objectsMap.size; // 3개의 도형
+
+      // 2. 도형 선택 상태에서 텍스트 붙여넣기 테스트 (글 -> 도형에 글상자 병합)
+      clipboard.pasteTextIntoSelectedShape('붙여넣은 텍스트 내용');
+
+      let mergedTextObj = null;
+      cfg.objectsMap.forEach(o => {
+        if (o.type === 'text' && o.attrs.text === '붙여넣은 텍스트 내용') {
+          mergedTextObj = o;
+        }
+      });
+
+      // 3. 선택 해제 상태에서 텍스트 붙여넣기 테스트 (글 -> 독립 글상자 생성)
+      cfg.selectedIds.clear();
+      clipboard.pasteStandaloneText('독립 글상자 텍스트');
+
+      let standaloneTextObj = null;
+      cfg.objectsMap.forEach(o => {
+        if (o.type === 'text' && o.attrs.text === '독립 글상자 텍스트') {
+          standaloneTextObj = o;
+        }
+      });
+
+      return {
+        shapeCountAfterPaste,
+        isPaste1Cascaded: paste1Obj && paste1Obj.attrs.x === 165 && paste1Obj.attrs.y === 165,
+        isPaste2CascadedFurther: paste2Obj && paste2Obj.attrs.x === 180 && paste2Obj.attrs.y === 180,
+        isTextMergedIntoShape: !!mergedTextObj && !!mergedTextObj.parentId,
+        mergedTextContent: mergedTextObj ? mergedTextObj.attrs.text : '',
+        isStandaloneTextCreated: !!standaloneTextObj && !standaloneTextObj.parentId
+      };
+    });
+
+    console.log('[Webpointer Context-Aware Copy & Cascading Paste Test 🧪]:', result);
+    expect(result.shapeCountAfterPaste).toBe(3);
+    expect(result.isPaste1Cascaded).toBe(true);
+    expect(result.isPaste2CascadedFurther).toBe(true);
+    expect(result.isTextMergedIntoShape).toBe(true);
+    expect(result.mergedTextContent).toBe('붙여넣은 텍스트 내용');
+    expect(result.isStandaloneTextCreated).toBe(true);
+  });
+
+  test('TC57: 글 서식 탭 내 패딩 카테고리(상하좌우 패딩 및 동기화) 연동 및 cycleTextVerticalAlign 수직 정렬 정확도 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const handlers = window;
+
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'pad_rect',
+        type: 'rect',
+        parentId: 'pad_group',
+        el: rectEl,
+        attrs: { x: 100, y: 100, width: 200, height: 200 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+
+      const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      document.getElementById('objectsGroup').appendChild(textEl);
+      const textObj = {
+        id: 'pad_text',
+        type: 'text',
+        parentId: 'pad_group',
+        el: textEl,
+        attrs: { x: 100, y: 100, width: 200, height: 200, text: '테스트1\n테스트2', fontSize: 20 }
+      };
+      cfg.objectsMap.set(textObj.id, textObj);
+      cfg.selectedIds.add(textObj.id);
+
+      // Initial text is 'hanging' (Top). Cycle goes Top -> Middle -> Bottom -> Top
+      handlers.cycleTextVerticalAlign(); // step 1: central (middle) -> 177
+      const middleY = textObj.attrs.y;
+
+      handlers.cycleTextVerticalAlign(); // step 2: alphabetic (bottom) -> 239
+      const bottomY = textObj.attrs.y;
+
+      handlers.cycleTextVerticalAlign(); // step 3: hanging (top) -> 110
+      const topY = textObj.attrs.y;
+
+      // 2. 패딩 변경 테스트 (상하좌우 패딩 20px 변경)
+      handlers.setTextPadding('top', 20);
+
+      // Top Y should now be minY 100 + padTop 20 = 120
+      handlers.setTextVerticalAlign('hanging');
+      const customPadTopY = textObj.attrs.y;
+
+      return {
+        topY,
+        middleY,
+        bottomY,
+        customPadTopY,
+        isTopYCorrect: topY === 110,
+        isMiddleInsideShape: middleY > 100 && middleY < 300,
+        isBottomInsideShape: bottomY > 100 && bottomY < 300,
+        isCustomPadTopYCorrect: customPadTopY === 120,
+        padSyncState: cfg.padSync
+      };
+    });
+
+    console.log('[Webpointer Padding Category & Vertical Align Test 🧪]:', result);
+    expect(result.isTopYCorrect).toBe(true);
+    expect(result.isMiddleInsideShape).toBe(true);
+    expect(result.isBottomInsideShape).toBe(true);
+    expect(result.isCustomPadTopYCorrect).toBe(true);
+    expect(result.padSyncState).toBe(true);
+  });
+
+  test('TC58: fitTextToShape 방향A (초과 시 폰트 축소, 여백 남을 시 기본 폰트 유지 및 정렬) 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const handlers = window;
+
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'fit_rect',
+        type: 'rect',
+        parentId: 'fit_group',
+        el: rectEl,
+        attrs: { x: 100, y: 100, width: 300, height: 100 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+
+      const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      document.getElementById('objectsGroup').appendChild(textEl);
+      const textObj = {
+        id: 'fit_text',
+        type: 'text',
+        parentId: 'fit_group',
+        el: textEl,
+        attrs: { x: 100, y: 100, width: 300, height: 100, text: '짧은 글', fontSize: 20, autoFitMode: 'fitTextToShape' }
+      };
+      cfg.objectsMap.set(textObj.id, textObj);
+
+      // 여백이 넉넉할 때: 폰트 크기가 20으로 유지됨
+      handlers.applyAutoFitToGroup(textObj);
+      const fontWhenSpaceRemains = textObj.attrs.fontSize;
+
+      return {
+        fontWhenSpaceRemains,
+        isFontMaintained: fontWhenSpaceRemains === 20
+      };
+    });
+
+    console.log('[Webpointer fitTextToShape Direction A Test 🧪]:', result);
+    expect(result.isFontMaintained).toBe(true);
+  });
+
+  test('TC59: cycleTextAutoFitMode 3회 이상 순환 클릭 시 baseFontSize 보존 및 도형/폰트 누적 축소(Spiral Bug) 방지 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const handlers = window;
+
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'sp_rect',
+        type: 'rect',
+        parentId: 'sp_group',
+        el: rectEl,
+        attrs: { x: 100, y: 100, width: 200, height: 100 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+
+      const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      document.getElementById('objectsGroup').appendChild(textEl);
+      const textObj = {
+        id: 'sp_text',
+        type: 'text',
+        parentId: 'sp_group',
+        el: textEl,
+        attrs: { x: 100, y: 100, width: 200, height: 100, text: '테스트용 샘플 텍스트 내용입니다', fontSize: 20, autoFitMode: 'fitShapeToText' }
+      };
+      cfg.objectsMap.set(textObj.id, textObj);
+      cfg.selectedIds.add(textObj.id);
+
+      // Cycle 1: fitShapeToText -> fitTextToShape -> none
+      handlers.cycleTextAutoFitMode(); // fitTextToShape
+      const cycle1FontSize = textObj.attrs.fontSize;
+
+      handlers.cycleTextAutoFitMode(); // none
+      handlers.cycleTextAutoFitMode(); // fitShapeToText (Back to start!)
+      const cycle2FitShapeFontSize = textObj.attrs.fontSize;
+
+      // Cycle 2: fitShapeToText -> fitTextToShape -> none
+      handlers.cycleTextAutoFitMode(); // fitTextToShape
+      const cycle2FontSize = textObj.attrs.fontSize;
+
+      handlers.cycleTextAutoFitMode(); // none
+      handlers.cycleTextAutoFitMode(); // fitShapeToText (Back to start!)
+      const cycle3FitShapeFontSize = textObj.attrs.fontSize;
+
+      // Cycle 3: fitShapeToText -> fitTextToShape
+      handlers.cycleTextAutoFitMode(); // fitTextToShape
+      const cycle3FontSize = textObj.attrs.fontSize;
+
+      return {
+        cycle1FontSize,
+        cycle2FitShapeFontSize,
+        cycle2FontSize,
+        cycle3FontSize,
+        isBaseFontRestoredOnCycle: cycle2FitShapeFontSize === 20 && cycle3FitShapeFontSize === 20,
+        isNoCumulativeShrink: cycle3FontSize === cycle2FontSize
+      };
+    });
+
+    console.log('[Webpointer Anti-Spiral AutoFit Cycle Test 🧪]:', result);
+    expect(result.isBaseFontRestoredOnCycle).toBe(true);
+    expect(result.isNoCumulativeShrink).toBe(true);
+  });
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

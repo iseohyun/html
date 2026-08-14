@@ -37,34 +37,28 @@
       }
     } else if (toolType === 'bez3') {
       ctrls3Arr = ctrls3Arr || [];
+      var prevC2 = null;
       for (var seg = 0; seg < fullPts.length - 1; seg++) {
         var pStart = fullPts[seg];
         var pEnd = fullPts[seg + 1];
         var ctrl1, ctrl2;
 
-        if (ctrls3Arr[seg] && (ctrls3Arr[seg].c1 || ctrls3Arr[seg].c2)) {
-          var defaultC1, defaultC2;
-          if (seg === 0 || !ctrls3Arr[seg - 1] || !ctrls3Arr[seg - 1].c2) {
-            defaultC1 = { x: pStart.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
-            defaultC2 = { x: pEnd.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
-          } else {
-            var prevC2 = ctrls3Arr[seg - 1].c2;
-            defaultC1 = { x: 2 * pStart.px - prevC2.x, y: 2 * pStart.py - prevC2.y };
-            defaultC2 = { x: pEnd.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
-          }
-          ctrl1 = ctrls3Arr[seg].c1 || defaultC1;
-          ctrl2 = ctrls3Arr[seg].c2 || defaultC2;
+        var defaultC2 = { x: pEnd.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
+        ctrl2 = (ctrls3Arr[seg] && ctrls3Arr[seg].c2) ? ctrls3Arr[seg].c2 : defaultC2;
+
+        if (seg === 0) {
+          var defaultC1 = { x: pStart.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
+          ctrl1 = (ctrls3Arr[0] && ctrls3Arr[0].c1) ? ctrls3Arr[0].c1 : defaultC1;
+          d += ' C ' + ctrl1.x + ' ' + ctrl1.y + ', ' + ctrl2.x + ' ' + ctrl2.y + ', ' + pEnd.px + ' ' + pEnd.py;
         } else {
-          if (seg === 0 || !ctrls3Arr[seg - 1] || !ctrls3Arr[seg - 1].c2) {
-            ctrl1 = { x: pStart.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
-            ctrl2 = { x: pEnd.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
+          if (ctrls3Arr[seg] && ctrls3Arr[seg].c1) {
+            ctrl1 = ctrls3Arr[seg].c1;
+            d += ' C ' + ctrl1.x + ' ' + ctrl1.y + ', ' + ctrl2.x + ' ' + ctrl2.y + ', ' + pEnd.px + ' ' + pEnd.py;
           } else {
-            var prevC2 = ctrls3Arr[seg - 1].c2;
-            ctrl1 = { x: 2 * pStart.px - prevC2.x, y: 2 * pStart.py - prevC2.y };
-            ctrl2 = { x: pEnd.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
+            d += ' S ' + ctrl2.x + ' ' + ctrl2.y + ', ' + pEnd.px + ' ' + pEnd.py;
           }
         }
-        d += ' C ' + ctrl1.x + ' ' + ctrl1.y + ', ' + ctrl2.x + ' ' + ctrl2.y + ', ' + pEnd.px + ' ' + pEnd.py;
+        prevC2 = ctrl2;
       }
     }
     return d;

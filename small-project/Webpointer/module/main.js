@@ -176,16 +176,38 @@
           return;
         }
 
+        if (isCtrlPressed && activeObj && hType === 'ellipse_rotate') {
+          var startRotateDrag = function() {
+            state.isDraggingHandle = true;
+            state.isSplitRotate = true;
+            state.activeHandleInfo = { objId: hObjId, handleType: hType, idx: hIdx };
+            state.initialObjAttrsMap.clear();
+            cfg.selectedIds.forEach(function(sId) {
+              var sObj = cfg.objectsMap.get(sId);
+              if (sObj) state.initialObjAttrsMap.set(sId, JSON.parse(JSON.stringify(sObj.attrs)));
+            });
+          };
+
+          if (window.openTextRotateSplitConfirmModal) {
+            window.openTextRotateSplitConfirmModal(startRotateDrag);
+          } else {
+            startRotateDrag();
+          }
+          return;
+        }
+
         state.isDraggingHandle = true;
+        state.isSplitRotate = false;
         state.activeHandleInfo = {
           objId: hObjId,
           handleType: hType,
           idx: hIdx
         };
-        if (activeObj) {
-          state.initialObjAttrsMap.clear();
-          state.initialObjAttrsMap.set(activeObj.id, JSON.parse(JSON.stringify(activeObj.attrs)));
-        }
+        state.initialObjAttrsMap.clear();
+        cfg.selectedIds.forEach(function(sId) {
+          var sObj = cfg.objectsMap.get(sId);
+          if (sObj) state.initialObjAttrsMap.set(sId, JSON.parse(JSON.stringify(sObj.attrs)));
+        });
         return;
       }
 
@@ -370,8 +392,9 @@
           a.rx = Math.max(5, Math.abs(px2 - px1) / 2);
           a.ry = Math.max(5, Math.abs(py2 - py1) / 2);
         } else if (type === 'arc') {
-          a.rx = Math.max(5, Math.abs(px2 - px1));
-          a.ry = Math.max(5, Math.abs(py2 - py1));
+          var rArc = Math.max(5, Math.hypot(px2 - px1, py2 - py1));
+          a.rx = rArc;
+          a.ry = rArc;
           a.endAngle = Math.round(Math.atan2(py2 - py1, px2 - px1) * (180 / Math.PI));
         }
 
@@ -403,6 +426,77 @@
         } else if (hType === 'end') {
           a.x2 = coords.px; a.y2 = coords.py;
         } else if (hType === 'top_left') {
+          a.x = Math.min(coords.px, initialAttrs.x + initialAttrs.width);
+          a.y = Math.min(coords.py, initialAttrs.y + initialAttrs.height);
+          a.width = Math.max(5, Math.abs((initialAttrs.x + initialAttrs.width) - coords.px));
+          a.height = Math.max(5, Math.abs((initialAttrs.y + initialAttrs.height) - coords.py));
+        } else if (hType === 'bottom_right') {
+          a.x = Math.min(initialAttrs.x, coords.px);
+          a.y = Math.min(initialAttrs.y, coords.py);
+          a.width = Math.max(5, Math.abs(coords.px - initialAttrs.x));
+          a.height = Math.max(5, Math.abs(coords.py - initialAttrs.y));
+        } else if (hType === 'corner_rx') {
+          a.rx = Math.max(0, Math.min(a.width / 2, coords.px - a.x));
+        } else if (hType === 'ellipse_center') {
+          a.cx = coords.px; a.cy = coords.py;
+        } else if (hType === 'ellipse_width') {
+          a.rx = Math.max(5, Math.hypot(coords.px - a.cx, coords.py - a.cy));
+        } else if (hType === 'ellipse_height') {
+          a.ry = Math.max(5, Math.hypot(coords.px - a.cx, coords.py - a.cy));
+        } else if (hType === 'ellipse_rotate') {
+          var center = window.WebpointerObjects ? window.WebpointerObjects.getObjectCenter(obj) : { x: a.cx || a.x || 0, y: a.cy || a.y || 0 };
+          var newAngle = Math.round(Math.atan2(coords.py - center.y, coords.px - center.x) * (180 / Math.PI)) + 90;
+          var baseAngle = initialAttrs.angle || 0;
+          var deltaAngle = newAngle - baseAngle;
+
+          if (state.isSplitRotate || cfg.selectedIds.size <= 1) {
+            a.angle = Math.round((newAngle % 360 + 360) % 360);
+          } else {
+            var rad = deltaAngle * (Math.PI / 180);
+            cfg.selectedIds.forEach(function(sId) {
+              var sObj = cfg.objectsMap.get(sId);
+              var sInit = state.initialObjAttrsMap.get(sId);
+              if (sObj && sInit) {
+                var sBaseAngle = sInit.angle || 0;
+                sObj.attrs.angle = Math.round(((sBaseAngle + deltaAngle) % 360 + 360) % 360);
+
+                if (sObj.id !== obj.id) {
+                  var sInitCenter = {
+                    x: sInit.cx !== undefined ? sInit.cx : (sInit.x !== undefined ? sInit.x + (sInit.width || 80) / 2 : center.x),
+                    y: sInit.cy !== undefined ? sInit.cy : (sInit.y !== undefined ? sInit.y + (sInit.height || 40) / 2 : center.y)
+                  };
+                  var dx = sInitCenter.x - center.x;
+                  var dy = sInitCenter.y - center.y;
+                  var rotX = center.x + (dx * Math.cos(rad) - dy * Math.sin(rad));
+                  var rotY = center.y + (dx * Math.sin(rad) + dy * Math.cos(rad));
+
+                  if (sObj.attrs.cx !== undefined) {
+                    sObj.attrs.cx = rotX;
+                    sObj.attrs.cy = rotY;
+                  } else if (sObj.attrs.x !== undefined) {
+                    var curW = sInit.width || (sObj.attrs.width || 80);
+                    var curH = sInit.height || (sObj.attrs.height || 40);
+                    sObj.attrs.x = rotX - curW / 2;
+                    sObj.attrs.y = rotY - curH / 2;
+                  }
+                }
+                render.updateElementAttributes(sObj);
+              }
+            });
+          }
+        } else if (hType === 'arc_start') {
+          var rotStart = a.angle || 0;
+          var angStart = Math.round(Math.atan2(coords.py - a.cy, coords.px - a.cx) * (180 / Math.PI)) - rotStart;
+          a.startAngle = Math.round((angStart % 360 + 360) % 360);
+          var newRStart = Math.max(5, Math.hypot(coords.px - a.cx, coords.py - a.cy));
+          a.rx = newRStart; a.ry = newRStart;
+        } else if (hType === 'arc_end') {
+          var rotEnd = a.angle || 0;
+          var angEnd = Math.round(Math.atan2(coords.py - a.cy, coords.px - a.cx) * (180 / Math.PI)) - rotEnd;
+          a.endAngle = Math.round((angEnd % 360 + 360) % 360);
+          var newREnd = Math.max(5, Math.hypot(coords.px - a.cx, coords.py - a.cy));
+          a.rx = newREnd; a.ry = newREnd;
+        } else if (hType === 'top_left_orig') {
           var hasCrop = initialAttrs.cropLeft || initialAttrs.cropRight || initialAttrs.cropTop || initialAttrs.cropBottom;
           var cropVisibleWRatio = 1 - (initialAttrs.cropLeft || 0) - (initialAttrs.cropRight || 0);
           var cropVisibleHRatio = 1 - (initialAttrs.cropTop || 0) - (initialAttrs.cropBottom || 0);
@@ -493,15 +587,27 @@
           }
           a.pathD = bezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3, a.ctrls2);
         } else if (hType === 'bez3_c1') {
+          var pts = a.points || [];
           a.ctrls3 = a.ctrls3 || [];
-          a.ctrls3[idx] = a.ctrls3[idx] || {};
-          a.ctrls3[idx].c1 = { x: coords.px, y: coords.py };
-          a.pathD = bezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3);
+          if (!idx || idx === 0 || isNaN(idx)) {
+            a.ctrls3[0] = a.ctrls3[0] || {};
+            a.ctrls3[0].c1 = { x: coords.px, y: coords.py };
+          } else if (a.ctrls3[idx] && a.ctrls3[idx].c1) {
+            // Already split! Update split c1 directly
+            a.ctrls3[idx].c1 = { x: coords.px, y: coords.py };
+          } else {
+            // Virtual c1! Reverse calculate ONLY immediately preceding segment's c2
+            var pStart = pts[idx] ? pts[idx] : pts[0];
+            var prevC2 = { x: 2 * pStart.px - coords.px, y: 2 * pStart.py - coords.py };
+            a.ctrls3[idx - 1] = a.ctrls3[idx - 1] || {};
+            a.ctrls3[idx - 1].c2 = prevC2;
+          }
+          a.pathD = bezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3, a.ctrls2);
         } else if (hType === 'bez3_c2') {
           a.ctrls3 = a.ctrls3 || [];
           a.ctrls3[idx] = a.ctrls3[idx] || {};
           a.ctrls3[idx].c2 = { x: coords.px, y: coords.py };
-          a.pathD = bezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3);
+          a.pathD = bezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3, a.ctrls2);
         } else if (hType === 'crop_top' || hType === 'crop_bottom' || hType === 'crop_left' || hType === 'crop_right') {
           var bounds = window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(obj) : null;
           if (bounds) {
@@ -526,6 +632,9 @@
           }
         }
 
+        if (window.WebpointerObjects && window.WebpointerObjects.syncShapeTextBounds) {
+          window.WebpointerObjects.syncShapeTextBounds(obj);
+        }
         render.updateElementAttributes(obj);
         render.renderUI();
         return;
@@ -562,14 +671,18 @@
               }
               if (initialAttrs.ctrls3) {
                 a.ctrls3 = initialAttrs.ctrls3.map(function(cp) {
+                  if (!cp) return {};
                   return {
-                    c1: { x: cp.c1.x + deltaPx, y: cp.c1.y + deltaPy },
-                    c2: { x: cp.c2.x + deltaPx, y: cp.c2.y + deltaPy }
+                    c1: cp.c1 ? { x: cp.c1.x + deltaPx, y: cp.c1.y + deltaPy } : null,
+                    c2: cp.c2 ? { x: cp.c2.x + deltaPx, y: cp.c2.y + deltaPy } : null
                   };
                 });
               }
               a.pathD = bezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3);
             }
+          }
+          if (window.WebpointerObjects && window.WebpointerObjects.syncShapeTextBounds) {
+            window.WebpointerObjects.syncShapeTextBounds(obj);
           }
           render.updateElementAttributes(obj);
         });
@@ -726,13 +839,91 @@
         return;
       }
 
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C')) {
+        var isInputTarget1 = e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA');
+        if (!isInputTarget1 && window.WebpointerClipboard) {
+          e.preventDefault();
+          window.WebpointerClipboard.copySelectedObjects();
+          return;
+        }
+      }
+
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V')) {
+        var isInputTarget2 = e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA');
+        if (!isInputTarget2 && window.WebpointerClipboard) {
+          e.preventDefault();
+          if (navigator.clipboard && navigator.clipboard.readText) {
+            navigator.clipboard.readText().then(function(clipText) {
+              if (!clipText) {
+                window.WebpointerClipboard.pasteClipboardObjects();
+                return;
+              }
+              var isSvg = clipText.includes('<svg') || clipText.includes('<path') || clipText.includes('<rect') || clipText.includes('<g');
+              try {
+                var parsed = JSON.parse(clipText);
+                if (parsed && parsed.type === 'webpointer_clipboard') {
+                  window.WebpointerClipboard.copiedObjects = parsed.data;
+                  window.WebpointerClipboard.pasteClipboardObjects();
+                  return;
+                }
+              } catch(eJson) {}
+
+              if (isSvg && window.WebpointerClipboard.pasteSVGFromClipboard) {
+                window.WebpointerClipboard.pasteSVGFromClipboard(clipText);
+                return;
+              }
+
+              // Plain Text: If a shape is selected, merge into shape; else paste standalone text!
+              if (cfg.selectedIds.size >= 1) {
+                var selId = Array.from(cfg.selectedIds)[0];
+                var selObj = cfg.objectsMap.get(selId);
+                if (selObj && selObj.type !== 'text') {
+                  window.WebpointerClipboard.pasteTextIntoSelectedShape(clipText);
+                  return;
+                }
+              }
+
+              // No shape selected -> paste standalone text!
+              if (window.WebpointerClipboard.pasteStandaloneText) {
+                window.WebpointerClipboard.pasteStandaloneText(clipText);
+                return;
+              }
+
+              window.WebpointerClipboard.pasteClipboardObjects();
+            }).catch(function() {
+              window.WebpointerClipboard.pasteClipboardObjects();
+            });
+          } else {
+            window.WebpointerClipboard.pasteClipboardObjects();
+          }
+          return;
+        }
+      }
+
       if (e.key === 'F2') {
-        if (cfg.selectedIds.size === 1) {
+        if (cfg.selectedIds.size >= 1) {
           var selId = Array.from(cfg.selectedIds)[0];
           var selObj = cfg.objectsMap.get(selId);
-          if (selObj && selObj.type === 'text') {
+          if (selObj) {
             e.preventDefault();
-            textTool.startDirectCanvasTyping(selObj.attrs.x, selObj.attrs.y, selObj);
+            if (selObj.type === 'text') {
+              textTool.startDirectCanvasTyping(selObj.attrs.x, selObj.attrs.y, selObj);
+            } else {
+              var existingText = null;
+              if (selObj.parentId) {
+                cfg.objectsMap.forEach(function(o) {
+                  if (o.parentId === selObj.parentId && o.type === 'text') {
+                    existingText = o;
+                  }
+                });
+              }
+              if (existingText) {
+                textTool.startDirectCanvasTyping(existingText.attrs.x, existingText.attrs.y, existingText);
+              } else {
+                var pt = textTool.getShapeTextInsertionPoint(selObj);
+                textTool.startDirectCanvasTyping(pt.px, pt.py, null, pt.anchor);
+              }
+            }
             return;
           }
         }

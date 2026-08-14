@@ -31,6 +31,12 @@
           obj.el.setAttribute('preserveAspectRatio', a.preserveAspectRatio);
         }
       }
+      if (a.angle) {
+        var center = window.WebpointerObjects ? window.WebpointerObjects.getObjectCenter(obj) : { x: a.x + (a.width || 100) / 2, y: a.y + (a.height || 100) / 2 };
+        obj.el.setAttribute('transform', 'rotate(' + a.angle + ' ' + center.x + ' ' + center.y + ')');
+      } else {
+        obj.el.removeAttribute('transform');
+      }
     } else if (obj.type === 'ellipse') {
       obj.el.setAttribute('cx', a.cx);
       obj.el.setAttribute('cy', a.cy);
@@ -79,8 +85,10 @@
         obj.el.setAttribute('d', 'M ' + a.x1 + ' ' + a.y1 + ' C ' + a.c1x + ' ' + a.c1y + ', ' + a.c2x + ' ' + a.c2y + ', ' + a.x2 + ' ' + a.y2);
       }
     } else if (obj.type === 'text') {
-      obj.el.setAttribute('x', a.x);
-      obj.el.setAttribute('y', a.y);
+      var safeX = (a.x !== undefined && a.x !== null && !isNaN(parseFloat(a.x))) ? parseFloat(a.x) : 0;
+      var safeY = (a.y !== undefined && a.y !== null && !isNaN(parseFloat(a.y))) ? parseFloat(a.y) : 0;
+      obj.el.setAttribute('x', safeX);
+      obj.el.setAttribute('y', safeY);
       var fSize = a.fontSize !== undefined ? a.fontSize : (cfg.fontSize || 20);
       var fFamily = a.fontFamily || cfg.fontFamily || 'sans-serif';
       var fWeight = a.fontWeight || cfg.fontWeight || 'normal';
@@ -89,7 +97,7 @@
       var tAnchor = a.textAnchor || cfg.textAnchor || 'start';
       var lHeight = a.lineHeight !== undefined ? a.lineHeight : (cfg.lineHeight || 1.2);
 
-      var dBase = a.dominantBaseline || cfg.textDominantBaseline || 'alphabetic';
+      var dBase = a.dominantBaseline || cfg.textDominantBaseline || 'hanging';
       var wMode = a.writingMode || cfg.textWritingMode || 'horizontal-tb';
 
       var uColor  = a.underlineColor || cfg.textUnderlineColor || 'currentColor';
@@ -102,40 +110,28 @@
       obj.el.setAttribute('font-weight', fWeight);
       obj.el.setAttribute('font-style', fStyle);
       var isJustify = (tAnchor === 'justify');
-      obj.el.setAttribute('text-anchor', isJustify ? 'start' : tAnchor);
       obj.el.setAttribute('dominant-baseline', dBase);
       obj.el.setAttribute('writing-mode', wMode);
 
-      if (uStyle !== 'none') {
-        var decoVal = (tDeco && tDeco !== 'none') ? (tDeco + ' underline') : 'underline';
-        obj.el.setAttribute('text-decoration', decoVal);
-        obj.el.style.textDecorationLine = decoVal;
-        obj.el.style.textDecorationColor = uColor;
-        obj.el.style.textDecorationStyle = uStyle;
-        obj.el.style.textUnderlineOffset = uOffset + 'px';
-        obj.el.style.textDecorationThickness = uWidth + 'px';
-      } else {
-        obj.el.setAttribute('text-decoration', tDeco);
-        obj.el.style.textDecorationLine = tDeco;
-        obj.el.style.textDecorationColor = '';
-        obj.el.style.textDecorationStyle = '';
-        obj.el.style.textUnderlineOffset = '';
-        obj.el.style.textDecorationThickness = '';
+      var hostShape = null;
+      if (obj.parentId) {
+        cfg.objectsMap.forEach(function(o) {
+          if (o.parentId === obj.parentId && o.type !== 'text') {
+            hostShape = o;
+          }
+        });
       }
 
-      if (a.fill) {
-        obj.el.setAttribute('fill', a.fill);
-      } else {
-        obj.el.removeAttribute('fill');
+      var pad = 10;
+      var hostBounds = hostShape ? (window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(hostShape) : null) : null;
+
+      if (isJustify && hostBounds) {
+        safeX = Math.round(hostBounds.minX + pad);
+        a.x = safeX;
+        obj.el.setAttribute('x', safeX);
       }
 
-      if (a.stroke && a.stroke !== 'none') {
-        obj.el.setAttribute('stroke', a.stroke);
-        obj.el.setAttribute('stroke-width', a.strokeWidth !== undefined ? a.strokeWidth : (cfg.textStrokeWidth || 1));
-      } else {
-        obj.el.removeAttribute('stroke');
-        obj.el.removeAttribute('stroke-width');
-      }
+      obj.el.setAttribute('text-anchor', isJustify ? 'start' : tAnchor);
 
       var lines = (a.text || '').split('\n');
       obj.el.innerHTML = '';
@@ -145,7 +141,7 @@
         var fontSizeNum = parseInt(fSize, 10);
         lines.forEach(function(lineStr, idx) {
           var tspan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
-          tspan.setAttribute('x', a.x);
+          tspan.setAttribute('x', safeX);
           if (idx === 0) {
             tspan.setAttribute('dy', 0);
           } else {
@@ -154,6 +150,80 @@
           tspan.textContent = lineStr || '\u200B';
           obj.el.appendChild(tspan);
         });
+      }
+
+      var existingTspans = obj.el.querySelectorAll('tspan');
+      if (isJustify) {
+        var hostDimension = 0;
+        var isVertical = (wMode === 'vertical-rl' || wMode === 'tb-rl');
+        if (hostBounds) {
+          hostDimension = isVertical ? (hostBounds.maxY - hostBounds.minY) : (hostBounds.maxX - hostBounds.minX);
+        } else if (isVertical) {
+          hostDimension = a.height || 100;
+        } else {
+          hostDimension = a.width || 100;
+        }
+
+        var targetDim = Math.max(10, hostDimension - (pad * 2));
+
+        if (existingTspans && existingTspans.length > 0) {
+          existingTspans.forEach(function(ts) {
+            var lineStr = ts.textContent || '';
+            var spaceCount = (lineStr.match(/ /g) || []).length;
+            var lineLen = 0;
+            try {
+              lineLen = ts.getComputedTextLength ? ts.getComputedTextLength() : 0;
+            } catch(e) {}
+
+            if (spaceCount > 0 && targetDim > lineLen && lineLen > 0) {
+              var extraWordSpace = (targetDim - lineLen) / spaceCount;
+              ts.style.wordSpacing = extraWordSpace.toFixed(2) + 'px';
+            } else if (spaceCount > 0 && targetDim > 0) {
+              var estCharW = (parseInt(fSize, 10) || 20) * 0.6;
+              var estLen = (lineStr.length - spaceCount) * estCharW + spaceCount * (estCharW * 0.5);
+              if (targetDim > estLen) {
+                var extraWordSpaceEst = (targetDim - estLen) / spaceCount;
+                ts.style.wordSpacing = extraWordSpaceEst.toFixed(2) + 'px';
+              } else {
+                ts.style.wordSpacing = '';
+              }
+            } else {
+              ts.style.wordSpacing = '';
+            }
+          });
+          obj.el.style.wordSpacing = '';
+        } else {
+          // Single-line text justification
+          var textContent = a.text || obj.el.textContent || '';
+          var spaceCountSingle = (textContent.match(/ /g) || []).length;
+          var computedLenSingle = 0;
+          try {
+            computedLenSingle = obj.el.getComputedTextLength ? obj.el.getComputedTextLength() : 0;
+          } catch(e) {}
+
+          if (spaceCountSingle > 0 && targetDim > computedLenSingle && computedLenSingle > 0) {
+            var extraSingle = (targetDim - computedLenSingle) / spaceCountSingle;
+            obj.el.style.wordSpacing = extraSingle.toFixed(2) + 'px';
+          } else if (spaceCountSingle > 0 && targetDim > 0) {
+            var estCharW2 = (parseInt(fSize, 10) || 20) * 0.6;
+            var estLen2 = (textContent.length - spaceCountSingle) * estCharW2 + spaceCountSingle * (estCharW2 * 0.5);
+            if (targetDim > estLen2) {
+              var extraSingleEst = (targetDim - estLen2) / spaceCountSingle;
+              obj.el.style.wordSpacing = extraSingleEst.toFixed(2) + 'px';
+            } else {
+              obj.el.style.wordSpacing = '';
+            }
+          } else {
+            obj.el.style.wordSpacing = '';
+          }
+        }
+      } else {
+        obj.el.style.wordSpacing = '';
+        if (existingTspans && existingTspans.length > 0) {
+          existingTspans.forEach(function(ts) {
+            ts.style.wordSpacing = '';
+          });
+        }
       }
 
       // Render Custom SVG Underline Path Element
@@ -234,6 +304,21 @@
             obj.underlineEl.parentNode.removeChild(obj.underlineEl);
           }
           obj.underlineEl = null;
+        }
+      }
+
+      var textBounds = window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(obj) : null;
+      var textCX = textBounds ? (textBounds.minX + textBounds.maxX) / 2 : a.x;
+      var textCY = textBounds ? (textBounds.minY + textBounds.maxY) / 2 : a.y;
+      if (a.angle) {
+        obj.el.setAttribute('transform', 'rotate(' + a.angle + ' ' + textCX + ' ' + textCY + ')');
+        if (obj.underlineEl) {
+          obj.underlineEl.setAttribute('transform', 'rotate(' + a.angle + ' ' + textCX + ' ' + textCY + ')');
+        }
+      } else {
+        obj.el.removeAttribute('transform');
+        if (obj.underlineEl) {
+          obj.underlineEl.removeAttribute('transform');
         }
       }
     }
@@ -470,6 +555,20 @@
       boxRect.setAttribute('stroke-dasharray', '4,4');
       boxRect.setAttribute('pointer-events', 'stroke');
       boxRect.style.cursor = 'move';
+
+      var targetAngleObj = null;
+      if (cfg.selectedIds.size >= 1) {
+        cfg.selectedIds.forEach(function(sId) {
+          var sObj = cfg.objectsMap.get(sId);
+          if (sObj && sObj.attrs && sObj.attrs.angle && !targetAngleObj) {
+            targetAngleObj = sObj;
+          }
+        });
+      }
+      if (targetAngleObj) {
+        var center = window.WebpointerObjects ? window.WebpointerObjects.getObjectCenter(targetAngleObj) : { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
+        boxRect.setAttribute('transform', 'rotate(' + targetAngleObj.attrs.angle + ' ' + center.x + ' ' + center.y + ')');
+      }
       uiGroup.appendChild(boxRect);
     }
 
@@ -566,21 +665,109 @@
         createHandleNode(a.cx, a.cy, id, 'point_center', 1, false);
       } else if (obj.type === 'arc') {
         createHandleNode(a.cx, a.cy, id, 'ellipse_center', 1, false);
-        var r = a.rx || 30;
-        var startRad = (a.startAngle || 0) * Math.PI / 180;
-        var endRad = (a.endAngle || 180) * Math.PI / 180;
-        createHandleNode(a.cx + r * Math.cos(startRad), a.cy + r * Math.sin(startRad), id, 'arc_start', 2, false);
-        createHandleNode(a.cx + r * Math.cos(endRad), a.cy + r * Math.sin(endRad), id, 'arc_end', 3, false);
-      } else if (obj.type === 'rect' || obj.type === 'image') {
-        var bounds = window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(obj) : { minX: a.x, maxX: a.x + a.width, minY: a.y, maxY: a.y + a.height };
-        createHandleNode(bounds.minX, bounds.minY, id, 'top_left', 1, false);
-        createHandleNode(bounds.maxX, bounds.maxY, id, 'bottom_right', 2, false);
-      } else if (obj.type === 'rounded') {
-        var bounds = window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(obj) : { minX: a.x, maxX: a.x + a.width, minY: a.y, maxY: a.y + a.height };
-        var cornerRx = a.rx !== undefined ? a.rx : 15;
-        createHandleNode(bounds.minX, bounds.minY, id, 'top_left', 1, false);
-        createHandleNode(bounds.maxX, bounds.maxY, id, 'bottom_right', 2, false);
-        createHandleNode(bounds.minX + cornerRx, bounds.minY, id, 'corner_rx', 3, true);
+        var rx = a.rx || 30;
+        var ry = a.ry || 30;
+        var rot = a.angle || 0;
+        var sAng = a.startAngle !== undefined ? a.startAngle : -90;
+        var eAng = a.endAngle !== undefined ? a.endAngle : 0;
+
+        function getArcHandlePoint(cx, cy, rx, ry, deg, rotDeg) {
+          var rad = deg * (Math.PI / 180);
+          var rotRad = rotDeg * (Math.PI / 180);
+          var px = rx * Math.cos(rad);
+          var py = ry * Math.sin(rad);
+          var rxRot = px * Math.cos(rotRad) - py * Math.sin(rotRad);
+          var ryRot = px * Math.sin(rotRad) + py * Math.cos(rotRad);
+          return { x: cx + rxRot, y: cy + ryRot };
+        }
+
+        var ptWidth = getArcHandlePoint(a.cx, a.cy, rx, ry, 0, rot);
+        var ptHeight = getArcHandlePoint(a.cx, a.cy, rx, ry, -90, rot);
+        var ptRotate = getArcHandlePoint(a.cx, a.cy, rx, ry + 25, -90, rot);
+
+        var rotStemArc = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        rotStemArc.setAttribute('x1', ptHeight.x); rotStemArc.setAttribute('y1', ptHeight.y);
+        rotStemArc.setAttribute('x2', ptRotate.x); rotStemArc.setAttribute('y2', ptRotate.y);
+        rotStemArc.setAttribute('stroke', '#0284c7'); rotStemArc.setAttribute('stroke-dasharray', '3,3');
+        rotStemArc.setAttribute('stroke-width', '1.5');
+        uiGroup.appendChild(rotStemArc);
+
+        createHandleNode(ptWidth.x, ptWidth.y, id, 'ellipse_width', 4, false);
+        createHandleNode(ptHeight.x, ptHeight.y, id, 'ellipse_height', 5, false);
+        createHandleNode(ptRotate.x, ptRotate.y, id, 'ellipse_rotate', 6, true);
+
+        var pStartHandle = getArcHandlePoint(a.cx, a.cy, rx, ry, sAng, rot);
+        var pEndHandle = getArcHandlePoint(a.cx, a.cy, rx, ry, eAng, rot);
+
+        var stemLine1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        stemLine1.setAttribute('x1', a.cx); stemLine1.setAttribute('y1', a.cy);
+        stemLine1.setAttribute('x2', pStartHandle.x); stemLine1.setAttribute('y2', pStartHandle.y);
+        stemLine1.setAttribute('stroke', '#0284c7'); stemLine1.setAttribute('stroke-dasharray', '3,3');
+        stemLine1.setAttribute('stroke-width', '1.2');
+        uiGroup.appendChild(stemLine1);
+
+        var stemLine2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        stemLine2.setAttribute('x1', a.cx); stemLine2.setAttribute('y1', a.cy);
+        stemLine2.setAttribute('x2', pEndHandle.x); stemLine2.setAttribute('y2', pEndHandle.y);
+        stemLine2.setAttribute('stroke', '#f97316'); stemLine2.setAttribute('stroke-dasharray', '3,3');
+        stemLine2.setAttribute('stroke-width', '1.2');
+        uiGroup.appendChild(stemLine2);
+
+        createHandleNode(pStartHandle.x, pStartHandle.y, id, 'arc_start', 2, true, { fill: '#38bdf8', stroke: '#0284c7', r: 6 });
+        createHandleNode(pEndHandle.x, pEndHandle.y, id, 'arc_end', 3, true, { fill: '#f97316', stroke: '#c2410c', r: 6 });
+      } else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'text' || obj.type === 'image') {
+        if (obj.type === 'text') {
+          var isInsideOrGroupedWithShape = false;
+          if (obj.parentId) {
+            isInsideOrGroupedWithShape = true;
+          } else {
+            cfg.selectedIds.forEach(function(sId) {
+              var sObj = cfg.objectsMap.get(sId);
+              if (sObj && sObj.id !== obj.id && sObj.type !== 'text') {
+                isInsideOrGroupedWithShape = true;
+              }
+            });
+          }
+          if (isInsideOrGroupedWithShape) return;
+        }
+
+        var bounds = window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(obj) : { minX: a.x, maxX: a.x + (a.width || 80), minY: a.y, maxY: a.y + (a.height || 40) };
+        var cX = (bounds.minX + bounds.maxX) / 2;
+        var cY = (bounds.minY + bounds.maxY) / 2;
+        var rot = a.angle || 0;
+
+        function getBoxRotPoint(px, py) {
+          if (!rot) return { x: px, y: py };
+          var rad = rot * (Math.PI / 180);
+          var dx = px - cX;
+          var dy = py - cY;
+          var rxRot = dx * Math.cos(rad) - dy * Math.sin(rad);
+          var ryRot = dx * Math.sin(rad) + dy * Math.cos(rad);
+          return { x: cX + rxRot, y: cY + ryRot };
+        }
+
+        var ptTL = getBoxRotPoint(bounds.minX, bounds.minY);
+        var ptBR = getBoxRotPoint(bounds.maxX, bounds.maxY);
+        createHandleNode(ptTL.x, ptTL.y, id, 'top_left', 1, false);
+        createHandleNode(ptBR.x, ptBR.y, id, 'bottom_right', 2, false);
+
+        if (obj.type === 'rounded') {
+          var cornerRx = a.rx !== undefined ? a.rx : 15;
+          var ptCorner = getBoxRotPoint(bounds.minX + cornerRx, bounds.minY);
+          createHandleNode(ptCorner.x, ptCorner.y, id, 'corner_rx', 3, true);
+        }
+
+        var ptTopMid = getBoxRotPoint(cX, bounds.minY);
+        var ptRotRect = getBoxRotPoint(cX, bounds.minY - 25);
+
+        var rStemRect = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        rStemRect.setAttribute('x1', ptTopMid.x); rStemRect.setAttribute('y1', ptTopMid.y);
+        rStemRect.setAttribute('x2', ptRotRect.x); rStemRect.setAttribute('y2', ptRotRect.y);
+        rStemRect.setAttribute('stroke', '#0284c7'); rStemRect.setAttribute('stroke-dasharray', '3,3');
+        rStemRect.setAttribute('stroke-width', '1.5');
+        uiGroup.appendChild(rStemRect);
+
+        createHandleNode(ptRotRect.x, ptRotRect.y, id, 'ellipse_rotate', 4, true);
       } else if (obj.type === 'bez2') {
         var pts = a.points || [];
         pts.forEach(function(pt, idx) {
@@ -638,50 +825,50 @@
           createHandleNode(pt.px, pt.py, id, 'bez_vertex', idx, false);
         });
         var ctrls = a.ctrls3 || [];
+        var prevC2 = null;
+
+        var createDashedLine3 = function(x1, y1, x2, y2, color) {
+          var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+          line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+          line.setAttribute('stroke', color || '#0284c7');
+          line.setAttribute('stroke-dasharray', '3,3');
+          line.setAttribute('stroke-width', '1.2');
+          uiGroup.appendChild(line);
+        };
+
         for (var seg = 0; seg < pts3.length - 1; seg++) {
           var pStart = pts3[seg];
           var pEnd = pts3[seg + 1];
           var ctrl1, ctrl2;
 
-          if (ctrls[seg] && (ctrls[seg].c1 || ctrls[seg].c2)) {
-            var defaultC1, defaultC2;
-            if (seg === 0 || !ctrls[seg - 1] || !ctrls[seg - 1].c2) {
-              defaultC1 = { x: pStart.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
-              defaultC2 = { x: pEnd.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
-            } else {
-              var prevC2 = ctrls[seg - 1].c2;
-              defaultC1 = { x: 2 * pStart.px - prevC2.x, y: 2 * pStart.py - prevC2.y };
-              defaultC2 = { x: pEnd.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
-            }
-            ctrl1 = ctrls[seg].c1 || defaultC1;
-            ctrl2 = ctrls[seg].c2 || defaultC2;
+          var defaultC2 = { x: pEnd.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
+          ctrl2 = (ctrls[seg] && ctrls[seg].c2) ? ctrls[seg].c2 : defaultC2;
+
+          if (seg === 0) {
+            var defaultC1 = { x: pStart.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
+            ctrl1 = (ctrls[0] && ctrls[0].c1) ? ctrls[0].c1 : defaultC1;
+            createHandleNode(ctrl1.x, ctrl1.y, id, 'bez3_c1', seg, true, { fill: '#0284c7', stroke: '#0369a1', r: 5 });
+            createDashedLine3(pStart.px, pStart.py, ctrl1.x, ctrl1.y, '#0284c7');
           } else {
-            if (seg === 0 || !ctrls[seg - 1] || !ctrls[seg - 1].c2) {
-              ctrl1 = { x: pStart.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
-              ctrl2 = { x: pEnd.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
+            var isC1Split = ctrls[seg] && ctrls[seg].c1;
+            if (isC1Split) {
+              ctrl1 = ctrls[seg].c1;
+              createHandleNode(ctrl1.x, ctrl1.y, id, 'bez3_c1', seg, true, { fill: '#f97316', stroke: '#c2410c', r: 6 });
+              createDashedLine3(pStart.px, pStart.py, ctrl1.x, ctrl1.y, '#f97316');
             } else {
-              var prevC2 = ctrls[seg - 1].c2;
-              ctrl1 = { x: 2 * pStart.px - prevC2.x, y: 2 * pStart.py - prevC2.y };
-              ctrl2 = { x: pEnd.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
+              var basePrevC2 = prevC2 || { x: pStart.px, y: pStart.py };
+              ctrl1 = { x: 2 * pStart.px - basePrevC2.x, y: 2 * pStart.py - basePrevC2.y };
+              createHandleNode(ctrl1.x, ctrl1.y, id, 'bez3_c1', seg, true, { fill: '#38bdf8', stroke: '#0284c7', r: 5 });
+              createDashedLine3(pStart.px, pStart.py, ctrl1.x, ctrl1.y, '#38bdf8');
             }
           }
 
-          createHandleNode(ctrl1.x, ctrl1.y, id, 'bez3_c1', seg, true);
-          createHandleNode(ctrl2.x, ctrl2.y, id, 'bez3_c2', seg, true);
+          var isC2Split = ctrls[seg] && ctrls[seg].c2;
+          createHandleNode(ctrl2.x, ctrl2.y, id, 'bez3_c2', seg, true, isC2Split ? { fill: '#f97316', stroke: '#c2410c', r: 6 } : { fill: '#0284c7', stroke: '#0369a1', r: 5 });
+          createDashedLine3(pEnd.px, pEnd.py, ctrl2.x, ctrl2.y, isC2Split ? '#f97316' : '#0284c7');
 
-          var l1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-          l1.setAttribute('x1', pStart.px); l1.setAttribute('y1', pStart.py);
-          l1.setAttribute('x2', ctrl1.x); l1.setAttribute('y2', ctrl1.y);
-          l1.setAttribute('stroke', '#0284c7'); l1.setAttribute('stroke-dasharray', '3,3');
-          l1.setAttribute('stroke-width', '1.2');
-          uiGroup.appendChild(l1);
-
-          var l2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-          l2.setAttribute('x1', pEnd.px); l2.setAttribute('y1', pEnd.py);
-          l2.setAttribute('x2', ctrl2.x); l2.setAttribute('y2', ctrl2.y);
-          l2.setAttribute('stroke', '#0284c7'); l2.setAttribute('stroke-dasharray', '3,3');
-          l2.setAttribute('stroke-width', '1.2');
-          uiGroup.appendChild(l2);
+          prevC2 = ctrl2;
         }
       }
 

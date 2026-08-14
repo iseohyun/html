@@ -2,6 +2,50 @@
 
 All notable changes to the Webpointer Vector CAD Editor project are documented in this file.
 
+## [v0.8.3] - 2026-08-14
+### Fixed & Improved (AutoFit Direction A & Anti-Spiral Base Font Preservation)
+- **AutoFit Mode Direction A & Base Font Size Preservation (`TC58`, `TC59`)**:
+  - Implemented Direction A `fitTextToShape` behavior: font size scales down ONLY when text overflows container, maintaining set base font size (`baseFontSize`) when space remains.
+  - Preserved `baseFontSize` across all auto-fit mode cycles (`fitShapeToText`, `fitTextToShape`, `none`), completely preventing cumulative font and shape shrinking (Spiral Bug) on repeated clicks.
+
+## [v0.8.2] - 2026-08-14
+### Added & Improved (Text Padding Category, 3-Tier Vertical Alignment Engine & Context-Aware Clipboard)
+- **Text Padding Category in `Text Format` Tab (`TC57`)**:
+  - Added new `Padding` category under `Text Format` (`text`) ribbon tab with Top, Bottom, Left, and Right numeric padding inputs (default 10px) and `Sync All Sides` checkbox (default checked).
+  - Integrated padding controls dynamically into horizontal (`left`, `center`, `right`, `justify`) and vertical (`top`, `middle`, `bottom`) text placement algorithms.
+- **3-Tier Real-Time Height Measurement & Vertical Alignment Engine (`TC54`, `TC55`)**:
+  - Built 3-Tier 2-Pass height measurement helper (`measureTextRealHeight`) using DOM `getBBox()`, off-screen SVG measurement fallback, and font em metrics.
+  - Aligned text box center with shape center for middle alignment, and bottom line with shape bottom margin for bottom alignment.
+  - Resolved cumulative Y position drift when toggling vertical alignment repeatedly.
+- **Context-Aware `Ctrl+C` / `Ctrl+V` & Cascading Paste Engine (`TC56`)**:
+  - Enabled context-aware clipboard handling: pasting text automatically embeds text box into a selected shape, or creates a standalone text box if no shape is selected.
+  - Implemented cumulative diagonal cascading offset (+15px per step) for consecutive `Ctrl+V` shape pastes.
+- **AI Coding Rules Directive**:
+  - Added Section 5 Anti-Inference Verification Directive to `AI_Coding_Rules.md`.
+
+## [v0.8.1] - 2026-08-14
+### Fixed & Improved (SVG Text Justification Engine)
+- **SVG Text Justification (`textAnchor="justify"`) Engine (`TC54`)**:
+  - Replaced fallback left-alignment logic with automatic `textLength` and `lengthAdjust="spacing"` attributes on justified text.
+  - Dynamically stretches word and character spacing across container/shape inner width for full justification.
+  - Automatically cleans up `textLength` attributes when switching back to left/center/right alignment modes.
+
+## [v0.8.0] - 2026-08-14
+### Major Improvements (Shape-Text Unified Synchronization Engine & Precision UX)
+- **Shape-Text 100% Unified Bounds Sync Engine (`syncShapeTextBounds`)**:
+  - Synchronized text bounding box (`x, y, width, height, angle`) with host shape on move, resize, rotation, and flip, completely eliminating rotation teleportation bugs.
+  - Automatically hidden text-only transform handles when embedded in shapes to present a single unified handle set.
+- **Shape+Text Keybinding & Precision Cursor UX (`TC51`, `TC52`, `TC53`)**:
+  - **F2 Key Edit Mode**: Pressing `F2` on a shape or text opens inline editing for the existing merged text without creating duplicate text objects.
+  - **Esc Key Restore**: Pressing `Esc` during typing finishes text editing and restores tool state to Select mode with host shape selected.
+  - **Top Dominant Baseline (`dominant-baseline="hanging"`)**: Switched default text baseline to top baseline (`hanging`), ensuring text stays inside shape boundaries.
+  - **Grouped Selection Box (`boxRect`) Rotation**: Updated selection box renderer to apply rotation transform for multi-selected / grouped shape+text objects.
+  - **Rotated Caret & Selection Highlight Alignment**: Synchronized caret line (`canvasBlinkingCaret`) and selection highlight group (`canvasTextSelectionGroup`) with `hanging` baseline and `rotate(angle)` transform.
+- **Metrics Category in Ribbon Menu (`Insert` > `Metrics`) (`TC48`)**:
+  - Added real-time width (px), height (px), and rotation angle (°) input fields in the Insert ribbon tab with bi-directional update handlers.
+- **Ctrl-Rotate Separation Modal & 90-Degree Rotation Binding (`TC45`, `TC49`)**:
+  - Implemented Ctrl-rotate notice dialog and fixed global reference bindings for `transformSelected('rotate90')`.
+
 ## [v0.7.1] - 2026-08-09
 ### Added
 - Added Image/Symbol Insertion Tool button in `Insert` > `Shapes` ribbon category with modal picker (`#imageSymbolPickerModal`).

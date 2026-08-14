@@ -12,7 +12,7 @@
     if (type === 'rect' || type === 'rounded') {
       return {
         px: (a.x !== undefined ? a.x : 0) + 10,
-        py: (a.y !== undefined ? a.y : 0) + fontSize + 4,
+        py: (a.y !== undefined ? a.y : 0) + 8,
         anchor: 'start'
       };
     }
@@ -39,12 +39,24 @@
 
   function addTextObject() {
     console.log('[Webpointer Debug] addTextObject called');
-    if (cfg.selectedIds && cfg.selectedIds.size === 1) {
+    if (cfg.selectedIds && cfg.selectedIds.size >= 1) {
       var selId = Array.from(cfg.selectedIds)[0];
       var shapeObj = cfg.objectsMap.get(selId);
       if (shapeObj && shapeObj.type !== 'text') {
-        var pt = getShapeTextInsertionPoint(shapeObj);
-        startDirectCanvasTyping(pt.px, pt.py, null, pt.anchor);
+        var existingText = null;
+        if (shapeObj.parentId) {
+          cfg.objectsMap.forEach(function(o) {
+            if (o.parentId === shapeObj.parentId && o.type === 'text') {
+              existingText = o;
+            }
+          });
+        }
+        if (existingText) {
+          startDirectCanvasTyping(existingText.attrs.x, existingText.attrs.y, existingText);
+        } else {
+          var pt = getShapeTextInsertionPoint(shapeObj);
+          startDirectCanvasTyping(pt.px, pt.py, null, pt.anchor);
+        }
         return;
       }
     }
@@ -86,7 +98,7 @@
       el.setAttribute('font-size', cfg.fontSize || 20);
       el.setAttribute('font-family', cfg.fontFamily || 'sans-serif');
       el.setAttribute('text-anchor', tAnchor);
-      el.setAttribute('dominant-baseline', 'alphabetic');
+      el.setAttribute('dominant-baseline', 'hanging');
 
       var attrs = {
         x: px,
@@ -95,7 +107,8 @@
         fill: textColor,
         fontSize: cfg.fontSize || 20,
         fontFamily: cfg.fontFamily || 'sans-serif',
-        textAnchor: tAnchor
+        textAnchor: tAnchor,
+        dominantBaseline: 'hanging'
       };
 
       var parentGroup = null;
@@ -107,6 +120,15 @@
             parentShape.parentId = 'group_' + (cfg.nextId++);
           }
           parentGroup = parentShape.parentId;
+
+          var b = window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(parentShape) : null;
+          if (b) {
+            attrs.x = b.minX;
+            attrs.y = b.minY;
+            attrs.width = Math.max(1, b.maxX - b.minX);
+            attrs.height = Math.max(1, b.maxY - b.minY);
+          }
+          attrs.angle = parentShape.attrs.angle || 0;
         }
       }
 
@@ -286,6 +308,12 @@
         }
       } catch(err) {}
 
+      if (state.typingSvgObj && state.typingSvgObj.attrs && state.typingSvgObj.attrs.angle) {
+        var rotAngle = state.typingSvgObj.attrs.angle;
+        var center = window.WebpointerObjects ? window.WebpointerObjects.getObjectCenter(state.typingSvgObj) : { x: 0, y: 0 };
+        highlightGroup.setAttribute('transform', 'rotate(' + rotAngle + ' ' + center.x + ' ' + center.y + ')');
+      }
+
       if (caretEl && caretEl.parentNode === uiGroup) {
         uiGroup.insertBefore(highlightGroup, caretEl);
       } else {
@@ -310,8 +338,9 @@
       var textAnchor = state.typingSvgObj.attrs.textAnchor || 'start';
 
       var cx = baseX;
-      var cy1 = fontBaselineY - (fontSize * 0.85);
-      var cy2 = fontBaselineY + (fontSize * 0.15);
+      var isHanging = (state.typingSvgObj.attrs.dominantBaseline === 'hanging' || cfg.textDominantBaseline === 'hanging');
+      var cy1 = isHanging ? fontBaselineY : fontBaselineY - (fontSize * 0.85);
+      var cy2 = isHanging ? fontBaselineY + fontSize : fontBaselineY + (fontSize * 0.15);
 
       var caretPos = hiddenInput.selectionDirection === 'backward' ? hiddenInput.selectionStart : hiddenInput.selectionEnd;
       if (caretPos === undefined || caretPos === null) caretPos = (hiddenInput.value || '').length;
@@ -344,8 +373,8 @@
       }
 
       var lineY = fontBaselineY + (targetLineIdx * fontSize * (state.typingSvgObj.attrs.lineHeight || 1.2));
-      cy1 = lineY - (fontSize * 0.85);
-      cy2 = lineY + (fontSize * 0.15);
+      cy1 = isHanging ? lineY : lineY - (fontSize * 0.85);
+      cy2 = isHanging ? lineY + fontSize : lineY + (fontSize * 0.15);
 
       if (targetTspan) {
         tspanText = targetTspan.textContent || hiddenInput.value || '';
@@ -356,25 +385,13 @@
         if (tspanText.length === 0) {
           calculatedX = baseX;
         } else if (chIdxInLine === 0) {
-          // START OF LINE (Home key / Position 0): Left edge of first character
           if (targetTspan.getStartPositionOfChar) {
-            try { calculatedX = Math.round(targetTspan.getStartPositionOfChar(0).x); } catch(e) {}
-          }
-          if (calculatedX === null && targetTspan.getExtentOfChar) {
             try {
-              var ext0 = targetTspan.getExtentOfChar(0);
-              if (ext0 && ext0.width >= 0) calculatedX = Math.round(ext0.x);
-            } catch(e) {}
-          }
-          if (calculatedX === null && targetTspan.getBBox) {
-            try {
-              var bbox0 = targetTspan.getBBox();
-              if (bbox0) calculatedX = Math.round(bbox0.x);
+              calculatedX = Math.round(targetTspan.getStartPositionOfChar(0).x);
             } catch(e) {}
           }
         } else {
-          // AFTER CHARACTER chIdxInLine - 1 (Right edge of character at chIdxInLine - 1)
-          var charIdxToQuery = Math.min(chIdxInLine - 1, tspanText.length - 1);
+          var charIdxToQuery = Math.max(0, chIdxInLine - 1);
           if (targetTspan.getExtentOfChar) {
             try {
               var ext = targetTspan.getExtentOfChar(charIdxToQuery);
@@ -422,6 +439,15 @@
       caretEl.setAttribute('y1', cy1);
       caretEl.setAttribute('x2', cx);
       caretEl.setAttribute('y2', cy2);
+
+      var rotAngle = state.typingSvgObj.attrs.angle || 0;
+      var center = window.WebpointerObjects ? window.WebpointerObjects.getObjectCenter(state.typingSvgObj) : { x: baseX, y: fontBaselineY };
+
+      if (rotAngle) {
+        caretEl.setAttribute('transform', 'rotate(' + rotAngle + ' ' + center.x + ' ' + center.y + ')');
+      } else {
+        caretEl.removeAttribute('transform');
+      }
     }
 
     updateCaretPosition();
@@ -643,21 +669,44 @@
     }
 
     if (state.typingSvgObj) {
-      var textVal = (state.typingSvgObj.attrs.text || '').trim();
+      var finishedObj = state.typingSvgObj;
+      var textVal = (finishedObj.attrs.text || '').trim();
       if (!textVal) {
-        if (state.typingSvgObj.el && state.typingSvgObj.el.parentNode) {
-          state.typingSvgObj.el.parentNode.removeChild(state.typingSvgObj.el);
+        if (finishedObj.el && finishedObj.el.parentNode) {
+          finishedObj.el.parentNode.removeChild(finishedObj.el);
         }
-        if (state.typingSvgObj.underlineEl && state.typingSvgObj.underlineEl.parentNode) {
-          state.typingSvgObj.underlineEl.parentNode.removeChild(state.typingSvgObj.underlineEl);
+        if (finishedObj.underlineEl && finishedObj.underlineEl.parentNode) {
+          finishedObj.underlineEl.parentNode.removeChild(finishedObj.underlineEl);
         }
-        cfg.objectsMap.delete(state.typingSvgObj.id);
-        cfg.selectedIds.delete(state.typingSvgObj.id);
+        cfg.objectsMap.delete(finishedObj.id);
+        cfg.selectedIds.delete(finishedObj.id);
       } else {
         cfg.selectedIds.clear();
-        cfg.selectedIds.add(state.typingSvgObj.id);
+        var hostShape = null;
+        if (finishedObj.parentId) {
+          cfg.objectsMap.forEach(function(o) {
+            if (o.parentId === finishedObj.parentId && o.type !== 'text') {
+              hostShape = o;
+            }
+          });
+        }
+        if (hostShape) {
+          cfg.selectedIds.add(hostShape.id);
+          cfg.selectedIds.add(finishedObj.id);
+          if (window.WebpointerObjects && window.WebpointerObjects.syncShapeTextBounds) {
+            window.WebpointerObjects.syncShapeTextBounds(hostShape);
+          }
+        } else {
+          cfg.selectedIds.add(finishedObj.id);
+        }
       }
       state.typingSvgObj = null;
+
+      if (window.WebpointerHandlers && window.WebpointerHandlers.setTool) {
+        window.WebpointerHandlers.setTool('select');
+      } else {
+        cfg.currentTool = 'select';
+      }
     }
 
     try {
@@ -687,24 +736,86 @@
     }
 
     var fontSize = parseInt(textObj.attrs ? textObj.attrs.fontSize || cfg.fontSize || 20 : 20, 10);
-    var h = hAlign || (textObj.attrs ? textObj.attrs.textAnchor : 'middle') || 'middle';
-    var v = vAlign || (textObj.attrs ? textObj.attrs.verticalAlign : 'middle') || 'middle';
+    var h = hAlign || (textObj.attrs ? textObj.attrs.textAnchor : 'start') || 'start';
+    var v = vAlign || (textObj.attrs ? textObj.attrs.verticalAlign : 'top') || 'top';
+
+    var pTop = textObj.attrs && textObj.attrs.padTop !== undefined ? textObj.attrs.padTop : (cfg.padTop !== undefined ? cfg.padTop : 10);
+    var pBottom = textObj.attrs && textObj.attrs.padBottom !== undefined ? textObj.attrs.padBottom : (cfg.padBottom !== undefined ? cfg.padBottom : 10);
+    var pLeft = textObj.attrs && textObj.attrs.padLeft !== undefined ? textObj.attrs.padLeft : (cfg.padLeft !== undefined ? cfg.padLeft : 10);
+    var pRight = textObj.attrs && textObj.attrs.padRight !== undefined ? textObj.attrs.padRight : (cfg.padRight !== undefined ? cfg.padRight : 10);
 
     var newX = (bounds.minX + bounds.maxX) / 2;
-    if (h === 'start' || h === 'left') {
-      newX = bounds.minX + 12;
+    var anchor = 'start';
+    if (h === 'start' || h === 'left' || h === 'justify') {
+      newX = bounds.minX + pLeft;
+      anchor = (h === 'justify') ? 'justify' : 'start';
     } else if (h === 'end' || h === 'right') {
-      newX = bounds.maxX - 12;
+      newX = bounds.maxX - pRight;
+      anchor = 'end';
+    } else {
+      newX = bounds.minX + pLeft + (((bounds.maxX - pRight) - (bounds.minX + pLeft)) / 2);
+      anchor = 'middle';
     }
 
-    var newY = (bounds.minY + bounds.maxY) / 2 + (fontSize * 0.35);
+    // 3-Tier 2-Pass real-time height measurement helper
+    var measureTextRealHeight = function(tObj) {
+      if (!tObj) return 20;
+
+      // Tier 1: Direct DOM BBox / getBoundingClientRect check
+      if (tObj.el && tObj.el.getBBox) {
+        try {
+          var bbox = tObj.el.getBBox();
+          if (bbox && bbox.height > 0) {
+            return bbox.height;
+          }
+        } catch(eB1) {}
+      }
+
+      // Tier 2: Offscreen container measurement
+      try {
+        var tempSvg = document.getElementById('temp_measure_svg');
+        if (!tempSvg) {
+          tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          tempSvg.setAttribute('id', 'temp_measure_svg');
+          tempSvg.style.position = 'absolute';
+          tempSvg.style.top = '-9999px';
+          tempSvg.style.left = '-9999px';
+          tempSvg.style.visibility = 'hidden';
+          tempSvg.style.width = '1000px';
+          tempSvg.style.height = '1000px';
+          document.body.appendChild(tempSvg);
+        }
+        var cloneEl = tObj.el ? tObj.el.cloneNode(true) : null;
+        if (!cloneEl) {
+          cloneEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          cloneEl.textContent = tObj.attrs ? (tObj.attrs.text || '') : '';
+        }
+        tempSvg.appendChild(cloneEl);
+        var cloneBBox = cloneEl.getBBox();
+        var measuredHeight = cloneBBox ? cloneBBox.height : 0;
+        tempSvg.removeChild(cloneEl);
+        if (measuredHeight > 0) return measuredHeight;
+      } catch(eB2) {}
+
+      // Tier 3: Font Em Metrics Em-fallback
+      var fSize = parseInt(tObj.attrs ? tObj.attrs.fontSize || cfg.fontSize || 20 : 20, 10);
+      var lHeight = (tObj.attrs ? tObj.attrs.lineHeight : 1.2) || 1.2;
+      var lines = Math.max(1, ((tObj.attrs ? tObj.attrs.text : '') || '').split('\n').length);
+      return (lines - 1) * (fSize * lHeight) + (fSize * 1.15);
+    };
+
+    var totalTextHeight = measureTextRealHeight(textObj);
+
+    var shapeInnerH = Math.max(0, (bounds.maxY - pBottom) - (bounds.minY + pTop));
+    var newY = bounds.minY + pTop;
     if (v === 'top') {
-      newY = bounds.minY + fontSize + 8;
+      newY = bounds.minY + pTop;
     } else if (v === 'bottom') {
-      newY = bounds.maxY - 8;
+      newY = bounds.maxY - pBottom - totalTextHeight;
+    } else {
+      // middle
+      newY = bounds.minY + pTop + (shapeInnerH / 2) - (totalTextHeight / 2);
     }
-
-    var anchor = (h === 'left') ? 'start' : ((h === 'right') ? 'end' : h);
 
     if (textObj.attrs) {
       textObj.attrs.x = Math.round(newX);
@@ -716,7 +827,7 @@
     if (textObj.el) {
       textObj.el.setAttribute('x', Math.round(newX));
       textObj.el.setAttribute('y', Math.round(newY));
-      textObj.el.setAttribute('text-anchor', anchor);
+      textObj.el.setAttribute('text-anchor', (anchor === 'justify') ? 'start' : anchor);
     }
   }
 
