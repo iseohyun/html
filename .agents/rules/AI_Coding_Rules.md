@@ -1,3 +1,7 @@
+---
+description: AI 코딩 규칙 및 버전 관리, 응답 및 아키텍처 통합 지침
+---
+
 # AI Coding Rules & Directives
 
 ## 1. Versioning & Commit Directives (버전 및 커밋 지침)
