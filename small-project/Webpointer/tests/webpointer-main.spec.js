@@ -1545,7 +1545,66 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     expect(result.hasArcRotate).toBe(true);
     expect(result.hasRectRotate).toBe(true);
   });
+
+  test('TC40: 회전된 호(arc) 및 직사각형(rect/rounded) 선택 상자(boxRect) transform 회전 및 렌더링 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+
+      cfg.objectsMap.clear();
+
+      // 1. 회전된 호 (arc) 선택상자 transform 검증
+      const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      document.getElementById('objectsGroup').appendChild(pathEl);
+      const arcObj = {
+        id: 'arc_rotate_box_test',
+        type: 'arc',
+        el: pathEl,
+        attrs: { cx: 250, cy: 250, rx: 70, ry: 70, startAngle: -90, endAngle: 90, angle: 45 }
+      };
+      cfg.currentTool = 'select';
+      cfg.objectsMap.set(arcObj.id, arcObj);
+      cfg.selectedIds.clear();
+      cfg.selectedIds.add(arcObj.id);
+      render.updateElementAttributes(arcObj);
+      render.renderUI();
+
+      const boxRectArc = document.querySelector('#uiGroup rect[stroke-dasharray="4,4"]');
+      const boxRectArcTransform = boxRectArc ? boxRectArc.getAttribute('transform') : null;
+
+      // 2. 회전된 직사각형 (rect) 요소 transform 및 선택상자 transform 검증
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'rect_transform_test',
+        type: 'rect',
+        el: rectEl,
+        attrs: { x: 400, y: 150, width: 120, height: 80, angle: 60 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+      cfg.selectedIds.clear();
+      cfg.selectedIds.add(rectObj.id);
+      render.updateElementAttributes(rectObj);
+      render.renderUI();
+
+      const rectElementTransform = rectEl.getAttribute('transform');
+      const boxRectRect = document.querySelector('#uiGroup rect[stroke-dasharray="4,4"]');
+      const boxRectRectTransform = boxRectRect ? boxRectRect.getAttribute('transform') : null;
+
+      return {
+        boxRectArcHasRotate: !!boxRectArcTransform && boxRectArcTransform.includes('rotate(45'),
+        rectElementHasRotate: !!rectElementTransform && rectElementTransform.includes('rotate(60'),
+        boxRectRectHasRotate: !!boxRectRectTransform && boxRectRectTransform.includes('rotate(60')
+      };
+    });
+
+    console.log('[Webpointer Rotated Selection Box & Transform Test 🧪]:', result);
+    expect(result.boxRectArcHasRotate).toBe(true);
+    expect(result.rectElementHasRotate).toBe(true);
+    expect(result.boxRectRectHasRotate).toBe(true);
+  });
 });
+
 
 
 

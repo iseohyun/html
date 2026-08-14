@@ -31,6 +31,13 @@
           obj.el.setAttribute('preserveAspectRatio', a.preserveAspectRatio);
         }
       }
+      if (a.angle) {
+        var cX = a.x + (a.width || 100) / 2;
+        var cY = a.y + (a.height || 100) / 2;
+        obj.el.setAttribute('transform', 'rotate(' + a.angle + ' ' + cX + ' ' + cY + ')');
+      } else {
+        obj.el.removeAttribute('transform');
+      }
     } else if (obj.type === 'ellipse') {
       obj.el.setAttribute('cx', a.cx);
       obj.el.setAttribute('cy', a.cy);
@@ -470,6 +477,17 @@
       boxRect.setAttribute('stroke-dasharray', '4,4');
       boxRect.setAttribute('pointer-events', 'stroke');
       boxRect.style.cursor = 'move';
+
+      if (cfg.selectedIds.size === 1) {
+        var singleId = Array.from(cfg.selectedIds)[0];
+        var singleObj = cfg.objectsMap.get(singleId);
+        if (singleObj && singleObj.attrs && singleObj.attrs.angle) {
+          var sA = singleObj.attrs;
+          var sCX = sA.cx !== undefined ? sA.cx : (sA.x !== undefined ? sA.x + (sA.width || 80) / 2 : (minX + maxX) / 2);
+          var sCY = sA.cy !== undefined ? sA.cy : (sA.y !== undefined ? sA.y + (sA.height || 40) / 2 : (minY + maxY) / 2);
+          boxRect.setAttribute('transform', 'rotate(' + sA.angle + ' ' + sCX + ' ' + sCY + ')');
+        }
+      }
       uiGroup.appendChild(boxRect);
     }
 
@@ -618,19 +636,36 @@
         createHandleNode(pEndHandle.x, pEndHandle.y, id, 'arc_end', 3, true, { fill: '#f97316', stroke: '#c2410c', r: 6 });
       } else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'text' || obj.type === 'image') {
         var bounds = window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(obj) : { minX: a.x, maxX: a.x + (a.width || 80), minY: a.y, maxY: a.y + (a.height || 40) };
-        createHandleNode(bounds.minX, bounds.minY, id, 'top_left', 1, false);
-        createHandleNode(bounds.maxX, bounds.maxY, id, 'bottom_right', 2, false);
-        if (obj.type === 'rounded') {
-          var cornerRx = a.rx !== undefined ? a.rx : 15;
-          createHandleNode(bounds.minX + cornerRx, bounds.minY, id, 'corner_rx', 3, true);
+        var cX = (bounds.minX + bounds.maxX) / 2;
+        var cY = (bounds.minY + bounds.maxY) / 2;
+        var rot = a.angle || 0;
+
+        function getBoxRotPoint(px, py) {
+          if (!rot) return { x: px, y: py };
+          var rad = rot * (Math.PI / 180);
+          var dx = px - cX;
+          var dy = py - cY;
+          var rxRot = dx * Math.cos(rad) - dy * Math.sin(rad);
+          var ryRot = dx * Math.sin(rad) + dy * Math.cos(rad);
+          return { x: cX + rxRot, y: cY + ryRot };
         }
 
-        var midX = (bounds.minX + bounds.maxX) / 2;
-        var topY = bounds.minY;
-        var ptRotRect = { x: midX, y: topY - 25 };
+        var ptTL = getBoxRotPoint(bounds.minX, bounds.minY);
+        var ptBR = getBoxRotPoint(bounds.maxX, bounds.maxY);
+        createHandleNode(ptTL.x, ptTL.y, id, 'top_left', 1, false);
+        createHandleNode(ptBR.x, ptBR.y, id, 'bottom_right', 2, false);
+
+        if (obj.type === 'rounded') {
+          var cornerRx = a.rx !== undefined ? a.rx : 15;
+          var ptCorner = getBoxRotPoint(bounds.minX + cornerRx, bounds.minY);
+          createHandleNode(ptCorner.x, ptCorner.y, id, 'corner_rx', 3, true);
+        }
+
+        var ptTopMid = getBoxRotPoint(cX, bounds.minY);
+        var ptRotRect = getBoxRotPoint(cX, bounds.minY - 25);
 
         var rStemRect = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        rStemRect.setAttribute('x1', midX); rStemRect.setAttribute('y1', topY);
+        rStemRect.setAttribute('x1', ptTopMid.x); rStemRect.setAttribute('y1', ptTopMid.y);
         rStemRect.setAttribute('x2', ptRotRect.x); rStemRect.setAttribute('y2', ptRotRect.y);
         rStemRect.setAttribute('stroke', '#0284c7'); rStemRect.setAttribute('stroke-dasharray', '3,3');
         rStemRect.setAttribute('stroke-width', '1.5');
