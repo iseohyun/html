@@ -144,12 +144,44 @@
         '<button class="tool-btn ' + (canTransform ? '' : 'disabled') + '" ' + (canTransform ? 'onclick="transformSelected(\'rotateNeg90\')"' : 'disabled style="opacity:0.4; cursor:not-allowed;"') + '><span class="alt-badge">L</span>' + (icons.rotateNeg90 || '') + '<span class="tooltip-text">' + (canTransform ? '-90도 회전 (반시계방향)' : '-90도 회전 (객체 선택 필요)') + '</span></button>'
       ];
 
+      var metricW = 0, metricH = 0, metricRot = 0;
+      var hasMetricSelection = (cfg.selectedIds && cfg.selectedIds.size > 0);
+      if (hasMetricSelection) {
+        var firstId = Array.from(cfg.selectedIds)[0];
+        var firstObj = cfg.objectsMap.get(firstId);
+        if (firstObj) {
+          var b = window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(firstObj) : null;
+          if (b) {
+            metricW = Math.round(b.maxX - b.minX);
+            metricH = Math.round(b.maxY - b.minY);
+          }
+          metricRot = firstObj.attrs.angle || 0;
+        }
+      }
+
+      var metricsContentHtml =
+        '<div style="display:flex; flex-direction:column; gap:2px; justify-content:center; padding:1px 2px;">' +
+          '<div style="display:flex; align-items:center; gap:4px; font-size:0.75rem; font-weight:600; color:#334155;">' +
+            '<span style="width:42px; color:#475569;">가로:</span>' +
+            '<input type="number" min="1" max="9999" value="' + (hasMetricSelection ? metricW : '') + '" placeholder="0" ' + (hasMetricSelection ? '' : 'disabled ') + 'oninput="updateSelectedMetricWidth(this.value)" onchange="updateSelectedMetricWidth(this.value)" style="width:55px; padding:1px 4px; font-size:0.75rem; border:1px solid #cbd5e1; border-radius:4px; text-align:right;" title="가로 크기 (Width)"> px' +
+          '</div>' +
+          '<div style="display:flex; align-items:center; gap:4px; font-size:0.75rem; font-weight:600; color:#334155;">' +
+            '<span style="width:42px; color:#475569;">세로:</span>' +
+            '<input type="number" min="1" max="9999" value="' + (hasMetricSelection ? metricH : '') + '" placeholder="0" ' + (hasMetricSelection ? '' : 'disabled ') + 'oninput="updateSelectedMetricHeight(this.value)" onchange="updateSelectedMetricHeight(this.value)" style="width:55px; padding:1px 4px; font-size:0.75rem; border:1px solid #cbd5e1; border-radius:4px; text-align:right;" title="세로 크기 (Height)"> px' +
+          '</div>' +
+          '<div style="display:flex; align-items:center; gap:4px; font-size:0.75rem; font-weight:600; color:#334155;">' +
+            '<span style="width:48px; color:#475569;">회전각:</span>' +
+            '<input type="number" min="-360" max="360" value="' + (hasMetricSelection ? metricRot : '') + '" placeholder="0" ' + (hasMetricSelection ? '' : 'disabled ') + 'oninput="updateSelectedMetricAngle(this.value)" onchange="updateSelectedMetricAngle(this.value)" style="width:49px; padding:1px 4px; font-size:0.75rem; border:1px solid #cbd5e1; border-radius:4px; text-align:right;" title="회전 각도 (Angle)"> °' +
+          '</div>' +
+        '</div>';
+
       ribbonBar.innerHTML =
         buildCategoryHtml('insert_shapes', '도형 삽입', build3RowGridHtml(shapeTools)) +
         buildCategoryHtml('insert_layer', '레이어 순서', build3RowGridHtml(layerTools)) +
         buildCategoryHtml('insert_group', '그룹화', build3RowGridHtml(groupTools)) +
         buildCategoryHtml('insert_align', '정렬 및 간격', build3RowGridHtml(alignTools)) +
-        buildCategoryHtml('insert_transform', '회전 및 대칭', build3RowGridHtml(transformTools));
+        buildCategoryHtml('insert_transform', '회전 및 대칭', build3RowGridHtml(transformTools)) +
+        buildCategoryHtml('insert_metrics', '수치', metricsContentHtml);
     } else if (cfg.currentTab === 'view') {
       var stepPx = cfg.gridStepSize || 24;
 

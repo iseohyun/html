@@ -1893,7 +1893,57 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     console.log('[Webpointer Shape Allocated Text Pivot Alignment Test 🧪]:', result);
     expect(result.isCenterMatching).toBe(true);
   });
+
+  test('TC48: 리본 메뉴 [삽입 > 수치 (가로:, 세로:, 회전각:)] 카테고리 신설 및 실시간 수치 연동 검증 수트', async ({ page }) => {
+    // 탭을 'insert'로 변경 및 도형 선택 시 수치 카테고리 렌더링 확인
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+
+      cfg.currentTab = 'insert';
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
+      // 직사각형 객체 생성 (x: 100, y: 100, width: 150, height: 80, angle: 30)
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'metric_test_rect',
+        type: 'rect',
+        el: rectEl,
+        attrs: { x: 100, y: 100, width: 150, height: 80, angle: 30 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+      cfg.selectedIds.add(rectObj.id);
+
+      render.renderRibbon();
+
+      // 수치 입력 함수 호출 시뮬레이션
+      window.updateSelectedMetricWidth(200);
+      window.updateSelectedMetricHeight(120);
+      window.updateSelectedMetricAngle(60);
+
+      return {
+        updatedWidth: rectObj.attrs.width,
+        updatedHeight: rectObj.attrs.height,
+        updatedAngle: rectObj.attrs.angle
+      };
+    });
+
+    console.log('[Webpointer Ribbon Metrics Category Test 🧪]:', result);
+    expect(result.updatedWidth).toBe(200);
+    expect(result.updatedHeight).toBe(120);
+    expect(result.updatedAngle).toBe(60);
+
+    // DOM UI에서 '수치', '가로:', '세로:', '회전각:' 텍스트 표시 검증
+    const ribbonBar = page.locator('#ribbonBar');
+    await expect(ribbonBar).toContainText('수치');
+    await expect(ribbonBar).toContainText('가로:');
+    await expect(ribbonBar).toContainText('세로:');
+    await expect(ribbonBar).toContainText('회전각:');
+  });
 });
+
 
 
 

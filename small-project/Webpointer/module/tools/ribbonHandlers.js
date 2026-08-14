@@ -4432,8 +4432,74 @@
     };
   }
 
+  function updateSelectedMetricWidth(newW) {
+    var render = window.WebpointerRender;
+    var val = parseFloat(newW);
+    if (isNaN(val) || val <= 0) return;
+    cfg.selectedIds.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (obj && obj.attrs) {
+        if (obj.attrs.width !== undefined) {
+          obj.attrs.width = val;
+        } else if (obj.attrs.rx !== undefined && (obj.type === 'ellipse' || obj.type === 'arc')) {
+          obj.attrs.rx = val / 2;
+        } else if (obj.type === 'line') {
+          var currW = Math.abs(obj.attrs.x2 - obj.attrs.x1);
+          if (currW > 0) {
+            var scale = val / currW;
+            obj.attrs.x2 = obj.attrs.x1 + (obj.attrs.x2 - obj.attrs.x1) * scale;
+          }
+        }
+        if (render && render.updateElementAttributes) render.updateElementAttributes(obj);
+      }
+    });
+    if (render && render.renderUI) render.renderUI();
+  }
+
+  function updateSelectedMetricHeight(newH) {
+    var render = window.WebpointerRender;
+    var val = parseFloat(newH);
+    if (isNaN(val) || val <= 0) return;
+    cfg.selectedIds.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (obj && obj.attrs) {
+        if (obj.attrs.height !== undefined) {
+          obj.attrs.height = val;
+        } else if (obj.attrs.ry !== undefined && (obj.type === 'ellipse' || obj.type === 'arc')) {
+          obj.attrs.ry = val / 2;
+        } else if (obj.type === 'line') {
+          var currH = Math.abs(obj.attrs.y2 - obj.attrs.y1);
+          if (currH > 0) {
+            var scale = val / currH;
+            obj.attrs.y2 = obj.attrs.y1 + (obj.attrs.y2 - obj.attrs.y1) * scale;
+          }
+        }
+        if (render && render.updateElementAttributes) render.updateElementAttributes(obj);
+      }
+    });
+    if (render && render.renderUI) render.renderUI();
+  }
+
+  function updateSelectedMetricAngle(newAng) {
+    var render = window.WebpointerRender;
+    var val = parseFloat(newAng);
+    if (isNaN(val)) return;
+    var safeAng = Math.round((val % 360 + 360) % 360);
+    cfg.selectedIds.forEach(function(id) {
+      var obj = cfg.objectsMap.get(id);
+      if (obj && obj.attrs) {
+        obj.attrs.angle = safeAng;
+        if (render && render.updateElementAttributes) render.updateElementAttributes(obj);
+      }
+    });
+    if (render && render.renderUI) render.renderUI();
+  }
+
   window.openBezierSplitConfirmModal = openBezierSplitConfirmModal;
   window.openTextRotateSplitConfirmModal = openTextRotateSplitConfirmModal;
+  window.updateSelectedMetricWidth = updateSelectedMetricWidth;
+  window.updateSelectedMetricHeight = updateSelectedMetricHeight;
+  window.updateSelectedMetricAngle = updateSelectedMetricAngle;
   window.bringToFront = bringToFront;
   window.bringForward = bringForward;
   window.sendBackward = sendBackward;
