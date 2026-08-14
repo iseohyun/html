@@ -2,6 +2,22 @@
 
 All notable changes to the Webpointer Vector CAD Editor project are documented in this file.
 
+## [v0.8.0] - 2026-08-14
+### Major Improvements (Shape-Text Unified Synchronization Engine & Precision UX)
+- **Shape-Text 100% Unified Bounds Sync Engine (`syncShapeTextBounds`)**:
+  - Synchronized text bounding box (`x, y, width, height, angle`) with host shape on move, resize, rotation, and flip, completely eliminating rotation teleportation bugs.
+  - Automatically hidden text-only transform handles when embedded in shapes to present a single unified handle set.
+- **Shape+Text Keybinding & Precision Cursor UX (`TC51`, `TC52`, `TC53`)**:
+  - **F2 Key Edit Mode**: Pressing `F2` on a shape or text opens inline editing for the existing merged text without creating duplicate text objects.
+  - **Esc Key Restore**: Pressing `Esc` during typing finishes text editing and restores tool state to Select mode with host shape selected.
+  - **Top Dominant Baseline (`dominant-baseline="hanging"`)**: Switched default text baseline to top baseline (`hanging`), ensuring text stays inside shape boundaries.
+  - **Grouped Selection Box (`boxRect`) Rotation**: Updated selection box renderer to apply rotation transform for multi-selected / grouped shape+text objects.
+  - **Rotated Caret & Selection Highlight Alignment**: Synchronized caret line (`canvasBlinkingCaret`) and selection highlight group (`canvasTextSelectionGroup`) with `hanging` baseline and `rotate(angle)` transform.
+- **Metrics Category in Ribbon Menu (`Insert` > `Metrics`) (`TC48`)**:
+  - Added real-time width (px), height (px), and rotation angle (°) input fields in the Insert ribbon tab with bi-directional update handlers.
+- **Ctrl-Rotate Separation Modal & 90-Degree Rotation Binding (`TC45`, `TC49`)**:
+  - Implemented Ctrl-rotate notice dialog and fixed global reference bindings for `transformSelected('rotate90')`.
+
 ## [v0.7.1] - 2026-08-09
 ### Added
 - Added Image/Symbol Insertion Tool button in `Insert` > `Shapes` ribbon category with modal picker (`#imageSymbolPickerModal`).
