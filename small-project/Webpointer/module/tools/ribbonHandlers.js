@@ -4376,7 +4376,64 @@
     };
   }
 
+  function openTextRotateSplitConfirmModal(onConfirm, onCancel) {
+    if (localStorage.getItem('webpointer_suppress_text_rotate_split_confirm') === 'true') {
+      if (onConfirm) onConfirm();
+      return;
+    }
+
+    var existingModal = document.getElementById('textRotateSplitModalOverlay');
+    if (existingModal) existingModal.remove();
+
+    var overlay = document.createElement('div');
+    overlay.id = 'textRotateSplitModalOverlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.45);backdrop-filter:blur(3px);z-index:99999;display:flex;align-items:center;justify-content:center;';
+
+    var modalHtml = '<div style="background:#ffffff;border-radius:12px;padding:24px;width:380px;box-shadow:0 12px 32px rgba(0,0,0,0.2);font-family:sans-serif;color:#1e293b;">' +
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">' +
+        '<span style="font-size:24px;">🔄</span>' +
+        '<h3 style="margin:0;font-size:18px;font-weight:700;color:#0f172a;">회전 분리</h3>' +
+      '</div>' +
+      '<p style="margin:0 0 16px 0;font-size:14px;color:#475569;line-height:1.5;">' +
+        '도형과 텍스트의 회전을 분리합니다.' +
+      '</p>' +
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;font-size:13px;color:#334155;">' +
+        '<input type="checkbox" id="textRotateSuppressChk" style="width:16px;height:16px;cursor:pointer;">' +
+        '<label for="textRotateSuppressChk" style="cursor:pointer;">앞으로 묻지 않음</label>' +
+      '</div>' +
+      '<div style="display:flex;justify-content:flex-end;gap:8px;">' +
+        '<button id="textRotateSplitCancelBtn" style="padding:8px 16px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:6px;font-size:13px;font-weight:600;color:#475569;cursor:pointer;">취소</button>' +
+        '<button id="textRotateSplitConfirmBtn" style="padding:8px 16px;border:none;background:#0284c7;border-radius:6px;font-size:13px;font-weight:600;color:#ffffff;cursor:pointer;">확인</button>' +
+      '</div>' +
+    '</div>';
+
+    overlay.innerHTML = modalHtml;
+    document.body.appendChild(overlay);
+
+    var cancelBtn = document.getElementById('textRotateSplitCancelBtn');
+    var confirmBtn = document.getElementById('textRotateSplitConfirmBtn');
+    var suppressChk = document.getElementById('textRotateSuppressChk');
+
+    var closeModal = function() {
+      if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    };
+
+    cancelBtn.onclick = function() {
+      closeModal();
+      if (onCancel) onCancel();
+    };
+
+    confirmBtn.onclick = function() {
+      if (suppressChk && suppressChk.checked) {
+        localStorage.setItem('webpointer_suppress_text_rotate_split_confirm', 'true');
+      }
+      closeModal();
+      if (onConfirm) onConfirm();
+    };
+  }
+
   window.openBezierSplitConfirmModal = openBezierSplitConfirmModal;
+  window.openTextRotateSplitConfirmModal = openTextRotateSplitConfirmModal;
   window.bringToFront = bringToFront;
   window.bringForward = bringForward;
   window.sendBackward = sendBackward;

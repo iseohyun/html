@@ -176,6 +176,24 @@
           return;
         }
 
+        if (isCtrlPressed && activeObj && hType === 'ellipse_rotate') {
+          var startRotateDrag = function() {
+            state.isDraggingHandle = true;
+            state.activeHandleInfo = { objId: hObjId, handleType: hType, idx: hIdx };
+            if (activeObj) {
+              state.initialObjAttrsMap.clear();
+              state.initialObjAttrsMap.set(activeObj.id, JSON.parse(JSON.stringify(activeObj.attrs)));
+            }
+          };
+
+          if (window.openTextRotateSplitConfirmModal) {
+            window.openTextRotateSplitConfirmModal(startRotateDrag);
+          } else {
+            startRotateDrag();
+          }
+          return;
+        }
+
         state.isDraggingHandle = true;
         state.activeHandleInfo = {
           objId: hObjId,

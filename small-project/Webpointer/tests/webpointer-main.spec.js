@@ -1753,7 +1753,32 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     expect(result.attrYIsZero).toBe(true);
     expect(consoleErrors.length).toBe(0);
   });
+
+  test('TC45: Ctrl 키 + 회전 핸들 누름 시 "도형과 텍스트의 회전을 분리합니다. [ ] 앞으로 묻지 않음" 팝업 모달 출력 검증', async ({ page }) => {
+    // LocalStorage 초기화
+    await page.evaluate(() => localStorage.removeItem('webpointer_suppress_text_rotate_split_confirm'));
+
+    // 모달 호출 시뮬레이션
+    await page.evaluate(() => {
+      window.openTextRotateSplitConfirmModal();
+    });
+
+    // 팝업 텍스트 검증
+    const modalOverlay = page.locator('#textRotateSplitModalOverlay');
+    await expect(modalOverlay).toBeVisible();
+    await expect(modalOverlay).toContainText('도형과 텍스트의 회전을 분리합니다.');
+    await expect(modalOverlay).toContainText('앞으로 묻지 않음');
+
+    // 앞으로 묻지 않음 체크 후 확인 클릭
+    await page.locator('#textRotateSuppressChk').check();
+    await page.locator('#textRotateSplitConfirmBtn').click();
+    await expect(modalOverlay).not.toBeVisible();
+
+    const isSuppressed = await page.evaluate(() => localStorage.getItem('webpointer_suppress_text_rotate_split_confirm'));
+    expect(isSuppressed).toBe('true');
+  });
 });
+
 
 
 
