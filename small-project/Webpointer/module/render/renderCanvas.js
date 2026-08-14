@@ -110,40 +110,28 @@
       obj.el.setAttribute('font-weight', fWeight);
       obj.el.setAttribute('font-style', fStyle);
       var isJustify = (tAnchor === 'justify');
-      obj.el.setAttribute('text-anchor', isJustify ? 'start' : tAnchor);
       obj.el.setAttribute('dominant-baseline', dBase);
       obj.el.setAttribute('writing-mode', wMode);
 
-      if (uStyle !== 'none') {
-        var decoVal = (tDeco && tDeco !== 'none') ? (tDeco + ' underline') : 'underline';
-        obj.el.setAttribute('text-decoration', decoVal);
-        obj.el.style.textDecorationLine = decoVal;
-        obj.el.style.textDecorationColor = uColor;
-        obj.el.style.textDecorationStyle = uStyle;
-        obj.el.style.textUnderlineOffset = uOffset + 'px';
-        obj.el.style.textDecorationThickness = uWidth + 'px';
-      } else {
-        obj.el.setAttribute('text-decoration', tDeco);
-        obj.el.style.textDecorationLine = tDeco;
-        obj.el.style.textDecorationColor = '';
-        obj.el.style.textDecorationStyle = '';
-        obj.el.style.textUnderlineOffset = '';
-        obj.el.style.textDecorationThickness = '';
+      var hostShape = null;
+      if (obj.parentId) {
+        cfg.objectsMap.forEach(function(o) {
+          if (o.parentId === obj.parentId && o.type !== 'text') {
+            hostShape = o;
+          }
+        });
       }
 
-      if (a.fill) {
-        obj.el.setAttribute('fill', a.fill);
-      } else {
-        obj.el.removeAttribute('fill');
+      var pad = 10;
+      var hostBounds = hostShape ? (window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(hostShape) : null) : null;
+
+      if (isJustify && hostBounds) {
+        safeX = Math.round(hostBounds.minX + pad);
+        a.x = safeX;
+        obj.el.setAttribute('x', safeX);
       }
 
-      if (a.stroke && a.stroke !== 'none') {
-        obj.el.setAttribute('stroke', a.stroke);
-        obj.el.setAttribute('stroke-width', a.strokeWidth !== undefined ? a.strokeWidth : (cfg.textStrokeWidth || 1));
-      } else {
-        obj.el.removeAttribute('stroke');
-        obj.el.removeAttribute('stroke-width');
-      }
+      obj.el.setAttribute('text-anchor', isJustify ? 'start' : tAnchor);
 
       var lines = (a.text || '').split('\n');
       obj.el.innerHTML = '';
@@ -162,6 +150,80 @@
           tspan.textContent = lineStr || '\u200B';
           obj.el.appendChild(tspan);
         });
+      }
+
+      var existingTspans = obj.el.querySelectorAll('tspan');
+      if (isJustify) {
+        var hostDimension = 0;
+        var isVertical = (wMode === 'vertical-rl' || wMode === 'tb-rl');
+        if (hostBounds) {
+          hostDimension = isVertical ? (hostBounds.maxY - hostBounds.minY) : (hostBounds.maxX - hostBounds.minX);
+        } else if (isVertical) {
+          hostDimension = a.height || 100;
+        } else {
+          hostDimension = a.width || 100;
+        }
+
+        var targetDim = Math.max(10, hostDimension - (pad * 2));
+
+        if (existingTspans && existingTspans.length > 0) {
+          existingTspans.forEach(function(ts) {
+            var lineStr = ts.textContent || '';
+            var spaceCount = (lineStr.match(/ /g) || []).length;
+            var lineLen = 0;
+            try {
+              lineLen = ts.getComputedTextLength ? ts.getComputedTextLength() : 0;
+            } catch(e) {}
+
+            if (spaceCount > 0 && targetDim > lineLen && lineLen > 0) {
+              var extraWordSpace = (targetDim - lineLen) / spaceCount;
+              ts.style.wordSpacing = extraWordSpace.toFixed(2) + 'px';
+            } else if (spaceCount > 0 && targetDim > 0) {
+              var estCharW = (parseInt(fSize, 10) || 20) * 0.6;
+              var estLen = (lineStr.length - spaceCount) * estCharW + spaceCount * (estCharW * 0.5);
+              if (targetDim > estLen) {
+                var extraWordSpaceEst = (targetDim - estLen) / spaceCount;
+                ts.style.wordSpacing = extraWordSpaceEst.toFixed(2) + 'px';
+              } else {
+                ts.style.wordSpacing = '';
+              }
+            } else {
+              ts.style.wordSpacing = '';
+            }
+          });
+          obj.el.style.wordSpacing = '';
+        } else {
+          // Single-line text justification
+          var textContent = a.text || obj.el.textContent || '';
+          var spaceCountSingle = (textContent.match(/ /g) || []).length;
+          var computedLenSingle = 0;
+          try {
+            computedLenSingle = obj.el.getComputedTextLength ? obj.el.getComputedTextLength() : 0;
+          } catch(e) {}
+
+          if (spaceCountSingle > 0 && targetDim > computedLenSingle && computedLenSingle > 0) {
+            var extraSingle = (targetDim - computedLenSingle) / spaceCountSingle;
+            obj.el.style.wordSpacing = extraSingle.toFixed(2) + 'px';
+          } else if (spaceCountSingle > 0 && targetDim > 0) {
+            var estCharW2 = (parseInt(fSize, 10) || 20) * 0.6;
+            var estLen2 = (textContent.length - spaceCountSingle) * estCharW2 + spaceCountSingle * (estCharW2 * 0.5);
+            if (targetDim > estLen2) {
+              var extraSingleEst = (targetDim - estLen2) / spaceCountSingle;
+              obj.el.style.wordSpacing = extraSingleEst.toFixed(2) + 'px';
+            } else {
+              obj.el.style.wordSpacing = '';
+            }
+          } else {
+            obj.el.style.wordSpacing = '';
+          }
+        }
+      } else {
+        obj.el.style.wordSpacing = '';
+        if (existingTspans && existingTspans.length > 0) {
+          existingTspans.forEach(function(ts) {
+            ts.style.wordSpacing = '';
+          });
+        }
       }
 
       // Render Custom SVG Underline Path Element

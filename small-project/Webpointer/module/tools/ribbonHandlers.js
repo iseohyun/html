@@ -602,27 +602,29 @@
     var members = getAllGroupMembers(cfg.selectedIds);
     var textObjs = members.filter(function(m) { return m.type === 'text'; });
 
+    var vAlign = 'top';
+    if (val === 'central' || val === 'middle') {
+      vAlign = 'middle';
+    } else if (val === 'alphabetic' || val === 'bottom') {
+      vAlign = 'bottom';
+    }
+
     textObjs.forEach(function(obj) {
       if (obj && obj.attrs) {
-        var shapeBounds = getParentShapeBounds(obj);
-        var fSize = obj.attrs.fontSize || cfg.fontSize || 20;
+        var shapeObj = null;
+        if (obj.parentId) {
+          cfg.objectsMap.forEach(function(o) {
+            if (o.parentId === obj.parentId && o.type !== 'text') {
+              shapeObj = o;
+            }
+          });
+        }
 
-        if (shapeBounds) {
-          var cy = (shapeBounds.minY + shapeBounds.maxY) / 2;
-          var ty = shapeBounds.minY + (fSize * 0.8) + 4;
-          var by = shapeBounds.maxY - (fSize * 0.2) - 4;
-          var targetY = cy;
-          if (val === 'hanging') {
-            targetY = ty;
-          } else if (val === 'central' || val === 'middle') {
-            targetY = cy + (fSize * 0.35);
-          } else if (val === 'alphabetic' || val === 'bottom') {
-            targetY = by;
-          }
-          obj.attrs.y = Math.round(targetY);
-          obj.attrs.dominantBaseline = val;
+        if (shapeObj && window.WebpointerTextTool && window.WebpointerTextTool.updateShapeTextAlignment) {
+          window.WebpointerTextTool.updateShapeTextAlignment(shapeObj, obj, obj.attrs.textAnchor, vAlign);
         } else {
           obj.attrs.dominantBaseline = val;
+          obj.attrs.verticalAlign = vAlign;
         }
 
         if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
@@ -645,6 +647,65 @@
     }
     setTextVerticalAlign(nextBaseline);
   }
+
+  function setTextPadding(side, val) {
+    var numVal = Math.max(0, Math.min(200, parseInt(val, 10) || 0));
+    if (cfg.padSync) {
+      cfg.padTop = numVal;
+      cfg.padBottom = numVal;
+      cfg.padLeft = numVal;
+      cfg.padRight = numVal;
+    } else {
+      if (side === 'top') cfg.padTop = numVal;
+      if (side === 'bottom') cfg.padBottom = numVal;
+      if (side === 'left') cfg.padLeft = numVal;
+      if (side === 'right') cfg.padRight = numVal;
+    }
+
+    var members = getAllGroupMembers(cfg.selectedIds);
+    var textObjs = members.filter(function(m) { return m.type === 'text'; });
+    textObjs.forEach(function(obj) {
+      if (obj && obj.attrs) {
+        obj.attrs.padTop = cfg.padTop;
+        obj.attrs.padBottom = cfg.padBottom;
+        obj.attrs.padLeft = cfg.padLeft;
+        obj.attrs.padRight = cfg.padRight;
+
+        var shapeObj = null;
+        if (obj.parentId) {
+          cfg.objectsMap.forEach(function(o) {
+            if (o.parentId === obj.parentId && o.type !== 'text') {
+              shapeObj = o;
+            }
+          });
+        }
+        if (shapeObj && window.WebpointerTextTool && window.WebpointerTextTool.updateShapeTextAlignment) {
+          window.WebpointerTextTool.updateShapeTextAlignment(shapeObj, obj, obj.attrs.textAnchor, obj.attrs.verticalAlign || 'top');
+        }
+        if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+          window.WebpointerRender.updateElementAttributes(obj);
+        }
+      }
+    });
+
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+  }
+
+  function toggleTextPaddingSync() {
+    cfg.padSync = !cfg.padSync;
+    if (cfg.padSync) {
+      var syncVal = cfg.padTop;
+      cfg.padBottom = syncVal;
+      cfg.padLeft = syncVal;
+      cfg.padRight = syncVal;
+      setTextPadding('top', syncVal);
+    } else {
+      if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+    }
+  }
+
+  window.setTextPadding = setTextPadding;
+  window.toggleTextPaddingSync = toggleTextPaddingSync;
 
   function cycleTextHorizontalAlign() {
     var cur = cfg.textAnchor || 'start';

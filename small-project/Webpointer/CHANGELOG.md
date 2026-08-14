@@ -2,6 +2,28 @@
 
 All notable changes to the Webpointer Vector CAD Editor project are documented in this file.
 
+## [v0.8.2] - 2026-08-14
+### Added & Improved (Text Padding Category, 3-Tier Vertical Alignment Engine & Context-Aware Clipboard)
+- **Text Padding Category in `Text Format` Tab (`TC57`)**:
+  - Added new `Padding` category under `Text Format` (`text`) ribbon tab with Top, Bottom, Left, and Right numeric padding inputs (default 10px) and `Sync All Sides` checkbox (default checked).
+  - Integrated padding controls dynamically into horizontal (`left`, `center`, `right`, `justify`) and vertical (`top`, `middle`, `bottom`) text placement algorithms.
+- **3-Tier Real-Time Height Measurement & Vertical Alignment Engine (`TC54`, `TC55`)**:
+  - Built 3-Tier 2-Pass height measurement helper (`measureTextRealHeight`) using DOM `getBBox()`, off-screen SVG measurement fallback, and font em metrics.
+  - Aligned text box center with shape center for middle alignment, and bottom line with shape bottom margin for bottom alignment.
+  - Resolved cumulative Y position drift when toggling vertical alignment repeatedly.
+- **Context-Aware `Ctrl+C` / `Ctrl+V` & Cascading Paste Engine (`TC56`)**:
+  - Enabled context-aware clipboard handling: pasting text automatically embeds text box into a selected shape, or creates a standalone text box if no shape is selected.
+  - Implemented cumulative diagonal cascading offset (+15px per step) for consecutive `Ctrl+V` shape pastes.
+- **AI Coding Rules Directive**:
+  - Added Section 5 Anti-Inference Verification Directive to `AI_Coding_Rules.md`.
+
+## [v0.8.1] - 2026-08-14
+### Fixed & Improved (SVG Text Justification Engine)
+- **SVG Text Justification (`textAnchor="justify"`) Engine (`TC54`)**:
+  - Replaced fallback left-alignment logic with automatic `textLength` and `lengthAdjust="spacing"` attributes on justified text.
+  - Dynamically stretches word and character spacing across container/shape inner width for full justification.
+  - Automatically cleans up `textLength` attributes when switching back to left/center/right alignment modes.
+
 ## [v0.8.0] - 2026-08-14
 ### Major Improvements (Shape-Text Unified Synchronization Engine & Precision UX)
 - **Shape-Text 100% Unified Bounds Sync Engine (`syncShapeTextBounds`)**:

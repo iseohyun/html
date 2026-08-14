@@ -839,6 +839,67 @@
         return;
       }
 
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C')) {
+        var isInputTarget1 = e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA');
+        if (!isInputTarget1 && window.WebpointerClipboard) {
+          e.preventDefault();
+          window.WebpointerClipboard.copySelectedObjects();
+          return;
+        }
+      }
+
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V')) {
+        var isInputTarget2 = e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA');
+        if (!isInputTarget2 && window.WebpointerClipboard) {
+          e.preventDefault();
+          if (navigator.clipboard && navigator.clipboard.readText) {
+            navigator.clipboard.readText().then(function(clipText) {
+              if (!clipText) {
+                window.WebpointerClipboard.pasteClipboardObjects();
+                return;
+              }
+              var isSvg = clipText.includes('<svg') || clipText.includes('<path') || clipText.includes('<rect') || clipText.includes('<g');
+              try {
+                var parsed = JSON.parse(clipText);
+                if (parsed && parsed.type === 'webpointer_clipboard') {
+                  window.WebpointerClipboard.copiedObjects = parsed.data;
+                  window.WebpointerClipboard.pasteClipboardObjects();
+                  return;
+                }
+              } catch(eJson) {}
+
+              if (isSvg && window.WebpointerClipboard.pasteSVGFromClipboard) {
+                window.WebpointerClipboard.pasteSVGFromClipboard(clipText);
+                return;
+              }
+
+              // Plain Text: If a shape is selected, merge into shape; else paste standalone text!
+              if (cfg.selectedIds.size >= 1) {
+                var selId = Array.from(cfg.selectedIds)[0];
+                var selObj = cfg.objectsMap.get(selId);
+                if (selObj && selObj.type !== 'text') {
+                  window.WebpointerClipboard.pasteTextIntoSelectedShape(clipText);
+                  return;
+                }
+              }
+
+              // No shape selected -> paste standalone text!
+              if (window.WebpointerClipboard.pasteStandaloneText) {
+                window.WebpointerClipboard.pasteStandaloneText(clipText);
+                return;
+              }
+
+              window.WebpointerClipboard.pasteClipboardObjects();
+            }).catch(function() {
+              window.WebpointerClipboard.pasteClipboardObjects();
+            });
+          } else {
+            window.WebpointerClipboard.pasteClipboardObjects();
+          }
+          return;
+        }
+      }
+
       if (e.key === 'F2') {
         if (cfg.selectedIds.size >= 1) {
           var selId = Array.from(cfg.selectedIds)[0];

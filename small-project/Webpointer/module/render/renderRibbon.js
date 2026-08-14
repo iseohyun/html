@@ -502,6 +502,27 @@
           underlineWidthInputHtml +
         '</div>';
 
+      var padSyncChecked = cfg.padSync !== false ? 'checked' : '';
+      var paddingCategoryContent =
+        '<div style="display:flex; flex-direction:column; gap:2px; justify-content:center;">' +
+          '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
+            '<span style="font-size:0.75rem; font-weight:600; color:#475569; width:16px;">상:</span>' +
+            '<input type="number" min="0" max="200" value="' + (cfg.padTop !== undefined ? cfg.padTop : 10) + '" oninput="setTextPadding(\'top\', this.value)" onchange="setTextPadding(\'top\', this.value)" style="width:36px; padding:2px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px; text-align:center;" title="상단 패딩 (px)">' +
+            '<span style="font-size:0.75rem; font-weight:600; color:#475569; width:16px;">하:</span>' +
+            '<input type="number" min="0" max="200" value="' + (cfg.padBottom !== undefined ? cfg.padBottom : 10) + '" oninput="setTextPadding(\'bottom\', this.value)" onchange="setTextPadding(\'bottom\', this.value)" style="width:36px; padding:2px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px; text-align:center;" title="하단 패딩 (px)">' +
+          '</div>' +
+          '<div style="display:flex; flex-direction:row; align-items:center; gap:4px;">' +
+            '<span style="font-size:0.75rem; font-weight:600; color:#475569; width:16px;">좌:</span>' +
+            '<input type="number" min="0" max="200" value="' + (cfg.padLeft !== undefined ? cfg.padLeft : 10) + '" oninput="setTextPadding(\'left\', this.value)" onchange="setTextPadding(\'left\', this.value)" style="width:36px; padding:2px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px; text-align:center;" title="좌측 패딩 (px)">' +
+            '<span style="font-size:0.75rem; font-weight:600; color:#475569; width:16px;">우:</span>' +
+            '<input type="number" min="0" max="200" value="' + (cfg.padRight !== undefined ? cfg.padRight : 10) + '" oninput="setTextPadding(\'right\', this.value)" onchange="setTextPadding(\'right\', this.value)" style="width:36px; padding:2px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px; text-align:center;" title="우측 패딩 (px)">' +
+          '</div>' +
+          '<div style="display:flex; flex-direction:row; align-items:center; gap:3px; margin-top:2px;">' +
+            '<input type="checkbox" id="padSyncCheck" ' + padSyncChecked + ' onchange="toggleTextPaddingSync()" style="cursor:pointer;">' +
+            '<label for="padSyncCheck" style="font-size:0.75rem; font-weight:600; color:#334155; cursor:pointer;">상하좌우 일치</label>' +
+          '</div>' +
+        '</div>';
+
       var textPanBtn    = '<button class="tool-btn ' + (cfg.currentTool==='pan'?'active':'') + '" onclick="setTool(\'pan\')"><span class="alt-badge">H</span>' + (icons.pan || '') + '<span class="tooltip-text">캔버스 화면 잡아서 밀기 (H)</span></button>';
       var textSelectBtn = '<button class="tool-btn ' + (cfg.currentTool==='select'?'active':'') + '" onclick="setTool(\'select\')"><span class="alt-badge">V</span>' + (icons.select || '') + '<span class="tooltip-text">선택 도구 (V)</span></button>';
       var textBoxBtn    = '<button class="tool-btn ' + (cfg.currentTool==='text'?'active':'') + '" onclick="setTool(\'text\')"><span class="alt-badge">T</span>' + (icons.addText || '') + '<span class="tooltip-text">텍스트 상자 도구 (T)</span></button>';
@@ -513,7 +534,8 @@
         buildCategoryHtml('text_insert', '삽입', textInsertContent) +
         buildCategoryHtml('text_font', '글꼴', fontOptionsHtml) +
         buildCategoryHtml('text_color', '색', textColorContent) +
-        buildCategoryHtml('text_underline', '밑줄', underlineCategoryContent);
+        buildCategoryHtml('text_underline', '밑줄', underlineCategoryContent) +
+        buildCategoryHtml('text_padding', '패딩', paddingCategoryContent);
     } else if (cfg.currentTab === 'anim') {
       var selId = cfg.selectedIds && cfg.selectedIds.size > 0 ? Array.from(cfg.selectedIds)[0] : null;
       var hasAnim = false;

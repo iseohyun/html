@@ -736,24 +736,86 @@
     }
 
     var fontSize = parseInt(textObj.attrs ? textObj.attrs.fontSize || cfg.fontSize || 20 : 20, 10);
-    var h = hAlign || (textObj.attrs ? textObj.attrs.textAnchor : 'middle') || 'middle';
-    var v = vAlign || (textObj.attrs ? textObj.attrs.verticalAlign : 'middle') || 'middle';
+    var h = hAlign || (textObj.attrs ? textObj.attrs.textAnchor : 'start') || 'start';
+    var v = vAlign || (textObj.attrs ? textObj.attrs.verticalAlign : 'top') || 'top';
+
+    var pTop = textObj.attrs && textObj.attrs.padTop !== undefined ? textObj.attrs.padTop : (cfg.padTop !== undefined ? cfg.padTop : 10);
+    var pBottom = textObj.attrs && textObj.attrs.padBottom !== undefined ? textObj.attrs.padBottom : (cfg.padBottom !== undefined ? cfg.padBottom : 10);
+    var pLeft = textObj.attrs && textObj.attrs.padLeft !== undefined ? textObj.attrs.padLeft : (cfg.padLeft !== undefined ? cfg.padLeft : 10);
+    var pRight = textObj.attrs && textObj.attrs.padRight !== undefined ? textObj.attrs.padRight : (cfg.padRight !== undefined ? cfg.padRight : 10);
 
     var newX = (bounds.minX + bounds.maxX) / 2;
-    if (h === 'start' || h === 'left') {
-      newX = bounds.minX + 12;
+    var anchor = 'start';
+    if (h === 'start' || h === 'left' || h === 'justify') {
+      newX = bounds.minX + pLeft;
+      anchor = (h === 'justify') ? 'justify' : 'start';
     } else if (h === 'end' || h === 'right') {
-      newX = bounds.maxX - 12;
+      newX = bounds.maxX - pRight;
+      anchor = 'end';
+    } else {
+      newX = bounds.minX + pLeft + (((bounds.maxX - pRight) - (bounds.minX + pLeft)) / 2);
+      anchor = 'middle';
     }
 
-    var newY = (bounds.minY + bounds.maxY) / 2 + (fontSize * 0.35);
+    // 3-Tier 2-Pass real-time height measurement helper
+    var measureTextRealHeight = function(tObj) {
+      if (!tObj) return 20;
+
+      // Tier 1: Direct DOM BBox / getBoundingClientRect check
+      if (tObj.el && tObj.el.getBBox) {
+        try {
+          var bbox = tObj.el.getBBox();
+          if (bbox && bbox.height > 0) {
+            return bbox.height;
+          }
+        } catch(eB1) {}
+      }
+
+      // Tier 2: Offscreen container measurement
+      try {
+        var tempSvg = document.getElementById('temp_measure_svg');
+        if (!tempSvg) {
+          tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          tempSvg.setAttribute('id', 'temp_measure_svg');
+          tempSvg.style.position = 'absolute';
+          tempSvg.style.top = '-9999px';
+          tempSvg.style.left = '-9999px';
+          tempSvg.style.visibility = 'hidden';
+          tempSvg.style.width = '1000px';
+          tempSvg.style.height = '1000px';
+          document.body.appendChild(tempSvg);
+        }
+        var cloneEl = tObj.el ? tObj.el.cloneNode(true) : null;
+        if (!cloneEl) {
+          cloneEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          cloneEl.textContent = tObj.attrs ? (tObj.attrs.text || '') : '';
+        }
+        tempSvg.appendChild(cloneEl);
+        var cloneBBox = cloneEl.getBBox();
+        var measuredHeight = cloneBBox ? cloneBBox.height : 0;
+        tempSvg.removeChild(cloneEl);
+        if (measuredHeight > 0) return measuredHeight;
+      } catch(eB2) {}
+
+      // Tier 3: Font Em Metrics Em-fallback
+      var fSize = parseInt(tObj.attrs ? tObj.attrs.fontSize || cfg.fontSize || 20 : 20, 10);
+      var lHeight = (tObj.attrs ? tObj.attrs.lineHeight : 1.2) || 1.2;
+      var lines = Math.max(1, ((tObj.attrs ? tObj.attrs.text : '') || '').split('\n').length);
+      return (lines - 1) * (fSize * lHeight) + (fSize * 1.15);
+    };
+
+    var totalTextHeight = measureTextRealHeight(textObj);
+
+    var shapeInnerH = Math.max(0, (bounds.maxY - pBottom) - (bounds.minY + pTop));
+    var newY = bounds.minY + pTop;
     if (v === 'top') {
-      newY = bounds.minY + fontSize + 8;
+      newY = bounds.minY + pTop;
     } else if (v === 'bottom') {
-      newY = bounds.maxY - 8;
+      newY = bounds.maxY - pBottom - totalTextHeight;
+    } else {
+      // middle
+      newY = bounds.minY + pTop + (shapeInnerH / 2) - (totalTextHeight / 2);
     }
-
-    var anchor = (h === 'left') ? 'start' : ((h === 'right') ? 'end' : h);
 
     if (textObj.attrs) {
       textObj.attrs.x = Math.round(newX);
@@ -765,7 +827,7 @@
     if (textObj.el) {
       textObj.el.setAttribute('x', Math.round(newX));
       textObj.el.setAttribute('y', Math.round(newY));
-      textObj.el.setAttribute('text-anchor', anchor);
+      textObj.el.setAttribute('text-anchor', (anchor === 'justify') ? 'start' : anchor);
     }
   }
 

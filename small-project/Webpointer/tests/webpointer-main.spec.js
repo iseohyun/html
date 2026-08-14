@@ -2231,7 +2231,268 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     expect(result.caretHasRotate45).toBe(true);
     expect(result.caretY1Equals100).toBe(true);
   });
+
+  test('TC54: 양쪽 맞춤 경계 위치(Problem 1, 2) 및 공백 포함 행 word-spacing 조절 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+
+      cfg.objectsMap.clear();
+
+      // 도형 생성
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'host_rect',
+        type: 'rect',
+        parentId: 'group_j',
+        el: rectEl,
+        attrs: { x: 100, y: 100, width: 300, height: 150 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+
+      // 연동 텍스트 생성: "가나다 라마\n바사 아자차차\n아하 추가공백"
+      const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      document.getElementById('objectsGroup').appendChild(textEl);
+      const textObj = {
+        id: 'justify_multi_text',
+        type: 'text',
+        parentId: 'group_j',
+        el: textEl,
+        attrs: { x: 100, y: 100, width: 300, height: 150, text: '가나다 라마\n바사 아자차차\n아하 추가공백', fontSize: 20, textAnchor: 'justify' }
+      };
+      cfg.objectsMap.set(textObj.id, textObj);
+
+      render.updateElementAttributes(rectObj);
+      render.updateElementAttributes(textObj);
+
+      const tspans = textEl.querySelectorAll('tspan');
+      const startX = parseFloat(textEl.getAttribute('x'));
+      const isStartXAlignedToLeftPad = (startX === 110); // minX + 10 = 110
+
+      const line1Spacing = tspans[0] ? parseFloat(tspans[0].style.wordSpacing || '0') : 0;
+      const line3Spacing = tspans[2] ? parseFloat(tspans[2].style.wordSpacing || '0') : 0;
+
+      return {
+        isStartXAlignedToLeftPad,
+        isLine1Justified: line1Spacing > 0,
+        isLine3JustifiedWithSpaces: line3Spacing > 0
+      };
+    });
+
+    console.log('[Webpointer Justification Bounds & Spacebar Alignment Test 🧪]:', result);
+    expect(result.isStartXAlignedToLeftPad).toBe(true);
+    expect(result.isLine1Justified).toBe(true);
+    expect(result.isLine3JustifiedWithSpaces).toBe(true);
+  });
+
+  test('TC55: 위/중앙/아래 정렬 시 hanging 베이스라인 오프셋 반영 및 반복 토글 위치 고정 검증 수트(Problem 3, 4)', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+      const textTool = window.WebpointerTextTool;
+
+      cfg.objectsMap.clear();
+
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'host_rect2',
+        type: 'rect',
+        parentId: 'group_v',
+        el: rectEl,
+        attrs: { x: 100, y: 100, width: 200, height: 200 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+
+      const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      document.getElementById('objectsGroup').appendChild(textEl);
+      const textObj = {
+        id: 'v_align_text',
+        type: 'text',
+        parentId: 'group_v',
+        el: textEl,
+        attrs: { x: 100, y: 100, width: 200, height: 200, text: '첫줄\n둘째줄', fontSize: 20, verticalAlign: 'top' }
+      };
+      cfg.objectsMap.set(textObj.id, textObj);
+
+      // 1. Top alignment: y should be 110 (minY 100 + pad 10)
+      textTool.updateShapeTextAlignment(rectObj, textObj, 'start', 'top');
+      const topY = textObj.attrs.y;
+
+      // 2. Middle alignment: totalTextHeight = 1*24 + 20 = 44. Center Y = 200 - 22 = 178
+      textTool.updateShapeTextAlignment(rectObj, textObj, 'start', 'middle');
+      const middleY = textObj.attrs.y;
+
+      // 3. Bottom alignment: maxY 300 - pad 10 - totalTextHeight 44 = 246
+      textTool.updateShapeTextAlignment(rectObj, textObj, 'start', 'bottom');
+      const bottomY = textObj.attrs.y;
+
+      // 4. Repeated toggle back to Top alignment: y MUST return to 110 (no hanging creep!)
+      textTool.updateShapeTextAlignment(rectObj, textObj, 'start', 'top');
+      const returnedTopY = textObj.attrs.y;
+
+      return {
+        topY,
+        middleY,
+        bottomY,
+        returnedTopY,
+        isTopYCorrect: topY === 110,
+        isMiddleInsideShape: middleY > 100 && middleY < 300,
+        isBottomInsideShape: bottomY > 100 && bottomY < 300 && (bottomY + 44 <= 290),
+        isNoCreepOnToggle: returnedTopY === topY
+      };
+    });
+
+    console.log('[Webpointer Top/Middle/Bottom Alignment & Hanging Drift Test 🧪]:', result);
+    expect(result.isTopYCorrect).toBe(true);
+    expect(result.isMiddleInsideShape).toBe(true);
+    expect(result.isBottomInsideShape).toBe(true);
+    expect(result.isNoCreepOnToggle).toBe(true);
+  });
+
+  test('TC56: Ctrl+C / Ctrl+V 클립보드 기능 검증 - 도형 복사 시 도형 복제 및 도형 선택 시 텍스트 붙여넣기 자동 병합 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const clipboard = window.WebpointerClipboard;
+
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
+      // 1. 도형 생성 및 복사/붙여넣기 테스트 (도형 -> 도형 복제)
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'cp_shape',
+        type: 'rect',
+        el: rectEl,
+        attrs: { x: 150, y: 150, width: 200, height: 120 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+      cfg.selectedIds.add(rectObj.id);
+
+      // 1회차 도형 복사 & 붙여넣기
+      clipboard.copySelectedObjects();
+      clipboard.pasteClipboardObjects(); // 150 + 15 = 165
+      const paste1Obj = Array.from(cfg.selectedIds).map(id => cfg.objectsMap.get(id))[0];
+
+      // 2회차 연속 붙여넣기 (Ctrl+V 연타)
+      clipboard.pasteClipboardObjects(); // 165 + 15 = 180
+      const paste2Obj = Array.from(cfg.selectedIds).map(id => cfg.objectsMap.get(id))[0];
+
+      const shapeCountAfterPaste = cfg.objectsMap.size; // 3개의 도형
+
+      // 2. 도형 선택 상태에서 텍스트 붙여넣기 테스트 (글 -> 도형에 글상자 병합)
+      clipboard.pasteTextIntoSelectedShape('붙여넣은 텍스트 내용');
+
+      let mergedTextObj = null;
+      cfg.objectsMap.forEach(o => {
+        if (o.type === 'text' && o.attrs.text === '붙여넣은 텍스트 내용') {
+          mergedTextObj = o;
+        }
+      });
+
+      // 3. 선택 해제 상태에서 텍스트 붙여넣기 테스트 (글 -> 독립 글상자 생성)
+      cfg.selectedIds.clear();
+      clipboard.pasteStandaloneText('독립 글상자 텍스트');
+
+      let standaloneTextObj = null;
+      cfg.objectsMap.forEach(o => {
+        if (o.type === 'text' && o.attrs.text === '독립 글상자 텍스트') {
+          standaloneTextObj = o;
+        }
+      });
+
+      return {
+        shapeCountAfterPaste,
+        isPaste1Cascaded: paste1Obj && paste1Obj.attrs.x === 165 && paste1Obj.attrs.y === 165,
+        isPaste2CascadedFurther: paste2Obj && paste2Obj.attrs.x === 180 && paste2Obj.attrs.y === 180,
+        isTextMergedIntoShape: !!mergedTextObj && !!mergedTextObj.parentId,
+        mergedTextContent: mergedTextObj ? mergedTextObj.attrs.text : '',
+        isStandaloneTextCreated: !!standaloneTextObj && !standaloneTextObj.parentId
+      };
+    });
+
+    console.log('[Webpointer Context-Aware Copy & Cascading Paste Test 🧪]:', result);
+    expect(result.shapeCountAfterPaste).toBe(3);
+    expect(result.isPaste1Cascaded).toBe(true);
+    expect(result.isPaste2CascadedFurther).toBe(true);
+    expect(result.isTextMergedIntoShape).toBe(true);
+    expect(result.mergedTextContent).toBe('붙여넣은 텍스트 내용');
+    expect(result.isStandaloneTextCreated).toBe(true);
+  });
+
+  test('TC57: 글 서식 탭 내 패딩 카테고리(상하좌우 패딩 및 동기화) 연동 및 cycleTextVerticalAlign 수직 정렬 정확도 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const handlers = window;
+
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'pad_rect',
+        type: 'rect',
+        parentId: 'pad_group',
+        el: rectEl,
+        attrs: { x: 100, y: 100, width: 200, height: 200 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+
+      const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      document.getElementById('objectsGroup').appendChild(textEl);
+      const textObj = {
+        id: 'pad_text',
+        type: 'text',
+        parentId: 'pad_group',
+        el: textEl,
+        attrs: { x: 100, y: 100, width: 200, height: 200, text: '테스트1\n테스트2', fontSize: 20 }
+      };
+      cfg.objectsMap.set(textObj.id, textObj);
+      cfg.selectedIds.add(textObj.id);
+
+      // Initial text is 'hanging' (Top). Cycle goes Top -> Middle -> Bottom -> Top
+      handlers.cycleTextVerticalAlign(); // step 1: central (middle) -> 177
+      const middleY = textObj.attrs.y;
+
+      handlers.cycleTextVerticalAlign(); // step 2: alphabetic (bottom) -> 239
+      const bottomY = textObj.attrs.y;
+
+      handlers.cycleTextVerticalAlign(); // step 3: hanging (top) -> 110
+      const topY = textObj.attrs.y;
+
+      // 2. 패딩 변경 테스트 (상하좌우 패딩 20px 변경)
+      handlers.setTextPadding('top', 20);
+
+      // Top Y should now be minY 100 + padTop 20 = 120
+      handlers.setTextVerticalAlign('hanging');
+      const customPadTopY = textObj.attrs.y;
+
+      return {
+        topY,
+        middleY,
+        bottomY,
+        customPadTopY,
+        isTopYCorrect: topY === 110,
+        isMiddleInsideShape: middleY > 100 && middleY < 300,
+        isBottomInsideShape: bottomY > 100 && bottomY < 300,
+        isCustomPadTopYCorrect: customPadTopY === 120,
+        padSyncState: cfg.padSync
+      };
+    });
+
+    console.log('[Webpointer Padding Category & Vertical Align Test 🧪]:', result);
+    expect(result.isTopYCorrect).toBe(true);
+    expect(result.isMiddleInsideShape).toBe(true);
+    expect(result.isBottomInsideShape).toBe(true);
+    expect(result.isCustomPadTopYCorrect).toBe(true);
+    expect(result.padSyncState).toBe(true);
+  });
 });
+
+
 
 
 
