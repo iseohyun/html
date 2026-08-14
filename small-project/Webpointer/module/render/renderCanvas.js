@@ -32,9 +32,8 @@
         }
       }
       if (a.angle) {
-        var cX = a.x + (a.width || 100) / 2;
-        var cY = a.y + (a.height || 100) / 2;
-        obj.el.setAttribute('transform', 'rotate(' + a.angle + ' ' + cX + ' ' + cY + ')');
+        var center = window.WebpointerObjects ? window.WebpointerObjects.getObjectCenter(obj) : { x: a.x + (a.width || 100) / 2, y: a.y + (a.height || 100) / 2 };
+        obj.el.setAttribute('transform', 'rotate(' + a.angle + ' ' + center.x + ' ' + center.y + ')');
       } else {
         obj.el.removeAttribute('transform');
       }
@@ -497,10 +496,8 @@
         var singleId = Array.from(cfg.selectedIds)[0];
         var singleObj = cfg.objectsMap.get(singleId);
         if (singleObj && singleObj.attrs && singleObj.attrs.angle) {
-          var sA = singleObj.attrs;
-          var sCX = sA.cx !== undefined ? sA.cx : (sA.x !== undefined ? sA.x + (sA.width || 80) / 2 : (minX + maxX) / 2);
-          var sCY = sA.cy !== undefined ? sA.cy : (sA.y !== undefined ? sA.y + (sA.height || 40) / 2 : (minY + maxY) / 2);
-          boxRect.setAttribute('transform', 'rotate(' + sA.angle + ' ' + sCX + ' ' + sCY + ')');
+          var center = window.WebpointerObjects ? window.WebpointerObjects.getObjectCenter(singleObj) : { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
+          boxRect.setAttribute('transform', 'rotate(' + singleObj.attrs.angle + ' ' + center.x + ' ' + center.y + ')');
         }
       }
       uiGroup.appendChild(boxRect);

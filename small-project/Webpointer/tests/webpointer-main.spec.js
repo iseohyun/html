@@ -1676,7 +1676,45 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     expect(result.textHasRotate).toBe(true);
     expect(result.underlineHasRotate).toBe(true);
   });
+
+  test('TC43: 텍스트 상자(text) 회전 피벗(getObjectCenter)과 선택 상자(boxRect) 회전 피벗 100% 일치 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+
+      cfg.objectsMap.clear();
+
+      const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      document.getElementById('objectsGroup').appendChild(textEl);
+      const textObj = {
+        id: 'text_pivot_alignment_test',
+        type: 'text',
+        el: textEl,
+        attrs: { x: 250, y: 180, text: '피벗 일치 테스트 텍스트', fontSize: 22, angle: 30 }
+      };
+      cfg.objectsMap.set(textObj.id, textObj);
+      cfg.selectedIds.clear();
+      cfg.selectedIds.add(textObj.id);
+      render.updateElementAttributes(textObj);
+      render.renderUI();
+
+      const textTransform = textEl.getAttribute('transform');
+      const boxRect = document.querySelector('#uiGroup rect[stroke-dasharray="4,4"]');
+      const boxRectTransform = boxRect ? boxRect.getAttribute('transform') : null;
+
+      // 둘 다 rotate(30 cx cy) 형태이며 cx, cy 값이 완전히 동일해야 함!
+      return {
+        textTransform: textTransform,
+        boxRectTransform: boxRectTransform,
+        isPivotIdentical: textTransform === boxRectTransform
+      };
+    });
+
+    console.log('[Webpointer Text Pivot Alignment Test 🧪]:', result);
+    expect(result.isPivotIdentical).toBe(true);
+  });
 });
+
 
 
 

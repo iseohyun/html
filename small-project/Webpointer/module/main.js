@@ -422,10 +422,8 @@
         } else if (hType === 'ellipse_height') {
           a.ry = Math.max(5, Math.hypot(coords.px - a.cx, coords.py - a.cy));
         } else if (hType === 'ellipse_rotate') {
-          var bounds = window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(obj) : null;
-          var cX = a.cx !== undefined ? a.cx : (bounds ? (bounds.minX + bounds.maxX) / 2 : ((a.x || 0) + (a.width || 80) / 2));
-          var cY = a.cy !== undefined ? a.cy : (bounds ? (bounds.minY + bounds.maxY) / 2 : ((a.y || 0) + (a.height || 40) / 2));
-          a.angle = Math.round(Math.atan2(coords.py - cY, coords.px - cX) * (180 / Math.PI)) + 90;
+          var center = window.WebpointerObjects ? window.WebpointerObjects.getObjectCenter(obj) : { x: a.cx || a.x || 0, y: a.cy || a.y || 0 };
+          a.angle = Math.round(Math.atan2(coords.py - center.y, coords.px - center.x) * (180 / Math.PI)) + 90;
         } else if (hType === 'arc_start') {
           var rotStart = a.angle || 0;
           var angStart = Math.round(Math.atan2(coords.py - a.cy, coords.px - a.cx) * (180 / Math.PI)) - rotStart;

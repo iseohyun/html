@@ -337,9 +337,20 @@
     }
   }
 
+  function getObjectCenter(obj) {
+    if (!obj || !obj.attrs) return { x: 0, y: 0 };
+    var a = obj.attrs;
+    if (a.cx !== undefined && a.cy !== undefined) {
+      return { x: a.cx, y: a.cy };
+    }
+    var bounds = getObjectBounds(obj);
+    return { x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 };
+  }
+
   window.WebpointerObjects = {
     createSvgObject: createSvgObject,
     getObjectBounds: getObjectBounds,
+    getObjectCenter: getObjectCenter,
     shiftObject: shiftObject,
     rotatePoint: rotatePoint,
     rotateObject: rotateObject,
