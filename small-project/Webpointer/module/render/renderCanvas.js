@@ -113,6 +113,21 @@
       obj.el.setAttribute('dominant-baseline', dBase);
       obj.el.setAttribute('writing-mode', wMode);
 
+      var textFill = (a.fill !== undefined && a.fill !== null) ? a.fill : (cfg.textFillColor || cfg.textColor || '#041e49');
+      obj.el.setAttribute('fill', textFill);
+
+      var textStroke = (a.stroke !== undefined && a.stroke !== null) ? a.stroke : (cfg.textStrokeColor || 'none');
+      if (textStroke && textStroke !== 'none') {
+        obj.el.setAttribute('stroke', textStroke);
+        var tStrokeWidth = a.strokeWidth !== undefined ? a.strokeWidth : (cfg.textStrokeWidth || 1);
+        obj.el.setAttribute('stroke-width', tStrokeWidth);
+        obj.el.setAttribute('paint-order', 'stroke fill');
+      } else {
+        obj.el.removeAttribute('stroke');
+        obj.el.removeAttribute('stroke-width');
+        obj.el.removeAttribute('paint-order');
+      }
+
       var hostShape = null;
       if (obj.parentId) {
         cfg.objectsMap.forEach(function(o) {

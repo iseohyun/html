@@ -229,8 +229,8 @@
     } else if (cfg.currentTab === 'style') {
       var strokeIconHtml = icons.getShapeStrokeIcon ? icons.getShapeStrokeIcon(cfg.strokeColor) : (icons.targetStroke || '');
       var fillIconHtml   = icons.getShapeFillIcon ? icons.getShapeFillIcon(cfg.fillColor) : (icons.targetFill || '');
-      var strokeBtnHtml = '<button class="tool-btn" onclick="toggleColorPalettePopover(this, \'stroke\')" style="width:34px; height:34px; position:relative;">' + strokeIconHtml + '<span class="tooltip-text">선 색상 (클릭하여 팔레트 열기)</span></button>';
-      var fillBtnHtml   = '<button class="tool-btn" onclick="toggleColorPalettePopover(this, \'fill\')" style="width:34px; height:34px; position:relative;">' + fillIconHtml + '<span class="tooltip-text">면 채우기 색상 (클릭하여 팔레트 열기)</span></button>';
+      var strokeBtnHtml = '<button class="tool-btn" onclick="handleColorBtnClick(this, \'stroke\')" onmousedown="startHoldColorBtn(event, this, \'stroke\')" onmouseup="endHoldColorBtn()" onmouseleave="endHoldColorBtn()" style="width:34px; height:34px; position:relative;">' + strokeIconHtml + '<span class="tooltip-text">선 색상 (클릭: 색상 적용 / 길게 누름: 팔레트 열기)</span></button>';
+      var fillBtnHtml   = '<button class="tool-btn" onclick="handleColorBtnClick(this, \'fill\')" onmousedown="startHoldColorBtn(event, this, \'fill\')" onmouseup="endHoldColorBtn()" onmouseleave="endHoldColorBtn()" style="width:34px; height:34px; position:relative;">' + fillIconHtml + '<span class="tooltip-text">면 채우기 색상 (클릭: 색상 적용 / 길게 누름: 팔레트 열기)</span></button>';
 
       var widthInputHtml = '<input type="number" min="1" max="50" value="' + cfg.strokeWidth + '" oninput="setStrokeWidth(this.value)" onchange="setStrokeWidth(this.value)" style="width:34px; height:34px; box-sizing:border-box; padding:2px; font-size:0.85rem; font-weight:700; border:1px solid #cbd5e1; border-radius:6px; text-align:center; outline:none; background:#ffffff; color:#0f172a;" title="선 두께 (px)">';
 
@@ -455,8 +455,8 @@
 
       var textFillIconHtml   = icons.getTextFillIcon ? icons.getTextFillIcon(fillColor) : (icons.textFillIcon || icons.targetFill || '');
       var textStrokeIconHtml = icons.getTextStrokeIcon ? icons.getTextStrokeIcon(strokeColor) : (icons.textStrokeIcon || icons.targetStroke || '');
-      var textFillBtnHtml   = '<button class="tool-btn" onclick="toggleColorPalettePopover(this, \'text_fill\')" style="width:34px; height:34px; position:relative;"><span class="alt-badge">F</span>' + textFillIconHtml + '<span class="tooltip-text">글자 채우기 색상 (fill)</span></button>';
-      var textStrokeBtnHtml = '<button class="tool-btn" onclick="toggleColorPalettePopover(this, \'text_stroke\')" style="width:34px; height:34px; position:relative;"><span class="alt-badge">S</span>' + textStrokeIconHtml + '<span class="tooltip-text">글자 테두리 색상 (stroke)</span></button>';
+      var textFillBtnHtml   = '<button class="tool-btn" onclick="handleColorBtnClick(this, \'text_fill\')" onmousedown="startHoldColorBtn(event, this, \'text_fill\')" onmouseup="endHoldColorBtn()" onmouseleave="endHoldColorBtn()" style="width:34px; height:34px; position:relative;"><span class="alt-badge">F</span>' + textFillIconHtml + '<span class="tooltip-text">글자 채우기 색상 (클릭: 색상 적용 / 길게 누름: 팔레트 열기)</span></button>';
+      var textStrokeBtnHtml = '<button class="tool-btn" onclick="handleColorBtnClick(this, \'text_stroke\')" onmousedown="startHoldColorBtn(event, this, \'text_stroke\')" onmouseup="endHoldColorBtn()" onmouseleave="endHoldColorBtn()" style="width:34px; height:34px; position:relative;"><span class="alt-badge">S</span>' + textStrokeIconHtml + '<span class="tooltip-text">글자 테두리 색상 (클릭: 색상 적용 / 길게 누름: 팔레트 열기)</span></button>';
       var strokeWidthInputHtml = '<input type="number" min="0" max="50" value="' + strokeWidth + '" oninput="setTextStrokeWidth(this.value)" onchange="setTextStrokeWidth(this.value)" style="width:34px; height:34px; box-sizing:border-box; padding:2px; font-size:0.85rem; font-weight:700; border:1px solid #cbd5e1; border-radius:6px; text-align:center; outline:none; background:#ffffff; color:#0f172a;" title="글자 테두리 두께 (px)">';
       var textFilterBtnHtml = '<button class="tool-btn" onclick="openFilterPopover(this)" style="width:34px; height:34px;">🪄<span class="tooltip-text">필터 효과 설정 (blur, brightness, contrast 등)</span></button>';
 
@@ -469,7 +469,7 @@
       var underlineWidth   = cfg.textUnderlineWidth !== undefined ? cfg.textUnderlineWidth : 1;
 
       var underlineIconHtml = icons.getTextUnderlineIcon ? icons.getTextUnderlineIcon(underlineColor) : (icons.textUnderlineIcon || icons.targetStroke || '');
-      var underlineColorBtnHtml = '<button class="tool-btn" onclick="toggleColorPalettePopover(this, \'text_underline\')" style="width:34px; height:34px; position:relative;"><span class="alt-badge">U</span>' + underlineIconHtml + '<span class="tooltip-text">밑줄 색상</span></button>';
+      var underlineColorBtnHtml = '<button class="tool-btn" onclick="handleColorBtnClick(this, \'text_underline\')" onmousedown="startHoldColorBtn(event, this, \'text_underline\')" onmouseup="endHoldColorBtn()" onmouseleave="endHoldColorBtn()" style="width:34px; height:34px; position:relative;"><span class="alt-badge">U</span>' + underlineIconHtml + '<span class="tooltip-text">밑줄 색상 (클릭: 색상 적용 / 길게 누름: 팔레트 열기)</span></button>';
 
       var underlineStyleSelectHtml =
         '<select onchange="setTextUnderlineStyle(this.value)" style="padding:2px 4px; font-size:0.78rem; border:1px solid #cbd5e1; border-radius:4px; height:34px; max-width:95px;" title="밑줄 종류">' +

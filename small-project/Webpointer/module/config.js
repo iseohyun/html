@@ -62,6 +62,10 @@
     padLeft: 10,
     padRight: 10,
     padSync: true,
+    textFillColor: '#041e49',
+    textColor: '#041e49',
+    textStrokeColor: 'none',
+    textStrokeWidth: 1,
     activeTextColorTarget: 'text', // 'text' (글자색) vs 'bg' (배경색/하이라이트)
     systemFonts: [
       "맑은 고딕", "나눔고딕", "나눔명조", "굴림", "돋움", "바탕", "궁서",

@@ -2,6 +2,20 @@
 
 All notable changes to the Webpointer Vector CAD Editor project are documented in this file.
 
+## [v0.8.4] - 2026-08-15
+### Added & Improved (Line Orthogonal Snap, Color Button Hold/Apply & In-Browser Test Runner)
+- **Line Drawing & Handle Drag `Ctrl` Orthogonal Snap (`TC60`)**:
+  - Holding `Ctrl` while drawing a line or dragging line endpoints (`start`/`end` handles) locks angle to perfectly horizontal (`y2 = y1`) or vertical (`x2 = x1`).
+- **Independent Color Button Apply & 200ms Long-Press Palette Popover (`TC61`)**:
+  - Short click (< 200ms) on shape stroke, shape fill, text fill, text stroke, and underline color buttons immediately applies current color independently without altering other style attributes.
+  - Long press (>= 200ms) opens the interactive color palette popover (`colorPalettePopover`).
+  - Fixed SVG DOM rendering engine in `renderCanvas.js` to ensure `<text>` elements reflect `fill`, `stroke`, `stroke-width`, and `paint-order` DOM attributes in real-time.
+- **Zero-Dependency In-Browser Test Runner & Modular Suites (`tests/`)**:
+  - Created standalone web test dashboard (`tests/index.html` & `tests/testEngine.js`) enabling 1-click execution of all tests in any browser without Playwright CLI or npm dependencies.
+  - Split entire test catalog into 7 modular feature suites (`tests/suites/suite-01-basic.js` through `suite-07-storage.js`).
+  - Converted `TC06` from visual pixel comparison to robust DOM structure & canvas integrity verification.
+  - Published comprehensive test catalog and direct test execution guide (`tests/TEST_CATALOG.md`).
+
 ## [v0.8.3] - 2026-08-14
 ### Fixed & Improved (AutoFit Direction A & Anti-Spiral Base Font Preservation)
 - **AutoFit Mode Direction A & Base Font Size Preservation (`TC58`, `TC59`)**:

@@ -380,7 +380,20 @@
         var py2 = coords.py;
 
         if (type === 'line') {
-          a.x2 = px2; a.y2 = py2;
+          if (e.ctrlKey || e.metaKey) {
+            var dx = px2 - px1;
+            var dy = py2 - py1;
+            if (Math.abs(dx) >= Math.abs(dy)) {
+              a.x2 = px2;
+              a.y2 = py1;
+            } else {
+              a.x2 = px1;
+              a.y2 = py2;
+            }
+          } else {
+            a.x2 = px2;
+            a.y2 = py2;
+          }
         } else if (type === 'rect' || type === 'rounded') {
           a.x = Math.min(px1, px2);
           a.y = Math.min(py1, py2);
@@ -422,9 +435,33 @@
         if (hType === 'point_center') {
           a.cx = coords.px; a.cy = coords.py;
         } else if (hType === 'start') {
-          a.x1 = coords.px; a.y1 = coords.py;
+          if (obj.type === 'line' && (e.ctrlKey || e.metaKey)) {
+            var dx = coords.px - a.x2;
+            var dy = coords.py - a.y2;
+            if (Math.abs(dx) >= Math.abs(dy)) {
+              a.x1 = coords.px;
+              a.y1 = a.y2;
+            } else {
+              a.x1 = a.x2;
+              a.y1 = coords.py;
+            }
+          } else {
+            a.x1 = coords.px; a.y1 = coords.py;
+          }
         } else if (hType === 'end') {
-          a.x2 = coords.px; a.y2 = coords.py;
+          if (obj.type === 'line' && (e.ctrlKey || e.metaKey)) {
+            var dx = coords.px - a.x1;
+            var dy = coords.py - a.y1;
+            if (Math.abs(dx) >= Math.abs(dy)) {
+              a.x2 = coords.px;
+              a.y2 = a.y1;
+            } else {
+              a.x2 = a.x1;
+              a.y2 = coords.py;
+            }
+          } else {
+            a.x2 = coords.px; a.y2 = coords.py;
+          }
         } else if (hType === 'top_left') {
           a.x = Math.min(coords.px, initialAttrs.x + initialAttrs.width);
           a.y = Math.min(coords.py, initialAttrs.y + initialAttrs.height);
@@ -701,8 +738,13 @@
         if (dist < 10 && obj.attrs) {
           var a = obj.attrs;
           if (obj.type === 'line') {
-            a.x2 = a.x1 + 80;
-            a.y2 = a.y1 + 50;
+            if (e.ctrlKey || e.metaKey) {
+              a.x2 = a.x1 + 80;
+              a.y2 = a.y1;
+            } else {
+              a.x2 = a.x1 + 80;
+              a.y2 = a.y1 + 50;
+            }
           } else if (obj.type === 'rect' || obj.type === 'rounded') {
             a.width = 100;
             a.height = 60;
