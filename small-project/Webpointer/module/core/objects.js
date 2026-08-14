@@ -211,7 +211,7 @@
           });
         }
         if (window.WebpointerBezier && window.WebpointerBezier.buildContinuousBezierPathD) {
-          a.pathD = window.WebpointerBezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3);
+          a.pathD = window.WebpointerBezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3, a.ctrls2);
         }
       } else {
         a.x1 += deltaX; a.y1 += deltaY;
@@ -280,7 +280,7 @@
           });
         }
         if (window.WebpointerBezier && window.WebpointerBezier.buildContinuousBezierPathD) {
-          a.pathD = window.WebpointerBezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3);
+          a.pathD = window.WebpointerBezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3, a.ctrls2);
         }
       }
     }
@@ -303,7 +303,7 @@
         if (a.firstCtrl) a.firstCtrl.cx = 2 * cx - a.firstCtrl.cx;
         if (a.ctrls3) a.ctrls3.forEach(function(cp) { cp.c1.x = 2 * cx - cp.c1.x; cp.c2.x = 2 * cx - cp.c2.x; });
         if (window.WebpointerBezier && window.WebpointerBezier.buildContinuousBezierPathD) {
-          a.pathD = window.WebpointerBezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3);
+          a.pathD = window.WebpointerBezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3, a.ctrls2);
         }
       }
     } else if (dir === 'V') {
@@ -315,7 +315,7 @@
         if (a.firstCtrl) a.firstCtrl.cy = 2 * cy - a.firstCtrl.cy;
         if (a.ctrls3) a.ctrls3.forEach(function(cp) { cp.c1.y = 2 * cy - cp.c1.y; cp.c2.y = 2 * cy - cp.c2.y; });
         if (window.WebpointerBezier && window.WebpointerBezier.buildContinuousBezierPathD) {
-          a.pathD = window.WebpointerBezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3);
+          a.pathD = window.WebpointerBezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3, a.ctrls2);
         }
       }
     }

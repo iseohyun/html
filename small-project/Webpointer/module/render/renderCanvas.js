@@ -584,7 +584,7 @@
           var c1x = a.firstCtrl ? a.firstCtrl.cx : Math.round((P0.px + P1.px) / 2);
           var c1y = a.firstCtrl ? a.firstCtrl.cy : (Math.min(P0.py, P1.py) - 100);
 
-          createHandleNode(c1x, c1y, id, 'bez2_ctrl', 999, true);
+          createHandleNode(c1x, c1y, id, 'bez2_ctrl', 0, true);
 
           var createDashedLine = function(x1, y1, x2, y2) {
             var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
@@ -605,7 +605,7 @@
             var currP = pts[i];
             var reflX = 2 * prevP.px - prevC.x;
             var reflY = 2 * prevP.py - prevC.y;
-            createHandleNode(reflX, reflY, id, 'bez2_ctrl', i, true);
+            createHandleNode(reflX, reflY, id, 'bez2_ctrl', i - 1, true);
             createDashedLine(prevP.px, prevP.py, reflX, reflY);
             createDashedLine(reflX, reflY, currP.px, currP.py);
             prevC = { x: reflX, y: reflY };
@@ -622,9 +622,18 @@
           var pEnd = pts3[seg + 1];
           var ctrl1, ctrl2;
 
-          if (ctrls[seg] && ctrls[seg].c1 && ctrls[seg].c2) {
-            ctrl1 = ctrls[seg].c1;
-            ctrl2 = ctrls[seg].c2;
+          if (ctrls[seg] && (ctrls[seg].c1 || ctrls[seg].c2)) {
+            var defaultC1, defaultC2;
+            if (seg === 0 || !ctrls[seg - 1] || !ctrls[seg - 1].c2) {
+              defaultC1 = { x: pStart.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
+              defaultC2 = { x: pEnd.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
+            } else {
+              var prevC2 = ctrls[seg - 1].c2;
+              defaultC1 = { x: 2 * pStart.px - prevC2.x, y: 2 * pStart.py - prevC2.y };
+              defaultC2 = { x: pEnd.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
+            }
+            ctrl1 = ctrls[seg].c1 || defaultC1;
+            ctrl2 = ctrls[seg].c2 || defaultC2;
           } else {
             if (seg === 0 || !ctrls[seg - 1] || !ctrls[seg - 1].c2) {
               ctrl1 = { x: pStart.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };

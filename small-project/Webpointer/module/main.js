@@ -439,8 +439,13 @@
             a.pathD = bezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3);
           }
         } else if (hType === 'bez2_ctrl') {
-          a.firstCtrl = { cx: coords.px, cy: coords.py };
-          a.pathD = bezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3);
+          if (!idx || idx === 0 || isNaN(idx)) {
+            a.firstCtrl = { cx: coords.px, cy: coords.py };
+          } else {
+            a.ctrls2 = a.ctrls2 || [];
+            a.ctrls2[idx] = { cx: coords.px, cy: coords.py };
+          }
+          a.pathD = bezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3, a.ctrls2);
         } else if (hType === 'bez3_c1') {
           a.ctrls3 = a.ctrls3 || [];
           a.ctrls3[idx] = a.ctrls3[idx] || {};

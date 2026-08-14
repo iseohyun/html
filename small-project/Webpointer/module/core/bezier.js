@@ -4,7 +4,7 @@
   var cfg = window.WebpointerConfig;
   var state = window.WebpointerState;
 
-  function buildContinuousBezierPathD(pts, activePt, toolType, firstCtrl, hoverPt, liveCtrl, ctrls3Arr) {
+  function buildContinuousBezierPathD(pts, activePt, toolType, firstCtrl, hoverPt, liveCtrl, ctrls3Arr, ctrls2Arr) {
     if (!pts || pts.length === 0) return '';
     var fullPts = pts.slice();
     if (activePt) fullPts.push(activePt);
@@ -23,12 +23,17 @@
 
       var prevC = { x: c1x, y: c1y };
       for (var i = 2; i < fullPts.length; i++) {
+        var segIdx = i - 1;
         var prevP = fullPts[i - 1];
         var currP = fullPts[i];
-        var reflX = 2 * prevP.px - prevC.x;
-        var reflY = 2 * prevP.py - prevC.y;
-        d += ' Q ' + reflX + ' ' + reflY + ', ' + currP.px + ' ' + currP.py;
-        prevC = { x: reflX, y: reflY };
+        var ctrlPt;
+        if (ctrls2Arr && ctrls2Arr[segIdx]) {
+          ctrlPt = { x: ctrls2Arr[segIdx].cx, y: ctrls2Arr[segIdx].cy };
+        } else {
+          ctrlPt = { x: 2 * prevP.px - prevC.x, y: 2 * prevP.py - prevC.y };
+        }
+        d += ' Q ' + ctrlPt.x + ' ' + ctrlPt.y + ', ' + currP.px + ' ' + currP.py;
+        prevC = ctrlPt;
       }
     } else if (toolType === 'bez3') {
       ctrls3Arr = ctrls3Arr || [];
@@ -37,9 +42,18 @@
         var pEnd = fullPts[seg + 1];
         var ctrl1, ctrl2;
 
-        if (ctrls3Arr[seg] && ctrls3Arr[seg].c1 && ctrls3Arr[seg].c2) {
-          ctrl1 = ctrls3Arr[seg].c1;
-          ctrl2 = ctrls3Arr[seg].c2;
+        if (ctrls3Arr[seg] && (ctrls3Arr[seg].c1 || ctrls3Arr[seg].c2)) {
+          var defaultC1, defaultC2;
+          if (seg === 0 || !ctrls3Arr[seg - 1] || !ctrls3Arr[seg - 1].c2) {
+            defaultC1 = { x: pStart.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
+            defaultC2 = { x: pEnd.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
+          } else {
+            var prevC2 = ctrls3Arr[seg - 1].c2;
+            defaultC1 = { x: 2 * pStart.px - prevC2.x, y: 2 * pStart.py - prevC2.y };
+            defaultC2 = { x: pEnd.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
+          }
+          ctrl1 = ctrls3Arr[seg].c1 || defaultC1;
+          ctrl2 = ctrls3Arr[seg].c2 || defaultC2;
         } else {
           if (seg === 0 || !ctrls3Arr[seg - 1] || !ctrls3Arr[seg - 1].c2) {
             ctrl1 = { x: pStart.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
