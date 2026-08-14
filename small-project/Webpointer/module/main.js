@@ -493,15 +493,36 @@
           }
           a.pathD = bezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3, a.ctrls2);
         } else if (hType === 'bez3_c1') {
+          var pts = a.points || [];
           a.ctrls3 = a.ctrls3 || [];
-          a.ctrls3[idx] = a.ctrls3[idx] || {};
-          a.ctrls3[idx].c1 = { x: coords.px, y: coords.py };
-          a.pathD = bezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3);
+          if (!idx || idx === 0 || isNaN(idx)) {
+            a.ctrls3[0] = a.ctrls3[0] || {};
+            a.ctrls3[0].c1 = { x: coords.px, y: coords.py };
+          } else if (a.ctrls3[idx] && a.ctrls3[idx].c1) {
+            // Already split! Update split c1 directly
+            a.ctrls3[idx].c1 = { x: coords.px, y: coords.py };
+          } else {
+            // Virtual c1! Propagate reverse calculation to previous segment's c2
+            var curRefl = { x: coords.px, y: coords.py };
+            for (var seg = idx; seg >= 1; seg--) {
+              var pStart = pts[seg] ? pts[seg] : pts[0];
+              var prevC2 = { x: 2 * pStart.px - curRefl.x, y: 2 * pStart.py - curRefl.y };
+              a.ctrls3[seg - 1] = a.ctrls3[seg - 1] || {};
+              a.ctrls3[seg - 1].c2 = prevC2;
+              if (a.ctrls3[seg - 1].c1) {
+                break;
+              } else {
+                var prevPStart = pts[seg - 1] ? pts[seg - 1] : pts[0];
+                curRefl = { x: 2 * prevPStart.px - prevC2.x, y: 2 * prevPStart.py - prevC2.y };
+              }
+            }
+          }
+          a.pathD = bezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3, a.ctrls2);
         } else if (hType === 'bez3_c2') {
           a.ctrls3 = a.ctrls3 || [];
           a.ctrls3[idx] = a.ctrls3[idx] || {};
           a.ctrls3[idx].c2 = { x: coords.px, y: coords.py };
-          a.pathD = bezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3);
+          a.pathD = bezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3, a.ctrls2);
         } else if (hType === 'crop_top' || hType === 'crop_bottom' || hType === 'crop_left' || hType === 'crop_right') {
           var bounds = window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(obj) : null;
           if (bounds) {

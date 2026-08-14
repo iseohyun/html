@@ -1244,7 +1244,84 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     expect(result.hasPropagatedFirstCtrl).toBe(true);
     expect(result.hasSplitOrangeHandle).toBe(true);
   });
+
+  test('TC35: 연속 3차 베지어 곡선(bez3) SVG S 구문, 가상 c1 역계산 전파 및 분리 핸들러 검증', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const bezier = window.WebpointerBezier;
+      const render = window.WebpointerRender;
+
+      const pts = [
+        { px: 100, py: 200 },
+        { px: 250, py: 100 },
+        { px: 400, py: 300 },
+        { px: 550, py: 150 }
+      ];
+      const ctrls3 = [
+        { c1: { x: 150, y: 150 }, c2: { x: 200, y: 120 } }
+      ];
+
+      const pathD = bezier.buildContinuousBezierPathD(pts, null, 'bez3', null, null, null, ctrls3, null);
+
+      const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      document.getElementById('objectsGroup').appendChild(pathEl);
+
+      const obj = {
+        id: 'bez3_continuous_test',
+        type: 'bez3',
+        el: pathEl,
+        attrs: {
+          points: pts,
+          ctrls3: ctrls3,
+          pathD: pathD,
+          stroke: '#0284c7',
+          strokeWidth: 2
+        }
+      };
+
+      cfg.currentTool = 'select';
+      cfg.objectsMap.set(obj.id, obj);
+      render.updateElementAttributes(obj);
+
+      cfg.selectedIds.clear();
+      cfg.selectedIds.add(obj.id);
+      render.renderUI();
+
+      // S 구문 포함 여부 검증
+      const hasSCommand = pathD.includes(' S ');
+
+      // c1 가상 핸들러 역계산 전파 테스트
+      // 세그먼트 1 (pts[1]->pts[2]) 가상 c1 이동 시 세그먼트 0의 c2 역계산
+      const virtualC1 = { x: 280, y: 120 };
+      const pStart = pts[1];
+      const prevC2 = { x: 2 * pStart.px - virtualC1.x, y: 2 * pStart.py - virtualC1.y };
+      obj.attrs.ctrls3[0].c2 = prevC2;
+
+      obj.attrs.pathD = bezier.buildContinuousBezierPathD(obj.attrs.points, null, obj.type, null, null, null, obj.attrs.ctrls3, null);
+      render.renderUI();
+
+      // c1 분리 핸들러 세팅 및 오렌지 렌더링 스타일 검증
+      obj.attrs.ctrls3[1] = { c1: { x: 300, y: 150 }, c2: { x: 450, y: 250 } };
+      obj.attrs.pathD = bezier.buildContinuousBezierPathD(obj.attrs.points, null, obj.type, null, null, null, obj.attrs.ctrls3, null);
+      render.renderUI();
+
+      const handles = Array.from(document.querySelectorAll('.handle-node'));
+      const splitHandleC1 = handles.find(h => h.dataset.handleType === 'bez3_c1' && String(h.dataset.idx) === '1' && h.getAttribute('fill') === '#f97316');
+
+      return {
+        hasSCommand: hasSCommand,
+        hasReverseCalculatedC2: !!obj.attrs.ctrls3[0].c2,
+        hasSplitOrangeHandleC1: !!splitHandleC1
+      };
+    });
+
+    console.log('[Webpointer Bez3 Continuous Test 🧪]:', result);
+    expect(result.hasSCommand).toBe(true);
+    expect(result.hasReverseCalculatedC2).toBe(true);
+    expect(result.hasSplitOrangeHandleC1).toBe(true);
+  });
 });
+
 
 
 

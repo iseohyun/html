@@ -638,50 +638,50 @@
           createHandleNode(pt.px, pt.py, id, 'bez_vertex', idx, false);
         });
         var ctrls = a.ctrls3 || [];
+        var prevC2 = null;
+
+        var createDashedLine3 = function(x1, y1, x2, y2, color) {
+          var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+          line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+          line.setAttribute('stroke', color || '#0284c7');
+          line.setAttribute('stroke-dasharray', '3,3');
+          line.setAttribute('stroke-width', '1.2');
+          uiGroup.appendChild(line);
+        };
+
         for (var seg = 0; seg < pts3.length - 1; seg++) {
           var pStart = pts3[seg];
           var pEnd = pts3[seg + 1];
           var ctrl1, ctrl2;
 
-          if (ctrls[seg] && (ctrls[seg].c1 || ctrls[seg].c2)) {
-            var defaultC1, defaultC2;
-            if (seg === 0 || !ctrls[seg - 1] || !ctrls[seg - 1].c2) {
-              defaultC1 = { x: pStart.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
-              defaultC2 = { x: pEnd.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
-            } else {
-              var prevC2 = ctrls[seg - 1].c2;
-              defaultC1 = { x: 2 * pStart.px - prevC2.x, y: 2 * pStart.py - prevC2.y };
-              defaultC2 = { x: pEnd.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
-            }
-            ctrl1 = ctrls[seg].c1 || defaultC1;
-            ctrl2 = ctrls[seg].c2 || defaultC2;
+          var defaultC2 = { x: pEnd.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
+          ctrl2 = (ctrls[seg] && ctrls[seg].c2) ? ctrls[seg].c2 : defaultC2;
+
+          if (seg === 0) {
+            var defaultC1 = { x: pStart.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
+            ctrl1 = (ctrls[0] && ctrls[0].c1) ? ctrls[0].c1 : defaultC1;
+            createHandleNode(ctrl1.x, ctrl1.y, id, 'bez3_c1', seg, true, { fill: '#0284c7', stroke: '#0369a1', r: 5 });
+            createDashedLine3(pStart.px, pStart.py, ctrl1.x, ctrl1.y, '#0284c7');
           } else {
-            if (seg === 0 || !ctrls[seg - 1] || !ctrls[seg - 1].c2) {
-              ctrl1 = { x: pStart.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
-              ctrl2 = { x: pEnd.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
+            var isC1Split = ctrls[seg] && ctrls[seg].c1;
+            if (isC1Split) {
+              ctrl1 = ctrls[seg].c1;
+              createHandleNode(ctrl1.x, ctrl1.y, id, 'bez3_c1', seg, true, { fill: '#f97316', stroke: '#c2410c', r: 6 });
+              createDashedLine3(pStart.px, pStart.py, ctrl1.x, ctrl1.y, '#f97316');
             } else {
-              var prevC2 = ctrls[seg - 1].c2;
-              ctrl1 = { x: 2 * pStart.px - prevC2.x, y: 2 * pStart.py - prevC2.y };
-              ctrl2 = { x: pEnd.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
+              var basePrevC2 = prevC2 || { x: pStart.px, y: pStart.py };
+              ctrl1 = { x: 2 * pStart.px - basePrevC2.x, y: 2 * pStart.py - basePrevC2.y };
+              createHandleNode(ctrl1.x, ctrl1.y, id, 'bez3_c1', seg, true, { fill: '#38bdf8', stroke: '#0284c7', r: 5 });
+              createDashedLine3(pStart.px, pStart.py, ctrl1.x, ctrl1.y, '#38bdf8');
             }
           }
 
-          createHandleNode(ctrl1.x, ctrl1.y, id, 'bez3_c1', seg, true);
-          createHandleNode(ctrl2.x, ctrl2.y, id, 'bez3_c2', seg, true);
+          var isC2Split = ctrls[seg] && ctrls[seg].c2;
+          createHandleNode(ctrl2.x, ctrl2.y, id, 'bez3_c2', seg, true, isC2Split ? { fill: '#f97316', stroke: '#c2410c', r: 6 } : { fill: '#0284c7', stroke: '#0369a1', r: 5 });
+          createDashedLine3(pEnd.px, pEnd.py, ctrl2.x, ctrl2.y, isC2Split ? '#f97316' : '#0284c7');
 
-          var l1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-          l1.setAttribute('x1', pStart.px); l1.setAttribute('y1', pStart.py);
-          l1.setAttribute('x2', ctrl1.x); l1.setAttribute('y2', ctrl1.y);
-          l1.setAttribute('stroke', '#0284c7'); l1.setAttribute('stroke-dasharray', '3,3');
-          l1.setAttribute('stroke-width', '1.2');
-          uiGroup.appendChild(l1);
-
-          var l2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-          l2.setAttribute('x1', pEnd.px); l2.setAttribute('y1', pEnd.py);
-          l2.setAttribute('x2', ctrl2.x); l2.setAttribute('y2', ctrl2.y);
-          l2.setAttribute('stroke', '#0284c7'); l2.setAttribute('stroke-dasharray', '3,3');
-          l2.setAttribute('stroke-width', '1.2');
-          uiGroup.appendChild(l2);
+          prevC2 = ctrl2;
         }
       }
 
