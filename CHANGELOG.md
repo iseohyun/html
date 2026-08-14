@@ -5,6 +5,15 @@ All notable changes to this repository will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to Semantic Versioning.
 
+## [20260814v1] - 2026-08-14
+
+### Changed
+- **Webpointer v0.8.3**:
+  - 도형 내 텍스트 통합 연동 (F2 편집 모드 지원, 도형 회전 시 텍스트 위치 및 중심축 동기화, 텍스트 패딩 연동)
+  - 베지어(Bezier) 3차 커브 S 명령어 지원 및 아크(Arc)/베지어 경로 정밀 근접 선택(Parametric Curve Sampling) 알고리즘 적용
+  - 리본 메뉴 '수치' 카테고리(너비, 높이, 회전 각도) 추가 및 회전/그룹화 툴바 오류 수정
+  - 텍스트 수직 정렬 엔진 구현 및 텍스트 자동맞춤(Autofit) 버그 수정
+
 ## [20260716v5] - 2026-07-16
 
 ### Fixed
