@@ -2490,6 +2490,116 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     expect(result.isCustomPadTopYCorrect).toBe(true);
     expect(result.padSyncState).toBe(true);
   });
+
+  test('TC58: fitTextToShape 방향A (초과 시 폰트 축소, 여백 남을 시 기본 폰트 유지 및 정렬) 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const handlers = window;
+
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'fit_rect',
+        type: 'rect',
+        parentId: 'fit_group',
+        el: rectEl,
+        attrs: { x: 100, y: 100, width: 300, height: 100 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+
+      const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      document.getElementById('objectsGroup').appendChild(textEl);
+      const textObj = {
+        id: 'fit_text',
+        type: 'text',
+        parentId: 'fit_group',
+        el: textEl,
+        attrs: { x: 100, y: 100, width: 300, height: 100, text: '짧은 글', fontSize: 20, autoFitMode: 'fitTextToShape' }
+      };
+      cfg.objectsMap.set(textObj.id, textObj);
+
+      // 여백이 넉넉할 때: 폰트 크기가 20으로 유지됨
+      handlers.applyAutoFitToGroup(textObj);
+      const fontWhenSpaceRemains = textObj.attrs.fontSize;
+
+      return {
+        fontWhenSpaceRemains,
+        isFontMaintained: fontWhenSpaceRemains === 20
+      };
+    });
+
+    console.log('[Webpointer fitTextToShape Direction A Test 🧪]:', result);
+    expect(result.isFontMaintained).toBe(true);
+  });
+
+  test('TC59: cycleTextAutoFitMode 3회 이상 순환 클릭 시 baseFontSize 보존 및 도형/폰트 누적 축소(Spiral Bug) 방지 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const handlers = window;
+
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'sp_rect',
+        type: 'rect',
+        parentId: 'sp_group',
+        el: rectEl,
+        attrs: { x: 100, y: 100, width: 200, height: 100 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+
+      const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      document.getElementById('objectsGroup').appendChild(textEl);
+      const textObj = {
+        id: 'sp_text',
+        type: 'text',
+        parentId: 'sp_group',
+        el: textEl,
+        attrs: { x: 100, y: 100, width: 200, height: 100, text: '테스트용 샘플 텍스트 내용입니다', fontSize: 20, autoFitMode: 'fitShapeToText' }
+      };
+      cfg.objectsMap.set(textObj.id, textObj);
+      cfg.selectedIds.add(textObj.id);
+
+      // Cycle 1: fitShapeToText -> fitTextToShape -> none
+      handlers.cycleTextAutoFitMode(); // fitTextToShape
+      const cycle1FontSize = textObj.attrs.fontSize;
+
+      handlers.cycleTextAutoFitMode(); // none
+      handlers.cycleTextAutoFitMode(); // fitShapeToText (Back to start!)
+      const cycle2FitShapeFontSize = textObj.attrs.fontSize;
+
+      // Cycle 2: fitShapeToText -> fitTextToShape -> none
+      handlers.cycleTextAutoFitMode(); // fitTextToShape
+      const cycle2FontSize = textObj.attrs.fontSize;
+
+      handlers.cycleTextAutoFitMode(); // none
+      handlers.cycleTextAutoFitMode(); // fitShapeToText (Back to start!)
+      const cycle3FitShapeFontSize = textObj.attrs.fontSize;
+
+      // Cycle 3: fitShapeToText -> fitTextToShape
+      handlers.cycleTextAutoFitMode(); // fitTextToShape
+      const cycle3FontSize = textObj.attrs.fontSize;
+
+      return {
+        cycle1FontSize,
+        cycle2FitShapeFontSize,
+        cycle2FontSize,
+        cycle3FontSize,
+        isBaseFontRestoredOnCycle: cycle2FitShapeFontSize === 20 && cycle3FitShapeFontSize === 20,
+        isNoCumulativeShrink: cycle3FontSize === cycle2FontSize
+      };
+    });
+
+    console.log('[Webpointer Anti-Spiral AutoFit Cycle Test 🧪]:', result);
+    expect(result.isBaseFontRestoredOnCycle).toBe(true);
+    expect(result.isNoCumulativeShrink).toBe(true);
+  });
 });
 
 

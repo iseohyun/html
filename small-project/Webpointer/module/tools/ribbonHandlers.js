@@ -725,7 +725,9 @@
   function applyAutoFitToGroup(textObj) {
     if (!textObj || !textObj.parentId) return;
     var mode = textObj.attrs.autoFitMode || cfg.textAutoFitMode || 'fitShapeToText';
-    if (mode === 'none') return;
+
+    var baseFont = textObj.attrs.baseFontSize || textObj.attrs.fontSize || cfg.fontSize || 20;
+    textObj.attrs.baseFontSize = baseFont;
 
     var groupMembers = [];
     cfg.objectsMap.forEach(function(o) {
@@ -734,6 +736,23 @@
       }
     });
     if (groupMembers.length === 0) return;
+
+    var shapeObj = groupMembers[0];
+    var sAttrs = shapeObj.attrs || {};
+
+    var pTop = textObj.attrs.padTop !== undefined ? textObj.attrs.padTop : (cfg.padTop !== undefined ? cfg.padTop : 10);
+    var pBottom = textObj.attrs.padBottom !== undefined ? textObj.attrs.padBottom : (cfg.padBottom !== undefined ? cfg.padBottom : 10);
+    var pLeft = textObj.attrs.padLeft !== undefined ? textObj.attrs.padLeft : (cfg.padLeft !== undefined ? cfg.padLeft : 10);
+    var pRight = textObj.attrs.padRight !== undefined ? textObj.attrs.padRight : (cfg.padRight !== undefined ? cfg.padRight : 10);
+
+    if (mode === 'fitShapeToText' || mode === 'none') {
+      textObj.attrs.fontSize = baseFont;
+      if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+        window.WebpointerRender.updateElementAttributes(textObj);
+      }
+    }
+
+    if (mode === 'none') return;
 
     var textWidth = 100, textHeight = 30;
     try {
@@ -744,19 +763,16 @@
       }
     } catch(e) {}
 
-    var shapeObj = groupMembers[0];
-    var sAttrs = shapeObj.attrs || {};
-
     if (mode === 'fitShapeToText') {
-      var reqWidth = textWidth + 30;
-      var reqHeight = textHeight + 20;
+      var reqWidth = textWidth + pLeft + pRight;
+      var reqHeight = textHeight + pTop + pBottom;
 
       if (shapeObj.type === 'rect' || shapeObj.type === 'rounded') {
-        if ((sAttrs.width || 100) < reqWidth) sAttrs.width = Math.round(reqWidth);
-        if ((sAttrs.height || 60) < reqHeight) sAttrs.height = Math.round(reqHeight);
+        sAttrs.width = Math.max(20, Math.round(reqWidth));
+        sAttrs.height = Math.max(20, Math.round(reqHeight));
       } else if (shapeObj.type === 'ellipse') {
-        if ((sAttrs.rx || 50) * 2 < reqWidth) sAttrs.rx = Math.round(reqWidth / 2);
-        if ((sAttrs.ry || 30) * 2 < reqHeight) sAttrs.ry = Math.round(reqHeight / 2);
+        sAttrs.rx = Math.max(10, Math.round(reqWidth / 2));
+        sAttrs.ry = Math.max(10, Math.round(reqHeight / 2));
       }
       if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
         window.WebpointerRender.updateElementAttributes(shapeObj);
@@ -765,20 +781,28 @@
       var shapeWidth = sAttrs.width || (sAttrs.rx ? sAttrs.rx * 2 : 100);
       var shapeHeight = sAttrs.height || (sAttrs.ry ? sAttrs.ry * 2 : 60);
 
-      var availW = shapeWidth - 20;
-      var availH = shapeHeight - 16;
+      var availW = Math.max(10, shapeWidth - (pLeft + pRight));
+      var availH = Math.max(10, shapeHeight - (pTop + pBottom));
 
       if (textWidth > availW || textHeight > availH) {
         var scale = Math.min(availW / textWidth, availH / textHeight);
         if (scale < 1) {
-          var curFont = textObj.attrs.fontSize || cfg.fontSize || 20;
-          var newFont = Math.max(8, Math.floor(curFont * scale));
+          var newFont = Math.max(8, Math.floor(baseFont * scale));
           textObj.attrs.fontSize = newFont;
           if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
             window.WebpointerRender.updateElementAttributes(textObj);
           }
         }
+      } else {
+        textObj.attrs.fontSize = baseFont;
+        if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+          window.WebpointerRender.updateElementAttributes(textObj);
+        }
       }
+    }
+
+    if (window.WebpointerTextTool && window.WebpointerTextTool.updateShapeTextAlignment) {
+      window.WebpointerTextTool.updateShapeTextAlignment(shapeObj, textObj, textObj.attrs.textAnchor || 'start', textObj.attrs.verticalAlign || 'top');
     }
   }
 
@@ -1012,6 +1036,7 @@
       if (obj && obj.attrs) {
         obj.attrs.fontFamily = cfg.fontFamily;
         obj.attrs.fontSize = cfg.fontSize;
+        obj.attrs.baseFontSize = cfg.fontSize;
         obj.attrs.fontWeight = cfg.fontWeight;
         obj.attrs.fontStyle = cfg.fontStyle;
         obj.attrs.textDecoration = cfg.textDecoration || 'none';

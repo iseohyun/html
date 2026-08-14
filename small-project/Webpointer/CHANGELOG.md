@@ -2,6 +2,12 @@
 
 All notable changes to the Webpointer Vector CAD Editor project are documented in this file.
 
+## [v0.8.3] - 2026-08-14
+### Fixed & Improved (AutoFit Direction A & Anti-Spiral Base Font Preservation)
+- **AutoFit Mode Direction A & Base Font Size Preservation (`TC58`, `TC59`)**:
+  - Implemented Direction A `fitTextToShape` behavior: font size scales down ONLY when text overflows container, maintaining set base font size (`baseFontSize`) when space remains.
+  - Preserved `baseFontSize` across all auto-fit mode cycles (`fitShapeToText`, `fitTextToShape`, `none`), completely preventing cumulative font and shape shrinking (Spiral Bug) on repeated clicks.
+
 ## [v0.8.2] - 2026-08-14
 ### Added & Improved (Text Padding Category, 3-Tier Vertical Alignment Engine & Context-Aware Clipboard)
 - **Text Padding Category in `Text Format` Tab (`TC57`)**:
