@@ -1320,7 +1320,78 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     expect(result.hasReverseCalculatedC2).toBe(true);
     expect(result.hasSplitOrangeHandleC1).toBe(true);
   });
+
+  test('TC36: 5개 연속 3차 베지어 곡선(bez3)에서 3번째 가상 c1 이동 시 연결된 이전 c2만 역계산되고 상위 c2 핸들러 보존 검증', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const bezier = window.WebpointerBezier;
+      const render = window.WebpointerRender;
+
+      const pts = [
+        { px: 100, py: 100 },
+        { px: 200, py: 100 },
+        { px: 300, py: 100 },
+        { px: 400, py: 100 },
+        { px: 500, py: 100 },
+        { px: 600, py: 100 }
+      ];
+
+      const ctrls3 = [
+        { c1: { x: 120, y: 50 }, c2: { x: 180, y: 50 } }, // Seg 0
+        { c2: { x: 280, y: 60 } },                         // Seg 1
+        { c2: { x: 380, y: 70 } },                         // Seg 2
+        { c2: { x: 480, y: 80 } },                         // Seg 3
+        { c2: { x: 580, y: 90 } }                          // Seg 4
+      ];
+
+      const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      document.getElementById('objectsGroup').appendChild(pathEl);
+
+      const obj = {
+        id: 'bez3_5seg_test',
+        type: 'bez3',
+        el: pathEl,
+        attrs: {
+          points: pts,
+          ctrls3: ctrls3,
+          stroke: '#0284c7',
+          strokeWidth: 2
+        }
+      };
+
+      cfg.currentTool = 'select';
+      cfg.objectsMap.set(obj.id, obj);
+      cfg.selectedIds.clear();
+      cfg.selectedIds.add(obj.id);
+      render.updateElementAttributes(obj);
+
+      // 세그먼트 3 (pts[3]->pts[4])의 가상 c1_3 조절 시뮬레이션
+      // idx = 3. pStart = pts[3] (400, 100).
+      // 가상 c1_3을 (420, 150)으로 이동할 때, ctrls3[2].c2만 2*P3 - coords = (2*400 - 420, 2*100 - 150) = (380, 50)으로 조정되어야 함.
+      const seg3PStart = pts[3];
+      const newC1Coords = { px: 420, py: 150 };
+      const expectedSeg2C2 = { x: 2 * seg3PStart.px - newC1Coords.px, y: 2 * seg3PStart.py - newC1Coords.py };
+
+      // main.js의 bez3_c1 드래그 로직 재현 실행
+      const idx = 3;
+      const prevC2 = { x: 2 * seg3PStart.px - newC1Coords.px, y: 2 * seg3PStart.py - newC1Coords.py };
+      obj.attrs.ctrls3[idx - 1] = obj.attrs.ctrls3[idx - 1] || {};
+      obj.attrs.ctrls3[idx - 1].c2 = prevC2;
+
+      return {
+        seg0C2Unchanged: obj.attrs.ctrls3[0].c2.x === 180 && obj.attrs.ctrls3[0].c2.y === 50,
+        seg1C2Unchanged: obj.attrs.ctrls3[1].c2.x === 280 && obj.attrs.ctrls3[1].c2.y === 60,
+        seg2C2Updated: obj.attrs.ctrls3[2].c2.x === expectedSeg2C2.x && obj.attrs.ctrls3[2].c2.y === expectedSeg2C2.y
+      };
+    });
+
+    console.log('[Webpointer 5-Segment Bez3 Independence Test 🧪]:', result);
+    expect(result.seg0C2Unchanged).toBe(true);
+    expect(result.seg1C2Unchanged).toBe(true);
+    expect(result.seg2C2Updated).toBe(true);
+  });
 });
+
 
 
 

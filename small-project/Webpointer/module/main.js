@@ -502,20 +502,11 @@
             // Already split! Update split c1 directly
             a.ctrls3[idx].c1 = { x: coords.px, y: coords.py };
           } else {
-            // Virtual c1! Propagate reverse calculation to previous segment's c2
-            var curRefl = { x: coords.px, y: coords.py };
-            for (var seg = idx; seg >= 1; seg--) {
-              var pStart = pts[seg] ? pts[seg] : pts[0];
-              var prevC2 = { x: 2 * pStart.px - curRefl.x, y: 2 * pStart.py - curRefl.y };
-              a.ctrls3[seg - 1] = a.ctrls3[seg - 1] || {};
-              a.ctrls3[seg - 1].c2 = prevC2;
-              if (a.ctrls3[seg - 1].c1) {
-                break;
-              } else {
-                var prevPStart = pts[seg - 1] ? pts[seg - 1] : pts[0];
-                curRefl = { x: 2 * prevPStart.px - prevC2.x, y: 2 * prevPStart.py - prevC2.y };
-              }
-            }
+            // Virtual c1! Reverse calculate ONLY immediately preceding segment's c2
+            var pStart = pts[idx] ? pts[idx] : pts[0];
+            var prevC2 = { x: 2 * pStart.px - coords.px, y: 2 * pStart.py - coords.py };
+            a.ctrls3[idx - 1] = a.ctrls3[idx - 1] || {};
+            a.ctrls3[idx - 1].c2 = prevC2;
           }
           a.pathD = bezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3, a.ctrls2);
         } else if (hType === 'bez3_c2') {
