@@ -56,17 +56,106 @@
     } else if (obj.type === 'ellipse' || obj.type === 'arc') {
       return Math.hypot(px - a.cx, py - a.cy);
     } else if (obj.type === 'bez2' || obj.type === 'bez3') {
-      if (a.points && a.points.length > 0) {
-        var minD = Infinity;
-        a.points.forEach(function(pt) {
-          var dPt = Math.hypot(px - pt.px, py - pt.py);
-          if (dPt < minD) minD = dPt;
-        });
-        return minD;
-      }
-      return Math.hypot(px - a.x1, py - a.y1);
+      return getDistanceToBezier(px, py, obj);
     }
     return Infinity;
+  }
+
+  function getDistanceToSegment(px, py, x1, y1, x2, y2) {
+    var A = px - x1, B = py - y1, C = x2 - x1, D = y2 - y1;
+    var dot = A * C + B * D;
+    var lenSq = C * C + D * D;
+    var param = lenSq !== 0 ? dot / lenSq : -1;
+    var xx, yy;
+    if (param < 0) { xx = x1; yy = y1; }
+    else if (param > 1) { xx = x2; yy = y2; }
+    else { xx = x1 + param * C; yy = y1 + param * D; }
+    return Math.hypot(px - xx, py - yy);
+  }
+
+  function getDistanceToBezier(px, py, obj) {
+    var a = obj.attrs;
+    var pts = a.points || [];
+    if (pts.length === 0) return Infinity;
+    if (pts.length === 1) return Math.hypot(px - pts[0].px, py - pts[0].py);
+
+    var minD = Infinity;
+    var SAMPLES = 20;
+
+    if (obj.type === 'bez2') {
+      var ctrls2 = a.ctrls2 || [];
+      var prevC = null;
+
+      for (var seg = 0; seg < pts.length - 1; seg++) {
+        var pStart = pts[seg];
+        var pEnd = pts[seg + 1];
+        var ctrl;
+
+        if (seg === 0) {
+          ctrl = a.firstCtrl ? { x: a.firstCtrl.cx, y: a.firstCtrl.cy } : (ctrls2[0] ? { x: ctrls2[0].cx, y: ctrls2[0].cy } : { x: Math.round((pStart.px + pEnd.px) / 2), y: Math.round((pStart.py + pEnd.py) / 2 - 50) });
+          prevC = ctrl;
+        } else {
+          if (ctrls2[seg]) {
+            ctrl = { x: ctrls2[seg].cx, y: ctrls2[seg].cy };
+            prevC = ctrl;
+          } else {
+            var basePrevC = prevC || { x: pStart.px, y: pStart.py };
+            ctrl = { x: 2 * pStart.px - basePrevC.x, y: 2 * pStart.py - basePrevC.y };
+            prevC = ctrl;
+          }
+        }
+
+        var prevSample = { x: pStart.px, y: pStart.py };
+        for (var i = 1; i <= SAMPLES; i++) {
+          var t = i / SAMPLES;
+          var invT = 1 - t;
+          var sampleX = invT * invT * pStart.px + 2 * invT * t * ctrl.x + t * t * pEnd.px;
+          var sampleY = invT * invT * pStart.py + 2 * invT * t * ctrl.y + t * t * pEnd.py;
+
+          var segD = getDistanceToSegment(px, py, prevSample.x, prevSample.y, sampleX, sampleY);
+          if (segD < minD) minD = segD;
+          prevSample = { x: sampleX, y: sampleY };
+        }
+      }
+    } else if (obj.type === 'bez3') {
+      var ctrls3 = a.ctrls3 || [];
+      var prevC2 = null;
+
+      for (var seg = 0; seg < pts.length - 1; seg++) {
+        var pStart = pts[seg];
+        var pEnd = pts[seg + 1];
+        var ctrl1, ctrl2;
+
+        var defaultC2 = { x: pEnd.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
+        ctrl2 = (ctrls3[seg] && ctrls3[seg].c2) ? ctrls3[seg].c2 : defaultC2;
+
+        if (seg === 0) {
+          var defaultC1 = { x: pStart.px, y: Math.round((pStart.py + pEnd.py) / 2 - 50) };
+          ctrl1 = (ctrls3[0] && ctrls3[0].c1) ? ctrls3[0].c1 : defaultC1;
+        } else {
+          if (ctrls3[seg] && ctrls3[seg].c1) {
+            ctrl1 = ctrls3[seg].c1;
+          } else {
+            var basePrevC2 = prevC2 || { x: pStart.px, y: pStart.py };
+            ctrl1 = { x: 2 * pStart.px - basePrevC2.x, y: 2 * pStart.py - basePrevC2.y };
+          }
+        }
+        prevC2 = ctrl2;
+
+        var prevSample = { x: pStart.px, y: pStart.py };
+        for (var i = 1; i <= SAMPLES; i++) {
+          var t = i / SAMPLES;
+          var invT = 1 - t;
+          var sampleX = invT * invT * invT * pStart.px + 3 * invT * invT * t * ctrl1.x + 3 * invT * t * t * ctrl2.x + t * t * t * pEnd.px;
+          var sampleY = invT * invT * invT * pStart.py + 3 * invT * invT * t * ctrl1.y + 3 * invT * t * t * ctrl2.y + t * t * t * pEnd.py;
+
+          var segD = getDistanceToSegment(px, py, prevSample.x, prevSample.y, sampleX, sampleY);
+          if (segD < minD) minD = segD;
+          prevSample = { x: sampleX, y: sampleY };
+        }
+      }
+    }
+    return minD;
   }
 
   function findNearestObject(px, py) {

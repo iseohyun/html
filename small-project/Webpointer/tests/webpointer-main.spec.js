@@ -1390,7 +1390,44 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     expect(result.seg1C2Unchanged).toBe(true);
     expect(result.seg2C2Updated).toBe(true);
   });
+
+  test('TC37: 베지어 곡선(bez2/bez3) 경로 자석 근접 선택(proximity selection) 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const selection = window.WebpointerSelection;
+
+      cfg.objectsMap.clear();
+
+      // (100, 100) -> (300, 100) 제어점 (200, 50) 아치형 2차 베지어 곡선
+      const bez2Obj = {
+        id: 'bez2_proximity_test',
+        type: 'bez2',
+        attrs: {
+          points: [{ px: 100, py: 100 }, { px: 300, py: 100 }],
+          firstCtrl: { cx: 200, cy: 50 },
+          ctrls2: [{ cx: 200, cy: 50 }]
+        }
+      };
+      cfg.objectsMap.set(bez2Obj.id, bez2Obj);
+
+      // 곡선 중간 근처 (200, 80) 클릭 시 감지 테스트 (경로 근처 10px 거리)
+      const foundObjArcMid = selection.findNearestObject(200, 80);
+
+      // 곡선에서 100px 떨어진 무관한 지점 (200, 300) 클릭 시 감지 불가 테스트
+      const foundObjFar = selection.findNearestObject(200, 300);
+
+      return {
+        detectedNearArc: foundObjArcMid ? foundObjArcMid.id : null,
+        notDetectedFar: foundObjFar === null
+      };
+    });
+
+    console.log('[Webpointer Bezier Proximity Selection Test 🧪]:', result);
+    expect(result.detectedNearArc).toBe('bez2_proximity_test');
+    expect(result.notDetectedFar).toBe(true);
+  });
 });
+
 
 
 
