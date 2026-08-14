@@ -125,25 +125,30 @@
         minY = oy; maxY = oy + oh;
       }
     } else if (obj.type === 'text') {
-      var hasBBox = false;
-      try {
-        if (obj.el) {
-          var bb = obj.el.getBBox();
-          if (bb && bb.width > 0 && bb.height > 0) {
-            minX = bb.x; maxX = bb.x + bb.width;
-            minY = bb.y; maxY = bb.y + bb.height;
-            hasBBox = true;
+      if (a.width && a.height) {
+        minX = a.x; maxX = a.x + a.width;
+        minY = a.y; maxY = a.y + a.height;
+      } else {
+        var hasBBox = false;
+        try {
+          if (obj.el) {
+            var bb = obj.el.getBBox();
+            if (bb && bb.width > 0 && bb.height > 0) {
+              minX = bb.x; maxX = bb.x + bb.width;
+              minY = bb.y; maxY = bb.y + bb.height;
+              hasBBox = true;
+            }
           }
+        } catch(e) {}
+        if (!hasBBox) {
+          var fontSize = parseInt(a.fontSize || 20, 10);
+          if (isNaN(fontSize) || fontSize <= 0) fontSize = 20;
+          var approxW = (a.text || '').length * (fontSize * 0.55);
+          var tx = (a.x !== undefined && a.x !== null && !isNaN(parseFloat(a.x))) ? parseFloat(a.x) : 0;
+          var ty = (a.y !== undefined && a.y !== null && !isNaN(parseFloat(a.y))) ? parseFloat(a.y) : 0;
+          minX = tx; maxX = tx + approxW;
+          minY = ty - fontSize; maxY = ty + 4;
         }
-      } catch(e) {}
-      if (!hasBBox) {
-        var fontSize = parseInt(a.fontSize || 20, 10);
-        if (isNaN(fontSize) || fontSize <= 0) fontSize = 20;
-        var approxW = (a.text || '').length * (fontSize * 0.55);
-        var tx = (a.x !== undefined && a.x !== null && !isNaN(parseFloat(a.x))) ? parseFloat(a.x) : 0;
-        var ty = (a.y !== undefined && a.y !== null && !isNaN(parseFloat(a.y))) ? parseFloat(a.y) : 0;
-        minX = tx; maxX = tx + approxW;
-        minY = ty - fontSize; maxY = ty + 4;
       }
     } else if (obj.type === 'ellipse' || obj.type === 'arc') {
       var ecx = a.cx || 0, ecy = a.cy || 0, erx = a.rx || 30, ery = a.ry || 30;

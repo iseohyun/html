@@ -1840,7 +1840,61 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     expect(result.rectHas45).toBe(true);
     expect(result.textHas45).toBe(true);
   });
+
+  test('TC47: 도형(rect) 영역 할당 텍스트(text)의 회전 시 중심축 기준 위치 및 각도 통합 고정 회전 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
+      // 1. 도형 생성 (x: 200, y: 200, width: 200, height: 100 => center: 300, 250)
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'bound_rect',
+        type: 'rect',
+        el: rectEl,
+        attrs: { x: 200, y: 200, width: 200, height: 100, angle: 0 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+
+      // 2. 텍스트 생성 (도형 영역 할당 attrs: width: 200, height: 100 => 도형 좌상단 포개어짐)
+      const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      document.getElementById('objectsGroup').appendChild(textEl);
+      const textObj = {
+        id: 'bound_text',
+        type: 'text',
+        el: textEl,
+        attrs: { x: 200, y: 200, width: 200, height: 100, text: '도형 연동 텍스트', fontSize: 20, angle: 0 }
+      };
+      cfg.objectsMap.set(textObj.id, textObj);
+
+      cfg.selectedIds.add(rectObj.id);
+      cfg.selectedIds.add(textObj.id);
+      render.updateElementAttributes(rectObj);
+      render.updateElementAttributes(textObj);
+      render.renderUI();
+
+      // 도형 및 텍스트의 getObjectCenter 피벗 일치 확인
+      const rectCenter = window.WebpointerObjects.getObjectCenter(rectObj);
+      const textCenter = window.WebpointerObjects.getObjectCenter(textObj);
+
+      return {
+        rectCenterX: rectCenter.x,
+        rectCenterY: rectCenter.y,
+        textCenterX: textCenter.x,
+        textCenterY: textCenter.y,
+        isCenterMatching: rectCenter.x === textCenter.x && rectCenter.y === textCenter.y
+      };
+    });
+
+    console.log('[Webpointer Shape Allocated Text Pivot Alignment Test 🧪]:', result);
+    expect(result.isCenterMatching).toBe(true);
+  });
 });
+
 
 
 

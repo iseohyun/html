@@ -452,12 +452,34 @@
           if (state.isSplitRotate || cfg.selectedIds.size <= 1) {
             a.angle = Math.round((newAngle % 360 + 360) % 360);
           } else {
+            var rad = deltaAngle * (Math.PI / 180);
             cfg.selectedIds.forEach(function(sId) {
               var sObj = cfg.objectsMap.get(sId);
               var sInit = state.initialObjAttrsMap.get(sId);
               if (sObj && sInit) {
                 var sBaseAngle = sInit.angle || 0;
                 sObj.attrs.angle = Math.round(((sBaseAngle + deltaAngle) % 360 + 360) % 360);
+
+                if (sObj.id !== obj.id) {
+                  var sInitCenter = {
+                    x: sInit.cx !== undefined ? sInit.cx : (sInit.x !== undefined ? sInit.x + (sInit.width || 80) / 2 : center.x),
+                    y: sInit.cy !== undefined ? sInit.cy : (sInit.y !== undefined ? sInit.y + (sInit.height || 40) / 2 : center.y)
+                  };
+                  var dx = sInitCenter.x - center.x;
+                  var dy = sInitCenter.y - center.y;
+                  var rotX = center.x + (dx * Math.cos(rad) - dy * Math.sin(rad));
+                  var rotY = center.y + (dx * Math.sin(rad) + dy * Math.cos(rad));
+
+                  if (sObj.attrs.cx !== undefined) {
+                    sObj.attrs.cx = rotX;
+                    sObj.attrs.cy = rotY;
+                  } else if (sObj.attrs.x !== undefined) {
+                    var curW = sInit.width || (sObj.attrs.width || 80);
+                    var curH = sInit.height || (sObj.attrs.height || 40);
+                    sObj.attrs.x = rotX - curW / 2;
+                    sObj.attrs.y = rotY - curH / 2;
+                  }
+                }
                 render.updateElementAttributes(sObj);
               }
             });
