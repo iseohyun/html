@@ -582,6 +582,21 @@
           return { x: cx + rxRot, y: cy + ryRot };
         }
 
+        var ptWidth = getArcHandlePoint(a.cx, a.cy, rx, ry, 0, rot);
+        var ptHeight = getArcHandlePoint(a.cx, a.cy, rx, ry, -90, rot);
+        var ptRotate = getArcHandlePoint(a.cx, a.cy, rx, ry + 25, -90, rot);
+
+        var rotStemArc = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        rotStemArc.setAttribute('x1', ptHeight.x); rotStemArc.setAttribute('y1', ptHeight.y);
+        rotStemArc.setAttribute('x2', ptRotate.x); rotStemArc.setAttribute('y2', ptRotate.y);
+        rotStemArc.setAttribute('stroke', '#0284c7'); rotStemArc.setAttribute('stroke-dasharray', '3,3');
+        rotStemArc.setAttribute('stroke-width', '1.5');
+        uiGroup.appendChild(rotStemArc);
+
+        createHandleNode(ptWidth.x, ptWidth.y, id, 'ellipse_width', 4, false);
+        createHandleNode(ptHeight.x, ptHeight.y, id, 'ellipse_height', 5, false);
+        createHandleNode(ptRotate.x, ptRotate.y, id, 'ellipse_rotate', 6, true);
+
         var pStartHandle = getArcHandlePoint(a.cx, a.cy, rx, ry, sAng, rot);
         var pEndHandle = getArcHandlePoint(a.cx, a.cy, rx, ry, eAng, rot);
 
@@ -601,16 +616,27 @@
 
         createHandleNode(pStartHandle.x, pStartHandle.y, id, 'arc_start', 2, true, { fill: '#38bdf8', stroke: '#0284c7', r: 6 });
         createHandleNode(pEndHandle.x, pEndHandle.y, id, 'arc_end', 3, true, { fill: '#f97316', stroke: '#c2410c', r: 6 });
-      } else if (obj.type === 'rect' || obj.type === 'image') {
-        var bounds = window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(obj) : { minX: a.x, maxX: a.x + a.width, minY: a.y, maxY: a.y + a.height };
+      } else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'text' || obj.type === 'image') {
+        var bounds = window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(obj) : { minX: a.x, maxX: a.x + (a.width || 80), minY: a.y, maxY: a.y + (a.height || 40) };
         createHandleNode(bounds.minX, bounds.minY, id, 'top_left', 1, false);
         createHandleNode(bounds.maxX, bounds.maxY, id, 'bottom_right', 2, false);
-      } else if (obj.type === 'rounded') {
-        var bounds = window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(obj) : { minX: a.x, maxX: a.x + a.width, minY: a.y, maxY: a.y + a.height };
-        var cornerRx = a.rx !== undefined ? a.rx : 15;
-        createHandleNode(bounds.minX, bounds.minY, id, 'top_left', 1, false);
-        createHandleNode(bounds.maxX, bounds.maxY, id, 'bottom_right', 2, false);
-        createHandleNode(bounds.minX + cornerRx, bounds.minY, id, 'corner_rx', 3, true);
+        if (obj.type === 'rounded') {
+          var cornerRx = a.rx !== undefined ? a.rx : 15;
+          createHandleNode(bounds.minX + cornerRx, bounds.minY, id, 'corner_rx', 3, true);
+        }
+
+        var midX = (bounds.minX + bounds.maxX) / 2;
+        var topY = bounds.minY;
+        var ptRotRect = { x: midX, y: topY - 25 };
+
+        var rStemRect = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        rStemRect.setAttribute('x1', midX); rStemRect.setAttribute('y1', topY);
+        rStemRect.setAttribute('x2', ptRotRect.x); rStemRect.setAttribute('y2', ptRotRect.y);
+        rStemRect.setAttribute('stroke', '#0284c7'); rStemRect.setAttribute('stroke-dasharray', '3,3');
+        rStemRect.setAttribute('stroke-width', '1.5');
+        uiGroup.appendChild(rStemRect);
+
+        createHandleNode(ptRotRect.x, ptRotRect.y, id, 'ellipse_rotate', 4, true);
       } else if (obj.type === 'bez2') {
         var pts = a.points || [];
         pts.forEach(function(pt, idx) {

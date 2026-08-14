@@ -1484,7 +1484,69 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     expect(result.hasEndHandle).toBe(true);
     expect(result.pathDValid).toBe(true);
   });
+
+  test('TC39: 호(arc) 가로/세로 크기 및 회전 핸들러, 직사각형(rect) 회전 핸들러 렌더링 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+
+      cfg.objectsMap.clear();
+
+      // 호(arc) 객체 생성 및 선택
+      const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      document.getElementById('objectsGroup').appendChild(pathEl);
+      const arcObj = {
+        id: 'arc_handles_test',
+        type: 'arc',
+        el: pathEl,
+        attrs: { cx: 200, cy: 200, rx: 60, ry: 60, startAngle: -90, endAngle: 90, angle: 15 }
+      };
+      cfg.currentTool = 'select';
+      cfg.objectsMap.set(arcObj.id, arcObj);
+      cfg.selectedIds.clear();
+      cfg.selectedIds.add(arcObj.id);
+      render.updateElementAttributes(arcObj);
+      render.renderUI();
+
+      const handlesArc = Array.from(document.querySelectorAll('.handle-node'));
+      const hasArcWidth = !!handlesArc.find(h => h.dataset.handleType === 'ellipse_width');
+      const hasArcHeight = !!handlesArc.find(h => h.dataset.handleType === 'ellipse_height');
+      const hasArcRotate = !!handlesArc.find(h => h.dataset.handleType === 'ellipse_rotate');
+
+      // 직사각형(rect) 객체 생성 및 선택
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'rect_rotate_test',
+        type: 'rect',
+        el: rectEl,
+        attrs: { x: 300, y: 100, width: 100, height: 60, angle: 30 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+      cfg.selectedIds.clear();
+      cfg.selectedIds.add(rectObj.id);
+      render.updateElementAttributes(rectObj);
+      render.renderUI();
+
+      const handlesRect = Array.from(document.querySelectorAll('.handle-node'));
+      const hasRectRotate = !!handlesRect.find(h => h.dataset.handleType === 'ellipse_rotate');
+
+      return {
+        hasArcWidth: hasArcWidth,
+        hasArcHeight: hasArcHeight,
+        hasArcRotate: hasArcRotate,
+        hasRectRotate: hasRectRotate
+      };
+    });
+
+    console.log('[Webpointer Arc & Rect Handles Audit Test 🧪]:', result);
+    expect(result.hasArcWidth).toBe(true);
+    expect(result.hasArcHeight).toBe(true);
+    expect(result.hasArcRotate).toBe(true);
+    expect(result.hasRectRotate).toBe(true);
+  });
 });
+
 
 
 
