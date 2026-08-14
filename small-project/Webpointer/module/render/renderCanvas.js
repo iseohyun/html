@@ -243,6 +243,21 @@
           obj.underlineEl = null;
         }
       }
+
+      var textBounds = window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(obj) : null;
+      var textCX = textBounds ? (textBounds.minX + textBounds.maxX) / 2 : a.x;
+      var textCY = textBounds ? (textBounds.minY + textBounds.maxY) / 2 : a.y;
+      if (a.angle) {
+        obj.el.setAttribute('transform', 'rotate(' + a.angle + ' ' + textCX + ' ' + textCY + ')');
+        if (obj.underlineEl) {
+          obj.underlineEl.setAttribute('transform', 'rotate(' + a.angle + ' ' + textCX + ' ' + textCY + ')');
+        }
+      } else {
+        obj.el.removeAttribute('transform');
+        if (obj.underlineEl) {
+          obj.underlineEl.removeAttribute('transform');
+        }
+      }
     }
 
     if (obj.type !== 'text') {

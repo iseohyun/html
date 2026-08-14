@@ -1640,7 +1640,44 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     expect(result.detectedNearStroke).toBe('unfilled_arc_magnet_test');
     expect(result.ignoredEmptySector).toBe(true);
   });
+
+  test('TC42: 텍스트 상자(text) 회전 핸들 드래그 및 텍스트/밑줄 실시간 transform 회전 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+
+      cfg.objectsMap.clear();
+
+      // 텍스트 객체 생성 및 선택
+      const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      document.getElementById('objectsGroup').appendChild(textEl);
+      const textObj = {
+        id: 'text_rotation_test',
+        type: 'text',
+        el: textEl,
+        attrs: { x: 300, y: 200, text: '회전 텍스트 테스트', fontSize: 24, underlineStyle: 'solid', angle: 45 }
+      };
+      cfg.objectsMap.set(textObj.id, textObj);
+      cfg.selectedIds.clear();
+      cfg.selectedIds.add(textObj.id);
+      render.updateElementAttributes(textObj);
+      render.renderUI();
+
+      const textTransform = textEl.getAttribute('transform');
+      const underlineTransform = textObj.underlineEl ? textObj.underlineEl.getAttribute('transform') : null;
+
+      return {
+        textHasRotate: !!textTransform && textTransform.includes('rotate(45'),
+        underlineHasRotate: !!underlineTransform && underlineTransform.includes('rotate(45')
+      };
+    });
+
+    console.log('[Webpointer Text Box Rotation Test 🧪]:', result);
+    expect(result.textHasRotate).toBe(true);
+    expect(result.underlineHasRotate).toBe(true);
+  });
 });
+
 
 
 
