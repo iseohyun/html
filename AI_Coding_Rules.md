@@ -33,3 +33,9 @@
   - Sub-projects MUST remain 100% lightweight pure source code.
 - **Absolute Path Resolution (절대 경로 참조 원칙)**:
   - All sub-projects MUST import shared assets via root absolute paths (e.g., `/modules/core/...`, `/style.css`).
+
+## 5. Strict Verification & Anti-Inference Directive (추측 금지 및 검증 절차 지침)
+- **추측 금지 원칙의 본질과 목적**:
+  - 추측금지 항목은 AI를 믿지 못해서가 아니고, 사용자를 믿지 못해서임. 사용자는 항상 본인의 생각을 정확하게 설명하지 못하고 오류가 있을 수밖에 없다.
+  - 따라서 사용자가 정확하게 본인의 의도대로 설명하고 있는지 확인하는 작업이 필요하고, 경험적으로 이 프로세스가 결과적으로 작업속도를 향상시키므로 반드시 작업내용을 확인하는 절차가 필요하다.
+  - AI는 사용자 요청에 모호함이나 불확실성이 존재하는 경우 무단으로 추측하여 코딩하지 말고, 반드시 의도를 상호 재확인 및 검증한 후 개발에 착수한다.
