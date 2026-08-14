@@ -848,8 +848,20 @@
             if (selObj.type === 'text') {
               textTool.startDirectCanvasTyping(selObj.attrs.x, selObj.attrs.y, selObj);
             } else {
-              var pt = textTool.getShapeTextInsertionPoint(selObj);
-              textTool.startDirectCanvasTyping(pt.px, pt.py, null, pt.anchor);
+              var existingText = null;
+              if (selObj.parentId) {
+                cfg.objectsMap.forEach(function(o) {
+                  if (o.parentId === selObj.parentId && o.type === 'text') {
+                    existingText = o;
+                  }
+                });
+              }
+              if (existingText) {
+                textTool.startDirectCanvasTyping(existingText.attrs.x, existingText.attrs.y, existingText);
+              } else {
+                var pt = textTool.getShapeTextInsertionPoint(selObj);
+                textTool.startDirectCanvasTyping(pt.px, pt.py, null, pt.anchor);
+              }
             }
             return;
           }

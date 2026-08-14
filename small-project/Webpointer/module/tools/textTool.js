@@ -12,7 +12,7 @@
     if (type === 'rect' || type === 'rounded') {
       return {
         px: (a.x !== undefined ? a.x : 0) + 10,
-        py: (a.y !== undefined ? a.y : 0) + fontSize + 4,
+        py: (a.y !== undefined ? a.y : 0) + 8,
         anchor: 'start'
       };
     }
@@ -39,12 +39,24 @@
 
   function addTextObject() {
     console.log('[Webpointer Debug] addTextObject called');
-    if (cfg.selectedIds && cfg.selectedIds.size === 1) {
+    if (cfg.selectedIds && cfg.selectedIds.size >= 1) {
       var selId = Array.from(cfg.selectedIds)[0];
       var shapeObj = cfg.objectsMap.get(selId);
       if (shapeObj && shapeObj.type !== 'text') {
-        var pt = getShapeTextInsertionPoint(shapeObj);
-        startDirectCanvasTyping(pt.px, pt.py, null, pt.anchor);
+        var existingText = null;
+        if (shapeObj.parentId) {
+          cfg.objectsMap.forEach(function(o) {
+            if (o.parentId === shapeObj.parentId && o.type === 'text') {
+              existingText = o;
+            }
+          });
+        }
+        if (existingText) {
+          startDirectCanvasTyping(existingText.attrs.x, existingText.attrs.y, existingText);
+        } else {
+          var pt = getShapeTextInsertionPoint(shapeObj);
+          startDirectCanvasTyping(pt.px, pt.py, null, pt.anchor);
+        }
         return;
       }
     }
@@ -86,7 +98,7 @@
       el.setAttribute('font-size', cfg.fontSize || 20);
       el.setAttribute('font-family', cfg.fontFamily || 'sans-serif');
       el.setAttribute('text-anchor', tAnchor);
-      el.setAttribute('dominant-baseline', 'alphabetic');
+      el.setAttribute('dominant-baseline', 'hanging');
 
       var attrs = {
         x: px,
@@ -95,7 +107,8 @@
         fill: textColor,
         fontSize: cfg.fontSize || 20,
         fontFamily: cfg.fontFamily || 'sans-serif',
-        textAnchor: tAnchor
+        textAnchor: tAnchor,
+        dominantBaseline: 'hanging'
       };
 
       var parentGroup = null;

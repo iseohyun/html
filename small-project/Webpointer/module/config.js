@@ -55,6 +55,7 @@
     fontStyle: 'normal',
     textDecoration: 'none', // 'none' vs 'line-through'
     textAnchor: 'start',     // 'start' (왼쪽), 'middle' (가운데), 'end' (오른쪽)
+    textDominantBaseline: 'hanging', // 'hanging' (top baseline)
     lineHeight: 1.2,
     activeTextColorTarget: 'text', // 'text' (글자색) vs 'bg' (배경색/하이라이트)
     systemFonts: [

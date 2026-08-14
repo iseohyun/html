@@ -2105,7 +2105,69 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     expect(result.isToolSelectAfterEsc).toBe(true);
     expect(result.isPivotMatching).toBe(true);
   });
+
+  test('TC52: 텍스트 상단 베이스라인(dominant-baseline="hanging") 적용 및 F2 키 누름 시 기존 병합 텍스트 수정 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+      const textTool = window.WebpointerTextTool;
+
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
+      // 1. 도형 및 텍스트 그룹 생성
+      const groupId = 'group_existing';
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'existing_shape',
+        type: 'rect',
+        parentId: groupId,
+        el: rectEl,
+        attrs: { x: 200, y: 200, width: 180, height: 100, angle: 0 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+
+      const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      document.getElementById('objectsGroup').appendChild(textEl);
+      const textObj = {
+        id: 'existing_text',
+        type: 'text',
+        parentId: groupId,
+        el: textEl,
+        attrs: { x: 200, y: 200, text: '기존문구', fontSize: 20, angle: 0, dominantBaseline: 'hanging' }
+      };
+      cfg.objectsMap.set(textObj.id, textObj);
+
+      render.updateElementAttributes(rectObj);
+      render.updateElementAttributes(textObj);
+
+      // 도형 선택 후 F2 시뮬레이션 (addTextObject)
+      cfg.selectedIds.add(rectObj.id);
+      textTool.addTextObject();
+
+      const editingSvgObj = window.WebpointerState.typingSvgObj;
+      const isEditingExistingText = editingSvgObj && editingSvgObj.id === textObj.id;
+
+      // dominant-baseline 속성 확인
+      const domBaseline = textEl.getAttribute('dominant-baseline');
+
+      textTool.finishDirectCanvasTyping();
+
+      return {
+        isEditingExistingText,
+        domBaseline,
+        objectsCount: cfg.objectsMap.size
+      };
+    });
+
+    console.log('[Webpointer Top Baseline & F2 Existing Text Edit Test 🧪]:', result);
+    expect(result.isEditingExistingText).toBe(true);
+    expect(result.domBaseline).toBe('hanging');
+    expect(result.objectsCount).toBe(2);
+  });
 });
+
 
 
 

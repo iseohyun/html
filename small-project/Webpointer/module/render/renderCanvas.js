@@ -97,7 +97,7 @@
       var tAnchor = a.textAnchor || cfg.textAnchor || 'start';
       var lHeight = a.lineHeight !== undefined ? a.lineHeight : (cfg.lineHeight || 1.2);
 
-      var dBase = a.dominantBaseline || cfg.textDominantBaseline || 'alphabetic';
+      var dBase = a.dominantBaseline || cfg.textDominantBaseline || 'hanging';
       var wMode = a.writingMode || cfg.textWritingMode || 'horizontal-tb';
 
       var uColor  = a.underlineColor || cfg.textUnderlineColor || 'currentColor';
