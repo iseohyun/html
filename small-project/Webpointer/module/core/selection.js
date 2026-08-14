@@ -56,12 +56,58 @@
     } else if (obj.type === 'ellipse') {
       return Math.hypot(px - a.cx, py - a.cy);
     } else if (obj.type === 'arc') {
-      var dCenter = Math.hypot(px - a.cx, py - a.cy);
-      return Math.abs(dCenter - (a.rx || 30));
+      return getDistanceToArc(px, py, obj);
     } else if (obj.type === 'bez2' || obj.type === 'bez3') {
       return getDistanceToBezier(px, py, obj);
     }
     return Infinity;
+  }
+
+  function getDistanceToArc(px, py, obj) {
+    var a = obj.attrs;
+    var rx = a.rx || 30;
+    var ry = a.ry || 30;
+    var cx = a.cx;
+    var cy = a.cy;
+    var rot = a.angle || 0;
+    var rotRad = rot * (Math.PI / 180);
+    var sAng = a.startAngle !== undefined ? a.startAngle : -90;
+    var eAng = a.endAngle !== undefined ? a.endAngle : 0;
+
+    var sweep = (eAng - sAng);
+
+    var isFilled = a.fill && a.fill !== 'none' && a.fill !== 'transparent';
+    if (isFilled) {
+      var dx = px - cx;
+      var dy = py - cy;
+      var unrotX = dx * Math.cos(-rotRad) - dy * Math.sin(-rotRad);
+      var unrotY = dx * Math.sin(-rotRad) + dy * Math.cos(-rotRad);
+      var normDistSq = (unrotX * unrotX) / (rx * rx) + (unrotY * unrotY) / (ry * ry);
+
+      if (normDistSq <= 1.0) {
+        var clickAng = Math.atan2(unrotY, unrotX) * (180 / Math.PI);
+        var relAng = (clickAng - sAng + 720) % 360;
+        var relEnd = (eAng - sAng + 720) % 360;
+        if (relAng <= relEnd) {
+          return 0;
+        }
+      }
+    }
+
+    var minD = Infinity;
+    var STEPS = 25;
+    for (var i = 0; i <= STEPS; i++) {
+      var t = i / STEPS;
+      var deg = sAng + t * sweep;
+      var rad = deg * (Math.PI / 180);
+      var localX = rx * Math.cos(rad);
+      var localY = ry * Math.sin(rad);
+      var rotX = cx + (localX * Math.cos(rotRad) - localY * Math.sin(rotRad));
+      var rotY = cy + (localX * Math.sin(rotRad) + localY * Math.cos(rotRad));
+      var dist = Math.hypot(px - rotX, py - rotY);
+      if (dist < minD) minD = dist;
+    }
+    return minD;
   }
 
   function getDistanceToSegment(px, py, x1, y1, x2, y2) {

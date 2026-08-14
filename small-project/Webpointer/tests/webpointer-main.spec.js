@@ -1603,7 +1603,45 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     expect(result.rectElementHasRotate).toBe(true);
     expect(result.boxRectRectHasRotate).toBe(true);
   });
+
+  test('TC41: 채우기가 없는(fill: none) 호(arc) 경로 근처 자석선택(Magnet Selection) 및 허수 영역 배제 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const selection = window.WebpointerSelection;
+
+      cfg.objectsMap.clear();
+
+      // 채우기 없는 호 (center 200, 200, rx 100, ry 100, sAng -90, eAng 0 => 우상단 호 궤적)
+      const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      document.getElementById('objectsGroup').appendChild(pathEl);
+      const arcObj = {
+        id: 'unfilled_arc_magnet_test',
+        type: 'arc',
+        el: pathEl,
+        attrs: { cx: 200, cy: 200, rx: 100, ry: 100, startAngle: -90, endAngle: 0, fill: 'none', stroke: '#0284c7', strokeWidth: 2 }
+      };
+      cfg.objectsMap.set(arcObj.id, arcObj);
+
+      // 1. 호 궤적 실선 근처 (200 + 100 * cos(-45deg), 200 + 100 * sin(-45deg)) => 약 (270.7, 129.3)
+      // 근처 (275, 125) 클릭 시 (약 5px 거리) -> 자석 감지 성공되어야 함!
+      const detectedNearStroke = selection.findNearestObject(275, 125, 15);
+
+      // 2. 호 궤적이 없는 빈 허수 영역 (129, 270) (좌하단 - 호가 없음!)
+      // 반지름 100px 거리이지만 호가 없는 영역이므로 자석 감지 실패되어야 함!
+      const detectedEmptySector = selection.findNearestObject(129, 270, 15);
+
+      return {
+        detectedNearStroke: detectedNearStroke ? detectedNearStroke.id : null,
+        ignoredEmptySector: detectedEmptySector === null
+      };
+    });
+
+    console.log('[Webpointer Unfilled Arc Magnet Selection Test 🧪]:', result);
+    expect(result.detectedNearStroke).toBe('unfilled_arc_magnet_test');
+    expect(result.ignoredEmptySector).toBe(true);
+  });
 });
+
 
 
 
