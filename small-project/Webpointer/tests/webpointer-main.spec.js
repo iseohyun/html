@@ -2047,7 +2047,66 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     expect(result.isWidthMatching).toBe(true);
     expect(result.isHeightMatching).toBe(true);
   });
+
+  test('TC51: F2 키 입력 시 도형 편집모드 진입, Esc 키 입력 시 도형 선택 복귀, 회전 시 순간이동 현상 차단 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+      const textTool = window.WebpointerTextTool;
+
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
+      // 1. 도형 생성 및 선택
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'f2_shape',
+        type: 'rect',
+        el: rectEl,
+        attrs: { x: 150, y: 150, width: 160, height: 90, angle: 0 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+      cfg.selectedIds.add(rectObj.id);
+
+      // F2 키 시뮬레이션: 도형 텍스트 편집 시작
+      const pt = textTool.getShapeTextInsertionPoint(rectObj);
+      textTool.startDirectCanvasTyping(pt.px, pt.py, null, pt.anchor);
+
+      const isTypingActive = !!window.WebpointerState.typingSvgObj;
+      const createdTextObj = window.WebpointerState.typingSvgObj;
+
+      // 텍스트 입력
+      if (createdTextObj) {
+        createdTextObj.attrs.text = '테스트문구';
+      }
+
+      // Esc 키 시뮬레이션: 편집 종료 및 도형 선택 복귀
+      textTool.finishDirectCanvasTyping();
+
+      const isShapeSelectedAfterEsc = cfg.selectedIds.has(rectObj.id);
+      const isToolSelectAfterEsc = cfg.currentTool === 'select';
+
+      // 회전 시 피벗 위치 검증 (도형과 텍스트의 getObjectCenter 피벗 일치 여부)
+      const rectCenter = window.WebpointerObjects.getObjectCenter(rectObj);
+      const textCenter = createdTextObj ? window.WebpointerObjects.getObjectCenter(createdTextObj) : null;
+
+      return {
+        isTypingActive,
+        isShapeSelectedAfterEsc,
+        isToolSelectAfterEsc,
+        isPivotMatching: textCenter && rectCenter.x === textCenter.x && rectCenter.y === textCenter.y
+      };
+    });
+
+    console.log('[Webpointer F2 & Esc Key Scenario & Pivot Sync Test 🧪]:', result);
+    expect(result.isTypingActive).toBe(true);
+    expect(result.isShapeSelectedAfterEsc).toBe(true);
+    expect(result.isToolSelectAfterEsc).toBe(true);
+    expect(result.isPivotMatching).toBe(true);
+  });
 });
+
 
 
 

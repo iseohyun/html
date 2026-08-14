@@ -107,6 +107,15 @@
             parentShape.parentId = 'group_' + (cfg.nextId++);
           }
           parentGroup = parentShape.parentId;
+
+          var b = window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(parentShape) : null;
+          if (b) {
+            attrs.x = b.minX;
+            attrs.y = b.minY;
+            attrs.width = Math.max(1, b.maxX - b.minX);
+            attrs.height = Math.max(1, b.maxY - b.minY);
+          }
+          attrs.angle = parentShape.attrs.angle || 0;
         }
       }
 
@@ -643,21 +652,44 @@
     }
 
     if (state.typingSvgObj) {
-      var textVal = (state.typingSvgObj.attrs.text || '').trim();
+      var finishedObj = state.typingSvgObj;
+      var textVal = (finishedObj.attrs.text || '').trim();
       if (!textVal) {
-        if (state.typingSvgObj.el && state.typingSvgObj.el.parentNode) {
-          state.typingSvgObj.el.parentNode.removeChild(state.typingSvgObj.el);
+        if (finishedObj.el && finishedObj.el.parentNode) {
+          finishedObj.el.parentNode.removeChild(finishedObj.el);
         }
-        if (state.typingSvgObj.underlineEl && state.typingSvgObj.underlineEl.parentNode) {
-          state.typingSvgObj.underlineEl.parentNode.removeChild(state.typingSvgObj.underlineEl);
+        if (finishedObj.underlineEl && finishedObj.underlineEl.parentNode) {
+          finishedObj.underlineEl.parentNode.removeChild(finishedObj.underlineEl);
         }
-        cfg.objectsMap.delete(state.typingSvgObj.id);
-        cfg.selectedIds.delete(state.typingSvgObj.id);
+        cfg.objectsMap.delete(finishedObj.id);
+        cfg.selectedIds.delete(finishedObj.id);
       } else {
         cfg.selectedIds.clear();
-        cfg.selectedIds.add(state.typingSvgObj.id);
+        var hostShape = null;
+        if (finishedObj.parentId) {
+          cfg.objectsMap.forEach(function(o) {
+            if (o.parentId === finishedObj.parentId && o.type !== 'text') {
+              hostShape = o;
+            }
+          });
+        }
+        if (hostShape) {
+          cfg.selectedIds.add(hostShape.id);
+          cfg.selectedIds.add(finishedObj.id);
+          if (window.WebpointerObjects && window.WebpointerObjects.syncShapeTextBounds) {
+            window.WebpointerObjects.syncShapeTextBounds(hostShape);
+          }
+        } else {
+          cfg.selectedIds.add(finishedObj.id);
+        }
       }
       state.typingSvgObj = null;
+
+      if (window.WebpointerHandlers && window.WebpointerHandlers.setTool) {
+        window.WebpointerHandlers.setTool('select');
+      } else {
+        cfg.currentTool = 'select';
+      }
     }
 
     try {

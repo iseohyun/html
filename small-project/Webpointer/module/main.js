@@ -840,12 +840,17 @@
       }
 
       if (e.key === 'F2') {
-        if (cfg.selectedIds.size === 1) {
+        if (cfg.selectedIds.size >= 1) {
           var selId = Array.from(cfg.selectedIds)[0];
           var selObj = cfg.objectsMap.get(selId);
-          if (selObj && selObj.type === 'text') {
+          if (selObj) {
             e.preventDefault();
-            textTool.startDirectCanvasTyping(selObj.attrs.x, selObj.attrs.y, selObj);
+            if (selObj.type === 'text') {
+              textTool.startDirectCanvasTyping(selObj.attrs.x, selObj.attrs.y, selObj);
+            } else {
+              var pt = textTool.getShapeTextInsertionPoint(selObj);
+              textTool.startDirectCanvasTyping(pt.px, pt.py, null, pt.anchor);
+            }
             return;
           }
         }
