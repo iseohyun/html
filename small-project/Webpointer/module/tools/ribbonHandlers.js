@@ -4572,6 +4572,9 @@
         obj.attrs.angle = Math.round(((-curAngle) % 360 + 360) % 360);
       }
 
+      if (window.WebpointerObjects && window.WebpointerObjects.syncShapeTextBounds) {
+        window.WebpointerObjects.syncShapeTextBounds(obj);
+      }
       if (render && render.updateElementAttributes) {
         render.updateElementAttributes(obj);
       }

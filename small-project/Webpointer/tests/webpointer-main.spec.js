@@ -1983,7 +1983,72 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     expect(result.angleAfterRotate90).toBe(90);
     expect(result.angleAfterRotateNeg90).toBe(0);
   });
+
+  test('TC50: 도형 내 글자 포함 시 글자 핸들러 숨김 처리 및 도형-글상자 크기·위치 100% 통합 동기화 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
+      // 도형 생성 (x: 100, y: 100, width: 200, height: 120, angle: 0)
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'host_shape',
+        type: 'rect',
+        el: rectEl,
+        attrs: { x: 100, y: 100, width: 200, height: 120, angle: 0 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+
+      // 연동 텍스트 생성
+      const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      document.getElementById('objectsGroup').appendChild(textEl);
+      const textObj = {
+        id: 'inside_text',
+        type: 'text',
+        el: textEl,
+        attrs: { x: 100, y: 100, text: '도형 내 텍스트', fontSize: 20, angle: 0 }
+      };
+      cfg.objectsMap.set(textObj.id, textObj);
+
+      // 다중 선택 (도형 + 텍스트)
+      cfg.selectedIds.add(rectObj.id);
+      cfg.selectedIds.add(textObj.id);
+
+      render.updateElementAttributes(rectObj);
+      render.updateElementAttributes(textObj);
+      render.renderUI();
+
+      // 1. 도형 핸들러 개수 검증 (텍스트 전용 핸들러는 숨김 처리되어 도형 핸들러만 존재)
+      const handleNodes = Array.from(document.querySelectorAll('.handle-node'));
+      const textHandleNodes = handleNodes.filter(h => h.dataset.objId === textObj.id);
+
+      // 2. 도형 크기 변형 후 syncShapeTextBounds 실행 시 텍스트 크기·위치 동기화 검증
+      rectObj.attrs.width = 300;
+      rectObj.attrs.height = 180;
+      window.WebpointerObjects.syncShapeTextBounds(rectObj);
+
+      return {
+        textHandleCount: textHandleNodes.length,
+        syncedTextWidth: textObj.attrs.width,
+        syncedTextHeight: textObj.attrs.height,
+        isWidthMatching: textObj.attrs.width === rectObj.attrs.width,
+        isHeightMatching: textObj.attrs.height === rectObj.attrs.height
+      };
+    });
+
+    console.log('[Webpointer Shape Text Unified Handle & Bounds Test 🧪]:', result);
+    expect(result.textHandleCount).toBe(0);
+    expect(result.syncedTextWidth).toBe(300);
+    expect(result.syncedTextHeight).toBe(180);
+    expect(result.isWidthMatching).toBe(true);
+    expect(result.isHeightMatching).toBe(true);
+  });
 });
+
 
 
 

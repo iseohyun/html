@@ -649,6 +649,21 @@
         createHandleNode(pStartHandle.x, pStartHandle.y, id, 'arc_start', 2, true, { fill: '#38bdf8', stroke: '#0284c7', r: 6 });
         createHandleNode(pEndHandle.x, pEndHandle.y, id, 'arc_end', 3, true, { fill: '#f97316', stroke: '#c2410c', r: 6 });
       } else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'text' || obj.type === 'image') {
+        if (obj.type === 'text') {
+          var isInsideOrGroupedWithShape = false;
+          if (obj.parentId) {
+            isInsideOrGroupedWithShape = true;
+          } else {
+            cfg.selectedIds.forEach(function(sId) {
+              var sObj = cfg.objectsMap.get(sId);
+              if (sObj && sObj.id !== obj.id && sObj.type !== 'text') {
+                isInsideOrGroupedWithShape = true;
+              }
+            });
+          }
+          if (isInsideOrGroupedWithShape) return;
+        }
+
         var bounds = window.WebpointerObjects ? window.WebpointerObjects.getObjectBounds(obj) : { minX: a.x, maxX: a.x + (a.width || 80), minY: a.y, maxY: a.y + (a.height || 40) };
         var cX = (bounds.minX + bounds.maxX) / 2;
         var cY = (bounds.minY + bounds.maxY) / 2;

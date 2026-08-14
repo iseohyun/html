@@ -632,6 +632,9 @@
           }
         }
 
+        if (window.WebpointerObjects && window.WebpointerObjects.syncShapeTextBounds) {
+          window.WebpointerObjects.syncShapeTextBounds(obj);
+        }
         render.updateElementAttributes(obj);
         render.renderUI();
         return;
@@ -677,6 +680,9 @@
               }
               a.pathD = bezier.buildContinuousBezierPathD(a.points, null, obj.type, a.firstCtrl, null, null, a.ctrls3);
             }
+          }
+          if (window.WebpointerObjects && window.WebpointerObjects.syncShapeTextBounds) {
+            window.WebpointerObjects.syncShapeTextBounds(obj);
           }
           render.updateElementAttributes(obj);
         });

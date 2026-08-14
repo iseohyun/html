@@ -354,10 +354,44 @@
     return { x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 };
   }
 
+  function syncShapeTextBounds(shapeObj) {
+    if (!shapeObj || shapeObj.type === 'text') return;
+    var cfg = window.WebpointerConfig;
+    if (!cfg) return;
+
+    var bounds = getObjectBounds(shapeObj);
+    var shapeW = Math.max(1, bounds.maxX - bounds.minX);
+    var shapeH = Math.max(1, bounds.maxY - bounds.minY);
+    var shapeAngle = shapeObj.attrs.angle || 0;
+
+    cfg.objectsMap.forEach(function(sObj) {
+      if (sObj.type === 'text') {
+        var isAssociated = false;
+        if (shapeObj.parentId && sObj.parentId === shapeObj.parentId) {
+          isAssociated = true;
+        } else if (cfg.selectedIds && cfg.selectedIds.has(sObj.id) && cfg.selectedIds.has(shapeObj.id)) {
+          isAssociated = true;
+        }
+
+        if (isAssociated) {
+          sObj.attrs.x = bounds.minX;
+          sObj.attrs.y = bounds.minY;
+          sObj.attrs.width = shapeW;
+          sObj.attrs.height = shapeH;
+          sObj.attrs.angle = shapeAngle;
+          if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+            window.WebpointerRender.updateElementAttributes(sObj);
+          }
+        }
+      }
+    });
+  }
+
   window.WebpointerObjects = {
     createSvgObject: createSvgObject,
     getObjectBounds: getObjectBounds,
     getObjectCenter: getObjectCenter,
+    syncShapeTextBounds: syncShapeTextBounds,
     shiftObject: shiftObject,
     rotatePoint: rotatePoint,
     rotateObject: rotateObject,
