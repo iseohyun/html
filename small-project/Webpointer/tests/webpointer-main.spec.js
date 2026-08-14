@@ -2166,7 +2166,73 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     expect(result.domBaseline).toBe('hanging');
     expect(result.objectsCount).toBe(2);
   });
+
+  test('TC53: 도형+텍스트 다중 선택 시 선택박스(boxRect) 동시 회전 및 회전/hanging 커서 위치 정렬 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+      const textTool = window.WebpointerTextTool;
+
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
+      // 1. 회전된 도형 생성 (angle: 45)
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'rot_box_rect',
+        type: 'rect',
+        el: rectEl,
+        attrs: { x: 100, y: 100, width: 200, height: 100, angle: 45 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+
+      // 2. 회전된 연동 텍스트 생성 (angle: 45)
+      const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      document.getElementById('objectsGroup').appendChild(textEl);
+      const textObj = {
+        id: 'rot_box_text',
+        type: 'text',
+        el: textEl,
+        attrs: { x: 100, y: 100, width: 200, height: 100, text: '회전 커서 검증', fontSize: 20, angle: 45, dominantBaseline: 'hanging' }
+      };
+      cfg.objectsMap.set(textObj.id, textObj);
+
+      // 둘 다 선택 (다중 선택)
+      cfg.selectedIds.add(rectObj.id);
+      cfg.selectedIds.add(textObj.id);
+
+      render.updateElementAttributes(rectObj);
+      render.updateElementAttributes(textObj);
+      render.renderUI();
+
+      // uiGroup 내 boxRect element 선택박스 transform 속성 검증
+      const uiGroup = document.getElementById('uiGroup');
+      const boxRectEl = uiGroup.querySelector('rect[stroke="#0284c7"]');
+      const boxRectTransform = boxRectEl ? boxRectEl.getAttribute('transform') : '';
+
+      // 3. 커서위치 검증: 텍스트 편집 시작 후 깜빡이는 커서(#canvasBlinkingCaret) transform 속성 검증
+      textTool.startDirectCanvasTyping(100, 100, textObj);
+      const caretEl = document.getElementById('canvasBlinkingCaret');
+      const caretTransform = caretEl ? caretEl.getAttribute('transform') : '';
+      const caretY1 = caretEl ? parseFloat(caretEl.getAttribute('y1')) : 0;
+
+      textTool.finishDirectCanvasTyping();
+
+      return {
+        boxRectHasRotate45: !!boxRectTransform && boxRectTransform.includes('rotate(45'),
+        caretHasRotate45: !!caretTransform && caretTransform.includes('rotate(45'),
+        caretY1Equals100: caretY1 === 100
+      };
+    });
+
+    console.log('[Webpointer Grouped BoxRect Rotation & Rotated Caret Alignment Test 🧪]:', result);
+    expect(result.boxRectHasRotate45).toBe(true);
+    expect(result.caretHasRotate45).toBe(true);
+    expect(result.caretY1Equals100).toBe(true);
+  });
 });
+
 
 
 

@@ -308,6 +308,12 @@
         }
       } catch(err) {}
 
+      if (state.typingSvgObj && state.typingSvgObj.attrs && state.typingSvgObj.attrs.angle) {
+        var rotAngle = state.typingSvgObj.attrs.angle;
+        var center = window.WebpointerObjects ? window.WebpointerObjects.getObjectCenter(state.typingSvgObj) : { x: 0, y: 0 };
+        highlightGroup.setAttribute('transform', 'rotate(' + rotAngle + ' ' + center.x + ' ' + center.y + ')');
+      }
+
       if (caretEl && caretEl.parentNode === uiGroup) {
         uiGroup.insertBefore(highlightGroup, caretEl);
       } else {
@@ -332,8 +338,9 @@
       var textAnchor = state.typingSvgObj.attrs.textAnchor || 'start';
 
       var cx = baseX;
-      var cy1 = fontBaselineY - (fontSize * 0.85);
-      var cy2 = fontBaselineY + (fontSize * 0.15);
+      var isHanging = (state.typingSvgObj.attrs.dominantBaseline === 'hanging' || cfg.textDominantBaseline === 'hanging');
+      var cy1 = isHanging ? fontBaselineY : fontBaselineY - (fontSize * 0.85);
+      var cy2 = isHanging ? fontBaselineY + fontSize : fontBaselineY + (fontSize * 0.15);
 
       var caretPos = hiddenInput.selectionDirection === 'backward' ? hiddenInput.selectionStart : hiddenInput.selectionEnd;
       if (caretPos === undefined || caretPos === null) caretPos = (hiddenInput.value || '').length;
@@ -366,8 +373,8 @@
       }
 
       var lineY = fontBaselineY + (targetLineIdx * fontSize * (state.typingSvgObj.attrs.lineHeight || 1.2));
-      cy1 = lineY - (fontSize * 0.85);
-      cy2 = lineY + (fontSize * 0.15);
+      cy1 = isHanging ? lineY : lineY - (fontSize * 0.85);
+      cy2 = isHanging ? lineY + fontSize : lineY + (fontSize * 0.15);
 
       if (targetTspan) {
         tspanText = targetTspan.textContent || hiddenInput.value || '';
@@ -378,25 +385,13 @@
         if (tspanText.length === 0) {
           calculatedX = baseX;
         } else if (chIdxInLine === 0) {
-          // START OF LINE (Home key / Position 0): Left edge of first character
           if (targetTspan.getStartPositionOfChar) {
-            try { calculatedX = Math.round(targetTspan.getStartPositionOfChar(0).x); } catch(e) {}
-          }
-          if (calculatedX === null && targetTspan.getExtentOfChar) {
             try {
-              var ext0 = targetTspan.getExtentOfChar(0);
-              if (ext0 && ext0.width >= 0) calculatedX = Math.round(ext0.x);
-            } catch(e) {}
-          }
-          if (calculatedX === null && targetTspan.getBBox) {
-            try {
-              var bbox0 = targetTspan.getBBox();
-              if (bbox0) calculatedX = Math.round(bbox0.x);
+              calculatedX = Math.round(targetTspan.getStartPositionOfChar(0).x);
             } catch(e) {}
           }
         } else {
-          // AFTER CHARACTER chIdxInLine - 1 (Right edge of character at chIdxInLine - 1)
-          var charIdxToQuery = Math.min(chIdxInLine - 1, tspanText.length - 1);
+          var charIdxToQuery = Math.max(0, chIdxInLine - 1);
           if (targetTspan.getExtentOfChar) {
             try {
               var ext = targetTspan.getExtentOfChar(charIdxToQuery);
@@ -444,6 +439,15 @@
       caretEl.setAttribute('y1', cy1);
       caretEl.setAttribute('x2', cx);
       caretEl.setAttribute('y2', cy2);
+
+      var rotAngle = state.typingSvgObj.attrs.angle || 0;
+      var center = window.WebpointerObjects ? window.WebpointerObjects.getObjectCenter(state.typingSvgObj) : { x: baseX, y: fontBaselineY };
+
+      if (rotAngle) {
+        caretEl.setAttribute('transform', 'rotate(' + rotAngle + ' ' + center.x + ' ' + center.y + ')');
+      } else {
+        caretEl.removeAttribute('transform');
+      }
     }
 
     updateCaretPosition();

@@ -494,13 +494,18 @@
       boxRect.setAttribute('pointer-events', 'stroke');
       boxRect.style.cursor = 'move';
 
-      if (cfg.selectedIds.size === 1) {
-        var singleId = Array.from(cfg.selectedIds)[0];
-        var singleObj = cfg.objectsMap.get(singleId);
-        if (singleObj && singleObj.attrs && singleObj.attrs.angle) {
-          var center = window.WebpointerObjects ? window.WebpointerObjects.getObjectCenter(singleObj) : { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
-          boxRect.setAttribute('transform', 'rotate(' + singleObj.attrs.angle + ' ' + center.x + ' ' + center.y + ')');
-        }
+      var targetAngleObj = null;
+      if (cfg.selectedIds.size >= 1) {
+        cfg.selectedIds.forEach(function(sId) {
+          var sObj = cfg.objectsMap.get(sId);
+          if (sObj && sObj.attrs && sObj.attrs.angle && !targetAngleObj) {
+            targetAngleObj = sObj;
+          }
+        });
+      }
+      if (targetAngleObj) {
+        var center = window.WebpointerObjects ? window.WebpointerObjects.getObjectCenter(targetAngleObj) : { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
+        boxRect.setAttribute('transform', 'rotate(' + targetAngleObj.attrs.angle + ' ' + center.x + ' ' + center.y + ')');
       }
       uiGroup.appendChild(boxRect);
     }
