@@ -179,11 +179,13 @@
         if (isCtrlPressed && activeObj && hType === 'ellipse_rotate') {
           var startRotateDrag = function() {
             state.isDraggingHandle = true;
+            state.isSplitRotate = true;
             state.activeHandleInfo = { objId: hObjId, handleType: hType, idx: hIdx };
-            if (activeObj) {
-              state.initialObjAttrsMap.clear();
-              state.initialObjAttrsMap.set(activeObj.id, JSON.parse(JSON.stringify(activeObj.attrs)));
-            }
+            state.initialObjAttrsMap.clear();
+            cfg.selectedIds.forEach(function(sId) {
+              var sObj = cfg.objectsMap.get(sId);
+              if (sObj) state.initialObjAttrsMap.set(sId, JSON.parse(JSON.stringify(sObj.attrs)));
+            });
           };
 
           if (window.openTextRotateSplitConfirmModal) {
@@ -195,15 +197,17 @@
         }
 
         state.isDraggingHandle = true;
+        state.isSplitRotate = false;
         state.activeHandleInfo = {
           objId: hObjId,
           handleType: hType,
           idx: hIdx
         };
-        if (activeObj) {
-          state.initialObjAttrsMap.clear();
-          state.initialObjAttrsMap.set(activeObj.id, JSON.parse(JSON.stringify(activeObj.attrs)));
-        }
+        state.initialObjAttrsMap.clear();
+        cfg.selectedIds.forEach(function(sId) {
+          var sObj = cfg.objectsMap.get(sId);
+          if (sObj) state.initialObjAttrsMap.set(sId, JSON.parse(JSON.stringify(sObj.attrs)));
+        });
         return;
       }
 
@@ -441,7 +445,23 @@
           a.ry = Math.max(5, Math.hypot(coords.px - a.cx, coords.py - a.cy));
         } else if (hType === 'ellipse_rotate') {
           var center = window.WebpointerObjects ? window.WebpointerObjects.getObjectCenter(obj) : { x: a.cx || a.x || 0, y: a.cy || a.y || 0 };
-          a.angle = Math.round(Math.atan2(coords.py - center.y, coords.px - center.x) * (180 / Math.PI)) + 90;
+          var newAngle = Math.round(Math.atan2(coords.py - center.y, coords.px - center.x) * (180 / Math.PI)) + 90;
+          var baseAngle = initialAttrs.angle || 0;
+          var deltaAngle = newAngle - baseAngle;
+
+          if (state.isSplitRotate || cfg.selectedIds.size <= 1) {
+            a.angle = Math.round((newAngle % 360 + 360) % 360);
+          } else {
+            cfg.selectedIds.forEach(function(sId) {
+              var sObj = cfg.objectsMap.get(sId);
+              var sInit = state.initialObjAttrsMap.get(sId);
+              if (sObj && sInit) {
+                var sBaseAngle = sInit.angle || 0;
+                sObj.attrs.angle = Math.round(((sBaseAngle + deltaAngle) % 360 + 360) % 360);
+                render.updateElementAttributes(sObj);
+              }
+            });
+          }
         } else if (hType === 'arc_start') {
           var rotStart = a.angle || 0;
           var angStart = Math.round(Math.atan2(coords.py - a.cy, coords.px - a.cx) * (180 / Math.PI)) - rotStart;

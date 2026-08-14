@@ -1777,7 +1777,71 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     const isSuppressed = await page.evaluate(() => localStorage.getItem('webpointer_suppress_text_rotate_split_confirm'));
     expect(isSuppressed).toBe('true');
   });
+
+  test('TC46: Ctrl 미눌림 상태에서 다중 선택된 도형(rect)과 텍스트(text)의 회전 각도 실시간 동기화 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const render = window.WebpointerRender;
+
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
+      // 1. 직사각형 객체 생성
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'sync_rect',
+        type: 'rect',
+        el: rectEl,
+        attrs: { x: 100, y: 100, width: 100, height: 60, angle: 0 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+
+      // 2. 텍스트 객체 생성
+      const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      document.getElementById('objectsGroup').appendChild(textEl);
+      const textObj = {
+        id: 'sync_text',
+        type: 'text',
+        el: textEl,
+        attrs: { x: 100, y: 200, text: '동기화 텍스트', fontSize: 20, angle: 0 }
+      };
+      cfg.objectsMap.set(textObj.id, textObj);
+
+      // 둘 다 선택 (다중 선택)
+      cfg.selectedIds.add(rectObj.id);
+      cfg.selectedIds.add(textObj.id);
+      render.updateElementAttributes(rectObj);
+      render.updateElementAttributes(textObj);
+      render.renderUI();
+
+      // 회전 각도 변화 시뮬레이션 (+45도 회전)
+      const deltaAngle = 45;
+      rectObj.attrs.angle = (rectObj.attrs.angle || 0) + deltaAngle;
+      textObj.attrs.angle = (textObj.attrs.angle || 0) + deltaAngle;
+      render.updateElementAttributes(rectObj);
+      render.updateElementAttributes(textObj);
+      render.renderUI();
+
+      const rectTransform = rectEl.getAttribute('transform');
+      const textTransform = textEl.getAttribute('transform');
+
+      return {
+        rectAngle: rectObj.attrs.angle,
+        textAngle: textObj.attrs.angle,
+        rectHas45: !!rectTransform && rectTransform.includes('rotate(45'),
+        textHas45: !!textTransform && textTransform.includes('rotate(45')
+      };
+    });
+
+    console.log('[Webpointer Shape & Text Rotation Sync Test 🧪]:', result);
+    expect(result.rectAngle).toBe(45);
+    expect(result.textAngle).toBe(45);
+    expect(result.rectHas45).toBe(true);
+    expect(result.textHas45).toBe(true);
+  });
 });
+
 
 
 
