@@ -9,8 +9,6 @@ description: Architecture standards, unified testing, documentation naming, and 
 - All test cases MUST reside in the root `tests/` directory (e.g., `tests/<project>.spec.js`).
 
 ## 2. Standardized Documentation
-- Do NOT create `version.md`.
-- Always manage release notes using `CHANGELOG.md` (Global/English) and `CHANGELOG-KR.md` (Korean).
 - Use uppercase `README.md` and `README.ko.md` for sub-project documentation.
 
 ## 3. Clean Sub-project Directory
