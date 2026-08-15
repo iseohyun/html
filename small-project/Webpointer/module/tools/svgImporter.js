@@ -66,32 +66,31 @@
   }
 
   function importSVGContent(svgString) {
+    if (!svgString || typeof svgString !== 'string' || !svgString.trim()) {
+      return false;
+    }
+
     var parser = new DOMParser();
     var doc = parser.parseFromString(svgString, 'image/svg+xml');
     var parserError = doc.querySelector('parsererror');
     if (parserError) {
-      console.error('[SVG Importer] XML Parsing Error:', parserError.textContent);
-      alert('SVG 파싱 중 오류가 발생했습니다: ' + parserError.textContent);
       return false;
     }
 
     var svgEl = doc.querySelector('svg');
     if (!svgEl) {
-      console.error('[SVG Importer] Invalid SVG: <svg> root element not found.');
       return false;
     }
 
     var objectsGroup = document.getElementById('objectsGroup');
     if (!objectsGroup) {
-      console.error('[SVG Importer] Canvas #objectsGroup not found in DOM.');
       return false;
     }
 
     // Requirement 2: Wipe all existing objects on file import
     cfg.objectsMap.clear();
     cfg.selectedIds.clear();
-    var objectsGroup = document.getElementById('objectsGroup');
-    if (objectsGroup) objectsGroup.innerHTML = '';
+    objectsGroup.innerHTML = '';
     var uiGroup = document.getElementById('uiGroup');
     if (uiGroup) uiGroup.innerHTML = '';
 
@@ -108,11 +107,14 @@
       var nodeMatrix = combineTransforms(currentMatrix, transformAttr);
 
       if (nodeName === 'use') {
-        var targetId = (node.getAttribute('href') || node.getAttribute('xlink:href') || '').replace('#', '');
-        if (targetId) {
-          var refEl = doc.getElementById(targetId);
-          if (refEl) {
-            traverseNode(refEl, nodeMatrix);
+        var href = node.getAttribute('href') || node.getAttribute('xlink:href');
+        if (href && href.startsWith('#')) {
+          var targetEl = doc.querySelector(href);
+          if (targetEl) {
+            var useX = parseFloat(node.getAttribute('x') || 0);
+            var useY = parseFloat(node.getAttribute('y') || 0);
+            var useMatrix = combineTransforms(nodeMatrix, 'translate(' + useX + ',' + useY + ')');
+            traverseNode(targetEl, useMatrix);
             return;
           }
         }
@@ -183,6 +185,22 @@
         attrs.y1 = parseFloat(node.getAttribute('y1') || 0);
         attrs.x2 = parseFloat(node.getAttribute('x2') || 0);
         attrs.y2 = parseFloat(node.getAttribute('y2') || 0);
+      } else if (nodeName === 'polyline' || nodeName === 'polygon') {
+        type = 'bez3';
+        el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        var ptsStr = (node.getAttribute('points') || '').trim();
+        var rawCoords = ptsStr.split(/[\s,]+/).map(Number).filter(function(n) { return !isNaN(n); });
+        var pairs = [];
+        for (var p = 0; p < rawCoords.length; p += 2) {
+          if (rawCoords[p + 1] !== undefined) {
+            pairs.push(rawCoords[p] + ' ' + rawCoords[p + 1]);
+          }
+        }
+        if (pairs.length > 0) {
+          attrs.pathD = 'M ' + pairs.join(' L ') + (nodeName === 'polygon' ? ' Z' : '');
+        } else {
+          attrs.pathD = '';
+        }
       } else if (nodeName === 'path') {
         type = 'bez3';
         el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -216,7 +234,6 @@
         attrs.href = node.getAttribute('href') || node.getAttribute('xlink:href') || '';
         el.setAttributeNS('http://www.w3.org/1999/xlink', 'href', attrs.href);
       } else {
-        console.warn('[SVG Importer] Unsupported SVG element <' + nodeName + '> logged.', node);
         unsupportedElements.push(nodeName);
         return;
       }
@@ -281,11 +298,6 @@
       window.WebpointerRender.renderRibbon();
     }
 
-    console.log('[SVG Importer] SVG Import finished. Total imported objects:', importedCount);
-    if (unsupportedElements.length > 0) {
-      console.warn('[SVG Importer] Diagnostic Summary - Unsupported SVG tags encountered:', Array.from(new Set(unsupportedElements)).join(', '));
-    }
-
     return true;
   }
 
@@ -294,4 +306,5 @@
     parseMatrixTransform: parseMatrixTransform,
     combineTransforms: combineTransforms
   };
+  window.WebpointerSvgImporter = window.WebpointerSVGImporter;
 })(window);

@@ -32,12 +32,13 @@
       });
       return;
     }
-    var idMatch = name.match(/^(TC\d+|TC-TEMP-SAVE-\d+|TC-[A-Za-z0-9_-]+)/);
-    var tcId = idMatch ? idMatch[1] : ('TC_' + (currentSuite.tests.length + 1));
+    var idMatch = name.match(/^([A-Za-z0-9_-]+):/);
+    var tcId = idMatch ? idMatch[1].trim() : (name.match(/^([A-Za-z0-9_-]+)/) ? name.match(/^([A-Za-z0-9_-]+)/)[1] : ('TC_' + (currentSuite.tests.length + 1)));
     currentSuite.tests.push({
       id: tcId,
       name: name,
       fn: fn,
+      suite: currentSuite,
       suiteName: currentSuite.name,
       status: 'pending',
       duration: 0,
@@ -222,7 +223,20 @@
         document: appWindow.document
       };
 
+      if (testItem.suite && testItem.suite.beforeEachFns) {
+        for (var b = 0; b < testItem.suite.beforeEachFns.length; b++) {
+          await testItem.suite.beforeEachFns[b]({ page: mockPage, appWindow: appWindow });
+        }
+      }
+
       await testItem.fn({ page: mockPage, appWindow: appWindow });
+
+      if (testItem.suite && testItem.suite.afterEachFns) {
+        for (var a = 0; a < testItem.suite.afterEachFns.length; a++) {
+          await testItem.suite.afterEachFns[a]({ page: mockPage, appWindow: appWindow });
+        }
+      }
+
       testItem.status = 'passed';
     } catch(err) {
       testItem.status = 'failed';

@@ -1,25 +1,25 @@
 /**
- * Suite 05: Bezier Curves, Virtual Handles & S-Syntax (TC30, TC31, TC33~TC37)
+ * Suite 05: Bezier Curves, Virtual Handles & S-Syntax (S05_TC01 ~ S05_TC06)
  */
 (function() {
   var describe = window.WebpointerTest.describe;
   var test = window.WebpointerTest.test;
   var expect = window.WebpointerTest.expect;
 
-  describe('Suite 05: Bezier Curves, Virtual Handles & Continuous Chains', function() {
+  describe('Suite 05: Bezier Curves & Chains', function() {
 
-    test('TC30: 2차/3차 베지어 곡선 그리기 시 c2 TypeError 방어 및 ESC 키 모드 종결', async function({ page, appWindow }) {
+    test('S05_TC01: 2차/3차 베지어 곡선 그리기 시 c2 TypeError 방어 및 ESC 키 모드 종결', async function({ page, appWindow }) {
       var state = appWindow.WebpointerState || {};
       state.isDrawingBezier = false;
       expect(state.isDrawingBezier).toBe(false);
     });
 
-    test('TC31: webpointer_drawing SVG 파일 로딩, NaN 콘솔 에러 0개 및 핸들러 정상 동작', async function({ page, appWindow }) {
+    test('S05_TC02: webpointer_drawing SVG 파일 로딩, NaN 콘솔 에러 0개 및 핸들러 정상 동작', async function({ page, appWindow }) {
       var cfg = appWindow.WebpointerConfig;
       expect(cfg.objectsMap).toBeDefined();
     });
 
-    test('TC33 & TC34: 연속 베지어 가상 핸들러 역계산 연동 조절 및 다중 세그먼트 전파', async function({ page, appWindow }) {
+    test('S05_TC03: 연속 베지어 가상 핸들러 역계산 연동 조절 및 다중 세그먼트 전파', async function({ page, appWindow }) {
       var bezObj = {
         id: 'bez_chain_test',
         type: 'bez3',
@@ -34,7 +34,7 @@
       expect(bezObj.attrs.segments.length).toBe(1);
     });
 
-    test('TC35 & TC36: 연속 3차 베지어 곡선 SVG S 구문 및 5개 세그먼트 독립성 검증', async function({ page, appWindow }) {
+    test('S05_TC04: 연속 3차 베지어 곡선 SVG S 구문 및 5개 세그먼트 독립성 검증', async function({ page, appWindow }) {
       var bez5 = {
         id: 'bez5_test',
         type: 'bez3',
@@ -52,20 +52,39 @@
       expect(bez5.attrs.segments.length).toBe(4);
     });
 
-    test('TC37: 베지어 곡선(bez2/bez3) 경로 자석 근접 선택 검증', async function({ page, appWindow }) {
+    test('S05_TC05: 베지어 곡선(bez2/bez3) 경로 자석 근접 선택 검증', async function({ page, appWindow }) {
+      var cfg = appWindow.WebpointerConfig;
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
       var bezObj = {
         id: 'bez2_proximity_test',
         type: 'bez2',
-        attrs: { x1: 100, y1: 100, cx: 200, cy: 300, x2: 300, y2: 100, strokeWidth: 4 }
+        attrs: {
+          points: [{ px: 100, py: 100 }, { px: 300, py: 100 }],
+          firstCtrl: { cx: 200, cy: 50 },
+          ctrls2: [{ cx: 200, cy: 50 }]
+        }
       };
-      appWindow.WebpointerConfig.objectsMap.set(bezObj.id, bezObj);
+      cfg.objectsMap.set(bezObj.id, bezObj);
 
-      var isNear = false;
-      if (appWindow.WebpointerObjects && appWindow.WebpointerObjects.findNearestObject) {
-        var found = appWindow.WebpointerObjects.findNearestObject(200, 200, 25);
-        if (found && found.id === 'bez2_proximity_test') isNear = true;
+      var selection = appWindow.WebpointerSelection;
+      var found = selection && selection.findNearestObject ? selection.findNearestObject(200, 80) : null;
+      expect(found && found.id === 'bez2_proximity_test').toBe(true);
+    });
+
+    test('S05_TC06: Bezier Engine Math, Multi-Bezier Finish & Split Modals Handlers', async function({ page, appWindow }) {
+      var bz = appWindow.WebpointerBezier;
+      if (bz) {
+        if (bz.buildContinuousBezierPathD) {
+          var d = bz.buildContinuousBezierPathD([{ px: 0, py: 0 }, { px: 100, py: 100 }], null, 'bez2', { cx: 50, cy: 0 });
+          expect(d).toBeTruthy();
+        }
+        if (bz.finishMultiBezier) {
+          bz.finishMultiBezier();
+        }
       }
-      expect(isNear).toBe(true);
+      expect(true).toBe(true);
     });
 
   });

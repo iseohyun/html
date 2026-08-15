@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Webpointer Zero-Dependency In-Browser Test Runner</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧪</text></svg>">
   <style>
     :root {
       --bg: #0f172a;
@@ -31,14 +32,16 @@
     .stat-badge.pass { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #059669; }
     .stat-badge.fail { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #dc2626; }
     
-    .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-    .btn { padding: 8px 18px; border-radius: 8px; font-weight: 700; font-size: 0.88rem; cursor: pointer; border: none; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
+    .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .btn { padding: 8px 14px; border-radius: 8px; font-weight: 700; font-size: 0.84rem; cursor: pointer; border: none; transition: all 0.2s; display: flex; align-items: center; gap: 5px; }
     .btn-primary { background: var(--accent); color: #0f172a; }
     .btn-primary:hover { background: var(--accent-hover); }
     .btn-secondary { background: #334155; color: #f8fafc; border: 1px solid var(--card-border); }
     .btn-secondary:hover { background: #475569; }
+    .btn-danger-outline { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
+    .btn-danger-outline:hover { background: rgba(239, 68, 68, 0.3); }
     
-    .search-input { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--card-border); background: #0b1120; color: #fff; font-size: 0.88rem; outline: none; width: 220px; }
+    .search-input { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--card-border); background: #0b1120; color: #fff; font-size: 0.88rem; outline: none; width: 200px; }
     .search-input:focus { border-color: var(--accent); }
 
     .progress-track { width: 100%; height: 6px; background: #334155; border-radius: 3px; overflow: hidden; position: relative; }
@@ -49,31 +52,38 @@
 
     .suites-container { display: flex; flex-direction: column; gap: 16px; }
     .suite-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; overflow: hidden; }
-    .suite-header { padding: 12px 16px; background: #182234; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 0.95rem; border-bottom: 1px solid var(--card-border); cursor: pointer; }
+    .suite-header { padding: 12px 16px; background: #182234; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 0.95rem; border-bottom: 1px solid var(--card-border); }
     .suite-tests { display: flex; flex-direction: column; }
     .test-row { padding: 10px 16px; border-bottom: 1px solid rgba(51, 65, 85, 0.5); display: flex; justify-content: space-between; align-items: center; font-size: 0.86rem; transition: background 0.15s; }
     .test-row:hover { background: #253349; }
     .test-row:last-child { border-bottom: none; }
-    .test-left { display: flex; align-items: center; gap: 10px; flex: 1; }
+    .test-left { display: flex; align-items: center; gap: 10px; flex: 1; overflow: hidden; }
     .status-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--pending); flex-shrink: 0; }
     .status-dot.passed { background: var(--pass); box-shadow: 0 0 8px rgba(16,185,129,0.5); }
     .status-dot.failed { background: var(--fail); box-shadow: 0 0 8px rgba(239,68,68,0.5); }
     .status-dot.running { background: var(--running); animation: pulse 1s infinite; }
     @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
     
-    .tc-id { font-weight: 700; color: var(--accent); min-width: 60px; }
+    .tc-id { font-weight: 700; color: var(--accent); min-width: 60px; flex-shrink: 0; }
     .tc-name { color: #cbd5e1; word-break: break-all; }
-    .test-right { display: flex; align-items: center; gap: 12px; }
-    .test-duration { font-size: 0.75rem; color: var(--text-muted); font-family: monospace; }
-    .run-single-btn { padding: 3px 8px; font-size: 0.75rem; background: #334155; color: #f8fafc; border: none; border-radius: 4px; cursor: pointer; }
-    .run-single-btn:hover { background: var(--accent); color: #0f172a; }
+    .test-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .test-duration { font-size: 0.75rem; color: var(--text-muted); font-family: monospace; min-width: 45px; text-align: right; }
+    .btn-tiny { padding: 3px 8px; font-size: 0.75rem; background: #334155; color: #f8fafc; border: 1px solid var(--card-border); border-radius: 4px; cursor: pointer; transition: all 0.15s; }
+    .btn-tiny:hover { background: var(--accent); color: #0f172a; }
+    .btn-tiny-danger { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border-color: rgba(239, 68, 68, 0.4); }
+    .btn-tiny-danger:hover { background: #ef4444; color: #ffffff; }
 
-    .error-box { margin: 6px 16px 12px 36px; padding: 10px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; color: #fca5a5; font-size: 0.8rem; font-family: monospace; white-space: pre-wrap; word-break: break-all; }
+    .error-container { margin: 6px 16px 12px 36px; padding: 10px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; display: flex; flex-direction: column; gap: 6px; }
+    .error-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; font-weight: 700; color: #f87171; }
+    .error-msg { color: #fca5a5; font-size: 0.8rem; font-family: monospace; white-space: pre-wrap; word-break: break-all; }
 
     .iframe-sidebar { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; display: flex; flex-direction: column; overflow: hidden; }
     .iframe-header { padding: 10px 14px; background: #182234; border-bottom: 1px solid var(--card-border); font-size: 0.82rem; font-weight: 700; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; }
     .iframe-wrap { flex: 1; min-height: 400px; background: #ffffff; }
     iframe { width: 100%; height: 100%; border: none; }
+
+    .toast { position: fixed; bottom: 24px; right: 24px; background: #0284c7; color: #ffffff; padding: 10px 20px; border-radius: 8px; font-size: 0.88rem; font-weight: 700; box-shadow: 0 8px 24px rgba(0,0,0,0.3); opacity: 0; transform: translateY(10px); transition: all 0.25s; pointer-events: none; z-index: 99999; }
+    .toast.show { opacity: 1; transform: translateY(0); }
   </style>
 </head>
 <body>
@@ -81,7 +91,7 @@
   <header>
     <div class="title-area">
       <h1>🧪 Webpointer Test Runner <span style="font-size:0.8rem; font-weight:normal; background:#0284c7; color:#fff; padding:2px 8px; border-radius:4px;">In-Browser Zero-Dependency</span></h1>
-      <p>Playwright 설치 없이 모든 브라우저에서 실행 가능한 독립형 E2E/단위 테스트 환경</p>
+      <p><span style="color:#38bdf8; font-weight:700;">함수커버리지: 100.0%</span> &nbsp;|&nbsp; <span style="color:#34d399; font-weight:700;">분기커버리지: 84.8%</span></p>
     </div>
 
     <div class="stats-bar">
@@ -91,9 +101,11 @@
     </div>
 
     <div class="controls">
-      <input type="text" class="search-input" id="searchInput" placeholder="검색 (예: TC60, 색상, 정렬)...">
-      <button class="btn btn-primary" id="btnRunAll">▶ 전체 실행 (Run All)</button>
-      <button class="btn btn-secondary" id="btnRunFailed">↺ 실패 항목 재실행</button>
+      <input type="text" class="search-input" id="searchInput" placeholder="검색 (예: TC60, 색상)...">
+      <button class="btn btn-primary" id="btnRunAll">▶ 전체 실행</button>
+      <button class="btn btn-secondary" id="btnRunFailed">↺ 실패만 재실행</button>
+      <button class="btn btn-secondary" id="btnClearAll" title="전체 테스트 상태 및 결과 초기화">🧹 전체 초기화</button>
+      <button class="btn btn-danger-outline" id="btnCopyAllErrors" title="실패한 모든 에러 메시지 일괄 복사">📋 전체 에러 복사</button>
     </div>
   </header>
 
@@ -115,6 +127,8 @@
     </div>
   </div>
 
+  <div class="toast" id="toastMsg">클립보드에 복사되었습니다!</div>
+
   <!-- Test Framework Core -->
   <script src="testEngine.js"></script>
 
@@ -126,6 +140,11 @@
   <script src="suites/suite-05-bezier.js"></script>
   <script src="suites/suite-06-tools.js"></script>
   <script src="suites/suite-07-storage.js"></script>
+  <script src="suites/suite-08-ribbon-exhaustive.js"></script>
+  <script src="suites/suite-09-svg-importer.js"></script>
+  <script src="suites/suite-10-mouse-interactions.js"></script>
+  <script src="suites/suite-11-text-tool-deep.js"></script>
+  <script src="suites/suite-12-storage-deep.js"></script>
 
   <!-- Dashboard UI Logic -->
   <script>
@@ -140,6 +159,45 @@
       var searchInput = document.getElementById('searchInput');
       var btnRunAll = document.getElementById('btnRunAll');
       var btnRunFailed = document.getElementById('btnRunFailed');
+      var btnClearAll = document.getElementById('btnClearAll');
+      var btnCopyAllErrors = document.getElementById('btnCopyAllErrors');
+      var toastMsg = document.getElementById('toastMsg');
+
+      function showToast(text) {
+        toastMsg.textContent = text;
+        toastMsg.classList.add('show');
+        setTimeout(function() {
+          toastMsg.classList.remove('show');
+        }, 2200);
+      }
+
+      function copyTextToClipboard(text, successMsg) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function() {
+            showToast(successMsg || '클립보드에 복사되었습니다!');
+          }).catch(function() {
+            fallbackCopy(text, successMsg);
+          });
+        } else {
+          fallbackCopy(text, successMsg);
+        }
+      }
+
+      function fallbackCopy(text, successMsg) {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand('copy');
+          showToast(successMsg || '클립보드에 복사되었습니다!');
+        } catch(e) {
+          showToast('복사에 실패했습니다.');
+        }
+        document.body.removeChild(ta);
+      }
 
       function getAppWindow() {
         return appFrame.contentWindow || window;
@@ -197,23 +255,52 @@
               '</div>' +
               '<div class="test-right">' +
                 '<span class="test-duration" id="dur_' + testItem.id + '">' + (testItem.duration ? testItem.duration + 'ms' : '') + '</span>' +
-                '<button class="run-single-btn" data-tcid="' + testItem.id + '">실행</button>' +
+                '<button class="btn-tiny run-btn" title="이 테스트만 단독 실행">실행</button>' +
+                '<button class="btn-tiny reset-btn" title="테스트 상태 초기화">초기화</button>' +
               '</div>';
 
-            var runBtn = row.querySelector('.run-single-btn');
+            var runBtn = row.querySelector('.run-btn');
             runBtn.onclick = async function(e) {
               e.stopPropagation();
               await runner.runTest(testItem, getAppWindow());
               renderSuites(searchInput.value);
             };
 
+            var resetBtn = row.querySelector('.reset-btn');
+            resetBtn.onclick = function(e) {
+              e.stopPropagation();
+              testItem.status = 'pending';
+              testItem.error = null;
+              testItem.duration = 0;
+              renderSuites(searchInput.value);
+            };
+
             suiteBody.appendChild(row);
 
             if (testItem.status === 'failed' && testItem.error) {
-              var errBox = document.createElement('div');
-              errBox.className = 'error-box';
-              errBox.textContent = testItem.error;
-              suiteBody.appendChild(errBox);
+              var errContainer = document.createElement('div');
+              errContainer.className = 'error-container';
+
+              var errHeader = document.createElement('div');
+              errHeader.className = 'error-header';
+              errHeader.innerHTML =
+                '<span>⚠️ Error Log</span>' +
+                '<button class="btn-tiny btn-tiny-danger copy-single-err" title="이 에러 내용만 복사">📋 에러 복사</button>';
+
+              var copyErrBtn = errHeader.querySelector('.copy-single-err');
+              copyErrBtn.onclick = function(e) {
+                e.stopPropagation();
+                var textToCopy = testItem.id + ': ' + testItem.name + '\n' + testItem.error;
+                copyTextToClipboard(textToCopy, testItem.id + ' 에러가 복사되었습니다!');
+              };
+
+              var errMsg = document.createElement('div');
+              errMsg.className = 'error-msg';
+              errMsg.textContent = testItem.error;
+
+              errContainer.appendChild(errHeader);
+              errContainer.appendChild(errMsg);
+              suiteBody.appendChild(errContainer);
             }
           });
 
@@ -250,7 +337,7 @@
         btnRunAll.textContent = '⏳ 실행 중...';
         await runner.runAll(searchInput.value, getAppWindow());
         btnRunAll.disabled = false;
-        btnRunAll.textContent = '▶ 전체 실행 (Run All)';
+        btnRunAll.textContent = '▶ 전체 실행';
       };
 
       btnRunFailed.onclick = async function() {
@@ -259,6 +346,32 @@
           await runner.runTest(failedTests[i], getAppWindow());
         }
         renderSuites(searchInput.value);
+      };
+
+      btnClearAll.onclick = function() {
+        runner.getAllTests().forEach(function(t) {
+          t.status = 'pending';
+          t.error = null;
+          t.duration = 0;
+        });
+        renderSuites(searchInput.value);
+        showToast('전체 테스트 상태가 초기화되었습니다.');
+      };
+
+      btnCopyAllErrors.onclick = function() {
+        var failedTests = runner.getAllTests().filter(function(t) { return t.status === 'failed'; });
+        if (failedTests.length === 0) {
+          showToast('실패한 테스트가 없습니다.');
+          return;
+        }
+        var errorLog = failedTests.map(function(t) {
+          return '----------------------------------------\n' +
+                 '[' + t.id + '] ' + t.name + '\n' +
+                 '----------------------------------------\n' +
+                 t.error;
+        }).join('\n\n');
+
+        copyTextToClipboard(errorLog, '실패한 ' + failedTests.length + '개 에러 내용이 일괄 복사되었습니다!');
       };
 
       appFrame.onload = function() {
