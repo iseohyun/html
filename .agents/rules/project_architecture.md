@@ -5,8 +5,9 @@ description: Architecture standards, unified testing, documentation naming, and 
 # Project Architecture & Consistency Directives
 
 ## 1. Unified Test Automation
+- Sub-projects MUST follow the **Zero-Dependency In-Browser Testing Standards** defined in `.agents/rules/testing_standards.md`.
 - Do NOT install Playwright or `node_modules` inside sub-projects (`small-project/*`).
-- All test cases MUST reside in the root `tests/` directory (e.g., `tests/<project>.spec.js`).
+- Each sub-project MUST provide a native in-browser test runner (`tests/index.html` + `testEngine.js`) referencing the golden template `small-project/Webpointer/tests/`.
 
 ## 2. Standardized Documentation
 - Use uppercase `README.md` and `README.ko.md` for sub-project documentation.
