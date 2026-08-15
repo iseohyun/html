@@ -1937,6 +1937,17 @@
     if (modal) modal.classList.remove('show');
   }
 
+  function setLongPressDelay(val) {
+    var ms = parseInt(val, 10);
+    if (isNaN(ms)) ms = 200;
+    ms = Math.max(200, Math.min(1000, ms));
+    cfg.longPressDelay = ms;
+    try {
+      localStorage.setItem('webpointer_long_press_delay', ms);
+    } catch(e) {}
+  }
+  window.setLongPressDelay = setLongPressDelay;
+
   function openDetailedSettingsModal() {
     var modal = document.getElementById('detailedSettingsModal');
     if (modal) {
@@ -1945,11 +1956,16 @@
       var stepInput = document.getElementById('settingAlphaStepCount');
       var snapEnableInput = document.getElementById('settingEnableSnapping');
       var snapThreshInput = document.getElementById('settingSnappingThreshold');
+      var holdInput = document.getElementById('settingLongPressDelay');
+      var holdVal = document.getElementById('settingLongPressVal');
+
       if (proxInput) proxInput.value = cfg.proximityThreshold !== undefined ? cfg.proximityThreshold : 12;
       if (sizeInput) sizeInput.value = cfg.defaultShapeSize || 100;
       if (stepInput) stepInput.value = cfg.alphaStepCount || 5;
       if (snapEnableInput) snapEnableInput.checked = cfg.enableSnapping !== undefined ? cfg.enableSnapping : true;
       if (snapThreshInput) snapThreshInput.value = cfg.snappingThreshold || 12;
+      if (holdInput) holdInput.value = cfg.longPressDelay || 200;
+      if (holdVal) holdVal.innerText = (cfg.longPressDelay || 200) + 'ms';
       modal.classList.add('show');
     }
   }
@@ -2263,11 +2279,15 @@
     var stepInput = document.getElementById('settingAlphaStepCount');
     var snapEnableInput = document.getElementById('settingEnableSnapping');
     var snapThreshInput = document.getElementById('settingSnappingThreshold');
+    var holdInput = document.getElementById('settingLongPressDelay');
+
     if (proxInput && proxInput.value !== '') setProximityThreshold(proxInput.value);
     if (sizeInput && sizeInput.value !== '') setDefaultShapeSize(sizeInput.value);
     if (stepInput && stepInput.value !== '') setAlphaStepCount(stepInput.value);
     if (snapEnableInput) cfg.enableSnapping = snapEnableInput.checked;
     if (snapThreshInput && snapThreshInput.value !== '') cfg.snappingThreshold = parseInt(snapThreshInput.value, 10) || 12;
+    if (holdInput && holdInput.value !== '') setLongPressDelay(holdInput.value);
+
     closeDetailedSettingsModal();
     if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
   }
@@ -2865,269 +2885,394 @@
     }
   }
 
-  function openFilterPopover(btnEl) {
-    var old = document.getElementById('filterEffectPopover');
-    if (old) {
-      old.remove();
-      return;
+  var effectHoldTimer = null;
+  var effectHoldTriggered = false;
+  var effectRollbackSnapshots = null;
+
+  function getCommonFilterList(selectedIds) {
+    if (!selectedIds || selectedIds.size === 0) {
+      return { commonList: [], hasDiscrepancy: false };
+    }
+    var objs = [];
+    selectedIds.forEach(function(id) {
+      var o = cfg.objectsMap.get(id);
+      if (o) objs.push(o);
+    });
+    if (objs.length === 0) {
+      return { commonList: [], hasDiscrepancy: false };
+    }
+    if (objs.length === 1) {
+      var fl = (objs[0].attrs && Array.isArray(objs[0].attrs.filterList)) ? objs[0].attrs.filterList : [];
+      return { commonList: fl, hasDiscrepancy: false };
     }
 
-    var popover = document.createElement('div');
-    popover.id = 'filterEffectPopover';
-    popover.style.cssText = 'position:fixed; z-index:99999; padding:10px; border:1px solid #0284c7; border-radius:8px; background:#ffffff; box-shadow:0 8px 24px rgba(0,0,0,0.2); outline:none; font-family:sans-serif; width:260px; display:flex; flex-direction:column; gap:8px;';
+    var firstList = (objs[0].attrs && Array.isArray(objs[0].attrs.filterList)) ? objs[0].attrs.filterList : [];
+    var hasDiscrepancy = false;
 
-    var rect = btnEl.getBoundingClientRect();
-    popover.style.left = Math.max(10, Math.min(window.innerWidth - 275, rect.left)) + 'px';
-    popover.style.top = (rect.bottom + 4) + 'px';
-
-    var html =
-      '<div style="font-size:0.82rem; font-weight:700; color:#0f172a; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">🪄 필터 효과 설정 (중복 가능)</div>' +
-      '<div style="display:flex; justify-content:space-between; align-items:center; font-size:0.78rem;">' +
-        '<span>필터 종류:</span>' +
-        '<select id="popFilterType" style="padding:3px; font-size:0.75rem;" onchange="updateFilterRangeConfig()">' +
-          '<option value="blur">블러 (blur)</option>' +
-          '<option value="brightness">밝기 (brightness)</option>' +
-          '<option value="contrast">대비 (contrast)</option>' +
-          '<option value="drop-shadow">그림자 (drop-shadow)</option>' +
-          '<option value="grayscale">흑백 (grayscale)</option>' +
-          '<option value="hue-rotate">색상 회전 (hue-rotate)</option>' +
-          '<option value="invert">반전 (invert)</option>' +
-          '<option value="opacity">불투명도 (opacity)</option>' +
-          '<option value="saturate">채도 (saturate)</option>' +
-          '<option value="sepia">세피아 (sepia)</option>' +
-        '</select>' +
-      '</div>' +
-      '<div style="display:flex; flex-direction:column; gap:2px; font-size:0.75rem;">' +
-        '<div style="display:flex; justify-content:space-between;">' +
-          '<span>계수 범위:</span>' +
-          '<span id="popFilterValDisp" style="font-weight:700; color:#0284c7;">3px</span>' +
-        '</div>' +
-        '<input type="range" id="popFilterRange" min="0" max="30" value="3" step="1" oninput="livePreviewFilter()">' +
-      '</div>' +
-      '<div style="display:flex; gap:6px;">' +
-        '<button onclick="addFilterFromPopover()" style="flex:1; padding:4px; background:#0284c7; color:#fff; border:none; border-radius:4px; font-size:0.75rem; font-weight:600; cursor:pointer;">➕ 필터 추가</button>' +
-        '<button onclick="clearAllFiltersFromPopover()" style="padding:4px 8px; background:#ef4444; color:#fff; border:none; border-radius:4px; font-size:0.75rem; cursor:pointer;">🧹 전체 삭제</button>' +
-      '</div>' +
-      '<div id="popFilterStackList" style="display:flex; flex-direction:column; gap:4px; max-height:100px; overflow-y:auto; font-size:0.72rem; padding:4px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px;">' +
-      '</div>';
-
-    popover.innerHTML = html;
-    document.body.appendChild(popover);
-
-    updateFilterRangeConfig();
-    renderFilterStackListInPopover();
-
-    function onOutsideClick(evt) {
-      if (popover && !popover.contains(evt.target) && !btnEl.contains(evt.target)) {
-        if (popover.parentNode) popover.parentNode.removeChild(popover);
-        document.removeEventListener('mousedown', onOutsideClick);
+    for (var i = 1; i < objs.length; i++) {
+      var otherList = (objs[i].attrs && Array.isArray(objs[i].attrs.filterList)) ? objs[i].attrs.filterList : [];
+      if (otherList.length !== firstList.length) {
+        hasDiscrepancy = true;
+        break;
       }
-    }
-    setTimeout(function() {
-      document.addEventListener('mousedown', onOutsideClick);
-    }, 50);
-  }
-
-  function livePreviewFilter() {
-    var select = document.getElementById('popFilterType');
-    var range = document.getElementById('popFilterRange');
-    var disp = document.getElementById('popFilterValDisp');
-    if (!select || !range) return;
-    if (disp) disp.innerText = range.value + (window.filterUnit || 'px');
-
-    var type = select.value;
-    var val = range.value;
-    var unit = window.filterUnit || 'px';
-    var filterExpr = (type === 'drop-shadow') ? 'drop-shadow(' + val + 'px ' + val + 'px ' + (parseInt(val, 10) + 2) + 'px rgba(0,0,0,0.5))' : type + '(' + val + unit + ')';
-
-    var targets = getSelectedObjectsForFilter();
-    targets.forEach(function(obj) {
-      if (!obj.attrs) obj.attrs = {};
-      var baseList = (obj.attrs.filterList || []).slice();
-      var previewList = baseList.concat([filterExpr]);
-      obj.attrs.filter = previewList.join(' ');
-      if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.updateElementAttributes) {
-        window.WebpointerRenderCanvas.updateElementAttributes(obj);
-      }
-    });
-  }
-  window.livePreviewFilter = livePreviewFilter;
-
-  function moveFilterUp(idx) {
-    if (idx <= 0) return;
-    var targets = getSelectedObjectsForFilter();
-    targets.forEach(function(obj) {
-      if (obj.attrs && obj.attrs.filterList && obj.attrs.filterList.length > idx) {
-        var temp = obj.attrs.filterList[idx];
-        obj.attrs.filterList[idx] = obj.attrs.filterList[idx - 1];
-        obj.attrs.filterList[idx - 1] = temp;
-        obj.attrs.filter = obj.attrs.filterList.join(' ');
-        if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.updateElementAttributes) {
-          window.WebpointerRenderCanvas.updateElementAttributes(obj);
-        }
-        if (window.WebpointerRender && window.WebpointerRender.renderCanvas) {
-          window.WebpointerRender.renderCanvas();
+      for (var j = 0; j < firstList.length; j++) {
+        if (JSON.stringify(firstList[j]) !== JSON.stringify(otherList[j])) {
+          hasDiscrepancy = true;
+          break;
         }
       }
-    });
-    renderFilterStackListInPopover();
-  }
-  window.moveFilterUp = moveFilterUp;
-
-  function moveFilterDown(idx) {
-    var targets = getSelectedObjectsForFilter();
-    targets.forEach(function(obj) {
-      if (obj.attrs && obj.attrs.filterList && idx < obj.attrs.filterList.length - 1) {
-        var temp = obj.attrs.filterList[idx];
-        obj.attrs.filterList[idx] = obj.attrs.filterList[idx + 1];
-        obj.attrs.filterList[idx + 1] = temp;
-        obj.attrs.filter = obj.attrs.filterList.join(' ');
-        if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.updateElementAttributes) {
-          window.WebpointerRenderCanvas.updateElementAttributes(obj);
-        }
-        if (window.WebpointerRender && window.WebpointerRender.renderCanvas) {
-          window.WebpointerRender.renderCanvas();
-        }
-      }
-    });
-    renderFilterStackListInPopover();
-  }
-  window.moveFilterDown = moveFilterDown;
-
-  function updateFilterRangeConfig() {
-    var select = document.getElementById('popFilterType');
-    var range = document.getElementById('popFilterRange');
-    var disp = document.getElementById('popFilterValDisp');
-    if (!select || !range || !disp) return;
-
-    var type = select.value;
-    var unit = 'px';
-    var min = 0, max = 100, val = 100, step = 1;
-
-    if (type === 'blur') {
-      min = 0; max = 30; val = 3; unit = 'px';
-    } else if (type === 'brightness') {
-      min = 0; max = 300; val = 120; unit = '%';
-    } else if (type === 'contrast') {
-      min = 0; max = 300; val = 150; unit = '%';
-    } else if (type === 'drop-shadow') {
-      min = 0; max = 30; val = 4; unit = 'px';
-    } else if (type === 'grayscale') {
-      min = 0; max = 100; val = 100; unit = '%';
-    } else if (type === 'hue-rotate') {
-      min = 0; max = 360; val = 90; unit = 'deg';
-    } else if (type === 'invert') {
-      min = 0; max = 100; val = 100; unit = '%';
-    } else if (type === 'opacity') {
-      min = 0; max = 100; val = 80; unit = '%';
-    } else if (type === 'saturate') {
-      min = 0; max = 500; val = 200; unit = '%';
-    } else if (type === 'sepia') {
-      min = 0; max = 100; val = 100; unit = '%';
+      if (hasDiscrepancy) break;
     }
 
-    window.filterUnit = unit;
-    range.min = min;
-    range.max = max;
-    range.value = val;
-    range.step = step;
-    disp.innerText = val + unit;
+    return { commonList: firstList, hasDiscrepancy: hasDiscrepancy };
   }
+  window.getCommonFilterList = getCommonFilterList;
 
   function getSelectedObjectsForFilter() {
     var members = getAllGroupMembers(cfg.selectedIds);
-    var textObjs = members.filter(function(m) { return m.type === 'text'; });
-    if (textObjs.length > 0) {
-      return textObjs;
-    }
-    var allTexts = Array.from(cfg.objectsMap.values()).filter(function(o) { return o.type === 'text'; });
-    if (allTexts.length > 0) {
-      return allTexts;
-    }
-    return members;
+    if (members.length > 0) return members;
+    var allObjs = Array.from(cfg.objectsMap.values());
+    return allObjs;
   }
 
-  function renderFilterStackListInPopover() {
-    var listContainer = document.getElementById('popFilterStackList');
-    if (!listContainer) return;
-    var targets = getSelectedObjectsForFilter();
-    if (targets.length === 0) {
-      listContainer.innerHTML = '<span style="color:#94a3b8;">대상을 선택하세요</span>';
+  function applyEffectDirect(effectType) {
+    if (effectHoldTriggered) {
+      effectHoldTriggered = false;
       return;
     }
-    var firstObj = targets[0];
-    var filters = (firstObj.attrs && firstObj.attrs.filterList) ? firstObj.attrs.filterList : [];
-    if (filters.length === 0) {
-      listContainer.innerHTML = '<span style="color:#94a3b8;">적용된 필터가 없습니다</span>';
-      return;
-    }
+    var preset = cfg.defaultFilterPresets && cfg.defaultFilterPresets[effectType];
+    if (!preset) return;
 
-    var tagsHtml = '';
-    for (var i = 0; i < filters.length; i++) {
-      tagsHtml +=
-        '<div style="display:flex; align-items:center; justify-space-between; background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; border:1px solid #bae6fd;">' +
-          '<span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + filters[i] + '</span>' +
-          '<div style="display:flex; gap:2px; margin-left:4px;">' +
-            '<button onclick="moveFilterUp(' + i + ')" style="background:none; border:none; color:#0284c7; font-weight:bold; cursor:pointer; font-size:0.7rem; padding:0 2px;">▲</button>' +
-            '<button onclick="moveFilterDown(' + i + ')" style="background:none; border:none; color:#0284c7; font-weight:bold; cursor:pointer; font-size:0.7rem; padding:0 2px;">▼</button>' +
-            '<button onclick="removeFilterAtIndexFromPopover(' + i + ')" style="background:none; border:none; color:#ef4444; font-weight:bold; cursor:pointer; font-size:0.75rem; padding:0 2px;">×</button>' +
-          '</div>' +
-        '</div>';
-    }
-    listContainer.innerHTML = tagsHtml;
-  }
-
-  function addFilterFromPopover() {
-    var select = document.getElementById('popFilterType');
-    var range = document.getElementById('popFilterRange');
-    if (!select || !range) return;
-
-    var type = select.value;
-    var val = range.value;
-    var unit = window.filterUnit || 'px';
-
-    var filterExpr = '';
-    if (type === 'drop-shadow') {
-      filterExpr = 'drop-shadow(' + val + 'px ' + val + 'px ' + (parseInt(val, 10) + 2) + 'px rgba(0,0,0,0.5))';
-    } else {
-      filterExpr = type + '(' + val + unit + ')';
-    }
+    var newEffect = JSON.parse(JSON.stringify(preset));
+    newEffect.id = 'fx_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+    newEffect.enabled = true;
 
     var targets = getSelectedObjectsForFilter();
     targets.forEach(function(obj) {
       if (!obj.attrs) obj.attrs = {};
-      if (!obj.attrs.filterList) obj.attrs.filterList = [];
-      obj.attrs.filterList.push(filterExpr);
-      obj.attrs.filter = obj.attrs.filterList.join(' ');
+      if (!Array.isArray(obj.attrs.filterList)) obj.attrs.filterList = [];
+      obj.attrs.filterList.push(JSON.parse(JSON.stringify(newEffect)));
       if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.updateElementAttributes) {
         window.WebpointerRenderCanvas.updateElementAttributes(obj);
       }
-      if (window.WebpointerRender && window.WebpointerRender.renderCanvas) {
-        window.WebpointerRender.renderCanvas();
+    });
+
+    if (window.WebpointerRender && window.WebpointerRender.renderCanvas) {
+      window.WebpointerRender.renderCanvas();
+    }
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+      window.WebpointerRender.renderRibbon();
+    }
+  }
+  window.applyEffectDirect = applyEffectDirect;
+
+  function startHoldEffect(e, btnEl, effectType) {
+    effectHoldTriggered = false;
+    clearTimeout(effectHoldTimer);
+    var delay = cfg.longPressDelay || 200;
+    effectHoldTimer = setTimeout(function() {
+      effectHoldTriggered = true;
+      openEffectParamPopover(btnEl, effectType);
+    }, delay);
+  }
+  window.startHoldEffect = startHoldEffect;
+
+  function endHoldEffect() {
+    clearTimeout(effectHoldTimer);
+  }
+  window.endHoldEffect = endHoldEffect;
+
+  function openEffectParamPopover(anchorEl, effectType, editIdx) {
+    var old = document.getElementById('effectParamPopover');
+    if (old) old.remove();
+
+    var targets = getSelectedObjectsForFilter();
+    effectRollbackSnapshots = new Map();
+    targets.forEach(function(obj) {
+      var currentList = (obj.attrs && Array.isArray(obj.attrs.filterList)) ? JSON.parse(JSON.stringify(obj.attrs.filterList)) : [];
+      effectRollbackSnapshots.set(obj.id, currentList);
+    });
+
+    var preset = (cfg.defaultFilterPresets && cfg.defaultFilterPresets[effectType]) || { type: effectType, val: 5, unit: 'px', label: effectType };
+    var currentItem = preset;
+    if (editIdx !== undefined && targets.length > 0 && targets[0].attrs && targets[0].attrs.filterList && targets[0].attrs.filterList[editIdx]) {
+      currentItem = targets[0].attrs.filterList[editIdx];
+    }
+
+    var popover = document.createElement('div');
+    popover.id = 'effectParamPopover';
+    popover.style.cssText = 'position:fixed; z-index:99999; padding:12px; border:1px solid #0284c7; border-radius:8px; background:#ffffff; box-shadow:0 10px 25px rgba(0,0,0,0.25); font-family:sans-serif; width:260px; display:flex; flex-direction:column; gap:8px; font-size:0.8rem;';
+
+    if (anchorEl) {
+      var rect = anchorEl.getBoundingClientRect();
+      popover.style.left = Math.max(10, Math.min(window.innerWidth - 280, rect.left)) + 'px';
+      popover.style.top = (rect.bottom + 6) + 'px';
+    } else {
+      popover.style.left = '50%';
+      popover.style.top = '50%';
+      popover.style.transform = 'translate(-50%, -50%)';
+    }
+
+    var titleText = (editIdx !== undefined ? '수정: ' : '추가: ') + (currentItem.label || effectType);
+
+    var controlsHtml = '';
+    if (effectType === 'drop-shadow') {
+      var curDx = currentItem.dx !== undefined ? currentItem.dx : 4;
+      var curDy = currentItem.dy !== undefined ? currentItem.dy : 4;
+      var curBlur = currentItem.blur !== undefined ? currentItem.blur : 8;
+      var curCol = currentItem.color || 'rgba(0,0,0,0.5)';
+
+      controlsHtml =
+        '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+          '<span>X 오프셋:</span>' +
+          '<input type="range" id="fxParamDx" min="-50" max="50" value="' + curDx + '" style="width:120px;" oninput="livePreviewEffect(\'' + effectType + '\', ' + editIdx + ')">' +
+          '<span id="fxParamDxDisp" style="width:35px; text-align:right; font-weight:700;">' + curDx + 'px</span>' +
+        '</div>' +
+        '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+          '<span>Y 오프셋:</span>' +
+          '<input type="range" id="fxParamDy" min="-50" max="50" value="' + curDy + '" style="width:120px;" oninput="livePreviewEffect(\'' + effectType + '\', ' + editIdx + ')">' +
+          '<span id="fxParamDyDisp" style="width:35px; text-align:right; font-weight:700;">' + curDy + 'px</span>' +
+        '</div>' +
+        '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+          '<span>블러 반경:</span>' +
+          '<input type="range" id="fxParamBlur" min="0" max="50" value="' + curBlur + '" style="width:120px;" oninput="livePreviewEffect(\'' + effectType + '\', ' + editIdx + ')">' +
+          '<span id="fxParamBlurDisp" style="width:35px; text-align:right; font-weight:700;">' + curBlur + 'px</span>' +
+        '</div>' +
+        '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+          '<span>그림자 색상:</span>' +
+          '<input type="color" id="fxParamColor" value="' + (curCol.startsWith('#') ? curCol : '#000000') + '" style="width:40px; height:24px; border:none; cursor:pointer;" onchange="livePreviewEffect(\'' + effectType + '\', ' + editIdx + ')">' +
+        '</div>';
+    } else if (effectType === 'glow') {
+      var gBlur = currentItem.blur !== undefined ? currentItem.blur : 10;
+      var gCol = currentItem.color || '#38bdf8';
+
+      controlsHtml =
+        '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+          '<span>발광 반경:</span>' +
+          '<input type="range" id="fxParamBlur" min="1" max="60" value="' + gBlur + '" style="width:120px;" oninput="livePreviewEffect(\'' + effectType + '\', ' + editIdx + ')">' +
+          '<span id="fxParamBlurDisp" style="width:35px; text-align:right; font-weight:700;">' + gBlur + 'px</span>' +
+        '</div>' +
+        '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+          '<span>네온 색상:</span>' +
+          '<input type="color" id="fxParamColor" value="' + (gCol.startsWith('#') ? gCol : '#38bdf8') + '" style="width:40px; height:24px; border:none; cursor:pointer;" onchange="livePreviewEffect(\'' + effectType + '\', ' + editIdx + ')">' +
+        '</div>';
+    } else {
+      var minVal = 0, maxVal = 100, stepVal = 1, defVal = currentItem.val !== undefined ? currentItem.val : 100;
+      var unitStr = currentItem.unit || '%';
+      if (effectType === 'blur') { minVal = 0; maxVal = 40; unitStr = 'px'; }
+      else if (effectType === 'brightness' || effectType === 'contrast') { minVal = 0; maxVal = 300; }
+      else if (effectType === 'saturate') { minVal = 0; maxVal = 500; }
+      else if (effectType === 'hue-rotate') { minVal = 0; maxVal = 360; unitStr = 'deg'; }
+
+      controlsHtml =
+        '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+          '<span>수치 조절:</span>' +
+          '<input type="range" id="fxParamSingle" min="' + minVal + '" max="' + maxVal + '" step="' + stepVal + '" value="' + defVal + '" style="width:120px;" oninput="livePreviewEffect(\'' + effectType + '\', ' + editIdx + ')">' +
+          '<span id="fxParamSingleDisp" style="width:45px; text-align:right; font-weight:700; color:#0284c7;">' + defVal + unitStr + '</span>' +
+        '</div>';
+    }
+
+    var actionBtns = '';
+    if (editIdx !== undefined) {
+      actionBtns =
+        '<div style="display:flex; gap:4px; margin-top:4px;">' +
+          '<button onclick="confirmEffectParam(\'' + effectType + '\', ' + editIdx + ')" style="flex:1; padding:6px; background:#0284c7; color:#fff; border:none; border-radius:4px; font-weight:700; cursor:pointer;">수정</button>' +
+          '<button onclick="removeEffectItem(' + editIdx + '); cancelEffectParam();" style="padding:6px 10px; background:#ef4444; color:#fff; border:none; border-radius:4px; font-weight:700; cursor:pointer;">삭제</button>' +
+          '<button onclick="cancelEffectParam()" style="padding:6px 10px; background:#e2e8f0; color:#334155; border:none; border-radius:4px; cursor:pointer;">취소</button>' +
+        '</div>';
+    } else {
+      actionBtns =
+        '<div style="display:flex; gap:6px; margin-top:4px;">' +
+          '<button onclick="confirmEffectParam(\'' + effectType + '\')" style="flex:1; padding:6px; background:#0284c7; color:#fff; border:none; border-radius:4px; font-weight:700; cursor:pointer;">적용</button>' +
+          '<button onclick="cancelEffectParam()" style="flex:1; padding:6px; background:#e2e8f0; color:#334155; border:none; border-radius:4px; cursor:pointer;">취소</button>' +
+        '</div>';
+    }
+
+    popover.innerHTML =
+      '<div style="font-weight:700; color:#0f172a; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">' + titleText + '</div>' +
+      controlsHtml +
+      actionBtns;
+
+    document.body.appendChild(popover);
+  }
+  window.openEffectParamPopover = openEffectParamPopover;
+  window.openFilterPopover = openEffectParamPopover;
+
+  function openEffectEditPopover(itemEl, idx) {
+    var targets = getSelectedObjectsForFilter();
+    if (targets.length === 0 || !targets[0].attrs || !targets[0].attrs.filterList || !targets[0].attrs.filterList[idx]) return;
+    var item = targets[0].attrs.filterList[idx];
+    openEffectParamPopover(itemEl, item.type, idx);
+  }
+  window.openEffectEditPopover = openEffectEditPopover;
+
+  function livePreviewEffect(effectType, editIdx) {
+    var targets = getSelectedObjectsForFilter();
+    if (targets.length === 0) return;
+
+    var previewEffectObj = { type: effectType, enabled: true };
+    var label = (cfg.defaultFilterPresets && cfg.defaultFilterPresets[effectType] && cfg.defaultFilterPresets[effectType].label) || effectType;
+    previewEffectObj.label = label;
+
+    if (effectType === 'drop-shadow') {
+      var dxEl = document.getElementById('fxParamDx');
+      var dyEl = document.getElementById('fxParamDy');
+      var blurEl = document.getElementById('fxParamBlur');
+      var colEl = document.getElementById('fxParamColor');
+      var dxDisp = document.getElementById('fxParamDxDisp');
+      var dyDisp = document.getElementById('fxParamDyDisp');
+      var blurDisp = document.getElementById('fxParamBlurDisp');
+
+      if (dxEl) { previewEffectObj.dx = parseInt(dxEl.value, 10); if (dxDisp) dxDisp.innerText = dxEl.value + 'px'; }
+      if (dyEl) { previewEffectObj.dy = parseInt(dyEl.value, 10); if (dyDisp) dyDisp.innerText = dyEl.value + 'px'; }
+      if (blurEl) { previewEffectObj.blur = parseInt(blurEl.value, 10); if (blurDisp) blurDisp.innerText = blurEl.value + 'px'; }
+      if (colEl) { previewEffectObj.color = colEl.value; }
+    } else if (effectType === 'glow') {
+      var blurEl = document.getElementById('fxParamBlur');
+      var colEl = document.getElementById('fxParamColor');
+      var blurDisp = document.getElementById('fxParamBlurDisp');
+
+      if (blurEl) { previewEffectObj.blur = parseInt(blurEl.value, 10); if (blurDisp) blurDisp.innerText = blurEl.value + 'px'; }
+      if (colEl) { previewEffectObj.color = colEl.value; }
+    } else {
+      var sEl = document.getElementById('fxParamSingle');
+      var sDisp = document.getElementById('fxParamSingleDisp');
+      var preset = (cfg.defaultFilterPresets && cfg.defaultFilterPresets[effectType]) || {};
+      var unit = preset.unit || '%';
+      if (sEl) {
+        previewEffectObj.val = parseFloat(sEl.value);
+        previewEffectObj.unit = unit;
+        if (sDisp) sDisp.innerText = sEl.value + unit;
+      }
+    }
+
+    targets.forEach(function(obj) {
+      if (!obj.attrs) obj.attrs = {};
+      var baseList = effectRollbackSnapshots && effectRollbackSnapshots.get(obj.id) ? JSON.parse(JSON.stringify(effectRollbackSnapshots.get(obj.id))) : (obj.attrs.filterList || []).slice();
+      if (editIdx !== undefined && editIdx >= 0 && editIdx < baseList.length) {
+        baseList[editIdx] = previewEffectObj;
+      } else {
+        baseList.push(previewEffectObj);
+      }
+      obj.attrs.filterList = baseList;
+      if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.updateElementAttributes) {
+        window.WebpointerRenderCanvas.updateElementAttributes(obj);
       }
     });
 
-    renderFilterStackListInPopover();
+    if (window.WebpointerRender && window.WebpointerRender.renderCanvas) {
+      window.WebpointerRender.renderCanvas();
+    }
   }
+  window.livePreviewEffect = livePreviewEffect;
+  window.livePreviewFilter = livePreviewEffect;
 
-  function removeFilterAtIndexFromPopover(idx) {
+  function confirmEffectParam(effectType, editIdx) {
+    livePreviewEffect(effectType, editIdx);
+    var pop = document.getElementById('effectParamPopover');
+    if (pop) pop.remove();
+    effectRollbackSnapshots = null;
+
+    if (window.WebpointerRender && window.WebpointerRender.renderCanvas) {
+      window.WebpointerRender.renderCanvas();
+    }
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+      window.WebpointerRender.renderRibbon();
+    }
+  }
+  window.confirmEffectParam = confirmEffectParam;
+
+  function cancelEffectParam() {
+    if (effectRollbackSnapshots) {
+      effectRollbackSnapshots.forEach(function(origList, objId) {
+        var obj = cfg.objectsMap.get(objId);
+        if (obj && obj.attrs) {
+          obj.attrs.filterList = origList;
+          if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.updateElementAttributes) {
+            window.WebpointerRenderCanvas.updateElementAttributes(obj);
+          }
+        }
+      });
+      effectRollbackSnapshots = null;
+    }
+
+    var pop = document.getElementById('effectParamPopover');
+    if (pop) pop.remove();
+
+    if (window.WebpointerRender && window.WebpointerRender.renderCanvas) {
+      window.WebpointerRender.renderCanvas();
+    }
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+      window.WebpointerRender.renderRibbon();
+    }
+  }
+  window.cancelEffectParam = cancelEffectParam;
+
+  function toggleEffectEnabled(idx, enabled) {
     var targets = getSelectedObjectsForFilter();
     targets.forEach(function(obj) {
-      if (obj.attrs && obj.attrs.filterList) {
-        obj.attrs.filterList.splice(idx, 1);
-        obj.attrs.filter = obj.attrs.filterList.join(' ');
+      if (obj.attrs && Array.isArray(obj.attrs.filterList) && obj.attrs.filterList[idx]) {
+        obj.attrs.filterList[idx].enabled = enabled;
         if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.updateElementAttributes) {
           window.WebpointerRenderCanvas.updateElementAttributes(obj);
         }
-        if (window.WebpointerRender && window.WebpointerRender.renderCanvas) {
-          window.WebpointerRender.renderCanvas();
+      }
+    });
+    if (window.WebpointerRender && window.WebpointerRender.renderCanvas) {
+      window.WebpointerRender.renderCanvas();
+    }
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+      window.WebpointerRender.renderRibbon();
+    }
+  }
+  window.toggleEffectEnabled = toggleEffectEnabled;
+
+  function reorderEffect(fromIdx, toIdx) {
+    var targets = getSelectedObjectsForFilter();
+    targets.forEach(function(obj) {
+      if (obj.attrs && Array.isArray(obj.attrs.filterList)) {
+        var list = obj.attrs.filterList;
+        if (fromIdx >= 0 && fromIdx < list.length && toIdx >= 0 && toIdx < list.length) {
+          var item = list.splice(fromIdx, 1)[0];
+          list.splice(toIdx, 0, item);
+          if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.updateElementAttributes) {
+            window.WebpointerRenderCanvas.updateElementAttributes(obj);
+          }
         }
       }
     });
-    renderFilterStackListInPopover();
+    if (window.WebpointerRender && window.WebpointerRender.renderCanvas) {
+      window.WebpointerRender.renderCanvas();
+    }
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+      window.WebpointerRender.renderRibbon();
+    }
   }
+  window.reorderEffect = reorderEffect;
+  window.moveFilterUp = function(idx) { reorderEffect(idx, idx - 1); };
+  window.moveFilterDown = function(idx) { reorderEffect(idx, idx + 1); };
 
-  function clearAllFiltersFromPopover() {
+  function removeEffectItem(idx) {
+    var targets = getSelectedObjectsForFilter();
+    targets.forEach(function(obj) {
+      if (obj.attrs && Array.isArray(obj.attrs.filterList) && idx >= 0 && idx < obj.attrs.filterList.length) {
+        obj.attrs.filterList.splice(idx, 1);
+        if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.updateElementAttributes) {
+          window.WebpointerRenderCanvas.updateElementAttributes(obj);
+        }
+      }
+    });
+    if (window.WebpointerRender && window.WebpointerRender.renderCanvas) {
+      window.WebpointerRender.renderCanvas();
+    }
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+      window.WebpointerRender.renderRibbon();
+    }
+  }
+  window.removeEffectItem = removeEffectItem;
+  window.removeFilterAtIndexFromPopover = removeEffectItem;
+
+  function clearAllFilterEffects() {
     var targets = getSelectedObjectsForFilter();
     targets.forEach(function(obj) {
       if (obj.attrs) {
@@ -3136,13 +3281,27 @@
         if (window.WebpointerRenderCanvas && window.WebpointerRenderCanvas.updateElementAttributes) {
           window.WebpointerRenderCanvas.updateElementAttributes(obj);
         }
-        if (window.WebpointerRender && window.WebpointerRender.renderCanvas) {
-          window.WebpointerRender.renderCanvas();
-        }
       }
     });
-    renderFilterStackListInPopover();
+    if (window.WebpointerRender && window.WebpointerRender.renderCanvas) {
+      window.WebpointerRender.renderCanvas();
+    }
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) {
+      window.WebpointerRender.renderRibbon();
+    }
   }
+  window.clearAllFilterEffects = clearAllFilterEffects;
+  window.clearAllFiltersFromPopover = clearAllFilterEffects;
+
+  function updateFilterRangeConfig(type, val) {
+    livePreviewEffect(type || 'blur');
+  }
+  window.updateFilterRangeConfig = updateFilterRangeConfig;
+
+  function addFilterFromPopover(type) {
+    applyEffectDirect(type || 'blur');
+  }
+  window.addFilterFromPopover = addFilterFromPopover;
 
   function openSymbolClipPopover(anchorBtn) {
     var popover = document.getElementById('symbolClipPopover');
@@ -3274,11 +3433,14 @@
     closeSymbolClipPopover();
   }
 
+  function openFilterPopover(btnEl, type, idx) {
+    return openEffectParamPopover(btnEl, type, idx);
+  }
   window.openFilterPopover = openFilterPopover;
   window.updateFilterRangeConfig = updateFilterRangeConfig;
   window.addFilterFromPopover = addFilterFromPopover;
-  window.removeFilterAtIndexFromPopover = removeFilterAtIndexFromPopover;
-  window.clearAllFiltersFromPopover = clearAllFiltersFromPopover;
+  window.removeFilterAtIndexFromPopover = removeEffectItem;
+  window.clearAllFiltersFromPopover = clearAllFilterEffects;
   window.openSymbolClipPopover = openSymbolClipPopover;
   window.closeSymbolClipPopover = closeSymbolClipPopover;
   window.applySymbolClip = applySymbolClip;
@@ -3316,7 +3478,7 @@
   window.WebpointerHandlers = {
     setTool: setTool,
     restoreSnapshot: restoreSnapshot,
-    saveState: saveState,
+    saveState: pushHistoryState,
     undo: undo,
     redo: redo,
     openFileSlotsModal: openFileSlotsModal,

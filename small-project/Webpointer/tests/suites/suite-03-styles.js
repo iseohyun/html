@@ -102,15 +102,93 @@
       expect(true).toBe(true);
     });
 
-    test('S03_TC09: Filter Stack & Range Controls Engine Matrix', async function({ page, appWindow }) {
-      if (appWindow.openFilterPopover) {
-        var dummy = appWindow.document.createElement('button');
-        appWindow.document.body.appendChild(dummy);
-        appWindow.openFilterPopover(dummy);
-        if (appWindow.updateFilterRangeConfig) appWindow.updateFilterRangeConfig('blur', 10);
-        appWindow.document.body.removeChild(dummy);
-      }
-      expect(true).toBe(true);
+    test('S03_TC09: 11종 효과 직접 적용, 리스트박스 On/Off 토글, 순서 변경, 삭제 및 전체 초기화', async function({ page, appWindow }) {
+      var cfg = appWindow.WebpointerConfig;
+      var obj = { id: 'fx_test_obj', type: 'rect', attrs: { x: 50, y: 50, width: 100, height: 100, filterList: [] } };
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+      cfg.objectsMap.set(obj.id, obj);
+      cfg.selectedIds.add(obj.id);
+
+      // Direct Apply blur and drop-shadow
+      appWindow.applyEffectDirect('blur');
+      expect(obj.attrs.filterList.length).toBe(1);
+      expect(obj.attrs.filterList[0].type).toBe('blur');
+      expect(obj.attrs.filterList[0].val).toBe(5);
+
+      appWindow.applyEffectDirect('drop-shadow');
+      expect(obj.attrs.filterList.length).toBe(2);
+      expect(obj.attrs.filterList[1].type).toBe('drop-shadow');
+
+      // Toggle On/Off
+      appWindow.toggleEffectEnabled(0, false);
+      expect(obj.attrs.filterList[0].enabled).toBe(false);
+      appWindow.toggleEffectEnabled(0, true);
+      expect(obj.attrs.filterList[0].enabled).toBe(true);
+
+      // Reorder
+      appWindow.reorderEffect(0, 1);
+      expect(obj.attrs.filterList[0].type).toBe('drop-shadow');
+      expect(obj.attrs.filterList[1].type).toBe('blur');
+
+      // Remove single
+      appWindow.removeEffectItem(0);
+      expect(obj.attrs.filterList.length).toBe(1);
+      expect(obj.attrs.filterList[0].type).toBe('blur');
+
+      // Clear all
+      appWindow.clearAllFilterEffects();
+      expect(obj.attrs.filterList.length).toBe(0);
+    });
+
+    test('S03_TC10: 롱프레스 타이머, 파라미터 Popover, 라이브 프리뷰/취소 롤백, 다중선택 공통목록 검증', async function({ page, appWindow }) {
+      var cfg = appWindow.WebpointerConfig;
+      var obj1 = { id: 'fx_m1', type: 'rect', attrs: { x: 10, y: 10, width: 50, height: 50, filterList: [{ type: 'blur', val: 5, enabled: true }] } };
+      var obj2 = { id: 'fx_m2', type: 'circle', attrs: { cx: 100, cy: 100, r: 30, filterList: [{ type: 'blur', val: 5, enabled: true }, { type: 'sepia', val: 100, enabled: true }] } };
+
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+      cfg.objectsMap.set(obj1.id, obj1);
+      cfg.objectsMap.set(obj2.id, obj2);
+      cfg.selectedIds.add(obj1.id);
+      cfg.selectedIds.add(obj2.id);
+
+      // Multi-selection common list & discrepancy check
+      var commonRes = appWindow.getCommonFilterList(cfg.selectedIds);
+      expect(commonRes.hasDiscrepancy).toBe(true);
+      expect(commonRes.commonList.length).toBe(1);
+
+      // Long-press Popover open & cancel rollback
+      var dummyBtn = appWindow.document.createElement('button');
+      appWindow.document.body.appendChild(dummyBtn);
+
+      appWindow.openEffectParamPopover(dummyBtn, 'drop-shadow');
+      var pop = appWindow.document.getElementById('effectParamPopover');
+      expect(pop).toBeTruthy();
+
+      // Live preview
+      appWindow.livePreviewEffect('drop-shadow');
+      expect(obj1.attrs.filterList.length).toBe(2);
+
+      // Cancel and rollback
+      appWindow.cancelEffectParam();
+      expect(obj1.attrs.filterList.length).toBe(1);
+
+      // Edit existing item popover & confirm
+      appWindow.openEffectEditPopover(dummyBtn, 0);
+      appWindow.confirmEffectParam('blur', 0);
+      expect(obj1.attrs.filterList.length).toBe(1);
+
+      // Hold helpers
+      appWindow.startHoldEffect({ preventDefault: function(){} }, dummyBtn, 'glow');
+      appWindow.endHoldEffect();
+
+      // Compatibility filter aliases
+      if (appWindow.openFilterPopover) appWindow.openFilterPopover(dummyBtn, 'blur');
+      if (appWindow.updateFilterRangeConfig) appWindow.updateFilterRangeConfig('blur', 5);
+      if (appWindow.addFilterFromPopover) appWindow.addFilterFromPopover('blur');
+
+      if (dummyBtn.parentNode) dummyBtn.parentNode.removeChild(dummyBtn);
     });
 
   });

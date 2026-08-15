@@ -65,6 +65,46 @@
     return defaultValue;
   }
 
+  function parseFilterStringToEffects(filterStr) {
+    if (!filterStr || typeof filterStr !== 'string') return [];
+    var effects = [];
+    var regex = /([a-z-]+)\(([^)]+)\)/gi;
+    var match;
+    while ((match = regex.exec(filterStr)) !== null) {
+      var type = match[1].toLowerCase();
+      var rawVal = match[2].trim();
+      var effectObj = { id: 'fx_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4), type: type, enabled: true };
+
+      if (type === 'drop-shadow') {
+        var dsParts = rawVal.split(/\s+/);
+        var nums = [];
+        var colParts = [];
+        dsParts.forEach(function(p) {
+          var num = parseFloat(p);
+          if (!isNaN(num) && (p.endsWith('px') || /^-?\d+(\.\d+)?$/.test(p))) {
+            nums.push(num);
+          } else {
+            colParts.push(p);
+          }
+        });
+        effectObj.dx = nums[0] !== undefined ? nums[0] : 4;
+        effectObj.dy = nums[1] !== undefined ? nums[1] : 4;
+        effectObj.blur = nums[2] !== undefined ? nums[2] : 8;
+        effectObj.color = colParts.join(' ') || 'rgba(0,0,0,0.5)';
+        effectObj.label = '그림자';
+      } else {
+        var num = parseFloat(rawVal);
+        var unit = rawVal.replace(/^[-\d.]+/, '').trim() || (type === 'blur' ? 'px' : (type === 'hue-rotate' ? 'deg' : '%'));
+        effectObj.val = !isNaN(num) ? num : 100;
+        effectObj.unit = unit;
+        var preset = cfg.defaultFilterPresets && cfg.defaultFilterPresets[type];
+        effectObj.label = preset ? preset.label : type;
+      }
+      effects.push(effectObj);
+    }
+    return effects;
+  }
+
   function importSVGContent(svgString) {
     if (!svgString || typeof svgString !== 'string' || !svgString.trim()) {
       return false;
@@ -239,6 +279,12 @@
       }
 
       if (el && type) {
+        var filterAttr = getInheritedStyle(node, 'filter', '');
+        if (filterAttr) {
+          attrs.filter = filterAttr;
+          attrs.filterList = parseFilterStringToEffects(filterAttr);
+        }
+
         el.setAttribute('id', id);
         if (nodeMatrix) {
           el.setAttribute('transform', 'matrix(' + nodeMatrix.join(' ') + ')');
@@ -304,7 +350,8 @@
   window.WebpointerSVGImporter = {
     importSVGContent: importSVGContent,
     parseMatrixTransform: parseMatrixTransform,
-    combineTransforms: combineTransforms
+    combineTransforms: combineTransforms,
+    parseFilterStringToEffects: parseFilterStringToEffects
   };
   window.WebpointerSvgImporter = window.WebpointerSVGImporter;
 })(window);

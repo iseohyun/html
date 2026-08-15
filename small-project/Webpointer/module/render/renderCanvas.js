@@ -3,6 +3,33 @@
 
   var cfg = window.WebpointerConfig;
 
+  function compileFilterString(filterList) {
+    if (!filterList || !Array.isArray(filterList)) return '';
+    var parts = [];
+    filterList.forEach(function(item) {
+      if (item && item.enabled !== false) {
+        if (typeof item === 'string') {
+          parts.push(item);
+        } else if (item.type === 'drop-shadow') {
+          var dx = item.dx !== undefined ? item.dx : 4;
+          var dy = item.dy !== undefined ? item.dy : 4;
+          var blur = item.blur !== undefined ? item.blur : 8;
+          var color = item.color || 'rgba(0,0,0,0.5)';
+          parts.push('drop-shadow(' + dx + 'px ' + dy + 'px ' + blur + 'px ' + color + ')');
+        } else if (item.type === 'glow') {
+          var gBlur = item.blur !== undefined ? item.blur : 10;
+          var gColor = item.color || '#38bdf8';
+          parts.push('drop-shadow(0px 0px ' + gBlur + 'px ' + gColor + ')');
+        } else if (item.type) {
+          var val = item.val !== undefined ? item.val : (item.value !== undefined ? item.value : 0);
+          var unit = item.unit || (item.type === 'blur' ? 'px' : (item.type === 'hue-rotate' ? 'deg' : '%'));
+          parts.push(item.type + '(' + val + unit + ')');
+        }
+      }
+    });
+    return parts.join(' ');
+  }
+
   function updateElementAttributes(obj) {
     if (!obj || !obj.el) return;
     var a = obj.attrs;
@@ -389,7 +416,15 @@
     obj.el.setAttribute('stroke-linejoin', strokeJoin);
 
     // Stacked Non-destructive Filter Effects
-    var filterStr = a.filter || cfg.filterStr || '';
+    var filterStr = '';
+    if (a.filterList && Array.isArray(a.filterList) && a.filterList.length > 0) {
+      filterStr = compileFilterString(a.filterList);
+    } else if (a.filter) {
+      filterStr = a.filter;
+    } else if (cfg.filterStr) {
+      filterStr = cfg.filterStr;
+    }
+
     if (filterStr) {
       obj.el.setAttribute('filter', filterStr);
       obj.el.style.filter = filterStr;
@@ -1071,6 +1106,7 @@
     renderCanvas: renderCanvas,
     renderAllObjects: renderCanvas,
     renderSnapGuides: renderSnapGuides,
-    clearSnapGuides: clearSnapGuides
+    clearSnapGuides: clearSnapGuides,
+    compileFilterString: compileFilterString
   };
 })(window);

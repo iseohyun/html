@@ -149,12 +149,23 @@
       expect(true).toBe(true);
     });
 
-    test('S01_TC10: Ribbon Layout HTML & Tooltip Builders Matrix (getOutermostGroupEl, build3RowGridHtml, buildCategoryHtml, buildWizardCategoryHtml, initGlobalTooltipManager)', async function({ page, appWindow }) {
+    test('S01_TC10: Ribbon Layout HTML & Tooltip Builders Matrix (getOutermostGroupEl, build3RowGridHtml, buildCategoryHtml, buildWizardCategoryHtml, buildEffectsCategoryHtml, renderEffectsListboxContent)', async function({ page, appWindow }) {
       var render = appWindow.WebpointerRender;
+      var ribbon = appWindow.WebpointerRenderRibbon;
       if (render) {
         if (render.buildCategoryHtml) render.buildCategoryHtml('tools', '도구', '<div></div>');
         if (render.buildWizardCategoryHtml) render.buildWizardCategoryHtml('wizard', '마법사', '<div></div>');
         if (render.initGlobalTooltipManager) render.initGlobalTooltipManager();
+      }
+      if (ribbon) {
+        if (ribbon.buildEffectsCategoryHtml) {
+          var effectsHtml = ribbon.buildEffectsCategoryHtml();
+          expect(effectsHtml).toContain('appliedEffectsListbox');
+        }
+        if (ribbon.renderEffectsListboxContent) {
+          var listboxHtml = ribbon.renderEffectsListboxContent();
+          expect(listboxHtml).toBeDefined();
+        }
       }
       expect(true).toBe(true);
     });

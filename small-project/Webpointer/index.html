@@ -305,6 +305,13 @@
             <label for="settingAlphaStepCount" style="font-weight: 600;">투명도 조절 단계 수:</label>
             <input type="number" id="settingAlphaStepCount" min="2" max="100" value="5" style="width: 90px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.88rem; text-align: center;">
           </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="settingLongPressDelay" style="font-weight: 600;">길게 누르기(롱프레스) 시간 (ms):</label>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <input type="range" id="settingLongPressDelay" min="200" max="1000" step="50" value="200" style="width: 100px; cursor: pointer;" oninput="document.getElementById('settingLongPressVal').innerText = this.value + 'ms'">
+              <span id="settingLongPressVal" style="font-weight: 700; width: 50px; text-align: right; color:#0284c7;">200ms</span>
+            </div>
+          </div>
         </div>
         <div class="palette-modal-actions" style="margin-top: 10px;">
           <button class="palette-modal-btn secondary" onclick="closeDetailedSettingsModal()">취소</button>

@@ -96,5 +96,29 @@
       expect(true).toBe(true);
     });
 
+    test('S09_TC08: SVG Filter 문자열 파싱 (parseFilterStringToEffects) 및 다중 필터 복원', async function({ page, appWindow }) {
+      var importer = appWindow.WebpointerSVGImporter || appWindow.WebpointerSvgImporter;
+      if (importer && importer.parseFilterStringToEffects) {
+        var sampleFilter = 'blur(6px) drop-shadow(4px 4px 8px rgba(0,0,0,0.5)) grayscale(80%)';
+        var parsed = importer.parseFilterStringToEffects(sampleFilter);
+        expect(parsed.length).toBe(3);
+        expect(parsed[0].type).toBe('blur');
+        expect(parsed[0].val).toBe(6);
+        expect(parsed[1].type).toBe('drop-shadow');
+        expect(parsed[1].blur).toBe(8);
+        expect(parsed[2].type).toBe('grayscale');
+        expect(parsed[2].val).toBe(80);
+
+        // Test with full SVG import
+        var svgStr = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect x="10" y="10" width="80" height="80" fill="#ff0000" filter="blur(4px) drop-shadow(2px 2px 4px #333333)"/></svg>';
+        importer.importSVGContent(svgStr);
+        var importedObj = Array.from(appWindow.WebpointerConfig.objectsMap.values())[0];
+        expect(importedObj).toBeDefined();
+        if (importedObj && importedObj.attrs && importedObj.attrs.filterList) {
+          expect(importedObj.attrs.filterList.length).toBe(2);
+        }
+      }
+    });
+
   });
 })();

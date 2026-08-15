@@ -82,6 +82,24 @@
     textUnderlineWidth: 1,
     symbolRegistry: JSON.parse(localStorage.getItem('webpointer_symbols') || '[]'),
 
+    // Long Press Delay in ms (200ms ~ 1000ms, default 200ms)
+    longPressDelay: parseInt(localStorage.getItem('webpointer_long_press_delay'), 10) || 200,
+
+    // Default Filter Presets (10 core + 1 glow)
+    defaultFilterPresets: {
+      'blur': { type: 'blur', val: 5, unit: 'px', label: '블러' },
+      'brightness': { type: 'brightness', val: 130, unit: '%', label: '밝기' },
+      'contrast': { type: 'contrast', val: 150, unit: '%', label: '대비' },
+      'grayscale': { type: 'grayscale', val: 100, unit: '%', label: '흑백' },
+      'hue-rotate': { type: 'hue-rotate', val: 90, unit: 'deg', label: '색상 회전' },
+      'invert': { type: 'invert', val: 100, unit: '%', label: '반전' },
+      'opacity': { type: 'opacity', val: 50, unit: '%', label: '불투명도' },
+      'saturate': { type: 'saturate', val: 200, unit: '%', label: '채도' },
+      'sepia': { type: 'sepia', val: 100, unit: '%', label: '세피아' },
+      'drop-shadow': { type: 'drop-shadow', dx: 4, dy: 4, blur: 8, color: 'rgba(0,0,0,0.5)', label: '그림자' },
+      'glow': { type: 'glow', blur: 10, color: '#38bdf8', label: '네온 발광' }
+    },
+
     selectedIds: new Set(),
     objectsMap: new Map(),
     nextId: 1

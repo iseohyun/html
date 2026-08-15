@@ -38,6 +38,106 @@
            '</div>';
   }
 
+  function buildEffectsCategoryHtml() {
+    var icons = window.WebpointerIcons || {};
+    var effectTypes = [
+      { type: 'blur', label: '블러', icon: icons.filterBlur || '💧' },
+      { type: 'brightness', label: '밝기', icon: icons.filterBrightness || '☀️' },
+      { type: 'contrast', label: '대비', icon: icons.filterContrast || '🌓' },
+      { type: 'grayscale', label: '흑백', icon: icons.filterGrayscale || '🏁' },
+      { type: 'hue-rotate', label: '색상회전', icon: icons.filterHueRotate || '🔄' },
+      { type: 'invert', label: '반전', icon: icons.filterInvert || '🔲' },
+      { type: 'opacity', label: '불투명도', icon: icons.filterOpacity || '👁️' },
+      { type: 'saturate', label: '채도', icon: icons.filterSaturate || '🎨' },
+      { type: 'sepia', label: '세피아', icon: icons.filterSepia || '📜' },
+      { type: 'drop-shadow', label: '그림자', icon: icons.filterDropShadow || '👥' },
+      { type: 'glow', label: '네온발광', icon: icons.filterGlow || '💡' },
+      { type: 'clear', label: '효과초기화', icon: '🧹' }
+    ];
+
+    var btnHtmlList = effectTypes.map(function(item) {
+      if (item.type === 'clear') {
+        return '<button class="tool-btn" onclick="clearAllFilterEffects()" style="width:34px; height:34px; color:#ef4444;"><span class="alt-badge">C</span>' + item.icon + '<span class="tooltip-text">효과 전체 삭제</span></button>';
+      }
+      return '<button class="tool-btn" onclick="applyEffectDirect(\'' + item.type + '\')" onmousedown="startHoldEffect(event, this, \'' + item.type + '\')" onmouseup="endHoldEffect()" onmouseleave="endHoldEffect()" style="width:34px; height:34px;">' +
+               item.icon +
+               '<span class="tooltip-text">' + item.label + ' (' + item.type + ') (클릭: 기본 적용 / 길게 누름: 세부 설정)</span>' +
+             '</button>';
+    });
+
+    var gridHtml = build3RowGridHtml(btnHtmlList);
+    var listboxHtml = renderEffectsListboxContent();
+
+    return '<div style="display:flex; flex-direction:row; align-items:center; gap:8px;">' +
+             gridHtml +
+             '<div style="display:flex; flex-direction:column; gap:2px;">' +
+               '<div style="font-size:0.7rem; font-weight:700; color:#475569; display:flex; justify-content:space-between; align-items:center;">' +
+                 '<span>적용된 효과 목록</span>' +
+               '</div>' +
+               listboxHtml +
+             '</div>' +
+           '</div>';
+  }
+
+  function renderEffectsListboxContent() {
+    var hasSelection = (cfg.selectedIds && cfg.selectedIds.size > 0);
+    if (!hasSelection) {
+      return '<div id="appliedEffectsListbox" style="width:190px; height:72px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:2px; display:flex; align-items:center; justify-content:center; font-size:0.75rem; color:#94a3b8;">' +
+               '선택된 객체 없음' +
+             '</div>';
+    }
+
+    var commonData = window.getCommonFilterList ? window.getCommonFilterList(cfg.selectedIds) : { commonList: [], hasDiscrepancy: false };
+    var list = commonData.commonList || [];
+
+    if (list.length === 0) {
+      var emptyNotice = commonData.hasDiscrepancy ?
+        '<div style="font-size:0.68rem; color:#d97706; text-align:center;">* 일부 개체에 개별 효과 있음</div>' :
+        '<div style="font-size:0.72rem; color:#94a3b8; text-align:center; padding-top:20px;">적용된 효과 없음</div>';
+
+      return '<div id="appliedEffectsListbox" style="width:190px; height:72px; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; padding:4px; overflow-y:auto; display:flex; flex-direction:column; justify-content:center;">' +
+               emptyNotice +
+             '</div>';
+    }
+
+    var itemsHtml = list.map(function(item, idx) {
+      var summary = '';
+      if (item.type === 'drop-shadow') {
+        summary = item.dx + ',' + item.dy + ' ' + (item.blur || 8) + 'px';
+      } else if (item.type === 'glow') {
+        summary = (item.blur || 10) + 'px';
+      } else {
+        var val = item.val !== undefined ? item.val : (item.value !== undefined ? item.value : '');
+        var unit = item.unit || '';
+        summary = val + unit;
+      }
+
+      var isChecked = item.enabled !== false;
+      var label = item.label || item.type;
+
+      return '<div class="effect-list-item" style="display:flex; align-items:center; justify-content:space-between; padding:2px 4px; border-radius:4px; font-size:0.73rem; background:' + (isChecked ? '#f1f5f9' : '#f8fafc') + '; opacity:' + (isChecked ? '1' : '0.6') + '; border:1px solid #e2e8f0; cursor:pointer;" onclick="openEffectEditPopover(this, ' + idx + ')">' +
+               '<div style="display:flex; align-items:center; gap:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">' +
+                 '<input type="checkbox" ' + (isChecked ? 'checked' : '') + ' onclick="event.stopPropagation(); toggleEffectEnabled(' + idx + ', this.checked)" style="cursor:pointer;" title="효과 활성화/비활성화">' +
+                 '<span style="font-weight:600; color:#1e293b;">' + label + '</span>' +
+                 '<span style="color:#64748b; font-size:0.68rem;">(' + summary + ')</span>' +
+               '</div>' +
+               '<div style="display:flex; align-items:center; gap:1px;" onclick="event.stopPropagation();">' +
+                 '<button onclick="reorderEffect(' + idx + ', ' + (idx - 1) + ')" style="border:none; background:none; cursor:pointer; padding:0 2px; font-size:0.65rem; color:#64748b;" title="위로 이동">▲</button>' +
+                 '<button onclick="reorderEffect(' + idx + ', ' + (idx + 1) + ')" style="border:none; background:none; cursor:pointer; padding:0 2px; font-size:0.65rem; color:#64748b;" title="아래로 이동">▼</button>' +
+                 '<button onclick="removeEffectItem(' + idx + ')" style="border:none; background:none; cursor:pointer; padding:0 2px; font-size:0.75rem; color:#ef4444;" title="삭제">✕</button>' +
+               '</div>' +
+             '</div>';
+    }).join('');
+
+    var discrepancyBadge = commonData.hasDiscrepancy ?
+      '<div style="font-size:0.65rem; color:#b45309; background:#fef3c7; border:1px solid #fde68a; border-radius:3px; padding:1px 3px; text-align:center; margin-top:2px;">* 일부 개체에 개별 효과 포함됨</div>' : '';
+
+    return '<div id="appliedEffectsListbox" style="width:190px; height:72px; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; padding:3px; overflow-y:auto; display:flex; flex-direction:column; gap:3px;">' +
+             itemsHtml +
+             discrepancyBadge +
+           '</div>';
+  }
+
   function renderRibbon() {
     var ribbonBar = document.getElementById('ribbonBar') || document.getElementById('ribbonContainer');
     if (!ribbonBar) return;
@@ -315,10 +415,13 @@
           cropBtnHtml + clipSymbolBtnHtml + filterBtnHtml +
         '</div>';
 
+      var effectsCategoryHtml = buildEffectsCategoryHtml();
+
       ribbonBar.innerHTML =
         buildCategoryHtml('style_line', '선 및 색상', lineGridHtml) +
         buildCategoryHtml('style_lineEnds', '선 끝', lineEndsContent) +
         buildCategoryHtml('style_capJoin', '마감', capJoinContent) +
+        buildCategoryHtml('style_effects', '효과', effectsCategoryHtml) +
         buildCategoryHtml('style_edit', '편집', editContent);
     } else if (cfg.currentTab === 'text') {
       var curFontFamily = cfg.fontFamily || 'sans-serif';
@@ -738,6 +841,8 @@
     getOutermostGroupEl: getOutermostGroupEl,
     build3RowGridHtml: build3RowGridHtml,
     buildCategoryHtml: buildCategoryHtml,
+    buildEffectsCategoryHtml: buildEffectsCategoryHtml,
+    renderEffectsListboxContent: renderEffectsListboxContent,
     renderRibbon: renderRibbon
   };
 })(window);

@@ -189,5 +189,22 @@
       expect(true).toBe(true);
     });
 
+    test('S02_TC09: Filter String Compiler Engine (compileFilterString)', async function({ page, appWindow }) {
+      var canvas = appWindow.WebpointerRenderCanvas;
+      if (canvas && canvas.compileFilterString) {
+        var testList = [
+          { type: 'blur', val: 8, unit: 'px', enabled: true },
+          { type: 'drop-shadow', dx: 3, dy: 3, blur: 6, color: '#ff0000', enabled: true },
+          { type: 'glow', blur: 12, color: '#00ffff', enabled: true },
+          { type: 'sepia', val: 100, unit: '%', enabled: false } // disabled should be skipped
+        ];
+        var compiled = canvas.compileFilterString(testList);
+        expect(compiled).toContain('blur(8px)');
+        expect(compiled).toContain('drop-shadow(3px 3px 6px #ff0000)');
+        expect(compiled).toContain('drop-shadow(0px 0px 12px #00ffff)');
+        expect(compiled.includes('sepia')).toBe(false);
+      }
+    });
+
   });
 })();

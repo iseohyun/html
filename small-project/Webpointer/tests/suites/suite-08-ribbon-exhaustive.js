@@ -296,5 +296,37 @@
       expect(true).toBe(true);
     });
 
+    test('S08_TC19: 롱프레스 지속시간 설정 (setLongPressDelay) 및 세부설정 모달 동기화', async function({ page, appWindow }) {
+      var cfg = appWindow.WebpointerConfig;
+      if (appWindow.setLongPressDelay) {
+        appWindow.setLongPressDelay(450);
+        expect(cfg.longPressDelay).toBe(450);
+
+        // Clamp checks (200 ~ 1000)
+        appWindow.setLongPressDelay(50);
+        expect(cfg.longPressDelay).toBe(200);
+
+        appWindow.setLongPressDelay(2500);
+        expect(cfg.longPressDelay).toBe(1000);
+
+        // Reset
+        appWindow.setLongPressDelay(200);
+        expect(cfg.longPressDelay).toBe(200);
+      }
+
+      if (appWindow.openDetailedSettingsModal && appWindow.closeDetailedSettingsModal) {
+        appWindow.openDetailedSettingsModal();
+        var holdInput = appWindow.document.getElementById('settingLongPressDelay');
+        if (holdInput) {
+          expect(parseInt(holdInput.value, 10)).toBe(200);
+        }
+        if (appWindow.applyDetailedSettings) {
+          appWindow.applyDetailedSettings();
+        } else {
+          appWindow.closeDetailedSettingsModal();
+        }
+      }
+    });
+
   });
 })();
