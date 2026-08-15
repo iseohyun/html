@@ -129,13 +129,29 @@
 
   function setStrokeColor(val) {
     cfg.strokeColor = val;
-    applyStyleToSelected();
+    var members = getAllGroupMembers(cfg.selectedIds);
+    members.forEach(function(obj) {
+      if (obj && obj.attrs && obj.type !== 'text') {
+        obj.attrs.stroke = val;
+        if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+          window.WebpointerRender.updateElementAttributes(obj);
+        }
+      }
+    });
     if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
   }
 
   function setFillColor(val) {
     cfg.fillColor = val;
-    applyStyleToSelected();
+    var members = getAllGroupMembers(cfg.selectedIds);
+    members.forEach(function(obj) {
+      if (obj && obj.attrs && obj.type !== 'text') {
+        obj.attrs.fill = val;
+        if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+          window.WebpointerRender.updateElementAttributes(obj);
+        }
+      }
+    });
     if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
   }
 
@@ -328,6 +344,79 @@
     "#e44d1b", "#c27800", "#669900", "#00a879", "#009dd1", "#4182fb", "#a760e2", "#d94594",
     "#ff976b", "#ffbb00", "#aae43f", "#00f5c0", "#00eaff", "#85caff", "#ec99ff", "#ff8fda"
   ];
+
+  var colorHoldTimer = null;
+  var isColorHoldTriggered = false;
+
+  function startHoldColorBtn(e, btnEl, targetMode) {
+    isColorHoldTriggered = false;
+    clearTimeout(colorHoldTimer);
+    colorHoldTimer = setTimeout(function() {
+      isColorHoldTriggered = true;
+      toggleColorPalettePopover(btnEl, targetMode);
+    }, 200);
+  }
+
+  function endHoldColorBtn() {
+    clearTimeout(colorHoldTimer);
+  }
+
+  function handleColorBtnClick(btnEl, targetMode) {
+    if (isColorHoldTriggered) {
+      isColorHoldTriggered = false;
+      return;
+    }
+    clearTimeout(colorHoldTimer);
+    applyCurrentColorDirectly(targetMode);
+  }
+
+  function applyCurrentColorDirectly(targetMode) {
+    if (targetMode === 'stroke') {
+      setStrokeColor(cfg.strokeColor || '#0284c7');
+    } else if (targetMode === 'fill') {
+      setFillColor(cfg.fillColor || '#38bdf8');
+    } else if (targetMode === 'text_stroke' || targetMode === 'text') {
+      var sColor = cfg.textStrokeColor !== undefined ? cfg.textStrokeColor : 'none';
+      var members = getAllGroupMembers(cfg.selectedIds);
+      var textObjs = members.filter(function(m) { return m.type === 'text'; });
+      textObjs.forEach(function(obj) {
+        if (obj && obj.attrs) {
+          obj.attrs.stroke = sColor;
+          if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+            window.WebpointerRender.updateElementAttributes(obj);
+          }
+        }
+      });
+    } else if (targetMode === 'text_fill' || targetMode === 'bg') {
+      var fColor = cfg.textFillColor || cfg.textColor || cfg.fillColor || '#041e49';
+      var members = getAllGroupMembers(cfg.selectedIds);
+      var textObjs = members.filter(function(m) { return m.type === 'text'; });
+      textObjs.forEach(function(obj) {
+        if (obj && obj.attrs) {
+          obj.attrs.fill = fColor;
+          if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+            window.WebpointerRender.updateElementAttributes(obj);
+          }
+        }
+      });
+    } else if (targetMode === 'text_underline') {
+      var uColor = cfg.textUnderlineColor || '#041e49';
+      var members = getAllGroupMembers(cfg.selectedIds);
+      var textObjs = members.filter(function(m) { return m.type === 'text'; });
+      textObjs.forEach(function(obj) {
+        if (obj && obj.attrs) {
+          obj.attrs.underlineColor = uColor;
+          if (window.WebpointerRender && window.WebpointerRender.updateElementAttributes) {
+            window.WebpointerRender.updateElementAttributes(obj);
+          }
+        }
+      });
+    }
+
+    var popover = document.getElementById('colorPalettePopover');
+    if (popover && popover.parentNode) popover.parentNode.removeChild(popover);
+    if (window.WebpointerRender && window.WebpointerRender.renderRibbon) window.WebpointerRender.renderRibbon();
+  }
 
   function toggleColorPalettePopover(btnEl, targetMode) {
     var old = document.getElementById('colorPalettePopover');
@@ -1378,6 +1467,10 @@
   window.scaleMarker = scaleMarker;
   window.toggleCategoryCollapse = toggleCategoryCollapse;
   window.toggleColorPalettePopover = toggleColorPalettePopover;
+  window.startHoldColorBtn = startHoldColorBtn;
+  window.endHoldColorBtn = endHoldColorBtn;
+  window.handleColorBtnClick = handleColorBtnClick;
+  window.applyCurrentColorDirectly = applyCurrentColorDirectly;
   window.selectColorFromPopover = selectColorFromPopover;
   window.openPaletteModal = openPaletteModal;
   window.closePaletteModal = closePaletteModal;

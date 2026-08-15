@@ -81,7 +81,9 @@
     var uiGroup = document.getElementById('uiGroup');
     if (!mainSvg || !objectsGroup) return;
 
-    var textColor = (cfg.strokeColor && cfg.strokeColor !== 'none') ? cfg.strokeColor : '#041e49';
+    var textColor = cfg.textFillColor || cfg.textColor || '#041e49';
+    var textStroke = cfg.textStrokeColor || 'none';
+    var textStrokeW = cfg.textStrokeWidth !== undefined ? cfg.textStrokeWidth : 1;
     var targetSvgObj = null;
 
     if (targetObj && targetObj.attrs) {
@@ -95,6 +97,11 @@
       el.setAttribute('x', px);
       el.setAttribute('y', py);
       el.setAttribute('fill', textColor);
+      if (textStroke && textStroke !== 'none') {
+        el.setAttribute('stroke', textStroke);
+        el.setAttribute('stroke-width', textStrokeW);
+        el.setAttribute('paint-order', 'stroke fill');
+      }
       el.setAttribute('font-size', cfg.fontSize || 20);
       el.setAttribute('font-family', cfg.fontFamily || 'sans-serif');
       el.setAttribute('text-anchor', tAnchor);
@@ -105,6 +112,8 @@
         y: py,
         text: '',
         fill: textColor,
+        stroke: textStroke,
+        strokeWidth: textStrokeW,
         fontSize: cfg.fontSize || 20,
         fontFamily: cfg.fontFamily || 'sans-serif',
         textAnchor: tAnchor,

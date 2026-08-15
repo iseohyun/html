@@ -8,21 +8,29 @@
     var a = obj.attrs;
 
     if (obj.type === 'point') {
-      obj.el.setAttribute('cx', a.cx);
-      obj.el.setAttribute('cy', a.cy);
+      var safeCX = (a.cx !== undefined && a.cx !== null && !isNaN(parseFloat(a.cx))) ? parseFloat(a.cx) : 0;
+      var safeCY = (a.cy !== undefined && a.cy !== null && !isNaN(parseFloat(a.cy))) ? parseFloat(a.cy) : 0;
+      obj.el.setAttribute('cx', safeCX);
+      obj.el.setAttribute('cy', safeCY);
       obj.el.setAttribute('r', a.r || cfg.pointRadius || 5);
     } else if (obj.type === 'line') {
-      obj.el.setAttribute('x1', a.x1);
-      obj.el.setAttribute('y1', a.y1);
-      obj.el.setAttribute('x2', a.x2);
-      obj.el.setAttribute('y2', a.y2);
+      var safeX1 = (a.x1 !== undefined && a.x1 !== null && !isNaN(parseFloat(a.x1))) ? parseFloat(a.x1) : 0;
+      var safeY1 = (a.y1 !== undefined && a.y1 !== null && !isNaN(parseFloat(a.y1))) ? parseFloat(a.y1) : 0;
+      var safeX2 = (a.x2 !== undefined && a.x2 !== null && !isNaN(parseFloat(a.x2))) ? parseFloat(a.x2) : 0;
+      var safeY2 = (a.y2 !== undefined && a.y2 !== null && !isNaN(parseFloat(a.y2))) ? parseFloat(a.y2) : 0;
+      obj.el.setAttribute('x1', safeX1);
+      obj.el.setAttribute('y1', safeY1);
+      obj.el.setAttribute('x2', safeX2);
+      obj.el.setAttribute('y2', safeY2);
     } else if (obj.type === 'rect' || obj.type === 'rounded' || obj.type === 'image') {
-      obj.el.setAttribute('x', a.x);
-      obj.el.setAttribute('y', a.y);
-      obj.el.setAttribute('width', Math.max(1, a.width || 100));
-      obj.el.setAttribute('height', Math.max(1, a.height || 100));
+      var safeX = (a.x !== undefined && a.x !== null && !isNaN(parseFloat(a.x))) ? parseFloat(a.x) : 0;
+      var safeY = (a.y !== undefined && a.y !== null && !isNaN(parseFloat(a.y))) ? parseFloat(a.y) : 0;
+      obj.el.setAttribute('x', safeX);
+      obj.el.setAttribute('y', safeY);
+      obj.el.setAttribute('width', Math.max(1, (!isNaN(parseFloat(a.width)) ? parseFloat(a.width) : 100)));
+      obj.el.setAttribute('height', Math.max(1, (!isNaN(parseFloat(a.height)) ? parseFloat(a.height) : 100)));
       if (obj.type === 'rounded') {
-        obj.el.setAttribute('rx', a.rx !== undefined ? a.rx : 15);
+        obj.el.setAttribute('rx', (a.rx !== undefined && !isNaN(parseFloat(a.rx))) ? parseFloat(a.rx) : 15);
       }
       if (obj.type === 'image' && a.href) {
         obj.el.setAttribute('href', a.href);
@@ -32,26 +40,30 @@
         }
       }
       if (a.angle) {
-        var center = window.WebpointerObjects ? window.WebpointerObjects.getObjectCenter(obj) : { x: a.x + (a.width || 100) / 2, y: a.y + (a.height || 100) / 2 };
+        var center = window.WebpointerObjects ? window.WebpointerObjects.getObjectCenter(obj) : { x: safeX + (a.width || 100) / 2, y: safeY + (a.height || 100) / 2 };
         obj.el.setAttribute('transform', 'rotate(' + a.angle + ' ' + center.x + ' ' + center.y + ')');
       } else {
         obj.el.removeAttribute('transform');
       }
     } else if (obj.type === 'ellipse') {
-      obj.el.setAttribute('cx', a.cx);
-      obj.el.setAttribute('cy', a.cy);
-      obj.el.setAttribute('rx', Math.max(1, a.rx));
-      obj.el.setAttribute('ry', Math.max(1, a.ry));
+      var safeCX = (a.cx !== undefined && a.cx !== null && !isNaN(parseFloat(a.cx))) ? parseFloat(a.cx) : 0;
+      var safeCY = (a.cy !== undefined && a.cy !== null && !isNaN(parseFloat(a.cy))) ? parseFloat(a.cy) : 0;
+      obj.el.setAttribute('cx', safeCX);
+      obj.el.setAttribute('cy', safeCY);
+      obj.el.setAttribute('rx', Math.max(1, (!isNaN(parseFloat(a.rx)) ? parseFloat(a.rx) : 10)));
+      obj.el.setAttribute('ry', Math.max(1, (!isNaN(parseFloat(a.ry)) ? parseFloat(a.ry) : 10)));
       if (a.angle) {
-        obj.el.setAttribute('transform', 'rotate(' + a.angle + ' ' + a.cx + ' ' + a.cy + ')');
+        obj.el.setAttribute('transform', 'rotate(' + a.angle + ' ' + safeCX + ' ' + safeCY + ')');
       } else {
         obj.el.removeAttribute('transform');
       }
     } else if (obj.type === 'arc') {
-      obj.el.setAttribute('cx', a.cx);
-      obj.el.setAttribute('cy', a.cy);
-      obj.el.setAttribute('rx', Math.max(1, a.rx));
-      obj.el.setAttribute('ry', Math.max(1, a.ry));
+      var safeCX = (a.cx !== undefined && a.cx !== null && !isNaN(parseFloat(a.cx))) ? parseFloat(a.cx) : 0;
+      var safeCY = (a.cy !== undefined && a.cy !== null && !isNaN(parseFloat(a.cy))) ? parseFloat(a.cy) : 0;
+      obj.el.setAttribute('cx', safeCX);
+      obj.el.setAttribute('cy', safeCY);
+      obj.el.setAttribute('rx', Math.max(1, (!isNaN(parseFloat(a.rx)) ? parseFloat(a.rx) : 10)));
+      obj.el.setAttribute('ry', Math.max(1, (!isNaN(parseFloat(a.ry)) ? parseFloat(a.ry) : 10)));
 
       var rot = a.angle || 0;
       var sAng = a.startAngle !== undefined ? a.startAngle : -90;
@@ -112,6 +124,21 @@
       var isJustify = (tAnchor === 'justify');
       obj.el.setAttribute('dominant-baseline', dBase);
       obj.el.setAttribute('writing-mode', wMode);
+
+      var textFill = (a.fill !== undefined && a.fill !== null) ? a.fill : (cfg.textFillColor || cfg.textColor || '#041e49');
+      obj.el.setAttribute('fill', textFill);
+
+      var textStroke = (a.stroke !== undefined && a.stroke !== null) ? a.stroke : (cfg.textStrokeColor || 'none');
+      if (textStroke && textStroke !== 'none') {
+        obj.el.setAttribute('stroke', textStroke);
+        var tStrokeWidth = a.strokeWidth !== undefined ? a.strokeWidth : (cfg.textStrokeWidth || 1);
+        obj.el.setAttribute('stroke-width', tStrokeWidth);
+        obj.el.setAttribute('paint-order', 'stroke fill');
+      } else {
+        obj.el.removeAttribute('stroke');
+        obj.el.removeAttribute('stroke-width');
+        obj.el.removeAttribute('paint-order');
+      }
 
       var hostShape = null;
       if (obj.parentId) {
@@ -245,7 +272,7 @@
 
         var dPath = '';
         lines.forEach(function(lineStr, idx) {
-          var lineY = a.y + (idx * fontSizeNum * lHeight);
+          var lineY = safeY + (idx * fontSizeNum * lHeight);
           var uY = lineY + uOffset;
 
           var lWidth = (lineStr || '').length * fontSizeNum * 0.55;
@@ -256,8 +283,8 @@
             }
           } catch(e) {}
 
-          var x1 = a.x;
-          var x2 = a.x + lWidth;
+          var x1 = safeX;
+          var x2 = safeX + lWidth;
           if (tAnchor === 'middle') {
             x1 = a.x - (lWidth / 2);
             x2 = a.x + (lWidth / 2);
@@ -437,9 +464,12 @@
     var uiGroup = document.getElementById('uiGroup');
     if (!uiGroup) return;
 
+    var safeX = (x !== undefined && !isNaN(parseFloat(x))) ? parseFloat(x) : 0;
+    var safeY = (y !== undefined && !isNaN(parseFloat(y))) ? parseFloat(y) : 0;
+
     var handle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    handle.setAttribute('cx', x);
-    handle.setAttribute('cy', y);
+    handle.setAttribute('cx', safeX);
+    handle.setAttribute('cy', safeY);
     var radius = (customStyle && customStyle.r) ? customStyle.r : (isSpecial ? 5 : 4.5);
     var fillColor = (customStyle && customStyle.fill) ? customStyle.fill : (isSpecial ? '#0284c7' : '#ffffff');
     var strokeColor = (customStyle && customStyle.stroke) ? customStyle.stroke : '#0284c7';

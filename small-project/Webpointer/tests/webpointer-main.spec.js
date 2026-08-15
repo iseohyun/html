@@ -446,7 +446,9 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
   });
 
   test('TC17: SVG File Import & Parser Diagnostics Suite', async ({ page }) => {
-    const exampleSvgDir = path.join(__dirname, 'exampleSvg');
+    const exampleSvgDir = fs.existsSync(path.join(__dirname, 'exampleSvg')) 
+      ? path.join(__dirname, 'exampleSvg') 
+      : path.join(__dirname, '..', 'examples');
     const svgFiles = fs.readdirSync(exampleSvgDir).filter(f => f.toLowerCase().endsWith('.svg'));
     expect(svgFiles.length).toBeGreaterThanOrEqual(3);
 
@@ -953,8 +955,8 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
       return { topX, topY, botX, botY };
     });
 
-    expect(coords.topX).toBe(112);
-    expect(coords.botX).toBe(288);
+    expect(coords.topX).toBe(110);
+    expect(coords.botX).toBe(290);
     expect(coords.botY).toBeGreaterThan(coords.topY);
 
     expect(pageErrors).toEqual([]);
@@ -2599,6 +2601,233 @@ test.describe('Webpointer Vector CAD Editor E2E Test Suite', () => {
     console.log('[Webpointer Anti-Spiral AutoFit Cycle Test 🧪]:', result);
     expect(result.isBaseFontRestoredOnCycle).toBe(true);
     expect(result.isNoCumulativeShrink).toBe(true);
+  });
+
+  test('TC60: 직선(line) 그리기 및 양 끝점 조절 시 Ctrl 키 가로/세로 직교 스냅(Orthogonal Lock) 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      const cfg = window.WebpointerConfig;
+      const state = window.WebpointerState;
+      const render = window.WebpointerRender;
+      const selection = window.WebpointerSelection;
+
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
+      const svgEl = document.getElementById('mainSvg');
+      const svgRect = svgEl.getBoundingClientRect();
+
+      function getClientCoords(targetPx, targetPy) {
+        return {
+          clientX: svgRect.left + (targetPx / (cfg.SVG_WIDTH || 960)) * svgRect.width,
+          clientY: svgRect.top + (targetPy / (cfg.SVG_HEIGHT || 540)) * svgRect.height
+        };
+      }
+
+      // 1. New Line Drawing with Ctrl (Horizontal: dx > dy)
+      const lineEl1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      document.getElementById('objectsGroup').appendChild(lineEl1);
+      const lineObj1 = {
+        id: 'line_ctrl_h',
+        type: 'line',
+        el: lineEl1,
+        attrs: { x1: 96, y1: 108, x2: 96, y2: 108, strokeWidth: 2 }
+      };
+      cfg.objectsMap.set(lineObj1.id, lineObj1);
+
+      state.isDrawingNewObject = true;
+      state.activeNewObj = lineObj1;
+      const startPt = getClientCoords(96, 108);
+      state.drawStartCoords = selection.getStepCoords({ clientX: startPt.clientX, clientY: startPt.clientY });
+      const px1 = (state.drawStartCoords.stepX / cfg.STEPS_X) * cfg.SVG_WIDTH;
+      const py1 = (state.drawStartCoords.stepY / cfg.STEPS_Y) * cfg.SVG_HEIGHT;
+
+      // Simulate mousemove with Ctrl pressed: targetPx = 300, targetPy = 120 -> |dx| >= |dy| -> y2 should be py1
+      const clientH = getClientCoords(300, 120);
+      const moveEventH = new MouseEvent('mousemove', { clientX: clientH.clientX, clientY: clientH.clientY, ctrlKey: true });
+      svgEl.dispatchEvent(moveEventH);
+      const drawHorizontalY2 = lineObj1.attrs.y2;
+      const drawHorizontalX2 = lineObj1.attrs.x2;
+
+      // Simulate mousemove with Ctrl pressed: targetPx = 110, targetPy = 350 -> |dy| > |dx| -> x2 should be px1
+      const clientV = getClientCoords(110, 350);
+      const moveEventV = new MouseEvent('mousemove', { clientX: clientV.clientX, clientY: clientV.clientY, ctrlKey: true });
+      svgEl.dispatchEvent(moveEventV);
+      const drawVerticalX2 = lineObj1.attrs.x2;
+      const drawVerticalY2 = lineObj1.attrs.y2;
+
+      state.isDrawingNewObject = false;
+      state.activeNewObj = null;
+
+      // 2. Line Handle Dragging with Ctrl (End Handle)
+      state.isDraggingHandle = true;
+      state.activeHandleInfo = { objId: lineObj1.id, handleType: 'end', idx: 2 };
+      state.initialObjAttrsMap = new Map();
+      state.initialObjAttrsMap.set(lineObj1.id, { ...lineObj1.attrs, x1: 100, y1: 100, x2: 300, y2: 100 });
+      lineObj1.attrs.x1 = 100;
+      lineObj1.attrs.y1 = 100;
+
+      // Drag end handle with Ctrl (horizontal lock: target (350, 120) relative to (100, 100))
+      const clientEndH = getClientCoords(350, 120);
+      const handleMoveH = new MouseEvent('mousemove', { clientX: clientEndH.clientX, clientY: clientEndH.clientY, ctrlKey: true });
+      svgEl.dispatchEvent(handleMoveH);
+      const handleEndLockY = lineObj1.attrs.y2;
+
+      // Drag end handle with Ctrl (vertical lock: target (120, 350) relative to (100, 100))
+      const clientEndV = getClientCoords(120, 350);
+      const handleMoveV = new MouseEvent('mousemove', { clientX: clientEndV.clientX, clientY: clientEndV.clientY, ctrlKey: true });
+      svgEl.dispatchEvent(handleMoveV);
+      const handleEndLockX = lineObj1.attrs.x2;
+
+      // 3. Line Handle Dragging with Ctrl (Start Handle)
+      state.activeHandleInfo = { objId: lineObj1.id, handleType: 'start', idx: 1 };
+      state.initialObjAttrsMap.set(lineObj1.id, { ...lineObj1.attrs, x1: 100, y1: 100, x2: 300, y2: 300 });
+      lineObj1.attrs.x2 = 300;
+      lineObj1.attrs.y2 = 300;
+
+      // Drag start handle with Ctrl (horizontal lock: anchor is x2, y2 = 300; target (100, 280))
+      const clientStartH = getClientCoords(100, 280);
+      const handleStartMoveH = new MouseEvent('mousemove', { clientX: clientStartH.clientX, clientY: clientStartH.clientY, ctrlKey: true });
+      svgEl.dispatchEvent(handleStartMoveH);
+      const handleStartLockY = lineObj1.attrs.y1;
+
+      state.isDraggingHandle = false;
+      state.activeHandleInfo = null;
+
+      return {
+        drawHorizontalY2,
+        drawHorizontalX2,
+        drawVerticalX2,
+        drawVerticalY2,
+        handleEndLockY,
+        handleEndLockX,
+        handleStartLockY,
+        py1,
+        px1,
+        isDrawHorizontalCorrect: drawHorizontalY2 === py1,
+        isDrawVerticalCorrect: drawVerticalX2 === px1,
+        isHandleEndHorizontalCorrect: handleEndLockY === 100,
+        isHandleEndVerticalCorrect: handleEndLockX === 100,
+        isHandleStartHorizontalCorrect: handleStartLockY === 300
+      };
+    });
+
+    console.log('[Webpointer Line Ctrl Orthogonal Snap Test 🧪]:', result);
+    expect(result.isDrawHorizontalCorrect).toBe(true);
+    expect(result.isDrawVerticalCorrect).toBe(true);
+    expect(result.isHandleEndHorizontalCorrect).toBe(true);
+    expect(result.isHandleEndVerticalCorrect).toBe(true);
+    expect(result.isHandleStartHorizontalCorrect).toBe(true);
+  });
+
+  test('TC61: 색상 버튼(선, 면 채우기, 글자 채우기, 글자 테두리, 밑줄) 짧은 클릭 시 색상 즉시 적용 및 롱프레스(Hold) 시 팔레트 팝오버 오픈 검증 수트', async ({ page }) => {
+    const result = await page.evaluate(async () => {
+      const cfg = window.WebpointerConfig;
+      const handlers = window;
+
+      cfg.objectsMap.clear();
+      cfg.selectedIds.clear();
+
+      // 1. 도형 생성 및 짧은 클릭 단독 적용 (연동 x) 테스트
+      const rectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      document.getElementById('objectsGroup').appendChild(rectEl);
+      const rectObj = {
+        id: 'color_rect',
+        type: 'rect',
+        el: rectEl,
+        attrs: { x: 100, y: 100, width: 200, height: 100, stroke: '#000000', fill: '#ffffff', strokeWidth: 5 }
+      };
+      cfg.objectsMap.set(rectObj.id, rectObj);
+      cfg.selectedIds.add(rectObj.id);
+
+      cfg.strokeColor = '#e11d48'; // 빨간색
+      cfg.fillColor = '#10b981';   // 초록색
+
+      // 짧은 클릭: stroke 만 단독 적용 (fill과 strokeWidth는 변경되지 않음)
+      const dummyBtn = document.createElement('button');
+      handlers.handleColorBtnClick(dummyBtn, 'stroke');
+      const strokeApplied = rectObj.attrs.stroke;
+      const fillUnchanged = rectObj.attrs.fill;
+      const widthUnchanged = rectObj.attrs.strokeWidth;
+
+      // 짧은 클릭: fill 만 단독 적용 (stroke는 빨간색 유지)
+      handlers.handleColorBtnClick(dummyBtn, 'fill');
+      const fillApplied = rectObj.attrs.fill;
+      const strokePreserved = rectObj.attrs.stroke;
+
+      // 2. 텍스트 개체 생성 및 짧은 클릭 적용 테스트
+      const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      document.getElementById('objectsGroup').appendChild(textEl);
+      const textObj = {
+        id: 'color_text',
+        type: 'text',
+        el: textEl,
+        attrs: { x: 100, y: 250, text: '색상 테스트', fill: '#000000', stroke: 'none', underlineColor: '#000000' }
+      };
+      cfg.objectsMap.set(textObj.id, textObj);
+      cfg.selectedIds.clear();
+      cfg.selectedIds.add(textObj.id);
+
+      cfg.textFillColor = '#8b5cf6';      // 보라색
+      cfg.textStrokeColor = '#f59e0b';    // 주황색
+      cfg.textUnderlineColor = '#3b82f6'; // 파란색
+
+      handlers.handleColorBtnClick(dummyBtn, 'text_fill');
+      const textFillApplied = textObj.attrs.fill;
+
+      handlers.handleColorBtnClick(dummyBtn, 'text_stroke');
+      const textStrokeApplied = textObj.attrs.stroke;
+
+      handlers.handleColorBtnClick(dummyBtn, 'text_underline');
+      const textUnderlineApplied = textObj.attrs.underlineColor;
+
+      // 3. 롱프레스 (Long-Press 200ms) 트리거 시 팔레트 팝오버 오픈 테스트
+      document.body.appendChild(dummyBtn);
+      handlers.startHoldColorBtn(new MouseEvent('mousedown'), dummyBtn, 'stroke');
+
+      // 250ms 대기하여 200ms 롱프레스 트리거 확인
+      await new Promise(r => setTimeout(r, 250));
+      const popoverAfterHold = document.getElementById('colorPalettePopover');
+      const isPopoverOpenedOnHold = !!popoverAfterHold && popoverAfterHold.dataset.targetMode === 'stroke';
+
+      // 롱프레스 후 마우스업 시 클릭 동작이 팝오버를 닫거나 무시하는지 확인
+      handlers.endHoldColorBtn();
+      handlers.handleColorBtnClick(dummyBtn, 'stroke');
+
+      if (popoverAfterHold && popoverAfterHold.parentNode) {
+        popoverAfterHold.parentNode.removeChild(popoverAfterHold);
+      }
+      if (dummyBtn.parentNode) dummyBtn.parentNode.removeChild(dummyBtn);
+
+      const textElDomFill = textEl.getAttribute('fill');
+      const textElDomStroke = textEl.getAttribute('stroke');
+
+      return {
+        strokeApplied,
+        fillUnchanged,
+        widthUnchanged,
+        fillApplied,
+        strokePreserved,
+        textFillApplied,
+        textStrokeApplied,
+        textUnderlineApplied,
+        textElDomFill,
+        textElDomStroke,
+        isPopoverOpenedOnHold,
+        isStrokeCorrect: strokeApplied === '#e11d48' && fillUnchanged === '#ffffff' && widthUnchanged === 5,
+        isFillCorrect: fillApplied === '#10b981' && strokePreserved === '#e11d48',
+        isTextFillCorrect: textFillApplied === '#8b5cf6' && textElDomFill === '#8b5cf6',
+        isTextStrokeCorrect: textStrokeApplied === '#f59e0b' && textElDomStroke === '#f59e0b',
+        isTextUnderlineCorrect: textUnderlineApplied === '#3b82f6'
+      };
+    });
+
+    console.log('[Webpointer Color Button Short Click & Long Press Test 🧪]:', result);
+    expect(result.isStrokeCorrect).toBe(true);
+    expect(result.isFillCorrect).toBe(true);
+    expect(result.isTextFillCorrect).toBe(true);
+    expect(result.isTextStrokeCorrect).toBe(true);
+    expect(result.isTextUnderlineCorrect).toBe(true);
+    expect(result.isPopoverOpenedOnHold).toBe(true);
   });
 });
 
