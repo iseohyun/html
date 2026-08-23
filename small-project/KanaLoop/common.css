@@ -82,6 +82,18 @@ body {
   gap: 6px;
 }
 
+.user-info-right.hidden,
+.hidden {
+  display: none !important;
+}
+
+.header-quiz-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
 .user-name-trigger {
   display: flex;
   align-items: center;
@@ -598,6 +610,29 @@ body {
   transform: scale(1.08);
 }
 
+.stop-btn {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #475569;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.stop-btn:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+  transform: scale(1.08);
+}
+
 /* 타임 프로그레스 바 */
 .timer-bar-container {
   width: 100%;
@@ -864,7 +899,9 @@ body {
 @media (max-width: 600px) {
   .user-profile-box {
     padding: 8px 12px;
-    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .header-quiz-control {
     gap: 8px;
   }
   .user-info-left {
@@ -884,7 +921,7 @@ body {
   }
 
   #main-box {
-    padding: 16px 14px;
+    padding: 10px 12px;
   }
   
   .mode-selection {

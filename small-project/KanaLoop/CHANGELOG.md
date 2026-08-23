@@ -2,6 +2,18 @@
 
 All notable changes to the KanaLoop project will be documented in this file.
 
+## [v1.0.4] - 2026-08-24
+### Added & Improved
+- **Top Header Quiz Control Integration**:
+  - Relocated mode badge & session control buttons directly into the unused space of the top header (`.user-profile-box`), eliminating the in-game quiz header and expanding vertical workspace for quiz questions & options.
+- **Session Abort (Stop) Button & Confirmation Flow**:
+  - Added dedicated Stop (`close` icon) button alongside the Pause button in the top header.
+  - Pauses timer/audio and presents a confirmation dialog (`confirm`) to safely exit sessions to the main screen without accidental data loss.
+- **Progress Table Overdue Red Border in All Modes**:
+  - Enabled red highlighting border (`2px solid #F44336`) for overdue forgetting-curve review items in both Response Speed mode and Stage mode.
+- **Real-Time Review Count Badge Sync**:
+  - Enhanced `updateReviewCountBadge()` to support multi-type index lookups and automatically recalculate pending review counts upon session termination and domain switching.
+
 ## [v1.0.3] - 2026-08-24
 ### Added & Improved
 - **Quiz Layout 100% Fit & Anti-Cutoff**:
