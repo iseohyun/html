@@ -6,6 +6,7 @@
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Kana-Loop</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800&family=Noto+Sans+KR:wght@400;500;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -46,17 +47,9 @@
         </div>
       </div>
       <div class="user-info-right">
-        <div class="menu-item" onclick="popupHelp()" data-tooltip="도움말">
-          <span class="material-symbols-outlined">question_mark</span>
-          <span class="keybind-badge" id="kb-badge-popupHelp">9</span>
-        </div>
         <div class="menu-item" onclick="popupLeaderboard()" data-tooltip="리더보드">
           <span class="material-symbols-outlined">leaderboard</span>
           <span class="keybind-badge" id="kb-badge-popupLeaderboard">5</span>
-        </div>
-        <div class="menu-item" onclick="popupSetting()" data-tooltip="설정">
-          <span class="material-symbols-outlined">settings</span>
-          <span class="keybind-badge" id="kb-badge-popupSetting">4</span>
         </div>
         <div class="menu-item" onclick="popupProgress()" data-tooltip="단어장">
           <span class="material-symbols-outlined">menu_book</span>
@@ -70,6 +63,10 @@
         <div class="menu-item" onclick="toggleDomain()" data-tooltip="히라가나/카타카나 전환">
           <span class="domain-btn">あ</span>
           <span class="keybind-badge" id="kb-badge-toggleDomain">1</span>
+        </div>
+        <div class="menu-item" onclick="popupSetting()" data-tooltip="설정">
+          <span class="material-symbols-outlined">settings</span>
+          <span class="keybind-badge" id="kb-badge-popupSetting">4</span>
         </div>
       </div>
     </div>

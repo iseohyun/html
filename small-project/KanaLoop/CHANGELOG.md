@@ -2,6 +2,22 @@
 
 All notable changes to the KanaLoop project will be documented in this file.
 
+## [v1.0.3] - 2026-08-24
+### Added & Improved
+- **Quiz Layout 100% Fit & Anti-Cutoff**:
+  - Re-architected `.options-grid` into a dynamic 2x2 responsive grid (`grid-template-rows: repeat(2, 1fr)`, `clamp` font sizing) to guarantee all 4 multiple-choice options are 100% visible on any screen size.
+  - Streamlined `#main-box`, `#audio-trigger`, and `.dashboard` paddings to eliminate overflow and viewport clipping on small displays.
+- **Quiz Pause / Resume Engine**:
+  - Upgraded pause button into a toggle mechanism: halts session timer and audio, switches icon to `play_arrow`, and resumes quiz smoothly upon second click.
+  - Eliminated disruptive browser modal alerts (`alert()`, `prompt()`, automatic leaderboard popup) upon session completion for a seamless learning flow.
+- **Header & Modal UX Refinement**:
+  - Integrated Help icon (`?`) in Settings modal header with automatic return-to-settings routing upon closing.
+  - Removed Help item from the main header and relocated Settings icon to the far right.
+  - Added SVG favicon meta tag to eliminate 404 `/favicon.ico` errors.
+- **FCM Push Notification Stability**:
+  - Resolved PushManager AbortError by waiting for `navigator.serviceWorker.ready` before acquiring FCM tokens.
+  - Added `skipWaiting` and `clients.claim` to `firebase-messaging-sw.js` for instant worker activation.
+
 ## [v1.0.2] - 2026-08-08
 ### Changed & Improved
 - **Local-First (Browser-First) Architecture & DB Optimization**:

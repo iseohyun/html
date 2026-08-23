@@ -28,10 +28,12 @@ export async function requestNotificationPermission() {
     }
 
     if ('serviceWorker' in navigator) {
-      const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js', { scope: './' });
-      console.log('서비스 워커 등록 성공:', registration);
+      await navigator.serviceWorker.register('./firebase-messaging-sw.js', { scope: './' });
+      const readyRegistration = await navigator.serviceWorker.ready;
+      console.log('서비스 워커 준비 완료:', readyRegistration);
+
       fcmToken = await getToken(messaging, {
-        serviceWorkerRegistration: registration,
+        serviceWorkerRegistration: readyRegistration,
         vapidKey: 'BCsz-FURaLXuyEgWJ5opmzZ2bk8oBACk7pGXouwVF71PlrK-XA-z95QuGNBPqHCi9ppaUD66UGQ79bf2ozcqjpg'
       });
       console.log('FCM Token 갱신 완료:', fcmToken);

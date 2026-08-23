@@ -16,6 +16,14 @@ firebase.initializeApp({
   appId: "1:566732000404:web:07c9fefe1727f863bd3881"
 });
 
+self.addEventListener('install', (event) => {
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim());
+});
+
 const messaging = firebase.messaging();
 
 // 백그라운드 알림 수신 리스너
