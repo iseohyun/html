@@ -1,5 +1,17 @@
 [
   {
+    "date": "2026-08-24",
+    "updates": [
+      {
+        "type": "Changed",
+        "projectName": "KanaLoop",
+        "projectPath": "/small-project/KanaLoop/index.html",
+        "version": "1.0.5",
+        "summary": "일부 UI개선, 배지 버그 개선, 알림버그 개선"
+      }
+    ]
+  },
+  {
     "date": "2026-08-14",
     "updates": [
       {
