@@ -2,6 +2,16 @@
 
 All notable changes to the KanaLoop project will be documented in this file.
 
+## [v1.0.5] - 2026-08-24
+### Added & Improved
+- **Dynamic 10s 360-Degree Gradient Rotation**:
+  - Implemented `@property --gradient-angle` with `inherits: true` and `:root` synchronization to smoothly rotate gradient backgrounds across all mode buttons and header badges in a 10-second continuous loop.
+- **Spectator Mode (LIVE) Pause / Resume & Confirmation Integration**:
+  - Enabled Pause / Resume button in Spectator mode to halt/resume the auto-advancing char loop, timer, and pronunciation audio seamlessly.
+  - Unified session exit flow across all modes with prompt confirmation on Stop button click and ESC key press.
+- **Dual-Tier Cache-Busting (20260824v1) & SemVer (v1.0.5)**:
+  - Added timestamp-based cache-busting query tags (`20260824v1`) for immediate asset refresh alongside formal semantic versioning.
+
 ## [v1.0.4] - 2026-08-24
 ### Added & Improved
 - **Top Header Quiz Control Integration**:

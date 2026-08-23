@@ -273,7 +273,7 @@ async function initApp() {
 window.startSessionWorkflow = async function (mode) {
   currentMode = mode;
   try {
-    const versionQuery = window.APP_VERSION ? `?v=${window.APP_VERSION}` : '';
+    const versionQuery = (window.CACHE_BUST || window.APP_VERSION) ? `?v=${window.CACHE_BUST || window.APP_VERSION}` : '';
     const viewFile = mode === 'spectator' ? 'spectatorMode' : 'studyMode';
     const response = await fetch(`./view/${viewFile}.html${versionQuery}`);
     if (!response.ok) throw new Error(`${viewFile}.html 수급 실패`);
@@ -295,27 +295,19 @@ window.startSessionWorkflow = async function (mode) {
     const pauseBtn = document.getElementById('header-pause-btn');
     const stopBtn = document.getElementById('header-stop-btn');
 
-    if (mode === 'spectator') {
-      if (pauseBtn) pauseBtn.style.display = 'none';
-      if (stopBtn) {
-        stopBtn.style.display = 'flex';
-        stopBtn.setAttribute('aria-label', '관전 종료');
-        stopBtn.setAttribute('title', '관전 종료');
-      }
-    } else {
-      if (pauseBtn) {
-        pauseBtn.style.display = 'flex';
-        pauseBtn.setAttribute('aria-label', '일시정지');
-        pauseBtn.setAttribute('title', '일시정지');
-        pauseBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 1.3rem;">pause</span>';
-        pauseBtn.style.background = '';
-        pauseBtn.style.borderColor = '';
-      }
-      if (stopBtn) {
-        stopBtn.style.display = 'flex';
-        stopBtn.setAttribute('aria-label', '중단');
-        stopBtn.setAttribute('title', '중단');
-      }
+    if (pauseBtn) {
+      pauseBtn.style.display = 'flex';
+      pauseBtn.setAttribute('aria-label', '일시정지');
+      pauseBtn.setAttribute('title', '일시정지');
+      pauseBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 1.3rem;">pause</span>';
+      pauseBtn.style.background = '';
+      pauseBtn.style.borderColor = '';
+    }
+    if (stopBtn) {
+      stopBtn.style.display = 'flex';
+      const stopTitle = mode === 'spectator' ? '관전 종료' : '중단';
+      stopBtn.setAttribute('aria-label', stopTitle);
+      stopBtn.setAttribute('title', stopTitle);
     }
 
     if (title && badge) {
@@ -1003,21 +995,30 @@ window.exitSpectatorTrigger = function () {
   terminateSpectatorSession();
 };
 
-// 퀴즈 / 학습 / 기록 모드 세션 중단 트리거 (팝업 확인 후 안전 종료)
+// 퀴즈 / 학습 / 기록 / 관전 모드 세션 중단 트리거 (팝업 확인 후 안전 종료)
 window.exitQuizTrigger = function () {
   if (isTimeUp) return;
 
   const wasPaused = isPaused;
   const wasInterval = timerInterval;
+  const wasSpectatorInterval = spectatorIntervalId;
 
   // 1. 확인창이 떠 있는 동안 타이머 및 음성 일시 중단
   if (timerInterval) {
     clearInterval(timerInterval);
     timerInterval = null;
   }
+  if (spectatorIntervalId) {
+    clearInterval(spectatorIntervalId);
+    spectatorIntervalId = null;
+  }
   stopAllVoices();
 
-  const confirmExit = confirm("현재 학습 세션을 중단하고 메인 화면으로 돌아가시겠습니까?");
+  const promptMsg = currentMode === 'spectator'
+    ? "관전을 종료하고 메인 화면으로 돌아가시겠습니까?"
+    : "현재 학습 세션을 중단하고 메인 화면으로 돌아가시겠습니까?";
+
+  const confirmExit = confirm(promptMsg);
   if (confirmExit) {
     if (currentMode === 'study') {
       terminateQuizSession();
@@ -1028,14 +1029,24 @@ window.exitQuizTrigger = function () {
     }
   } else {
     // 2. 취소 시: 중단 시도 전 일시정지 상태가 아니었다면 타이머 및 음성 재개
-    if (!wasPaused && wasInterval) {
+    if (!wasPaused) {
       isPaused = false;
-      if (currentMode === 'study') {
-        timerInterval = setInterval(tickSessionTimer, 1000);
-      } else if (currentMode === 'record') {
-        timerInterval = setInterval(tickSpeedrunTimer, 1000);
+      if (wasInterval) {
+        if (currentMode === 'study') {
+          timerInterval = setInterval(tickSessionTimer, 1000);
+        } else if (currentMode === 'record') {
+          timerInterval = setInterval(tickSpeedrunTimer, 1000);
+        } else if (currentMode === 'spectator') {
+          timerInterval = setInterval(tickSpectatorSessionTimer, 1000);
+        }
       }
-      if (window.audioTriggerClick) window.audioTriggerClick();
+      if (wasSpectatorInterval && currentMode === 'spectator') {
+        const intervalMs = (userConfig.spectatorInterval || 1) * 1000;
+        spectatorIntervalId = setInterval(tickSpectator, intervalMs);
+      }
+      if (currentMode !== 'spectator' && window.audioTriggerClick) {
+        window.audioTriggerClick();
+      }
     }
   }
 };
@@ -1086,7 +1097,7 @@ function updateDomainUI() {
   }
 }
 
-// 세션 도중 일시정지 / 재개 버튼 토글 핸들러
+// 세션 도중 일시정지 / 재개 버튼 토글 핸들러 (학습/기록/관전 모드 공통 지원)
 window.pauseGameTrigger = function () {
   if (isTimeUp) return;
 
@@ -1094,10 +1105,14 @@ window.pauseGameTrigger = function () {
   const optionsContainer = document.getElementById('options');
 
   if (!isPaused) {
-    // 1. 일시정지 실행 (시간 정지, 입력 비활성화, 음성 중단, 플레이 버튼으로 변경)
+    // 1. 일시정지 실행 (시간 정지, 관전 루프 정지, 입력 비활성화, 음성 중단, 플레이 버튼으로 변경)
     if (timerInterval) {
       clearInterval(timerInterval);
       timerInterval = null;
+    }
+    if (spectatorIntervalId) {
+      clearInterval(spectatorIntervalId);
+      spectatorIntervalId = null;
     }
     isPaused = true;
     stopAllVoices();
@@ -1114,15 +1129,25 @@ window.pauseGameTrigger = function () {
       pauseBtn.style.background = '#dcfce7';
       pauseBtn.style.borderColor = '#86efac';
     }
-    console.log("[Quiz] 게임 세션 일시정지 ⏸️");
+    console.log("[Session] 게임/관전 세션 일시정지 ⏸️");
   } else {
-    // 2. 재개 실행 (시간 재시작, 입력 활성화, 일시정지 버튼으로 복원, 음성 재생)
+    // 2. 재개 실행 (시간 재시작, 관전 루프 재시작, 입력 활성화, 일시정지 버튼으로 복원, 음성 재생)
     isPaused = false;
 
     if (currentMode === 'study') {
       timerInterval = setInterval(tickSessionTimer, 1000);
-    } else {
+    } else if (currentMode === 'record') {
       timerInterval = setInterval(tickSpeedrunTimer, 1000);
+    } else if (currentMode === 'spectator') {
+      timerInterval = setInterval(tickSpectatorSessionTimer, 1000);
+      const intervalMs = (userConfig.spectatorInterval || 1) * 1000;
+      if (spectatorIntervalId) clearInterval(spectatorIntervalId);
+      spectatorIntervalId = setInterval(tickSpectator, intervalMs);
+
+      const charEl = document.getElementById('spectator-char');
+      if (charEl && charEl.innerText && charEl.innerText !== '-') {
+        playTargetVoice(charEl.innerText);
+      }
     }
 
     if (optionsContainer) {
@@ -1138,10 +1163,10 @@ window.pauseGameTrigger = function () {
       pauseBtn.style.borderColor = '';
     }
 
-    if (window.audioTriggerClick) {
+    if (currentMode !== 'spectator' && window.audioTriggerClick) {
       window.audioTriggerClick();
     }
-    console.log("[Quiz] 게임 세션 재개 ▶️");
+    console.log("[Session] 게임/관전 세션 재개 ▶️");
   }
 };
 
@@ -1342,7 +1367,7 @@ async function openRemoteModalPopup(viewName, options = {}) {
   if (timerInterval && !isTimeUp) return;
 
   try {
-    const versionQuery = window.APP_VERSION ? `?v=${window.APP_VERSION}` : '';
+    const versionQuery = (window.CACHE_BUST || window.APP_VERSION) ? `?v=${window.CACHE_BUST || window.APP_VERSION}` : '';
     const response = await fetch(`./view/${viewName}.html${versionQuery}`);
     if (!response.ok) throw new Error("HTML 조각 수급 실패");
 
@@ -1899,7 +1924,9 @@ registerGlobalKeybindings(userConfig, {
     activeOverlay.click(); // 오버레이 클릭 이벤트를 트리거하여 모달 닫기 및 설정 자동 저장
   },
   onEscapeSpectator: () => {
-    terminateSpectatorSession();
+    if (typeof window.exitQuizTrigger === 'function') {
+      window.exitQuizTrigger();
+    }
   },
   onEscapeQuiz: () => {
     if (typeof window.exitQuizTrigger === 'function') {

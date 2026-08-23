@@ -1,23 +1,42 @@
 /* KanaLoop Modern Design System */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800&family=Noto+Sans+KR:wght@400;500;700;800&family=Outfit:wght@500;600;700;800&display=swap');
 
+/* 🌈 10초 주기 360도 그라데이션 회전 커스텀 프로퍼티 */
+@property --gradient-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: true;
+}
+
+@keyframes rotateGradientAngle {
+  0% {
+    --gradient-angle: 0deg;
+  }
+
+  100% {
+    --gradient-angle: 360deg;
+  }
+}
+
 :root {
+  --gradient-angle: 0deg;
+  animation: rotateGradientAngle 10s linear infinite;
   --bg-gradient: linear-gradient(135deg, #f0f4fd 0%, #e2e9fb 100%);
   --glass-bg: rgba(255, 255, 255, 0.85);
   --glass-border: rgba(255, 255, 255, 0.6);
   --text-main: #1e293b;
   --text-muted: #64748b;
-  
-  --study-grad: linear-gradient(135deg, #2563eb 0%, #0d9488 100%);
+
+  --study-grad: linear-gradient(var(--gradient-angle), #2563eb 0%, #0d9488 100%);
   --study-shadow: 0 12px 28px rgba(37, 99, 235, 0.28);
-  
-  --record-grad: linear-gradient(135deg, #e11d48 0%, #f97316 100%);
+
+  --record-grad: linear-gradient(var(--gradient-angle), #e11d48 0%, #f97316 100%);
   --record-shadow: 0 12px 28px rgba(225, 29, 72, 0.28);
-  
-  --spectator-grad: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+
+  --spectator-grad: linear-gradient(var(--gradient-angle), #7c3aed 0%, #4f46e5 100%);
   --spectator-shadow: 0 12px 28px rgba(124, 58, 237, 0.28);
-  
-  --info-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(241, 245, 249, 0.9) 100%);
+
+  --info-card-bg: linear-gradient(var(--gradient-angle), rgba(255, 255, 255, 0.95) 0%, rgba(241, 245, 249, 0.85) 100%);
   --info-card-shadow: 0 8px 20px rgba(148, 163, 184, 0.15);
 
   --font-main: 'Outfit', 'Noto Sans KR', 'Noto Sans JP', sans-serif;
@@ -127,7 +146,7 @@ body {
   border: 1px solid rgba(226, 232, 240, 0.8);
   color: #475569;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
 }
 
 .menu-item.profile-trigger-item {
@@ -143,7 +162,7 @@ body {
   background: #ffffff;
   color: #1e293b;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .menu-item:active {
@@ -248,7 +267,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(0,0,0,0.15) 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(0, 0, 0, 0.15) 100%);
   opacity: 0.8;
   transition: opacity 0.3s ease;
 }
@@ -266,21 +285,24 @@ body {
 }
 
 .mode-study {
-  background: var(--study-grad);
+  background: linear-gradient(var(--gradient-angle), #ff79dc 0%, #0d9488 100%);
   box-shadow: var(--study-shadow);
   color: white;
+  animation: rotateGradientAngle 10s linear infinite;
 }
 
 .mode-record {
-  background: var(--record-grad);
+  background: linear-gradient(var(--gradient-angle), #4fd1f8 0%, #f97316 100%);
   box-shadow: var(--record-shadow);
   color: white;
+  animation: rotateGradientAngle 10s linear infinite;
 }
 
 .mode-spectator {
-  background: var(--spectator-grad);
+  background: linear-gradient(var(--gradient-angle), #61e99a 0%, #4f46e5 100%);
   box-shadow: var(--spectator-shadow);
   color: white;
+  animation: rotateGradientAngle 10s linear infinite;
 }
 
 .mode-btn-content {
@@ -322,9 +344,12 @@ body {
   padding: 24px;
   box-sizing: border-box;
   display: flex;
+  flex-direction: column;
+  justify-content: center;
   align-items: center;
   gap: 16px;
   color: #334155;
+  animation: rotateGradientAngle 10s linear infinite;
 }
 
 .info-card-icon {
@@ -364,10 +389,10 @@ body {
   padding: 3px 8px;
   font-weight: 700;
   font-family: monospace;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   z-index: 10;
   display: none !important;
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 @media (min-width: 601px) {
@@ -393,7 +418,7 @@ body {
   justify-content: center;
   padding: 0 4px;
   box-sizing: border-box;
-  box-shadow: 0 2px 5px rgba(239,68,68,0.4);
+  box-shadow: 0 2px 5px rgba(239, 68, 68, 0.4);
   z-index: 9;
 }
 
@@ -511,13 +536,16 @@ body {
   overflow-y: auto;
   flex: 1;
   padding-right: 4px;
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 .modal-body::-webkit-scrollbar,
 .modal-content::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none;
+  /* Chrome, Safari, Opera */
 }
 
 .modal-body h1 {
@@ -571,21 +599,24 @@ body {
 }
 
 .mode-badge.study {
-  background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+  background: linear-gradient(var(--gradient-angle), #e0f2fe, #bae6fd);
   color: #0284c7;
   border: 1px solid rgba(56, 189, 248, 0.4);
+  animation: rotateGradientAngle 10s linear infinite;
 }
 
 .mode-badge.record {
-  background: linear-gradient(135deg, #ffedd5, #fed7aa);
+  background: linear-gradient(var(--gradient-angle), #ffedd5, #fed7aa);
   color: #ea580c;
   border: 1px solid rgba(251, 146, 60, 0.4);
+  animation: rotateGradientAngle 10s linear infinite;
 }
 
 .mode-badge.spectator {
-  background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
+  background: linear-gradient(var(--gradient-angle), #f3e8ff, #e9d5ff);
   color: #9333ea;
   border: 1px solid rgba(192, 132, 252, 0.4);
+  animation: rotateGradientAngle 10s linear infinite;
 }
 
 .pause-btn {
@@ -661,8 +692,14 @@ body {
 }
 
 @keyframes pulseGlow {
-  from { opacity: 0.8; }
-  to { opacity: 1; transform: scaleY(1.1); }
+  from {
+    opacity: 0.8;
+  }
+
+  to {
+    opacity: 1;
+    transform: scaleY(1.1);
+  }
 }
 
 /* 대시보드 & 숙련도 배지 그리드 */
@@ -831,15 +868,35 @@ body {
 }
 
 @keyframes popSuccess {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.06); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.06);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 @keyframes shakeError {
-  0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-6px); }
-  40%, 80% { transform: translateX(6px); }
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20%,
+  60% {
+    transform: translateX(-6px);
+  }
+
+  40%,
+  80% {
+    transform: translateX(6px);
+  }
 }
 
 .keybind-hint {
@@ -875,7 +932,6 @@ body {
   font-size: clamp(4rem, 18vw, 9rem);
   font-weight: 900;
   color: #ffffff;
-  text-shadow: 0 0 35px rgba(168, 85, 247, 0.75), 0 0 10px rgba(99, 102, 241, 0.9);
   user-select: none;
   letter-spacing: -2px;
 }
@@ -886,13 +942,25 @@ body {
 
 /* 애니메이션 Keyframes */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* 반응형 미디어 쿼리 */
@@ -901,20 +969,25 @@ body {
     padding: 8px 12px;
     gap: 8px;
   }
+
   .header-quiz-control {
     gap: 8px;
   }
+
   .user-info-left {
     gap: 6px;
   }
+
   .user-info-right {
     gap: 4px;
     flex-wrap: wrap;
   }
+
   .menu-item {
     width: 34px;
     height: 34px;
   }
+
   .user-name-trigger {
     padding: 4px 8px;
     font-size: 0.82rem;
@@ -923,20 +996,20 @@ body {
   #main-box {
     padding: 10px 12px;
   }
-  
+
   .mode-selection {
     gap: 14px;
   }
-  
+
   .mode-btn {
     padding: 18px 16px;
     border-radius: var(--radius-lg);
   }
-  
+
   .mode-icon {
     font-size: 2.2rem !important;
   }
-  
+
   .mode-title {
     font-size: 1.25rem;
   }
@@ -944,7 +1017,7 @@ body {
   .mode-desc {
     font-size: 0.75rem;
   }
-  
+
   .mode-info-card {
     padding: 16px;
     border-radius: var(--radius-lg);

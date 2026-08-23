@@ -14,11 +14,12 @@
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <script>
-    window.APP_VERSION = "v1.0.4";
+    window.APP_VERSION = "v1.0.5";
+    window.CACHE_BUST = "20260824v1";
 
     const cssLink = document.createElement("link");
     cssLink.rel = "stylesheet";
-    cssLink.href = `common.css?v=${window.APP_VERSION}`;
+    cssLink.href = `common.css?v=${window.CACHE_BUST}`;
     document.head.appendChild(cssLink);
 
     window.runAutonomousAudioTC = async function(charList = ["あ", "い", "う", "え", "お", "か", "き", "く", "け", "こ"]) {
@@ -131,7 +132,7 @@
   <script>
     const mainScript = document.createElement("script");
     mainScript.type = "module";
-    mainScript.src = `./main.js?v=${window.APP_VERSION}`;
+    mainScript.src = `./main.js?v=${window.CACHE_BUST || window.APP_VERSION}`;
     document.body.appendChild(mainScript);
   </script>
 </body>
