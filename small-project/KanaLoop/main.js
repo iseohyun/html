@@ -273,7 +273,7 @@ async function initApp() {
 window.startSessionWorkflow = async function (mode) {
   currentMode = mode;
   try {
-    const versionQuery = window.APP_VERSION ? `?v=${window.APP_VERSION}` : '';
+    const versionQuery = (window.CACHE_BUST || window.APP_VERSION) ? `?v=${window.CACHE_BUST || window.APP_VERSION}` : '';
     const viewFile = mode === 'spectator' ? 'spectatorMode' : 'studyMode';
     const response = await fetch(`./view/${viewFile}.html${versionQuery}`);
     if (!response.ok) throw new Error(`${viewFile}.html 수급 실패`);
@@ -282,18 +282,47 @@ window.startSessionWorkflow = async function (mode) {
     const mainBox = document.getElementById('main-box');
     if (mainBox) mainBox.innerHTML = htmlContent;
 
+    // 상단 헤더 user-profile-box 빈 영역에 퀴즈 모드 컨트롤 활성화
+    const userInfoRight = document.querySelector('.user-info-right');
+    if (userInfoRight) userInfoRight.classList.add('hidden');
+
+    const headerQuizControl = document.getElementById('header-quiz-control');
+    if (headerQuizControl) headerQuizControl.style.display = 'flex';
+
     const title = document.getElementById('current-mode-title');
-    const badge = document.querySelector('.mode-badge');
-    if (title) {
+    const badge = document.getElementById('header-mode-badge');
+    const badgeIcon = badge?.querySelector('.mode-badge-icon');
+    const pauseBtn = document.getElementById('header-pause-btn');
+    const stopBtn = document.getElementById('header-stop-btn');
+
+    if (pauseBtn) {
+      pauseBtn.style.display = 'flex';
+      pauseBtn.setAttribute('aria-label', '일시정지');
+      pauseBtn.setAttribute('title', '일시정지');
+      pauseBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 1.3rem;">pause</span>';
+      pauseBtn.style.background = '';
+      pauseBtn.style.borderColor = '';
+    }
+    if (stopBtn) {
+      stopBtn.style.display = 'flex';
+      const stopTitle = mode === 'spectator' ? '관전 종료' : '중단';
+      stopBtn.setAttribute('aria-label', stopTitle);
+      stopBtn.setAttribute('title', stopTitle);
+    }
+
+    if (title && badge) {
       if (mode === 'study') {
         title.innerText = '학습 모드';
-        if (badge) badge.className = 'mode-badge study';
+        badge.className = 'mode-badge study';
+        if (badgeIcon) badgeIcon.innerText = 'school';
       } else if (mode === 'record') {
-        title.innerText = '기록 모드 (스피드런 ⚡)';
-        if (badge) badge.className = 'mode-badge record';
+        title.innerText = '기록 모드';
+        badge.className = 'mode-badge record';
+        if (badgeIcon) badgeIcon.innerText = 'timer';
       } else if (mode === 'spectator') {
-        title.innerText = '관전 모드 (LIVE 🔴)';
-        if (badge) badge.className = 'mode-badge spectator';
+        title.innerText = '관전 모드 (LIVE)';
+        badge.className = 'mode-badge spectator';
+        if (badgeIcon) badgeIcon.innerText = 'visibility';
       }
     }
 
@@ -568,7 +597,7 @@ async function terminateQuizSession() {
     await scheduleReviewNotification(userConfig.currentDomain, delayMin);
     updateReviewCountBadge(); // 세션 종료 후 복습 필요 문항 수 배지 갱신
 
-    // 학습모드 랭킹 등록 처리
+    // 학습모드 랭킹 등록 처리 (팝업 알림 없이 백그라운드 조용히 저장)
     const correctCount = correctLogs.length;
     const accuracy = sessionHistory.length > 0 ? Math.round((correctCount / sessionHistory.length) * 100) : 0;
 
@@ -579,23 +608,11 @@ async function terminateQuizSession() {
       recordDomain = (sampleChar === sampleChar.toUpperCase()) ? 'english(A)' : 'english(a)';
     }
 
-    let playerName = document.getElementById('profile-name')?.innerText || "게스트";
-    if (!auth.currentUser || playerName === "게스트") {
-      const defaultGuestName = localStorage.getItem('GUEST_ID') || "게스트";
-      playerName = prompt("학습모드 랭킹에 등록할 닉네임을 입력해 주세요.", defaultGuestName) || defaultGuestName;
-    }
+    let playerName = document.getElementById('profile-name')?.innerText || (auth.currentUser ? (auth.currentUser.displayName || "이름 없음") : (localStorage.getItem('GUEST_ID') || "게스트"));
+    if (playerName.includes('(')) playerName = playerName.split('(')[0].trim();
 
-    const isNewRecord = await submitStudyRanking(recordDomain, correctCount, playedTime, accuracy, playerName);
-
-    if (isNewRecord) {
-      alert(`🎉 학습모드 새로운 기록 달성!\n🎯 정답수: ${correctCount}개\n⏱️ 소요 시간: ${formatTime(playedTime)}\n🎯 정답률: ${accuracy}%`);
-      const currentUid = auth.currentUser ? auth.currentUser.uid : (localStorage.getItem('GUEST_ID') || 'GUEST');
-      window.highlightRecordId = `${currentUid}_${recordDomain}`;
-      window.highlightRemaining = 2;
-      window.popupLeaderboard(recordDomain, 'study');
-    } else {
-      alert(`학습모드 완료!\n🎯 정답수: ${correctCount}개\n⏱️ 소요 시간: ${formatTime(playedTime)}\n🎯 정답률: ${accuracy}%`);
-    }
+    await submitStudyRanking(recordDomain, correctCount, playedTime, accuracy, playerName);
+    console.log(`[Quiz] 학습 세션 정상 마감 완료 - 정답수: ${correctCount}, 시간: ${formatTime(playedTime)}, 정답률: ${accuracy}%`);
   } catch (dbError) {
     console.warn("[LocalFirst] 학습모드 완료 백엔드 등록 안내 (로컬 저장 완료):", dbError.message || dbError);
   }
@@ -763,26 +780,7 @@ function formatTime(seconds) {
 }
 
 async function terminateSpeedrunSession() {
-  if (timerInterval) {  // 퀴즈 화면이 아니거나, 오답 확인 대기 중(pointerEvents === 'none')일 때는 무시
-    if (!optionsContainer || optionsContainer.style.pointerEvents === 'none') return;
-
-    if (e.code === 'Space') {
-      e.preventDefault(); // 스페이스바 화면 스크롤 방지
-      if (window.audioTriggerClick) window.audioTriggerClick();
-      return;
-    }
-
-    const key = e.key.toLowerCase();
-    let optionIndex = -1;
-    // 퀴즈 화면이 아니거나, 오답 확인 대기 중(pointerEvents === 'none')일 때는 무시
-    if (!optionsContainer || optionsContainer.style.pointerEvents === 'none') return;
-
-    if (e.code === 'Space') {
-      e.preventDefault(); // 스페이스바 화면 스크롤 방지
-      if (window.audioTriggerClick) window.audioTriggerClick();
-      return;
-    }
-
+  if (timerInterval) {
     clearInterval(timerInterval);
     timerInterval = null;
   }
@@ -806,12 +804,8 @@ async function terminateSpeedrunSession() {
 
     const accuracy = Math.round((srCorrectCount / srTotalCount) * 100);
 
-    // 게스트이거나 닉네임이 없는 경우 랭킹 등록용 이름 입력받기
-    let playerName = document.getElementById('profile-name')?.innerText || "게스트";
-    if (!auth.currentUser || playerName === "게스트") {
-      const defaultGuestName = localStorage.getItem('GUEST_ID') || "게스트";
-      playerName = prompt("스피드런 랭킹에 등록할 닉네임을 입력해 주세요.", defaultGuestName) || defaultGuestName;
-    }
+    let playerName = document.getElementById('profile-name')?.innerText || (auth.currentUser ? (auth.currentUser.displayName || "이름 없음") : (localStorage.getItem('GUEST_ID') || "게스트"));
+    if (playerName.includes('(')) playerName = playerName.split('(')[0].trim();
 
     // 도메인 기록 명칭 분리 (영문 대소문자 구별)
     let recordDomain = userConfig.currentDomain;
@@ -821,13 +815,8 @@ async function terminateSpeedrunSession() {
       recordDomain = (sampleChar === sampleChar.toUpperCase()) ? 'english(A)' : 'english(a)';
     }
 
-    const recordId = await submitSpeedrunRanking(recordDomain, srTotalCount, srElapsedTime, accuracy, playerName);
-
-    alert(`스피드런 모드 완료!\n⏱️ 소요 시간: ${formatTime(srElapsedTime)}\n🎯 정답률: ${accuracy}%`);
-
-    window.highlightRecordId = recordId;
-    window.highlightRemaining = 2; // 이번 자동 팝업(1) + 다음번 직접 팝업(1) 총 2회 유지
-    window.popupLeaderboard(recordDomain);
+    await submitSpeedrunRanking(recordDomain, srTotalCount, srElapsedTime, accuracy, playerName);
+    console.log(`[Speedrun] 기록 모드 완료 - 소요 시간: ${formatTime(srElapsedTime)}, 정답률: ${accuracy}%`);
   } catch (dbError) {
     console.error("스피드런 데이터 처리 중 예외 발생:", dbError);
   }
@@ -1006,6 +995,62 @@ window.exitSpectatorTrigger = function () {
   terminateSpectatorSession();
 };
 
+// 퀴즈 / 학습 / 기록 / 관전 모드 세션 중단 트리거 (팝업 확인 후 안전 종료)
+window.exitQuizTrigger = function () {
+  if (isTimeUp) return;
+
+  const wasPaused = isPaused;
+  const wasInterval = timerInterval;
+  const wasSpectatorInterval = spectatorIntervalId;
+
+  // 1. 확인창이 떠 있는 동안 타이머 및 음성 일시 중단
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  if (spectatorIntervalId) {
+    clearInterval(spectatorIntervalId);
+    spectatorIntervalId = null;
+  }
+  stopAllVoices();
+
+  const promptMsg = currentMode === 'spectator'
+    ? "관전을 종료하고 메인 화면으로 돌아가시겠습니까?"
+    : "현재 학습 세션을 중단하고 메인 화면으로 돌아가시겠습니까?";
+
+  const confirmExit = confirm(promptMsg);
+  if (confirmExit) {
+    if (currentMode === 'study') {
+      terminateQuizSession();
+    } else if (currentMode === 'record') {
+      terminateSpeedrunSession();
+    } else {
+      terminateSpectatorSession();
+    }
+  } else {
+    // 2. 취소 시: 중단 시도 전 일시정지 상태가 아니었다면 타이머 및 음성 재개
+    if (!wasPaused) {
+      isPaused = false;
+      if (wasInterval) {
+        if (currentMode === 'study') {
+          timerInterval = setInterval(tickSessionTimer, 1000);
+        } else if (currentMode === 'record') {
+          timerInterval = setInterval(tickSpeedrunTimer, 1000);
+        } else if (currentMode === 'spectator') {
+          timerInterval = setInterval(tickSpectatorSessionTimer, 1000);
+        }
+      }
+      if (wasSpectatorInterval && currentMode === 'spectator') {
+        const intervalMs = (userConfig.spectatorInterval || 1) * 1000;
+        spectatorIntervalId = setInterval(tickSpectator, intervalMs);
+      }
+      if (currentMode !== 'spectator' && window.audioTriggerClick) {
+        window.audioTriggerClick();
+      }
+    }
+  }
+};
+
 /**
  * 세션 타임아웃 또는 강제 이탈 시 메인 선택 화면으로 리셋 복귀
  */
@@ -1019,11 +1064,20 @@ function resetToMainModeSelection() {
     spectatorIntervalId = null;
   }
 
+  // 상단 헤더 컨트롤 복원 (퀴즈 컨트롤 숨김, 상단 메뉴 아이콘 복원)
+  const headerQuizControl = document.getElementById('header-quiz-control');
+  if (headerQuizControl) headerQuizControl.style.display = 'none';
+
+  const userInfoRight = document.querySelector('.user-info-right');
+  if (userInfoRight) userInfoRight.classList.remove('hidden');
+
   const mainBox = document.getElementById('main-box');
   if (mainBox) {
     mainBox.innerHTML = MAIN_SELECTION_HTML;
     updateVisualBadges(userConfig); // 모드 버튼이 동적 교체되었으므로 Q/W 단축키 배지 재생성 반영
   }
+
+  updateReviewCountBadge(); // 학습모드/세션 종료 후 복습 필요 배지 즉각 갱신
 }
 
 /**
@@ -1043,17 +1097,76 @@ function updateDomainUI() {
   }
 }
 
-// 세션 도중 일시정지 버튼 클릭 시 타이머 정지 및 세션 종료 처리
+// 세션 도중 일시정지 / 재개 버튼 토글 핸들러 (학습/기록/관전 모드 공통 지원)
 window.pauseGameTrigger = function () {
-  if (!timerInterval || isTimeUp) return;
+  if (isTimeUp) return;
 
-  clearInterval(timerInterval);
-  isPaused = true;
+  const pauseBtn = document.getElementById('header-pause-btn') || document.querySelector('.pause-btn');
+  const optionsContainer = document.getElementById('options');
 
-  if (currentMode === 'study') {
-    terminateQuizSession();
+  if (!isPaused) {
+    // 1. 일시정지 실행 (시간 정지, 관전 루프 정지, 입력 비활성화, 음성 중단, 플레이 버튼으로 변경)
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+    if (spectatorIntervalId) {
+      clearInterval(spectatorIntervalId);
+      spectatorIntervalId = null;
+    }
+    isPaused = true;
+    stopAllVoices();
+
+    if (optionsContainer) {
+      optionsContainer.style.pointerEvents = 'none';
+      optionsContainer.style.opacity = '0.5';
+    }
+
+    if (pauseBtn) {
+      pauseBtn.setAttribute('aria-label', '재개');
+      pauseBtn.setAttribute('title', '재개');
+      pauseBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 1.3rem; color: #16a34a;">play_arrow</span>';
+      pauseBtn.style.background = '#dcfce7';
+      pauseBtn.style.borderColor = '#86efac';
+    }
+    console.log("[Session] 게임/관전 세션 일시정지 ⏸️");
   } else {
-    terminateSpeedrunSession();
+    // 2. 재개 실행 (시간 재시작, 관전 루프 재시작, 입력 활성화, 일시정지 버튼으로 복원, 음성 재생)
+    isPaused = false;
+
+    if (currentMode === 'study') {
+      timerInterval = setInterval(tickSessionTimer, 1000);
+    } else if (currentMode === 'record') {
+      timerInterval = setInterval(tickSpeedrunTimer, 1000);
+    } else if (currentMode === 'spectator') {
+      timerInterval = setInterval(tickSpectatorSessionTimer, 1000);
+      const intervalMs = (userConfig.spectatorInterval || 1) * 1000;
+      if (spectatorIntervalId) clearInterval(spectatorIntervalId);
+      spectatorIntervalId = setInterval(tickSpectator, intervalMs);
+
+      const charEl = document.getElementById('spectator-char');
+      if (charEl && charEl.innerText && charEl.innerText !== '-') {
+        playTargetVoice(charEl.innerText);
+      }
+    }
+
+    if (optionsContainer) {
+      optionsContainer.style.pointerEvents = 'auto';
+      optionsContainer.style.opacity = '1';
+    }
+
+    if (pauseBtn) {
+      pauseBtn.setAttribute('aria-label', '일시정지');
+      pauseBtn.setAttribute('title', '일시정지');
+      pauseBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 1.3rem;">pause</span>';
+      pauseBtn.style.background = '';
+      pauseBtn.style.borderColor = '';
+    }
+
+    if (currentMode !== 'spectator' && window.audioTriggerClick) {
+      window.audioTriggerClick();
+    }
+    console.log("[Session] 게임/관전 세션 재개 ▶️");
   }
 };
 
@@ -1250,11 +1363,11 @@ window.toggleDomain = function () {
 /**
  * view/ 디렉터리의 조각 HTML을 원격 수급하여 모달 창에 주입하는 핵심 엔진
  */
-async function openRemoteModalPopup(viewName) {
+async function openRemoteModalPopup(viewName, options = {}) {
   if (timerInterval && !isTimeUp) return;
 
   try {
-    const versionQuery = window.APP_VERSION ? `?v=${window.APP_VERSION}` : '';
+    const versionQuery = (window.CACHE_BUST || window.APP_VERSION) ? `?v=${window.CACHE_BUST || window.APP_VERSION}` : '';
     const response = await fetch(`./view/${viewName}.html${versionQuery}`);
     if (!response.ok) throw new Error("HTML 조각 수급 실패");
 
@@ -1314,7 +1427,14 @@ async function openRemoteModalPopup(viewName) {
       <div class="modal-content">
         <div class="modal-header">
           <h3 class="modal-title">${modalTitle}</h3>
-          <button class="modal-close" aria-label="닫기">&times;</button>
+          <div class="modal-header-actions">
+            ${viewName === 'setting' ? `
+              <button class="modal-icon-btn modal-help-trigger" id="setting-help-btn" title="도움말" aria-label="도움말">
+                <span class="material-symbols-outlined" style="font-size:18px;">question_mark</span>
+              </button>
+            ` : ''}
+            <button class="modal-close" aria-label="닫기">&times;</button>
+          </div>
         </div>
         <div class="modal-body">
           ${htmlContent}
@@ -1324,7 +1444,7 @@ async function openRemoteModalPopup(viewName) {
 
     // 오버레이 및 닫기 버튼 클릭 시 모달 닫기 및 설정 일괄 저장 처리
     const closeHandler = (e) => {
-      if (e.target.classList.contains('modal-close') || e.target === overlay) {
+      if (e.target.closest('.modal-close') || e.target === overlay) {
         overlay.remove();
         if (viewName === 'setting') {
           saveUserConfig(userConfig);
@@ -1337,6 +1457,9 @@ async function openRemoteModalPopup(viewName) {
           if (!window.highlightRemaining || window.highlightRemaining <= 0) {
             window.highlightRecordId = null; // 유효 횟수 소진 시 하이라이트 해제
           }
+        }
+        if (options && options.returnTo) {
+          openRemoteModalPopup(options.returnTo);
         }
       }
     };
@@ -1416,6 +1539,16 @@ async function openRemoteModalPopup(viewName) {
 
     // 5. 컴포넌트 마운트 직후 이벤트 리스너 바인딩
     if (viewName === 'setting') {
+      const helpBtn = overlay.querySelector('#setting-help-btn');
+      if (helpBtn) {
+        helpBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          saveUserConfig(userConfig);
+          overlay.remove();
+          openRemoteModalPopup('help', { returnTo: 'setting' });
+        });
+      }
+
       const ageSelect = document.getElementById('user-age');
       if (ageSelect) ageSelect.value = userConfig.age || '미상';
 
@@ -1754,15 +1887,18 @@ async function updateReviewCountBadge() {
     let idCounter = 0;
     
     for (const row of rows) {
-      for (const char of row) {
+      if (typeof row !== 'string' && !Array.isArray(row)) continue;
+      for (let i = 0; i < row.length; i++) {
+        const char = row[i];
         if (char !== '_') {
           const charId = idCounter++;
-          const saved = dbData[charId];
-          if (saved && saved.totalSolved > 0) {
+          const saved = dbData[charId.toString()] || dbData[charId];
+          if (saved && (saved.stage > 0 || (saved.totalSolved && saved.totalSolved > 0))) {
             const stage = saved.stage !== undefined ? saved.stage : 0;
             const lastSessionTime = saved.lastSessionTime || 0;
             const timeDiffMin = (now - lastSessionTime) / (60 * 1000);
-            if (timeDiffMin >= INTERVALS[stage]) {
+            const requiredMin = INTERVALS[stage] !== undefined ? INTERVALS[stage] : INTERVALS[INTERVALS.length - 1];
+            if (timeDiffMin >= requiredMin) {
               count++;
             }
           }
@@ -1788,32 +1924,13 @@ registerGlobalKeybindings(userConfig, {
     activeOverlay.click(); // 오버레이 클릭 이벤트를 트리거하여 모달 닫기 및 설정 자동 저장
   },
   onEscapeSpectator: () => {
-    terminateSpectatorSession();
+    if (typeof window.exitQuizTrigger === 'function') {
+      window.exitQuizTrigger();
+    }
   },
   onEscapeQuiz: () => {
-    const wasInterval = timerInterval;
-    if (timerInterval) {
-      clearInterval(timerInterval);
-      timerInterval = null;
-    }
-    isPaused = true;
-
-    const confirmExit = confirm("현재 학습 세션을 종료하고 메인 화면으로 돌아가시겠습니까?");
-    if (confirmExit) {
-      if (currentMode === 'study') {
-        terminateQuizSession();
-      } else {
-        terminateSpeedrunSession();
-      }
-    } else {
-      isPaused = false;
-      if (wasInterval) {
-        if (currentMode === 'study') {
-          timerInterval = setInterval(tickSessionTimer, 1000);
-        } else {
-          timerInterval = setInterval(tickSpeedrunTimer, 1000);
-        }
-      }
+    if (typeof window.exitQuizTrigger === 'function') {
+      window.exitQuizTrigger();
     }
   },
   onToggleDomain: () => {
@@ -1847,11 +1964,13 @@ registerGlobalKeybindings(userConfig, {
     if (typeof startSessionWorkflow === 'function') startSessionWorkflow('spectator');
   },
   onReplayVoice: () => {
+    if (isPaused) return;
     if (window.audioTriggerClick) window.audioTriggerClick();
   },
   onOptionSelect: (optionIndex) => {
+    if (isPaused) return;
     const optionsContainer = document.getElementById('options');
-    if (optionsContainer) {
+    if (optionsContainer && optionsContainer.style.pointerEvents !== 'none') {
       const buttons = optionsContainer.querySelectorAll('.option-btn');
       if (buttons && buttons.length > optionIndex) {
         buttons[optionIndex].click();

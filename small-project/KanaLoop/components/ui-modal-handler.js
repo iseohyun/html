@@ -232,7 +232,7 @@ export function renderProgressTable(domain, domainProgress) {
         td.style.background = (analysisMode === 'stage') ? getStageColor(progress.stage) : getLatencyColor(avgLat);
         td.style.color = "#222222";
 
-        if (analysisMode === 'stage' && isOverdue) {
+        if (isOverdue) {
           td.style.border = "2px solid #F44336";
           td.style.padding = "6px 1px"; // 2px 테두리로 인한 레이아웃 밀림(Jitter) 방지
         }

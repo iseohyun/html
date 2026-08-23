@@ -6,6 +6,7 @@
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Kana-Loop</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800&family=Noto+Sans+KR:wght@400;500;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -13,11 +14,12 @@
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <script>
-    window.APP_VERSION = "v1.0.3";
+    window.APP_VERSION = "v1.0.5";
+    window.CACHE_BUST = "20260824v1";
 
     const cssLink = document.createElement("link");
     cssLink.rel = "stylesheet";
-    cssLink.href = `common.css?v=${window.APP_VERSION}`;
+    cssLink.href = `common.css?v=${window.CACHE_BUST}`;
     document.head.appendChild(cssLink);
 
     window.runAutonomousAudioTC = async function(charList = ["あ", "い", "う", "え", "お", "か", "き", "く", "け", "こ"]) {
@@ -45,18 +47,25 @@
           <span class="keybind-badge" id="kb-badge-popupLogin">ESC</span>
         </div>
       </div>
-      <div class="user-info-right">
-        <div class="menu-item" onclick="popupHelp()" data-tooltip="도움말">
-          <span class="material-symbols-outlined">question_mark</span>
-          <span class="keybind-badge" id="kb-badge-popupHelp">9</span>
+
+      <!-- 🎮 퀴즈/게임 모드 실행 시 상단 헤더 빈 영역에 노출되는 모드 배지 및 컨트롤 -->
+      <div class="header-quiz-control" id="header-quiz-control" style="display: none;">
+        <div class="mode-badge study" id="header-mode-badge">
+          <span class="material-symbols-outlined mode-badge-icon" style="font-size: 1.1rem;">school</span>
+          <span id="current-mode-title">학습 모드</span>
         </div>
+        <button class="pause-btn" id="header-pause-btn" onclick="pauseGameTrigger()" aria-label="일시정지" title="일시정지">
+          <span class="material-symbols-outlined" style="font-size: 1.3rem;">pause</span>
+        </button>
+        <button class="stop-btn" id="header-stop-btn" onclick="exitQuizTrigger()" aria-label="중단" title="중단">
+          <span class="material-symbols-outlined" style="font-size: 1.3rem;">close</span>
+        </button>
+      </div>
+
+      <div class="user-info-right">
         <div class="menu-item" onclick="popupLeaderboard()" data-tooltip="리더보드">
           <span class="material-symbols-outlined">leaderboard</span>
           <span class="keybind-badge" id="kb-badge-popupLeaderboard">5</span>
-        </div>
-        <div class="menu-item" onclick="popupSetting()" data-tooltip="설정">
-          <span class="material-symbols-outlined">settings</span>
-          <span class="keybind-badge" id="kb-badge-popupSetting">4</span>
         </div>
         <div class="menu-item" onclick="popupProgress()" data-tooltip="단어장">
           <span class="material-symbols-outlined">menu_book</span>
@@ -70,6 +79,10 @@
         <div class="menu-item" onclick="toggleDomain()" data-tooltip="히라가나/카타카나 전환">
           <span class="domain-btn">あ</span>
           <span class="keybind-badge" id="kb-badge-toggleDomain">1</span>
+        </div>
+        <div class="menu-item" onclick="popupSetting()" data-tooltip="설정">
+          <span class="material-symbols-outlined">settings</span>
+          <span class="keybind-badge" id="kb-badge-popupSetting">4</span>
         </div>
       </div>
     </div>
@@ -119,7 +132,7 @@
   <script>
     const mainScript = document.createElement("script");
     mainScript.type = "module";
-    mainScript.src = `./main.js?v=${window.APP_VERSION}`;
+    mainScript.src = `./main.js?v=${window.CACHE_BUST || window.APP_VERSION}`;
     document.body.appendChild(mainScript);
   </script>
 </body>
