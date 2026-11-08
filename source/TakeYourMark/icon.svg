@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="512" height="512">
+  <rect width="108" height="108" rx="22" ry="22" fill="#0B6EA6"/>
+  <!-- 스타팅 블록 (Starting Block Base & Plate) -->
+  <path fill="#00B8D4" d="M 32,74 L 58,75 L 50,88 L 32,88 Z" />
+  <!-- 스타팅 블록 손잡이 (Block Handle) -->
+  <path fill="none" stroke="#1AD2ED" stroke-width="2.5" stroke-linecap="round" d="M 52,78 C 62,78 62,84 60,84 L 56,84" />
+  <!-- 스타팅 블록 상판 경사면 (Top Surface) -->
+  <path fill="#1AD2ED" d="M 22,68 L 62,72 C 63,72 63,75 62,75 L 20,71 Z" />
+  <!-- 스타팅 블록 뒷 발판 (Foot Rest Block) -->
+  <path fill="#1AD2ED" d="M 24,60 L 31,69 L 22,68 Z" />
+  <!-- 수영 선수 - 뒤 다리 (Back Leg) -->
+  <path fill="#F7B896" d="M 27,61 L 35,53 L 47,50 L 44,43 L 31,48 Z" />
+  <!-- 수영 선수 - 앞 다리 (Front Leg) -->
+  <path fill="#EAA484" d="M 50,71 L 54,61 L 52,48 L 46,47 L 45,61 L 48,71 Z" />
+  <!-- 수영 선수 - 빨간 수영복 (Red Swimsuit) -->
+  <path fill="#E53935" d="M 38,32 C 46,28 58,30 65,36 C 68,40 65,48 60,45 C 55,42 47,45 43,51 L 37,48 Z" />
+  <!-- 수영 선수 - 몸통 & 어깨 (Torso & Shoulder) -->
+  <path fill="#F7B896" d="M 58,34 C 64,36 67,42 66,48 L 62,48 C 62,43 58,38 54,36 Z" />
+  <!-- 수영 선수 - 뻗은 팔 (Arms to Block Edge) -->
+  <path fill="#F7B896" d="M 62,40 L 66,48 L 61,72 L 58,72 L 60,48 Z" />
+  <!-- 수영 선수 - 얼굴 & 목 (Face & Neck) -->
+  <path fill="#F7B896" d="M 68,31 C 74,31 80,35 80,41 L 76,43 L 71,40 Z" />
+  <!-- 수영모 (Blue Swim Cap) -->
+  <path fill="#1E88E5" d="M 68,31 C 74,29 80,33 80,39 C 76,37 72,37 68,31 Z" />
+  <!-- 수경 & 끈 (Goggles & Strap) -->
+  <path fill="none" stroke="#0D47A1" stroke-width="1.8" stroke-linecap="round" d="M 70,36 L 79,36" />
+  <circle cx="74" cy="36" r="2" fill="#0D47A1" />
+</svg>

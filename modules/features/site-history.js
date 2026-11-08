@@ -2,398 +2,120 @@
 
 window.SiteModules = window.SiteModules || {};
 
-window.SiteModules.UpdateLog = (function() {
-  let activeYears = [2026];
-  let activeTag = 'all';
+window.SiteModules.UpdateLog = (function () {
+  const DEFAULT_YEARS = [2026, 2025, 2024];
+  const DEFAULT_ENVS = ['iseohyun.com', 'WebApp', 'Android', 'Desktop', 'Video'];
+  const DEFAULT_TYPES = ['Add', 'Changed', 'Fixed', 'Deleted'];
+  const DEFAULT_SEARCH_TARGETS = ['title', 'content', 'category'];
 
-  const daysOfWeek = ["일", "월", "화", "수", "목", "금", "토"];
+  let filterState = {
+    years: [...DEFAULT_YEARS],
+    envs: [...DEFAULT_ENVS],
+    types: [...DEFAULT_TYPES],
+    searchText: '',
+    searchTargets: [...DEFAULT_SEARCH_TARGETS],
+    hasUserFiltered: false
+  };
 
-  function formatDateWithDay(dateStr) {
-    const d = parseDateString(dateStr);
-    const dayName = daysOfWeek[d.getDay()];
-    return `${dateStr}(${dayName})`;
-  }
+  let cachedUpdates = null;
+  let cachedHierarchy = null;
 
-  function formatSidebarContent(origContent, hierarchy) {
-    let content = origContent;
-    
-    // 1. [신규], [개선], [bugfix], [동영상] 등 대괄호 태그 제거
-    content = content.replace(/^\[(?:신규|개선|bugfix|동영상)\]\s*/i, "");
+  const daysOfWeek = ['일', '월', '화', '수', '목', '금', '토'];
 
-    let endIndex = content.indexOf(":");
-    if (endIndex === -1) endIndex = content.length;
-    const rawTitle = content.substring(0, endIndex).trim();
-    const description = endIndex !== content.length ? content.substring(endIndex + 1).trim() : "";
+  const ENV_CLASS_MAP = {
+    'iseohyun.com': 'env-iseohyun',
+    'WebApp': 'env-webapp',
+    'Android': 'env-android',
+    'Desktop': 'env-desktop',
+    'Video': 'env-video'
+  };
 
-    const path = findPath(hierarchy, rawTitle);
+  const TYPE_CLASS_MAP = {
+    'Add': 'type-add',
+    'Changed': 'type-changed',
+    'Fixed': 'type-fixed',
+    'Deleted': 'type-deleted'
+  };
 
-    if (path) {
-      const hasPathArrow = rawTitle.includes(">");
-      const displayTitle = hasPathArrow ? rawTitle.split(">").pop().trim() : rawTitle;
-      let text = "<a href='" + path + "' class='recent-visit-link'>" + displayTitle + "</a>";
-      
-      // 경로명 간소화(hasPathArrow)가 이루어진 경우 뒤따라오는 설명(: ...)도 함께 생략합니다.
-      if (description && !hasPathArrow) {
-        text += ": " + description;
-      }
-      return text;
-    } else {
-      const hasPathArrow = rawTitle.includes(">");
-      const displayTitle = hasPathArrow ? rawTitle.split(">").pop().trim() : rawTitle;
-      let text = displayTitle;
-      
-      // 경로명 간소화(hasPathArrow)가 이루어진 경우 뒤따라오는 설명도 함께 생략
-      if (description && !hasPathArrow) {
-        text += ": " + description;
-      }
-      return text;
-    }
+  const TYPE_BADGE_MAP = {
+    'Add': { letter: 'A', cls: 'badge-add', label: 'Add' },
+    'Changed': { letter: 'C', cls: 'badge-changed', label: 'Changed' },
+    'Fixed': { letter: 'F', cls: 'badge-fixed', label: 'Fixed' },
+    'Deleted': { letter: 'D', cls: 'badge-deleted', label: 'Deleted' }
+  };
+
+  function escapeHtml(str) {
+    return String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   function parseDateString(dateStr) {
     if (!dateStr) return new Date();
-    if (dateStr instanceof Date) return dateStr;
-    const parts = String(dateStr).split('-');
+    if (dateStr instanceof Date) {
+      return new Date(dateStr.getFullYear(), dateStr.getMonth(), dateStr.getDate());
+    }
+    const parts = String(dateStr).trim().split('-');
     if (parts.length === 3) {
       const year = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10) - 1; // 0-based month
+      const month = parseInt(parts[1], 10) - 1;
       const day = parseInt(parts[2], 10);
       return new Date(year, month, day);
     }
-    return new Date(dateStr);
+    const d = new Date(dateStr);
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
   }
 
-  function selectYear(Y) {
-    if (Y === 'all') {
-      activeYears = [2024, 2025, 2026];
-    } else {
-      const yearNum = parseInt(Y, 10);
-      if (activeYears.includes(yearNum)) {
-        // 이미 선택된 영역을 선택함 -> 선택 해제 후, 해당 영역만 선택
-        activeYears = [yearNum];
-      } else {
-        // 아직 선택되지 않은 영역을 선택함 -> 기존 선택 영역에서 확장
-        if (activeYears.length === 0) {
-          activeYears = [yearNum];
-        } else {
-          const currentMin = Math.min(...activeYears);
-          const currentMax = Math.max(...activeYears);
-          const newMin = Math.min(currentMin, yearNum);
-          const newMax = Math.max(currentMax, yearNum);
-          activeYears = [];
-          for (let y = newMin; y <= newMax; y++) {
-            activeYears.push(y);
-          }
-        }
-      }
-    }
+  function toDateKey(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
   }
 
-  function updateHistoryDisplay() {
-    const items = document.querySelectorAll("#site-history li");
-    items.forEach(item => {
-      const itemYear = parseInt(item.getAttribute("data-year"), 10);
-      const matchesYear = activeYears.includes(itemYear);
-
-      const contentSpans = item.querySelectorAll("div > span.content");
-      let hasVisibleContent = false;
-
-      contentSpans.forEach(span => {
-        let matchesTag = false;
-        if (activeTag === 'all') {
-          matchesTag = true;
-        } else {
-          if (activeTag === 'added' && (span.classList.contains('added') || span.classList.contains('new'))) matchesTag = true;
-          if (activeTag === 'changed' && (span.classList.contains('changed') || span.classList.contains('modify') || span.classList.contains('update'))) matchesTag = true;
-          if (activeTag === 'fixed' && (span.classList.contains('fixed') || span.classList.contains('bugfix'))) matchesTag = true;
-          if (activeTag === 'removed' && span.classList.contains('removed')) matchesTag = true;
-        }
-
-        if (matchesTag) {
-          span.style.display = "";
-          hasVisibleContent = true;
-        } else {
-          span.style.display = "none";
-        }
-      });
-
-      if (matchesYear && hasVisibleContent) {
-        item.style.display = "";
-      } else {
-        item.style.display = "none";
-      }
-    });
-
-    const filterContainer = document.getElementById("history-filters");
-    if (!filterContainer) return;
-
-    // Update Year UI active classes
-    const yearGroup = filterContainer.querySelector(".year-btn-group");
-    if (yearGroup) {
-      const isAllYearsActive = activeYears.length === 3;
-      yearGroup.querySelectorAll(".filter-btn").forEach(btn => {
-        const filter = btn.dataset.filter;
-        if (filter === "year-all") {
-          if (isAllYearsActive) btn.classList.add("active");
-          else btn.classList.remove("active");
-        } else {
-          const yearVal = parseInt(filter.substring(5), 10);
-          if (activeYears.includes(yearVal)) btn.classList.add("active");
-          else btn.classList.remove("active");
-        }
-      });
-    }
-
-    // Update Tag UI active classes
-    const tagGroup = filterContainer.querySelector(".tag-btn-group");
-    if (tagGroup) {
-      tagGroup.querySelectorAll(".filter-btn").forEach(btn => {
-        const filter = btn.dataset.filter;
-        const tagVal = filter.substring(4);
-        if (tagVal === activeTag) btn.classList.add("active");
-        else btn.classList.remove("active");
-      });
-    }
+  function formatDateWithDay(dateStr) {
+    const d = parseDateString(dateStr);
+    const dayName = daysOfWeek[d.getDay()];
+    return `${toDateKey(d)} (${dayName})`;
   }
 
-  async function getUpdateList(cnt = 'all', date = '2023-01-01', edate = '', keywords = "", targetId = "site-history") {
-    const updateList = document.getElementById(targetId);
-    if (!updateList) return;
-    updateList.innerHTML = ""; // 기존 리스트 초기화
-
-    // 필터 버튼 컨테이너 생성 및 이벤트 바인딩
-    let filterContainer = document.getElementById("history-filters");
-    if (!filterContainer && targetId === "site-history") {
-      filterContainer = document.createElement("div");
-      filterContainer.id = "history-filters";
-      filterContainer.className = "history-filters";
-      filterContainer.innerHTML = `
-        <div class="filter-group-wrapper">
-          <span class="filter-label">연도 선택</span>
-          <div class="year-btn-group">
-            <button class="filter-btn" data-filter="year-all">전체</button>
-            <button class="filter-btn" data-filter="year-2026">2026년</button>
-            <button class="filter-btn" data-filter="year-2025">2025년</button>
-            <button class="filter-btn" data-filter="year-2024">2024년</button>
-          </div>
-        </div>
-        <div class="filter-group-wrapper">
-          <span class="filter-label">분류 선택</span>
-          <div class="tag-btn-group">
-            <button class="filter-btn" data-filter="tag-all">전체</button>
-            <button class="filter-btn" data-filter="tag-added">✨ 추가</button>
-            <button class="filter-btn" data-filter="tag-changed">📝 수정</button>
-            <button class="filter-btn" data-filter="tag-fixed">🛠️ 개선</button>
-            <button class="filter-btn" data-filter="tag-removed">🗑️ 삭제</button>
-          </div>
-        </div>
-      `;
-      updateList.parentNode.insertBefore(filterContainer, updateList);
-
-      // 연도 버튼 이벤트
-      filterContainer.querySelector(".year-btn-group").querySelectorAll(".filter-btn").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-          const filter = e.target.dataset.filter;
-          const filterVal = filter.substring(5);
-          selectYear(filterVal);
-          updateHistoryDisplay();
-        });
-      });
-
-      // 분류 버튼 이벤트
-      filterContainer.querySelector(".tag-btn-group").querySelectorAll(".filter-btn").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-          const filter = e.target.dataset.filter;
-          activeTag = filter.substring(4);
-          updateHistoryDisplay();
-        });
-      });
+  // 분류(type) 정규화 -> 'Add' | 'Changed' | 'Fixed' | 'Deleted'
+  function normalizeTypeKey(item) {
+    if (typeof item === 'string') {
+      if (item.includes('[신규]') || item.includes('[추가]')) return 'Add';
+      if (item.includes('[bugfix]') || item.includes('[개선]')) return 'Fixed';
+      if (item.includes('[삭제]')) return 'Deleted';
+      return 'Changed';
     }
+    const t = String(item.type || 'Changed').toLowerCase();
+    if (t === 'added' || t === 'add' || t === 'new') return 'Add';
+    if (t === 'fixed' || t === 'bugfix') return 'Fixed';
+    if (t === 'removed' || t === 'deleted' || t === 'delete') return 'Deleted';
+    return 'Changed';
+  }
 
-    try {
-      // JSON 데이터 가져오기 (async/await 사용)
-      const updatesResponse = await fetch("/changelog.json");
-      const updates = await updatesResponse.json();
-
-      const hierarchyResponse = await fetch("/hierarchy.json");
-      const hierarchy = await hierarchyResponse.json();
-
-      // 날짜 변환
-      const startDate = parseDateString(date);
-      const endDate = parseDateString(edate);
-      if (!edate) {
-        endDate.setTime(new Date().getTime());
-      }
-      endDate.setDate(endDate.getDate() + 1);
-      
-      // 필터링 및 정렬
-      const filteredUpdates = updates
-        .filter(update => {
-          const uDate = parseDateString(update.date);
-          const inRange = uDate >= startDate && uDate <= endDate;
-          const items = update.updates || update.content || [];
-          const matchKeyword = keywords === "" || items.some(item => {
-            if (typeof item === 'string') return item.includes(keywords);
-            const str = `${item.type} ${item.projectName} ${item.summary || ''} ${item.version || ''}`;
-            return str.includes(keywords);
-          });
-          return inRange && matchKeyword;
-        })
-        .sort((a, b) => parseDateString(b.date) - parseDateString(a.date));
-
-      // 출력 갯수 제한 적용
-      const limitedUpdates = cnt === 'all' ? filteredUpdates : filteredUpdates.slice(0, cnt);
-
-      // 리스트 생성
-      limitedUpdates.forEach(update => {
-        const listItem = document.createElement("li");
-
-        // data-year 설정
-        const year = update.date.split('-')[0];
-        listItem.setAttribute("data-year", year);
-
-        // data-tags 설정
-        let tags = [];
-        const items = update.updates || update.content || [];
-        items.forEach(item => {
-          if (typeof item === 'string') {
-            if (item.includes("[신규]") || item.includes("[추가]")) tags.push("added");
-            if (item.includes("[개선]") || item.includes("[수정]")) tags.push("changed");
-            if (item.includes("[bugfix]")) tags.push("fixed");
-            if (item.includes("[삭제]")) tags.push("removed");
-          } else {
-            if (item.type === "Added") tags.push("added");
-            if (item.type === "Changed") tags.push("changed");
-            if (item.type === "Fixed") tags.push("fixed");
-            if (item.type === "Removed") tags.push("removed");
-          }
-        });
-        listItem.setAttribute("data-tags", tags.join(" "));
-
-        if (targetId === "sidebar-update-list") {
-          const details = document.createElement("details");
-          details.className = "recent-visit-day";
-          details.setAttribute("open", ""); // Open by default
-
-          const summary = document.createElement("summary");
-          summary.className = "recent-visit-summary";
-          summary.textContent = formatDateWithDay(update.date);
-          details.appendChild(summary);
-
-          const ul = document.createElement("ul");
-          ul.className = "recent-visit-list";
-
-          items.forEach(item => {
-            const li = document.createElement("li");
-            li.className = "recent-visit-item";
-            
-            let formatted;
-            if (typeof item === 'string') {
-              formatted = formatSidebarContent(item, hierarchy);
-            } else {
-              const iconMap = { Added: "✨", Changed: "📝", Fixed: "🛠️", Removed: "🗑️" };
-              const labelMap = { Added: "추가", Changed: "수정", Fixed: "개선", Removed: "삭제" };
-              const icon = iconMap[item.type] || "📝";
-              const label = labelMap[item.type] || "수정";
-              const tagBadge = `<span class="changelog-badge ${item.type.toLowerCase()}" title="${label}">${icon} ${label}</span>`;
-              const ver = item.version ? ` (v${item.version})` : "";
-              const title = item.projectName + ver;
-              const path = item.projectPath || findPath(hierarchy, item.projectName);
-              const linkHtml = path ? `<a href='${path}'>${title}</a>` : title;
-              const summaryHtml = item.summary ? `: ${item.summary}` : "";
-              formatted = `${tagBadge} ${linkHtml}${summaryHtml}`;
-            }
-            
-            const linkWrapper = document.createElement("div");
-            linkWrapper.className = "recent-visit-link-wrapper";
-            linkWrapper.innerHTML = formatted;
-            
-            li.appendChild(linkWrapper);
-            ul.appendChild(li);
-          });
-
-          details.appendChild(ul);
-          
-          listItem.innerHTML = "";
-          listItem.appendChild(details);
-          listItem.style.border = "none";
-          listItem.style.background = "none";
-          listItem.style.padding = "0";
-          listItem.style.margin = "0 0 12px 0";
-          listItem.style.boxShadow = "none";
-        } else {
-          // 날짜 출력
-          const dateSpan = document.createElement("span");
-          dateSpan.className = "date";
-          dateSpan.textContent = update.date;
-
-          const updateDiv = document.createElement("div");
-
-          items.forEach(item => {
-            let contentSpan = document.createElement("span");
-            if (typeof item === 'string') {
-              let content = item;
-              if (content.startsWith("[신규]") || content.startsWith("[추가]")) contentSpan.className = "added";
-              else if (content.startsWith("[bugfix]") || content.startsWith("[개선]")) contentSpan.className = "fixed";
-              else if (content.startsWith("[수정]")) contentSpan.className = "changed";
-              else if (content.startsWith("[삭제]")) contentSpan.className = "removed";
-              contentSpan.className += " content";
-              contentSpan.innerHTML = formatSidebarContent(content, hierarchy);
-            } else {
-              const iconMap = { Added: "✨", Changed: "📝", Fixed: "🛠️", Removed: "🗑️" };
-              const labelMap = { Added: "추가", Changed: "수정", Fixed: "개선", Removed: "삭제" };
-              const icon = iconMap[item.type] || "📝";
-              const label = labelMap[item.type] || "수정";
-              const tagBadge = `<span class="changelog-badge ${item.type.toLowerCase()}" title="${label}">${icon} ${label}</span>`;
-              contentSpan.className = `${item.type.toLowerCase()} content`;
-              const ver = item.version ? ` (v${item.version})` : "";
-              const title = item.projectName + ver;
-              const path = item.projectPath || findPath(hierarchy, item.projectName);
-              const linkHtml = path ? `<a href='${path}'>${title}</a>` : title;
-              const summaryHtml = item.summary ? `: ${item.summary}` : "";
-              contentSpan.innerHTML = `${tagBadge} ${linkHtml}${summaryHtml}`;
-            }
-            updateDiv.appendChild(contentSpan);
-          });
-
-          listItem.appendChild(dateSpan);
-          listItem.appendChild(updateDiv);
-        }
-        updateList.appendChild(listItem);
-      });
-
-      // 초기 활성 필터링 상태 적용
-      if (targetId === "site-history") {
-        updateHistoryDisplay();
-      }
-
-      // Pre-fetch links in the rendered list to populate searchCache for article detection
-      try {
-        const container = document.getElementById(targetId);
-        if (container) {
-          const links = container.querySelectorAll("a[href]");
-          links.forEach(link => {
-            let href = link.getAttribute("href");
-            if (href && !href.startsWith("http") && href.includes(".html")) {
-              let cleanHref = href.split(/[?#]/)[0];
-              let absolutePath = cleanHref.startsWith("/") ? cleanHref : "/" + cleanHref;
-
-              // 최근 업데이트 링크 불필요한 30개 HTML 사전 fetch 다운로드 완전 파기 정돈 (Network 요청 0건)
-            }
-          });
-        }
-      } catch (e) {
-        // 무시
-      }
-
-    } catch (error) {
-      console.error("Error fetching or processing data:", error);
+  // 환경(env) 정규화 -> 배열 반환 (예: ['WebApp'] 또는 ['Desktop', 'Android'])
+  function normalizeEnvList(item) {
+    if (!item || typeof item === 'string') return ['iseohyun.com'];
+    if (Array.isArray(item.env) && item.env.length > 0) {
+      return item.env;
     }
+    if (typeof item.env === 'string' && item.env.trim() !== '') {
+      return [item.env.trim()];
+    }
+    const pPath = item.projectPath || '';
+    if (pPath.includes('youtube.com')) return ['Video'];
+    if (pPath.startsWith('/small-project/') || pPath.startsWith('http')) return ['WebApp'];
+    return ['iseohyun.com'];
   }
 
   // 계층 경로 찾기 함수
-  function findPath(hierarchy, title, currentPath = "") {
-    const cleanTitle = title.replace(/\s*\(\s*v\d+(?:\.\d+)*\s*\)/gi, "");
+  function findPath(hierarchy, title, currentPath = '') {
+    if (!hierarchy || !title) return null;
+    const cleanTitle = title.replace(/\s*\(\s*v\d+(?:\.\d+)*\s*\)/gi, '');
     const titles = cleanTitle.split('>');
     let path = currentPath;
 
@@ -402,67 +124,617 @@ window.SiteModules.UpdateLog = (function() {
 
       for (const item of hierarchy) {
         if (item.주제 === currentTitle.trim()) {
-          path += item.디렉토리 || "";
+          path += item.디렉토리 || '';
 
           if (item.목록) {
             hierarchy = item.목록;
             found = true;
             break;
           } else {
-            const fileName = item.hasOwnProperty('파일명') ? item.파일명 : "index.html";
-            return path + fileName;
+            const fileName = Object.prototype.hasOwnProperty.call(item, '파일명') ? item.파일명 : 'index.html';
+            return '/' + (path + fileName).replace(/^\/+/, '');
           }
         }
       }
 
       if (!found) {
-        return null; // 경로를 찾을 수 없는 경우
+        return null;
       }
     }
 
-    return path; // 최종 경로 반환
+    return '/' + path.replace(/^\/+/, '');
+  }
+
+  // 개별 이벤트가 현재 필터 조건에 부합하는지 검사
+  function matchesEventFilter(ev) {
+    // 1. 연도 필터
+    if (!filterState.years.includes(ev.year)) {
+      return false;
+    }
+
+    // 2. 환경 필터 (복수 선택)
+    const hasEnvMatch = ev.envs.some(e => filterState.envs.includes(e));
+    if (!hasEnvMatch) {
+      return false;
+    }
+
+    // 3. 분류 필터 (복수 선택)
+    if (!filterState.types.includes(ev.typeKey)) {
+      return false;
+    }
+
+    // 4. 검색어 필터
+    const query = filterState.searchText.trim().toLowerCase();
+    if (query.length > 0) {
+      if (filterState.searchTargets.length === 0) {
+        return false;
+      }
+      const item = ev.raw;
+      const titleStr = (typeof item === 'string' ? item : (item.projectName || '')).toLowerCase();
+      const contentStr = (typeof item === 'string' ? '' : `${item.summary || ''} ${item.detail || ''}`).toLowerCase();
+      const categoryStr = `${ev.envs.join(' ')} ${ev.typeKey} ${item.type || ''} ${item.projectPath || ''}`.toLowerCase();
+
+      let matchedQuery = false;
+      if (filterState.searchTargets.includes('title') && titleStr.includes(query)) {
+        matchedQuery = true;
+      }
+      if (!matchedQuery && filterState.searchTargets.includes('content') && contentStr.includes(query)) {
+        matchedQuery = true;
+      }
+      if (!matchedQuery && filterState.searchTargets.includes('category') && categoryStr.includes(query)) {
+        matchedQuery = true;
+      }
+      if (!matchedQuery) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  function ensureDetailModal() {
+    let modal = document.getElementById('changelog-detail-modal');
+    if (modal) return modal;
+
+    modal = document.createElement('div');
+    modal.id = 'changelog-detail-modal';
+    modal.className = 'cal-modal-overlay';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.innerHTML = `
+      <div class="cal-modal-card">
+        <div class="cal-modal-header">
+          <div class="cal-modal-meta" id="cal-modal-meta"></div>
+          <button type="button" class="cal-modal-close" id="cal-modal-close" title="닫기 (ESC)">&times;</button>
+        </div>
+        <div class="cal-modal-body" id="cal-modal-body"></div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    const closeBtn = modal.querySelector('#cal-modal-close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+      });
+    }
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.remove('active');
+      }
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('active')) {
+        modal.classList.remove('active');
+      }
+    });
+
+    return modal;
+  }
+
+  function openEventDetailPopup(dateStr, ev, hierarchy) {
+    const modal = ensureDetailModal();
+    const metaEl = modal.querySelector('#cal-modal-meta');
+    const bodyEl = modal.querySelector('#cal-modal-body');
+
+    const item = ev.raw;
+    const typeKey = ev.typeKey;
+    const badgeClassMap = { Add: 'added', Changed: 'changed', Fixed: 'fixed', Deleted: 'removed' };
+    const iconMap = { Add: '✨', Changed: '📝', Fixed: '🛠️', Deleted: '🗑️' };
+    const labelMap = { Add: '추가 (Add)', Changed: '수정 (Changed)', Fixed: '개선 (Fixed)', Deleted: '삭제 (Deleted)' };
+
+    const badgeClass = badgeClassMap[typeKey] || 'changed';
+    const envBadgesHtml = ev.envs.map(envName => {
+      const envCls = ENV_CLASS_MAP[envName] || 'env-iseohyun';
+      return `<span class="cal-modal-env-badge ${envCls}">${escapeHtml(envName)}</span>`;
+    }).join('');
+
+    const badgeHtml = `<span class="changelog-badge ${badgeClass}">${iconMap[typeKey]} ${labelMap[typeKey]}</span>`;
+    const dateHtml = `<span class="cal-modal-date">${escapeHtml(formatDateWithDay(dateStr))}</span>`;
+    metaEl.innerHTML = `${badgeHtml}${envBadgesHtml}${dateHtml}`;
+
+    const projectName = item.projectName || '업데이트';
+    const verHtml = item.version ? `<span class="cal-modal-version">v${escapeHtml(item.version)}</span>` : '';
+    const summaryText = item.summary || '';
+    const detailText = item.detail || item.summary || '';
+
+    const resolvedPath = item.projectPath || findPath(hierarchy, projectName);
+    let actionHtml = '';
+    if (resolvedPath) {
+      const isExternal = resolvedPath.startsWith('http://') || resolvedPath.startsWith('https://');
+      if (isExternal) {
+        actionHtml = `
+          <div class="cal-modal-actions">
+            <a class="cal-modal-link-btn" href="${escapeHtml(resolvedPath)}" target="_blank" rel="noopener noreferrer">
+              <span>사이트 / 저장소 바로가기</span>
+              <span class="material-symbols-outlined" style="font-size:17px;">open_in_new</span>
+            </a>
+          </div>
+        `;
+      } else {
+        actionHtml = `
+          <div class="cal-modal-actions">
+            <a class="cal-modal-link-btn" href="${escapeHtml(resolvedPath)}" id="cal-modal-internal-link">
+              <span>해당 페이지로 이동</span>
+              <span class="material-symbols-outlined" style="font-size:17px;">arrow_forward</span>
+            </a>
+          </div>
+        `;
+      }
+    }
+
+    const formattedDetail = escapeHtml(detailText).replace(/\n/g, '<br>');
+    const titleColorClass = TYPE_CLASS_MAP[typeKey] || 'type-changed';
+
+    bodyEl.innerHTML = `
+      <div class="cal-modal-title-row">
+        <h3 class="cal-modal-title ${titleColorClass}">${escapeHtml(projectName)}</h3>
+        ${verHtml}
+      </div>
+      ${summaryText ? `<div class="cal-modal-summary">${escapeHtml(summaryText)}</div>` : ''}
+      ${formattedDetail && formattedDetail !== escapeHtml(summaryText) ? `
+        <div class="cal-modal-detail-section">
+          <div class="cal-modal-detail-label">상세 내용</div>
+          <div class="cal-modal-detail-box">${formattedDetail}</div>
+        </div>
+      ` : ''}
+      ${actionHtml}
+    `;
+
+    const internalLink = bodyEl.querySelector('#cal-modal-internal-link');
+    if (internalLink) {
+      internalLink.addEventListener('click', () => {
+        modal.classList.remove('active');
+      });
+    }
+
+    modal.classList.add('active');
+  }
+
+  function buildFloatingFilterUI(updateList, targetId) {
+    let floatingFilter = document.getElementById('cal-floating-filter');
+    if (floatingFilter) return floatingFilter;
+
+    floatingFilter = document.createElement('div');
+    floatingFilter.id = 'cal-floating-filter';
+    floatingFilter.className = 'cal-floating-filter';
+
+    floatingFilter.innerHTML = `
+      <button type="button" class="cal-filter-toggle-btn" id="cal-filter-toggle-btn" title="달력 필터 옵션 열기/닫기" aria-expanded="false">
+        <span class="material-symbols-outlined">tune</span>
+      </button>
+      <div class="cal-filter-panel" id="cal-filter-panel">
+        <table class="cal-filter-table">
+          <tbody>
+            <tr>
+              <th>연도</th>
+              <td>
+                <div class="cal-filter-options">
+                  <label class="cal-filter-chip">
+                    <input type="checkbox" name="cal-year" value="2026" checked>
+                    <span>2026</span>
+                  </label>
+                  <label class="cal-filter-chip">
+                    <input type="checkbox" name="cal-year" value="2025" checked>
+                    <span>2025</span>
+                  </label>
+                  <label class="cal-filter-chip">
+                    <input type="checkbox" name="cal-year" value="2024" checked>
+                    <span>2024</span>
+                  </label>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <th>환경</th>
+              <td>
+                <div class="cal-filter-options">
+                  <label class="cal-filter-chip env-chip env-iseohyun">
+                    <input type="checkbox" name="cal-env" value="iseohyun.com" checked>
+                    <span>iseohyun.com</span>
+                  </label>
+                  <label class="cal-filter-chip env-chip env-webapp">
+                    <input type="checkbox" name="cal-env" value="WebApp" checked>
+                    <span>WebApp</span>
+                  </label>
+                  <label class="cal-filter-chip env-chip env-android">
+                    <input type="checkbox" name="cal-env" value="Android" checked>
+                    <span>Android</span>
+                  </label>
+                  <label class="cal-filter-chip env-chip env-desktop">
+                    <input type="checkbox" name="cal-env" value="Desktop" checked>
+                    <span>Desktop</span>
+                  </label>
+                  <label class="cal-filter-chip env-chip env-video">
+                    <input type="checkbox" name="cal-env" value="Video" checked>
+                    <span>Video</span>
+                  </label>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <th>분류</th>
+              <td>
+                <div class="cal-filter-options">
+                  <label class="cal-filter-chip type-chip">
+                    <input type="checkbox" name="cal-type" value="Add" checked>
+                    <span class="cal-filter-type-dot" style="background-color:#16a34a;">A</span>
+                    <span class="type-add">Add</span>
+                  </label>
+                  <label class="cal-filter-chip type-chip">
+                    <input type="checkbox" name="cal-type" value="Changed" checked>
+                    <span class="cal-filter-type-dot" style="background-color:#2563eb;">C</span>
+                    <span class="type-changed">Changed</span>
+                  </label>
+                  <label class="cal-filter-chip type-chip">
+                    <input type="checkbox" name="cal-type" value="Fixed" checked>
+                    <span class="cal-filter-type-dot" style="background-color:#f59e0b;">F</span>
+                    <span class="type-fixed">Fixed</span>
+                  </label>
+                  <label class="cal-filter-chip type-chip">
+                    <input type="checkbox" name="cal-type" value="Deleted" checked>
+                    <span class="cal-filter-type-dot" style="background-color:#dc2626;">D</span>
+                    <span class="type-deleted">Deleted</span>
+                  </label>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <th>검색</th>
+              <td>
+                <div class="cal-filter-options cal-search-options">
+                  <input type="text" id="cal-search-input" class="cal-search-input" placeholder="검색어 입력..." autocomplete="off">
+                  <label class="cal-filter-chip">
+                    <input type="checkbox" name="cal-search-target" value="title" checked>
+                    <span>제목</span>
+                  </label>
+                  <label class="cal-filter-chip">
+                    <input type="checkbox" name="cal-search-target" value="content" checked>
+                    <span>내용</span>
+                  </label>
+                  <label class="cal-filter-chip">
+                    <input type="checkbox" name="cal-search-target" value="category" checked>
+                    <span>분류</span>
+                  </label>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    updateList.parentNode.insertBefore(floatingFilter, updateList);
+
+    const toggleBtn = floatingFilter.querySelector('#cal-filter-toggle-btn');
+    const panel = floatingFilter.querySelector('#cal-filter-panel');
+
+    if (toggleBtn && panel) {
+      toggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = panel.classList.toggle('open');
+        toggleBtn.classList.toggle('active', isOpen);
+        toggleBtn.setAttribute('aria-expanded', String(isOpen));
+      });
+    }
+
+    function syncFilterStateAndRender() {
+      const checkedYears = Array.from(floatingFilter.querySelectorAll('input[name="cal-year"]:checked'))
+        .map(el => parseInt(el.value, 10));
+      const checkedEnvs = Array.from(floatingFilter.querySelectorAll('input[name="cal-env"]:checked'))
+        .map(el => el.value);
+      const checkedTypes = Array.from(floatingFilter.querySelectorAll('input[name="cal-type"]:checked'))
+        .map(el => el.value);
+      const checkedTargets = Array.from(floatingFilter.querySelectorAll('input[name="cal-search-target"]:checked'))
+        .map(el => el.value);
+      const searchInput = floatingFilter.querySelector('#cal-search-input');
+
+      filterState.years = checkedYears;
+      filterState.envs = checkedEnvs;
+      filterState.types = checkedTypes;
+      filterState.searchTargets = checkedTargets;
+      filterState.searchText = searchInput ? searchInput.value : '';
+      filterState.hasUserFiltered = true;
+
+      renderCalendar(targetId);
+    }
+
+    floatingFilter.querySelectorAll('input[type="checkbox"]').forEach(chk => {
+      chk.addEventListener('change', syncFilterStateAndRender);
+    });
+
+    const searchInput = floatingFilter.querySelector('#cal-search-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', syncFilterStateAndRender);
+    }
+
+    return floatingFilter;
+  }
+
+  function renderCalendar(targetId = 'site-history') {
+    const container = document.getElementById(targetId);
+    if (!container || !cachedUpdates) return;
+
+    container.innerHTML = '';
+
+    // 1. 전체 이벤트 정규화 및 필터링 수행
+    const dateMap = new Map();
+    const filteredEvents = [];
+
+    cachedUpdates.forEach(entry => {
+      if (!entry || !entry.date) return;
+      const d = parseDateString(entry.date);
+      const key = toDateKey(d);
+
+      const rawItems = (Array.isArray(entry.updates) || Array.isArray(entry.content))
+        ? (entry.updates || entry.content)
+        : [entry];
+
+      rawItems.forEach(item => {
+        const typeKey = normalizeTypeKey(item);
+        const envs = normalizeEnvList(item);
+        const ev = {
+          dateObj: d,
+          dateKey: key,
+          year: d.getFullYear(),
+          typeKey: typeKey,
+          envs: envs,
+          raw: item
+        };
+
+        if (matchesEventFilter(ev)) {
+          filteredEvents.push(ev);
+          if (!dateMap.has(key)) {
+            dateMap.set(key, []);
+          }
+          dateMap.get(key).push(ev);
+        }
+      });
+    });
+
+    // 2. 달력 테이블 기본 뼈대 생성 (thead: 일, 월, 화, 수, 목, 금, 토)
+    const tableWrap = document.createElement('div');
+    tableWrap.className = 'update-calendar-wrapper';
+
+    const table = document.createElement('table');
+    table.className = 'update-calendar-table';
+
+    const thead = document.createElement('thead');
+    const headRow = document.createElement('tr');
+    daysOfWeek.forEach((dayName, idx) => {
+      const th = document.createElement('th');
+      th.textContent = dayName;
+      if (idx === 0) th.className = 'sun-col';
+      if (idx === 6) th.className = 'sat-col';
+      headRow.appendChild(th);
+    });
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+
+    // 필터 결과가 0건인 경우 빈 안내 행 출력
+    if (filteredEvents.length === 0) {
+      const emptyTr = document.createElement('tr');
+      const emptyTd = document.createElement('td');
+      emptyTd.colSpan = 7;
+      emptyTd.style.cssText = 'padding: 40px 16px; text-align: center; color: #64748b; font-weight: 600;';
+      emptyTd.textContent = '선택한 필터 조건에 일치하는 업데이트 이벤트가 없습니다.';
+      emptyTr.appendChild(emptyTd);
+      tbody.appendChild(emptyTr);
+      table.appendChild(tbody);
+      tableWrap.appendChild(table);
+      container.appendChild(tableWrap);
+      return;
+    }
+
+    // 3. 기준 주(1행) 및 마지막 주 계산
+    // - 초기 로드 상태에서는 오늘(Today)이 포함된 주가 1행
+    // - 필터가 선택/변경된 경우, 필터된 최신 이벤트 날짜가 포함된 주가 1행!
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayKey = toDateKey(today);
+
+    const maxFilteredTime = Math.max(...filteredEvents.map(ev => ev.dateObj.getTime()));
+    const minFilteredTime = Math.min(...filteredEvents.map(ev => ev.dateObj.getTime()));
+    const latestEventDate = new Date(maxFilteredTime);
+    const earliestEventDate = new Date(minFilteredTime);
+
+    const anchorEndDate = filterState.hasUserFiltered
+      ? latestEventDate
+      : (today > latestEventDate ? today : latestEventDate);
+
+    const firstRowSunday = new Date(
+      anchorEndDate.getFullYear(),
+      anchorEndDate.getMonth(),
+      anchorEndDate.getDate() - anchorEndDate.getDay()
+    );
+
+    const lastRowSunday = new Date(
+      earliestEventDate.getFullYear(),
+      earliestEventDate.getMonth(),
+      earliestEventDate.getDate() - earliestEventDate.getDay()
+    );
+
+    const totalWeeks = Math.max(
+      1,
+      Math.round((firstRowSunday.getTime() - lastRowSunday.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1
+    );
+
+    for (let w = 0; w < totalWeeks; w++) {
+      const weekSunday = new Date(
+        firstRowSunday.getFullYear(),
+        firstRowSunday.getMonth(),
+        firstRowSunday.getDate() - w * 7
+      );
+
+      // 선택된 연도에 속하는 날짜가 하루도 없는 주는 건너뜀 (단, 1행은 항상 표시)
+      if (w > 0) {
+        let hasActiveYearDay = false;
+        for (let i = 0; i < 7; i++) {
+          const d = new Date(weekSunday.getFullYear(), weekSunday.getMonth(), weekSunday.getDate() + i);
+          if (filterState.years.includes(d.getFullYear())) {
+            hasActiveYearDay = true;
+            break;
+          }
+        }
+        if (!hasActiveYearDay) continue;
+      }
+
+      const tr = document.createElement('tr');
+
+      for (let dIdx = 0; dIdx < 7; dIdx++) {
+        const cellDate = new Date(
+          weekSunday.getFullYear(),
+          weekSunday.getMonth(),
+          weekSunday.getDate() + dIdx
+        );
+        const cellKey = toDateKey(cellDate);
+        const isToday = cellKey === todayKey;
+        const isFirstOfMonth = cellDate.getDate() === 1;
+
+        const td = document.createElement('td');
+        td.className = 'cal-cell';
+        if (dIdx === 0) td.classList.add('sun-cell');
+        if (dIdx === 6) td.classList.add('sat-cell');
+        if (isToday) td.classList.add('is-today');
+        if (!filterState.years.includes(cellDate.getFullYear()) && !isToday) {
+          td.classList.add('out-of-year');
+        }
+
+        // 셀 상단 날짜 표시줄
+        const dateHeader = document.createElement('div');
+        dateHeader.className = 'cal-date-header';
+
+        const dateLabel = document.createElement('span');
+        dateLabel.className = 'cal-date-num';
+        if (isFirstOfMonth || (w === 0 && dIdx === 0)) {
+          const yearPrefix = (cellDate.getMonth() === 0 && isFirstOfMonth) || (w === 0 && dIdx === 0)
+            ? `${cellDate.getFullYear()}.`
+            : '';
+          dateLabel.textContent = `${yearPrefix}${cellDate.getMonth() + 1}.${cellDate.getDate()}`;
+          if (isFirstOfMonth) dateLabel.classList.add('month-start-badge');
+        } else {
+          dateLabel.textContent = `${cellDate.getMonth() + 1}.${cellDate.getDate()}`;
+        }
+        dateHeader.appendChild(dateLabel);
+
+        if (isToday) {
+          const todayBadge = document.createElement('span');
+          todayBadge.className = 'cal-today-badge';
+          todayBadge.textContent = '오늘';
+          dateHeader.appendChild(todayBadge);
+        }
+
+        td.appendChild(dateHeader);
+
+        // 해당 날짜의 필터링된 이벤트 카드 렌더링
+        const dayEvents = dateMap.get(cellKey) || [];
+        if (dayEvents.length > 0) {
+          const eventsWrap = document.createElement('div');
+          eventsWrap.className = 'cal-events-wrap';
+
+          dayEvents.forEach(ev => {
+            const item = ev.raw;
+            // 배경색: 활성화된 환경 중 첫 번째 매칭 환경 색상 적용
+            const matchedEnv = ev.envs.find(e => filterState.envs.includes(e)) || ev.envs[0] || 'iseohyun.com';
+            const envClass = ENV_CLASS_MAP[matchedEnv] || 'env-iseohyun';
+            // 우상단 border 걸침 배지: 분류(type) A / C / F / D 원형 배지
+            const badgeInfo = TYPE_BADGE_MAP[ev.typeKey] || TYPE_BADGE_MAP.Changed;
+
+            const card = document.createElement('div');
+            card.className = `cal-event-card ${envClass}`;
+
+            const projectName = typeof item === 'string' ? item : (item.projectName || '업데이트');
+            const summaryText = typeof item === 'string' ? '' : (item.summary || '');
+
+            card.innerHTML = `<span class="cal-type-badge ${badgeInfo.cls}" title="${escapeHtml(badgeInfo.label)}">${badgeInfo.letter}</span><strong class="cal-event-project" title="${escapeHtml(projectName)}">${escapeHtml(projectName)}</strong>${
+              summaryText ? `<span class="cal-event-summary">${escapeHtml(summaryText)}</span>` : ''
+            }`;
+
+            card.addEventListener('click', (e) => {
+              e.stopPropagation();
+              openEventDetailPopup(cellKey, ev, cachedHierarchy);
+            });
+
+            eventsWrap.appendChild(card);
+          });
+
+          td.appendChild(eventsWrap);
+        }
+
+        tr.appendChild(td);
+      }
+
+      tbody.appendChild(tr);
+    }
+
+    table.appendChild(tbody);
+    tableWrap.appendChild(table);
+    container.appendChild(tableWrap);
+  }
+
+  async function getUpdateList(cnt = 'all', date = '2023-01-01', edate = '', keywords = '', targetId = 'site-history') {
+    const updateList = document.getElementById(targetId);
+    if (!updateList) return;
+
+    if (targetId === 'site-history') {
+      filterState = {
+        years: [...DEFAULT_YEARS],
+        envs: [...DEFAULT_ENVS],
+        types: [...DEFAULT_TYPES],
+        searchText: '',
+        searchTargets: [...DEFAULT_SEARCH_TARGETS],
+        hasUserFiltered: false
+      };
+      buildFloatingFilterUI(updateList, targetId);
+    }
+
+    try {
+      const [updatesResponse, hierarchyResponse] = await Promise.all([
+        fetch('/changelog.json', { cache: 'no-cache' }),
+        fetch('/hierarchy.json')
+      ]);
+      cachedUpdates = await updatesResponse.json();
+      cachedHierarchy = await hierarchyResponse.json();
+
+      renderCalendar(targetId);
+    } catch (error) {
+      console.error('Error fetching or rendering changelog calendar:', error);
+    }
   }
 
   function clearUpdateList() {
-    const updateList = document.querySelector('ul#site-history');
+    const updateList = document.getElementById('site-history');
     if (updateList) {
-      while (updateList.firstChild) {
-        updateList.removeChild(updateList.firstChild);
-      }
+      updateList.innerHTML = '';
     }
   }
 
   function toggle(tag) {
-    const elements = document.querySelectorAll('ul#site-history span');
-    elements.forEach(element => {
-      if (tag === 'all' || element.classList.contains('date')) {
-        element.style.display = 'block';
-      } else {
-        if (element.classList.contains(tag)) {
-          element.style.display = 'block';
-        } else {
-          element.style.display = 'none';
-        }
-      }
-    });
-
-    const listItems = document.querySelectorAll('ul#site-history > li');
-    listItems.forEach(item => {
-      const spans = item.querySelectorAll('span');
-      let allHidden = true;
-
-      spans.forEach(span => {
-        if (!span.classList.contains('date') && span.style.display !== 'none') {
-          allHidden = false;
-        }
-      });
-
-      if (allHidden) {
-        item.style.display = 'none';
-      } else {
-        item.style.display = 'block';
-      }
-    });
+    renderCalendar('site-history');
   }
 
   return {
@@ -473,7 +745,7 @@ window.SiteModules.UpdateLog = (function() {
 })();
 
 // 글로벌 객체 매핑 및 대기열(Queue) 실행 처리
-(function() {
+(function () {
   const UpdateLog = window.SiteModules.UpdateLog;
   window.getUpdateList = UpdateLog.getUpdateList;
   window.clearUpdateList = UpdateLog.clearUpdateList;

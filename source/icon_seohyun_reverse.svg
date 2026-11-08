@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 500 500" width="500" height="500" xmlns="http://www.w3.org/2000/svg">
+  <rect width="500" height="500" rx="100" ry="100" fill="rgb(0, 0, 0)"/>
+  <g transform="translate(250, 250) scale(0.9) translate(-250, -250)">
+    <path style="stroke: rgb(255, 255, 255); fill: none; stroke-linecap: round; stroke-width: 46px;" d="M 84 440 C -1 341 38 223 68 161 S 151 23 234 34 S 363 164 327 217 S 245 273 198 229 S 187 105 245 77 S 432 108 432 212 S 354 371 393 420 C 431 460 468 436 468 407"/>
+    <path style="stroke: rgb(255, 255, 255); fill: none; stroke-linecap: round; stroke-width: 46px;" d="M 99 289 C 183 296 239 392 188 468"/>
+    <path style="stroke: rgb(255, 255, 255); fill: none; stroke-linecap: round; stroke-miterlimit: 17; stroke-width: 46px;" d="M 246 311 C 335 320 324 390 291 462"/>
+    <path style="stroke: rgb(255, 255, 255); fill: none; stroke-linecap: round; stroke-miterlimit: 17; stroke-width: 46px;" d="M 341 267 C 339 260 360 313 400 309"/>
+  </g>
+</svg>

@@ -46,7 +46,7 @@ window.SiteModules.Navigation = (function () {
         }
 
         // Q&A 질답 폼 리렌더링 트리거 (로그인 상태 변화에 반응)
-        if (state && state.currentPath && state.currentPath !== "/index.html" && state.currentPath !== "/") {
+        if (state && state.currentPath && state.currentPath !== "/index.html" && state.currentPath !== "/" && !state.currentPath.endsWith("/") && !document.getElementById("site-history")) {
           renderPageFeedbackArea(state.currentPath);
         }
 
@@ -72,7 +72,15 @@ window.SiteModules.Navigation = (function () {
       });
     }).catch(err => console.error("Firebase initialization failed:", err));
 
-    // 1. 구글 머티리얼 심볼 링크 주입
+    // 1. 구글 머티리얼 심볼 링크 주입 및 기본 파비콘 동기화
+    let faviconLink = document.querySelector("link[rel*='icon']");
+    if (!faviconLink) {
+      faviconLink = document.createElement("link");
+      faviconLink.rel = "shortcut icon";
+      document.head.appendChild(faviconLink);
+    }
+    faviconLink.type = "image/svg+xml";
+    faviconLink.href = "/source/icon_seohyun_reverse.svg";
     if (!document.getElementById("material-symbols-link")) {
       const link = document.createElement("link");
       link.id = "material-symbols-link";
@@ -93,7 +101,7 @@ window.SiteModules.Navigation = (function () {
         mobileHeader.setAttribute("id", "mobile-header");
         mobileHeader.innerHTML = `
           <div id="mobile-logo">
-            <img src="/source/icon_seohyun.svg" alt="iseohyun.com 로고" id="mobile-logo-img">
+            <img src="/source/icon_seohyun_reverse.svg" alt="iseohyun.com 로고" id="mobile-logo-img">
             <span id="mobile-logo-text">iseohyun.com</span>
           </div>
           <div id="mobile-menu-btn" data-tooltip="메뉴">
@@ -500,7 +508,7 @@ window.SiteModules.Navigation = (function () {
 
     if (!hash || hash === "#" || hash === "#/" || hash === "#/index.html" || hash === "#index.html") {
       const path = window.location.pathname;
-      if (path === "/" || path === "/index.html" || path.endsWith("/index.html")) {
+      if (hash === "#/" || hash === "#/index.html" || hash === "#index.html" || path === "/" || path.endsWith("/") || path === "/index.html" || path.endsWith("/index.html") || !!document.getElementById("site-history")) {
         loadHomeRoute();
       } else {
         // 서브페이지 직접 진입 (해시 없음): 기존 article 구조와 내용을 유지하면서 상태 데이터만 갱신
@@ -883,7 +891,7 @@ window.SiteModules.Navigation = (function () {
 
     // I-4. 모든 서브페이지 최하단 Q&A 피드백 영역 렌더링
     const isAdminPage = urlPath && (urlPath.endsWith("/admin.html") || urlPath.endsWith("/admin.htm"));
-    if (!isHome && !isAdminPage) {
+    if (!isHome && !isAdminPage && !(urlPath && urlPath.endsWith("/promo.html"))) {
       renderPageFeedbackArea(urlPath);
       if (urlPath === "/help.html") {
         bindHelpSuggestionEvents(document.querySelector("article"));

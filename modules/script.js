@@ -3,7 +3,7 @@
 // 하위 호환성을 유지하기 위한 통합 진입점(Bootstrapper) 스크립트입니다.
 // 핵심 모듈들을 비동기로 로드하고 어플리케이션을 초기화합니다.
 
-window.SiteVersion = "20260814v1";
+window.SiteVersion = "20261109v4";
 
 (function() {
   // SPA 리다이렉트 처리: index.html이 아닌 개별 서브페이지로 직접 접속 시 홈(SPA 숙주)의 해시 경로로 강제 전환시킵니다.
@@ -58,7 +58,7 @@ window.SiteVersion = "20260814v1";
   // 각 모듈 동적 로드
   scripts.forEach(src => {
     const s = document.createElement('script');
-    s.src = src;
+    s.src = src + "?v=" + window.SiteVersion;
     s.async = false; // 브라우저 스크립트 실행 순서 보장
     s.onload = onScriptLoad;
     s.onerror = (err) => console.error(`[Bootstrapper] Failed to load script: ${src}`, err);

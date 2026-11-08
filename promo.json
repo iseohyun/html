@@ -1,14 +1,17 @@
 {
   "sections": [
     {
-      "id": "sites",
-      "title": "사이트",
+      "id": "webapp",
+      "title": "Web App",
       "items": [
         {
           "title": "해풍단",
+          "projectId": "haepungdan",
+          "icon": "source/haepungdan/Haepungdan-main.png",
+          "image": "source/haepungdan/Haepungdan-banner.png",
           "links": [
             {
-              "label": "사이트 방문",
+              "label": "해풍단",
               "url": "https://iseohyun.github.io/haepungdan/"
             }
           ],
@@ -35,9 +38,11 @@
         },
         {
           "title": "거시배 몽꾸와 야르",
+          "projectId": "GeojeSwimmers",
+          "icon": "source/GeojeSwimmers/logo-swimmer.svg",
           "links": [
             {
-              "label": "사이트 방문",
+              "label": "거시배 몽꾸와 야르",
               "url": "https://iseohyun.github.io/GeojeSwimmers/#/competition-result-adult-records"
             }
           ],
@@ -75,9 +80,11 @@
         },
         {
           "title": "야호트래블",
+          "projectId": "yahotravel",
+          "icon": "source/yahotravel/icon.png",
           "links": [
             {
-              "label": "공식 홈페이지",
+              "label": "야호트래블",
               "url": "https://yahotravel.co.kr/"
             }
           ],
@@ -100,9 +107,10 @@
         {
           "title": "보컬훈련",
           "projectId": "SingSharp",
+          "icon": "source/SingSharp/singsharp-icon.svg",
           "links": [
             {
-              "label": "웹 앱 실행",
+              "label": "SingSharp",
               "url": "https://iseohyun.github.io/SingSharp/"
             }
           ],
@@ -126,9 +134,10 @@
         {
           "title": "대한민국 행사",
           "projectId": "KoreaEventList",
+          "icon": "source/KoreaEventList/korea-map-icon.svg",
           "links": [
             {
-              "label": "사이트 방문",
+              "label": "KoreaEventList",
               "url": "https://iseohyun.github.io/KoreaEventList/"
             }
           ],
@@ -151,12 +160,344 @@
               "content": "공공데이터 및 연관된 사이트 수집 및 크롤링 수행, DB구축, 사이트 개설"
             }
           ]
+        },
+        {
+          "title": "색상 파레트 추출기",
+          "projectId": "UniPalette",
+          "icon": "source/UniPalette/icon.svg",
+          "links": [
+            {
+              "label": "UniPalette",
+              "url": "https://iseohyun.github.io/UniPalette/"
+            },
+            {
+              "label": "GitHub",
+              "url": "https://github.com/iseohyun/UniPalette"
+            }
+          ],
+          "showUrl": false,
+          "description": "다양한 알고리즘을 바탕으로 색상환에서 N개의 색상을 균일한 간격으로 추출하고, 인간의 시신경 분포를 고려해 비슷한 색상을 식별하도록 도와주는 웹 프로그램",
+          "overview": [
+            "분명 비슷한 간격으로 색을 추출했는데, 어떤 두 색상은 비슷하게 보이는 걸까? 인간의 시신경 분포는 컴퓨터같이 일정하지 않습니다.",
+            "이 프로그램은 다양한 알고리즘을 통해 색상환에서 N개의 색상을 균일한 간격으로 추출하고, 인간의 시신경 분포를 고려하여 비슷하게 보이는 색상들을 식별할 수 있도록 도와줍니다."
+          ],
+          "video": "https://github.com/user-attachments/assets/aabbc453-e4a8-4eb2-ad90-3b726077873d",
+          "techStack": [
+            "JavaScript (ES6+)",
+            "HTML5 Canvas / SVG",
+            "지각 균일 색공간(Perceptual Color Space) 알고리즘",
+            "GitHub Pages"
+          ],
+          "changelog": [
+            {
+              "date": "2026.7.10",
+              "content": "색상환 기반 균일 색상 팔레트 추출 웹 프로그램 공개"
+            }
+          ]
+        },
+        {
+          "title": "Webpointer",
+          "projectId": "Webpointer",
+          "icon": "source/webpointer/icon.svg",
+          "links": [
+            {
+              "label": "Webpointer",
+              "url": "https://iseohyun.github.io/webpointer/"
+            },
+            {
+              "label": "GitHub",
+              "url": "https://github.com/iseohyun/webpointer"
+            }
+          ],
+          "showUrl": false,
+          "description": "MS Office 리본 UI와 481×271 격자 스냅, 실시간 SVG DOM을 기반으로 도형·베지어 곡선·텍스트·11종 이펙트 필터 및 SMIL 애니메이션을 편집하는 웹 벡터 CAD 에디터",
+          "overview": [
+            "16:9 비율의 캔버스 위에서 481 × 271 Step 근사 격자 스냅(Grid Snap)과 실제 SVG DOM 태그를 기반으로 실시간 벡터 그래픽을 드로잉하고 변형할 수 있는 웹 기반 벡터 CAD 에디터입니다.",
+            "• 삽입/보기/그림 서식/글 서식/애니메이션 등 MS Office 스타일 리본 바 UI",
+            "• 도형 8종(점, 선, 사각, 타원, 호, 2차/3차 베지어, 둥근사각), 제어점 핸들 실시간 곡률 편집, 도형 내 인라인 텍스트 통합 편집",
+            "• 11종 SVG 이펙트 필터, 멀티스탑 그라데이션, SMIL SVG 애니메이션 위저드, 무제한 임시 저장 슬롯 및 파일 열기/저장 지원"
+          ],
+          "techStack": [
+            "SVG DOM & 481×271 Grid Snap Engine",
+            "JavaScript (ES6+ Modular Architecture)",
+            "2차/3차 베지어 곡선 & 원호(Arc) 제어점 핸들",
+            "SMIL SVG Animation Wizard",
+            "11종 SVG Filter Effects & 멀티스탑 그라데이션",
+            "Zero-Dependency In-Browser Test Runner (107 TCs)",
+            "GitHub Pages"
+          ],
+          "changelog": [
+            {
+              "date": "2026.8.15",
+              "version": "v0.8.4",
+              "content": "직선 Ctrl 직교 스냅, 5종 색상 단독 적용 & 200ms 롱프레스 팔레트 팝오버, 11종 이펙트 필터 및 107개 TC 인브라우저 테스트 러너 구축"
+            },
+            {
+              "date": "2026.8.14",
+              "version": "v0.8.3",
+              "content": "도형 내 텍스트 통합 연동(F2 편집, 회전 중심축·트랜스폼 동기화), 베지어/아크 정밀 근접 선택, 리본 수치 카테고리 및 자동맞춤 방향A 보존"
+            },
+            {
+              "date": "2026.8.9",
+              "version": "v0.7.2",
+              "content": "자르기 및 늘리기 기능 개선, 각종 버그 수정"
+            },
+            {
+              "date": "2026.8.8",
+              "version": "v0.7.1",
+              "content": "그림 추가, 애니메이션 위저드, 줌 인, 파일 열기/저장, Undo/Redo, 자가진단 모듈 추가"
+            },
+            {
+              "date": "2026.7.30",
+              "version": "v0.2.1",
+              "content": "연속 베지어 곡선 중간 제어점 핸들 표시 및 마우스 커서 스타일 적용"
+            }
+          ]
+        },
+        {
+          "title": "로또 시뮬레이터",
+          "projectId": "LottoSimulator",
+          "icon": "source/LottoSimulator/icon.png",
+          "links": [
+            {
+              "label": "LottoSimulator",
+              "url": "https://iseohyun.github.io/LottoSimulator/"
+            },
+            {
+              "label": "GitHub",
+              "url": "https://github.com/iseohyun/LottoSimulator"
+            }
+          ],
+          "showUrl": false,
+          "description": "실제 동행복권 당첨 데이터를 기반으로 나만의 조합 알고리즘·슬롯별 시나리오·당첨 빈도 히트맵 및 기댓값을 분석하는 로또 시뮬레이터",
+          "overview": [
+            "실제 동행복권 역대 당첨 번호 데이터베이스를 바탕으로 매주 응모 시뮬레이션과 수익률·기댓값을 실시간 분석하는 웹 애플리케이션입니다.",
+            "• 나만의 알고리즘 설계: 최근 N회차 빈출 번호 + 고정 번호 + 랜덤 번호 조합 규칙 커스텀 빌더",
+            "• 다중 슬롯(Slot 1~5) 시나리오 저장·비교 및 이름 커스텀 편집",
+            "• 1~45번 누적 당첨/선택 번호 히트맵 및 빈도 막대 차트(드라마틱/드라이 모드), CSV 내보내기 지원"
+          ],
+          "techStack": [
+            "JavaScript (ES6+)",
+            "SVG Dynamic Bar Chart & Heatmap Grid",
+            "동행복권 역대 당첨번호 DB 연동",
+            "LocalStorage 멀티 슬롯 상태 직렬화",
+            "GitHub Pages"
+          ],
+          "changelog": [
+            {
+              "date": "2026.7.25",
+              "version": "v1.0.20",
+              "content": "나만의 알고리즘 조합 빌더(최근 빈출·고정·랜덤), 누적 당첨 히트맵/막대 차트, 5슬롯 커스텀 저장 및 도움말 모달 고도화"
+            },
+            {
+              "date": "2026.7.14",
+              "version": "v1.0.0",
+              "content": "실제 동행복권 데이터를 활용한 시나리오별 슬롯 시뮬레이터 공개"
+            }
+          ]
+        },
+        {
+          "title": "카카오톡 대화 생성기",
+          "projectId": "KakaotalkSimulator",
+          "icon": "source/KakaotalkSimulator/icon-simulator-black.png",
+          "links": [
+            {
+              "label": "KakaotalkSimulator",
+              "url": "https://iseohyun.github.io/KakaotalkSimulator/"
+            },
+            {
+              "label": "GitHub",
+              "url": "https://github.com/iseohyun/KakaotalkSimulator"
+            }
+          ],
+          "showUrl": false,
+          "description": "카카오톡 대화 내보내기 텍스트 또는 직접 입력한 대화를 실물 카카오톡 화면(라이트/다크/커스텀 테마)으로 렌더링하고 이미지·영상으로 저장하는 웹 시뮬레이터",
+          "overview": [
+            "카카오톡 대화 내보내기 파일이나 직접 작성한 대화를 실제 스마트폰 카카오톡 화면과 동일한 S자 3차 베지어 말풍선 꼬리 및 레이아웃으로 렌더링하는 웹 애플리케이션입니다.",
+            "• 기본/다크/사용자 지정 테마 프리셋 및 실시간 미니 프리뷰 색상 상세 설정 모달",
+            "• 색상 및 레이아웃 실시간 편집, 편집 히스토리(Undo/Redo) 관리, 2D 커스텀 컬러피커",
+            "• PNG 이미지, 전체 통 이미지, MP4 비디오 다운로드 지원"
+          ],
+          "techStack": [
+            "HTML5 Canvas 2D & Cubic Bezier Rendering",
+            "JavaScript (ES6+ Modular Architecture)",
+            "Custom 2D Color Picker & Undo/Redo History",
+            "카카오톡 대화 내보내기 정규식 파서",
+            "GitHub Pages"
+          ],
+          "changelog": [
+            {
+              "date": "2026.8.11",
+              "version": "v1.5.0",
+              "content": "색상 및 레이아웃 실시간 편집, 편집 히스토리(Undo/Redo) 관리, 2D 컬러피커 및 통일된 UI 구축"
+            },
+            {
+              "date": "2026.8.9",
+              "version": "v1.4.2",
+              "content": "실물 카카오톡 S자 3차 베지어 말풍선 꼬리 렌더링, 테마(다크/라이트/커스텀) 및 색상 상세 프리뷰 모달"
+            },
+            {
+              "date": "2026.8.8",
+              "version": "v1.2.0",
+              "content": "PNG, 통 이미지, MP4 비디오 다운로드 기능 확장"
+            },
+            {
+              "date": "2026.7.15",
+              "version": "v1.0.0",
+              "content": "카카오톡 대화 내보내기 데이터 재생 및 시뮬레이션 웹 프로그램 공개"
+            }
+          ]
+        },
+        {
+          "title": "웹 장기",
+          "projectId": "janggi",
+          "icon": "source/janggi/icon.png",
+          "links": [
+            {
+              "label": "웹 장기",
+              "url": "https://iseohyun.github.io/janggi/"
+            },
+            {
+              "label": "GitHub",
+              "url": "https://github.com/iseohyun/janggi"
+            }
+          ],
+          "showUrl": false,
+          "description": "상차림·외통수 판독·기보 및 코멘트 편집기·키보드 커서락 접근성·AI 대국 엔진을 지원하는 웹 장기(Janggi) 대국 및 기보 연구 플랫폼",
+          "overview": [
+            "대한장기협회 좌표 표준(9×10 격자)을 기반으로 상차림 설정, 대국, 기보 복기 및 주석(코멘트) 편집을 지원하는 웹 장기 애플리케이션입니다.",
+            "• Minimax Depth-2 탐색 및 포지션 가중치·덤(1.5점) 보정이 적용된 AI 대국 엔진 및 실시간 장군/외통수 판독",
+            "• 메타데이터·수순별 코멘트 말풍선 편집기, 자동재생 복기, 클립보드 기보 불러오기/내보내기 및 다중 슬롯 저장",
+            "• 장기판 테마(모양·크기·색상)·좌표 표시 커스터마이징, 상하회전/좌우반전 애니메이션, 키보드 화살표 및 CapsLock 커서락(Cursor Lock) 접근성 조작 지원"
+          ],
+          "techStack": [
+            "JavaScript (ES6+ 11-Module Architecture)",
+            "SVG & CSS3 Board Rendering (8 Domain CSS)",
+            "Minimax Depth-2 AI & Checkmate(외통수) Detector",
+            "기보 파서 & 수순별 코멘트 에디터",
+            "CapsLock Cursor-Lock 키보드 접근성 엔진",
+            "GitHub Pages"
+          ],
+          "changelog": [
+            {
+              "date": "2026.8.11",
+              "version": "v2.0.1",
+              "content": "모듈화 개편 후 전역 참조 오류 복구 및 UTF-8 인코딩 정상화"
+            },
+            {
+              "date": "2026.8.8",
+              "version": "v2.0.0",
+              "content": "아키텍처 대규모 리팩터링(11개 JS 모듈·8개 도메인 CSS 분리, data-action 이벤트 위임 전환)"
+            },
+            {
+              "date": "2026.7.19",
+              "version": "v1.5.3",
+              "content": "기보 저장 고도화(메타데이터·코멘트 편집기), 점수판, AI 대국, 키보드 이동·자동재생, 외통수 판독 및 장기판 테마 세팅 추가"
+            },
+            {
+              "date": "2023.4.6",
+              "version": "v1.0.0",
+              "content": "웹 장기 최초 공개"
+            }
+          ]
+        },
+        {
+          "title": "플로우 차트",
+          "projectId": "flowchart",
+          "icon": "source/flowchart/icon.svg",
+          "links": [
+            {
+              "label": "플로우 차트",
+              "url": "https://iseohyun.github.io/flowchart/test-app/"
+            },
+            {
+              "label": "GitHub",
+              "url": "https://github.com/iseohyun/flowchart"
+            }
+          ],
+          "showUrl": false,
+          "description": "C, Java, Python, JavaScript 소스코드를 실시간 구문 분석하여 인터랙티브 플로우차트(순서도)로 시각화하는 웹앱 및 라이브러리",
+          "overview": [
+            "컴퓨터 언어(C, Java, Python, JavaScript 지원)로 작성된 소스코드를 구문 분석하여 시각적인 플로우차트(순서도)로 실시간 변환하고 그리는 자바스크립트 모듈 라이브러리 및 데모 웹앱입니다.",
+            "• 언어별 파서(CParser, JavaParser, JavaScriptParser, PythonParser)와 언어 무관 그리드 배치 엔진(LayoutEngine) 및 HTML5 Canvas 렌더러 분리 아키텍처",
+            "• ESM(flowchart.js) 및 UMD(flowchart.umd.cjs) 듀얼 번들 제공으로 외부 프로젝트에 즉시 임베드 가능",
+            "• 실시간 코드 편집, 언어별 예제 프리셋(조건문·반복문·분기·복합), 줌/폰트/여백/다크모드/컬러모드 등 세밀한 렌더링 옵션 제어"
+          ],
+          "techStack": [
+            "JavaScript (ES6+ ESM & UMD Library)",
+            "Multi-Language AST/Control-Flow Parser (C, Java, JS, Python)",
+            "Grid Layout Engine & HTML5 Canvas 2D Renderer",
+            "Vite Library Mode",
+            "GitHub Pages"
+          ],
+          "changelog": [
+            {
+              "date": "2026.7.12",
+              "content": "C, Java, Python, JavaScript 다중 언어 파서 및 플로우차트 렌더링 모듈 라이브러리화"
+            },
+            {
+              "date": "2025.1.10",
+              "content": "소스코드를 플로우차트(순서도)로 자동 변환하여 그려주는 페이지 최초 공개"
+            }
+          ]
+        },
+        {
+          "title": "일본어 글자 암기 (CharQuiz)",
+          "projectId": "CharQuiz",
+          "icon": "source/CharQuiz/icon.svg",
+          "links": [
+            {
+              "label": "CharQuiz",
+              "url": "https://iseohyun.github.io/CharQuiz/"
+            },
+            {
+              "label": "GitHub",
+              "url": "https://github.com/iseohyun/CharQuiz"
+            }
+          ],
+          "showUrl": false,
+          "description": "원어민 음성을 듣고 히라가나·카타카나를 빠르게 맞추는 반복 학습·타임어택 기록·실시간 관전 및 에빙하우스 망각곡선 복습 웹앱",
+          "overview": [
+            "일본어 히라가나·카타카나 글자의 음성을 듣고 빠르게 선택하며 암기 효율을 극대화하는 오디오 반응형 학습 웹 애플리케이션입니다 (구 KanaLoop 통합).",
+            "• 학습 모드(반복 오디오 퀴즈), 기록 모드(타임어택 속도 측정 및 리더보드), 실시간 관전 모드(LIVE), 단어장(응답속도·장기기억 망각 위험 단어 하이라이트 및 복습 알림 배지)",
+            "• Local-First(0ms 로컬 캐싱 기동, 세션 종료 시 Lazy Batch Sync, 단어 단위 양방향 스마트 병합) 아키텍처로 Firebase DB 읽기/쓰기 비용 최소화",
+            "• 다중 음성 지원 및 오디오 딜레이 최적화, FCM 푸시 알림 서비스 워커, 키보드 단축키 완벽 지원"
+          ],
+          "techStack": [
+            "JavaScript (ES6+ SPA Architecture)",
+            "Firebase Auth / Firestore (Local-First Lazy Batch Sync) / FCM Push",
+            "Web Audio & Multi-Voice Preload Engine",
+            "CSS Houdini (@property 360° Gradient) & Glassmorphism UI",
+            "GitHub Pages"
+          ],
+          "changelog": [
+            {
+              "date": "2026.8.24",
+              "version": "v1.0.5",
+              "content": "상단 헤더 퀴즈 컨트롤(일시정지/중단) 통합, 복습 필요 단어 배지 실시간 갱신, 360° 회전 그라데이션 및 알림 안정화"
+            },
+            {
+              "date": "2026.8.9",
+              "version": "v1.0.3",
+              "content": "가변 2×2 반응형 퀴즈 그리드, 다중 음성 지원 및 딜레이 개선, 서버 통신 최적화"
+            },
+            {
+              "date": "2026.8.8",
+              "version": "v1.0.2",
+              "content": "Local-First 백엔드 통신 최적화(0ms 캐싱 기동, 지연 배치 동기화, 단어 단위 스마트 병합) 및 3D 카드 UI 리뉴얼"
+            },
+            {
+              "date": "2026.6.16",
+              "version": "v1.0.0",
+              "content": "글자 음성을 듣고 빠르게 맞추는 일본어 가나 학습 웹 프로그램 최초 공개"
+            }
+          ]
         }
       ]
     },
     {
-      "id": "tools",
-      "title": "툴",
+      "id": "desktop",
+      "title": "Desktop App",
       "items": [
         {
           "title": "동영상 재생 및 편집기",
@@ -199,7 +540,7 @@
         {
           "title": "내 ai 비서 시스템",
           "projectId": "myLore",
-          "icon": "source/mylore-icon.svg",
+          "icon": "source/mylore/icon.svg",
           "links": [
             {
               "label": "myLore",
@@ -213,7 +554,7 @@
           "description": [
             "내 ai 비서 시스템, 나만의 ai 비서, 나만의 ai 챗봇, 나만의 ai 비서 시스템, 나만의 ai 챗봇 시스템"
           ],
-          "image": "source/mylore_cad_blueprint_ko.svg",
+          "image": "source/mylore/mylore_cad_blueprint_ko.svg",
           "techStack": [
             "react + vite",
             "qrcode",
@@ -247,6 +588,162 @@
             {
               "date": "2026.11.8",
               "content": "myLore 코어 아키텍처 설계 및 myLore-Sync 동기화 모듈 연동"
+            }
+          ]
+        },
+        {
+          "title": "맞춤형 비프음 오디오 생성기",
+          "projectId": "beep-gen",
+          "icon": "source/beep-gen/icon.png",
+          "links": [
+            {
+              "label": "GitHub",
+              "url": "https://github.com/iseohyun/beep-gen"
+            }
+          ],
+          "showUrl": false,
+          "description": "정해진 시간마다 반복적으로 beep음을 만들어주는 훈련용 오디오 제작 앱",
+          "overview": [
+            "원하는 비트 주기(n초)와 쪼개기 박자(m개), 약한 비프 볼륨 비율, 재생 길이(l초), 그리고 음원 시작 시 세팅을 알려주는 TTS 인트로 음성을 포함하는 맞춤형 훈련용 오디오 파일(.mp3 / .wav) 생성 데스크톱 앱입니다.",
+            "• 기본 비트(880Hz) 및 균등 쪼개기 약한 비트(587Hz) 볼륨 조절, 안티 클리핑 페이드 엔벨로프(5ms) 합성",
+            "• 다중 TTS 엔진(Edge-TTS Neural AI, Google TTS, Windows SAPI5 오프라인 음성) 기반 시작 안내 음성 삽입",
+            "• PyQt6 그래픽 인터페이스(5초 미리듣기·실시간 진행률) 및 무인 자동화 CLI 모드, 단독 실행 파일(BeepGen.exe) 지원"
+          ],
+          "techStack": [
+            "Python + PyQt6 (GUI & CLI)",
+            "Sine-Wave Audio Synthesizer (Anti-Clipping Envelope)",
+            "Multi-TTS Engine (Edge-TTS, gTTS, Windows SAPI5)",
+            "FFmpeg (MP3 / WAV Export)",
+            "PyInstaller Standalone EXE"
+          ],
+          "changelog": [
+            {
+              "date": "2026.8.23",
+              "version": "v0.1.0",
+              "content": "맞춤형 주기·분할 비프음 합성 코어, 다중 TTS 인트로 엔진, PyQt6 GUI 및 CLI 출시"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "android",
+      "title": "Android App",
+      "items": [
+        {
+          "title": "Take Your Mark",
+          "projectId": "TakeYourMark",
+          "icon": "source/TakeYourMark/icon.svg",
+          "image": "source/TakeYourMark/take_your_mark_img.jpg",
+          "links": [
+            {
+              "label": "GitHub",
+              "url": "https://github.com/iseohyun/TakeYourMark"
+            }
+          ],
+          "showUrl": false,
+          "description": "수영대회에서 임의 시작신호를 만들어 내고, 기록 측정(타이머)를 수행하는 앱",
+          "overview": [
+            "수영대회 출발 신호(\"Take your mark\" 음성 후 랜덤 딜레이 비프음)를 재현하여 스타트 반응 훈련을 돕고, 구간별 스플리트 기록 측정(타이머) 및 메모 관리를 수행하는 안드로이드 앱입니다.",
+            "• 실제 수영 경기와 동일한 \"Take your mark\" 구령 후 설정된 최소~최대 시간 범위 내 임의(Random) 출발 신호음 발생",
+            "• 출발 신호와 동시에 작동하는 고정밀 타이머 및 최대 8구간 스플리트(Split) 랩타임 측정",
+            "• 일시별 기록 자동 저장, 기록별 메모 편집 및 히스토리 관리"
+          ],
+          "techStack": [
+            "Kotlin",
+            "Jetpack Compose (Material 3)",
+            "Android MediaPlayer (Low-Latency Start Signal)",
+            "Coroutines Stopwatch & Split Timer",
+            "SharedPreferences JSON Repository"
+          ],
+          "changelog": [
+            {
+              "date": "2026.11.9",
+              "version": "v1.0.0",
+              "content": "수영 출발 랜덤 신호기(Take Your Mark) 및 구간 기록 측정 타이머 안드로이드 앱 공개"
+            }
+          ]
+        },
+        {
+          "title": "내 ai 비서 시스템 (Android)",
+          "projectId": "myLore",
+          "icon": "source/mylore/icon.svg",
+          "links": [
+            {
+              "label": "myLore",
+              "url": "https://github.com/iseohyun/myLore"
+            },
+            {
+              "label": "myLore-Sync",
+              "url": "https://github.com/iseohyun/myLore-Sync"
+            }
+          ],
+          "showUrl": false,
+          "description": "PC(myLore)와 로컬 암호화 동기화(QR 스캔)를 수행하며 모바일 일정·연락처·명함 OCR·위치 기록을 관리하는 안드로이드 앱",
+          "techStack": [
+            "AndroidX Jetpack",
+            "ZXing Core & zxing-android-embedded (QR코드 스캔)",
+            "Google ML Kit (명함 OCR)",
+            "Google Maps SDK for Android",
+            "tiny_http / blake3 로컬 암호화 동기화"
+          ],
+          "changelog": [
+            {
+              "date": "2026.11.8",
+              "content": "myLore 안드로이드 앱 및 myLore-Sync 동기화 모듈 연동"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "video",
+      "title": "Video",
+      "items": [
+        {
+          "title": "Python 시작하기 강의",
+          "projectId": "python-start",
+          "icon": "source/coding.svg",
+          "links": [
+            {
+              "label": "YouTube",
+              "url": "https://www.youtube.com/watch?v=GfJZ5bzvUPY"
+            }
+          ],
+          "showUrl": false,
+          "description": "코딩 > Python > 시작하기 유튜브 강의 영상",
+          "techStack": [
+            "Python",
+            "YouTube 강의"
+          ],
+          "changelog": [
+            {
+              "date": "2024.12.7",
+              "content": "코딩 > Python > 시작하기 유튜브 강의 영상 업로드"
+            }
+          ]
+        },
+        {
+          "title": "Python 환경설정하기 강의",
+          "projectId": "python-env",
+          "icon": "source/coding.svg",
+          "links": [
+            {
+              "label": "YouTube",
+              "url": "https://www.youtube.com/watch?v=wbN2wQdO3zY"
+            }
+          ],
+          "showUrl": false,
+          "description": "코딩 > Python > 개발 환경설정하기 유튜브 강의 영상",
+          "techStack": [
+            "Python",
+            "VS Code",
+            "YouTube 강의"
+          ],
+          "changelog": [
+            {
+              "date": "2024.12.5",
+              "content": "코딩 > Python > 환경설정하기 유튜브 강의 영상 업로드"
             }
           ]
         }
