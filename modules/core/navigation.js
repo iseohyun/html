@@ -146,6 +146,9 @@ window.SiteModules.Navigation = (function () {
         <div class="nav-group" id="sidebar-page-features"></div>
         
         <div class="nav-group">
+          <div class="nav-item" id="nav-promo" data-tooltip="홍보 사이트 리스트">
+            <span class="material-symbols-outlined">campaign</span>
+          </div>
           <div class="nav-item" id="nav-login" data-tooltip="게스트">
             <span class="material-symbols-outlined">account_circle</span>
           </div>
@@ -285,7 +288,7 @@ window.SiteModules.Navigation = (function () {
   }
 
   function isKnownArticlePage(absolutePath) {
-    const knownRootArticles = ["/index.html", "/admin.html", "/help.html", "/info.html", "/"];
+    const knownRootArticles = ["/index.html", "/admin.html", "/help.html", "/info.html", "/promo.html", "/"];
     if (knownRootArticles.includes(absolutePath)) {
       return true;
     }
@@ -804,7 +807,19 @@ window.SiteModules.Navigation = (function () {
 
       const list = window.SiteModules.hierarchyListCached;
       if (list) {
-        findAndPopulateState(list, state.currentPath);
+        const found = findAndPopulateState(list, state.currentPath);
+        if (!found) {
+          const fallbackTitles = {
+            "/promo.html": "홍보",
+            "/info.html": "사이트 소개",
+            "/help.html": "질의 응답 및 건의사항",
+            "/admin.html": "관리자 대시보드"
+          };
+          state.cur_doc = { title: docTitle || fallbackTitles[urlPath] || "", dir: "", file: urlPath.replace(/^\//, "") };
+          state.prv_doc = { title: "", dir: "", file: "" };
+          state.next_doc = { title: "", dir: "", file: "" };
+          state.category = "";
+        }
       }
 
       // admin 페이지 여부에 따라 body.admin-mode 클래스 토글
@@ -1369,6 +1384,13 @@ window.SiteModules.Navigation = (function () {
           alert("로그아웃 되었습니다.");
           if (loginOverlay) loginOverlay.classList.remove("active");
         });
+      });
+    }
+
+    const promoBtn = document.getElementById("nav-promo");
+    if (promoBtn) {
+      promoBtn.addEventListener("click", () => {
+        window.location.hash = "#/promo.html";
       });
     }
 
