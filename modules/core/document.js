@@ -25,7 +25,7 @@ window.SiteModules.Document = (function() {
       }
 
       // 홈인 경우 타이틀 생략 (site-intro 배너가 타이틀 역할을 수행함)
-      if (state.currentPath.includes("index.html") || state.currentPath === "/") {
+      if (state.currentPath.includes("index.html") || state.currentPath === "/" || state.currentPath.includes("promo.html")) {
         return;
       }
 

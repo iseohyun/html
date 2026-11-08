@@ -33,130 +33,637 @@
   <script
     src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.8.0/highlightjs-line-numbers.min.js"></script>
 
-  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+  <link rel="shortcut icon" type="image/svg+xml" href="/source/icon_seohyun_reverse.svg">
 
   <style type="text/css">
     @import url("/style.css");
 
     #site-history {
-      width: 95%;
-      margin: 0 auto 300px;
-      border: 1px solid #aaa;
-      padding: 1em;
-      border-radius: 22px;
+      width: 96%;
+      margin: 24px auto 200px;
+      padding: 0;
+      list-style: none;
+      border: none;
+      font-size: 75%;
+      line-height: 1.35;
     }
 
-    #site-history li {
-      margin-bottom: 1em;
+    /* ==========================================
+       우상단 고정 Float 필터 아이콘 & 애니메이션 테이블 패널
+       ========================================== */
+    .cal-floating-filter {
+      position: fixed;
+      top: 16px;
+      right: 20px;
+      z-index: 1200;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      font-size: 75%;
+      font-family: var(--font-main);
     }
 
-    #site-history li::marker {
-      content: "";
+    .cal-filter-toggle-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid #cbd5e1;
+      background-color: #ffffff;
+      color: #334155;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.14);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+      transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    #site-history div {
-      margin: 1px 0 5px 2em;
+    .cal-filter-toggle-btn:hover,
+    .cal-filter-toggle-btn.active {
+      background-color: #228be6;
+      border-color: #228be6;
+      color: #ffffff;
+      transform: scale(1.05);
+      box-shadow: 0 6px 18px rgba(34, 139, 230, 0.3);
     }
 
-    #site-history span.date {
-      font-size: 0.8em;
-      color: #999;
+    .cal-filter-panel {
+      margin-top: 8px;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+      overflow: hidden;
+      transform-origin: top right;
+      max-height: 0;
+      opacity: 0;
+      transform: scale(0.92) translateY(-6px);
+      pointer-events: none;
+      transition:
+        max-height 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 0.22s ease,
+        transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+        padding 0.25s ease;
+      padding: 0 12px;
     }
 
-    #site-history span.content {
-      display: block;
-      font-size: 0.9em;
-      color: #444;
+    .cal-filter-panel.open {
+      max-height: 420px;
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      pointer-events: auto;
+      padding: 10px 12px;
     }
 
-    #site-history a:visited {
-      color: #44c;
+    table.cal-filter-table {
+      margin: 0;
+      border: 1px solid #e2e8f0;
+      border-collapse: collapse;
+      width: auto;
+      font-family: var(--font-main);
+      font-stretch: 100%;
+      counter-increment: none;
+      background: #ffffff;
     }
 
-    #site-history a:hover {
-      color: red;
+    table.cal-filter-table th {
+      background-color: #f8fafc;
+      color: #334155;
+      font-weight: 800;
+      font-size: 1em;
+      padding: 6px 12px;
+      border: 1px solid #e2e8f0;
+      white-space: nowrap;
+      text-align: center;
     }
 
-    /* 필터 스타일 */
-    .history-filters {
-      width: 95%;
-      margin: 20px auto 10px;
+    table.cal-filter-table td {
+      padding: 6px 10px;
+      border: 1px solid #e2e8f0;
+      text-align: left;
+      background-color: #ffffff;
+    }
+
+    .cal-filter-options {
       display: flex;
       flex-wrap: wrap;
-      gap: 16px;
       align-items: center;
+      gap: 6px;
     }
 
-    .filter-group-wrapper {
+    .cal-filter-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid #dee2e6;
+      background-color: #f8fafc;
+      color: #334155;
+      font-size: 0.98em;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+      line-height: 1.3;
+      transition: opacity 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .cal-filter-chip:hover {
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.1);
+    }
+
+    .cal-filter-chip input[type="checkbox"] {
+      margin: 0;
+      cursor: pointer;
+      accent-color: #228be6;
+    }
+
+    .cal-search-input {
+      padding: 4px 8px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 1em;
+      font-family: inherit;
+      width: 140px;
+      outline: none;
+    }
+
+    .cal-search-input:focus {
+      border-color: #228be6;
+      box-shadow: 0 0 0 2px rgba(34, 139, 230, 0.15);
+    }
+
+    /* ==========================================
+       환경(배경색) & 분류(우상단 원형 배지) 컬러 팔레트
+       - Web(주황색), Android(초록색), Desktop(파란색), Video(빨간색), iseohyun(흰색)
+       - 검정색 글자를 읽는 데 방해되지 않는 은은한 파스텔 배경색
+       ========================================== */
+    .env-iseohyun {
+      background-color: #ffffff !important;
+      border-color: #cbd5e1 !important;
+    }
+
+    .env-webapp {
+      background-color: #fff4e6 !important;
+      border-color: #ffc078 !important;
+    }
+
+    .env-android {
+      background-color: #ebfbee !important;
+      border-color: #8ce99a !important;
+    }
+
+    .env-desktop {
+      background-color: #e7f5ff !important;
+      border-color: #74c0fc !important;
+    }
+
+    .env-video {
+      background-color: #fff0f0 !important;
+      border-color: #ffa8a8 !important;
+    }
+
+    /* 분류 (모달 제목/필터 텍스트색 & 원형 배지 배경색) */
+    .type-add {
+      color: #16a34a !important;
+      font-weight: 800;
+    }
+
+    .type-changed {
+      color: #2563eb !important;
+      font-weight: 800;
+    }
+
+    .type-fixed {
+      color: #d97706 !important;
+      font-weight: 800;
+    }
+
+    .type-deleted {
+      color: #dc2626 !important;
+      font-weight: 800;
+    }
+
+    /* 달력 카드 우상단 border에 걸치는 분류 원형 배지 (A, C, F, D) */
+    .cal-type-badge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff !important;
+      font-size: 9px;
+      font-weight: 900;
+      line-height: 1;
+      font-family: var(--font-sans-serif);
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.25);
+      border: 1.5px solid #ffffff;
+      z-index: 3;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .cal-type-badge.badge-add {
+      background-color: #16a34a;
+    }
+
+    .cal-type-badge.badge-changed {
+      background-color: #2563eb;
+    }
+
+    .cal-type-badge.badge-fixed {
+      background-color: #f59e0b;
+    }
+
+    .cal-type-badge.badge-deleted {
+      background-color: #dc2626;
+    }
+
+    .cal-filter-type-dot {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      color: #ffffff !important;
+      font-size: 9px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    /* ==========================================
+       최근 업데이트 주간 역순 달력 스타일 (평소 폰트의 75% 기준)
+       ========================================== */
+    .update-calendar-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      border-radius: 14px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+    }
+
+    table.update-calendar-table {
+      width: 100%;
+      min-width: 680px;
+      table-layout: fixed;
+      border-collapse: collapse;
+      margin: 0;
+      border: none;
+      font-family: var(--font-main);
+      font-size: 1em;
+      font-stretch: 100%;
+      counter-increment: none;
+    }
+
+    table.update-calendar-table thead {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background-color: #f8fafc;
+      color: #334155;
+      border-bottom: 2px solid #cbd5e1;
+    }
+
+    table.update-calendar-table th {
+      width: 14.2857%;
+      padding: 8px 4px;
+      font-size: 1.05em;
+      font-weight: 800;
+      text-align: center;
+      border: 1px solid #e2e8f0;
+      border-top: none;
+      background-color: #f8fafc;
+      color: #334155;
+    }
+
+    table.update-calendar-table th.sun-col {
+      color: #e03131;
+    }
+
+    table.update-calendar-table th.sat-col {
+      color: #1971c2;
+    }
+
+    table.update-calendar-table td.cal-cell {
+      vertical-align: top;
+      text-align: left;
+      padding: 5px 6px 8px;
+      min-height: 64px;
+      height: 64px;
+      max-width: 0;
+      border: 1px solid #e2e8f0;
+      background-color: #ffffff;
+      box-sizing: border-box;
+      transition: background-color 0.15s ease;
+    }
+
+    table.update-calendar-table td.cal-cell.out-of-year {
+      background-color: #f8fafc;
+      opacity: 0.55;
+    }
+
+    /* 오늘 날짜 셀 하이라이트: 연한 파란색 배경 + 두꺼운 파란색 border */
+    table.update-calendar-table td.cal-cell.is-today {
+      background-color: #e7f5ff !important;
+      border: 2.5px solid #228be6 !important;
+      box-shadow: inset 0 0 0 1px #228be6;
+      opacity: 1 !important;
+    }
+
+    .cal-date-header {
       display: flex;
       align-items: center;
-      gap: 8px;
+      justify-content: space-between;
+      margin-bottom: 3px;
+      line-height: 1.2;
     }
 
-    .filter-label {
-      font-size: 13px;
-      font-weight: 600;
-      color: #495057;
+    .cal-date-num {
+      font-size: 0.95em;
+      font-weight: 700;
+      color: #64748b;
     }
 
-    .year-btn-group,
-    .tag-btn-group {
-      display: inline-flex;
-      border-radius: 20px;
-      overflow: hidden;
-      border: 1px solid #dee2e6;
+    td.sun-cell .cal-date-num {
+      color: #e03131;
     }
 
-    .year-btn-group .filter-btn,
-    .tag-btn-group .filter-btn {
-      border: none;
-      border-radius: 0;
-      margin: 0;
-      border-right: 1px solid #dee2e6;
-      padding: 6px 14px;
+    td.sat-cell .cal-date-num {
+      color: #1971c2;
     }
 
-    .year-btn-group .filter-btn:last-child,
-    .tag-btn-group .filter-btn:last-child {
-      border-right: none;
+    .cal-date-num.month-start-badge {
+      background-color: #1e293b;
+      color: #ffffff !important;
+      padding: 1px 5px;
+      border-radius: 999px;
+      font-size: 0.9em;
     }
 
-    .filter-btn {
-      background-color: #f1f3f5;
-      color: #495057;
-      border: 1px solid #dee2e6;
-      padding: 6px 12px;
-      font-size: 13px;
-      font-weight: 500;
-      border-radius: 20px;
+    .cal-today-badge {
+      font-size: 0.85em;
+      font-weight: 800;
+      color: #ffffff;
+      background-color: #228be6;
+      padding: 1px 5px;
+      border-radius: 999px;
+    }
+
+    .cal-events-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+      padding-top: 3px;
+      padding-right: 3px;
+    }
+
+    /* 이벤트 RoundRect 카드: 배경색=환경(env), 글자색=검정, 우상단 border 배지=분류(type) */
+    .cal-event-card {
+      position: relative;
+      border-radius: 7px;
+      padding: 4px 10px 4px 6px;
+      text-align: left;
+      line-height: 1.3;
       cursor: pointer;
-      transition: all 0.2s ease;
+      min-width: 0;
+      max-width: 100%;
+      overflow: visible;
+      box-sizing: border-box;
+      border: 1px solid #cbd5e1;
+      color: #0f172a;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
     }
 
-    .filter-btn:hover {
-      background-color: #e9ecef;
+    .cal-event-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 8px rgba(15, 23, 42, 0.12);
+      filter: brightness(0.97);
     }
 
-    .filter-btn.active {
-      background-color: #228be6;
-      color: white;
-      border-color: #228be6;
+    /* 카드 제목: 검정색 글자, word-break 하지 않고 칸 초과 시 ... 생략 */
+    .cal-event-project {
+      display: block;
+      max-width: 100%;
+      font-weight: 800;
+      font-size: 1em;
+      color: #0f172a !important;
+      white-space: nowrap;
+      word-break: normal;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      vertical-align: bottom;
     }
 
-    .year-btn-group .filter-btn.active,
-    .tag-btn-group .filter-btn.active {
-      background-color: #228be6;
-      color: white;
-      border: none;
-      border-right: 1px solid #228be6;
+    .cal-event-summary {
+      display: block;
+      font-size: 0.88em;
+      font-weight: 500;
+      color: #1e293b;
+      opacity: 0.95;
+      word-break: keep-all;
+      overflow-wrap: break-word;
     }
 
-    .year-btn-group .filter-btn.active:last-child,
-    .tag-btn-group .filter-btn.active:last-child {
-      border-right: none;
+    /* ==========================================
+       이벤트 상세정보 팝업 모달
+       ========================================== */
+    .cal-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      z-index: 16000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .cal-modal-overlay.active {
+      display: flex;
+    }
+
+    .cal-modal-card {
+      background: #ffffff;
+      border-radius: 16px;
+      width: min(560px, 94vw);
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 48px rgba(15, 23, 42, 0.25);
+      overflow: hidden;
+    }
+
+    .cal-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 22px;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .cal-modal-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .cal-modal-env-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid #cbd5e1;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .cal-modal-date {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #475569;
+      font-family: var(--font-monospace);
+    }
+
+    .cal-modal-close {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #475569;
+      font-size: 22px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .cal-modal-close:hover {
+      background: #fee2e2;
+      border-color: #fca5a5;
+      color: #dc2626;
+    }
+
+    .cal-modal-body {
+      padding: 20px 22px 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .cal-modal-title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .cal-modal-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0 !important;
+    }
+
+    .cal-modal-title::before {
+      display: none !important;
+      content: "" !important;
+    }
+
+    .cal-modal-version {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #1d4ed8;
+      background: #dbeafe;
+      padding: 2px 9px;
+      border-radius: 999px;
+    }
+
+    .cal-modal-summary {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #1e293b;
+      line-height: 1.5;
+    }
+
+    .cal-modal-detail-section {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .cal-modal-detail-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #64748b;
+    }
+
+    .cal-modal-detail-box {
+      font-size: 0.93rem;
+      color: #334155;
+      line-height: 1.65;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 12px 15px;
+    }
+
+    .cal-modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 4px;
+    }
+
+    .cal-modal-link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: #228be6;
+      color: #ffffff !important;
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-decoration: none !important;
+      transition: background-color 0.2s ease;
+    }
+
+    .cal-modal-link-btn:hover {
+      background: #1c7ed6;
+    }
+
+    @media screen and (max-width: 768px) {
+      .cal-floating-filter {
+        top: 56px;
+        right: 12px;
+      }
+
+      .cal-filter-panel {
+        max-width: calc(100vw - 24px);
+      }
     }
   </style>
-  <script src="/modules/script.js" defer></script>
+  <script src="/modules/script.js?v=20261109v4" defer></script>
 </head>
 
 <body>
