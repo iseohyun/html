@@ -1,0 +1,256 @@
+{
+  "sections": [
+    {
+      "id": "sites",
+      "title": "사이트",
+      "items": [
+        {
+          "title": "해풍단",
+          "links": [
+            {
+              "label": "사이트 방문",
+              "url": "https://iseohyun.github.io/haepungdan/"
+            }
+          ],
+          "showUrl": false,
+          "description": "토요바다수영 소모임 아카이브, 모임 일정/위치/사진/영상 등 기록 및 공유",
+          "techStack": [
+            "react + vite",
+            "Google maps API",
+            "Firebase DB"
+          ],
+          "considerations": [
+            "현재 단체 카톡 내용을 AI에게 전달해서 해당 새 스케줄을 업로드 하고 있는데, 관리자가 따로 없고, 검수작업을 따로 진행하자니 귀찮"
+          ],
+          "changelog": [
+            {
+              "date": "2026.11.7",
+              "content": "UI일부 변경, 새 스케줄 업로드"
+            },
+            {
+              "date": "2026.8.21",
+              "content": "아카이브 사이트 공개"
+            }
+          ]
+        },
+        {
+          "title": "거시배 몽꾸와 야르",
+          "links": [
+            {
+              "label": "사이트 방문",
+              "url": "https://iseohyun.github.io/GeojeSwimmers/#/competition-result-adult-records"
+            }
+          ],
+          "showUrl": false,
+          "description": "2026 제 19회 거제시장배 수영대회, 몽꾸팀 & 야르팀, 훈련, 전력분석 및 대회결과",
+          "techStack": [
+            "react + vite",
+            "firebase DB"
+          ],
+          "considerations": [
+            "향후 타 대회 출전에 따른 사이트 확장"
+          ],
+          "changelog": [
+            {
+              "date": "2026.8.16",
+              "content": "사이트 개설: 개인PB 및 팀 전략 분석 목적"
+            },
+            {
+              "date": "2026.9.5",
+              "content": "훈련 및 일정에 대한 페이지 신설"
+            },
+            {
+              "date": "2026.10.23",
+              "content": "실시간 대회 진행을 위한 페이지 신설"
+            },
+            {
+              "date": "2026.10.25",
+              "content": "대회 결과 및 기록 업데이트"
+            },
+            {
+              "date": "2026.11.3",
+              "content": "대회 결과 분석 및 DB 열람 기능 추가"
+            }
+          ]
+        },
+        {
+          "title": "야호트래블",
+          "links": [
+            {
+              "label": "공식 홈페이지",
+              "url": "https://yahotravel.co.kr/"
+            }
+          ],
+          "showUrl": true,
+          "description": "거제소재 일본 전문 여행사(지인 운영)",
+          "techStack": [
+            "react + vite",
+            "카톡 비지니스 채널 연동"
+          ],
+          "considerations": [
+            "이미 내 손을 떠난 사이트, 유지보수에 대한 고민 중"
+          ],
+          "changelog": [
+            {
+              "date": "2026.9.14",
+              "content": "사이트 개설, 각종 포털에 검색엔진 등록"
+            }
+          ]
+        },
+        {
+          "title": "보컬훈련",
+          "projectId": "SingSharp",
+          "links": [
+            {
+              "label": "웹 앱 실행",
+              "url": "https://iseohyun.github.io/SingSharp/"
+            }
+          ],
+          "showUrl": false,
+          "description": "음정유지, 호흡, 박자 등 훈련을 도와주는 웹 어플",
+          "techStack": [
+            "react + vite",
+            "Web Audio API",
+            "HTML5 Canvas 2D API"
+          ],
+          "considerations": [
+            "정확한 훈련 방법에 대한 구체적인 연구나 경험 부족"
+          ],
+          "changelog": [
+            {
+              "date": "2026.11.7",
+              "content": "사이트 개설: 각종 훈련과 난이도, 개별 음역 분석에 대한 시나리오 제공"
+            }
+          ]
+        },
+        {
+          "title": "대한민국 행사",
+          "projectId": "KoreaEventList",
+          "links": [
+            {
+              "label": "사이트 방문",
+              "url": "https://iseohyun.github.io/KoreaEventList/"
+            }
+          ],
+          "showUrl": false,
+          "description": "공공데이터 홍보, 지자체 홍보, 수영/러닝/자전거/철인 등의 협회 홍보등을 종합 열람",
+          "techStack": [
+            "Open API / 공공데이터 연동",
+            "react + vite",
+            "firebase DB",
+            "Filtering & Search UI",
+            "GitHub Secrets & Actions for Data Sync"
+          ],
+          "considerations": [
+            "네이버 밴드, 카카오 채널, 블로그, 지역 신문 등 비공식으로만 홍보되는 행사에 대한 누락",
+            "개별 행사 등록에 대한 인력 처리 및 보안 여부(Auth 2.0 범위 밖)"
+          ],
+          "changelog": [
+            {
+              "date": "2026.11.8",
+              "content": "공공데이터 및 연관된 사이트 수집 및 크롤링 수행, DB구축, 사이트 개설"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tools",
+      "title": "툴",
+      "items": [
+        {
+          "title": "동영상 재생 및 편집기",
+          "projectId": "Movie Player lite",
+          "icon": "source/movie-player-lite-icon.ico",
+          "links": [
+            {
+              "label": "GitHub",
+              "url": "https://github.com/iseohyun/movie-player-lite"
+            }
+          ],
+          "description": [
+            "동영상 재생(느리게, 빠르게, 프레임 단위로)",
+            "동영상 편집(자르기, 돌리기)",
+            "재생중 그리기 기능 탑재"
+          ],
+          "image": "source/movie-player-lite.png",
+          "techStack": [
+            "python + PyQt5",
+            "ffmpeg"
+          ],
+          "considerations": [
+            "한국어로만 국한됨. 배포용 설치파일 제작 필요"
+          ],
+          "changelog": [
+            {
+              "date": "2026.7.2",
+              "content": "파일 자르기용으로 출시(mp4-trim)"
+            },
+            {
+              "date": "2026.7.23",
+              "content": "동영상 재생 기능 추가, 이름 변경(Movie Player lite)"
+            },
+            {
+              "date": "2026.11.7",
+              "content": "화면 위 임시 그리기 기능 추가"
+            }
+          ]
+        },
+        {
+          "title": "내 ai 비서 시스템",
+          "projectId": "myLore",
+          "icon": "source/mylore-icon.svg",
+          "links": [
+            {
+              "label": "myLore",
+              "url": "https://github.com/iseohyun/myLore"
+            },
+            {
+              "label": "myLore-Sync",
+              "url": "https://github.com/iseohyun/myLore-Sync"
+            }
+          ],
+          "description": [
+            "내 ai 비서 시스템, 나만의 ai 비서, 나만의 ai 챗봇, 나만의 ai 비서 시스템, 나만의 ai 챗봇 시스템"
+          ],
+          "image": "source/mylore_cad_blueprint_ko.svg",
+          "techStack": [
+            "react + vite",
+            "qrcode",
+            "LLM API(OpenAI, Gemini, Claude, Grok) ureq 인증",
+            "tauri v2(Webview2 + Rust)",
+            "SQLite DB",
+            "tiny_http(Sync port:18443)",
+            "blake3(암호화)",
+            "uuid(고유식별자)",
+            "ragex(정규식, mk파서)",
+            "walkdir(폴더 탐색)",
+            "faster-whisper(asr엔진)",
+            "openAI whisper(asr모델)",
+            "Silero VAD(음성 구간 탐지)",
+            "sherpa-onnx(음성 인식)",
+            "3D-Speaker CAM++(성문 모델A)",
+            "WeSpeaker ResNet34-LM(성문 모델B)",
+            "numpy/soundfile(오디오 wav파일 입출력)",
+            "ffmpeg",
+            "ActiveyWatch(PC활동 감지)",
+            "AndroidX Jetpack(안드로이드 앱)",
+            "ZXing Core & zxing-android-embedded (QR코드 스캔)",
+            "Google ML Kit(명함OCR)",
+            "Google Maps SDK for Android"
+          ],
+          "considerations": [
+            "음성 인식이 한국어가 매우 떨어짐(통화음질 포함)",
+            "아직 금융은 시작도 못했음"
+          ],
+          "changelog": [
+            {
+              "date": "2026.11.8",
+              "content": "myLore 코어 아키텍처 설계 및 myLore-Sync 동기화 모듈 연동"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>홍보</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/modules/script.js" defer></script>
+</head>
+
+<body>
+  <article>
+    <style>
+      .promo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 20px;
+        margin: 20px 0 40px 0;
+      }
+
+      .promo-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 22px 24px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        gap: 12px;
+        cursor: pointer;
+        position: relative;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      }
+
+      .promo-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.1);
+        border-color: #93c5fd;
+      }
+
+      .promo-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .promo-card-title-wrap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .promo-tool-icon {
+        width: 28px;
+        height: 28px;
+        object-fit: contain;
+        flex-shrink: 0;
+        border-radius: 6px;
+      }
+
+      .promo-card-title {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin: 0;
+        line-height: 1.3;
+      }
+
+      .promo-card-title a {
+        color: inherit;
+        text-decoration: none;
+        font-weight: 800;
+      }
+
+      .promo-card-title a:hover {
+        color: #2563eb;
+        text-decoration: none;
+      }
+
+      .promo-card-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+      }
+
+      .promo-card-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 30px;
+        height: 30px;
+        padding: 0 6px;
+        box-sizing: border-box;
+        border-radius: 8px;
+        background-color: #eff6ff;
+        color: #2563eb;
+        flex-shrink: 0;
+        text-decoration: none;
+        font-size: 0.75rem;
+        font-weight: 700;
+        gap: 3px;
+        transition: background-color 0.2s ease, color 0.2s ease;
+      }
+
+      .promo-card-badge:hover {
+        background-color: #2563eb;
+        color: #ffffff;
+        text-decoration: none;
+      }
+
+      .promo-card-badge .material-symbols-outlined {
+        font-size: 18px;
+      }
+
+      .promo-card-url-box {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 0.85rem;
+        word-break: break-all;
+        line-height: 1.4;
+      }
+
+      .promo-card-url {
+        color: #2563eb;
+        font-family: var(--font-monospace);
+        font-weight: 600;
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+      }
+
+      .promo-card-url:visited {
+        color: #1d4ed8;
+      }
+
+      .promo-card-url:hover {
+        color: #dc2626;
+      }
+
+      .promo-card-desc {
+        margin: 4px 0 0 0;
+        font-size: 0.95rem;
+        color: #334155;
+        line-height: 1.65;
+        flex-grow: 1;
+      }
+
+      .promo-card-desc::before {
+        display: none;
+      }
+
+      .promo-preview-img {
+        width: 100%;
+        border-radius: 8px;
+        margin-top: 8px;
+        border: 1px solid #e2e8f0;
+        cursor: zoom-in;
+        transition: opacity 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+        display: block;
+      }
+
+      .promo-preview-img:hover {
+        opacity: 0.95;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+      }
+
+      .promo-card-footer-hint {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 4px;
+        font-size: 0.76rem;
+        color: #64748b;
+        margin-top: 2px;
+        user-select: none;
+      }
+
+      .promo-card:hover .promo-card-footer-hint {
+        color: #2563eb;
+      }
+
+      /* ==========================================
+         카드 상세 정보 팝업 (Detail Modal)
+         ========================================== */
+      .promo-detail-overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+        z-index: 15000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+
+      .promo-detail-overlay.active {
+        display: flex;
+      }
+
+      .promo-detail-dialog {
+        background: #ffffff;
+        border-radius: 16px;
+        width: min(680px, 94vw);
+        max-height: 86vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 20px 50px rgba(15, 23, 42, 0.28);
+        overflow: hidden;
+        animation: promoModalFadeIn 0.2s ease-out;
+      }
+
+      @keyframes promoModalFadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px) scale(0.98);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .promo-detail-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 18px 24px;
+        border-bottom: 1px solid #e2e8f0;
+        background: #f8fafc;
+      }
+
+      .promo-detail-title-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+        flex-wrap: wrap;
+      }
+
+      .promo-detail-icon {
+        width: 34px;
+        height: 34px;
+        object-fit: contain;
+        border-radius: 8px;
+        flex-shrink: 0;
+      }
+
+      .promo-detail-title {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0;
+      }
+
+      .promo-detail-project-badge {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #1d4ed8;
+        background: #dbeafe;
+        padding: 2px 10px;
+        border-radius: 999px;
+      }
+
+      .promo-detail-close {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 1px solid #cbd5e1;
+        background: #ffffff;
+        color: #475569;
+        font-size: 22px;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        flex-shrink: 0;
+        padding: 0;
+        transition: background-color 0.2s ease, color 0.2s ease;
+      }
+
+      .promo-detail-close:hover {
+        background: #fee2e2;
+        border-color: #fca5a5;
+        color: #dc2626;
+      }
+
+      .promo-detail-body {
+        padding: 22px 24px 28px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .promo-detail-links-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .promo-detail-link-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border-radius: 8px;
+        background: #2563eb;
+        color: #ffffff !important;
+        font-size: 0.88rem;
+        font-weight: 700;
+        text-decoration: none !important;
+        transition: background-color 0.2s ease, transform 0.15s ease;
+      }
+
+      .promo-detail-link-btn:hover {
+        background: #1d4ed8;
+        transform: translateY(-1px);
+      }
+
+      .promo-detail-link-btn .material-symbols-outlined {
+        font-size: 17px;
+      }
+
+      .promo-detail-section {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .promo-detail-section-title {
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0;
+        padding-bottom: 6px;
+        border-bottom: 1px solid #f1f5f9;
+      }
+
+      .promo-detail-desc-box {
+        font-size: 0.95rem;
+        color: #334155;
+        line-height: 1.7;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 12px 16px;
+      }
+
+      .promo-tech-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .promo-tech-chip {
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: #0f172a;
+        background: #f1f5f9;
+        border: 1px solid #cbd5e1;
+        padding: 4px 12px;
+        border-radius: 999px;
+      }
+
+      .promo-detail-list {
+        margin: 0 !important;
+        padding-left: 20px !important;
+        color: #334155;
+        font-size: 0.93rem;
+        line-height: 1.65;
+      }
+
+      .promo-detail-list li {
+        margin-bottom: 6px !important;
+        line-height: 1.6 !important;
+      }
+
+      .promo-detail-list li::marker {
+        content: "• " !important;
+        color: #2563eb;
+      }
+
+      .promo-changelog-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .promo-changelog-item {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        font-size: 0.9rem;
+        line-height: 1.55;
+        padding: 8px 12px;
+        background: #f8fafc;
+        border-left: 3px solid #3b82f6;
+        border-radius: 4px 8px 8px 4px;
+      }
+
+      .promo-changelog-date {
+        font-family: var(--font-monospace);
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #1d4ed8;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .promo-changelog-content {
+        color: #334155;
+      }
+
+      /* ==========================================
+         대표이미지 크게보기 모달 (Lightbox)
+         ========================================== */
+      .promo-lightbox-overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        z-index: 20000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        box-sizing: border-box;
+      }
+
+      .promo-lightbox-overlay.active {
+        display: flex;
+      }
+
+      .promo-lightbox-content {
+        position: relative;
+        max-width: 92vw;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .promo-lightbox-close {
+        position: fixed;
+        top: 20px;
+        right: 24px;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: rgba(30, 41, 59, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        color: #ffffff;
+        font-size: 26px;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 20001;
+        transition: background-color 0.2s ease, transform 0.15s ease;
+        padding: 0;
+      }
+
+      .promo-lightbox-close:hover {
+        background: #dc2626;
+        transform: scale(1.06);
+      }
+
+      .promo-lightbox-img {
+        max-width: 92vw;
+        max-height: 84vh;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        border-radius: 10px;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+        background: #ffffff;
+      }
+
+      .promo-lightbox-caption {
+        margin-top: 10px;
+        color: #f8fafc;
+        font-size: 0.95rem;
+        font-weight: 600;
+        text-align: center;
+      }
+
+      @media screen and (max-width: 768px) {
+        .promo-grid {
+          grid-template-columns: 1fr;
+          gap: 16px;
+        }
+
+        .promo-card {
+          padding: 18px 20px;
+        }
+
+        .promo-detail-header {
+          padding: 15px 18px;
+        }
+
+        .promo-detail-body {
+          padding: 18px;
+        }
+
+        .promo-lightbox-close {
+          top: 12px;
+          right: 14px;
+          width: 38px;
+          height: 38px;
+          font-size: 22px;
+        }
+      }
+    </style>
+
+    <!-- promo.json 동적 렌더링 영역 -->
+    <div id="promo-sections-root"></div>
+
+    <!-- 1. 카드 상세 정보 팝업 (Detail Modal) -->
+    <div class="promo-detail-overlay" id="promo-detail-modal" role="dialog" aria-modal="true" aria-label="상세 정보">
+      <div class="promo-detail-dialog">
+        <div class="promo-detail-header">
+          <div class="promo-detail-title-group" id="promo-detail-title-group"></div>
+          <button type="button" class="promo-detail-close" id="promo-detail-close" title="닫기 (ESC)">&times;</button>
+        </div>
+        <div class="promo-detail-body" id="promo-detail-body"></div>
+      </div>
+    </div>
+
+    <!-- 2. 대표이미지 크게보기 모달 (Lightbox) -->
+    <div class="promo-lightbox-overlay" id="promo-lightbox" role="dialog" aria-modal="true" aria-label="이미지 크게 보기">
+      <button type="button" class="promo-lightbox-close" id="promo-lightbox-close" title="닫기 (ESC)">&times;</button>
+      <div class="promo-lightbox-content">
+        <img class="promo-lightbox-img" id="promo-lightbox-img" src="" alt="">
+        <div class="promo-lightbox-caption" id="promo-lightbox-caption"></div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        const rootEl = document.getElementById('promo-sections-root');
+        const detailModal = document.getElementById('promo-detail-modal');
+        const detailTitleGroup = document.getElementById('promo-detail-title-group');
+        const detailBody = document.getElementById('promo-detail-body');
+        const detailCloseBtn = document.getElementById('promo-detail-close');
+
+        const lightbox = document.getElementById('promo-lightbox');
+        const lightboxImg = document.getElementById('promo-lightbox-img');
+        const lightboxCaption = document.getElementById('promo-lightbox-caption');
+        const lightboxCloseBtn = document.getElementById('promo-lightbox-close');
+
+        if (!rootEl) return;
+
+        function normalizeAssetPath(p) {
+          if (!p) return '';
+          if (p.startsWith('http://') || p.startsWith('https://') || p.startsWith('data:') || p.startsWith('/')) {
+            return p;
+          }
+          return '/' + p;
+        }
+
+        function normalizeLinks(item) {
+          if (Array.isArray(item.links)) {
+            return item.links.map(function (l) {
+              if (typeof l === 'string') return { label: '바로가기', url: l };
+              return { label: l.label || '바로가기', url: l.url || '' };
+            }).filter(function (l) { return !!l.url; });
+          }
+          if (typeof item.url === 'string' && item.url) {
+            return [{ label: '바로가기', url: item.url }];
+          }
+          return [];
+        }
+
+        function formatDescriptionHtml(item, includeProjectId) {
+          const lines = [];
+          if (includeProjectId && item.projectId) {
+            lines.push('Project ID: ' + escapeHtml(item.projectId));
+          }
+          const rawDesc = item.description !== undefined ? item.description : item.설명;
+          if (Array.isArray(rawDesc)) {
+            rawDesc.forEach(function (line) {
+              lines.push(escapeHtml(String(line)));
+            });
+          } else if (rawDesc) {
+            String(rawDesc).split('\n').forEach(function (line) {
+              lines.push(escapeHtml(line));
+            });
+          }
+          return lines.join('<br>');
+        }
+
+        function escapeHtml(str) {
+          return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+        }
+
+        function shouldShowUrlBox(item, links) {
+          if (typeof item.showUrl === 'boolean') return item.showUrl;
+          if (!links.length) return false;
+          const firstUrl = links[0].url;
+          return !firstUrl.includes('github.io') && !firstUrl.includes('github.com');
+        }
+
+        function openLightbox(src, alt) {
+          if (!lightbox || !lightboxImg) return;
+          lightboxImg.src = src;
+          lightboxImg.alt = alt || '';
+          if (lightboxCaption) {
+            lightboxCaption.textContent = alt || '';
+          }
+          lightbox.classList.add('active');
+        }
+
+        function closeLightbox() {
+          if (!lightbox || !lightboxImg) return;
+          lightbox.classList.remove('active');
+          lightboxImg.src = '';
+        }
+
+        function openDetailModal(item, sectionId) {
+          if (!detailModal || !detailTitleGroup || !detailBody) return;
+
+          const links = normalizeLinks(item);
+          const iconSrc = normalizeAssetPath(item.icon || item.아이콘);
+          const imgSrc = normalizeAssetPath(item.image || item.대표이미지);
+          const techStack = item.techStack || item.기술 || [];
+          const considerations = item.considerations || item.고민중인내용 || [];
+          const changelog = item.changelog || item.변경이력 || [];
+
+          // 1. 헤더 구성
+          let headerHtml = '';
+          if (iconSrc) {
+            headerHtml += `<img class="promo-detail-icon" src="${escapeHtml(iconSrc)}" alt="${escapeHtml(item.title)} 아이콘">`;
+          }
+          headerHtml += `<h2 class="promo-detail-title" style="border:none; padding:0; margin:0; width:auto;">${escapeHtml(item.title)}</h2>`;
+          if (item.projectId) {
+            headerHtml += `<span class="promo-detail-project-badge">${escapeHtml(item.projectId)}</span>`;
+          }
+          detailTitleGroup.innerHTML = headerHtml;
+
+          // 2. 본문 구성
+          let bodyHtml = '';
+
+          // 2-1. 바로가기 링크 버튼들
+          if (links.length > 0) {
+            bodyHtml += `<div class="promo-detail-links-bar">`;
+            links.forEach(function (link) {
+              bodyHtml += `
+                <a class="promo-detail-link-btn" href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer">
+                  <span>${escapeHtml(link.label)}</span>
+                  <span class="material-symbols-outlined">open_in_new</span>
+                </a>
+              `;
+            });
+            bodyHtml += `</div>`;
+          }
+
+          // 2-2. 상세 설명 및 대표 이미지
+          const overviewText = item.overview || item.상세설명;
+          const descHtml = overviewText
+            ? (Array.isArray(overviewText) ? overviewText.map(escapeHtml).join('<br>') : escapeHtml(overviewText).replace(/\n/g, '<br>'))
+            : formatDescriptionHtml(item, false);
+
+          if (descHtml || imgSrc) {
+            bodyHtml += `
+              <div class="promo-detail-section">
+                <div class="promo-detail-section-title">📌 소개</div>
+                ${descHtml ? `<div class="promo-detail-desc-box">${descHtml}</div>` : ''}
+                ${imgSrc ? `<img class="promo-preview-img promo-modal-preview-img" src="${escapeHtml(imgSrc)}" alt="${escapeHtml(item.title)}" title="클릭하여 크게 보기">` : ''}
+              </div>
+            `;
+          }
+
+          // 2-3. 구성한 기술
+          const techList = Array.isArray(techStack) ? techStack : (techStack ? [techStack] : []);
+          if (techList.length > 0) {
+            bodyHtml += `
+              <div class="promo-detail-section">
+                <div class="promo-detail-section-title">🛠️ 구성한 기술</div>
+                <div class="promo-tech-chips">
+                  ${techList.map(function (t) { return `<span class="promo-tech-chip">${escapeHtml(t)}</span>`; }).join('')}
+                </div>
+              </div>
+            `;
+          }
+
+          // 2-4. 고민중인 내용
+          const consList = Array.isArray(considerations) ? considerations : (considerations ? [considerations] : []);
+          if (consList.length > 0) {
+            bodyHtml += `
+              <div class="promo-detail-section">
+                <div class="promo-detail-section-title">🤔 고민중인 내용</div>
+                <ul class="promo-detail-list">
+                  ${consList.map(function (c) { return `<li>${escapeHtml(c)}</li>`; }).join('')}
+                </ul>
+              </div>
+            `;
+          }
+
+          // 2-5. 변경 이력
+          const logList = Array.isArray(changelog) ? changelog : (changelog ? [changelog] : []);
+          if (logList.length > 0) {
+            bodyHtml += `
+              <div class="promo-detail-section">
+                <div class="promo-detail-section-title">📜 변경 이력</div>
+                <div class="promo-changelog-list">
+                  ${logList.map(function (entry) {
+                    if (typeof entry === 'string') {
+                      return `<div class="promo-changelog-item"><span class="promo-changelog-content">${escapeHtml(entry)}</span></div>`;
+                    }
+                    const dateOrVer = [entry.date || entry.날짜, entry.version || entry.버전].filter(Boolean).join(' ');
+                    const content = entry.content || entry.내용 || '';
+                    return `
+                      <div class="promo-changelog-item">
+                        ${dateOrVer ? `<span class="promo-changelog-date">${escapeHtml(dateOrVer)}</span>` : ''}
+                        <span class="promo-changelog-content">${escapeHtml(content)}</span>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+            `;
+          }
+
+          detailBody.innerHTML = bodyHtml;
+
+          // 팝업 내부의 대표 이미지 클릭 시에도 크게보기(Lightbox) 연동
+          detailBody.querySelectorAll('.promo-modal-preview-img').forEach(function (img) {
+            img.addEventListener('click', function (e) {
+              e.stopPropagation();
+              openLightbox(img.getAttribute('src'), img.getAttribute('alt'));
+            });
+          });
+
+          detailModal.classList.add('active');
+        }
+
+        function closeDetailModal() {
+          if (!detailModal) return;
+          detailModal.classList.remove('active');
+        }
+
+        function renderPromoSections(data) {
+          const sections = (data && Array.isArray(data.sections)) ? data.sections : [];
+          rootEl.innerHTML = '';
+
+          sections.forEach(function (section, secIdx) {
+            if (secIdx > 0) {
+              rootEl.appendChild(document.createElement('hr'));
+            }
+
+            const h1 = document.createElement('h1');
+            h1.textContent = section.title || '';
+            rootEl.appendChild(h1);
+
+            const grid = document.createElement('div');
+            grid.className = 'promo-grid';
+
+            const items = Array.isArray(section.items) ? section.items : [];
+            items.forEach(function (item) {
+              const card = document.createElement('div');
+              card.className = 'promo-card';
+
+              const links = normalizeLinks(item);
+              const iconSrc = normalizeAssetPath(item.icon || item.아이콘);
+              const imgSrc = normalizeAssetPath(item.image || item.대표이미지);
+              const isToolSection = section.id === 'tools' || !!iconSrc || !!imgSrc;
+
+              // 1. 카드 상단 헤더 (아이콘 - 제목 - 링크1,2)
+              const header = document.createElement('div');
+              header.className = 'promo-card-header';
+
+              const titleWrap = document.createElement('div');
+              titleWrap.className = 'promo-card-title-wrap';
+
+              if (iconSrc) {
+                const iconImg = document.createElement('img');
+                iconImg.className = 'promo-tool-icon';
+                iconImg.src = iconSrc;
+                iconImg.alt = (item.title || '') + ' 아이콘';
+                titleWrap.appendChild(iconImg);
+              }
+
+              const titleDiv = document.createElement('div');
+              titleDiv.className = 'promo-card-title';
+              titleDiv.textContent = item.title || '';
+              titleWrap.appendChild(titleDiv);
+
+              header.appendChild(titleWrap);
+
+              if (links.length > 0) {
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'promo-card-actions';
+
+                links.forEach(function (link) {
+                  const a = document.createElement('a');
+                  a.className = 'promo-card-badge';
+                  a.href = link.url;
+                  a.target = '_blank';
+                  a.rel = 'noopener noreferrer';
+                  a.title = (link.label ? link.label + ' - ' : '') + '새 탭에서 열기';
+                  if (links.length > 1 && link.label) {
+                    const labelSpan = document.createElement('span');
+                    labelSpan.textContent = link.label;
+                    a.appendChild(labelSpan);
+                  }
+                  const iconSpan = document.createElement('span');
+                  iconSpan.className = 'material-symbols-outlined';
+                  iconSpan.textContent = 'open_in_new';
+                  a.appendChild(iconSpan);
+
+                  a.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                  });
+
+                  actionsDiv.appendChild(a);
+                });
+
+                header.appendChild(actionsDiv);
+              }
+
+              card.appendChild(header);
+
+              // 2. 외부 도메인 URL 노출 여부 (github.io / github.com 은 기본 숨김)
+              if (shouldShowUrlBox(item, links) && links.length > 0) {
+                const urlBox = document.createElement('div');
+                urlBox.className = 'promo-card-url-box';
+                const urlAnchor = document.createElement('a');
+                urlAnchor.className = 'promo-card-url';
+                urlAnchor.href = links[0].url;
+                urlAnchor.target = '_blank';
+                urlAnchor.rel = 'noopener noreferrer';
+                urlAnchor.textContent = links[0].url;
+                urlAnchor.addEventListener('click', function (e) {
+                  e.stopPropagation();
+                });
+                urlBox.appendChild(urlAnchor);
+                card.appendChild(urlBox);
+              }
+
+              // 3. 설명 (툴 섹션인 경우 Project ID 자동 표시)
+              const descHtml = formatDescriptionHtml(item, isToolSection);
+              if (descHtml) {
+                const descP = document.createElement('p');
+                descP.className = 'promo-card-desc';
+                descP.innerHTML = descHtml;
+                card.appendChild(descP);
+              }
+
+              // 4. 대표 이미지 (클릭 시 크게보기 Lightbox)
+              if (imgSrc) {
+                const previewImg = document.createElement('img');
+                previewImg.className = 'promo-preview-img';
+                previewImg.src = imgSrc;
+                previewImg.alt = item.title || '';
+                previewImg.title = '클릭하여 크게 보기';
+                previewImg.addEventListener('click', function (e) {
+                  e.stopPropagation();
+                  openLightbox(imgSrc, item.title || '');
+                });
+                card.appendChild(previewImg);
+              }
+
+              // 5. 하단 상세보기 힌트
+              const footerHint = document.createElement('div');
+              footerHint.className = 'promo-card-footer-hint';
+              footerHint.innerHTML = '<span>상세 정보 보기</span><span class="material-symbols-outlined" style="font-size:15px;">info</span>';
+              card.appendChild(footerHint);
+
+              // 카드 클릭 시 상세 정보 팝업 열기
+              card.addEventListener('click', function () {
+                openDetailModal(item, section.id);
+              });
+
+              grid.appendChild(card);
+            });
+
+            rootEl.appendChild(grid);
+          });
+
+          // 동적 생성된 h1 태그를 사이드바 목차(TOC)에 반영
+          if (window.SiteModules && window.SiteModules.TOC) {
+            if (typeof window.SiteModules.TOC.init === 'function') {
+              window.SiteModules.TOC.init();
+            }
+            const tocTree = document.getElementById('toc-tree');
+            if (tocTree && typeof window.SiteModules.TOC.addContentsList === 'function') {
+              tocTree.innerHTML = '';
+              window.SiteModules.TOC.addContentsList(tocTree);
+            }
+          }
+        }
+
+        // 모달 닫기 이벤트 바인딩
+        if (detailCloseBtn) {
+          detailCloseBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            closeDetailModal();
+          });
+        }
+
+        if (detailModal) {
+          detailModal.addEventListener('click', function (e) {
+            if (e.target === detailModal) {
+              closeDetailModal();
+            }
+          });
+        }
+
+        if (lightboxCloseBtn) {
+          lightboxCloseBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            closeLightbox();
+          });
+        }
+
+        if (lightbox) {
+          lightbox.addEventListener('click', function (e) {
+            if (e.target === lightbox || e.target.classList.contains('promo-lightbox-content')) {
+              closeLightbox();
+            }
+          });
+        }
+
+        const onKeyDown = function (e) {
+          if (e.key === 'Escape') {
+            if (lightbox && lightbox.classList.contains('active')) {
+              closeLightbox();
+            } else if (detailModal && detailModal.classList.contains('active')) {
+              closeDetailModal();
+            }
+          }
+        };
+        window.addEventListener('keydown', onKeyDown);
+        window.activeWindowListeners = window.activeWindowListeners || [];
+        window.activeWindowListeners.push({ type: 'keydown', fn: onKeyDown });
+
+        // promo.json 로드 및 렌더링
+        fetch('/promo.json', { cache: 'no-cache' })
+          .then(function (res) {
+            if (!res.ok) throw new Error('Failed to load /promo.json (status ' + res.status + ')');
+            return res.json();
+          })
+          .then(function (data) {
+            renderPromoSections(data);
+          })
+          .catch(function (err) {
+            console.error('[Promo] JSON 로드 오류:', err);
+            rootEl.innerHTML = '<p style="color:#dc2626;">홍보 데이터를 불러오지 못했습니다: ' + escapeHtml(err.message) + '</p>';
+          });
+      })();
+    </script>
+  </article>
+</body>
+
+</html>

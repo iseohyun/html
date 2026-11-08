@@ -1,5 +1,106 @@
 [
   {
+    "date": "2026-11-08",
+    "updates": [
+      {
+        "type": "Added",
+        "projectName": "홍보 페이지",
+        "projectPath": "/promo.html",
+        "summary": "홍보용 페이지 개설 — 사이드바 홍보 메뉴 신설 및 JSON 기반 외부 사이트·툴 아카이브(기술 스택/고민사항/변경이력 상세 팝업 및 대표이미지 확대보기) 구축"
+      },
+      {
+        "type": "Added",
+        "projectName": "대한민국 행사 (KoreaEventList)",
+        "projectPath": "/promo.html",
+        "summary": "공공데이터·지자체·체육협회(수영/러닝/자전거/철인 등) 행사 데이터 수집·크롤링 및 Firebase DB 구축, 통합 열람 사이트 개설"
+      },
+      {
+        "type": "Added",
+        "projectName": "내 AI 비서 시스템 (myLore)",
+        "projectPath": "/promo.html",
+        "summary": "Tauri v2(Rust) + React 기반 나만의 AI 비서 코어 아키텍처 설계(다중 LLM·음성인식·SQLite) 및 모바일·PC 동기화(myLore-Sync) 모듈 연동"
+      }
+    ]
+  },
+  {
+    "date": "2026-11-07",
+    "updates": [
+      {
+        "type": "Added",
+        "projectName": "보컬훈련 (SingSharp)",
+        "projectPath": "/promo.html",
+        "summary": "Web Audio API 및 Canvas 2D 기반 음정 유지·호흡·박자 훈련 시나리오와 개별 음역 분석 웹 어플리케이션 개설"
+      },
+      {
+        "type": "Changed",
+        "projectName": "해풍단",
+        "projectPath": "/promo.html",
+        "summary": "토요바다수영 소모임 아카이브 UI 일부 변경 및 신규 모임 스케줄 업로드"
+      },
+      {
+        "type": "Changed",
+        "projectName": "동영상 재생 및 편집기 (Movie Player lite)",
+        "projectPath": "/promo.html",
+        "summary": "동영상 재생 중 화면 위 임시 그리기(드로잉 오버레이) 기능 추가"
+      }
+    ]
+  },
+  {
+    "date": "2026-11-03",
+    "updates": [
+      {
+        "type": "Changed",
+        "projectName": "거시배 몽꾸와 야르",
+        "projectPath": "/promo.html",
+        "summary": "제19회 거제시장배 수영대회 결과 분석 및 기록 DB 열람 기능 추가"
+      }
+    ]
+  },
+  {
+    "date": "2026-10-25",
+    "updates": [
+      {
+        "type": "Changed",
+        "projectName": "거시배 몽꾸와 야르",
+        "projectPath": "/promo.html",
+        "summary": "제19회 거제시장배 수영대회 결과 및 출전 선수 기록 업데이트"
+      }
+    ]
+  },
+  {
+    "date": "2026-10-23",
+    "updates": [
+      {
+        "type": "Added",
+        "projectName": "거시배 몽꾸와 야르",
+        "projectPath": "/promo.html",
+        "summary": "실시간 수영대회 진행 현황 확인을 위한 페이지 신설"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-14",
+    "updates": [
+      {
+        "type": "Added",
+        "projectName": "야호트래블",
+        "projectPath": "/promo.html",
+        "summary": "거제 소재 일본 전문 여행사 공식 홈페이지 개설, 카카오톡 비즈니스 채널 연동 및 각종 포털 검색엔진 등록"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-05",
+    "updates": [
+      {
+        "type": "Added",
+        "projectName": "거시배 몽꾸와 야르",
+        "projectPath": "/promo.html",
+        "summary": "제19회 거제시장배 수영대회 대비 팀 훈련 및 일정 안내 페이지 신설"
+      }
+    ]
+  },
+  {
     "date": "2026-08-24",
     "updates": [
       {
