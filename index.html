@@ -34,10 +34,9 @@
     src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.8.0/highlightjs-line-numbers.min.js"></script>
 
   <link rel="shortcut icon" type="image/svg+xml" href="/source/icon_seohyun_reverse.svg">
+  <link rel="stylesheet" href="/style.css?v=20261109v10">
 
   <style type="text/css">
-    @import url("/style.css");
-
     #site-history {
       width: 96%;
       margin: 24px auto 200px;
@@ -53,14 +52,15 @@
        ========================================== */
     .cal-floating-filter {
       position: fixed;
-      top: 16px;
-      right: 20px;
+      top: 8px;
+      right: 12px;
       z-index: 1200;
       display: flex;
       flex-direction: column;
       align-items: flex-end;
       font-size: 75%;
       font-family: var(--font-main);
+      pointer-events: none;
     }
 
     .cal-filter-toggle-btn {
@@ -76,6 +76,7 @@
       justify-content: center;
       cursor: pointer;
       padding: 0;
+      pointer-events: auto;
       transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     }
 
@@ -111,18 +112,62 @@
     }
 
     .cal-filter-panel.open {
-      max-height: 420px;
+      max-height: 620px;
       opacity: 1;
       transform: scale(1) translateY(0);
       pointer-events: auto;
       padding: 10px 12px;
     }
 
+    .cal-filter-divider {
+      border: none;
+      border-top: 1px solid #cbd5e1;
+      margin: 8px 0;
+    }
+
+    .cal-settings-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .cal-settings-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .cal-settings-label {
+      font-weight: 700;
+      color: #334155;
+      white-space: nowrap;
+      min-width: 54px;
+    }
+
+    .cal-bg-slider {
+      flex: 1;
+      min-width: 120px;
+      cursor: pointer;
+      accent-color: #228be6;
+      margin: 0;
+    }
+
+    .cal-bg-percent-label {
+      font-family: var(--font-monospace);
+      font-weight: 800;
+      font-size: 0.98em;
+      color: #1e293b;
+      min-width: 38px;
+      text-align: right;
+    }
+
     table.cal-filter-table {
       margin: 0;
       border: 1px solid #e2e8f0;
       border-collapse: collapse;
-      width: auto;
+      width: 100%;
       font-family: var(--font-main);
       font-stretch: 100%;
       counter-increment: none;
@@ -138,6 +183,7 @@
       border: 1px solid #e2e8f0;
       white-space: nowrap;
       text-align: center;
+      width: 64px;
     }
 
     table.cal-filter-table td {
@@ -197,36 +243,44 @@
     }
 
     /* ==========================================
-       환경(배경색) & 분류(우상단 원형 배지) 컬러 팔레트
+       환경(배경색) & 분류(우상단 이모지 배지) 컬러 팔레트
        - Web(주황색), Android(초록색), Desktop(파란색), Video(빨간색), iseohyun(흰색)
-       - 검정색 글자를 읽는 데 방해되지 않는 은은한 파스텔 배경색
+       - --cal-env-bg-alpha 변수(기본 0.25 = 25%)로 배경 농도(%) 실시간 제어
        ========================================== */
+    :root {
+      --cal-env-bg-alpha: 0.25;
+      --cal-title-font-size: 12px;
+      --cal-title-zoom: 0.7500;
+      --cal-content-font-size: 12px;
+      --cal-content-zoom: 0.6667;
+    }
+
     .env-iseohyun {
       background-color: #ffffff !important;
       border-color: #cbd5e1 !important;
     }
 
     .env-webapp {
-      background-color: #fff4e6 !important;
-      border-color: #ffc078 !important;
+      background-color: rgba(255, 146, 43, var(--cal-env-bg-alpha, 0.25)) !important;
+      border-color: rgba(247, 103, 7, calc(min(1, var(--cal-env-bg-alpha, 0.25) + 0.28))) !important;
     }
 
     .env-android {
-      background-color: #ebfbee !important;
-      border-color: #8ce99a !important;
+      background-color: rgba(64, 192, 87, var(--cal-env-bg-alpha, 0.25)) !important;
+      border-color: rgba(43, 138, 62, calc(min(1, var(--cal-env-bg-alpha, 0.25) + 0.28))) !important;
     }
 
     .env-desktop {
-      background-color: #e7f5ff !important;
-      border-color: #74c0fc !important;
+      background-color: rgba(51, 154, 240, var(--cal-env-bg-alpha, 0.25)) !important;
+      border-color: rgba(25, 113, 194, calc(min(1, var(--cal-env-bg-alpha, 0.25) + 0.28))) !important;
     }
 
     .env-video {
-      background-color: #fff0f0 !important;
-      border-color: #ffa8a8 !important;
+      background-color: rgba(255, 107, 107, var(--cal-env-bg-alpha, 0.25)) !important;
+      border-color: rgba(224, 49, 49, calc(min(1, var(--cal-env-bg-alpha, 0.25) + 0.28))) !important;
     }
 
-    /* 분류 (모달 제목/필터 텍스트색 & 원형 배지 배경색) */
+    /* 분류 (모달 제목/필터 텍스트색) */
     .type-add {
       color: #16a34a !important;
       font-weight: 800;
@@ -247,55 +301,30 @@
       font-weight: 800;
     }
 
-    /* 달력 카드 우상단 border에 걸치는 분류 원형 배지 (A, C, F, D) */
+    /* 달력 카드 우상단 border에 걸치는 분류 이모지 배지 (원형 배경 없음: ✨, 🐛, ♻️, 🔥) */
     .cal-type-badge {
       position: absolute;
-      top: -6px;
+      top: -7px;
       right: -6px;
-      width: 15px;
-      height: 15px;
-      border-radius: 50%;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      color: #ffffff !important;
-      font-size: 9px;
-      font-weight: 900;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      font-size: 12px;
       line-height: 1;
-      font-family: var(--font-sans-serif);
-      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.25);
-      border: 1.5px solid #ffffff;
+      filter: drop-shadow(0 1px 1.5px rgba(15, 23, 42, 0.22));
       z-index: 3;
       user-select: none;
       pointer-events: none;
     }
 
-    .cal-type-badge.badge-add {
-      background-color: #16a34a;
-    }
-
-    .cal-type-badge.badge-changed {
-      background-color: #2563eb;
-    }
-
-    .cal-type-badge.badge-fixed {
-      background-color: #f59e0b;
-    }
-
-    .cal-type-badge.badge-deleted {
-      background-color: #dc2626;
-    }
-
-    .cal-filter-type-dot {
+    .cal-filter-type-emoji {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 15px;
-      height: 15px;
-      border-radius: 50%;
-      color: #ffffff !important;
-      font-size: 9px;
-      font-weight: 900;
+      font-size: 12px;
       line-height: 1;
     }
 
@@ -313,7 +342,6 @@
 
     table.update-calendar-table {
       width: 100%;
-      min-width: 680px;
       table-layout: fixed;
       border-collapse: collapse;
       margin: 0;
@@ -369,6 +397,61 @@
     table.update-calendar-table td.cal-cell.out-of-year {
       background-color: #f8fafc;
       opacity: 0.55;
+    }
+
+    /* 빈 주간(연속된 내용 없는 주) 기본 접기 & 통합 요약 토글 행 */
+    table.update-calendar-table tr.cal-empty-week-row.is-collapsed {
+      display: none;
+    }
+
+    table.update-calendar-table tr.cal-empty-weeks-toggle-row td.cal-empty-weeks-toggle-cell {
+      padding: 5px 12px;
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+      color: #64748b;
+      font-size: 0.92em;
+      font-weight: 600;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    table.update-calendar-table tr.cal-empty-weeks-toggle-row:hover td.cal-empty-weeks-toggle-cell {
+      background-color: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    .cal-empty-weeks-bar {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      line-height: 1.3;
+    }
+
+    .cal-empty-weeks-chevron {
+      display: inline-block;
+      font-size: 0.85em;
+      transition: transform 0.2s ease;
+    }
+
+    tr.cal-empty-weeks-toggle-row.is-expanded .cal-empty-weeks-chevron {
+      transform: rotate(90deg);
+    }
+
+    .cal-empty-weeks-badge {
+      background-color: #e2e8f0;
+      color: #334155;
+      padding: 1px 7px;
+      border-radius: 999px;
+      font-size: 0.88em;
+      font-weight: 700;
+    }
+
+    tr.cal-empty-weeks-toggle-row:hover .cal-empty-weeks-badge {
+      background-color: #dbeafe;
+      color: #1d4ed8;
     }
 
     /* 오늘 날짜 셀 하이라이트: 연한 파란색 배경 + 두꺼운 파란색 border */
@@ -455,7 +538,11 @@
       display: block;
       max-width: 100%;
       font-weight: 800;
-      font-size: 1em;
+      font-size: var(--cal-title-font-size, 12px) !important;
+      zoom: var(--cal-title-zoom, 0.7500);
+      -webkit-text-size-adjust: none;
+      text-size-adjust: none;
+      line-height: 1.3;
       color: #0f172a !important;
       white-space: nowrap;
       word-break: normal;
@@ -466,7 +553,11 @@
 
     .cal-event-summary {
       display: block;
-      font-size: 0.88em;
+      font-size: var(--cal-content-font-size, 12px) !important;
+      zoom: var(--cal-content-zoom, 0.6667);
+      -webkit-text-size-adjust: none;
+      text-size-adjust: none;
+      line-height: 1.35;
       font-weight: 500;
       color: #1e293b;
       opacity: 0.95;
@@ -652,18 +743,18 @@
       background: #1c7ed6;
     }
 
-    @media screen and (max-width: 768px) {
+    @media screen and (max-width: 960px) {
       .cal-floating-filter {
-        top: 56px;
-        right: 12px;
+        top: 8px;
+        right: 10px;
       }
 
       .cal-filter-panel {
-        max-width: calc(100vw - 24px);
+        max-width: calc(100vw - 20px);
       }
     }
   </style>
-  <script src="/modules/script.js?v=20261109v4" defer></script>
+  <script src="/modules/script.js?v=20261109v10" defer></script>
 </head>
 
 <body>

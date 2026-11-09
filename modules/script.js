@@ -3,7 +3,18 @@
 // 하위 호환성을 유지하기 위한 통합 진입점(Bootstrapper) 스크립트입니다.
 // 핵심 모듈들을 비동기로 로드하고 어플리케이션을 초기화합니다.
 
-window.SiteVersion = "20261109v4";
+window.SiteVersion = "20261109v10";
+(function() {
+  const styleLink = document.querySelector('link[rel="stylesheet"][href^="/style.css"]');
+  if (styleLink) {
+    styleLink.href = "/style.css?v=" + window.SiteVersion;
+  } else {
+    const newStyleLink = document.createElement("link");
+    newStyleLink.rel = "stylesheet";
+    newStyleLink.href = "/style.css?v=" + window.SiteVersion;
+    document.head.insertBefore(newStyleLink, document.head.firstChild);
+  }
+})();
 
 (function() {
   // SPA 리다이렉트 처리: index.html이 아닌 개별 서브페이지로 직접 접속 시 홈(SPA 숙주)의 해시 경로로 강제 전환시킵니다.

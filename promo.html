@@ -5,8 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>홍보</title>
-  <link rel="stylesheet" href="/style.css">
-  <script src="/modules/script.js?v=20261109v4" defer></script>
+  <link rel="stylesheet" href="/style.css?v=20261109v10">
+  <script src="/modules/script.js?v=20261109v10" defer></script>
 </head>
 
 <body>
@@ -152,6 +152,7 @@
         border-radius: 14px;
         background: #f8fafc;
         border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.09);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -166,11 +167,13 @@
         height: 100%;
         object-fit: contain;
         display: block;
+        filter: drop-shadow(0 2px 4px rgba(15, 23, 42, 0.16));
       }
 
       .promo-icon-fallback {
         font-size: 28px !important;
         color: #2563eb;
+        filter: drop-shadow(0 2px 3px rgba(37, 99, 235, 0.2));
       }
 
       .promo-icon-label {
@@ -319,6 +322,7 @@
         object-fit: contain;
         flex-shrink: 0;
         border-radius: 6px;
+        filter: drop-shadow(0 2px 4px rgba(15, 23, 42, 0.16));
       }
 
       .promo-card-title {
@@ -525,6 +529,7 @@
         object-fit: contain;
         border-radius: 8px;
         flex-shrink: 0;
+        filter: drop-shadow(0 2px 5px rgba(15, 23, 42, 0.18));
       }
 
       .promo-detail-title {
@@ -785,11 +790,11 @@
 
       @media screen and (max-width: 768px) {
         .promo-floating-view-toggle {
-          top: 56px;
+          top: 10px;
         }
 
         .promo-section-header {
-          top: 48px;
+          top: 0;
         }
 
         .promo-section-chevron {
@@ -909,7 +914,13 @@
           const candidates = [];
           if (item && item.projectId) {
             const folder = '/source/' + item.projectId + '/';
-            ['icon.svg', 'icon.png', 'favicon.svg', 'favicon.png', 'favicon.ico', 'logo.svg', 'logo.png'].forEach(function (file) {
+            const pidLower = String(item.projectId).toLowerCase();
+            [
+              'icon.svg', 'icon.png', 'icon.jpg',
+              'favicon.svg', 'favicon.png', 'favicon.ico',
+              'logo.svg', 'logo.png', 'logo.jpg',
+              pidLower + '.svg', pidLower + '.png', pidLower + '.jpg'
+            ].forEach(function (file) {
               candidates.push(folder + file);
             });
           }
