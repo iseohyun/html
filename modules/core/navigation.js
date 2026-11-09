@@ -94,21 +94,19 @@ window.SiteModules.Navigation = (function () {
     if (!sidebarContainer) {
       const body = document.querySelector("body");
 
-      // C. 모바일 전용 상단 고정 헤더
-      let mobileHeader = document.getElementById("mobile-header");
-      if (!mobileHeader) {
-        mobileHeader = document.createElement("div");
-        mobileHeader.setAttribute("id", "mobile-header");
-        mobileHeader.innerHTML = `
-          <div id="mobile-logo">
-            <img src="/source/icon_seohyun_reverse.svg" alt="iseohyun.com 로고" id="mobile-logo-img">
-            <span id="mobile-logo-text">iseohyun.com</span>
-          </div>
-          <div id="mobile-menu-btn" data-tooltip="메뉴">
-            <span class="material-symbols-outlined">menu</span>
-          </div>
-        `;
-        body.insertBefore(mobileHeader, body.firstChild);
+      // C. 좁은 화면(화면 절반 이하/모바일) 전용 좌상단 고정 삼선(햄버거) 메뉴 버튼
+      let existingMobileHeader = document.getElementById("mobile-header");
+      if (existingMobileHeader) existingMobileHeader.remove();
+
+      let mobileMenuBtn = document.getElementById("mobile-menu-btn");
+      if (!mobileMenuBtn) {
+        mobileMenuBtn = document.createElement("button");
+        mobileMenuBtn.setAttribute("type", "button");
+        mobileMenuBtn.setAttribute("id", "mobile-menu-btn");
+        mobileMenuBtn.setAttribute("title", "메뉴 열기/닫기");
+        mobileMenuBtn.setAttribute("aria-label", "메뉴 열기/닫기");
+        mobileMenuBtn.innerHTML = `<span class="material-symbols-outlined">menu</span>`;
+        body.insertBefore(mobileMenuBtn, body.firstChild);
       }
 
       // D. 모바일 어두운 배경 오버레이
@@ -218,35 +216,18 @@ window.SiteModules.Navigation = (function () {
       `;
       sidebarContainer.appendChild(sidebarPanel);
 
-      if (window.innerWidth > 768) {
+      if (window.innerWidth > 960) {
         setPanelCollapsed(true);
       } else {
-        document.documentElement.style.setProperty('--sidebar-width', '60px');
+        setPanelCollapsed(false);
+        document.documentElement.style.setProperty('--sidebar-width', '0px');
       }
 
       createModals();
       bindSidebarEvents();
 
-      // C. 모바일 스크린 상단 헤더 (header) 100% 동적 렌더링 주입
-      let siteHeader = document.querySelector("header");
-      if (!siteHeader) {
-        siteHeader = document.createElement("header");
-        siteHeader.className = "site-header";
-        siteHeader.innerHTML = `
-          <div id="headerIcons">
-            <div id="header-home" onclick="window.location.href='/'" title="홈으로" style="cursor:pointer; display:flex; align-items:center;">
-              <span class="material-symbols-outlined" style="color:#2563eb; font-size:22px;">home</span>
-            </div>
-            <div id="header-sitemap" onclick="document.getElementById('nav-sitemap')?.click()" title="사이트맵" style="cursor:pointer; display:flex; align-items:center;">
-              <span class="material-symbols-outlined" style="color:#475569; font-size:22px;">account_tree</span>
-            </div>
-            <div id="header-search" onclick="document.getElementById('nav-search')?.click()" title="검색" style="cursor:pointer; display:flex; align-items:center;">
-              <span class="material-symbols-outlined" style="color:#475569; font-size:22px;">search</span>
-            </div>
-          </div>
-        `;
-        document.body.prepend(siteHeader);
-      }
+      // 기존 상단 header 요소가 있다면 제거 (상단 nav 미사용, 좌상단 삼선 메뉴로 통합)
+      document.querySelectorAll("header").forEach(h => h.remove());
     }
 
     baseUl = document.getElementById("sitemap-tree");
@@ -497,13 +478,18 @@ window.SiteModules.Navigation = (function () {
 
   function handleRouteChange() {
     let hash = window.location.hash;
-    const isMobile = window.innerWidth <= 768;
+    const isMobile = window.innerWidth <= 960;
 
     if (isMobile) {
       const container = document.getElementById("sidebar-container");
       const overlay = document.getElementById("sidebar-overlay");
+      const menuBtn = document.getElementById("mobile-menu-btn");
       if (container) container.classList.remove("active");
       if (overlay) overlay.classList.remove("active");
+      if (menuBtn) {
+        menuBtn.classList.remove("active", "hidden-by-sidebar");
+      }
+      document.body.classList.remove("mobile-nav-open");
     }
 
     if (!hash || hash === "#" || hash === "#/" || hash === "#/index.html" || hash === "#index.html") {
@@ -1078,17 +1064,28 @@ window.SiteModules.Navigation = (function () {
   function trigBoard(mode = "trigger") {
     const container = document.getElementById("sidebar-container");
     const panel = document.getElementById("sidebar-panel");
+    const overlay = document.getElementById("sidebar-overlay");
+    const menuBtn = document.getElementById("mobile-menu-btn");
     if (!container || !panel) return;
 
-    const isMobile = window.innerWidth <= 768;
+    const isMobile = window.innerWidth <= 960;
 
     if (isMobile) {
-      if (mode === "trigger") {
-        container.classList.toggle("active");
-      } else if (mode === "visible") {
-        container.classList.add("active");
-      } else {
-        container.classList.remove("active");
+      let nextActive = !container.classList.contains("active");
+      if (mode === "visible") {
+        nextActive = true;
+      } else if (mode === "hidden") {
+        nextActive = false;
+      }
+      container.classList.toggle("active", nextActive);
+      if (overlay) overlay.classList.toggle("active", nextActive);
+      if (menuBtn) {
+        menuBtn.classList.toggle("active", nextActive);
+        menuBtn.classList.toggle("hidden-by-sidebar", nextActive);
+      }
+      document.body.classList.toggle("mobile-nav-open", nextActive);
+      if (nextActive) {
+        setPanelCollapsed(false);
       }
     } else {
       const isCollapsed = panel.classList.contains("collapsed");
@@ -1109,10 +1106,11 @@ window.SiteModules.Navigation = (function () {
   function setPanelCollapsed(shouldCollapse) {
     const panel = document.getElementById("sidebar-panel");
     if (!panel) return;
+    const isMobile = window.innerWidth <= 960;
 
     if (shouldCollapse) {
       panel.classList.add("collapsed");
-      document.documentElement.style.setProperty('--sidebar-width', '60px');
+      document.documentElement.style.setProperty('--sidebar-width', isMobile ? '0px' : '60px');
       // 패널이 접히면 모든 탭 아이콘에서 active 클래스를 제거하여 비활성 상태로 보이도록 합니다.
       const tabs = ["nav-sitemap", "nav-toc", "nav-search"];
       tabs.forEach(id => {
@@ -1121,7 +1119,7 @@ window.SiteModules.Navigation = (function () {
       });
     } else {
       panel.classList.remove("collapsed");
-      document.documentElement.style.setProperty('--sidebar-width', '300px');
+      document.documentElement.style.setProperty('--sidebar-width', isMobile ? '0px' : '300px');
 
       // 패널이 펼쳐질 때, 만약 활성화된 탭이 없다면 기본적으로 nav-sitemap을 활성화합니다.
       const tabs = ["nav-sitemap", "nav-toc", "nav-search"];
@@ -1207,34 +1205,62 @@ window.SiteModules.Navigation = (function () {
   }
 
   function bindSidebarEvents() {
-    const mobileHeader = document.getElementById("mobile-header");
+    const mobileMenuBtn = document.getElementById("mobile-menu-btn");
     const sidebarOverlay = document.getElementById("sidebar-overlay");
     const sidebarContainer = document.getElementById("sidebar-container");
 
-    function toggleMobileMenu() {
+    function setMobileDrawerState(isOpen) {
       if (!sidebarContainer) return;
-      const isActive = sidebarContainer.classList.toggle("active");
+      sidebarContainer.classList.toggle("active", isOpen);
       if (sidebarOverlay) {
-        sidebarOverlay.classList.toggle("active", isActive);
+        sidebarOverlay.classList.toggle("active", isOpen);
       }
-      if (isActive) {
-        // 모바일 메뉴가 열릴 때 패널이 접혀 있다면 펼쳐서 메뉴 항목을 활성화
+      if (mobileMenuBtn) {
+        mobileMenuBtn.classList.toggle("active", isOpen);
+        mobileMenuBtn.classList.toggle("hidden-by-sidebar", isOpen);
+      }
+      document.body.classList.toggle("mobile-nav-open", isOpen);
+      if (isOpen) {
+        // 삼선 메뉴가 열릴 때 패널이 접혀 있다면 펼쳐서 메뉴 항목을 활성화
         setPanelCollapsed(false);
       }
     }
 
-    if (mobileHeader) {
-      mobileHeader.addEventListener("click", () => {
-        toggleMobileMenu();
+    if (mobileMenuBtn) {
+      mobileMenuBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const nextOpen = !sidebarContainer.classList.contains("active");
+        setMobileDrawerState(nextOpen);
       });
     }
 
     if (sidebarOverlay) {
       sidebarOverlay.addEventListener("click", () => {
-        if (sidebarContainer) sidebarContainer.classList.remove("active");
-        sidebarOverlay.classList.remove("active");
+        setMobileDrawerState(false);
       });
     }
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && window.innerWidth <= 960 && sidebarContainer && sidebarContainer.classList.contains("active")) {
+        setMobileDrawerState(false);
+      }
+    });
+
+    let lastIsMobile = window.innerWidth <= 960;
+    window.addEventListener("resize", () => {
+      const nowIsMobile = window.innerWidth <= 960;
+      if (nowIsMobile !== lastIsMobile) {
+        lastIsMobile = nowIsMobile;
+        const panel = document.getElementById("sidebar-panel");
+        setMobileDrawerState(false);
+        if (nowIsMobile) {
+          document.documentElement.style.setProperty('--sidebar-width', '0px');
+        } else {
+          const isCollapsed = panel ? panel.classList.contains("collapsed") : true;
+          document.documentElement.style.setProperty('--sidebar-width', isCollapsed ? '60px' : '300px');
+        }
+      }
+    });
 
     const navHomeBtn = document.getElementById("nav-home");
     if (navHomeBtn) {

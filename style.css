@@ -425,39 +425,10 @@ header #headerIcons #tutorial-icon {
   cursor: pointer;
 }
 
-/* 412x914px 최신 스마트폰 포함 모든 모바일/태블릿(900px 이하) 상단 헤더 100% 보장 */
-@media screen and (max-width: 900px) {
+/* 상단 헤더 미사용 (좁은 화면에서는 좌상단 고정 삼선 메뉴 사용) */
+@media screen and (max-width: 960px) {
   header.site-header {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 48px !important;
-    background: rgba(255, 255, 255, 0.98) !important;
-    backdrop-filter: blur(10px) !important;
-    border-bottom: 1px solid #cbd5e1 !important;
-    padding: 0 16px !important;
-    box-sizing: border-box !important;
-    z-index: 99999 !important;
-  }
-  body {
-    padding-top: 48px !important;
-  }
-  header ul {
-    display: flex;
-    width: 100vw;
-    margin: 0;
-    padding: 0;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-around;
-  }
-
-  header li>ul {
-    top: 55px;
+    display: none !important;
   }
 }
 
@@ -1576,110 +1547,104 @@ header {
   color: white;
 }
 
-/* Mobile Top Header (Fixed at top for screens <= 768px) */
+/* 좁은 화면(<= 960px) 전용 좌상단 고정 삼선(햄버거) 메뉴 버튼 */
 #mobile-header {
-  display: none;
+  display: none !important;
+}
+
+#mobile-menu-btn {
+  display: none !important;
 }
 
 #sidebar-overlay {
-  display: none;
+  display: none !important;
 }
 
-/* Responsive Media Queries */
-@media screen and (max-width: 768px) {
+/* Responsive Media Queries (화면 절반 너비 960px 이하 & 모바일) */
+@media screen and (max-width: 960px) {
   :root {
-    --sidebar-width: 0px;
+    --sidebar-width: 0px !important;
   }
 
   body {
     padding-left: 0 !important;
-    padding-top: 50px !important;
-  }
-
-  #mobile-header {
-    display: flex;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 50px;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border-bottom: 1px solid #e9ecef;
-    z-index: 9999;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 16px;
-    box-sizing: border-box;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    user-select: none;
-    cursor: pointer;
-  }
-
-  #mobile-logo {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  #mobile-logo-img {
-    height: 26px;
-    width: 26px;
-  }
-
-  #mobile-logo-text {
-    font-weight: 800;
-    font-size: 1.15rem;
-    color: #212529;
-    letter-spacing: -0.3px;
+    padding-top: 0 !important;
   }
 
   #mobile-menu-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    color: #495057;
-    transition: background-color 0.2s;
+    display: flex !important;
+    position: fixed !important;
+    top: 8px !important;
+    left: 10px !important;
+    z-index: 9999 !important;
+    width: 42px !important;
+    height: 42px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    border: 1px solid #cbd5e1 !important;
+    background-color: #ffffff !important;
+    color: #334155 !important;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.14) !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    user-select: none !important;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease !important;
   }
 
-  #mobile-menu-btn:active {
-    background-color: #e9ecef;
+  #mobile-menu-btn * {
+    pointer-events: none !important;
+  }
+
+  #mobile-menu-btn:hover,
+  #mobile-menu-btn.active {
+    background-color: #228be6 !important;
+    border-color: #228be6 !important;
+    color: #ffffff !important;
+    transform: scale(1.05) !important;
+    box-shadow: 0 6px 18px rgba(34, 139, 230, 0.3) !important;
+  }
+
+  #mobile-menu-btn.hidden-by-sidebar,
+  body.mobile-nav-open #mobile-menu-btn {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
   }
 
   #sidebar-container {
-    top: 50px !important;
-    height: calc(100vh - 50px) !important;
-    z-index: 10000;
-    transform: translateX(-350px);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    top: 0 !important;
+    left: 0 !important;
+    height: 100vh !important;
+    z-index: 10000 !important;
+    transform: translateX(-105%) !important;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   }
 
   #sidebar-container.active {
-    transform: translateX(0);
-    box-shadow: 6px 0 24px rgba(0, 0, 0, 0.18);
+    transform: translateX(0) !important;
+    box-shadow: 6px 0 24px rgba(0, 0, 0, 0.18) !important;
   }
 
   #sidebar-overlay {
-    display: block;
-    position: fixed;
-    top: 50px;
-    left: 0;
-    width: 100vw;
-    height: calc(100vh - 50px);
-    background: rgba(0, 0, 0, 0.4);
-    z-index: 9998;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
+    display: block !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(0, 0, 0, 0.4) !important;
+    z-index: 9998 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: opacity 0.3s ease !important;
   }
 
   #sidebar-overlay.active {
-    opacity: 1;
-    pointer-events: auto;
+    opacity: 1 !important;
+    pointer-events: auto !important;
   }
 }
 
@@ -2223,40 +2188,13 @@ article a:hover {
    5. 헤더는 현재 출력되는 문서의 title을 표시한다 (#header-doc-title)
    ========================================================================== */
 
-/* 데스크탑 기본: 헤더 숨김 */
+/* 상단 헤더 미사용 */
 .site-header {
   display: none !important;
 }
 
-/* 모바일 전용 (max-width: 768px): 헤더 상단 고정 출력 */
-@media screen and (max-width: 768px) {
-  .site-header {
-    display: flex !important;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    width: 100% !important;
-    height: 48px !important;
-    background-color: rgba(255, 255, 255, 0.92) !important;
-    backdrop-filter: blur(8px) !important;
-    -webkit-backdrop-filter: blur(8px) !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-    z-index: 900 !important; /* 네비게이션(1000)보다 z가 작음 */
-    align-items: center !important;
-    justify-content: space-between !important;
-    padding: 0 12px !important;
-    box-sizing: border-box !important;
-  }
-
-  /* 주의사항 1번: 헤더는 문서를 가리지 않는다 (헤더 높이 48px 밑선 확보) */
-  body > article,
-  article {
-    margin-top: 48px !important;
-    padding-top: 10px !important;
-  }
-
-  /* [새로 추가된 주의사항] 모바일 버전에서는 네비게이션의 툴팁이 보이지 않는다 */
+/* 좁은 화면(max-width: 960px)에서는 네비게이션 툴팁 숨김 */
+@media screen and (max-width: 960px) {
   .tooltip,
   #sidebar-container [data-tooltip]::before,
   #sidebar-container [data-tooltip]::after,
@@ -2268,10 +2206,5 @@ article a:hover {
     opacity: 0 !important;
     visibility: hidden !important;
     content: none !important;
-  }
-
-  /* 네비게이션 패널은 z-index: 1000으로 헤더 위로 덮임 */
-  #sidebar-container {
-    z-index: 1000 !important;
   }
 }

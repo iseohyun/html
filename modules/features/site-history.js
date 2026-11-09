@@ -38,11 +38,70 @@ window.SiteModules.UpdateLog = (function () {
   };
 
   const TYPE_BADGE_MAP = {
-    'Add': { letter: 'A', cls: 'badge-add', label: 'Add' },
-    'Changed': { letter: 'C', cls: 'badge-changed', label: 'Changed' },
-    'Fixed': { letter: 'F', cls: 'badge-fixed', label: 'Fixed' },
-    'Deleted': { letter: 'D', cls: 'badge-deleted', label: 'Deleted' }
+    'Add': { emoji: '✨', label: 'Add' },
+    'Changed': { emoji: '♻️', label: 'Changed' },
+    'Fixed': { emoji: '🐛', label: 'Fixed' },
+    'Deleted': { emoji: '🔥', label: 'Deleted' }
   };
+
+  let bgAlphaPercent = 25;
+  let titleFontSizePx = 9;
+  let contentFontSizePx = 8;
+  try {
+    const savedPct = parseInt(localStorage.getItem('cal_env_bg_percent_v2') || '25', 10);
+    if (!isNaN(savedPct) && savedPct >= 5 && savedPct <= 100) {
+      bgAlphaPercent = savedPct;
+    }
+    const savedTitlePx = parseInt(localStorage.getItem('cal_title_font_size_px_v2') || '9', 10);
+    if (!isNaN(savedTitlePx) && savedTitlePx >= 1 && savedTitlePx <= 24) {
+      titleFontSizePx = savedTitlePx;
+    }
+    const savedContentPx = parseInt(localStorage.getItem('cal_content_font_size_px_v2') || '8', 10);
+    if (!isNaN(savedContentPx) && savedContentPx >= 1 && savedContentPx <= 22) {
+      contentFontSizePx = savedContentPx;
+    }
+  } catch (e) {}
+
+  function applyBgAlphaPercent(pct) {
+    bgAlphaPercent = Math.max(5, Math.min(100, Number(pct) || 25));
+    document.documentElement.style.setProperty('--cal-env-bg-alpha', (bgAlphaPercent / 100).toFixed(2));
+    try {
+      localStorage.setItem('cal_env_bg_percent_v2', String(bgAlphaPercent));
+    } catch (e) {}
+  }
+
+  function applyTitleFontSizePx(px) {
+    titleFontSizePx = Math.max(1, Math.min(24, Number(px) || 9));
+    // 브라우저 최소 글꼴 크기 제한(10px~12px)을 우회하기 위해 12px 미만은 기준 12px + zoom 비율로 렌더링
+    if (titleFontSizePx < 12) {
+      document.documentElement.style.setProperty('--cal-title-font-size', '12px');
+      document.documentElement.style.setProperty('--cal-title-zoom', (titleFontSizePx / 12).toFixed(4));
+    } else {
+      document.documentElement.style.setProperty('--cal-title-font-size', `${titleFontSizePx}px`);
+      document.documentElement.style.setProperty('--cal-title-zoom', '1');
+    }
+    try {
+      localStorage.setItem('cal_title_font_size_px_v2', String(titleFontSizePx));
+    } catch (e) {}
+  }
+
+  function applyContentFontSizePx(px) {
+    contentFontSizePx = Math.max(1, Math.min(22, Number(px) || 8));
+    if (contentFontSizePx < 12) {
+      document.documentElement.style.setProperty('--cal-content-font-size', '12px');
+      document.documentElement.style.setProperty('--cal-content-zoom', (contentFontSizePx / 12).toFixed(4));
+    } else {
+      document.documentElement.style.setProperty('--cal-content-font-size', `${contentFontSizePx}px`);
+      document.documentElement.style.setProperty('--cal-content-zoom', '1');
+    }
+    try {
+      localStorage.setItem('cal_content_font_size_px_v2', String(contentFontSizePx));
+    } catch (e) {}
+  }
+
+  applyBgAlphaPercent(bgAlphaPercent);
+  applyTitleFontSizePx(titleFontSizePx);
+  applyContentFontSizePx(contentFontSizePx);
 
   function escapeHtml(str) {
     return String(str || '')
@@ -242,7 +301,7 @@ window.SiteModules.UpdateLog = (function () {
     const item = ev.raw;
     const typeKey = ev.typeKey;
     const badgeClassMap = { Add: 'added', Changed: 'changed', Fixed: 'fixed', Deleted: 'removed' };
-    const iconMap = { Add: '✨', Changed: '📝', Fixed: '🛠️', Deleted: '🗑️' };
+    const iconMap = { Add: '✨', Changed: '♻️', Fixed: '🐛', Deleted: '🔥' };
     const labelMap = { Add: '추가 (Add)', Changed: '수정 (Changed)', Fixed: '개선 (Fixed)', Deleted: '삭제 (Deleted)' };
 
     const badgeClass = badgeClassMap[typeKey] || 'changed';
@@ -380,22 +439,22 @@ window.SiteModules.UpdateLog = (function () {
                 <div class="cal-filter-options">
                   <label class="cal-filter-chip type-chip">
                     <input type="checkbox" name="cal-type" value="Add" checked>
-                    <span class="cal-filter-type-dot" style="background-color:#16a34a;">A</span>
+                    <span class="cal-filter-type-emoji">✨</span>
                     <span class="type-add">Add</span>
                   </label>
                   <label class="cal-filter-chip type-chip">
                     <input type="checkbox" name="cal-type" value="Changed" checked>
-                    <span class="cal-filter-type-dot" style="background-color:#2563eb;">C</span>
+                    <span class="cal-filter-type-emoji">♻️</span>
                     <span class="type-changed">Changed</span>
                   </label>
                   <label class="cal-filter-chip type-chip">
                     <input type="checkbox" name="cal-type" value="Fixed" checked>
-                    <span class="cal-filter-type-dot" style="background-color:#f59e0b;">F</span>
+                    <span class="cal-filter-type-emoji">🐛</span>
                     <span class="type-fixed">Fixed</span>
                   </label>
                   <label class="cal-filter-chip type-chip">
                     <input type="checkbox" name="cal-type" value="Deleted" checked>
-                    <span class="cal-filter-type-dot" style="background-color:#dc2626;">D</span>
+                    <span class="cal-filter-type-emoji">🔥</span>
                     <span class="type-deleted">Deleted</span>
                   </label>
                 </div>
@@ -418,6 +477,38 @@ window.SiteModules.UpdateLog = (function () {
                     <input type="checkbox" name="cal-search-target" value="category" checked>
                     <span>분류</span>
                   </label>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <hr class="cal-filter-divider">
+        <table class="cal-filter-table cal-settings-table">
+          <tbody>
+            <tr>
+              <th>배경농도</th>
+              <td>
+                <div class="cal-settings-wrap">
+                  <input type="range" id="cal-bg-alpha-slider" class="cal-bg-slider" min="5" max="100" step="1" value="${bgAlphaPercent}">
+                  <span id="cal-bg-alpha-label" class="cal-bg-percent-label">${bgAlphaPercent}%</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <th>제목크기</th>
+              <td>
+                <div class="cal-settings-wrap">
+                  <input type="range" id="cal-title-size-slider" class="cal-bg-slider" min="1" max="24" step="1" value="${titleFontSizePx}">
+                  <span id="cal-title-size-label" class="cal-bg-percent-label">${titleFontSizePx}px</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <th>내용크기</th>
+              <td>
+                <div class="cal-settings-wrap">
+                  <input type="range" id="cal-content-size-slider" class="cal-bg-slider" min="1" max="22" step="1" value="${contentFontSizePx}">
+                  <span id="cal-content-size-label" class="cal-bg-percent-label">${contentFontSizePx}px</span>
                 </div>
               </td>
             </tr>
@@ -468,6 +559,36 @@ window.SiteModules.UpdateLog = (function () {
     const searchInput = floatingFilter.querySelector('#cal-search-input');
     if (searchInput) {
       searchInput.addEventListener('input', syncFilterStateAndRender);
+    }
+
+    const bgSlider = floatingFilter.querySelector('#cal-bg-alpha-slider');
+    const bgLabel = floatingFilter.querySelector('#cal-bg-alpha-label');
+    if (bgSlider) {
+      bgSlider.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value, 10);
+        if (bgLabel) bgLabel.textContent = `${val}%`;
+        applyBgAlphaPercent(val);
+      });
+    }
+
+    const titleSlider = floatingFilter.querySelector('#cal-title-size-slider');
+    const titleLabel = floatingFilter.querySelector('#cal-title-size-label');
+    if (titleSlider) {
+      titleSlider.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value, 10);
+        if (titleLabel) titleLabel.textContent = `${val}px`;
+        applyTitleFontSizePx(val);
+      });
+    }
+
+    const contentSlider = floatingFilter.querySelector('#cal-content-size-slider');
+    const contentLabel = floatingFilter.querySelector('#cal-content-size-label');
+    if (contentSlider) {
+      contentSlider.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value, 10);
+        if (contentLabel) contentLabel.textContent = `${val}px`;
+        applyContentFontSizePx(val);
+      });
     }
 
     return floatingFilter;
@@ -583,11 +704,22 @@ window.SiteModules.UpdateLog = (function () {
       Math.round((firstRowSunday.getTime() - lastRowSunday.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1
     );
 
+    function formatDotDate(d) {
+      return `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()}`;
+    }
+
+    const weekRows = [];
+
     for (let w = 0; w < totalWeeks; w++) {
       const weekSunday = new Date(
         firstRowSunday.getFullYear(),
         firstRowSunday.getMonth(),
         firstRowSunday.getDate() - w * 7
+      );
+      const weekSaturday = new Date(
+        weekSunday.getFullYear(),
+        weekSunday.getMonth(),
+        weekSunday.getDate() + 6
       );
 
       // 선택된 연도에 속하는 날짜가 하루도 없는 주는 건너뜀 (단, 1행은 항상 표시)
@@ -604,6 +736,7 @@ window.SiteModules.UpdateLog = (function () {
       }
 
       const tr = document.createElement('tr');
+      let weekEventCount = 0;
 
       for (let dIdx = 0; dIdx < 7; dIdx++) {
         const cellDate = new Date(
@@ -653,6 +786,7 @@ window.SiteModules.UpdateLog = (function () {
         // 해당 날짜의 필터링된 이벤트 카드 렌더링
         const dayEvents = dateMap.get(cellKey) || [];
         if (dayEvents.length > 0) {
+          weekEventCount += dayEvents.length;
           const eventsWrap = document.createElement('div');
           eventsWrap.className = 'cal-events-wrap';
 
@@ -661,7 +795,7 @@ window.SiteModules.UpdateLog = (function () {
             // 배경색: 활성화된 환경 중 첫 번째 매칭 환경 색상 적용
             const matchedEnv = ev.envs.find(e => filterState.envs.includes(e)) || ev.envs[0] || 'iseohyun.com';
             const envClass = ENV_CLASS_MAP[matchedEnv] || 'env-iseohyun';
-            // 우상단 border 걸침 배지: 분류(type) A / C / F / D 원형 배지
+            // 우상단 border 걸침 배지: 분류(type) 이모지 배지
             const badgeInfo = TYPE_BADGE_MAP[ev.typeKey] || TYPE_BADGE_MAP.Changed;
 
             const card = document.createElement('div');
@@ -670,7 +804,7 @@ window.SiteModules.UpdateLog = (function () {
             const projectName = typeof item === 'string' ? item : (item.projectName || '업데이트');
             const summaryText = typeof item === 'string' ? '' : (item.summary || '');
 
-            card.innerHTML = `<span class="cal-type-badge ${badgeInfo.cls}" title="${escapeHtml(badgeInfo.label)}">${badgeInfo.letter}</span><strong class="cal-event-project" title="${escapeHtml(projectName)}">${escapeHtml(projectName)}</strong>${
+            card.innerHTML = `<span class="cal-type-badge" title="${escapeHtml(badgeInfo.label)}">${badgeInfo.emoji}</span><strong class="cal-event-project" title="${escapeHtml(projectName)}">${escapeHtml(projectName)}</strong>${
               summaryText ? `<span class="cal-event-summary">${escapeHtml(summaryText)}</span>` : ''
             }`;
 
@@ -688,7 +822,71 @@ window.SiteModules.UpdateLog = (function () {
         tr.appendChild(td);
       }
 
-      tbody.appendChild(tr);
+      weekRows.push({
+        w,
+        weekSunday,
+        weekSaturday,
+        tr,
+        isEmpty: weekEventCount === 0
+      });
+    }
+
+    // 4. 한 주간 내용이 없는 경우 기본 접기 제공 (연속된 빈 주는 하나로 묶어서 접기)
+    let idx = 0;
+    while (idx < weekRows.length) {
+      const current = weekRows[idx];
+      if (!current.isEmpty) {
+        tbody.appendChild(current.tr);
+        idx++;
+        continue;
+      }
+
+      const emptyGroup = [];
+      while (idx < weekRows.length && weekRows[idx].isEmpty) {
+        emptyGroup.push(weekRows[idx]);
+        idx++;
+      }
+
+      const newestSat = emptyGroup[0].weekSaturday;
+      const oldestSun = emptyGroup[emptyGroup.length - 1].weekSunday;
+      const rangeLabel = `${formatDotDate(oldestSun)} ~ ${formatDotDate(newestSat)}`;
+      const weekCountLabel = emptyGroup.length === 1
+        ? '1주간 내용 없음'
+        : `${emptyGroup.length}주 연속 내용 없음`;
+
+      const toggleTr = document.createElement('tr');
+      toggleTr.className = 'cal-empty-weeks-toggle-row';
+      toggleTr.title = '클릭하여 빈 주간 펼치기/접기';
+
+      const toggleTd = document.createElement('td');
+      toggleTd.colSpan = 7;
+      toggleTd.className = 'cal-empty-weeks-toggle-cell';
+      toggleTd.innerHTML = `
+        <div class="cal-empty-weeks-bar">
+          <span class="cal-empty-weeks-chevron">▶</span>
+          <span class="cal-empty-weeks-range">${escapeHtml(rangeLabel)}</span>
+          <span class="cal-empty-weeks-badge">${escapeHtml(weekCountLabel)}</span>
+          <span class="cal-empty-weeks-action">펼치기</span>
+        </div>
+      `;
+      toggleTr.appendChild(toggleTd);
+
+      const actionSpan = toggleTd.querySelector('.cal-empty-weeks-action');
+      toggleTr.addEventListener('click', () => {
+        const expanded = toggleTr.classList.toggle('is-expanded');
+        emptyGroup.forEach(item => {
+          item.tr.classList.toggle('is-collapsed', !expanded);
+        });
+        if (actionSpan) {
+          actionSpan.textContent = expanded ? '접기' : '펼치기';
+        }
+      });
+
+      tbody.appendChild(toggleTr);
+      emptyGroup.forEach(item => {
+        item.tr.classList.add('cal-empty-week-row', 'is-collapsed');
+        tbody.appendChild(item.tr);
+      });
     }
 
     table.appendChild(tbody);
