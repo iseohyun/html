@@ -133,12 +133,16 @@
         },
         {
           "title": "대한민국 행사",
-          "projectId": "KoreaEventList",
-          "icon": "source/KoreaEventList/korea-map-icon.svg",
+          "projectId": "KoreaEvent",
+          "icon": "source/KoreaEvent/korea-map-icon.svg",
           "links": [
             {
-              "label": "KoreaEventList",
-              "url": "https://iseohyun.github.io/KoreaEventList/"
+              "label": "KoreaEvent",
+              "url": "https://iseohyun.github.io/KoreaEvent/"
+            },
+            {
+              "label": "GitHub",
+              "url": "https://github.com/iseohyun/KoreaEvent"
             }
           ],
           "showUrl": false,
@@ -158,6 +162,39 @@
             {
               "date": "2026.11.8",
               "content": "공공데이터 및 연관된 사이트 수집 및 크롤링 수행, DB구축, 사이트 개설"
+            }
+          ]
+        },
+        {
+          "title": "대한민국 이슈",
+          "projectId": "KoreaIssue",
+          "icon": "source/KoreaIssue/icon.png",
+          "links": [
+            {
+              "label": "KoreaIssue",
+              "url": "https://iseohyun.github.io/KoreaIssue/"
+            },
+            {
+              "label": "GitHub",
+              "url": "https://github.com/iseohyun/KoreaIssue"
+            }
+          ],
+          "showUrl": false,
+          "description": "총 29개 주요 언론(신문 10, 방송 9 등)을 기반으로 보도 뉴스를 수집하고, 최초 보도와 보도 사실을 시간순으로 엮어 내용을 정리해주는 사이트",
+          "techStack": [
+            "react + vite + TypeScript",
+            "언론사 공식 RSS 및 방송사 유튜브 대본·자막 수집 파이프라인",
+            "한국어 결합단어(Compound Noun) 키워드 클러스터링",
+            "문장별 시간순 출처 꼬리표(최초 보도 추적) 및 30일 보관·폐기"
+          ],
+          "considerations": [
+            "언론사별 RSS 제공 범위 차이 및 방송사 유튜브 자막/설명란 대본 포맷 파편화",
+            "원본 기사 스크립트 저작권 및 스토리지 용량 관리를 위한 1개월(30일) 보관 후 자동 폐기 설계"
+          ],
+          "changelog": [
+            {
+              "date": "2026.11.9",
+              "content": "주요 언론(신문 10, 방송 9) 기반 보도 뉴스 수집 및 최초 보도·보도 사실 정리 웹앱 개설"
             }
           ]
         },
