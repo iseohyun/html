@@ -3,7 +3,7 @@
 // 하위 호환성을 유지하기 위한 통합 진입점(Bootstrapper) 스크립트입니다.
 // 핵심 모듈들을 비동기로 로드하고 어플리케이션을 초기화합니다.
 
-window.SiteVersion = "20261109v10";
+window.SiteVersion = "20261110v3";
 (function() {
   const styleLink = document.querySelector('link[rel="stylesheet"][href^="/style.css"]');
   if (styleLink) {

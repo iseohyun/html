@@ -19,6 +19,26 @@ window.SiteModules.UpdateLog = (function () {
 
   let cachedUpdates = null;
   let cachedHierarchy = null;
+  let cachedHolidays = new Map();
+
+  function buildHolidayMap(rawData) {
+    const map = new Map();
+    if (!rawData || typeof rawData !== 'object') return map;
+    Object.entries(rawData).forEach(([key, val]) => {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(key)) {
+        const list = Array.isArray(val) ? val : [String(val)];
+        map.set(key, list.filter(Boolean));
+      } else if (val && typeof val === 'object' && !Array.isArray(val)) {
+        Object.entries(val).forEach(([dateKey, names]) => {
+          if (/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) {
+            const list = Array.isArray(names) ? names : [String(names)];
+            map.set(dateKey, list.filter(Boolean));
+          }
+        });
+      }
+    });
+    return map;
+  }
 
   const daysOfWeek = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -747,11 +767,14 @@ window.SiteModules.UpdateLog = (function () {
         const cellKey = toDateKey(cellDate);
         const isToday = cellKey === todayKey;
         const isFirstOfMonth = cellDate.getDate() === 1;
+        const holidayNames = cachedHolidays.get(cellKey) || [];
+        const isHoliday = holidayNames.length > 0;
 
         const td = document.createElement('td');
         td.className = 'cal-cell';
         if (dIdx === 0) td.classList.add('sun-cell');
         if (dIdx === 6) td.classList.add('sat-cell');
+        if (isHoliday) td.classList.add('holiday-cell');
         if (isToday) td.classList.add('is-today');
         if (!filterState.years.includes(cellDate.getFullYear()) && !isToday) {
           td.classList.add('out-of-year');
@@ -774,11 +797,27 @@ window.SiteModules.UpdateLog = (function () {
         }
         dateHeader.appendChild(dateLabel);
 
-        if (isToday) {
-          const todayBadge = document.createElement('span');
-          todayBadge.className = 'cal-today-badge';
-          todayBadge.textContent = '오늘';
-          dateHeader.appendChild(todayBadge);
+        if (isHoliday || isToday) {
+          const rightGroup = document.createElement('div');
+          rightGroup.className = 'cal-date-right';
+
+          if (isHoliday) {
+            const holidayBadge = document.createElement('span');
+            holidayBadge.className = 'cal-holiday-label';
+            const joinedHoliday = holidayNames.join(' · ');
+            holidayBadge.textContent = joinedHoliday;
+            holidayBadge.title = joinedHoliday;
+            rightGroup.appendChild(holidayBadge);
+          }
+
+          if (isToday) {
+            const todayBadge = document.createElement('span');
+            todayBadge.className = 'cal-today-badge';
+            todayBadge.textContent = '오늘';
+            rightGroup.appendChild(todayBadge);
+          }
+
+          dateHeader.appendChild(rightGroup);
         }
 
         td.appendChild(dateHeader);
@@ -911,12 +950,17 @@ window.SiteModules.UpdateLog = (function () {
     }
 
     try {
-      const [updatesResponse, hierarchyResponse] = await Promise.all([
+      const [updatesResponse, hierarchyResponse, holidaysResponse] = await Promise.all([
         fetch('/changelog.json', { cache: 'no-cache' }),
-        fetch('/hierarchy.json')
+        fetch('/hierarchy.json'),
+        fetch('/holidays.json', { cache: 'no-cache' }).catch(() => null)
       ]);
       cachedUpdates = await updatesResponse.json();
       cachedHierarchy = await hierarchyResponse.json();
+      if (holidaysResponse && holidaysResponse.ok) {
+        const rawHolidays = await holidaysResponse.json();
+        cachedHolidays = buildHolidayMap(rawHolidays);
+      }
 
       renderCalendar(targetId);
     } catch (error) {

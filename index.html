@@ -34,7 +34,7 @@
     src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.8.0/highlightjs-line-numbers.min.js"></script>
 
   <link rel="shortcut icon" type="image/svg+xml" href="/source/icon_seohyun_reverse.svg">
-  <link rel="stylesheet" href="/style.css?v=20261109v10">
+  <link rel="stylesheet" href="/style.css?v=20261110v3">
 
   <style type="text/css">
     #site-history {
@@ -466,14 +466,17 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 4px;
       margin-bottom: 3px;
       line-height: 1.2;
+      min-width: 0;
     }
 
     .cal-date-num {
       font-size: 0.95em;
       font-weight: 700;
       color: #64748b;
+      flex-shrink: 0;
     }
 
     td.sun-cell .cal-date-num {
@@ -484,12 +487,42 @@
       color: #1971c2;
     }
 
+    td.holiday-cell .cal-date-num {
+      color: #e03131 !important;
+    }
+
     .cal-date-num.month-start-badge {
       background-color: #1e293b;
       color: #ffffff !important;
       padding: 1px 5px;
       border-radius: 999px;
       font-size: 0.9em;
+    }
+
+    td.sun-cell .cal-date-num.month-start-badge,
+    td.holiday-cell .cal-date-num.month-start-badge {
+      background-color: #e03131;
+      color: #ffffff !important;
+    }
+
+    .cal-date-right {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 4px;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
+    .cal-holiday-label {
+      font-size: 0.85em;
+      font-weight: 700;
+      color: #e03131;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+      text-align: right;
     }
 
     .cal-today-badge {
@@ -499,6 +532,7 @@
       background-color: #228be6;
       padding: 1px 5px;
       border-radius: 999px;
+      flex-shrink: 0;
     }
 
     .cal-events-wrap {
@@ -754,7 +788,7 @@
       }
     }
   </style>
-  <script src="/modules/script.js?v=20261109v10" defer></script>
+  <script src="/modules/script.js?v=20261110v3" defer></script>
 </head>
 
 <body>

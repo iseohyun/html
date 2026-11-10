@@ -155,6 +155,11 @@ window.SiteModules.Navigation = (function () {
           <div class="nav-item" id="nav-promo" data-tooltip="홍보 사이트 리스트">
             <span class="material-symbols-outlined">campaign</span>
           </div>
+          <div class="nav-item" id="nav-kakao-channel" data-tooltip="카카오톡 채널 (iseohyun)">
+            <svg viewBox="0 0 24 24" class="kakao-nav-svg" aria-hidden="true">
+              <path d="M12 3C6.477 3 2 6.463 2 10.734c0 2.757 1.856 5.177 4.651 6.535-.153.553-.986 3.555-1.021 3.79-.044.294.108.29.228.211.094-.062 3.743-2.501 5.252-3.524.291.028.587.043.89.043 5.523 0 10-3.463 10-7.734S17.523 3 12 3z"/>
+            </svg>
+          </div>
           <div class="nav-item" id="nav-login" data-tooltip="게스트">
             <span class="material-symbols-outlined">account_circle</span>
           </div>
@@ -1202,6 +1207,48 @@ window.SiteModules.Navigation = (function () {
       `;
       body.appendChild(loginModal);
     }
+
+    // KakaoTalk Channel Floating Widget & Popover
+    if (!document.getElementById("kakao-floating-widget")) {
+      const kakaoWidget = document.createElement("div");
+      kakaoWidget.id = "kakao-floating-widget";
+      kakaoWidget.className = "kakao-floating-widget";
+      kakaoWidget.innerHTML = `
+        <div class="kakao-channel-popover" id="kakao-channel-popover" role="dialog" aria-label="카카오톡 채널 iseohyun">
+          <div class="kakao-popover-header">
+            <div class="kakao-popover-title-wrap">
+              <span class="kakao-popover-badge">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 3C6.477 3 2 6.463 2 10.734c0 2.757 1.856 5.177 4.651 6.535-.153.553-.986 3.555-1.021 3.79-.044.294.108.29.228.211.094-.062 3.743-2.501 5.252-3.524.291.028.587.043.89.043 5.523 0 10-3.463 10-7.734S17.523 3 12 3z"/>
+                </svg>
+              </span>
+              <div class="kakao-popover-title-text">
+                <strong>iseohyun</strong>
+                <span>카카오톡 채널 (@_ETRrX)</span>
+              </div>
+            </div>
+            <button type="button" class="kakao-popover-close" id="kakao-popover-close" aria-label="닫기">&times;</button>
+          </div>
+          <div class="kakao-popover-actions">
+            <a class="kakao-action-btn kakao-action-home" href="http://pf.kakao.com/_ETRrX" target="_blank" rel="noopener noreferrer">
+              <span class="material-symbols-outlined">person_add</span>
+              <span>채널 추가 · 홈</span>
+            </a>
+            <a class="kakao-action-btn kakao-action-chat" href="http://pf.kakao.com/_ETRrX/chat" target="_blank" rel="noopener noreferrer">
+              <span class="material-symbols-outlined">chat</span>
+              <span>1:1 채팅 문의</span>
+            </a>
+          </div>
+        </div>
+        <button type="button" class="kakao-fab-btn" id="kakao-fab-btn" title="카카오톡 채널 (iseohyun)" aria-label="카카오톡 채널 열기" aria-expanded="false">
+          <svg viewBox="0 0 24 24" class="kakao-fab-svg" aria-hidden="true">
+            <path d="M12 3C6.477 3 2 6.463 2 10.734c0 2.757 1.856 5.177 4.651 6.535-.153.553-.986 3.555-1.021 3.79-.044.294.108.29.228.211.094-.062 3.743-2.501 5.252-3.524.291.028.587.043.89.043 5.523 0 10-3.463 10-7.734S17.523 3 12 3z"/>
+          </svg>
+        </button>
+      `;
+      body.appendChild(kakaoWidget);
+    // End KakaoTalk Channel Floating Widget
+    }
   }
 
   function bindSidebarEvents() {
@@ -1427,6 +1474,65 @@ window.SiteModules.Navigation = (function () {
         window.location.hash = "#/promo.html";
       });
     }
+
+    const navKakaoChannelBtn = document.getElementById("nav-kakao-channel");
+    const kakaoFabBtn = document.getElementById("kakao-fab-btn");
+    const kakaoPopover = document.getElementById("kakao-channel-popover");
+    const kakaoPopoverClose = document.getElementById("kakao-popover-close");
+    const kakaoFloatingWidget = document.getElementById("kakao-floating-widget");
+
+    function setKakaoPopoverOpen(isOpen) {
+      if (!kakaoPopover) return;
+      kakaoPopover.classList.toggle("open", isOpen);
+      if (kakaoFabBtn) {
+        kakaoFabBtn.classList.toggle("active", isOpen);
+        kakaoFabBtn.setAttribute("aria-expanded", String(isOpen));
+      }
+      if (navKakaoChannelBtn) {
+        navKakaoChannelBtn.classList.toggle("active", isOpen);
+      }
+    }
+
+    if (navKakaoChannelBtn) {
+      navKakaoChannelBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (window.innerWidth <= 960) {
+          setMobileDrawerState(false);
+          setKakaoPopoverOpen(true);
+        } else {
+          const nextOpen = !(kakaoPopover && kakaoPopover.classList.contains("open"));
+          setKakaoPopoverOpen(nextOpen);
+        }
+      });
+    }
+
+    if (kakaoFabBtn) {
+      kakaoFabBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const nextOpen = !(kakaoPopover && kakaoPopover.classList.contains("open"));
+        setKakaoPopoverOpen(nextOpen);
+      });
+    }
+
+    if (kakaoPopoverClose) {
+      kakaoPopoverClose.addEventListener("click", (e) => {
+        e.stopPropagation();
+        setKakaoPopoverOpen(false);
+      });
+    }
+
+    document.addEventListener("click", (e) => {
+      if (!kakaoPopover || !kakaoPopover.classList.contains("open")) return;
+      if (kakaoFloatingWidget && kakaoFloatingWidget.contains(e.target)) return;
+      if (navKakaoChannelBtn && navKakaoChannelBtn.contains(e.target)) return;
+      setKakaoPopoverOpen(false);
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && kakaoPopover && kakaoPopover.classList.contains("open")) {
+        setKakaoPopoverOpen(false);
+      }
+    });
 
     const helpBtn = document.getElementById("nav-help");
     if (helpBtn) {

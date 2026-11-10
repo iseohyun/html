@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-11-09",
+    "type": "Added",
+    "env": "WebApp",
+    "projectName": "KoreaIssue",
+    "projectPath": "https://iseohyun.github.io/KoreaIssue/",
+    "summary": "대한민국 언론 보도 이슈 정리 사이트 개설",
+    "detail": "총 29개 주요 언론(신문 10, 방송 9 등)을 기반으로 보도 뉴스를 수집하고, 최초 보도와 보도 사실을 시간순으로 엮어 내용을 정리해주는 웹앱 신설"
+  },
+  {
     "date": "2026-11-08",
     "type": "Added",
     "env": "iseohyun.com",
@@ -12,8 +21,8 @@
     "date": "2026-11-08",
     "type": "Added",
     "env": "WebApp",
-    "projectName": "KoreaEventList",
-    "projectPath": "https://iseohyun.github.io/KoreaEventList/",
+    "projectName": "KoreaEvent",
+    "projectPath": "https://iseohyun.github.io/KoreaEvent/",
     "summary": "대한민국 행사 통합 게시",
     "detail": "공공데이터·지자체·체육협회(수영/러닝/자전거/철인 등) 행사 데이터 수집·크롤링 및 Firebase DB 구축, 통합 열람 사이트 개설"
   },
