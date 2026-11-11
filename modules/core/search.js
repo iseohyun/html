@@ -2,8 +2,8 @@
  * @file modules/core/search.js
  * @module SiteModules.Search
  * @description 사이드바 검색. 제목 검색은 hierarchy.json만으로 즉시 수행하고, 태그/전체 검색은
- *   모든 문서를 받아 만든 본문 색인(window.SiteModules.searchCache)을 사용한다.
- *   색인은 검색 탭 진입/검색창 포커스 시점에 한 번만 생성한다(사이트 접속 시 선수집하지 않음).
+ *   본문 색인(window.SiteModules.searchCache)을 사용한다. 색인은 검색 탭 진입/검색창 포커스 시점에 한 번만 준비하며,
+ *   정적 색인(/search-index.json, scripts/build-search-index.js로 생성)을 우선 받고 없으면 모든 문서를 직접 수집한다.
  * @requires SiteModules.Hierarchy, window.SiteModules.hierarchyListCached
  * @exports ensureIndex, getKnownArticleFlag, rememberArticleFlag, bindInput
  */
@@ -13,6 +13,7 @@ window.SiteModules = window.SiteModules || {};
 window.SiteModules.Search = (function () {
   const INDEX_FETCH_CONCURRENCY = 5;
   const MIN_QUERY_LENGTH = 2;
+  const STATIC_INDEX_URL = "/search-index.json";
 
   let indexPromise = null;
   let isIndexReady = false;
@@ -57,7 +58,33 @@ window.SiteModules.Search = (function () {
     return indexPromise;
   }
 
+  // 배포 전에 scripts/build-search-index.js로 만들어 둔 정적 색인을 받는다. 없거나 형식이 다르면 null.
+  async function loadStaticIndex() {
+    try {
+      const res = await fetch(STATIC_INDEX_URL + "?v=" + (window.SiteVersion || ""));
+      if (!res.ok) return null;
+      const entries = await res.json();
+      const isValid = Array.isArray(entries) && entries.every(entry =>
+        entry && typeof entry.url === "string" && typeof entry.title === "string" &&
+        Array.isArray(entry.tags) && typeof entry.articleText === "string");
+      return isValid ? entries : null;
+    } catch (err) {
+      console.warn("[Search] 정적 색인을 불러오지 못해 문서를 직접 수집합니다:", err);
+      return null;
+    }
+  }
+
   async function buildIndex(list) {
+    const staticIndex = await loadStaticIndex();
+    if (staticIndex) {
+      window.SiteModules.searchCache = staticIndex;
+      return;
+    }
+    await crawlPages(list);
+  }
+
+  // 정적 색인이 없을 때의 대체 경로: 모든 문서를 받아 브라우저에서 색인을 만든다
+  async function crawlPages(list) {
     window.SiteModules.searchCache = [];
     const pages = listPages(list);
     let nextIndex = 0;

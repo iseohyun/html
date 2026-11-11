@@ -47,6 +47,12 @@ small-project/<ProjectName>/
 
 ---
 
+### ✅ Checklist 6: 검색 색인 갱신 (`search-index.json`)
+* **규칙**: 문서 본문(HTML)이나 `hierarchy.json`을 수정했다면 `npm run build:search`로 **`search-index.json`**을 다시 생성해 함께 커밋합니다. 배포 전에는 `npm run check:search`로 색인이 최신인지 확인합니다.
+* **참고**: 색인 파일이 없거나 손상되면 사이트는 검색 시 문서를 직접 수집하는 방식으로 자동 대체되므로 검색 자체는 동작합니다. 다만 색인이 오래되면 새 문서가 태그/전체 검색에 나오지 않습니다.
+
+---
+
 ## 🧪 3. 통합 테스트 실행 명령어
 
 ```bash

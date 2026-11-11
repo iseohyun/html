@@ -12,7 +12,7 @@
 /small-project/manualEuclidean/
 ├── index.html              # 메인 HTML UI 인터페이스
 ├── manualEuclidean.css     # 그리드 및 가이드 툴팁 레이아웃 스타일시트
-├── readme.md               # 프로젝트 문서 및 폴더 구조 명세 (본 파일)
+├── README.ko.md               # 프로젝트 문서 및 폴더 구조 명세 (본 파일)
 ├── CHANGELOG.md            # 버전 및 요구사항 이력 관리기록
 ├── tc/                     # 자동 테스트 검증용 마크다운 명세 케이스 폴더
 │   └── testcase_6192_1012.md
