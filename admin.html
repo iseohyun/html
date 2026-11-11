@@ -105,7 +105,7 @@
           }
         } catch (error) {
           console.error("권한 체크 오류:", error);
-          errorAlert.innerHTML = `<span>🔒 <b>조회 오류:</b> 관리자 권한 조회 중 오류가 발생했습니다.<br><b>상세 에러:</b> ${error.message}</span>`;
+          errorAlert.innerHTML = `<span>🔒 <b>조회 오류:</b> 관리자 권한 조회 중 오류가 발생했습니다.<br><b>상세 에러:</b> ${escapeHtml(error.message)}</span>`;
           errorAlert.style.display = 'flex';
           auth.signOut();
         }
@@ -155,11 +155,11 @@
           count++;
 
           html += `
-            <div class="suggestion-card" id="card-${uid}">
+            <div class="suggestion-card" id="card-${escapeHtml(uid)}">
               <div class="card-header">
                 <div class="user-meta">
-                  <span class="user-name">${data.name || '게스트'}</span>
-                  <span class="user-email">${data.email || '비로그인 사용자 (GUEST_ID: ' + uid + ')'}</span>
+                  <span class="user-name">${escapeHtml(data.name || '게스트')}</span>
+                  <span class="user-email">${escapeHtml(data.email || '비로그인 사용자 (GUEST_ID: ' + uid + ')')}</span>
                 </div>
                 <div class="time-meta">
                   <span class="status-badge ${statusClass}">${statusText}</span>
@@ -179,9 +179,9 @@
 
               <div class="reply-form">
                 <label style="font-size: 12px; font-weight: 600;">새 답변 작성</label>
-                <textarea class="reply-textarea" id="textarea-${uid}" placeholder="건의에 대한 답변을 작성하십시오. 저장 시 답변 역사로 병합되고 사용자 건의창은 비워집니다." ${hasPending ? '' : 'disabled'}></textarea>
+                <textarea class="reply-textarea" id="textarea-${escapeHtml(uid)}" placeholder="건의에 대한 답변을 작성하십시오. 저장 시 답변 역사로 병합되고 사용자 건의창은 비워집니다." ${hasPending ? '' : 'disabled'}></textarea>
                 <div style="display: flex; justify-content: flex-end; margin-top: 5px;">
-                  <button class="btn btn-primary btn-save-reply" data-uid="${uid}" ${hasPending ? '' : 'disabled'}>답변 저장 및 이관</button>
+                  <button class="btn btn-primary btn-save-reply" data-uid="${escapeHtml(uid)}" ${hasPending ? '' : 'disabled'}>답변 저장 및 이관</button>
                 </div>
               </div>
             </div>
@@ -237,7 +237,7 @@
 
       } catch (error) {
         console.error("건의사항 목록 수급 실패:", error);
-        suggestionsContainer.innerHTML = `<div class="error-msg">⚠️ 데이터 수급 실패: ${error.message}</div>`;
+        suggestionsContainer.innerHTML = `<div class="error-msg">⚠️ 데이터 수급 실패: ${escapeHtml(error.message)}</div>`;
       }
     }
 
