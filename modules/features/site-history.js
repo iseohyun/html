@@ -955,13 +955,18 @@ window.SiteModules.UpdateLog = (function () {
     }
 
     try {
-      const [updatesResponse, hierarchyResponse, holidaysResponse] = await Promise.all([
+      // hierarchy.json은 Navigation이 이미 받아둔 캐시가 있으면 재사용한다
+      const preloadedHierarchy = window.SiteModules.hierarchyListCached;
+      const [updatesResponse, hierarchyData, holidaysResponse] = await Promise.all([
         fetch('/changelog.json', { cache: 'no-cache' }),
-        fetch('/hierarchy.json'),
+        preloadedHierarchy ? Promise.resolve(preloadedHierarchy) : fetch('/hierarchy.json').then(res => res.json()),
         fetch('/holidays.json', { cache: 'no-cache' }).catch(() => null)
       ]);
+      if (!updatesResponse.ok) {
+        throw new Error(`changelog.json 로드 실패 (status ${updatesResponse.status})`);
+      }
       cachedUpdates = await updatesResponse.json();
-      cachedHierarchy = await hierarchyResponse.json();
+      cachedHierarchy = hierarchyData;
       if (holidaysResponse && holidaysResponse.ok) {
         const rawHolidays = await holidaysResponse.json();
         cachedHolidays = buildHolidayMap(rawHolidays);
@@ -970,6 +975,10 @@ window.SiteModules.UpdateLog = (function () {
       renderCalendar(targetId);
     } catch (error) {
       console.error('Error fetching or rendering changelog calendar:', error);
+      const errorNotice = document.createElement('li');
+      errorNotice.style.cssText = 'list-style: none; padding: 40px 10px; text-align: center; color: #747775;';
+      errorNotice.textContent = '변경 이력을 불러오지 못했습니다. 잠시 후 새로고침해 주세요.';
+      updateList.appendChild(errorNotice);
     }
   }
 

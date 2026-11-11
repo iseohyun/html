@@ -2117,7 +2117,7 @@ window.SiteModules.Navigation = (function () {
         const text = pageKey + " " + userText;
         submitBtn.disabled = true;
         try {
-          await window.SiteModules.Auth.submitSuggestion(text);
+          await window.SiteModules.Auth.submitSuggestion(text, { append: true });
           textarea.value = "";
           alert("질문이 등록되었습니다.");
 

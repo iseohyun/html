@@ -213,11 +213,17 @@ window.SiteModules.Auth = (function() {
     return hashPath || "home";
   }
 
-  async function submitSuggestion(text) {
+  /**
+   * 건의사항 저장.
+   * @param {string} text 건의 본문
+   * @param {{append?: boolean}} [options] append=true이면 답변 대기 중인 기존 건의를 덮어쓰지 않고 뒤에 이어 붙인다
+   *   (문서 하단 "페이지 질문"처럼 기존 건의와 별개로 추가되는 입력용).
+   */
+  async function submitSuggestion(text, options = {}) {
     await window.SiteModules.FirebaseConfig.loadSDKs();
     const auth = window.SiteModules.FirebaseConfig.getAuth();
     const db = window.SiteModules.FirebaseConfig.getDb();
-    if (!db) return;
+    if (!db) throw new Error("Firestore를 사용할 수 없습니다.");
 
     let uid = "";
     let displayName = "게스트";
@@ -233,26 +239,29 @@ window.SiteModules.Auth = (function() {
     }
 
     const docRef = db.collection('suggestions').doc(uid);
-    const docSnap = await docRef.get();
-    const existingData = docSnap.exists ? docSnap.data() : {};
-
     const pageKey = getNormalizedPageKey();
 
-    const suggestionHistory = existingData.suggestionHistory || [];
-    suggestionHistory.push({
-      text: text,
-      page: pageKey,
-      timestamp: Date.now()
-    });
+    let pendingText = text;
+    if (options.append) {
+      const docSnap = await docRef.get();
+      const existingPending = docSnap.exists ? (docSnap.data().suggestion || "").trim() : "";
+      // 답변 이력은 빈 줄("\n\n")로 블록을 구분하므로 한 줄 개행으로만 이어 붙인다
+      if (existingPending) pendingText = existingPending + "\n" + text;
+    }
 
+    // 이력은 arrayUnion으로 원자적으로 추가하여 동시 저장 시 기록 유실을 방지한다.
+    // reply(관리자 답변) 필드는 쓰지 않는다: merge 저장이므로 기존 값이 그대로 보존된다.
     await docRef.set({
       uid: uid,
       name: displayName,
       email: email,
-      suggestion: text,
+      suggestion: pendingText,
       page: pageKey,
-      suggestionHistory: suggestionHistory,
-      reply: existingData.reply || "",
+      suggestionHistory: window.firebase.firestore.FieldValue.arrayUnion({
+        text: text,
+        page: pageKey,
+        timestamp: Date.now()
+      }),
       updatedAt: Date.now()
     }, { merge: true });
   }
