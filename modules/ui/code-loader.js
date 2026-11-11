@@ -1,4 +1,8 @@
-// modules/ui/code-loader.js
+/**
+ * @file modules/ui/code-loader.js
+ * @module SiteModules.CodeLoader
+ * @description 외부 소스 파일을 불러와 코드 블록에 표시하고 접기/펼치기(toggleContent)를 제공한다.
+ */
 
 window.SiteModules = window.SiteModules || {};
 

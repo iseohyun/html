@@ -1,4 +1,8 @@
-// modules/ui/clipboard.js
+/**
+ * @file modules/ui/clipboard.js
+ * @module SiteModules.Clipboard
+ * @description 코드 블록 등의 클립보드 복사 버튼 처리.
+ */
 
 window.SiteModules = window.SiteModules || {};
 

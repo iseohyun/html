@@ -1,4 +1,9 @@
-// modules/features/site-history.js
+/**
+ * @file modules/features/site-history.js
+ * @module SiteModules.UpdateLog
+ * @description 홈 화면의 변경 이력 달력: changelog.json/holidays.json을 불러와 달력·필터·상세 팝업을 렌더링한다.
+ * @exports getUpdateList, clearUpdateList, toggle
+ */
 
 window.SiteModules = window.SiteModules || {};
 

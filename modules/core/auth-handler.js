@@ -1,8 +1,24 @@
-// modules/core/auth-handler.js
+/**
+ * @file modules/core/auth-handler.js
+ * @module SiteModules.Auth
+ * @description 구글(팝업)·네이버·카카오(OAuth 코드 → 커스텀 토큰) 로그인, 게스트 ID 발급,
+ *   건의사항(suggestions 컬렉션) 저장/조회.
+ * @requires SiteModules.FirebaseConfig
+ * @exports getOrCreateGuestId, handleRedirectCallback, googleLogin, naverLogin, kakaoLogin,
+ *   logoutUser, submitSuggestion, getUserSuggestion
+ */
 window.SiteModules = window.SiteModules || {};
 
 window.SiteModules.Auth = (function() {
   let isLoginProcessing = false;
+  const OAUTH_STATE_KEY = 'oauth_state';
+
+  // 로그인 시작 시 추측 불가능한 state를 발급·보관 (콜백에서 대조)
+  function issueOAuthState() {
+    const state = generateSecureToken();
+    sessionStorage.setItem(OAUTH_STATE_KEY, state);
+    return state;
+  }
 
   // 게스트 문서 ID는 접근 권한 역할을 하므로 추측 불가능한 암호학적 난수(128bit)로 생성합니다.
   function generateSecureToken() {
@@ -26,7 +42,23 @@ window.SiteModules.Auth = (function() {
     const loginProvider = localStorage.getItem('login_provider');
 
     if (authCode && loginProvider) {
-      window.SiteModules.FirebaseConfig.loadSDKs().then(() => {
+      // OAuth CSRF 방어: 로그인 시작 시 저장한 state와 콜백의 state가 일치해야만 토큰 교환 진행
+      const expectedState = sessionStorage.getItem(OAUTH_STATE_KEY);
+      sessionStorage.removeItem(OAUTH_STATE_KEY);
+      if (!expectedState || urlParams.get('state') !== expectedState) {
+        console.error("[Auth] OAuth state 불일치로 로그인 콜백을 거부했습니다.");
+        localStorage.removeItem('login_provider');
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+        alert("로그인 요청을 확인할 수 없습니다. 다시 시도해 주세요.");
+        return;
+      }
+
+      window.SiteModules.FirebaseConfig.loadSDKs().catch(err => {
+        console.error("[Auth] Firebase SDK 로딩 실패:", err);
+        localStorage.removeItem('login_provider');
+        alert("로그인 처리 중 오류 발생");
+        throw err;
+      }).then(() => {
         // 즉시 주소창에서 query parameter 지우기 (해시 보존)
         window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
 
@@ -133,7 +165,7 @@ window.SiteModules.Auth = (function() {
     localStorage.setItem('login_provider', 'naver');
     const redirectUri = window.location.origin + "/";
     const clientId = "hemXaBshyStfBhmNg05m";
-    const state = Math.random().toString(36).substr(2, 11);
+    const state = issueOAuthState();
     const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
 
     window.location.href = naverAuthUrl;
@@ -146,7 +178,8 @@ window.SiteModules.Auth = (function() {
     localStorage.setItem('login_provider', 'kakao');
     const redirectUri = window.location.origin + "/";
     const clientId = "af28f94aa8260ab663fd27dffea1ee77";
-    const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+    const state = issueOAuthState();
+    const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
 
     window.location.href = kakaoAuthUrl;
   }

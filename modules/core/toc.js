@@ -1,4 +1,8 @@
-// modules/core/toc.js
+/**
+ * @file modules/core/toc.js
+ * @module SiteModules.TOC
+ * @description 문서의 h1/h2를 수집해 사이드바 목차를 만들고, 스크롤 위치에 따라 현재 항목을 강조한다.
+ */
 
 window.SiteModules = window.SiteModules || {};
 
@@ -43,7 +47,10 @@ window.SiteModules.TOC = (function() {
         anchor.textContent = i + ". " + header.textContent;
       } else {
         j++;
-        anchor.innerHTML = "<span style='font-size:0.85em'> &nbsp; " + i + "-" + j + ". " + header.textContent + "</span>";
+        const subItem = document.createElement("span");
+        subItem.style.fontSize = "0.85em";
+        subItem.textContent = "   " + i + "-" + j + ". " + header.textContent;
+        anchor.appendChild(subItem);
       }
       
       header.setAttribute("id", header.textContent);

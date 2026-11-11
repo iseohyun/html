@@ -1,4 +1,8 @@
-// modules/ui/quiz.js
+/**
+ * @file modules/ui/quiz.js
+ * @module SiteModules.Quiz
+ * @description 문서 내 퀴즈 요소의 정답 확인/표시 처리.
+ */
 
 window.SiteModules = window.SiteModules || {};
 

@@ -1,4 +1,9 @@
-// modules/core/firebase-config.js
+/**
+ * @file modules/core/firebase-config.js
+ * @module SiteModules.FirebaseConfig
+ * @description Firebase 프로젝트 설정 보관 및 compat SDK(app/auth/firestore) 지연 로드·초기화.
+ * @exports config, loadSDKs, initialize, getAuth, getDb
+ */
 window.SiteModules = window.SiteModules || {};
 
 window.SiteModules.FirebaseConfig = (function () {

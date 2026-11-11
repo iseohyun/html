@@ -11,3 +11,4 @@ test-results/
 tests/fixtures/
 open-test-server.bat
 open-test-server.cmd
+scratch/
