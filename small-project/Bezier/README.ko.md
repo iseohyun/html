@@ -11,7 +11,7 @@ small-project/Bezier/
 ├── index.html            # UI 마크업, 에러 콘솔 탑재 및 외부 모듈 연결
 ├── Bezier.css            # 스타일 격리 가이드 준수 CSS 시트
 ├── CHANGELOG.md          # 버전 및 요구사항 이력 관리
-├── readme.md             # 본 가이드 문서
+├── README.ko.md             # 본 가이드 문서
 └── module/
     ├── config.js         # 전역 상태(state) 및 DOM 선택자 상수 관리
     ├── simulation.js     # 순수 선형 보간(lerp) 및 N차 베지어 포인트 수학적 계산 알고리즘

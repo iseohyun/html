@@ -3,6 +3,8 @@
   "version": "2.0.0",
   "description": "iseohyun.com web portal & small projects monorepo",
   "scripts": {
+    "build:search": "node scripts/build-search-index.js",
+    "check:search": "node scripts/build-search-index.js --check",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
     "test:heading": "playwright test --headed"
