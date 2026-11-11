@@ -27,9 +27,13 @@ window.SiteVersion = "20261110v3";
   }
 
   const scripts = [
+    '/modules/core/site-config.js',
     '/modules/core/firebase-config.js',
     '/modules/core/auth-handler.js',
     '/modules/core/keybind-manager.js',
+    '/modules/core/hierarchy.js',
+    '/modules/core/search.js',
+    '/modules/features/feedback.js',
     '/modules/core/navigation.js',
     '/modules/core/toc.js',
     '/modules/core/document.js',

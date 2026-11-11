@@ -2,20 +2,14 @@
  * @file modules/core/firebase-config.js
  * @module SiteModules.FirebaseConfig
  * @description Firebase 프로젝트 설정 보관 및 compat SDK(app/auth/firestore) 지연 로드·초기화.
+ * @requires SiteModules.Config
  * @exports config, loadSDKs, initialize, getAuth, getDb
  */
 window.SiteModules = window.SiteModules || {};
 
 window.SiteModules.FirebaseConfig = (function () {
-  const config = {
-    apiKey: "AIzaSyBu8rZQ_E_LKiGXu9jeIWn5FCPU7cWu734",
-    authDomain: "iseohyun.firebaseapp.com",
-    projectId: "iseohyun",
-    storageBucket: "iseohyun.firebasestorage.app",
-    messagingSenderId: "480884385518",
-    appId: "1:480884385518:web:e624e46512c8c3834675ff",
-    measurementId: "G-FP4D4V74P5"
-  };
+  const config = window.SiteModules.Config.firebase;
+  const SDK_BASE_URL = "https://www.gstatic.com/firebasejs/" + window.SiteModules.Config.firebaseSdkVersion;
 
   let sdkLoadingPromise = null;
 
@@ -29,13 +23,13 @@ window.SiteModules.FirebaseConfig = (function () {
       }
 
       const appScript = document.createElement("script");
-      appScript.src = "https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js";
+      appScript.src = SDK_BASE_URL + "/firebase-app-compat.js";
       appScript.onload = () => {
         const authScript = document.createElement("script");
-        authScript.src = "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth-compat.js";
+        authScript.src = SDK_BASE_URL + "/firebase-auth-compat.js";
         authScript.onload = () => {
           const fsScript = document.createElement("script");
-          fsScript.src = "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore-compat.js";
+          fsScript.src = SDK_BASE_URL + "/firebase-firestore-compat.js";
           fsScript.onload = () => {
             window.firebase.initializeApp(config);
             resolve();

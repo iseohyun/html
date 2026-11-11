@@ -1,11 +1,12 @@
 /**
  * @file modules/core/navigation.js
  * @module SiteModules.Navigation
- * @description SPA 해시 라우터, 이중 사이드바(사이트맵/목차/검색) UI, 로그인·도움말 모달,
- *   페이지별 질문/건의 폼을 담당하는 코어 모듈.
- * @requires SiteModules.FirebaseConfig, SiteModules.Auth, SiteModules.TOC, SiteModules.Document
- * @exports init, trigBoard, findHierarchyPath
- * @state window.SiteModules.state (현재/이전/다음 문서), hierarchyListCached, searchCache
+ * @description SPA 해시 라우터, 이중 사이드바(사이트맵/목차/검색 탭) UI, 로그인·도움말 모달을 담당하는 코어 모듈.
+ *   검색은 SiteModules.Search, 질문/건의 폼은 SiteModules.Feedback, hierarchy 순회는 SiteModules.Hierarchy에 위임한다.
+ * @requires SiteModules.Config, SiteModules.FirebaseConfig, SiteModules.Auth, SiteModules.Hierarchy,
+ *   SiteModules.Search, SiteModules.Feedback, SiteModules.TOC, SiteModules.Document
+ * @exports init, trigBoard, findHierarchyPath, registerPageCleanup
+ * @state window.SiteModules.state (현재/이전/다음 문서), hierarchyListCached
  */
 
 window.SiteModules = window.SiteModules || {};
@@ -17,24 +18,128 @@ window.SiteModules.state = window.SiteModules.state || {
   currentPath: ""
 };
 window.SiteModules.authInitialized = false;
+// 페이지 종속 스크립트용 단축 진입점: window.SiteModules.registerPageCleanup(() => { ... })
+window.SiteModules.registerPageCleanup = function (cleanupFn) {
+  window.SiteModules.Navigation.registerPageCleanup(cleanupFn);
+};
 
 window.SiteModules.Navigation = (function () {
   let baseUl;
-  let searchCachePromise = null;
-  let isSearchCacheReady = false;
-  // 문서 URL별 <article> 존재 여부 캐시 (최근 업데이트 링크의 SPA/새 탭 분기 판단용)
-  const articleFlagCache = new Map();
+  // 모바일(드로어) 레이아웃 전환 기준 너비. style.css의 @media (max-width: 960px)와 동일해야 한다.
+  const MOBILE_BREAKPOINT = window.SiteModules.Config.layout.mobileBreakpoint;
+  // hierarchy.json에 없어도 SPA 본문으로 로드 가능한 루트 문서
+  const KNOWN_ROOT_ARTICLES = ["/index.html", "/admin.html", "/help.html", "/info.html", "/promo.html", "/"];
+  // registerPageCleanup을 쓰지 않는 기존 소프로젝트들이 남기는 전역 이름 (신규 프로젝트는 registerPageCleanup 사용)
+  const LEGACY_PAGE_GLOBALS = [
+    "init", "initApp", "rebuildGrid", "positionTooltip", "guide", "stepsData", "inputs",
+    "cur_step", "cur_line", "language", "isFin", "isGreating", "stateHistory", "state",
+    "EuclideanGridInput", "SqrtGridInput", "GridInput", "V", "titleText", "sentences",
+    "activeCells", "clearGridRow", "highlightActiveStep", "nextStep", "prevStep", "initKeybindings",
+    "triggerRandomStart", "resetToStart",
+    "initChart", "redrawChart", "startChartAnimation", "drawBars", "updateChartRealtime",
+    "triggerMathRendering", "setupDualInputBindings", "handleRunSimulation", "cleanupActiveWorker", "updateResultUI",
+    "coordinatesToSvg", "svgToCoordinates", "multiplyComplex", "drawRulers", "handleReload", "drawAnimatePath",
+    "drawCoordinateAxes", "drawConcentricCircles", "drawControlPath", "updateDragGuideLine", "setBackgroundSize", "T"
+  ];
+  // 현재 페이지가 등록한 정리 함수 목록 (다음 페이지로 전환될 때 1회 실행 후 비워진다)
+  let pageCleanups = [];
 
-  function loadFirebaseSDK() {
-    return window.SiteModules.FirebaseConfig.loadSDKs();
+  /**
+   * 페이지 종속 스크립트가 SPA 전환 시 실행할 정리 함수를 등록한다.
+   * (전역 변수 삭제, 타이머/리스너/Worker 해제 등)
+   * @param {Function} cleanupFn
+   */
+  function registerPageCleanup(cleanupFn) {
+    if (typeof cleanupFn === "function") pageCleanups.push(cleanupFn);
   }
+
+  function runPageCleanups() {
+    const cleanups = pageCleanups;
+    pageCleanups = [];
+    cleanups.forEach(cleanupFn => {
+      try {
+        cleanupFn();
+      } catch (err) {
+        console.error("[Router] 페이지 정리 함수 실행 실패:", err);
+      }
+    });
+  }
+
+  function isKnownArticlePage(absolutePath) {
+    if (KNOWN_ROOT_ARTICLES.includes(absolutePath)) return true;
+
+    const list = window.SiteModules.hierarchyListCached;
+    if (!list) return true;
+
+    return !!window.SiteModules.Hierarchy.findPage(list, absolutePath);
+  }
+
+  // hierarchy에서 현재 문서를 찾아 state의 현재/이전/다음 문서 정보를 채운다
+  function populateDocState(list, targetPath) {
+    const page = window.SiteModules.Hierarchy.findPage(list, targetPath.split('#')[0]);
+    if (!page) return false;
+
+    const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
+    const toNeighborDoc = (neighbor) => {
+      if (!neighbor) return { title: "", dir: "", file: "" };
+      return {
+        title: neighbor.주제,
+        dir: neighbor.디렉토리,
+        file: hasOwn(neighbor, '파일명') ? neighbor.파일명 : (hasOwn(neighbor, '목록') ? "" : "index.html"),
+        parentDirs: page.parentDirs
+      };
+    };
+
+    const state = window.SiteModules.state;
+    state.cur_doc.title = page.item.주제;
+    state.cur_doc.dir = page.item.디렉토리;
+    state.cur_doc.file = page.fileName;
+    state.category = page.ancestors.join(" >> ");
+    state.prv_doc = toNeighborDoc(page.siblings[page.index - 1]);
+    state.next_doc = toNeighborDoc(page.siblings[page.index + 1]);
+    return true;
+  }
+
+  // admin/help 문서는 관리자 여부에 따라 서로 교차 리다이렉트한다
+  function checkAdminAndLoadRoute(urlPath) {
+    window.SiteModules.FirebaseConfig.loadSDKs().then(() => {
+      const checkAndLoad = () => {
+        window.SiteModules.Auth.isAdmin().then(isAdmin => {
+          if (urlPath === "/admin.html") {
+            if (isAdmin) loadPageRoute(urlPath);
+            else window.location.hash = "#/help.html";
+          } else if (urlPath === "/help.html") {
+            if (isAdmin) window.location.hash = "#/admin.html";
+            else loadPageRoute(urlPath);
+          }
+        }).catch(err => {
+          console.error("Admin verification failed:", err);
+          if (urlPath === "/admin.html") window.location.hash = "#/help.html";
+          else loadPageRoute(urlPath);
+        });
+      };
+
+      if (window.SiteModules.authInitialized) {
+        checkAndLoad();
+      } else {
+        const unsubscribe = window.firebase.auth().onAuthStateChanged(() => {
+          unsubscribe();
+          checkAndLoad();
+        });
+      }
+    }).catch(err => {
+      console.error("Firebase SDK load failed:", err);
+      loadPageRoute(urlPath);
+    });
+  }
+
 
   function init() {
     const state = window.SiteModules.state;
     state.currentPath = window.location.pathname;
 
     // 파이어베이스 인증 관찰자 및 로그인 처리기 초기화
-    loadFirebaseSDK().then(() => {
+    window.SiteModules.FirebaseConfig.loadSDKs().then(() => {
       window.firebase.auth().onAuthStateChanged((user) => {
         window.SiteModules.authInitialized = true;
 
@@ -62,28 +167,17 @@ window.SiteModules.Navigation = (function () {
 
         // Q&A 질답 폼 리렌더링 트리거 (로그인 상태 변화에 반응)
         if (state && state.currentPath && state.currentPath !== "/index.html" && state.currentPath !== "/" && !state.currentPath.endsWith("/") && !document.getElementById("site-history")) {
-          renderPageFeedbackArea(state.currentPath);
+          window.SiteModules.Feedback.renderPageFeedbackArea(state.currentPath);
         }
 
         // 관리자 권한 상태에 따른 페이지 해시 리다이렉트
-        const db = window.firebase.firestore();
-        if (user) {
-          db.collection('admins').doc(user.uid).get().then(docSnap => {
-            if (docSnap.exists) {
-              if (window.location.hash === "#/help.html") {
-                window.location.hash = "#/admin.html";
-              }
-            } else {
-              if (window.location.hash === "#/admin.html") {
-                window.location.hash = "#/help.html";
-              }
-            }
-          }).catch(err => console.error("Admin check on auth change failed:", err));
-        } else {
-          if (window.location.hash === "#/admin.html") {
+        window.SiteModules.Auth.isAdmin().then(isAdmin => {
+          if (isAdmin && window.location.hash === "#/help.html") {
+            window.location.hash = "#/admin.html";
+          } else if (!isAdmin && window.location.hash === "#/admin.html") {
             window.location.hash = "#/help.html";
           }
-        }
+        }).catch(err => console.error("Admin check on auth change failed:", err));
       });
     }).catch(err => console.error("Firebase initialization failed:", err));
 
@@ -236,7 +330,7 @@ window.SiteModules.Navigation = (function () {
       `;
       sidebarContainer.appendChild(sidebarPanel);
 
-      if (window.innerWidth > 960) {
+      if (window.innerWidth > MOBILE_BREAKPOINT) {
         setPanelCollapsed(true);
       } else {
         setPanelCollapsed(false);
@@ -293,47 +387,7 @@ window.SiteModules.Navigation = (function () {
     return baseParts.join("/");
   }
 
-  function isKnownArticlePage(absolutePath) {
-    const knownRootArticles = ["/index.html", "/admin.html", "/help.html", "/info.html", "/promo.html", "/"];
-    if (knownRootArticles.includes(absolutePath)) {
-      return true;
-    }
 
-    const list = window.SiteModules.hierarchyListCached;
-    if (!list) {
-      return true;
-    }
-
-    const cleanTargetPath = absolutePath.startsWith('/') ? absolutePath.substring(1) : absolutePath;
-
-    function search(items, currentDir) {
-      for (const item of items) {
-        const itemDir = currentDir + (item.디렉토리 || "");
-        const fileName = item.파일명 || (item.목록 ? null : "index.html");
-        if (fileName) {
-          const fullPath = itemDir + fileName;
-          if (fullPath === cleanTargetPath) {
-            return true;
-          }
-        }
-        if (item.목록) {
-          if (search(item.목록, itemDir)) {
-            return true;
-          }
-        }
-      }
-      return false;
-    }
-
-    return search(list, "");
-  }
-
-  // 문서의 <article> 존재 여부를 캐시에서 조회 (모르면 undefined)
-  function getKnownArticleFlag(url) {
-    if (articleFlagCache.has(url)) return articleFlagCache.get(url);
-    const entry = (window.SiteModules.searchCache || []).find(p => p.url === url);
-    return entry ? entry.hasArticle : undefined;
-  }
 
   // SPA 해시 라우터 구성
   function initRouter() {
@@ -379,7 +433,7 @@ window.SiteModules.Navigation = (function () {
                   hashOrQuery = href.substring(firstHashOrQueryIdx);
                 }
 
-                const knownHasArticle = getKnownArticleFlag(absolutePath);
+                const knownHasArticle = window.SiteModules.Search.getKnownArticleFlag(absolutePath);
                 if (knownHasArticle !== undefined) {
                   if (knownHasArticle) {
                     e.preventDefault();
@@ -402,7 +456,7 @@ window.SiteModules.Navigation = (function () {
                       const articleEl = doc.querySelector("article");
                       const hasArticle = !!articleEl;
 
-                      articleFlagCache.set(absolutePath, hasArticle);
+                      window.SiteModules.Search.rememberArticleFlag(absolutePath, hasArticle);
 
                       if (hasArticle) {
                         newTab.close();
@@ -441,63 +495,10 @@ window.SiteModules.Navigation = (function () {
     handleRouteChange();
   }
 
-  function checkAdminAndLoadRoute(urlPath) {
-    loadFirebaseSDK().then(() => {
-      const auth = window.firebase.auth();
-      const db = window.firebase.firestore();
-      
-      const checkAndLoad = () => {
-        const user = auth.currentUser;
-        if (urlPath === "/admin.html") {
-          if (user) {
-            db.collection('admins').doc(user.uid).get().then(docSnap => {
-              if (docSnap.exists) {
-                loadPageRoute(urlPath);
-              } else {
-                window.location.hash = "#/help.html";
-              }
-            }).catch(err => {
-              console.error("Admin verification failed:", err);
-              window.location.hash = "#/help.html";
-            });
-          } else {
-            window.location.hash = "#/help.html";
-          }
-        } else if (urlPath === "/help.html") {
-          if (user) {
-            db.collection('admins').doc(user.uid).get().then(docSnap => {
-              if (docSnap.exists) {
-                window.location.hash = "#/admin.html";
-              } else {
-                loadPageRoute(urlPath);
-              }
-            }).catch(err => {
-              console.error("Admin check failed for help page:", err);
-              loadPageRoute(urlPath);
-            });
-          } else {
-            loadPageRoute(urlPath);
-          }
-        }
-      };
-
-      if (window.SiteModules.authInitialized) {
-        checkAndLoad();
-      } else {
-        const unsubscribe = auth.onAuthStateChanged(() => {
-          unsubscribe();
-          checkAndLoad();
-        });
-      }
-    }).catch(err => {
-      console.error("Firebase SDK load failed:", err);
-      loadPageRoute(urlPath);
-    });
-  }
 
   function handleRouteChange() {
     let hash = window.location.hash;
-    const isMobile = window.innerWidth <= 960;
+    const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
 
     if (isMobile) {
       const container = document.getElementById("sidebar-container");
@@ -697,19 +698,11 @@ window.SiteModules.Navigation = (function () {
       window.activeWindowListeners = [];
     }
 
+    // 이전 페이지가 registerPageCleanup으로 등록한 정리 함수 실행
+    runPageCleanups();
+
     // SPA 페이지 전환 시 이전 소프로젝트 잔존 전역 함수 및 변수 일괄 소거 (네임스페이스 충돌 방어)
-    const globalsToClean = [
-      "init", "initApp", "rebuildGrid", "positionTooltip", "guide", "stepsData", "inputs",
-      "cur_step", "cur_line", "language", "isFin", "isGreating", "stateHistory", "state",
-      "EuclideanGridInput", "SqrtGridInput", "GridInput", "V", "titleText", "sentences",
-      "activeCells", "clearGridRow", "highlightActiveStep", "nextStep", "prevStep", "initKeybindings",
-      "triggerRandomStart", "resetToStart",
-      "initChart", "redrawChart", "startChartAnimation", "drawBars", "updateChartRealtime",
-      "triggerMathRendering", "setupDualInputBindings", "handleRunSimulation", "cleanupActiveWorker", "updateResultUI",
-      "coordinatesToSvg", "svgToCoordinates", "multiplyComplex", "drawRulers", "handleReload", "drawAnimatePath",
-      "drawCoordinateAxes", "drawConcentricCircles", "drawControlPath", "updateDragGuideLine", "setBackgroundSize", "T"
-    ];
-    globalsToClean.forEach(key => {
+    LEGACY_PAGE_GLOBALS.forEach(key => {
       try { delete window[key]; } catch(e) {}
     });
 
@@ -838,7 +831,7 @@ window.SiteModules.Navigation = (function () {
 
       const list = window.SiteModules.hierarchyListCached;
       if (list) {
-        const found = findAndPopulateState(list, state.currentPath);
+        const found = populateDocState(list, state.currentPath);
         if (!found) {
           const fallbackTitles = {
             "/promo.html": "홍보",
@@ -915,9 +908,9 @@ window.SiteModules.Navigation = (function () {
     // I-4. 모든 서브페이지 최하단 Q&A 피드백 영역 렌더링
     const isAdminPage = urlPath && (urlPath.endsWith("/admin.html") || urlPath.endsWith("/admin.htm"));
     if (!isHome && !isAdminPage && !(urlPath && urlPath.endsWith("/promo.html"))) {
-      renderPageFeedbackArea(urlPath);
+      window.SiteModules.Feedback.renderPageFeedbackArea(urlPath);
       if (urlPath === "/help.html") {
-        bindHelpSuggestionEvents(document.querySelector("article"));
+        window.SiteModules.Feedback.bindHelpSuggestionEvents(document.querySelector("article"));
       }
     } else {
       const oldArea = document.getElementById("page-feedback-area");
@@ -1105,7 +1098,7 @@ window.SiteModules.Navigation = (function () {
     const menuBtn = document.getElementById("mobile-menu-btn");
     if (!container || !panel) return;
 
-    const isMobile = window.innerWidth <= 960;
+    const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
 
     if (isMobile) {
       let nextActive = !container.classList.contains("active");
@@ -1143,7 +1136,7 @@ window.SiteModules.Navigation = (function () {
   function setPanelCollapsed(shouldCollapse) {
     const panel = document.getElementById("sidebar-panel");
     if (!panel) return;
-    const isMobile = window.innerWidth <= 960;
+    const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
 
     if (shouldCollapse) {
       panel.classList.add("collapsed");
@@ -1320,14 +1313,14 @@ window.SiteModules.Navigation = (function () {
     }
 
     window.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && window.innerWidth <= 960 && sidebarContainer && sidebarContainer.classList.contains("active")) {
+      if (e.key === "Escape" && window.innerWidth <= MOBILE_BREAKPOINT && sidebarContainer && sidebarContainer.classList.contains("active")) {
         setMobileDrawerState(false);
       }
     });
 
-    let lastIsMobile = window.innerWidth <= 960;
+    let lastIsMobile = window.innerWidth <= MOBILE_BREAKPOINT;
     window.addEventListener("resize", () => {
-      const nowIsMobile = window.innerWidth <= 960;
+      const nowIsMobile = window.innerWidth <= MOBILE_BREAKPOINT;
       if (nowIsMobile !== lastIsMobile) {
         lastIsMobile = nowIsMobile;
         const panel = document.getElementById("sidebar-panel");
@@ -1443,7 +1436,7 @@ window.SiteModules.Navigation = (function () {
             });
 
             el.classList.add("active");
-            if (tabId === "nav-search") ensureSearchCache();
+            if (tabId === "nav-search") window.SiteModules.Search.ensureIndex();
             const targetTabPane = el.getAttribute("data-tab");
             const paneEl = document.getElementById(targetTabPane);
             if (paneEl) paneEl.classList.add("active");
@@ -1529,7 +1522,7 @@ window.SiteModules.Navigation = (function () {
     if (navKakaoChannelBtn) {
       navKakaoChannelBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        if (window.innerWidth <= 960) {
+        if (window.innerWidth <= MOBILE_BREAKPOINT) {
           setMobileDrawerState(false);
           setKakaoPopoverOpen(true);
         } else {
@@ -1581,277 +1574,13 @@ window.SiteModules.Navigation = (function () {
       });
     }
 
-    const searchInput = document.getElementById("sidebar-search-input");
-    if (searchInput) {
-      // 검색창에 처음 포커스할 때 본문 색인 생성을 시작 (사이트 접속 시 전체 페이지 선수집 방지)
-      searchInput.addEventListener("focus", () => { ensureSearchCache(); }, { once: true });
-      searchInput.addEventListener("input", (e) => {
-        const query = e.target.value.trim().toLowerCase();
-        const resultsContainer = document.getElementById("sidebar-search-results");
-        if (!resultsContainer) return;
-        resultsContainer.innerHTML = "";
-
-        if (query.length < 2) return;
-
-        // Get active search type
-        const activeRadio = document.querySelector("input[name='search-type']:checked");
-        const searchType = activeRadio ? activeRadio.value : "title";
-
-        // 태그/전체 검색은 본문 색인이 필요하므로, 준비 전이면 안내 후 완료 시 자동 재검색
-        if (searchType !== "title" && !isSearchCacheReady) {
-          const li = document.createElement("li");
-          li.style.padding = "10px";
-          li.style.color = "#747775";
-          li.style.fontSize = "0.85em";
-          li.textContent = "검색 색인을 준비하는 중입니다...";
-          resultsContainer.appendChild(li);
-          ensureSearchCache().then(() => {
-            if (isSearchCacheReady && searchInput.value.trim().toLowerCase() === query) {
-              searchInput.dispatchEvent(new Event("input"));
-            }
-          });
-          return;
-        }
-
-        let matches = [];
-
-        if (searchType === "title") {
-          const list = window.SiteModules.hierarchyListCached;
-          matches = searchHierarchy(list, query);
-        } else if (searchType === "tag") {
-          const cache = window.SiteModules.searchCache || [];
-          matches = cache.filter(item => {
-            return item.tags.some(tag => tag.includes(query));
-          });
-        } else if (searchType === "all") {
-          const cache = window.SiteModules.searchCache || [];
-          matches = cache.filter(item => {
-            const inTitle = item.title.toLowerCase().includes(query);
-            const inTags = item.tags.some(tag => tag.includes(query));
-            const inArticle = item.articleText.includes(query);
-            return inTitle || inTags || inArticle;
-          });
-        }
-
-        if (matches.length === 0) {
-          const li = document.createElement("li");
-          li.style.padding = "10px";
-          li.style.color = "#747775";
-          li.style.fontSize = "0.85em";
-          li.textContent = "검색 결과가 없습니다.";
-          resultsContainer.appendChild(li);
-          return;
-        }
-
-        matches.forEach(match => {
-          const li = document.createElement("li");
-          const link = document.createElement("a");
-          link.href = match.url;
-          link.textContent = match.title;
-          const pathDesc = document.createElement("span");
-          pathDesc.className = "search-path-desc";
-          pathDesc.textContent = match.breadcrumb;
-          li.append(link, pathDesc);
-          resultsContainer.appendChild(li);
-        });
-      });
-    }
+    // 검색 입력 처리(제목/태그/전체)는 Search 모듈이 담당
+    window.SiteModules.Search.bindInput();
   }
 
-  async function bindHelpSuggestionEvents(container) {
-    const textarea = container.querySelector('#user-suggestion-textarea');
-    const submitBtn = container.querySelector('#submit-suggestion-btn');
-    const replyTextarea = container.querySelector('#dev-reply-textarea');
 
-    try {
-      const auth = window.SiteModules.FirebaseConfig.getAuth();
-      const db = window.SiteModules.FirebaseConfig.getDb();
-      if (auth && auth.currentUser && db) {
-        const uid = auth.currentUser.uid;
-        db.collection('admins').doc(uid).get().then(docSnap => {
-          if (docSnap.exists) {
-            let adminDiv = container.querySelector('#help-admin-link-area');
-            if (!adminDiv) {
-              adminDiv = document.createElement('div');
-              adminDiv.id = 'help-admin-link-area';
-              adminDiv.style.cssText = "margin-bottom: 20px; padding: 12px; background-color: #2b3a4a; border-radius: 6px; border: 1px solid #3b4a5a; text-align: center;";
-              adminDiv.innerHTML = `<a href="/admin.html" style="color: #64b5f6; font-weight: bold; text-decoration: none; font-size: 14px;">⚙️ 관리자 대시보드로 이동</a>`;
-              container.insertBefore(adminDiv, container.firstChild);
-            }
-          }
-        }).catch(err => console.error("Admin check inside help failed:", err));
-      }
-    } catch (e) {
-      console.error(e);
-    }
 
-    if (!textarea || !submitBtn) return;
 
-    try {
-      const data = await window.SiteModules.Auth.getUserSuggestion();
-      if (data) {
-        if (replyTextarea) {
-          replyTextarea.value = data.reply || "";
-        }
-        if (data.suggestion && data.suggestion.trim() !== "") {
-          textarea.value = data.suggestion;
-          submitBtn.innerText = "수정";
-        } else {
-          submitBtn.innerText = "보내기";
-        }
-      } else {
-        submitBtn.innerText = "보내기";
-      }
-
-      // 기존 이벤트 리스너 제거를 위한 클론 처리
-      const newSubmitBtn = submitBtn.cloneNode(true);
-      submitBtn.parentNode.replaceChild(newSubmitBtn, submitBtn);
-
-      newSubmitBtn.addEventListener('click', async () => {
-        const text = textarea.value.trim();
-        if (!text) {
-          alert("건의사항을 입력해 주세요.");
-          return;
-        }
-
-        const currentLabel = newSubmitBtn.innerText;
-        if (currentLabel === "수정") {
-          newSubmitBtn.innerText = "수정사항으로 건의하시겠습니까?";
-          return;
-        }
-
-        const isFirstSubmit = currentLabel === "보내기";
-        newSubmitBtn.disabled = true;
-        try {
-          await window.SiteModules.Auth.submitSuggestion(text);
-          newSubmitBtn.innerText = "수정";
-          alert(isFirstSubmit ? "건의사항이 등록되었습니다." : "건의사항이 수정되었습니다.");
-        } catch (err) {
-          console.error("[Suggestion] 전송 실패:", err);
-          alert("전송에 실패했습니다. 잠시 후 다시 시도해 주세요.");
-        } finally {
-          newSubmitBtn.disabled = false;
-        }
-      });
-    } catch (err) {
-      console.error("건의사항 바인딩 실패:", err);
-    }
-  }
-
-  // 태그/전체 검색용 본문 색인을 최초 필요 시점(검색 탭 진입)에 한 번만 생성
-  function ensureSearchCache() {
-    if (!searchCachePromise) {
-      const list = window.SiteModules.hierarchyListCached;
-      if (!list) return Promise.resolve();
-      searchCachePromise = buildSearchCache(list)
-        .then(() => { isSearchCacheReady = true; })
-        .catch(err => {
-          console.error("[Search] 색인 생성 실패:", err);
-          searchCachePromise = null; // 다음 시도에서 재생성 허용
-        });
-    }
-    return searchCachePromise;
-  }
-
-  async function buildSearchCache(list) {
-    window.SiteModules.searchCache = [];
-    
-    const pages = [];
-    function traverse(data, currentPath = "", currentBreadcrumb = "") {
-      if (!Array.isArray(data)) return;
-      data.forEach(item => {
-        const title = item.주제 || "";
-        const dir = item.디렉토리 || "";
-        const pathDesc = currentBreadcrumb ? `${currentBreadcrumb} > ${title}` : title;
-        const hasFile = item.hasOwnProperty('파일명') || !item.hasOwnProperty('목록');
-        if (hasFile) {
-          const fileName = item.hasOwnProperty('파일명') ? item.파일명 : "index.html";
-          const fullUrl = `/${currentPath}${dir}${fileName}`;
-          pages.push({
-            title: title,
-            url: fullUrl,
-            breadcrumb: pathDesc
-          });
-        }
-        if (item.목록 && item.목록.length > 0) {
-          traverse(item.목록, currentPath + dir, pathDesc);
-        }
-      });
-    }
-    traverse(list);
-
-    const concurrency = 5;
-    let index = 0;
-
-    async function worker() {
-      while (index < pages.length) {
-        const pageIndex = index++;
-        if (pageIndex >= pages.length) break;
-        const page = pages[pageIndex];
-
-        try {
-          const res = await fetch(page.url);
-          if (!res.ok) continue;
-          const htmlText = await res.text();
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(htmlText, "text/html");
-          
-          const tagsEl = doc.querySelector("tags");
-          const tagsText = tagsEl ? tagsEl.textContent : "";
-          const tags = tagsText.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
-
-          const articleEl = doc.querySelector("article");
-          let articleText = "";
-          if (articleEl) {
-            const clone = articleEl.cloneNode(true);
-            clone.querySelectorAll("script, style, tags, #site-intro, #site-toc-panel").forEach(el => el.remove());
-            articleText = (clone.textContent || "").toLowerCase().replace(/\s+/g, ' ').trim();
-          }
-
-          window.SiteModules.searchCache.push({
-            title: page.title,
-            url: page.url,
-            breadcrumb: page.breadcrumb,
-            tags: tags,
-            articleText: articleText,
-            hasArticle: !!articleEl
-          });
-        } catch (err) {
-          console.warn(`Failed to index page ${page.url}:`, err);
-        }
-      }
-    }
-
-    const workers = Array.from({ length: concurrency }, () => worker());
-    await Promise.all(workers);
-  }
-
-  function searchHierarchy(data, query, results = [], currentPath = "", currentBreadcrumb = "") {
-    if (!Array.isArray(data)) return results;
-    data.forEach(item => {
-      const title = item.주제 || "";
-      const dir = item.디렉토리 || "";
-      const pathDesc = currentBreadcrumb ? `${currentBreadcrumb} > ${title}` : title;
-
-      const hasFile = item.hasOwnProperty('파일명') || !item.hasOwnProperty('목록');
-      if (hasFile) {
-        const fileName = item.hasOwnProperty('파일명') ? item.파일명 : "index.html";
-        const fullUrl = `/${currentPath}${dir}${fileName}`;
-        if (title.toLowerCase().includes(query.toLowerCase())) {
-          results.push({
-            title: title,
-            url: fullUrl,
-            breadcrumb: pathDesc
-          });
-        }
-      }
-
-      if (item.목록 && item.목록.length > 0) {
-        searchHierarchy(item.목록, query, results, currentPath + dir, pathDesc);
-      }
-    });
-    return results;
-  }
 
 
 
@@ -1907,258 +1636,17 @@ window.SiteModules.Navigation = (function () {
     }
   }
 
-  function findAndPopulateState(data, targetPath, parentDirectories = "", currentBreadcrumb = "") {
-    if (!Array.isArray(data)) return false;
 
-    let cleanTarget = targetPath;
-    if (!cleanTarget.startsWith('/')) cleanTarget = '/' + cleanTarget;
-    const hashIndex = cleanTarget.indexOf('#');
-    if (hashIndex !== -1) {
-      cleanTarget = cleanTarget.substring(0, hashIndex);
-    }
 
-    for (let i = 0; i < data.length; i++) {
-      const item = data[i];
-      const currentDir = item.디렉토리 || "";
-      const pathDesc = currentBreadcrumb ? `${currentBreadcrumb} >> ${item.주제}` : item.주제;
 
-      const hasFile = item.hasOwnProperty('파일명') || !item.hasOwnProperty('목록');
-      if (hasFile) {
-        const fileName = item.hasOwnProperty('파일명') ? item.파일명 : "index.html";
-        const resolvedPath = `/${parentDirectories}${currentDir}${fileName}`;
-        if (resolvedPath === cleanTarget) {
-          const state = window.SiteModules.state;
-          state.cur_doc.title = item.주제;
-          state.cur_doc.dir = item.디렉토리;
-          state.cur_doc.file = fileName;
-          state.category = currentBreadcrumb;
 
-          // 이전글 설정
-          if (i > 0) {
-            const prev = data[i - 1];
-            state.prv_doc.title = prev.주제;
-            state.prv_doc.dir = prev.디렉토리;
-            state.prv_doc.file = prev.hasOwnProperty('파일명') ? prev.파일명 : (prev.hasOwnProperty('목록') ? "" : "index.html");
-            state.prv_doc.parentDirs = parentDirectories;
-          } else {
-            state.prv_doc = { title: "", dir: "", file: "" };
-          }
 
-          // 다음글 설정
-          if (i < data.length - 1) {
-            const next = data[i + 1];
-            state.next_doc.title = next.주제;
-            state.next_doc.dir = next.디렉토리;
-            state.next_doc.file = next.hasOwnProperty('파일명') ? next.파일명 : (next.hasOwnProperty('목록') ? "" : "index.html");
-            state.next_doc.parentDirs = parentDirectories;
-          } else {
-            state.next_doc = { title: "", dir: "", file: "" };
-          }
 
-          return true;
-        }
-      }
-
-      if (item.목록 && item.목록.length > 0) {
-        const found = findAndPopulateState(item.목록, targetPath, parentDirectories + currentDir, pathDesc);
-        if (found) return true;
-      }
-    }
-    return false;
-  }
-
-  function findHierarchyPath(hierarchy, title, currentPath = "") {
-    const titles = title.split('>');
-    let path = currentPath;
-
-    for (const currentTitle of titles) {
-      let found = false;
-
-      for (const item of hierarchy) {
-        if (item.주제 === currentTitle.trim()) {
-          path += item.디렉토리 || "";
-
-          if (item.목록) {
-            hierarchy = item.목록;
-            found = true;
-            break;
-          } else {
-            const fileName = item.hasOwnProperty('파일명') ? item.파일명 : "index.html";
-            return path + fileName;
-          }
-        }
-      }
-
-      if (!found) {
-        return null;
-      }
-    }
-    return path;
-  }
-
-  function getPageKey(path) {
-    if (!path) return "@home";
-
-    // 1. 쿼리 파라미터 분리 제거
-    let cleanPath = path.split('?')[0];
-
-    // 2. 앞뒤 슬래시 정리 및 확장자 제거
-    if (cleanPath.startsWith('/')) cleanPath = cleanPath.substring(1);
-    if (cleanPath.endsWith('/')) cleanPath = cleanPath.substring(0, cleanPath.length - 1);
-    cleanPath = cleanPath.replace(/\.html?$/i, '');
-
-    // 3. 파일명이 'index' 인 경우 소프로젝트 범주로 취합하기 위해 떼어냄
-    const parts = cleanPath.split('/');
-    if (parts.length > 0 && parts[parts.length - 1].toLowerCase() === 'index') {
-      parts.pop();
-    }
-
-    if (parts.length === 0 || (parts.length === 1 && parts[0] === '')) {
-      return '@home';
-    }
-
-    return '@' + parts.join('>');
-  }
-
-  function renderPageFeedbackArea(urlPath) {
-    if (urlPath === "/index.html" || urlPath === "/" || !urlPath) return;
-
-    // admin 페이지인 경우 질답 폼을 생성하지 않음
-    if (urlPath.endsWith("/admin.html") || urlPath.endsWith("/admin.htm")) {
-      const oldArea = document.getElementById("page-feedback-area");
-      if (oldArea) oldArea.remove();
-      return;
-    }
-
-    if (urlPath === "/help.html") {
-      // 관리자가 아닐때, 하단에 개별 페이지마다 동작하는 개별페이지 질의 폼이 생성되지 않도록 함
-      window.SiteModules.FirebaseConfig.loadSDKs().then(() => {
-        const auth = window.SiteModules.FirebaseConfig.getAuth();
-        const db = window.SiteModules.FirebaseConfig.getDb();
-        if (auth && auth.currentUser && db) {
-          db.collection('admins').doc(auth.currentUser.uid).get().then(docSnap => {
-            if (docSnap.exists) {
-              renderFeedbackAreaActual(urlPath);
-            }
-          }).catch(err => {
-            console.error("Admin check in feedback area failed:", err);
-          });
-        }
-      });
-      return;
-    }
-
-    renderFeedbackAreaActual(urlPath);
-  }
-
-  function renderFeedbackAreaActual(urlPath) {
-    const article = document.querySelector("article");
-    if (!article) return;
-
-    const oldArea = document.getElementById("page-feedback-area");
-    if (oldArea) oldArea.remove();
-
-    const feedbackArea = document.createElement("div");
-    feedbackArea.id = "page-feedback-area";
-    feedbackArea.style.cssText = "margin-top: 50px; border-top: 1px solid #ddd; padding-top: 20px;";
-
-    const pageKey = getPageKey(urlPath);
-
-    feedbackArea.innerHTML = `
-      <h3 style="font-size: 16px; margin-bottom: 15px; font-weight: bold;">💬 이 문서에 대한 질문 및 건의</h3>
-      <div style="display: flex; flex-direction: column; gap: 12px;">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="font-size: 12px; font-weight: bold; background-color: #e8f0fe; color: #1a73e8; padding: 4px 8px; border-radius: 4px; border: 1px solid #d2e3fc; user-select: none;">${pageKey}</span>
-          <span style="font-size: 11px; color: #747775;">(이 카테고리 태그가 질문과 함께 전송됩니다)</span>
-        </div>
-        <div>
-          <textarea id="page-suggestion-textarea" placeholder="이 문서에 대한 건의사항이나 질문을 작성해 주세요." style="width: 100%; height: 80px; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-family: inherit; font-size: 13px; resize: vertical; box-sizing: border-box;"></textarea>
-        </div>
-        <div style="display: flex; justify-content: flex-end;">
-          <button id="page-suggestion-submit-btn" style="padding: 8px 16px; background-color: #228be6; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; transition: background-color 0.2s ease;">보내기</button>
-        </div>
-        <div style="margin-top: 15px;">
-          <h4 style="font-size: 13px; font-weight: bold; margin-bottom: 5px; color: #495057;">이 문서의 질답 이력</h4>
-          <div id="page-feedback-history" style="width: 100%; max-height: 200px; overflow-y: auto; padding: 10px; border-radius: 6px; border: 1px solid #ccc; background-color: #f1f3f5; font-size: 13px; box-sizing: border-box; white-space: pre-wrap; line-height: 1.5em; color: #495057;">이력 정보를 불러오는 중입니다...</div>
-        </div>
-      </div>
-    `;
-
-    const lastMod = document.getElementById("last-modified");
-    if (lastMod) {
-      article.insertBefore(feedbackArea, lastMod);
-    } else {
-      article.appendChild(feedbackArea);
-    }
-
-    const textarea = document.getElementById("page-suggestion-textarea");
-    textarea.value = "";
-
-    bindPageFeedbackEvents(feedbackArea, pageKey);
-  }
-
-  async function bindPageFeedbackEvents(container, pageKey) {
-    const textarea = container.querySelector('#page-suggestion-textarea');
-    const submitBtn = container.querySelector('#page-suggestion-submit-btn');
-    const historyDiv = container.querySelector('#page-feedback-history');
-    if (!textarea || !submitBtn) return;
-
-    try {
-      const data = await window.SiteModules.Auth.getUserSuggestion();
-      updatePageFeedbackHistoryDisplay(data, pageKey, historyDiv);
-
-      submitBtn.addEventListener('click', async () => {
-        const userText = textarea.value.trim();
-        if (!userText) {
-          alert("질문 내용을 입력해 주세요.");
-          return;
-        }
-
-        const text = pageKey + " " + userText;
-        submitBtn.disabled = true;
-        try {
-          await window.SiteModules.Auth.submitSuggestion(text, { append: true });
-          textarea.value = "";
-          alert("질문이 등록되었습니다.");
-
-          const newData = await window.SiteModules.Auth.getUserSuggestion();
-          updatePageFeedbackHistoryDisplay(newData, pageKey, historyDiv);
-        } catch (err) {
-          console.error("[Feedback] 전송 실패:", err);
-          alert("전송에 실패했습니다. 잠시 후 다시 시도해 주세요.");
-        } finally {
-          submitBtn.disabled = false;
-        }
-      });
-    } catch (err) {
-      console.error("페이지 피드백 연동 실패:", err);
-      if (historyDiv) {
-        historyDiv.innerHTML = `<span style="color:red; font-style:italic;">이력 데이터를 가져오지 못했습니다.</span>`;
-      }
-    }
-  }
-
-  function updatePageFeedbackHistoryDisplay(data, pageKey, historyDiv) {
-    if (!historyDiv) return;
-
-    if (!data || !data.reply) {
-      historyDiv.innerHTML = `<span style="color:#868e96; font-style:italic;">과거 답변 기록이 없습니다.</span>`;
-      return;
-    }
-
-    const blocks = data.reply.split("\n\n");
-    const filteredBlocks = blocks.filter(block => block.includes(pageKey));
-
-    if (filteredBlocks.length > 0) {
-      historyDiv.textContent = filteredBlocks.join("\n\n");
-    } else {
-      historyDiv.innerHTML = `<span style="color:#868e96; font-style:italic;">이 문서에 대해 등록된 답변이 없습니다.</span>`;
-    }
-  }
 
   return {
     init: init,
     trigBoard: trigBoard,
-    findHierarchyPath: findHierarchyPath
+    findHierarchyPath: (hierarchy, title, currentPath) => window.SiteModules.Hierarchy.findPathByTitle(hierarchy, title, currentPath),
+    registerPageCleanup: registerPageCleanup
   };
 })();
