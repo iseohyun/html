@@ -649,9 +649,25 @@ window.SiteModules.Navigation = (function () {
     });
   }
 
+  // 해시 경로가 동일 출처의 HTML 문서인지 검증 (예: "#//evil.com/x.html" 같은 프로토콜 상대 URL 차단)
+  function isSafeInternalPath(urlPath) {
+    try {
+      const resolved = new URL(urlPath, window.location.origin);
+      return resolved.origin === window.location.origin && /\.html?$/i.test(resolved.pathname);
+    } catch (e) {
+      return false;
+    }
+  }
+
   async function loadPageRoute(urlPath) {
     const article = document.querySelector("article");
     if (!article) return;
+
+    if (!isSafeInternalPath(urlPath)) {
+      console.warn("[Router] 허용되지 않은 경로를 차단했습니다:", urlPath);
+      window.location.hash = "#/";
+      return;
+    }
 
     // SPA 페이지 전환 시 잔존하는 ResizeObserver 및 윈도우 스냅 리스너 일괄 청소
     if (window.activeResizeObservers) {
@@ -733,7 +749,9 @@ window.SiteModules.Navigation = (function () {
       }
     } catch (err) {
       console.error(err);
-      article.innerHTML = `<h1 style="color:red;">페이지 로드 오류</h1><p>해당 문서를 불러올 수 없습니다.<br>${err.message}</p>`;
+      article.innerHTML = `<h1 style="color:red;">페이지 로드 오류</h1><p>해당 문서를 불러올 수 없습니다.<br><span id="page-load-error-detail"></span></p>`;
+      const errorDetail = article.querySelector("#page-load-error-detail");
+      if (errorDetail) errorDetail.textContent = err.message;
     }
   }
 

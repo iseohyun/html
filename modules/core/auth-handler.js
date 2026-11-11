@@ -4,10 +4,17 @@ window.SiteModules = window.SiteModules || {};
 window.SiteModules.Auth = (function() {
   let isLoginProcessing = false;
 
+  // 게스트 문서 ID는 접근 권한 역할을 하므로 추측 불가능한 암호학적 난수(128bit)로 생성합니다.
+  function generateSecureToken() {
+    const bytes = new Uint8Array(16);
+    window.crypto.getRandomValues(bytes);
+    return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+  }
+
   function getOrCreateGuestId() {
     let guestId = localStorage.getItem('GUEST_ID');
     if (!guestId) {
-      guestId = 'GUEST_' + Math.random().toString(36).substring(2, 11);
+      guestId = 'GUEST_' + generateSecureToken();
       localStorage.setItem('GUEST_ID', guestId);
     }
     return guestId;
