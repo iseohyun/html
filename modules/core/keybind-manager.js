@@ -1,4 +1,10 @@
-// modules/core/keybind-manager.js
+/**
+ * @file modules/core/keybind-manager.js
+ * @module SiteModules.KeybindManager
+ * @description 전역 단축키 처리. 숫자 1~3으로 사이드바 탭(사이트맵/목차/검색)을 전환하고,
+ *   Alt 키를 누르는 동안 단축키 배지를 표시한다. 입력 필드 포커스 중에는 동작하지 않는다.
+ * @exports init
+ */
 window.SiteModules = window.SiteModules || {};
 
 window.SiteModules.KeybindManager = (function() {
@@ -14,7 +20,7 @@ window.SiteModules.KeybindManager = (function() {
         return;
       }
 
-      // 숫자 키 1~5 탭 클릭 에뮬레이션
+      // 숫자 키 1~3 탭 클릭 에뮬레이션
       if (e.key === '1') {
         e.preventDefault();
         const el = document.getElementById("nav-sitemap");

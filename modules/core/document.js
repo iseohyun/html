@@ -1,4 +1,8 @@
-// modules/core/document.js
+/**
+ * @file modules/core/document.js
+ * @module SiteModules.Document
+ * @description 문서 공통 후처리: 최종 수정일/저작권 표기, 각주·참고문헌 번호 매김, 이미지 캡션 목록 생성.
+ */
 
 window.SiteModules = window.SiteModules || {};
 
