@@ -59,7 +59,7 @@ window.SiteModules.TOC = (function() {
 
       anchor.addEventListener("click", function (ev) {
         ev.stopPropagation();
-        if (window.innerWidth <= 768) {
+        if (window.innerWidth <= window.SiteModules.Config.layout.tocAutoCloseBreakpoint) {
           const container = document.getElementById("sidebar-container");
           if (container) container.classList.remove("active");
         }

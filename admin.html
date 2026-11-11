@@ -37,22 +37,15 @@
 </article>
 
 <!-- Firebase Compat SDKs -->
+<script src="/modules/core/site-config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore-compat.js"></script>
 
 <script>
   (function () {
-    // Firebase Config (modules/core/firebase-config.js 구성 정보와 동일하게 매핑)
-    const firebaseConfig = {
-      apiKey: "AIzaSyBu8rZQ_E_LKiGXu9jeIWn5FCPU7cWu734",
-      authDomain: "iseohyun.firebaseapp.com",
-      projectId: "iseohyun",
-      storageBucket: "iseohyun.firebasestorage.app",
-      messagingSenderId: "480884385518",
-      appId: "1:480884385518:web:e624e46512c8c3834675ff",
-      measurementId: "G-FP4D4V74P5"
-    };
+    // Firebase 설정은 modules/core/site-config.js 단일 출처에서 가져온다
+    const firebaseConfig = window.SiteModules.Config.firebase;
 
     const app = firebase.apps.length > 0 ? firebase.app() : firebase.initializeApp(firebaseConfig);
     const auth = app.auth();

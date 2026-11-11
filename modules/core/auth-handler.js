@@ -3,9 +3,9 @@
  * @module SiteModules.Auth
  * @description 구글(팝업)·네이버·카카오(OAuth 코드 → 커스텀 토큰) 로그인, 게스트 ID 발급,
  *   건의사항(suggestions 컬렉션) 저장/조회.
- * @requires SiteModules.FirebaseConfig
+ * @requires SiteModules.Config, SiteModules.FirebaseConfig
  * @exports getOrCreateGuestId, handleRedirectCallback, googleLogin, naverLogin, kakaoLogin,
- *   logoutUser, submitSuggestion, getUserSuggestion
+ *   logoutUser, isAdmin, submitSuggestion, getUserSuggestion
  */
 window.SiteModules = window.SiteModules || {};
 
@@ -62,11 +62,12 @@ window.SiteModules.Auth = (function() {
         // 즉시 주소창에서 query parameter 지우기 (해시 보존)
         window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
 
-        let endpoint = 'https://naverlogin-kw55rtsoba-uc.a.run.app';
+        const oauthConfig = window.SiteModules.Config.oauth;
+        let endpoint = oauthConfig.naver.tokenExchangeUrl;
         let requestBody = { code: authCode };
 
         if (loginProvider === 'kakao') {
-          endpoint = 'https://kakaologin-kw55rtsoba-uc.a.run.app';
+          endpoint = oauthConfig.kakao.tokenExchangeUrl;
           requestBody.redirectUri = window.location.origin + "/";
         }
 
@@ -164,7 +165,7 @@ window.SiteModules.Auth = (function() {
 
     localStorage.setItem('login_provider', 'naver');
     const redirectUri = window.location.origin + "/";
-    const clientId = "hemXaBshyStfBhmNg05m";
+    const clientId = window.SiteModules.Config.oauth.naver.clientId;
     const state = issueOAuthState();
     const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
 
@@ -177,7 +178,7 @@ window.SiteModules.Auth = (function() {
 
     localStorage.setItem('login_provider', 'kakao');
     const redirectUri = window.location.origin + "/";
-    const clientId = "af28f94aa8260ab663fd27dffea1ee77";
+    const clientId = window.SiteModules.Config.oauth.kakao.clientId;
     const state = issueOAuthState();
     const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
 
@@ -197,6 +198,33 @@ window.SiteModules.Auth = (function() {
         }
       });
     }
+  }
+
+  // uid별 관리자 여부 조회 결과(Promise) 캐시: 같은 세션에서 admins 문서를 반복 조회하지 않는다
+  const adminCheckCache = new Map();
+
+  /**
+   * 현재 로그인 사용자가 관리자(admins/{uid} 문서 존재)인지 확인한다.
+   * @returns {Promise<boolean>} 비로그인 시 false. 조회 실패 시 reject(캐시하지 않음).
+   */
+  async function isAdmin() {
+    await window.SiteModules.FirebaseConfig.loadSDKs();
+    const auth = window.SiteModules.FirebaseConfig.getAuth();
+    const db = window.SiteModules.FirebaseConfig.getDb();
+    const user = auth ? auth.currentUser : null;
+    if (!user || !db) return false;
+
+    if (!adminCheckCache.has(user.uid)) {
+      const uid = user.uid;
+      const pendingCheck = db.collection('admins').doc(uid).get()
+        .then(docSnap => docSnap.exists)
+        .catch(err => {
+          adminCheckCache.delete(uid);
+          throw err;
+        });
+      adminCheckCache.set(uid, pendingCheck);
+    }
+    return adminCheckCache.get(user.uid);
   }
 
   function getNormalizedPageKey() {
@@ -290,6 +318,7 @@ window.SiteModules.Auth = (function() {
     naverLogin: naverLogin,
     kakaoLogin: kakaoLogin,
     logoutUser: logoutUser,
+    isAdmin: isAdmin,
     submitSuggestion: submitSuggestion,
     getUserSuggestion: getUserSuggestion
   };
