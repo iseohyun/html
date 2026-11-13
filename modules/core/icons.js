@@ -25,14 +25,13 @@ window.SiteModules.Icons = (function () {
     "sitemap": '<path d="M21 12h-8M21 6H8M21 18h-8M3 6v4c0 1.1.9 2 2 2h3M3 10v6c0 1.1.9 2 2 2h3"/>', // 사이트맵 (list-tree)
     "list": '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',          // 목차 (list)
     "search": '<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',           // 검색 (search)
-    "megaphone": '<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>', // 홍보 (megaphone)
     "user": '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',         // 로그인 (user)
-    "help": '<circle cx="12" cy="12" r="9"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"/>', // 도움말 (circle-help)
     "info": '<circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/>',          // 문서 정보 (info)
     "school": '<path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0zM22 10v6M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>', // 튜토리얼 (graduation-cap)
 
     // 그 밖
     "user-plus": '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/>', // 친구 추가 (user-plus)
+    "mail": '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>', // 메일 (mail)
     "chat": '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',                             // 채팅 (message-circle)
   };
 

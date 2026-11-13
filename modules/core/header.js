@@ -6,7 +6,7 @@
  *   필터와 화면별 설정은 헤더 바로 아래로 펼쳐지는 같은 자리의 패널이며 한 번에 하나만 열린다.
  *   패널의 내용은 각 화면이 setPanels() 로 등록하고, 등록한 화면에서만 해당 아이콘이 보인다.
  * @requires SiteModules.Icons
- * @exports init, setTitle, setPanels, togglePanel, closePanel, setFilterActive
+ * @exports init, setTitle, setTabs, setPanels, togglePanel, closePanel, setFilterActive
  */
 
 window.SiteModules = window.SiteModules || {};
@@ -71,6 +71,38 @@ window.SiteModules.Header = (function () {
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && openKind) closePanel();
     });
+  }
+
+  /**
+   * 헤더 가운데의 탭을 바꾼다. 빈 배열이면 탭을 지운다.
+   * 탭은 주소(#...)로 가는 링크라서 눌렀을 때의 화면 전환은 라우터가 맡는다.
+   * @param {Array<{label: string, href: string, selected?: boolean}>} tabs
+   */
+  function setTabs(tabs = []) {
+    const nav = el("header-tabs");
+    if (!nav) return;
+    nav.replaceChildren();
+
+    let selectedTab = null;
+    tabs.forEach(tab => {
+      const link = document.createElement("a");
+      link.className = "app-tab";
+      link.setAttribute("role", "tab");
+      link.setAttribute("aria-selected", String(!!tab.selected));
+      link.href = tab.href;
+      link.textContent = tab.label;
+      link.title = tab.label;
+      if (tab.selected) selectedTab = link;
+      nav.appendChild(link);
+    });
+
+    // 넘쳐서 가려진 경우 켜진 탭이 보이도록 가로로 민다
+    if (selectedTab) {
+      const overflowLeft = selectedTab.offsetLeft - nav.scrollLeft;
+      const overflowRight = selectedTab.offsetLeft + selectedTab.offsetWidth - (nav.scrollLeft + nav.clientWidth);
+      if (overflowLeft < 0) nav.scrollLeft += overflowLeft - 16;
+      else if (overflowRight > 0) nav.scrollLeft += overflowRight + 16;
+    }
   }
 
   function setTitle(text) {
@@ -149,6 +181,7 @@ window.SiteModules.Header = (function () {
   return {
     init: init,
     setTitle: setTitle,
+    setTabs: setTabs,
     setPanels: setPanels,
     togglePanel: togglePanel,
     closePanel: closePanel,

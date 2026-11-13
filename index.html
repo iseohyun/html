@@ -848,6 +848,241 @@
       }
     }
 
+    /* ==========================================
+       리스트 보기 (변경 이력을 표 / 카드로 나열) · 화면별 설정의 선택 버튼
+       ========================================== */
+    .pill-btn {
+      height: 30px;
+      padding: 0 11px;
+      border-radius: var(--r-md);
+      border: 1px solid var(--line);
+      background-color: var(--surface);
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: background-color var(--t-fast) ease, border-color var(--t-fast) ease, color var(--t-fast) ease;
+    }
+
+    .pill-btn:hover {
+      background-color: var(--surface);
+      border-color: var(--muted);
+      color: var(--fg);
+    }
+
+    .pill-btn[aria-pressed="true"] {
+      background-color: var(--fg);
+      border-color: var(--fg);
+      color: var(--bg);
+    }
+
+    .update-list-view {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      font-family: var(--font-main);
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--fg);
+    }
+
+    .list-summary-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .list-summary-text {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .list-summary-hint {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .list-table-scroll {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      background-color: var(--surface);
+    }
+
+    table.list-data-table {
+      width: 100%;
+      margin: 0;
+      border-collapse: collapse;
+      font-size: 13px;
+      color: var(--fg);
+    }
+
+    table.list-data-table thead {
+      position: static;
+      background-color: var(--sunken);
+      color: var(--muted);
+    }
+
+    table.list-data-table th {
+      padding: 9px 12px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      border: none;
+      border-bottom: 1px solid var(--line);
+      background-color: var(--sunken);
+      color: var(--muted);
+    }
+
+    table.list-data-table td {
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: middle;
+      border: none;
+      border-bottom: 1px solid var(--line);
+    }
+
+    table.list-data-table tbody tr {
+      cursor: pointer;
+      transition: background-color var(--t-fast) ease;
+    }
+
+    table.list-data-table tbody tr:hover,
+    table.list-data-table tbody tr:focus-visible {
+      background-color: var(--bg);
+      outline: none;
+    }
+
+    table.list-data-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .list-date-cell,
+    .list-nowrap-cell {
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .list-date-cell {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .list-title-cell {
+      font-weight: 700;
+      min-width: 140px;
+    }
+
+    .list-type-tag {
+      display: inline-block;
+      padding: 1px 7px;
+      border-radius: var(--r-sm);
+      background-color: var(--sunken);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .list-env-tags {
+      display: inline-flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .list-env-tag {
+      display: inline-block;
+      padding: 1px 7px;
+      border: 1px solid var(--line);
+      border-radius: var(--r-sm);
+      color: #0f172a;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .list-card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+      gap: 14px;
+    }
+
+    .list-card {
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      background-color: var(--surface);
+      color: var(--fg);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      transition: transform var(--t-fast) ease, border-color var(--t-fast) ease;
+    }
+
+    .list-card:hover,
+    .list-card:focus {
+      background-color: var(--surface);
+      transform: translateY(-3px);
+      border-color: var(--muted);
+    }
+
+    .list-card-body {
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .list-card-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .list-card-title {
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.4;
+      color: var(--fg);
+    }
+
+    .list-card-summary {
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .list-card-foot {
+      padding: 9px 16px;
+      border-top: 1px solid var(--line);
+      background-color: var(--bg);
+      font-size: 12px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .list-empty {
+      border: 1px dashed var(--muted);
+      border-radius: var(--r-lg);
+      padding: 44px 24px;
+      text-align: center;
+      color: var(--muted);
+    }
+
     @media (prefers-reduced-motion: reduce) {
       .cal-day-detail-anim,
       .cal-dot::before {
