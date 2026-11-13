@@ -3,6 +3,7 @@
  * @module SiteModules.Header
  * @description 화면 위에 고정되는 헤더. 한 줄에 세 묶음을 둔다:
  *   [메뉴 아이콘][페이지 제목] ── 탭 ── [필터][페이지 공유][설정]
+ *   탭 줄이 제목과 아이콘에 밀려 다 보이지 않으면 가려진 쪽에 스크롤 버튼이 생기고, 탭 줄을 끌어서도 밀 수 있다.
  *   필터와 화면별 설정은 헤더 바로 아래로 펼쳐지는 같은 자리의 패널이며 한 번에 하나만 열린다.
  *   패널의 내용은 각 화면이 setPanels() 로 등록한다. 필터 아이콘은 등록한 화면에서만 보이고,
  *   설정 아이콘은 어느 화면에나 있으며 맨 아래 줄에서 전체 설정 페이지로 간다.
@@ -16,6 +17,10 @@ window.SiteModules.Header = (function () {
   const TOAST_DURATION_MS = 1600;
   const PANEL_KINDS = ["filter", "settings"];
   const GLOBAL_SETTINGS_HREF = "#/settings.html";
+  // 탭 줄: 이만큼은 스크롤 끝으로 본다 / 버튼 한 번에 미는 폭(탭 줄 폭 대비) / 끌기로 인정하는 최소 이동
+  const TAB_SCROLL_EPSILON_PX = 2;
+  const TAB_SCROLL_PAGE_RATIO = 0.7;
+  const TAB_DRAG_THRESHOLD_PX = 5;
 
   let root = null;
   let openKind = null;
@@ -44,7 +49,11 @@ window.SiteModules.Header = (function () {
           <button class="icon-btn" type="button" id="header-menu-btn" aria-label="메뉴" title="메뉴">${icon("menu")}</button>
           <span class="app-page-title" id="header-title"></span>
         </div>
-        <nav class="app-tabs" id="header-tabs" aria-label="페이지"></nav>
+        <div class="app-tabs-wrap">
+          <button class="app-tabs-arrow" type="button" id="header-tabs-prev" aria-label="앞쪽 탭 보기" title="앞쪽 탭 보기" hidden>${icon("chevron-left")}</button>
+          <nav class="app-tabs" id="header-tabs" aria-label="페이지"></nav>
+          <button class="app-tabs-arrow" type="button" id="header-tabs-next" aria-label="뒤쪽 탭 보기" title="뒤쪽 탭 보기" hidden>${icon("chevron-right")}</button>
+        </div>
         <div class="app-header-right">
           <button class="icon-btn" type="button" id="header-filter-btn" aria-label="필터" title="필터" aria-expanded="false" aria-controls="header-drop" hidden>${icon("filter")}<span class="filter-dot" id="header-filter-dot" hidden></span></button>
           <span class="pop-wrap">
@@ -69,6 +78,7 @@ window.SiteModules.Header = (function () {
     el("header-filter-btn").addEventListener("click", () => togglePanel("filter"));
     el("header-settings-btn").addEventListener("click", () => togglePanel("settings"));
     el("header-share-btn").addEventListener("click", sharePage);
+    bindTabStrip();
 
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && openKind) closePanel();
@@ -103,10 +113,70 @@ window.SiteModules.Header = (function () {
     scrollSelectedTabIntoView();
   }
 
+  // 탭 줄이 제목과 아이콘에 밀려 다 보이지 않을 때: 가려진 쪽에 스크롤 버튼을 보이고, 탭 줄을 끌어서도 밀 수 있다
+  function updateTabArrows() {
+    const nav = el("header-tabs");
+    const prev = el("header-tabs-prev");
+    const next = el("header-tabs-next");
+    if (!nav || !prev || !next) return;
+
+    const maxScroll = nav.scrollWidth - nav.clientWidth;
+    const isOverflowing = maxScroll > TAB_SCROLL_EPSILON_PX;
+    prev.hidden = !isOverflowing || nav.scrollLeft <= TAB_SCROLL_EPSILON_PX;
+    next.hidden = !isOverflowing || nav.scrollLeft >= maxScroll - TAB_SCROLL_EPSILON_PX;
+    nav.classList.toggle("is-scrollable", isOverflowing);
+  }
+
+  function bindTabStrip() {
+    const nav = el("header-tabs");
+    const prev = el("header-tabs-prev");
+    const next = el("header-tabs-next");
+
+    const scrollByPage = (direction) => {
+      nav.scrollBy({ left: direction * nav.clientWidth * TAB_SCROLL_PAGE_RATIO, behavior: "smooth" });
+    };
+    prev.addEventListener("click", () => scrollByPage(-1));
+    next.addEventListener("click", () => scrollByPage(1));
+    nav.addEventListener("scroll", updateTabArrows, { passive: true });
+
+    // 마우스로 탭 줄을 끌어서 민다 (손가락으로 미는 것은 브라우저가 원래 처리한다)
+    let drag = null;
+    nav.addEventListener("pointerdown", (e) => {
+      if (e.pointerType !== "mouse" || e.button !== 0) return;
+      drag = { startX: e.clientX, startScroll: nav.scrollLeft, moved: false };
+    });
+    window.addEventListener("pointermove", (e) => {
+      if (!drag) return;
+      const delta = e.clientX - drag.startX;
+      if (!drag.moved && Math.abs(delta) < TAB_DRAG_THRESHOLD_PX) return;
+      drag.moved = true;
+      nav.classList.add("is-dragging");
+      nav.scrollLeft = drag.startScroll - delta;
+    });
+    window.addEventListener("pointerup", () => {
+      if (!drag) return;
+      const wasDragged = drag.moved;
+      drag = null;
+      nav.classList.remove("is-dragging");
+      // 끌다가 놓은 자리의 탭이 눌리지 않게, 바로 뒤따르는 클릭 한 번만 막는다
+      if (wasDragged) {
+        const swallow = (clickEvent) => {
+          clickEvent.preventDefault();
+          clickEvent.stopPropagation();
+        };
+        nav.addEventListener("click", swallow, { capture: true, once: true });
+        setTimeout(() => nav.removeEventListener("click", swallow, { capture: true }), 0);
+      }
+    });
+    // 탭(링크)을 끌 때 브라우저의 링크 끌기가 시작되지 않게 한다
+    nav.addEventListener("dragstart", (e) => e.preventDefault());
+  }
+
   // 탭이 넘쳐서 가로로 밀리는 경우, 켜진 탭이 탭 줄의 가운데에 오도록 민다
   function scrollSelectedTabIntoView() {
     const nav = el("header-tabs");
     const selected = nav ? nav.querySelector('.app-tab[aria-selected="true"]') : null;
+    updateTabArrows();
     if (!nav || !selected || nav.scrollWidth <= nav.clientWidth) return;
 
     const navRect = nav.getBoundingClientRect();
@@ -114,6 +184,7 @@ window.SiteModules.Header = (function () {
     const tabCenter = tabRect.left + tabRect.width / 2;
     const navCenter = navRect.left + navRect.width / 2;
     nav.scrollLeft += tabCenter - navCenter;
+    updateTabArrows();
   }
 
   function setTitle(text) {

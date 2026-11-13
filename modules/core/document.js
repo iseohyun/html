@@ -16,7 +16,7 @@ window.SiteModules.Document = (function() {
 
   function initTitle() {
     const state = window.SiteModules.state;
-    const article = document.querySelector('body > article');
+    const article = document.querySelector('article');
 
     if (article) {
       let existingTitleContainer = document.getElementById('title-container');
@@ -51,7 +51,7 @@ window.SiteModules.Document = (function() {
       // article의 첫 번째 자식으로 삽입
       article.insertBefore(container, article.firstChild);
     } else {
-      console.error('body > article 요소를 찾을 수 없습니다.');
+      console.error('article 요소를 찾을 수 없습니다.');
     }
   }
 

@@ -4,7 +4,7 @@
  * @description 어느 화면에서나 같은 "전체 설정"(테마, 글자 크기)의 저장 · 적용과 전체 설정 페이지(settings.html) 그리기.
  *   - 값이 바뀔 때마다 localStorage 에 저장한다. 키 끝의 판 번호는 저장 모양이 바뀌면 올린다.
  *   - 읽을 때 항목마다 허용된 값인지 확인하고, 어긋난 항목만 기본값으로 둔다. 읽기/쓰기에 실패해도 기본값으로 동작한다.
- *   - 테마는 :root[data-skin] 으로 적용한다. 지금은 뼈대(레일 · 패널 · 헤더)에만 적용되고 문서 본문은 밝게 유지된다.
+ *   - 테마는 :root[data-skin] 으로 적용한다. 뼈대 · 홈 · 문서 둘레의 바탕에 적용되고, 문서 본문은 밝은 종이로 유지된다.
  *   - 화면을 열 때의 첫 적용은 깜빡임을 줄이기 위해 modules/script.js 가 같은 키를 읽어 먼저 한다.
  * @exports get, set, reset, apply, renderPage, THEMES, FONT_SCALES
  */
@@ -27,7 +27,8 @@ window.SiteModules.Settings = (function () {
     { value: "1.1", label: "크게" },
     { value: "1.25", label: "아주 크게" }
   ];
-  const DEFAULTS = { theme: "light", fontScale: "1" };
+  // 기본 테마는 기기의 밝게/어둡게 설정을 따르는 "시스템"
+  const DEFAULTS = { theme: "system", fontScale: "1" };
   const OPTIONS = { theme: THEMES, fontScale: FONT_SCALES };
 
   let current = load();
@@ -157,7 +158,7 @@ window.SiteModules.Settings = (function () {
 
     const note = document.createElement("p");
     note.className = "set-note";
-    note.textContent = "테마는 지금 왼쪽 메뉴와 위쪽 헤더에 적용됩니다. 문서 본문은 읽기 쉽도록 밝은 바탕을 유지합니다. 설정은 이 브라우저에 기억됩니다.";
+    note.textContent = "테마는 메뉴, 헤더, 홈 화면, 문서 둘레의 바탕에 적용됩니다. 문서 본문은 그림과 예제가 제대로 보이도록 밝은 종이로 유지합니다. 설정은 이 브라우저에 기억됩니다.";
 
     container.append(card, note);
   }

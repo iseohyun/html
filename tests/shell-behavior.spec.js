@@ -67,18 +67,18 @@ test.describe('스크롤 위치 기억', () => {
     await page.goto('/index.html#/column/swimming/freestyle.html');
     await expect(page.locator('article h1').first()).toBeVisible();
 
-    await page.evaluate(() => window.scrollTo(0, 900));
-    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(900);
+    await page.evaluate(() => document.getElementById('app-main').scrollTo({ top: 900, behavior: 'instant' }));
+    await expect.poll(() => page.evaluate(() => Math.round(document.getElementById('app-main').scrollTop))).toBe(900);
 
     // 다른 문서는 처음 보는 곳이라 맨 위에서 시작한다
     await page.evaluate(() => { window.location.hash = '#/info.html'; });
     await expect(page.locator('#header-title')).toHaveText('사이트 소개');
-    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+    await expect.poll(() => page.evaluate(() => Math.round(document.getElementById('app-main').scrollTop))).toBe(0);
 
     // 돌아오면 보던 자리
     await page.evaluate(() => { window.location.hash = '#/column/swimming/freestyle.html'; });
     await expect(page.locator('#header-title')).not.toHaveText('사이트 소개');
-    await expect.poll(() => page.evaluate(() => Math.round(window.scrollY))).toBe(900);
+    await expect.poll(() => page.evaluate(() => Math.round(document.getElementById('app-main').scrollTop))).toBe(900);
   });
 
   test('홈의 달력도 다녀오면 보던 자리로 돌아온다', async ({ page }) => {
@@ -86,13 +86,75 @@ test.describe('스크롤 위치 기억', () => {
     await page.goto('/index.html');
     await expect(page.locator('.update-calendar-table')).toBeVisible();
 
-    await page.evaluate(() => window.scrollTo(0, 700));
-    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(700);
+    await page.evaluate(() => document.getElementById('app-main').scrollTo({ top: 700, behavior: 'instant' }));
+    await expect.poll(() => page.evaluate(() => Math.round(document.getElementById('app-main').scrollTop))).toBe(700);
 
     await page.locator('#header-tabs .app-tab', { hasText: '리스트' }).click();
     await expect(page.locator('table.list-data-table')).toBeVisible();
     await page.locator('#header-tabs .app-tab', { hasText: '달력' }).click();
     await expect(page.locator('.update-calendar-table')).toBeVisible();
-    await expect.poll(() => page.evaluate(() => Math.round(window.scrollY))).toBe(700);
+    await expect.poll(() => page.evaluate(() => Math.round(document.getElementById('app-main').scrollTop))).toBe(700);
+  });
+});
+
+test.describe('본문 영역만 스크롤', () => {
+  test('페이지는 스크롤되지 않고 본문 영역만 스크롤되며, 헤더는 제자리에 있다', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/index.html#/column/swimming/freestyle.html');
+    await expect(page.locator('article h1').first()).toBeVisible();
+
+    const main = page.locator('#app-main');
+    await expect(main).toBeVisible();
+    expect(await main.evaluate(el => el.scrollHeight > el.clientHeight)).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight)).toBe(true);
+
+    await page.locator('article').hover();
+    await page.mouse.wheel(0, 1200);
+    await expect.poll(() => main.evaluate(el => el.scrollTop)).toBeGreaterThan(300);
+    expect(await page.evaluate(() => document.scrollingElement.scrollTop)).toBe(0);
+    expect(await page.locator('#app-header').evaluate(el => Math.round(el.getBoundingClientRect().top))).toBe(0);
+
+    // 예전 코드 호환: window.scrollY 가 본문 영역의 스크롤 위치를 돌려준다
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(300);
+  });
+
+  test('문서 맨 위에는 제목과 분류 경로가 나온다', async ({ page }) => {
+    await page.goto('/index.html#/basicStudy/science/middle/first/force.html');
+    await expect(page.locator('#title-container')).toBeVisible();
+    await expect(page.locator('#title-container')).toContainText('기초과학');
+    await expect(page.locator('#last-modified')).toBeAttached();
+  });
+
+  test('문서는 밝은 종이로, 둘레의 바탕은 테마를 따른다', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('iseohyun_settings_v1', JSON.stringify({ theme: 'navy', fontScale: '1' }));
+    });
+    await page.goto('/index.html#/column/swimming/freestyle.html');
+    await expect(page.locator('article h1').first()).toBeVisible();
+    const colors = await page.evaluate(() => ({
+      body: getComputedStyle(document.body).backgroundColor,
+      article: getComputedStyle(document.querySelector('article')).backgroundColor,
+    }));
+    expect(colors.body).toBe('rgb(15, 27, 45)');
+    expect(colors.article).toBe('rgb(255, 255, 255)');
+  });
+
+  test('목차는 본문 영역을 스크롤하면 지금 보는 항목을 강조한다', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/index.html#/column/swimming/freestyle.html');
+    await expect(page.locator('article h1').first()).toBeVisible();
+    await page.locator('#nav-toc').click();
+    await expect(page.locator('#toc-tree li').first()).toBeVisible();
+
+    // 목차의 마지막 항목이 가리키는 제목으로 스크롤하면 그 항목이 강조된다
+    const lastTocText = await page.locator('#toc-tree a').last().textContent();
+    const headingText = await page.evaluate(tocText => {
+      const heading = [...document.querySelectorAll('article h1, article h2')].reverse()
+        .find(h => h.textContent && tocText.includes(h.textContent));
+      heading.scrollIntoView({ block: 'start', behavior: 'instant' });
+      return heading.textContent;
+    }, lastTocText);
+    await expect(page.locator('#toc-tree a.active-toc')).toHaveCount(1);
+    await expect(page.locator('#toc-tree a.active-toc')).toContainText(headingText.trim());
   });
 });

@@ -63,7 +63,8 @@ test.describe('전체 설정', () => {
     });
     await page.goto('/index.html#/settings.html');
     await expect(page.locator('.set-card')).toBeVisible();
-    await expect(page.locator('.pill-btn[data-setting="theme"][data-value="light"]')).toHaveAttribute('aria-pressed', 'true');
+    // 테마의 기본값은 "시스템"
+    await expect(page.locator('.pill-btn[data-setting="theme"][data-value="system"]')).toHaveAttribute('aria-pressed', 'true');
     await expect(page.locator('.pill-btn[data-setting="fontScale"][data-value="1.1"]')).toHaveAttribute('aria-pressed', 'true');
   });
 });
@@ -150,5 +151,22 @@ test.describe('단축키', () => {
     await expect(page.locator('.key-cap[data-action="menu"]')).toHaveText('K');
     await page.locator('#keys-reset-btn').click();
     await expect(page.locator('.key-cap[data-action="menu"]')).toHaveText('M');
+  });
+});
+
+test.describe('기본 테마', () => {
+  test('처음 온 방문자는 기기의 밝게/어둡게 설정을 따른다', async ({ browser }) => {
+    const dark = await browser.newContext({ colorScheme: 'dark' });
+    const darkPage = await dark.newPage();
+    await darkPage.goto('/index.html');
+    await expect(darkPage.locator('html')).toHaveAttribute('data-skin', 'dark');
+    await dark.close();
+
+    const light = await browser.newContext({ colorScheme: 'light' });
+    const lightPage = await light.newPage();
+    await lightPage.goto('/index.html');
+    await expect(lightPage.locator('.update-calendar-table')).toBeVisible();
+    await expect(lightPage.locator('html')).not.toHaveAttribute('data-skin', /.+/);
+    await light.close();
   });
 });

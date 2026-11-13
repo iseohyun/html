@@ -83,17 +83,18 @@ test.describe('프로젝트 탭 (promo)', () => {
     await expect(page.locator('.promo-detail-body .promo-detail-link-btn')).toHaveCount(0);
 
     // 상세 창 위에서 휠을 끝까지 굴려도 페이지는 그대로다
-    const before = await page.evaluate(() => window.scrollY);
+    const scrollTop = () => page.evaluate(() => document.getElementById('app-main').scrollTop);
+    const before = await scrollTop();
     await page.locator('.promo-detail-body').hover();
     for (let i = 0; i < 12; i++) await page.mouse.wheel(0, 900);
     await page.waitForTimeout(300);
-    expect(await page.evaluate(() => window.scrollY)).toBe(before);
-    expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflowY)).toBe('hidden');
+    expect(await scrollTop()).toBe(before);
+    expect(await page.evaluate(() => getComputedStyle(document.getElementById('app-main')).overflowY)).toBe('hidden');
 
     // 닫으면 다시 스크롤된다
     await page.keyboard.press('Escape');
     await expect(modal).not.toHaveClass(/active/);
-    expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflowY)).not.toBe('hidden');
+    expect(await page.evaluate(() => getComputedStyle(document.getElementById('app-main')).overflowY)).not.toBe('hidden');
   });
 });
 
@@ -124,5 +125,68 @@ test.describe('헤더 탭의 색과 자동 스크롤', () => {
     const colors = await page.locator('#header-tabs .app-tab[aria-selected="false"]').evaluateAll(els =>
       [...new Set(els.map(el => getComputedStyle(el).color))]);
     expect(colors).toHaveLength(1);
+  });
+});
+
+test.describe('헤더 탭 줄의 스크롤 버튼과 끌어서 밀기', () => {
+  test('탭이 다 보이면 스크롤 버튼이 없다', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/index.html');
+    await expect(page.locator('#header-tabs .app-tab')).toHaveCount(3);
+    await expect(page.locator('#header-tabs-prev')).toBeHidden();
+    await expect(page.locator('#header-tabs-next')).toBeHidden();
+  });
+
+  test('탭이 넘치면 가려진 쪽에 버튼이 생기고, 누르면 그쪽으로 밀린다', async ({ page }) => {
+    await page.setViewportSize({ width: 700, height: 800 });
+    // 초등수학 13편의 첫 문서: 탭 줄이 넘치고 켜진 탭은 맨 앞에 있다
+    await page.goto('/index.html#/basicStudy/math/elementary/overview.html');
+    await expect(page.locator('#header-tabs .app-tab[aria-selected="true"]')).toHaveCount(1);
+
+    const nav = page.locator('#header-tabs');
+    const prev = page.locator('#header-tabs-prev');
+    const next = page.locator('#header-tabs-next');
+    await expect(next).toBeVisible();
+    await expect(prev).toBeHidden();
+
+    const before = await nav.evaluate(el => el.scrollLeft);
+    await next.click();
+    await expect.poll(() => nav.evaluate(el => el.scrollLeft)).toBeGreaterThan(before + 50);
+    await expect(prev).toBeVisible();
+
+    // 끝까지 가면 뒤쪽 버튼은 사라진다
+    await nav.evaluate(el => el.scrollTo({ left: el.scrollWidth, behavior: 'instant' }));
+    await expect(next).toBeHidden();
+    await expect(prev).toBeVisible();
+  });
+
+  test('탭 줄을 마우스로 끌어서 밀 수 있고, 끌다가 놓아도 탭이 눌리지 않는다', async ({ page }) => {
+    await page.setViewportSize({ width: 700, height: 800 });
+    await page.goto('/index.html#/basicStudy/math/elementary/overview.html');
+    await expect(page.locator('#header-tabs .app-tab[aria-selected="true"]')).toHaveCount(1);
+
+    const nav = page.locator('#header-tabs');
+    const box = await nav.boundingBox();
+    const startX = box.x + box.width - 30;
+    const y = box.y + box.height / 2;
+    const before = await nav.evaluate(el => el.scrollLeft);
+    const urlBefore = page.url();
+
+    await page.mouse.move(startX, y);
+    await page.mouse.down();
+    await page.mouse.move(startX - 80, y, { steps: 4 });
+    await page.mouse.move(startX - 220, y, { steps: 6 });
+    await page.mouse.up();
+
+    await expect.poll(() => nav.evaluate(el => el.scrollLeft)).toBeGreaterThan(before + 150);
+    await page.waitForTimeout(300);
+    expect(page.url()).toBe(urlBefore);
+
+    // 끌지 않고 그냥 누르면 평소처럼 그 탭으로 이동한다
+    const other = page.locator('#header-tabs .app-tab[aria-selected="false"]').last();
+    const label = await other.textContent();
+    await other.scrollIntoViewIfNeeded();
+    await other.click();
+    await expect(page.locator('#header-title')).toHaveText(label);
   });
 });

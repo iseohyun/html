@@ -159,7 +159,7 @@
 
       .promo-section-header {
         position: sticky;
-        top: var(--header-h, 0px);
+        top: 0;
         z-index: 40;
         display: flex;
         align-items: center;
@@ -758,7 +758,7 @@
 
       @media screen and (max-width: 768px) {
         .promo-section-header {
-          top: var(--header-h, 0px);
+          top: 0;
         }
 
         .promo-grid {
@@ -1464,15 +1464,16 @@
 
         // 상세 창이나 큰 그림이 열려 있는 동안에는 뒤의 페이지가 스크롤되지 않게 잠근다
         function setPageScrollLocked(isLocked) {
-          const rootStyle = document.documentElement.style;
+          // 스크롤은 본문 영역(#app-main)에서 일어난다
+          const scroller = document.getElementById('app-main') || document.documentElement;
           if (isLocked) {
-            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-            rootStyle.overflow = 'hidden';
+            const scrollbarWidth = scroller.offsetWidth - scroller.clientWidth;
+            scroller.style.overflow = 'hidden';
             // 스크롤바가 사라지며 화면이 옆으로 밀리지 않게 그 폭만큼 채운다
-            rootStyle.paddingRight = scrollbarWidth > 0 ? scrollbarWidth + 'px' : '';
+            scroller.style.paddingRight = scrollbarWidth > 0 ? scrollbarWidth + 'px' : '';
           } else {
-            rootStyle.overflow = '';
-            rootStyle.paddingRight = '';
+            scroller.style.overflow = '';
+            scroller.style.paddingRight = '';
           }
         }
 

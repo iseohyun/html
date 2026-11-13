@@ -10,12 +10,14 @@ window.SiteModules.TOC = (function() {
   let headers = [];
   let target;
   let scrollListenerAttached = false;
+  const CURRENT_HEADING_OFFSET_PX = 20;
 
   function init() {
     headers = document.querySelectorAll("h1, h2");
 
     if (!scrollListenerAttached) {
-      window.addEventListener("scroll", handleScroll);
+      // 스크롤은 페이지가 아니라 본문 영역(#app-main)에서 일어난다
+      getScroller().addEventListener("scroll", handleScroll, { passive: true });
       scrollListenerAttached = true;
     }
 
@@ -70,14 +72,23 @@ window.SiteModules.TOC = (function() {
     });
   }
 
+  function getScroller() {
+    return window.SiteModules.Navigation.getScroller();
+  }
+
+  // 목차 링크가 이 제목을 가리키는지: 링크 주소는 "#<문서 경로>#<제목>" 꼴이다
+  function isAnchorFor(anchor, header) {
+    const href = anchor.getAttribute("href") || "";
+    return href.endsWith("#" + header.textContent);
+  }
+
   function handleScroll() {
-    let scrollPosition = window.scrollY;
+    // 본문 영역의 위쪽 끝에서 20px 안으로 올라온 마지막 제목이 지금 보고 있는 항목이다
+    const scrollerTop = getScroller().getBoundingClientRect().top;
 
     // 목차에 현재 보고있는 내용에 밑줄로 표기하기
     headers.forEach(function (header) {
-      let headerPosition = header.getBoundingClientRect().top + scrollPosition;
-
-      if (scrollPosition >= (headerPosition - 20)) {
+      if (header.getBoundingClientRect().top - scrollerTop <= CURRENT_HEADING_OFFSET_PX) {
         target = header;
       }
 
@@ -86,7 +97,7 @@ window.SiteModules.TOC = (function() {
       if (tocTree) {
         const anchors = tocTree.querySelectorAll("a");
         anchors.forEach(anchor => {
-          if (anchor.getAttribute("href") === "#" + header.textContent) {
+          if (isAnchorFor(anchor, header)) {
             anchor.classList.remove("active-toc");
           }
         });
@@ -98,7 +109,7 @@ window.SiteModules.TOC = (function() {
       if (tocTree) {
         const anchors = tocTree.querySelectorAll("a");
         anchors.forEach(anchor => {
-          if (anchor.getAttribute("href") === "#" + target.textContent) {
+          if (isAnchorFor(anchor, target)) {
             anchor.classList.add("active-toc");
           }
         });

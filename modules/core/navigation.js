@@ -5,7 +5,7 @@
  *   검색은 SiteModules.Search, 문의 창은 SiteModules.Contact, hierarchy 순회는 SiteModules.Hierarchy에 위임한다.
  * @requires SiteModules.Config, SiteModules.Icons, SiteModules.Header, SiteModules.Hierarchy,
  *   SiteModules.Search, SiteModules.Contact, SiteModules.TOC, SiteModules.Document
- * @exports init, trigBoard, findHierarchyPath, registerPageCleanup
+ * @exports init, trigBoard, findHierarchyPath, registerPageCleanup, getScroller
  * @state window.SiteModules.state (현재/이전/다음 문서), hierarchyListCached
  */
 
@@ -140,9 +140,45 @@ window.SiteModules.Navigation = (function () {
     }));
   }
 
+  // 본문 스크롤 영역(#app-main): 페이지 전체가 아니라 이 영역만 스크롤한다. 문서(article)를 감싸서 만든다.
+  function ensureMainScroller() {
+    let main = document.getElementById("app-main");
+    if (main) return main;
+    const article = document.querySelector("article");
+    if (!article) return null;
+    main = document.createElement("main");
+    main.id = "app-main";
+    article.parentNode.insertBefore(main, article);
+    main.appendChild(article);
+    installWindowScrollCompat(main);
+    return main;
+  }
+
+  // 호환 처리: 예전 문서와 소프로젝트 중에는 창(window)의 스크롤에 기대는 코드가 있다
+  // (window.scrollY 를 읽거나 window/document 의 scroll 이벤트를 듣는다).
+  // 본문 영역의 스크롤을 창의 스크롤처럼 보이게 이어 준다.
+  function installWindowScrollCompat(main) {
+    try {
+      ["scrollY", "pageYOffset"].forEach(name => {
+        Object.defineProperty(window, name, { configurable: true, get: () => main.scrollTop });
+      });
+    } catch (err) {
+      console.warn("[Router] window.scrollY 호환 처리를 적용하지 못했습니다:", err);
+    }
+    main.addEventListener("scroll", () => {
+      window.dispatchEvent(new Event("scroll"));
+      document.dispatchEvent(new Event("scroll"));
+    }, { passive: true });
+  }
+
+  function getScroller() {
+    return document.getElementById("app-main") || document.scrollingElement || document.documentElement;
+  }
+
   function init() {
     const state = window.SiteModules.state;
     state.currentPath = window.location.pathname;
+    ensureMainScroller();
 
     // 1. 구글 머티리얼 심볼 링크 주입 및 기본 파비콘 동기화
     let faviconLink = document.querySelector("link[rel*='icon']");
@@ -506,7 +542,7 @@ window.SiteModules.Navigation = (function () {
             targetElement.scrollIntoView({ behavior: "smooth" });
           }
         } else {
-          window.scrollTo(0, 0);
+          getScroller().scrollTo({ top: 0, behavior: "instant" });
         }
         return;
       }
@@ -662,14 +698,17 @@ window.SiteModules.Navigation = (function () {
 
   function rememberScrollPosition() {
     const key = getScrollKey();
-    if (key) scrollPositions.set(key, window.scrollY);
+    if (key) scrollPositions.set(key, getScroller().scrollTop);
   }
 
   // 내용이 늦게 그려지는 화면(홈의 달력 등)은 높이가 찰 때까지 잠깐 기다렸다가 되돌린다.
   // 그 사이 사용자가 직접 스크롤하면 그만둔다.
   function restoreScrollPosition() {
     const saved = scrollPositions.get(getScrollKey()) || 0;
-    window.scrollTo(0, saved);
+    const scroller = getScroller();
+    // 되돌릴 때는 부드럽게 움직이지 않고 바로 그 자리로 간다
+    const jump = () => scroller.scrollTo({ top: saved, behavior: "instant" });
+    jump();
     if (saved <= 0) return;
 
     const startedAt = Date.now();
@@ -680,8 +719,8 @@ window.SiteModules.Navigation = (function () {
     window.addEventListener("keydown", cancel, { once: true });
 
     const retry = () => {
-      if (cancelled || Math.abs(window.scrollY - saved) < 2) return;
-      window.scrollTo(0, saved);
+      if (cancelled || Math.abs(scroller.scrollTop - saved) < 2) return;
+      jump();
       if (Date.now() - startedAt < SCROLL_RESTORE_WAIT_MS) setTimeout(retry, 100);
     };
     setTimeout(retry, 100);
@@ -1460,6 +1499,7 @@ window.SiteModules.Navigation = (function () {
     init: init,
     trigBoard: trigBoard,
     findHierarchyPath: (hierarchy, title, currentPath) => window.SiteModules.Hierarchy.findPathByTitle(hierarchy, title, currentPath),
-    registerPageCleanup: registerPageCleanup
+    registerPageCleanup: registerPageCleanup,
+    getScroller: getScroller
   };
 })();

@@ -13,7 +13,7 @@ window.SiteSettingsStorageKey = "iseohyun_settings_v1";
   // 값의 검증과 그 밖의 처리는 settings.js 가 로드된 뒤 다시 한다.
   try {
     const saved = JSON.parse(localStorage.getItem(window.SiteSettingsStorageKey) || "{}");
-    let skin = saved.theme;
+    let skin = saved.theme || "system";
     if (skin === "system") {
       skin = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
     }
