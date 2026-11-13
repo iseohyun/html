@@ -3,7 +3,7 @@
  * @module SiteModules.Navigation
  * @description SPA 해시 라우터, 이중 사이드바(사이트맵/목차/검색 탭) UI, 로그인·도움말 모달을 담당하는 코어 모듈.
  *   검색은 SiteModules.Search, 질문/건의 폼은 SiteModules.Feedback, hierarchy 순회는 SiteModules.Hierarchy에 위임한다.
- * @requires SiteModules.Config, SiteModules.FirebaseConfig, SiteModules.Auth, SiteModules.Hierarchy,
+ * @requires SiteModules.Config, SiteModules.Icons, SiteModules.Header, SiteModules.FirebaseConfig, SiteModules.Auth, SiteModules.Hierarchy,
  *   SiteModules.Search, SiteModules.Feedback, SiteModules.TOC, SiteModules.Document
  * @exports init, trigBoard, findHierarchyPath, registerPageCleanup
  * @state window.SiteModules.state (현재/이전/다음 문서), hierarchyListCached
@@ -27,6 +27,9 @@ window.SiteModules.Navigation = (function () {
   let baseUl;
   // 모바일(드로어) 레이아웃 전환 기준 너비. style.css의 @media (max-width: 960px)와 동일해야 한다.
   const MOBILE_BREAKPOINT = window.SiteModules.Config.layout.mobileBreakpoint;
+  // 본문을 밀어내는 사이드바 폭 (--sidebar-width 에 넣는 값)
+  const RAIL_WIDTH = "var(--rail-w)";
+  const RAIL_AND_PANEL_WIDTH = "calc(var(--rail-w) + var(--panel-w))";
   // hierarchy.json에 없어도 SPA 본문으로 로드 가능한 루트 문서
   const KNOWN_ROOT_ARTICLES = ["/index.html", "/admin.html", "/help.html", "/info.html", "/promo.html", "/"];
   // registerPageCleanup을 쓰지 않는 기존 소프로젝트들이 남기는 전역 이름 (신규 프로젝트는 registerPageCleanup 사용)
@@ -203,20 +206,10 @@ window.SiteModules.Navigation = (function () {
     if (!sidebarContainer) {
       const body = document.querySelector("body");
 
-      // C. 좁은 화면(화면 절반 이하/모바일) 전용 좌상단 고정 삼선(햄버거) 메뉴 버튼
-      let existingMobileHeader = document.getElementById("mobile-header");
-      if (existingMobileHeader) existingMobileHeader.remove();
-
-      let mobileMenuBtn = document.getElementById("mobile-menu-btn");
-      if (!mobileMenuBtn) {
-        mobileMenuBtn = document.createElement("button");
-        mobileMenuBtn.setAttribute("type", "button");
-        mobileMenuBtn.setAttribute("id", "mobile-menu-btn");
-        mobileMenuBtn.setAttribute("title", "메뉴 열기/닫기");
-        mobileMenuBtn.setAttribute("aria-label", "메뉴 열기/닫기");
-        mobileMenuBtn.innerHTML = `<span class="material-symbols-outlined">menu</span>`;
-        body.insertBefore(mobileMenuBtn, body.firstChild);
-      }
+      // C. 아이콘 모음과 헤더 (메뉴 아이콘은 넓은 화면에서 패널을, 좁은 화면에서 서랍을 여닫는다)
+      const icon = window.SiteModules.Icons.html;
+      window.SiteModules.Icons.ensureSprite();
+      window.SiteModules.Header.init({ onMenuClick: () => trigBoard("trigger") });
 
       // D. 모바일 어두운 배경 오버레이
       let sidebarOverlay = document.getElementById("sidebar-overlay");
@@ -243,16 +236,16 @@ window.SiteModules.Navigation = (function () {
               <path d="M 341 267 C 339 260 360 313 400 309" style="stroke-miterlimit: 17;"/>
             </svg>
           </div>
-          <div class="nav-item" id="nav-sitemap" data-tab="tab-sitemap" data-tooltip="Site Map">
-            <span class="material-symbols-outlined">account_tree</span>
+          <div class="nav-item" id="nav-sitemap" data-tab="tab-sitemap" data-tooltip="사이트맵" data-panel-title="사이트맵">
+            ${icon("sitemap")}
             <span class="keybind-badge">1</span>
           </div>
-          <div class="nav-item" id="nav-toc" data-tab="tab-toc" data-tooltip="목차">
-            <span class="material-symbols-outlined">toc</span>
+          <div class="nav-item" id="nav-toc" data-tab="tab-toc" data-tooltip="목차" data-panel-title="목차">
+            ${icon("list")}
             <span class="keybind-badge">2</span>
           </div>
-          <div class="nav-item" id="nav-search" data-tab="tab-search" data-tooltip="검색">
-            <span class="material-symbols-outlined">search</span>
+          <div class="nav-item" id="nav-search" data-tab="tab-search" data-tooltip="검색" data-panel-title="문서 검색">
+            ${icon("search")}
             <span class="keybind-badge">3</span>
           </div>
         </div>
@@ -262,7 +255,7 @@ window.SiteModules.Navigation = (function () {
         
         <div class="nav-group">
           <div class="nav-item" id="nav-promo" data-tooltip="홍보 사이트 리스트">
-            <span class="material-symbols-outlined">campaign</span>
+            ${icon("megaphone")}
           </div>
           <div class="nav-item" id="nav-kakao-channel" data-tooltip="카카오톡 채널 (iseohyun)">
             <svg viewBox="0 0 24 24" class="kakao-nav-svg" aria-hidden="true">
@@ -270,13 +263,13 @@ window.SiteModules.Navigation = (function () {
             </svg>
           </div>
           <div class="nav-item" id="nav-login" data-tooltip="게스트">
-            <span class="material-symbols-outlined">account_circle</span>
+            ${icon("user")}
           </div>
           <div class="nav-item" id="nav-help" data-tooltip="질의 응답 / 인터페이스 소개">
-            <span class="material-symbols-outlined">help</span>
+            ${icon("help")}
           </div>
           <div class="nav-item" id="nav-info" data-tooltip="사이트 소개">
-            <span class="material-symbols-outlined">info</span>
+            ${icon("info")}
           </div>
         </div>
       `;
@@ -286,6 +279,10 @@ window.SiteModules.Navigation = (function () {
       const sidebarPanel = document.createElement("div");
       sidebarPanel.setAttribute("id", "sidebar-panel");
       sidebarPanel.innerHTML = `
+        <div class="panel-head">
+          <span id="panel-title">사이트맵</span>
+          <button class="icon-btn is-bare" type="button" id="panel-close-btn" aria-label="패널 닫기" title="패널 닫기">${icon("x")}</button>
+        </div>
         <div class="panel-body">
           <!-- 1. Sitemap Pane -->
           <div class="tab-pane" id="tab-sitemap">
@@ -304,9 +301,6 @@ window.SiteModules.Navigation = (function () {
           </div>
           <!-- 3. Search Pane -->
           <div class="tab-pane" id="tab-search">
-            <div class="panel-header">
-              <span class="panel-header-title">문서 검색</span>
-            </div>
             <div class="search-type-wrapper">
               <label class="search-type-option active">
                 <input type="radio" name="search-type" value="title" checked style="display: none;">
@@ -327,7 +321,9 @@ window.SiteModules.Navigation = (function () {
             <ul class="search-results-list" id="sidebar-search-results"></ul>
           </div>
         </div>
+        <div class="panel-foot" id="panel-foot"></div>
       `;
+      sidebarPanel.querySelector("#panel-foot").textContent = window.SiteVersion ? `빌드 ${window.SiteVersion}` : "";
       sidebarContainer.appendChild(sidebarPanel);
 
       if (window.innerWidth > MOBILE_BREAKPOINT) {
@@ -340,7 +336,7 @@ window.SiteModules.Navigation = (function () {
       createModals();
       bindSidebarEvents();
 
-      // 기존 상단 header 요소가 있다면 제거 (상단 nav 미사용, 좌상단 삼선 메뉴로 통합)
+      // 문서에 남아 있는 예전 <header> 요소 제거 (새 헤더는 #app-header)
       document.querySelectorAll("header").forEach(h => h.remove());
     }
 
@@ -503,12 +499,8 @@ window.SiteModules.Navigation = (function () {
     if (isMobile) {
       const container = document.getElementById("sidebar-container");
       const overlay = document.getElementById("sidebar-overlay");
-      const menuBtn = document.getElementById("mobile-menu-btn");
       if (container) container.classList.remove("active");
       if (overlay) overlay.classList.remove("active");
-      if (menuBtn) {
-        menuBtn.classList.remove("active", "hidden-by-sidebar");
-      }
       document.body.classList.remove("mobile-nav-open");
     }
 
@@ -905,6 +897,10 @@ window.SiteModules.Navigation = (function () {
       window.SiteModules.Document.init();
     }
 
+    // 헤더: 제목을 맞추고, 홈이 아니면 홈 전용 필터/설정 패널을 내린다
+    window.SiteModules.Header.setTitle(isHome ? "iseohyun.com" : (state.cur_doc.title || docTitle || ""));
+    if (!isHome) window.SiteModules.Header.setPanels({});
+
     // I-4. 모든 서브페이지 최하단 Q&A 피드백 영역 렌더링
     const isAdminPage = urlPath && (urlPath.endsWith("/admin.html") || urlPath.endsWith("/admin.htm"));
     if (!isHome && !isAdminPage && !(urlPath && urlPath.endsWith("/promo.html"))) {
@@ -1095,7 +1091,6 @@ window.SiteModules.Navigation = (function () {
     const container = document.getElementById("sidebar-container");
     const panel = document.getElementById("sidebar-panel");
     const overlay = document.getElementById("sidebar-overlay");
-    const menuBtn = document.getElementById("mobile-menu-btn");
     if (!container || !panel) return;
 
     const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
@@ -1109,10 +1104,6 @@ window.SiteModules.Navigation = (function () {
       }
       container.classList.toggle("active", nextActive);
       if (overlay) overlay.classList.toggle("active", nextActive);
-      if (menuBtn) {
-        menuBtn.classList.toggle("active", nextActive);
-        menuBtn.classList.toggle("hidden-by-sidebar", nextActive);
-      }
       document.body.classList.toggle("mobile-nav-open", nextActive);
       if (nextActive) {
         setPanelCollapsed(false);
@@ -1133,6 +1124,13 @@ window.SiteModules.Navigation = (function () {
     }
   }
 
+  // 패널 머리의 제목을 지금 켜진 레일 탭에 맞춘다
+  function updatePanelTitle() {
+    const title = document.getElementById("panel-title");
+    const activeTab = document.querySelector("#sidebar-nav .nav-item.active[data-panel-title]");
+    if (title && activeTab) title.textContent = activeTab.getAttribute("data-panel-title");
+  }
+
   function setPanelCollapsed(shouldCollapse) {
     const panel = document.getElementById("sidebar-panel");
     if (!panel) return;
@@ -1140,7 +1138,7 @@ window.SiteModules.Navigation = (function () {
 
     if (shouldCollapse) {
       panel.classList.add("collapsed");
-      document.documentElement.style.setProperty('--sidebar-width', isMobile ? '0px' : '60px');
+      document.documentElement.style.setProperty('--sidebar-width', isMobile ? '0px' : RAIL_WIDTH);
       // 패널이 접히면 모든 탭 아이콘에서 active 클래스를 제거하여 비활성 상태로 보이도록 합니다.
       const tabs = ["nav-sitemap", "nav-toc", "nav-search"];
       tabs.forEach(id => {
@@ -1149,7 +1147,7 @@ window.SiteModules.Navigation = (function () {
       });
     } else {
       panel.classList.remove("collapsed");
-      document.documentElement.style.setProperty('--sidebar-width', isMobile ? '0px' : '300px');
+      document.documentElement.style.setProperty('--sidebar-width', isMobile ? '0px' : RAIL_AND_PANEL_WIDTH);
 
       // 패널이 펼쳐질 때, 만약 활성화된 탭이 없다면 기본적으로 nav-sitemap을 활성화합니다.
       const tabs = ["nav-sitemap", "nav-toc", "nav-search"];
@@ -1170,6 +1168,7 @@ window.SiteModules.Navigation = (function () {
           }
         }
       }
+      updatePanelTitle();
     }
   }
 
@@ -1256,11 +1255,11 @@ window.SiteModules.Navigation = (function () {
           </div>
           <div class="kakao-popover-actions">
             <a class="kakao-action-btn kakao-action-home" href="http://pf.kakao.com/_ETRrX" target="_blank" rel="noopener noreferrer">
-              <span class="material-symbols-outlined">person_add</span>
+              ${window.SiteModules.Icons.html("user-plus")}
               <span>채널 추가 · 홈</span>
             </a>
             <a class="kakao-action-btn kakao-action-chat" href="http://pf.kakao.com/_ETRrX/chat" target="_blank" rel="noopener noreferrer">
-              <span class="material-symbols-outlined">chat</span>
+              ${window.SiteModules.Icons.html("chat")}
               <span>1:1 채팅 문의</span>
             </a>
           </div>
@@ -1277,7 +1276,6 @@ window.SiteModules.Navigation = (function () {
   }
 
   function bindSidebarEvents() {
-    const mobileMenuBtn = document.getElementById("mobile-menu-btn");
     const sidebarOverlay = document.getElementById("sidebar-overlay");
     const sidebarContainer = document.getElementById("sidebar-container");
 
@@ -1287,10 +1285,6 @@ window.SiteModules.Navigation = (function () {
       if (sidebarOverlay) {
         sidebarOverlay.classList.toggle("active", isOpen);
       }
-      if (mobileMenuBtn) {
-        mobileMenuBtn.classList.toggle("active", isOpen);
-        mobileMenuBtn.classList.toggle("hidden-by-sidebar", isOpen);
-      }
       document.body.classList.toggle("mobile-nav-open", isOpen);
       if (isOpen) {
         // 삼선 메뉴가 열릴 때 패널이 접혀 있다면 펼쳐서 메뉴 항목을 활성화
@@ -1298,12 +1292,9 @@ window.SiteModules.Navigation = (function () {
       }
     }
 
-    if (mobileMenuBtn) {
-      mobileMenuBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const nextOpen = !sidebarContainer.classList.contains("active");
-        setMobileDrawerState(nextOpen);
-      });
+    const panelCloseBtn = document.getElementById("panel-close-btn");
+    if (panelCloseBtn) {
+      panelCloseBtn.addEventListener("click", () => trigBoard("hidden"));
     }
 
     if (sidebarOverlay) {
@@ -1329,7 +1320,7 @@ window.SiteModules.Navigation = (function () {
           document.documentElement.style.setProperty('--sidebar-width', '0px');
         } else {
           const isCollapsed = panel ? panel.classList.contains("collapsed") : true;
-          document.documentElement.style.setProperty('--sidebar-width', isCollapsed ? '60px' : '300px');
+          document.documentElement.style.setProperty('--sidebar-width', isCollapsed ? RAIL_WIDTH : RAIL_AND_PANEL_WIDTH);
         }
       }
     });
@@ -1440,6 +1431,7 @@ window.SiteModules.Navigation = (function () {
             const targetTabPane = el.getAttribute("data-tab");
             const paneEl = document.getElementById(targetTabPane);
             if (paneEl) paneEl.classList.add("active");
+            updatePanelTitle();
 
             trigBoard("visible");
           }
@@ -1595,7 +1587,7 @@ window.SiteModules.Navigation = (function () {
       tutorialBtn.className = "nav-item";
       tutorialBtn.id = "sidebar-tutorial-toggle";
       tutorialBtn.setAttribute("data-tooltip", "튜토리얼 표시 토글");
-      tutorialBtn.innerHTML = `<span class="material-symbols-outlined">school</span>`;
+      tutorialBtn.innerHTML = window.SiteModules.Icons.html("school");
 
       let anyVisible = false;
       tutorials.forEach(t => {

@@ -45,81 +45,11 @@
     }
 
     /* ==========================================
-       우상단 고정 Float 필터 아이콘 & 애니메이션 테이블 패널
+       달력 필터 · 화면별 설정 (헤더 아래 패널에 들어가는 내용)
        ========================================== */
-    .cal-floating-filter {
-      position: fixed;
-      top: 8px;
-      right: 12px;
-      z-index: 1200;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      font-size: 75%;
+    .cal-filter-content {
+      font-size: 12px;
       font-family: var(--font-main);
-      pointer-events: none;
-    }
-
-    .cal-filter-toggle-btn {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      border: 1px solid #cbd5e1;
-      background-color: #ffffff;
-      color: #334155;
-      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.14);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      padding: 0;
-      pointer-events: auto;
-      transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .cal-filter-toggle-btn:hover,
-    .cal-filter-toggle-btn.active {
-      background-color: #228be6;
-      border-color: #228be6;
-      color: #ffffff;
-      transform: scale(1.05);
-      box-shadow: 0 6px 18px rgba(34, 139, 230, 0.3);
-    }
-
-    .cal-filter-panel {
-      margin-top: 8px;
-      background: rgba(255, 255, 255, 0.98);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid #cbd5e1;
-      border-radius: 12px;
-      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
-      overflow: hidden;
-      transform-origin: top right;
-      max-height: 0;
-      opacity: 0;
-      transform: scale(0.92) translateY(-6px);
-      pointer-events: none;
-      transition:
-        max-height 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-        opacity 0.22s ease,
-        transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-        padding 0.25s ease;
-      padding: 0 12px;
-    }
-
-    .cal-filter-panel.open {
-      max-height: 620px;
-      opacity: 1;
-      transform: scale(1) translateY(0);
-      pointer-events: auto;
-      padding: 10px 12px;
-    }
-
-    .cal-filter-divider {
-      border: none;
-      border-top: 1px solid #cbd5e1;
-      margin: 8px 0;
     }
 
     .cal-settings-list {
@@ -350,6 +280,7 @@
     }
 
     table.update-calendar-table thead {
+      /* 달력은 자체 테두리 상자(.update-calendar-wrapper) 안에 있어 상자 기준으로 붙는다 */
       position: sticky;
       top: 0;
       z-index: 5;
@@ -774,16 +705,6 @@
       background: #1c7ed6;
     }
 
-    @media screen and (max-width: 960px) {
-      .cal-floating-filter {
-        top: 8px;
-        right: 10px;
-      }
-
-      .cal-filter-panel {
-        max-width: calc(100vw - 20px);
-      }
-    }
 
     /* ==========================================
        좁은 화면(640px 이하) 점 달력
