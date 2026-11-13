@@ -69,6 +69,9 @@ window.SiteModules.UpdateLog = (function () {
     'Deleted': { emoji: '🔥', label: 'Deleted' }
   };
 
+  // 점 달력 펼침 패널의 높이 전환 시간(ms). index.html의 .cal-day-detail-anim transition 값과 같아야 한다.
+  const DAY_DETAIL_ANIMATION_MS = 250;
+
   let bgAlphaPercent = 25;
   let titleFontSizePx = 9;
   let contentFontSizePx = 8;
@@ -733,6 +736,86 @@ window.SiteModules.UpdateLog = (function () {
       return `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()}`;
     }
 
+    // 좁은 화면의 점 달력: 점을 누르면 해당 주 바로 아래에 이벤트 1건을 펼쳐 보여준다 (한 번에 1개만 열림)
+    let openDayDetail = null; // { row, dot }
+
+    function closeDayDetail() {
+      if (!openDayDetail) return;
+      const { row, dot } = openDayDetail;
+      openDayDetail = null;
+
+      dot.classList.remove('is-active');
+      dot.setAttribute('aria-expanded', 'false');
+
+      const anim = row.querySelector('.cal-day-detail-anim');
+      const removeRow = () => row.remove();
+      anim.addEventListener('transitionend', removeRow, { once: true });
+      // transitionend가 오지 않는 경우(모션 축소 설정, 숨김 상태 등)를 대비한 보조 제거
+      setTimeout(removeRow, DAY_DETAIL_ANIMATION_MS + 100);
+      anim.classList.remove('is-open');
+    }
+
+    function toggleDayDetail(weekTr, dot, info) {
+      const isSameDot = openDayDetail && openDayDetail.dot === dot;
+      closeDayDetail();
+      if (isSameDot) return;
+
+      const row = document.createElement('tr');
+      row.className = 'cal-day-detail-row';
+      const cell = document.createElement('td');
+      cell.colSpan = 7;
+      cell.className = 'cal-day-detail-cell';
+
+      const anim = document.createElement('div');
+      anim.className = 'cal-day-detail-anim';
+      const inner = document.createElement('div');
+      inner.className = 'cal-day-detail-inner';
+
+      const card = document.createElement('div');
+      card.className = `cal-day-detail-card ${info.envClass}`;
+
+      const meta = document.createElement('div');
+      meta.className = 'cal-day-detail-meta';
+      meta.textContent = `${info.badgeInfo.emoji} ${info.badgeInfo.label} · ${formatDateWithDay(info.dateKey)}`;
+
+      const title = document.createElement('strong');
+      title.className = 'cal-day-detail-title';
+      title.textContent = info.projectName;
+
+      card.append(meta, title);
+
+      if (info.summaryText) {
+        const summary = document.createElement('p');
+        summary.className = 'cal-day-detail-summary';
+        summary.textContent = info.summaryText;
+        card.appendChild(summary);
+      }
+
+      const moreBtn = document.createElement('button');
+      moreBtn.type = 'button';
+      moreBtn.className = 'cal-day-detail-more';
+      moreBtn.textContent = '자세히 보기';
+      moreBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openEventDetailPopup(info.dateKey, info.ev, cachedHierarchy);
+      });
+      card.appendChild(moreBtn);
+
+      inner.appendChild(card);
+      anim.appendChild(inner);
+      cell.appendChild(anim);
+      row.appendChild(cell);
+      weekTr.after(row);
+
+      dot.classList.add('is-active');
+      dot.setAttribute('aria-expanded', 'true');
+      openDayDetail = { row, dot };
+
+      // 닫힌 상태의 레이아웃을 먼저 확정(강제 리플로우)해야 높이 전환 애니메이션이 재생된다
+      void anim.offsetHeight;
+      anim.classList.add('is-open');
+    }
+
     const weekRows = [];
 
     for (let w = 0; w < totalWeeks; w++) {
@@ -833,6 +916,9 @@ window.SiteModules.UpdateLog = (function () {
           weekEventCount += dayEvents.length;
           const eventsWrap = document.createElement('div');
           eventsWrap.className = 'cal-events-wrap';
+          // 좁은 화면 전용: 카드 대신 이벤트당 점 1개를 표시 (CSS가 화면 너비에 따라 둘 중 하나만 노출)
+          const dotsWrap = document.createElement('div');
+          dotsWrap.className = 'cal-dots';
 
           dayEvents.forEach(ev => {
             const item = ev.raw;
@@ -858,9 +944,28 @@ window.SiteModules.UpdateLog = (function () {
             });
 
             eventsWrap.appendChild(card);
+
+            const dot = document.createElement('button');
+            dot.type = 'button';
+            dot.className = `cal-dot ${envClass.replace('env-', 'dot-')}`;
+            dot.setAttribute('aria-label', `${projectName}${summaryText ? ': ' + summaryText : ''}`);
+            dot.setAttribute('aria-expanded', 'false');
+            dot.addEventListener('click', (e) => {
+              e.stopPropagation();
+              toggleDayDetail(tr, dot, {
+                dateKey: cellKey,
+                ev: ev,
+                envClass: envClass,
+                badgeInfo: badgeInfo,
+                projectName: projectName,
+                summaryText: summaryText
+              });
+            });
+            dotsWrap.appendChild(dot);
           });
 
           td.appendChild(eventsWrap);
+          td.appendChild(dotsWrap);
         }
 
         tr.appendChild(td);
