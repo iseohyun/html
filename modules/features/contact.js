@@ -42,6 +42,11 @@ window.SiteModules.Contact = (function () {
         <textarea class="contact-input" id="contact-message" name="message" rows="5" placeholder="질문이나 건의를 적어 주세요."></textarea>
         <label class="contact-label" for="contact-email">답장 받을 주소 <span class="contact-optional">(선택)</span></label>
         <input class="contact-input" id="contact-email" name="email" type="email" autocomplete="email" placeholder="name@example.com">
+        <label class="contact-page-row" for="contact-page-check">
+          <input type="checkbox" id="contact-page-check" name="includePage" checked>
+          <span class="contact-label">현재 페이지 정보 추가</span>
+        </label>
+        <input class="contact-input contact-page-name" id="contact-page-name" name="pageName" type="text" readonly aria-label="현재 페이지" tabindex="-1">
         <input class="contact-botcheck" name="botcheck" type="checkbox" tabindex="-1" autocomplete="off" aria-hidden="true">
         <div class="contact-form-foot">
           <span class="contact-result" id="contact-result" role="status"></span>
@@ -53,8 +58,23 @@ window.SiteModules.Contact = (function () {
     return node;
   }
 
+  // 지금 보고 있는 페이지의 이름 (예: "사이트 소개"). 홈은 "홈".
+  function getCurrentPageName() {
+    const state = window.SiteModules.state || {};
+    return (state.cur_doc && state.cur_doc.title) || document.title || "";
+  }
+
+  // 읽기 전용 칸에 현재 페이지 이름을 채우고, 체크를 끄면 칸을 흐리게 한다
+  function refreshPageInfo() {
+    const nameInput = popover.querySelector("#contact-page-name");
+    const check = popover.querySelector("#contact-page-check");
+    nameInput.value = getCurrentPageName();
+    nameInput.classList.toggle("is-off", !check.checked);
+  }
+
   function setOpen(isOpen) {
     if (!popover) return;
+    if (isOpen) refreshPageInfo();
     popover.hidden = !isOpen;
     if (railButton) railButton.classList.toggle("active", isOpen);
   }
@@ -73,11 +93,10 @@ window.SiteModules.Contact = (function () {
     result.classList.toggle("is-error", !!isError);
   }
 
-  // 지금 보던 페이지와 버전을 본문 끝에 붙여, 어느 화면에서 온 문의인지 알 수 있게 한다
-  function composeMessage(message) {
-    const state = window.SiteModules.state || {};
-    const pageTitle = (state.cur_doc && state.cur_doc.title) || document.title;
-    return `${message}\n\n---\n페이지: ${pageTitle}\n주소: ${window.location.href}\n빌드: ${window.SiteVersion || "-"}`;
+  // 체크되어 있으면 보던 페이지와 버전을 본문 끝에 붙여, 어느 화면에서 온 문의인지 알 수 있게 한다
+  function composeMessage(message, includePage) {
+    if (!includePage) return message;
+    return `${message}\n\n---\n페이지: ${getCurrentPageName()}\n주소: ${window.location.href}\n빌드: ${window.SiteVersion || "-"}`;
   }
 
   async function submitMail(event) {
@@ -100,13 +119,13 @@ window.SiteModules.Contact = (function () {
       return;
     }
 
-    const state = window.SiteModules.state || {};
-    const pageTitle = (state.cur_doc && state.cur_doc.title) || "";
+    const includePage = form.elements.includePage.checked;
+    const pageName = includePage ? getCurrentPageName() : "";
     const payload = {
       access_key: config.web3formsAccessKey,
-      subject: `[iseohyun.com] 문의${pageTitle ? " - " + pageTitle : ""}`,
+      subject: `[iseohyun.com] 문의${pageName ? " - " + pageName : ""}`,
       from_name: "iseohyun.com",
-      message: composeMessage(message)
+      message: composeMessage(message, includePage)
     };
     if (email) payload.email = email;
 
@@ -123,6 +142,7 @@ window.SiteModules.Contact = (function () {
         throw new Error(data.message || `전송 실패 (status ${response.status})`);
       }
       form.reset();
+      refreshPageInfo();
       showResult("보냈습니다. 고맙습니다.", false);
     } catch (err) {
       console.error("[Contact] 메일 전송 실패:", err);
@@ -155,6 +175,11 @@ window.SiteModules.Contact = (function () {
       setMailFormOpen(popover.querySelector("#contact-mail-form").hidden);
     });
     popover.querySelector("#contact-mail-form").addEventListener("submit", submitMail);
+    popover.querySelector("#contact-page-check").addEventListener("change", refreshPageInfo);
+    // 문의 창을 연 채로 다른 문서로 옮겨도 페이지 이름이 따라오게 한다
+    window.addEventListener("hashchange", () => {
+      if (!popover.hidden) setTimeout(refreshPageInfo, 600);
+    });
 
     document.addEventListener("click", (e) => {
       if (popover.hidden || popover.contains(e.target) || railButton.contains(e.target)) return;

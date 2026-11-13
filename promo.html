@@ -5,8 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>홍보</title>
-  <link rel="stylesheet" href="/style.css?v=20261110v3">
-  <script src="/modules/script.js?v=20261110v3" defer></script>
+  <link rel="stylesheet" href="/style.css?v=20261114v1">
+  <script src="/modules/script.js?v=20261114v1" defer></script>
 </head>
 
 <body>
@@ -66,50 +66,6 @@
       /* 공통 document.js가 주입하는 문서 상단 타이틀바(#title-container) 숨김 */
       body:has(#promo-page-wrapper) #title-container {
         display: none !important;
-      }
-
-      /* ==========================================
-         우상단 Float Sticky 보기 전환 토글 버튼 (아이콘 보기 <-> 카드 보기)
-         ========================================== */
-      .promo-floating-view-toggle {
-        position: sticky;
-        top: 14px;
-        float: right;
-        z-index: 120;
-        margin: 0 0 10px 12px;
-      }
-
-      .promo-view-toggle-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        height: 40px;
-        padding: 0 14px;
-        border-radius: 999px;
-        border: 1px solid #cbd5e1;
-        background: rgba(255, 255, 255, 0.96);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        color: #1e293b;
-        font-size: 0.85rem;
-        font-weight: 800;
-        font-family: inherit;
-        cursor: pointer;
-        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12);
-        transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.18s ease, box-shadow 0.2s ease;
-      }
-
-      .promo-view-toggle-btn:hover {
-        background: #2563eb;
-        border-color: #2563eb;
-        color: #ffffff;
-        transform: translateY(-1px);
-        box-shadow: 0 6px 18px rgba(37, 99, 235, 0.28);
-      }
-
-      .promo-view-toggle-btn .material-symbols-outlined {
-        font-size: 20px;
       }
 
       /* ==========================================
@@ -203,7 +159,7 @@
 
       .promo-section-header {
         position: sticky;
-        top: 0;
+        top: var(--header-h, 0px);
         z-index: 40;
         display: flex;
         align-items: center;
@@ -244,7 +200,8 @@
         color: #475569;
         transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease;
         flex-shrink: 0;
-        margin-right: 120px;
+        margin-left: auto;
+        margin-right: 0;
       }
 
       .promo-section-header:hover .promo-section-chevron {
@@ -575,6 +532,8 @@
       .promo-detail-body {
         padding: 22px 24px 28px;
         overflow-y: auto;
+        /* 끝까지 스크롤해도 뒤의 페이지로 넘어가지 않는다 */
+        overscroll-behavior: contain;
         display: flex;
         flex-direction: column;
         gap: 20px;
@@ -586,14 +545,23 @@
         gap: 10px;
       }
 
+      .promo-empty {
+        padding: 44px 24px;
+        border: 1px dashed #94a3b8;
+        border-radius: 12px;
+        text-align: center;
+        color: #64748b;
+      }
+
       .promo-detail-link-btn {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 38px;
-        height: 38px;
+        width: 32px;
+        height: 32px;
         padding: 0;
-        border-radius: 10px;
+        flex-shrink: 0;
+        border-radius: 8px;
         background: #eff6ff;
         color: #2563eb !important;
         text-decoration: none !important;
@@ -789,16 +757,8 @@
       }
 
       @media screen and (max-width: 768px) {
-        .promo-floating-view-toggle {
-          top: 10px;
-        }
-
         .promo-section-header {
-          top: 0;
-        }
-
-        .promo-section-chevron {
-          margin-right: 105px;
+          top: var(--header-h, 0px);
         }
 
         .promo-grid {
@@ -839,14 +799,6 @@
     </style>
 
     <div id="promo-page-wrapper">
-      <!-- 우상단 Float Sticky 보기 방식 토글 버튼 (아이콘 보기 <-> 카드 보기) -->
-      <div class="promo-floating-view-toggle">
-        <button type="button" class="promo-view-toggle-btn" id="promo-view-toggle-btn" title="카드 보기로 전환" aria-label="보기 방식 전환">
-          <span class="material-symbols-outlined" id="promo-view-toggle-icon">view_agenda</span>
-          <span id="promo-view-toggle-label">카드 보기</span>
-        </button>
-      </div>
-
       <!-- promo.json 동적 렌더링 영역 -->
       <div id="promo-sections-root"></div>
 
@@ -884,10 +836,11 @@
         const lightboxCaption = document.getElementById('promo-lightbox-caption');
         const lightboxCloseBtn = document.getElementById('promo-lightbox-close');
 
-        const viewToggleBtn = document.getElementById('promo-view-toggle-btn');
-        const viewToggleIcon = document.getElementById('promo-view-toggle-icon');
-        const viewToggleLabel = document.getElementById('promo-view-toggle-label');
-        let currentViewMode = 'icon'; // 기본값: 아이콘 보기
+        // 화면별 설정(헤더의 설정 아이콘): 보기 방식과 검색. 저장 키 끝의 판 번호는 저장 모양이 바뀌면 올린다.
+        const SETTINGS_KEY = 'iseohyun_promo_settings_v1';
+        const VIEW_MODES = ['icon', 'card'];
+        let currentViewMode = loadViewMode(); // 기본값: 아이콘 보기
+        let searchQuery = '';
         let cachedPromoData = null;
 
         if (!rootEl) return;
@@ -992,11 +945,13 @@
             lightboxCaption.textContent = alt || '';
           }
           lightbox.classList.add('active');
+          syncPageScrollLock();
         }
 
         function closeLightbox() {
           if (!lightbox || !lightboxImg) return;
           lightbox.classList.remove('active');
+          syncPageScrollLock();
           lightboxImg.src = '';
         }
 
@@ -1035,25 +990,25 @@
             detailTitleGroup.appendChild(badgeSpan);
           }
 
+          // 바로가기 링크: 프로젝트 배지 바로 뒤에 둔다 (웹앱은 열기 아이콘, GitHub 는 GitHub 아이콘)
+          links.forEach(function (link) {
+            const gh = isGithubUrl(link.url);
+            const tooltip = gh
+              ? (link.label && link.label.toLowerCase() !== 'github' ? 'GitHub (' + link.label + ')' : 'GitHub 저장소 열기')
+              : ((item.title || link.label || '웹앱') + ' 열기');
+            const anchor = document.createElement('a');
+            anchor.className = 'promo-detail-link-btn' + (gh ? ' github-btn' : '');
+            anchor.href = link.url;
+            anchor.target = '_blank';
+            anchor.rel = 'noopener noreferrer';
+            anchor.title = tooltip;
+            anchor.setAttribute('aria-label', tooltip);
+            anchor.innerHTML = gh ? getGithubSvgHtml(18) : '<span class="material-symbols-outlined">open_in_new</span>';
+            detailTitleGroup.appendChild(anchor);
+          });
+
           // 2. 본문 구성
           let bodyHtml = '';
-
-          // 2-1. 바로가기 아이콘 버튼들 (웹앱: material-symbols-outlined, GitHub: GitHub 아이콘만 표시)
-          if (links.length > 0) {
-            bodyHtml += '<div class="promo-detail-links-bar">';
-            links.forEach(function (link) {
-              const gh = isGithubUrl(link.url);
-              const tooltip = gh
-                ? (link.label && link.label.toLowerCase() !== 'github' ? 'GitHub (' + link.label + ')' : 'GitHub 저장소 열기')
-                : ((item.title || link.label || '웹앱') + ' 열기');
-              bodyHtml += `
-                <a class="promo-detail-link-btn ${gh ? 'github-btn' : ''}" href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(tooltip)}">
-                  ${gh ? getGithubSvgHtml(20) : '<span class="material-symbols-outlined">open_in_new</span>'}
-                </a>
-              `;
-            });
-            bodyHtml += '</div>';
-          }
 
           // 2-2. 상세 설명 및 대표 이미지/영상
           const overviewText = item.overview || item.상세설명;
@@ -1134,11 +1089,13 @@
           });
 
           detailModal.classList.add('active');
+          syncPageScrollLock();
         }
 
         function closeDetailModal() {
           if (!detailModal) return;
           detailModal.classList.remove('active');
+          syncPageScrollLock();
         }
 
         function renderPromoSections(data) {
@@ -1147,6 +1104,7 @@
           rootEl.innerHTML = '';
 
           const isIconMode = currentViewMode === 'icon';
+          let visibleItemCount = 0;
 
           sections.forEach(function (section) {
             const sectionEl = document.createElement('section');
@@ -1196,7 +1154,10 @@
             const grid = document.createElement('div');
             grid.className = isIconMode ? 'promo-icon-grid' : 'promo-grid';
 
-            const items = Array.isArray(section.items) ? section.items : [];
+            const items = sortByLatestUpdate(Array.isArray(section.items) ? section.items : []).filter(matchesSearch);
+            // 검색 결과가 없는 분류는 통째로 숨긴다
+            if (items.length === 0) return;
+            visibleItemCount += items.length;
             items.forEach(function (item) {
               const links = normalizeLinks(item);
               const iconSrc = normalizeAssetPath(item.icon || item.아이콘);
@@ -1378,6 +1339,13 @@
             rootEl.appendChild(sectionEl);
           });
 
+          if (visibleItemCount === 0) {
+            const empty = document.createElement('p');
+            empty.className = 'promo-empty';
+            empty.textContent = searchQuery ? '검색어에 맞는 프로젝트가 없습니다.' : '표시할 프로젝트가 없습니다.';
+            rootEl.appendChild(empty);
+          }
+
           // 동적 생성된 h1 태그를 사이드바 목차(TOC)에 반영
           if (window.SiteModules && window.SiteModules.TOC) {
             if (typeof window.SiteModules.TOC.init === 'function') {
@@ -1391,28 +1359,135 @@
           }
         }
 
-        function updateViewToggleButtonUI() {
-          if (!viewToggleBtn) return;
-          if (currentViewMode === 'icon') {
-            if (viewToggleIcon) viewToggleIcon.textContent = 'view_agenda';
-            if (viewToggleLabel) viewToggleLabel.textContent = '카드 보기';
-            viewToggleBtn.title = '카드 보기로 전환';
-          } else {
-            if (viewToggleIcon) viewToggleIcon.textContent = 'apps';
-            if (viewToggleLabel) viewToggleLabel.textContent = '아이콘 보기';
-            viewToggleBtn.title = '아이콘 보기로 전환';
+        function loadViewMode() {
+          try {
+            const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+            return VIEW_MODES.includes(saved.view) ? saved.view : 'icon';
+          } catch (err) {
+            console.warn('[Promo] 설정을 읽지 못해 기본값을 씁니다:', err);
+            return 'icon';
           }
         }
 
-        if (viewToggleBtn) {
-          viewToggleBtn.addEventListener('click', function (e) {
-            e.stopPropagation();
-            currentViewMode = currentViewMode === 'icon' ? 'card' : 'icon';
-            updateViewToggleButtonUI();
-            if (cachedPromoData) {
-              renderPromoSections(cachedPromoData);
-            }
+        function saveViewMode() {
+          try {
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify({ view: currentViewMode }));
+          } catch (err) {
+            console.warn('[Promo] 설정을 저장하지 못했습니다:', err);
+          }
+        }
+
+        // 헤더의 설정 아이콘 아래로 펼쳐지는 패널: 보기 방식(아이콘/카드)과 검색
+        function buildSettingsPanel() {
+          const panel = document.createElement('div');
+          panel.className = 'cal-filter-content';
+          panel.innerHTML = `
+            <table class="cal-filter-table">
+              <tbody>
+                <tr>
+                  <th>보기</th>
+                  <td>
+                    <div class="cal-filter-options">
+                      <button type="button" class="pill-btn" data-view="icon">아이콘</button>
+                      <button type="button" class="pill-btn" data-view="card">카드</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <th>검색</th>
+                  <td>
+                    <div class="cal-filter-options cal-search-options">
+                      <input type="text" id="promo-search-input" class="cal-search-input" placeholder="프로젝트 이름, 설명, 기술로 찾기..." autocomplete="off">
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          `;
+
+          const viewButtons = panel.querySelectorAll('[data-view]');
+          const syncViewButtons = function () {
+            viewButtons.forEach(function (btn) {
+              btn.setAttribute('aria-pressed', String(btn.dataset.view === currentViewMode));
+            });
+          };
+          viewButtons.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+              currentViewMode = btn.dataset.view;
+              saveViewMode();
+              syncViewButtons();
+              if (cachedPromoData) renderPromoSections(cachedPromoData);
+            });
           });
+          syncViewButtons();
+
+          panel.querySelector('#promo-search-input').addEventListener('input', function (e) {
+            searchQuery = e.target.value.trim().toLowerCase();
+            if (cachedPromoData) renderPromoSections(cachedPromoData);
+          });
+
+          return panel;
+        }
+
+        // 변경 이력에서 가장 최근 날짜를 찾는다 ("2026.11.13" / "2026-11-13" 형식). 날짜가 없으면 0.
+        function getLatestUpdateTime(item) {
+          const changelog = item.changelog || item.변경이력 || [];
+          const entries = Array.isArray(changelog) ? changelog : [changelog];
+          let latest = 0;
+          entries.forEach(function (entry) {
+            const text = typeof entry === 'string' ? entry : ((entry && (entry.date || entry.날짜)) || '');
+            const match = /(\d{4})[.\-\/]\s*(\d{1,2})[.\-\/]\s*(\d{1,2})/.exec(String(text));
+            if (!match) return;
+            const time = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])).getTime();
+            if (time > latest) latest = time;
+          });
+          return latest;
+        }
+
+        // 최근에 업데이트된 프로젝트가 앞에 오도록 정렬한다 (날짜가 같거나 없으면 원래 순서 유지)
+        function sortByLatestUpdate(items) {
+          return items
+            .map(function (item, index) { return { item: item, index: index, time: getLatestUpdateTime(item) }; })
+            .sort(function (a, b) { return (b.time - a.time) || (a.index - b.index); })
+            .map(function (entry) { return entry.item; });
+        }
+
+        function matchesSearch(item) {
+          if (!searchQuery) return true;
+          const haystack = [
+            item.title, item.projectId, item.description, item.overview, item.상세설명,
+            [].concat(item.techStack || item.기술 || []).join(' ')
+          ].map(function (part) { return Array.isArray(part) ? part.join(' ') : String(part || ''); })
+            .join(' ').toLowerCase();
+          return haystack.includes(searchQuery);
+        }
+
+        // 상세 창이나 큰 그림이 열려 있는 동안에는 뒤의 페이지가 스크롤되지 않게 잠근다
+        function setPageScrollLocked(isLocked) {
+          const rootStyle = document.documentElement.style;
+          if (isLocked) {
+            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+            rootStyle.overflow = 'hidden';
+            // 스크롤바가 사라지며 화면이 옆으로 밀리지 않게 그 폭만큼 채운다
+            rootStyle.paddingRight = scrollbarWidth > 0 ? scrollbarWidth + 'px' : '';
+          } else {
+            rootStyle.overflow = '';
+            rootStyle.paddingRight = '';
+          }
+        }
+
+        function syncPageScrollLock() {
+          const isAnyOpen = (detailModal && detailModal.classList.contains('active'))
+            || (lightbox && lightbox.classList.contains('active'));
+          setPageScrollLocked(!!isAnyOpen);
+        }
+
+        if (window.SiteModules && window.SiteModules.Header) {
+          window.SiteModules.Header.setPanels({ settings: buildSettingsPanel() });
+        }
+        // 다른 문서로 옮기면 잠금을 푼다
+        if (window.SiteModules && typeof window.SiteModules.registerPageCleanup === 'function') {
+          window.SiteModules.registerPageCleanup(function () { setPageScrollLocked(false); });
         }
 
         // 모달 닫기 이벤트 바인딩

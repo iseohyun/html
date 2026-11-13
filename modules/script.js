@@ -1,11 +1,11 @@
 /**
  * @file modules/script.js
- * @version 20261110v3
+ * @version 20261114v1
  * @description 통합 진입점(Bootstrapper). 캐시 버스팅 버전(window.SiteVersion)을 정의하고,
  *   서브페이지 직접 접속을 SPA 해시 경로로 리다이렉트한 뒤 코어/UI/기능 모듈을 순서대로 로드·초기화한다.
  */
 
-window.SiteVersion = "20261110v3";
+window.SiteVersion = "20261114v1";
 (function() {
   const styleLink = document.querySelector('link[rel="stylesheet"][href^="/style.css"]');
   if (styleLink) {
@@ -28,14 +28,11 @@ window.SiteVersion = "20261110v3";
 
   const scripts = [
     '/modules/core/site-config.js',
-    '/modules/core/firebase-config.js',
-    '/modules/core/auth-handler.js',
     '/modules/core/keybind-manager.js',
     '/modules/core/icons.js',
     '/modules/core/header.js',
     '/modules/core/hierarchy.js',
     '/modules/core/search.js',
-    '/modules/features/feedback.js',
     '/modules/features/contact.js',
     '/modules/core/navigation.js',
     '/modules/core/toc.js',
@@ -63,8 +60,6 @@ window.SiteVersion = "20261110v3";
   function initApp() {
     // 순차적으로 모듈 초기화 수행
     if (window.SiteModules) {
-      if (window.SiteModules.FirebaseConfig) window.SiteModules.FirebaseConfig.initialize();
-      if (window.SiteModules.Auth) window.SiteModules.Auth.handleRedirectCallback();
       if (window.SiteModules.KeybindManager) window.SiteModules.KeybindManager.init();
       if (window.SiteModules.Navigation) window.SiteModules.Navigation.init();
       if (window.SiteModules.TOC) window.SiteModules.TOC.init();
