@@ -30,6 +30,16 @@ window.SiteModules.Navigation = (function () {
   // 본문을 밀어내는 사이드바 폭 (--sidebar-width 에 넣는 값)
   const RAIL_WIDTH = "var(--rail-w)";
   const RAIL_AND_PANEL_WIDTH = "calc(var(--rail-w) + var(--panel-w))";
+  // 홈의 보기 방식과 주소: 달력(#/), 리스트(#/list). 프로젝트 소개는 별도 문서(/promo.html)지만 같은 탭 줄에 둔다.
+  const HOME_VIEW_BY_HASH = { "#/list": "list" };
+  const HOME_TABS = [
+    { id: "calendar", label: "달력", href: "#/" },
+    { id: "list", label: "리스트", href: "#/list" },
+    { id: "promo", label: "프로젝트", href: "#/promo.html" }
+  ];
+  const PROMO_PATH = "/promo.html";
+  // 형제 문서를 탭으로 묶지 않는 경로 (서로 이어지는 글이 아닌 독립 프로젝트)
+  const NO_SERIES_TAB_PREFIX = "/small-project/";
   // hierarchy.json에 없어도 SPA 본문으로 로드 가능한 루트 문서
   const KNOWN_ROOT_ARTICLES = ["/index.html", "/admin.html", "/help.html", "/info.html", "/promo.html", "/"];
   // registerPageCleanup을 쓰지 않는 기존 소프로젝트들이 남기는 전역 이름 (신규 프로젝트는 registerPageCleanup 사용)
@@ -101,6 +111,30 @@ window.SiteModules.Navigation = (function () {
     state.prv_doc = toNeighborDoc(page.siblings[page.index - 1]);
     state.next_doc = toNeighborDoc(page.siblings[page.index + 1]);
     return true;
+  }
+
+  // 헤더 탭 구성: 홈과 프로젝트 소개는 홈 탭, 이어지는 문서는 같은 묶음의 형제 문서를 탭으로 보여 준다
+  function buildHeaderTabs(isHome, urlPath) {
+    if (isHome || urlPath === PROMO_PATH) {
+      const selectedId = isHome ? (window.SiteModules.state.homeView || "calendar") : "promo";
+      return HOME_TABS.map(tab => ({ label: tab.label, href: tab.href, selected: tab.id === selectedId }));
+    }
+
+    const list = window.SiteModules.hierarchyListCached;
+    if (!list || !urlPath || urlPath.startsWith(NO_SERIES_TAB_PREFIX)) return [];
+
+    const Hierarchy = window.SiteModules.Hierarchy;
+    const page = Hierarchy.findPage(list, urlPath.split('#')[0]);
+    if (!page) return [];
+
+    const seriesDocs = page.siblings.filter(Hierarchy.isPageItem);
+    if (seriesDocs.length < 2) return [];
+
+    return seriesDocs.map(item => ({
+      label: item.주제 || "",
+      href: `#/${page.parentDirs}${item.디렉토리 || ""}${Hierarchy.getFileName(item)}`,
+      selected: item === page.item
+    }));
   }
 
   // admin/help 문서는 관리자 여부에 따라 서로 교차 리다이렉트한다
@@ -254,19 +288,13 @@ window.SiteModules.Navigation = (function () {
         <div class="nav-group" id="sidebar-page-features"></div>
         
         <div class="nav-group">
-          <div class="nav-item" id="nav-promo" data-tooltip="홍보 사이트 리스트">
-            ${icon("megaphone")}
-          </div>
-          <div class="nav-item" id="nav-kakao-channel" data-tooltip="카카오톡 채널 (iseohyun)">
+          <div class="nav-item" id="nav-kakao-channel" data-tooltip="문의 (카카오톡 · 메일)">
             <svg viewBox="0 0 24 24" class="kakao-nav-svg" aria-hidden="true">
               <path d="M12 3C6.477 3 2 6.463 2 10.734c0 2.757 1.856 5.177 4.651 6.535-.153.553-.986 3.555-1.021 3.79-.044.294.108.29.228.211.094-.062 3.743-2.501 5.252-3.524.291.028.587.043.89.043 5.523 0 10-3.463 10-7.734S17.523 3 12 3z"/>
             </svg>
           </div>
           <div class="nav-item" id="nav-login" data-tooltip="게스트">
             ${icon("user")}
-          </div>
-          <div class="nav-item" id="nav-help" data-tooltip="질의 응답 / 인터페이스 소개">
-            ${icon("help")}
           </div>
           <div class="nav-item" id="nav-info" data-tooltip="사이트 소개">
             ${icon("info")}
@@ -504,7 +532,9 @@ window.SiteModules.Navigation = (function () {
       document.body.classList.remove("mobile-nav-open");
     }
 
-    if (!hash || hash === "#" || hash === "#/" || hash === "#/index.html" || hash === "#index.html") {
+    if (HOME_VIEW_BY_HASH[hash]) {
+      loadHomeRoute(HOME_VIEW_BY_HASH[hash]);
+    } else if (!hash || hash === "#" || hash === "#/" || hash === "#/index.html" || hash === "#index.html") {
       const path = window.location.pathname;
       if (hash === "#/" || hash === "#/index.html" || hash === "#index.html" || path === "/" || path.endsWith("/") || path === "/index.html" || path.endsWith("/index.html") || !!document.getElementById("site-history")) {
         loadHomeRoute();
@@ -567,9 +597,11 @@ window.SiteModules.Navigation = (function () {
   }
 
   // 홈 페이지 (index.html 기본 내용)를 동적으로 완전 빌드 (무한 대기 루프 완벽 제거)
-  function loadHomeRoute() {
+  function loadHomeRoute(view = "calendar") {
     const article = document.querySelector("article");
     if (!article) return;
+
+    window.SiteModules.state.homeView = view;
 
     if (window.SiteModules && window.SiteModules.state) {
       window.SiteModules.state.lastModifiedDate = null;
@@ -582,10 +614,10 @@ window.SiteModules.Navigation = (function () {
 
     // 최근 변경 사항 로그 빌드 (전체 로드하여 필터링 지원)
     if (window.SiteModules.UpdateLog && typeof window.SiteModules.UpdateLog.getUpdateList === 'function') {
-      window.SiteModules.UpdateLog.getUpdateList('all', '2023-01-01', '', '', 'site-history');
+      window.SiteModules.UpdateLog.getUpdateList('all', '2023-01-01', '', '', 'site-history', view);
     } else {
       window.SiteModules.updateLogQueue = window.SiteModules.updateLogQueue || [];
-      window.SiteModules.updateLogQueue.push(['all', '2023-01-01', '', '', 'site-history']);
+      window.SiteModules.updateLogQueue.push(['all', '2023-01-01', '', '', 'site-history', view]);
     }
 
     postLoadPageActions(true);
@@ -900,6 +932,7 @@ window.SiteModules.Navigation = (function () {
     // 헤더: 제목을 맞추고, 홈이 아니면 홈 전용 필터/설정 패널을 내린다
     window.SiteModules.Header.setTitle(isHome ? "iseohyun.com" : (state.cur_doc.title || docTitle || ""));
     if (!isHome) window.SiteModules.Header.setPanels({});
+    window.SiteModules.Header.setTabs(buildHeaderTabs(isHome, urlPath));
 
     // I-4. 모든 서브페이지 최하단 Q&A 피드백 영역 렌더링
     const isAdminPage = urlPath && (urlPath.endsWith("/admin.html") || urlPath.endsWith("/admin.htm"));
@@ -1232,47 +1265,6 @@ window.SiteModules.Navigation = (function () {
       body.appendChild(loginModal);
     }
 
-    // KakaoTalk Channel Floating Widget & Popover
-    if (!document.getElementById("kakao-floating-widget")) {
-      const kakaoWidget = document.createElement("div");
-      kakaoWidget.id = "kakao-floating-widget";
-      kakaoWidget.className = "kakao-floating-widget";
-      kakaoWidget.innerHTML = `
-        <div class="kakao-channel-popover" id="kakao-channel-popover" role="dialog" aria-label="카카오톡 채널 iseohyun">
-          <div class="kakao-popover-header">
-            <div class="kakao-popover-title-wrap">
-              <span class="kakao-popover-badge">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M12 3C6.477 3 2 6.463 2 10.734c0 2.757 1.856 5.177 4.651 6.535-.153.553-.986 3.555-1.021 3.79-.044.294.108.29.228.211.094-.062 3.743-2.501 5.252-3.524.291.028.587.043.89.043 5.523 0 10-3.463 10-7.734S17.523 3 12 3z"/>
-                </svg>
-              </span>
-              <div class="kakao-popover-title-text">
-                <strong>iseohyun</strong>
-                <span>카카오톡 채널 (@_ETRrX)</span>
-              </div>
-            </div>
-            <button type="button" class="kakao-popover-close" id="kakao-popover-close" aria-label="닫기">&times;</button>
-          </div>
-          <div class="kakao-popover-actions">
-            <a class="kakao-action-btn kakao-action-home" href="http://pf.kakao.com/_ETRrX" target="_blank" rel="noopener noreferrer">
-              ${window.SiteModules.Icons.html("user-plus")}
-              <span>채널 추가 · 홈</span>
-            </a>
-            <a class="kakao-action-btn kakao-action-chat" href="http://pf.kakao.com/_ETRrX/chat" target="_blank" rel="noopener noreferrer">
-              ${window.SiteModules.Icons.html("chat")}
-              <span>1:1 채팅 문의</span>
-            </a>
-          </div>
-        </div>
-        <button type="button" class="kakao-fab-btn" id="kakao-fab-btn" title="카카오톡 채널 (iseohyun)" aria-label="카카오톡 채널 열기" aria-expanded="false">
-          <svg viewBox="0 0 24 24" class="kakao-fab-svg" aria-hidden="true">
-            <path d="M12 3C6.477 3 2 6.463 2 10.734c0 2.757 1.856 5.177 4.651 6.535-.153.553-.986 3.555-1.021 3.79-.044.294.108.29.228.211.094-.062 3.743-2.501 5.252-3.524.291.028.587.043.89.043 5.523 0 10-3.463 10-7.734S17.523 3 12 3z"/>
-          </svg>
-        </button>
-      `;
-      body.appendChild(kakaoWidget);
-    // End KakaoTalk Channel Floating Widget
-    }
   }
 
   function bindSidebarEvents() {
@@ -1486,78 +1478,8 @@ window.SiteModules.Navigation = (function () {
       });
     }
 
-    const promoBtn = document.getElementById("nav-promo");
-    if (promoBtn) {
-      promoBtn.addEventListener("click", () => {
-        window.location.hash = "#/promo.html";
-      });
-    }
-
-    const navKakaoChannelBtn = document.getElementById("nav-kakao-channel");
-    const kakaoFabBtn = document.getElementById("kakao-fab-btn");
-    const kakaoPopover = document.getElementById("kakao-channel-popover");
-    const kakaoPopoverClose = document.getElementById("kakao-popover-close");
-    const kakaoFloatingWidget = document.getElementById("kakao-floating-widget");
-
-    function setKakaoPopoverOpen(isOpen) {
-      if (!kakaoPopover) return;
-      kakaoPopover.classList.toggle("open", isOpen);
-      if (kakaoFabBtn) {
-        kakaoFabBtn.classList.toggle("active", isOpen);
-        kakaoFabBtn.setAttribute("aria-expanded", String(isOpen));
-      }
-      if (navKakaoChannelBtn) {
-        navKakaoChannelBtn.classList.toggle("active", isOpen);
-      }
-    }
-
-    if (navKakaoChannelBtn) {
-      navKakaoChannelBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        if (window.innerWidth <= MOBILE_BREAKPOINT) {
-          setMobileDrawerState(false);
-          setKakaoPopoverOpen(true);
-        } else {
-          const nextOpen = !(kakaoPopover && kakaoPopover.classList.contains("open"));
-          setKakaoPopoverOpen(nextOpen);
-        }
-      });
-    }
-
-    if (kakaoFabBtn) {
-      kakaoFabBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const nextOpen = !(kakaoPopover && kakaoPopover.classList.contains("open"));
-        setKakaoPopoverOpen(nextOpen);
-      });
-    }
-
-    if (kakaoPopoverClose) {
-      kakaoPopoverClose.addEventListener("click", (e) => {
-        e.stopPropagation();
-        setKakaoPopoverOpen(false);
-      });
-    }
-
-    document.addEventListener("click", (e) => {
-      if (!kakaoPopover || !kakaoPopover.classList.contains("open")) return;
-      if (kakaoFloatingWidget && kakaoFloatingWidget.contains(e.target)) return;
-      if (navKakaoChannelBtn && navKakaoChannelBtn.contains(e.target)) return;
-      setKakaoPopoverOpen(false);
-    });
-
-    window.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && kakaoPopover && kakaoPopover.classList.contains("open")) {
-        setKakaoPopoverOpen(false);
-      }
-    });
-
-    const helpBtn = document.getElementById("nav-help");
-    if (helpBtn) {
-      helpBtn.addEventListener("click", () => {
-        window.location.hash = "#/help.html";
-      });
-    }
+    // 문의 창: 카카오톡 채널 추가 · 1:1 채팅 · 메일로 문의
+    window.SiteModules.Contact.init({ closeDrawer: () => setMobileDrawerState(false) });
 
     const infoBtn = document.getElementById("nav-info");
     if (infoBtn) {

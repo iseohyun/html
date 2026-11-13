@@ -3,7 +3,7 @@
  * @module SiteModules.Config
  * @description 사이트 전역 설정의 단일 출처. Firebase 프로젝트 설정, SDK 버전, OAuth(네이버/카카오) 식별자와
  *   토큰 교환 엔드포인트, 레이아웃 기준 너비를 보관한다. 여기의 값은 모두 브라우저에 공개되는 값이며 비밀이 아니다.
- * @exports firebase, firebaseSdkVersion, oauth, layout
+ * @exports firebase, firebaseSdkVersion, oauth, feedback, layout
  */
 
 window.SiteModules = window.SiteModules || {};
@@ -32,6 +32,12 @@ window.SiteModules.Config = window.SiteModules.Config || Object.freeze({
       clientId: "af28f94aa8260ab663fd27dffea1ee77",
       tokenExchangeUrl: "https://kakaologin-kw55rtsoba-uc.a.run.app"
     })
+  }),
+
+  // 의견 보내기(Web3Forms). 접근 키는 받는 주소에 묶인 공개용 키라 화면 코드에 둘 수 있다.
+  feedback: Object.freeze({
+    web3formsEndpoint: "https://api.web3forms.com/submit",
+    web3formsAccessKey: "8ffc27ff-bbd8-4d15-949b-e0a99e11cded"
   }),
 
   layout: Object.freeze({

@@ -36,6 +36,7 @@ window.SiteVersion = "20261110v3";
     '/modules/core/hierarchy.js',
     '/modules/core/search.js',
     '/modules/features/feedback.js',
+    '/modules/features/contact.js',
     '/modules/core/navigation.js',
     '/modules/core/toc.js',
     '/modules/core/document.js',

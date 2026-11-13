@@ -1,5 +1,15 @@
 [
   {
+    "date": "2026-11-13",
+    "type": "Changed",
+    "env": "Desktop",
+    "projectName": "Movie Player lite",
+    "projectPath": "https://github.com/iseohyun/movie-player-lite",
+    "version": "1.7.0",
+    "summary": "설치 프로그램(Installer) 배포",
+    "detail": "설치 프로그램(Installer) 배포\n- 설치 중 FFmpeg 확인 및 자동 내려받기\n- 확장자별 기본 플레이어 지정\n- 다국어 UI(언어 설정) 추가\n- YouTube 주소 재생 추가"
+  },
+  {
     "date": "2026-11-09",
     "type": "Added",
     "env": "WebApp",

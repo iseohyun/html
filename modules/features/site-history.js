@@ -1,7 +1,7 @@
 /**
  * @file modules/features/site-history.js
  * @module SiteModules.UpdateLog
- * @description 홈 화면의 변경 이력 달력: changelog.json/holidays.json을 불러와 달력·필터·상세 팝업을 렌더링한다.
+ * @description 홈 화면의 변경 이력(달력 보기 / 리스트 보기): changelog.json/holidays.json을 불러와 달력·필터·상세 팝업을 렌더링한다.
  * @requires SiteModules.Header (달력의 필터와 화면별 설정을 헤더 패널에 등록)
  * @exports getUpdateList, clearUpdateList, toggle
  */
@@ -22,6 +22,14 @@ window.SiteModules.UpdateLog = (function () {
     searchTargets: [...DEFAULT_SEARCH_TARGETS],
     hasUserFiltered: false
   };
+
+  // 홈의 보기 방식: 'calendar' | 'list'
+  let currentView = 'calendar';
+  // 리스트 보기 설정. 저장 키 끝의 판 번호는 저장 모양이 바뀌면 올린다.
+  const LIST_SETTINGS_KEY = 'iseohyun_home_list_settings_v1';
+  const LIST_VIEWS = ['table', 'card'];
+  const LIST_SORTS = ['desc', 'asc'];
+  let listSettings = loadListSettings();
 
   let cachedUpdates = null;
   let cachedHierarchy = null;
@@ -542,6 +550,8 @@ window.SiteModules.UpdateLog = (function () {
         </table>
     `;
 
+    if (currentView === 'list') buildListSettings(settingsContent, targetId);
+
     window.SiteModules.Header.setPanels({ filter: filterContent, settings: settingsContent });
 
     // 기본값에서 하나라도 벗어나 있으면 필터가 걸린 것으로 본다
@@ -572,7 +582,7 @@ window.SiteModules.UpdateLog = (function () {
       filterState.hasUserFiltered = true;
       window.SiteModules.Header.setFilterActive(isFilterApplied());
 
-      renderCalendar(targetId);
+      renderCurrentView(targetId);
     }
 
     filterContent.querySelectorAll('input[type="checkbox"]').forEach(chk => {
@@ -615,13 +625,8 @@ window.SiteModules.UpdateLog = (function () {
     }
   }
 
-  function renderCalendar(targetId = 'site-history') {
-    const container = document.getElementById(targetId);
-    if (!container || !cachedUpdates) return;
-
-    container.innerHTML = '';
-
-    // 1. 전체 이벤트 정규화 및 필터링 수행
+  // 변경 이력을 이벤트 단위로 펼치고 지금 필터를 통과한 것만 모은다
+  function collectFilteredEvents() {
     const dateMap = new Map();
     const filteredEvents = [];
 
@@ -655,6 +660,247 @@ window.SiteModules.UpdateLog = (function () {
         }
       });
     });
+
+    return { dateMap, filteredEvents };
+  }
+
+  // 홈의 지금 보기 방식(달력 / 리스트)으로 그린다
+  function renderCurrentView(targetId = 'site-history') {
+    if (currentView === 'list') renderList(targetId);
+    else renderCalendar(targetId);
+  }
+
+  function isAllowed(value, allowed, fallback) {
+    return allowed.includes(value) ? value : fallback;
+  }
+
+  function loadListSettings() {
+    const defaults = { view: 'table', sort: 'desc' };
+    try {
+      const saved = JSON.parse(localStorage.getItem(LIST_SETTINGS_KEY) || '{}');
+      return {
+        view: isAllowed(saved.view, LIST_VIEWS, defaults.view),
+        sort: isAllowed(saved.sort, LIST_SORTS, defaults.sort)
+      };
+    } catch (err) {
+      console.warn('[UpdateLog] 리스트 설정을 읽지 못해 기본값을 씁니다:', err);
+      return defaults;
+    }
+  }
+
+  function saveListSettings() {
+    try {
+      localStorage.setItem(LIST_SETTINGS_KEY, JSON.stringify(listSettings));
+    } catch (err) {
+      console.warn('[UpdateLog] 리스트 설정을 저장하지 못했습니다:', err);
+    }
+  }
+
+  // 리스트 화면의 화면별 설정(헤더 설정 아이콘): 보기(표/카드)와 정렬
+  function buildListSettings(settingsContent, targetId) {
+    const groups = [
+      { key: 'view', label: '리스트 보기', options: [['table', '표'], ['card', '카드']] },
+      { key: 'sort', label: '정렬', options: [['desc', '최신순'], ['asc', '오래된순']] }
+    ];
+
+    const table = document.createElement('table');
+    table.className = 'cal-filter-table';
+    const tbody = document.createElement('tbody');
+
+    groups.forEach(group => {
+      const tr = document.createElement('tr');
+      const th = document.createElement('th');
+      th.textContent = group.label;
+      const td = document.createElement('td');
+      const line = document.createElement('div');
+      line.className = 'cal-filter-options';
+
+      group.options.forEach(([value, label]) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'pill-btn';
+        btn.textContent = label;
+        btn.dataset.setting = group.key;
+        btn.dataset.value = value;
+        btn.setAttribute('aria-pressed', String(listSettings[group.key] === value));
+        btn.addEventListener('click', () => {
+          listSettings[group.key] = value;
+          saveListSettings();
+          line.querySelectorAll('.pill-btn').forEach(other => {
+            other.setAttribute('aria-pressed', String(other === btn));
+          });
+          renderCurrentView(targetId);
+        });
+        line.appendChild(btn);
+      });
+
+      td.appendChild(line);
+      tr.append(th, td);
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+    settingsContent.replaceChildren(table);
+  }
+
+  function describeEvent(ev) {
+    const item = ev.raw;
+    const badgeInfo = TYPE_BADGE_MAP[ev.typeKey] || TYPE_BADGE_MAP.Changed;
+    return {
+      badgeInfo: badgeInfo,
+      projectName: typeof item === 'string' ? item : (item.projectName || '업데이트'),
+      summaryText: typeof item === 'string' ? '' : (item.summary || ''),
+      version: typeof item === 'string' ? '' : (item.version || '')
+    };
+  }
+
+  function createEnvTags(ev) {
+    const wrap = document.createElement('span');
+    wrap.className = 'list-env-tags';
+    ev.envs.forEach(envName => {
+      const tag = document.createElement('span');
+      tag.className = `list-env-tag ${ENV_CLASS_MAP[envName] || 'env-iseohyun'}`;
+      tag.textContent = envName;
+      wrap.appendChild(tag);
+    });
+    return wrap;
+  }
+
+  function createTypeTag(badgeInfo) {
+    const tag = document.createElement('span');
+    tag.className = 'list-type-tag';
+    tag.textContent = `${badgeInfo.emoji} ${badgeInfo.label}`;
+    return tag;
+  }
+
+  // 리스트 보기: 변경 이력을 표 또는 카드로 나열한다. 달력과 같은 필터를 따른다.
+  function renderList(targetId = 'site-history') {
+    const container = document.getElementById(targetId);
+    if (!container || !cachedUpdates) return;
+    container.innerHTML = '';
+
+    const { filteredEvents } = collectFilteredEvents();
+    const direction = listSettings.sort === 'asc' ? 1 : -1;
+    const events = filteredEvents.slice().sort((a, b) => direction * (a.dateObj.getTime() - b.dateObj.getTime()));
+
+    const wrap = document.createElement('li');
+    wrap.className = 'update-list-view';
+
+    const summaryRow = document.createElement('div');
+    summaryRow.className = 'list-summary-row';
+    const summaryText = document.createElement('span');
+    summaryText.className = 'list-summary-text';
+    summaryText.textContent = `${events.length}건`;
+    const summaryHint = document.createElement('span');
+    summaryHint.className = 'list-summary-hint';
+    summaryHint.textContent = `${listSettings.sort === 'asc' ? '오래된순' : '최신순'} · 항목을 누르면 상세를 봅니다`;
+    summaryRow.append(summaryText, summaryHint);
+    wrap.appendChild(summaryRow);
+
+    if (events.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'list-empty';
+      empty.textContent = '선택한 필터 조건에 일치하는 업데이트가 없습니다.';
+      wrap.appendChild(empty);
+      container.appendChild(wrap);
+      return;
+    }
+
+    const openDetail = ev => openEventDetailPopup(ev.dateKey, ev, cachedHierarchy);
+
+    if (listSettings.view === 'card') {
+      const grid = document.createElement('div');
+      grid.className = 'list-card-grid';
+      events.forEach(ev => {
+        const info = describeEvent(ev);
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'list-card';
+
+        const body = document.createElement('div');
+        body.className = 'list-card-body';
+        const meta = document.createElement('div');
+        meta.className = 'list-card-meta';
+        meta.append(createTypeTag(info.badgeInfo), createEnvTags(ev));
+        const title = document.createElement('strong');
+        title.className = 'list-card-title';
+        title.textContent = info.projectName;
+        body.append(meta, title);
+        if (info.summaryText) {
+          const summary = document.createElement('span');
+          summary.className = 'list-card-summary';
+          summary.textContent = info.summaryText;
+          body.appendChild(summary);
+        }
+
+        const foot = document.createElement('div');
+        foot.className = 'list-card-foot';
+        foot.textContent = formatDateWithDay(ev.dateKey) + (info.version ? ` · v${info.version}` : '');
+
+        card.append(body, foot);
+        card.addEventListener('click', () => openDetail(ev));
+        grid.appendChild(card);
+      });
+      wrap.appendChild(grid);
+    } else {
+      const scroll = document.createElement('div');
+      scroll.className = 'list-table-scroll';
+      const table = document.createElement('table');
+      table.className = 'list-data-table';
+
+      const thead = document.createElement('thead');
+      const headRow = document.createElement('tr');
+      ['날짜', '분류', '환경', '프로젝트', '요약'].forEach(label => {
+        const th = document.createElement('th');
+        th.textContent = label;
+        headRow.appendChild(th);
+      });
+      thead.appendChild(headRow);
+      table.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+      events.forEach(ev => {
+        const info = describeEvent(ev);
+        const tr = document.createElement('tr');
+        tr.tabIndex = 0;
+
+        const dateTd = document.createElement('td');
+        dateTd.className = 'list-date-cell';
+        dateTd.textContent = formatDateWithDay(ev.dateKey);
+        const typeTd = document.createElement('td');
+        typeTd.className = 'list-nowrap-cell';
+        typeTd.appendChild(createTypeTag(info.badgeInfo));
+        const envTd = document.createElement('td');
+        envTd.appendChild(createEnvTags(ev));
+        const titleTd = document.createElement('td');
+        titleTd.className = 'list-title-cell';
+        titleTd.textContent = info.projectName;
+        const summaryTd = document.createElement('td');
+        summaryTd.textContent = info.summaryText;
+
+        tr.append(dateTd, typeTd, envTd, titleTd, summaryTd);
+        tr.addEventListener('click', () => openDetail(ev));
+        tr.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') openDetail(ev);
+        });
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      scroll.appendChild(table);
+      wrap.appendChild(scroll);
+    }
+
+    container.appendChild(wrap);
+  }
+
+  function renderCalendar(targetId = 'site-history') {
+    const container = document.getElementById(targetId);
+    if (!container || !cachedUpdates) return;
+
+    container.innerHTML = '';
+
+    // 1. 전체 이벤트 정규화 및 필터링 수행
+    const { dateMap, filteredEvents } = collectFilteredEvents();
 
     // 2. 달력 테이블 기본 뼈대 생성 (thead: 일, 월, 화, 수, 목, 금, 토)
     const tableWrap = document.createElement('div');
@@ -1036,9 +1282,11 @@ window.SiteModules.UpdateLog = (function () {
     container.appendChild(tableWrap);
   }
 
-  async function getUpdateList(cnt = 'all', date = '2023-01-01', edate = '', keywords = '', targetId = 'site-history') {
+  async function getUpdateList(cnt = 'all', date = '2023-01-01', edate = '', keywords = '', targetId = 'site-history', view = 'calendar') {
     const updateList = document.getElementById(targetId);
     if (!updateList) return;
+
+    currentView = view === 'list' ? 'list' : 'calendar';
 
     if (targetId === 'site-history') {
       filterState = {
@@ -1070,7 +1318,7 @@ window.SiteModules.UpdateLog = (function () {
         cachedHolidays = buildHolidayMap(rawHolidays);
       }
 
-      renderCalendar(targetId);
+      renderCurrentView(targetId);
     } catch (error) {
       console.error('Error fetching or rendering changelog calendar:', error);
       const errorNotice = document.createElement('li');
@@ -1088,7 +1336,7 @@ window.SiteModules.UpdateLog = (function () {
   }
 
   function toggle(tag) {
-    renderCalendar('site-history');
+    renderCurrentView('site-history');
   }
 
   return {
