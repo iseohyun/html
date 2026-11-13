@@ -784,6 +784,155 @@
         max-width: calc(100vw - 20px);
       }
     }
+
+    /* ==========================================
+       좁은 화면(640px 이하) 점 달력
+       - 칸에는 이벤트당 점 1개만 표시하고, 점을 누르면 해당 주 아래로 이벤트 1건이 펼쳐진다
+       - 넓은 화면에서는 점과 펼침 행을 숨기고 기존 카드를 그대로 표시한다
+       ========================================== */
+    .cal-dots,
+    tr.cal-day-detail-row {
+      display: none;
+    }
+
+    @media screen and (max-width: 640px) {
+      .cal-events-wrap {
+        display: none;
+      }
+
+      table.update-calendar-table td.cal-cell {
+        height: 52px;
+        min-height: 52px;
+        padding: 4px 2px 6px;
+      }
+
+      /* 칸이 좁아 날짜와 겹치므로 '오늘' 글자는 숨기고 칸 강조만 유지 */
+      .cal-today-badge {
+        display: none;
+      }
+
+      .cal-dots {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0;
+        padding-top: 2px;
+      }
+
+      /* 버튼 자체는 20px 터치 영역(49px 칸에 2개가 나란히 들어가는 크기), 보이는 점은 ::before 로 그린다 */
+      .cal-dot {
+        width: 20px;
+        height: 20px;
+        padding: 0;
+        border: none;
+        background: transparent;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .cal-dot::before {
+        content: "";
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        box-sizing: border-box;
+        background-color: var(--cal-dot-color, #94a3b8);
+        border: 1.5px solid var(--cal-dot-border, #64748b);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      .cal-dot.is-active::before {
+        transform: scale(1.35);
+        box-shadow: 0 0 0 3px rgba(34, 139, 230, 0.35);
+      }
+
+      .cal-dot.dot-iseohyun { --cal-dot-color: #ffffff; --cal-dot-border: #64748b; }
+      .cal-dot.dot-webapp { --cal-dot-color: #ff922b; --cal-dot-border: #f76707; }
+      .cal-dot.dot-android { --cal-dot-color: #40c057; --cal-dot-border: #2b8a3e; }
+      .cal-dot.dot-desktop { --cal-dot-color: #339af0; --cal-dot-border: #1971c2; }
+      .cal-dot.dot-video { --cal-dot-color: #ff6b6b; --cal-dot-border: #e03131; }
+
+      tr.cal-day-detail-row {
+        display: table-row;
+      }
+
+      table.update-calendar-table td.cal-day-detail-cell {
+        padding: 0;
+        border: none;
+        background-color: #f1f5f9;
+      }
+
+      /* grid-template-rows 0fr -> 1fr 전환으로 내용 높이만큼 부드럽게 펼친다 (site-history.js의 DAY_DETAIL_ANIMATION_MS와 동일) */
+      .cal-day-detail-anim {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 0.25s ease;
+      }
+
+      .cal-day-detail-anim.is-open {
+        grid-template-rows: 1fr;
+      }
+
+      .cal-day-detail-inner {
+        overflow: hidden;
+        min-height: 0;
+      }
+
+      .cal-day-detail-card {
+        margin: 8px;
+        padding: 10px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        text-align: left;
+        color: #0f172a;
+      }
+
+      .cal-day-detail-meta {
+        font-size: 12px;
+        color: #475569;
+        margin-bottom: 4px;
+      }
+
+      .cal-day-detail-title {
+        display: block;
+        font-size: 15px;
+        font-weight: 800;
+        color: #0f172a;
+        word-break: keep-all;
+        overflow-wrap: anywhere;
+      }
+
+      .cal-day-detail-summary {
+        margin: 4px 0 0;
+        font-size: 13px;
+        line-height: 1.5;
+        color: #1e293b;
+        word-break: keep-all;
+        overflow-wrap: anywhere;
+      }
+
+      .cal-day-detail-more {
+        margin-top: 8px;
+        padding: 6px 12px;
+        border: 1px solid #94a3b8;
+        border-radius: 6px;
+        background-color: #ffffff;
+        color: #0f172a;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .cal-day-detail-anim,
+      .cal-dot::before {
+        transition: none;
+      }
+    }
   </style>
   <script src="/modules/script.js?v=20261110v3" defer></script>
 </head>
