@@ -4,7 +4,8 @@
  * @description 화면 위에 고정되는 헤더. 한 줄에 세 묶음을 둔다:
  *   [메뉴 아이콘][페이지 제목] ── 탭 ── [필터][페이지 공유][설정]
  *   필터와 화면별 설정은 헤더 바로 아래로 펼쳐지는 같은 자리의 패널이며 한 번에 하나만 열린다.
- *   패널의 내용은 각 화면이 setPanels() 로 등록하고, 등록한 화면에서만 해당 아이콘이 보인다.
+ *   패널의 내용은 각 화면이 setPanels() 로 등록한다. 필터 아이콘은 등록한 화면에서만 보이고,
+ *   설정 아이콘은 어느 화면에나 있으며 맨 아래 줄에서 전체 설정 페이지로 간다.
  * @requires SiteModules.Icons
  * @exports init, setTitle, setTabs, setPanels, togglePanel, closePanel, setFilterActive
  */
@@ -14,6 +15,7 @@ window.SiteModules = window.SiteModules || {};
 window.SiteModules.Header = (function () {
   const TOAST_DURATION_MS = 1600;
   const PANEL_KINDS = ["filter", "settings"];
+  const GLOBAL_SETTINGS_HREF = "#/settings.html";
 
   let root = null;
   let openKind = null;
@@ -125,12 +127,40 @@ window.SiteModules.Header = (function () {
    */
   function setPanels(nextPanels = {}) {
     closePanel();
+    panels.filter = nextPanels.filter || null;
+    // 설정 아이콘은 어느 화면에나 있다: 화면별 설정이 없으면 안내 한 줄, 맨 아래 줄은 전체 설정 링크
+    panels.settings = buildSettingsPanel(nextPanels.settings || null);
     PANEL_KINDS.forEach(kind => {
-      panels[kind] = nextPanels[kind] || null;
       const btn = el(`header-${kind}-btn`);
       if (btn) btn.hidden = !panels[kind];
     });
     setFilterActive(false);
+  }
+
+  function buildSettingsPanel(pageSettings) {
+    const wrap = document.createElement("div");
+    wrap.className = "app-settings-panel";
+
+    if (pageSettings) {
+      wrap.appendChild(pageSettings);
+    } else {
+      const note = document.createElement("p");
+      note.className = "app-drop-note";
+      note.textContent = "이 화면에만 해당하는 설정은 없습니다.";
+      wrap.appendChild(note);
+    }
+
+    const footer = document.createElement("div");
+    footer.className = "app-drop-foot";
+    const link = document.createElement("a");
+    link.className = "app-drop-link";
+    link.id = "header-global-settings-link";
+    link.href = GLOBAL_SETTINGS_HREF;
+    link.textContent = "전체 설정 (테마 · 글자 크기 · 단축키) →";
+    link.addEventListener("click", closePanel);
+    footer.appendChild(link);
+    wrap.appendChild(footer);
+    return wrap;
   }
 
   function togglePanel(kind) {

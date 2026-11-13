@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <title>단축키</title>
+  <link rel="stylesheet" href="/style.css?v=20261114v1">
+  <script src="/modules/script.js?v=20261114v1" defer></script>
+</head>
+
+<body>
+  <article>
+    <!-- 단축키 목록 · 바꾸기 · 기본값으로. 전체 설정에서 한 번 더 들어오는 하위 페이지. 내용은 SiteModules.KeybindManager 가 그린다. -->
+    <div id="keys-root"></div>
+    <script>
+      window.SiteModules.KeybindManager.renderPage(document.getElementById('keys-root'));
+    </script>
+  </article>
+</body>
+
+</html>

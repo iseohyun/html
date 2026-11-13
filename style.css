@@ -55,7 +55,8 @@
 
 html {
   scroll-behavior: smooth;
-  font-size: 80% !important;
+  /* --font-scale: 전체 설정의 글자 크기 (작게 0.9 / 보통 1 / 크게 1.1 / 아주 크게 1.25) */
+  font-size: calc(80% * var(--font-scale, 1)) !important;
 }
 
 body {
@@ -2008,30 +2009,6 @@ footer {
   width: 100% !important;
 }
 
-/* Alt Keybind Badges */
-.keybind-badge {
-  display: none;
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  background-color: #ea4335;
-  color: white;
-  font-size: 9px;
-  font-weight: 800;
-  border-radius: 50%;
-  width: 15px;
-  height: 15px;
-  text-align: center;
-  line-height: 15px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  z-index: 110;
-  user-select: none;
-}
-
-body.show-keybinds .keybind-badge {
-  display: block;
-}
-
 /* Migrated from index.html internal styles */
 article a:hover {
   color: red;
@@ -2760,4 +2737,199 @@ textarea.contact-input {
 .app-header .app-tab[aria-selected="true"],
 .app-header .app-tab[aria-selected="true"]:visited {
   color: var(--fg);
+}
+
+/* ==========================================================================
+   단축키 안내 배지: Alt 를 누르는 동안만 해당 버튼의 오른쪽 아래 모서리에 보인다
+   ========================================================================== */
+[data-key]::after {
+  content: attr(data-key);
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  left: auto;
+  top: auto;
+  transform: none;
+  z-index: 7;
+  min-width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  padding: 0 3px;
+  border-radius: var(--r-sm);
+  background-color: var(--fg);
+  color: var(--bg);
+  border: 1px solid var(--bg);
+  font-family: var(--font-monospace);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 14px;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--t-fast) ease;
+}
+
+.show-keys [data-key]::after {
+  opacity: 1;
+}
+
+/* 레일 아이콘은 ::after 를 설명 풍선으로 쓰므로, 배지를 보이는 동안에는 풍선 대신 배지를 그린다 */
+#sidebar-nav .nav-item[data-key]::after {
+  content: attr(data-tooltip);
+  right: auto;
+  bottom: auto;
+  left: 70px;
+  top: 50%;
+  transform: translateY(-50%);
+  min-width: 0;
+  height: auto;
+  padding: 4px 8px;
+  border: none;
+  font-family: inherit;
+  font-size: 0.75em;
+  line-height: inherit;
+  text-transform: none;
+  z-index: 200;
+}
+
+.show-keys #sidebar-nav .nav-item[data-key]::after {
+  content: attr(data-key);
+  right: -5px;
+  bottom: -5px;
+  left: auto;
+  top: auto;
+  transform: none;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border: 1px solid var(--bg);
+  font-family: var(--font-monospace);
+  font-size: 10px;
+  line-height: 14px;
+  text-transform: uppercase;
+  z-index: 7;
+  opacity: 1;
+}
+
+/* ==========================================================================
+   화면별 설정 패널의 안내 줄과 전체 설정 링크
+   ========================================================================== */
+.app-drop-note {
+  margin: 0;
+  padding: 2px 0 10px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.app-drop-foot {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+}
+
+.app-settings-panel > .app-drop-note + .app-drop-foot {
+  margin-top: 0;
+}
+
+.app-header .app-drop-link,
+.app-header .app-drop-link:visited {
+  color: var(--fg);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.app-header .app-drop-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ==========================================================================
+   전체 설정 · 단축키 페이지: 줄 묶음 카드 (왼쪽에 항목 이름, 오른쪽에 버튼)
+   ========================================================================== */
+.set-card {
+  max-width: 52rem;
+  margin: 8px 0 12px;
+  padding: 14px 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background-color: var(--surface);
+  color: var(--fg);
+  font-size: 13px;
+}
+
+.set-card .topic-row {
+  display: grid;
+  grid-template-columns: 9em minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--line);
+}
+
+.set-card .topic-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.set-card .topic-label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.controls-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.set-note {
+  max-width: 52rem;
+  margin: 0 0 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+/* 전체 설정 페이지의 선택 버튼은 링크로도 쓰인다 */
+article a.pill-btn,
+article a.pill-btn:visited {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+article a.pill-btn:hover {
+  color: var(--fg);
+}
+
+.key-cap {
+  min-width: 46px;
+  justify-content: center;
+  font-family: var(--font-monospace);
+  text-transform: uppercase;
+}
+
+.key-cap.is-fixed {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.key-default-hint {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+@media screen and (max-width: 560px) {
+  .set-card .topic-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
 }

@@ -6,6 +6,24 @@
  */
 
 window.SiteVersion = "20261114v1";
+// 전체 설정의 저장 키. 끝의 판 번호는 저장 모양이 바뀌면 올린다. (modules/core/settings.js 가 같은 키를 쓴다)
+window.SiteSettingsStorageKey = "iseohyun_settings_v1";
+(function() {
+  // 저장해 둔 테마와 글자 크기를 화면이 그려지기 전에 먼저 적용한다 (깜빡임 방지).
+  // 값의 검증과 그 밖의 처리는 settings.js 가 로드된 뒤 다시 한다.
+  try {
+    const saved = JSON.parse(localStorage.getItem(window.SiteSettingsStorageKey) || "{}");
+    let skin = saved.theme;
+    if (skin === "system") {
+      skin = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    if (["dark", "gray", "navy"].includes(skin)) document.documentElement.setAttribute("data-skin", skin);
+    if (["0.9", "1", "1.1", "1.25"].includes(saved.fontScale)) document.documentElement.style.setProperty("--font-scale", saved.fontScale);
+  } catch (err) {
+    console.warn("[Bootstrapper] 저장된 설정을 읽지 못했습니다:", err);
+  }
+})();
+
 (function() {
   const styleLink = document.querySelector('link[rel="stylesheet"][href^="/style.css"]');
   if (styleLink) {
@@ -28,6 +46,7 @@ window.SiteVersion = "20261114v1";
 
   const scripts = [
     '/modules/core/site-config.js',
+    '/modules/core/settings.js',
     '/modules/core/keybind-manager.js',
     '/modules/core/icons.js',
     '/modules/core/header.js',

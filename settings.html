@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <title>전체 설정</title>
+  <link rel="stylesheet" href="/style.css?v=20261114v1">
+  <script src="/modules/script.js?v=20261114v1" defer></script>
+</head>
+
+<body>
+  <article>
+    <!-- 어느 화면에서나 같은 설정(테마 · 글자 크기 · 단축키 · 되돌리기). 내용은 SiteModules.Settings 가 그린다. -->
+    <div id="settings-root"></div>
+    <script>
+      window.SiteModules.Settings.renderPage(document.getElementById('settings-root'));
+    </script>
+  </article>
+</body>
+
+</html>

@@ -40,7 +40,7 @@ window.SiteModules.Navigation = (function () {
   // 형제 문서를 탭으로 묶지 않는 경로 (서로 이어지는 글이 아닌 독립 프로젝트)
   const NO_SERIES_TAB_PREFIX = "/small-project/";
   // hierarchy.json에 없어도 SPA 본문으로 로드 가능한 루트 문서
-  const KNOWN_ROOT_ARTICLES = ["/index.html", "/info.html", "/promo.html", "/"];
+  const KNOWN_ROOT_ARTICLES = ["/index.html", "/info.html", "/promo.html", "/settings.html", "/settings-keys.html", "/"];
   // registerPageCleanup을 쓰지 않는 기존 소프로젝트들이 남기는 전역 이름 (신규 프로젝트는 registerPageCleanup 사용)
   const LEGACY_PAGE_GLOBALS = [
     "init", "initApp", "rebuildGrid", "positionTooltip", "guide", "stepsData", "inputs",
@@ -194,15 +194,12 @@ window.SiteModules.Navigation = (function () {
           </div>
           <div class="nav-item" id="nav-sitemap" data-tab="tab-sitemap" data-tooltip="사이트맵" data-panel-title="사이트맵">
             ${icon("sitemap")}
-            <span class="keybind-badge">1</span>
           </div>
           <div class="nav-item" id="nav-toc" data-tab="tab-toc" data-tooltip="목차" data-panel-title="목차">
             ${icon("list")}
-            <span class="keybind-badge">2</span>
           </div>
           <div class="nav-item" id="nav-search" data-tab="tab-search" data-tooltip="검색" data-panel-title="문서 검색">
             ${icon("search")}
-            <span class="keybind-badge">3</span>
           </div>
         </div>
         
@@ -775,7 +772,9 @@ window.SiteModules.Navigation = (function () {
         if (!found) {
           const fallbackTitles = {
             "/promo.html": "홍보",
-            "/info.html": "사이트 소개"
+            "/info.html": "사이트 소개",
+            "/settings.html": "전체 설정",
+            "/settings-keys.html": "단축키"
           };
           state.cur_doc = { title: docTitle || fallbackTitles[urlPath] || "", dir: "", file: urlPath.replace(/^\//, "") };
           state.prv_doc = { title: "", dir: "", file: "" };

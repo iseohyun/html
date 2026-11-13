@@ -82,11 +82,15 @@ test.describe('공통 뼈대: 헤더 · 레일 · 패널', () => {
     await page.locator('#cal-search-input').fill('수영');
     await expect(page.locator('#header-filter-dot')).toBeVisible();
 
-    // 문서 페이지로 가면 두 아이콘이 사라지고 제목이 바뀐다
+    // 문서 페이지로 가면 필터 아이콘은 사라지고, 설정 아이콘은 남아 전체 설정으로 가는 길을 보여 준다
     await page.evaluate(() => { window.location.hash = '#/column/swimming/swimming.html'; });
     await expect(page.locator('article h1').first()).toBeVisible();
     await expect(filterBtn).toBeHidden();
-    await expect(settingsBtn).toBeHidden();
+    await expect(settingsBtn).toBeVisible();
+    await settingsBtn.click();
+    await expect(page.locator('.app-drop-note')).toHaveText('이 화면에만 해당하는 설정은 없습니다.');
+    await expect(page.locator('#header-global-settings-link')).toBeVisible();
+    await page.keyboard.press('Escape');
     await expect(page.locator('#header-title')).not.toHaveText('iseohyun.com');
   });
 
