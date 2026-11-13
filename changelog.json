@@ -1,5 +1,17 @@
 [
   {
+    "date": "2026-11-14",
+    "type": "Changed",
+    "env": [
+      "WebApp",
+      "Desktop"
+    ],
+    "projectName": "beep-gen",
+    "projectPath": "https://iseohyun.github.io/beep-gen/",
+    "summary": "웹·PC·CLI·MCP 다중 환경 지원",
+    "detail": "비프 합성을 Rust 코어로 옮기고 여러 환경에서 같은 코어를 사용\n- 웹 앱 공개 (설치 없이 브라우저에서 사용)\n- PC 로컬앱: 안내 음성, 주소 입력\n- 명령줄(CLI)과 로컬 MCP 서버\n- 배경 음악 템포 맞추기\n- 웹용 안내 음성(TTS)"
+  },
+  {
     "date": "2026-11-13",
     "type": "Changed",
     "env": "Desktop",

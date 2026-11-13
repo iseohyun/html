@@ -39,6 +39,10 @@ window.SiteModules.Navigation = (function () {
   const PROMO_PATH = "/promo.html";
   // 형제 문서를 탭으로 묶지 않는 경로 (서로 이어지는 글이 아닌 독립 프로젝트)
   const NO_SERIES_TAB_PREFIX = "/small-project/";
+  // 화면별 스크롤 위치 (키: 문서 경로, 홈은 보기 방식까지)
+  const scrollPositions = new Map();
+  // 늦게 그려지는 화면에서 스크롤 위치를 되돌리려고 기다리는 최대 시간
+  const SCROLL_RESTORE_WAIT_MS = 1500;
   // hierarchy.json에 없어도 SPA 본문으로 로드 가능한 루트 문서
   const KNOWN_ROOT_ARTICLES = ["/index.html", "/info.html", "/promo.html", "/settings.html", "/settings-keys.html", "/"];
   // registerPageCleanup을 쓰지 않는 기존 소프로젝트들이 남기는 전역 이름 (신규 프로젝트는 registerPageCleanup 사용)
@@ -437,6 +441,9 @@ window.SiteModules.Navigation = (function () {
 
 
   function handleRouteChange() {
+    // 떠나는 화면의 스크롤 위치를 적어 둔다
+    rememberScrollPosition();
+
     let hash = window.location.hash;
     const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
 
@@ -610,6 +617,76 @@ window.SiteModules.Navigation = (function () {
     }
   }
 
+  // 본문 영역의 오류 경계: 문서를 그리다 오류가 나도 하얀 화면 대신 안내와 다시 시도 버튼을 보여 준다.
+  // 헤더와 사이드바는 그대로 살아 있어 다른 페이지로 옮길 수 있다.
+  function renderErrorState(article, err, retry) {
+    const box = document.createElement("div");
+    box.className = "error-state";
+    box.setAttribute("role", "alert");
+
+    const title = document.createElement("strong");
+    title.className = "error-state-title";
+    title.textContent = "문제가 생겼습니다";
+    const detail = document.createElement("p");
+    detail.className = "error-state-detail";
+    detail.textContent = (err && err.message) ? err.message : "알 수 없는 오류입니다.";
+
+    const actions = document.createElement("div");
+    actions.className = "error-state-actions";
+    const retryBtn = document.createElement("button");
+    retryBtn.type = "button";
+    retryBtn.className = "pill-btn";
+    retryBtn.id = "error-retry-btn";
+    retryBtn.textContent = "다시 시도";
+    retryBtn.addEventListener("click", retry);
+    const reloadBtn = document.createElement("button");
+    reloadBtn.type = "button";
+    reloadBtn.className = "pill-btn";
+    reloadBtn.id = "error-reload-btn";
+    reloadBtn.textContent = "새로 고침";
+    reloadBtn.addEventListener("click", () => window.location.reload());
+    actions.append(retryBtn, reloadBtn);
+
+    box.append(title, detail, actions);
+    article.replaceChildren(box);
+    window.SiteModules.Header.setTitle("문제가 생겼습니다");
+    window.SiteModules.Header.setTabs([]);
+  }
+
+  // 화면마다 보던 스크롤 위치를 적어 두고, 돌아오면 되돌린다 (새로 고치면 지워진다)
+  function getScrollKey() {
+    const state = window.SiteModules.state;
+    if (!state.currentPath) return "";
+    return state.currentPath === "/index.html" ? `/index.html#${state.homeView || "calendar"}` : state.currentPath;
+  }
+
+  function rememberScrollPosition() {
+    const key = getScrollKey();
+    if (key) scrollPositions.set(key, window.scrollY);
+  }
+
+  // 내용이 늦게 그려지는 화면(홈의 달력 등)은 높이가 찰 때까지 잠깐 기다렸다가 되돌린다.
+  // 그 사이 사용자가 직접 스크롤하면 그만둔다.
+  function restoreScrollPosition() {
+    const saved = scrollPositions.get(getScrollKey()) || 0;
+    window.scrollTo(0, saved);
+    if (saved <= 0) return;
+
+    const startedAt = Date.now();
+    let cancelled = false;
+    const cancel = () => { cancelled = true; };
+    window.addEventListener("wheel", cancel, { once: true, passive: true });
+    window.addEventListener("touchstart", cancel, { once: true, passive: true });
+    window.addEventListener("keydown", cancel, { once: true });
+
+    const retry = () => {
+      if (cancelled || Math.abs(window.scrollY - saved) < 2) return;
+      window.scrollTo(0, saved);
+      if (Date.now() - startedAt < SCROLL_RESTORE_WAIT_MS) setTimeout(retry, 100);
+    };
+    setTimeout(retry, 100);
+  }
+
   async function loadPageRoute(urlPath) {
     const article = document.querySelector("article");
     if (!article) return;
@@ -694,9 +771,7 @@ window.SiteModules.Navigation = (function () {
       }
     } catch (err) {
       console.error(err);
-      article.innerHTML = `<h1 style="color:red;">페이지 로드 오류</h1><p>해당 문서를 불러올 수 없습니다.<br><span id="page-load-error-detail"></span></p>`;
-      const errorDetail = article.querySelector("#page-load-error-detail");
-      if (errorDetail) errorDetail.textContent = err.message;
+      renderErrorState(article, err, () => loadPageRoute(urlPath));
     }
   }
 
@@ -852,7 +927,7 @@ window.SiteModules.Navigation = (function () {
         }
       }
     } else {
-      window.scrollTo(0, 0);
+      restoreScrollPosition();
     }
   }
 

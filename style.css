@@ -2933,3 +2933,41 @@ article a.pill-btn:hover {
     gap: 6px;
   }
 }
+
+/* ==========================================================================
+   본문 영역의 오류 안내 (문서를 불러오거나 그리다 오류가 났을 때)
+   ========================================================================== */
+.error-state {
+  max-width: 36rem;
+  margin: 48px auto;
+  padding: 28px 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  border: 1px dashed var(--muted);
+  border-radius: var(--r-lg);
+  background-color: var(--surface);
+  color: var(--fg);
+  font-size: 14px;
+}
+
+.error-state-title {
+  font-size: 18px;
+}
+
+.error-state-detail {
+  margin: 0;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.error-state-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 6px;
+}

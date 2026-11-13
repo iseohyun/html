@@ -638,6 +638,10 @@
           "icon": "source/beep-gen/icon.png",
           "links": [
             {
+              "label": "웹 앱",
+              "url": "https://iseohyun.github.io/beep-gen/"
+            },
+            {
               "label": "GitHub",
               "url": "https://github.com/iseohyun/beep-gen"
             }
@@ -651,6 +655,10 @@
             "• PyQt6 그래픽 인터페이스(5초 미리듣기·실시간 진행률) 및 무인 자동화 CLI 모드, 단독 실행 파일(BeepGen.exe) 지원"
           ],
           "techStack": [
+            "Rust 코어 (WASM / 기기용)",
+            "웹 앱",
+            "Tauri 로컬앱",
+            "CLI · 로컬 MCP 서버",
             "Python + PyQt6 (GUI & CLI)",
             "Sine-Wave Audio Synthesizer (Anti-Clipping Envelope)",
             "Multi-TTS Engine (Edge-TTS, gTTS, Windows SAPI5)",
@@ -662,6 +670,10 @@
               "date": "2026.8.23",
               "version": "v0.1.0",
               "content": "맞춤형 주기·분할 비프음 합성 코어, 다중 TTS 인트로 엔진, PyQt6 GUI 및 CLI 출시"
+            },
+            {
+              "date": "2026.11.14",
+              "content": "다중 환경 지원(웹 앱·PC 로컬앱·CLI·MCP), Rust 코어 이식"
             }
           ]
         }
