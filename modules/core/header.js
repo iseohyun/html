@@ -71,6 +71,8 @@ window.SiteModules.Header = (function () {
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && openKind) closePanel();
     });
+    // 창 크기가 바뀌어 탭 줄의 폭이 달라져도 켜진 탭이 보이게 한다
+    window.addEventListener("resize", scrollSelectedTabIntoView);
   }
 
   /**
@@ -96,13 +98,20 @@ window.SiteModules.Header = (function () {
       nav.appendChild(link);
     });
 
-    // 넘쳐서 가려진 경우 켜진 탭이 보이도록 가로로 민다
-    if (selectedTab) {
-      const overflowLeft = selectedTab.offsetLeft - nav.scrollLeft;
-      const overflowRight = selectedTab.offsetLeft + selectedTab.offsetWidth - (nav.scrollLeft + nav.clientWidth);
-      if (overflowLeft < 0) nav.scrollLeft += overflowLeft - 16;
-      else if (overflowRight > 0) nav.scrollLeft += overflowRight + 16;
-    }
+    scrollSelectedTabIntoView();
+  }
+
+  // 탭이 넘쳐서 가로로 밀리는 경우, 켜진 탭이 탭 줄의 가운데에 오도록 민다
+  function scrollSelectedTabIntoView() {
+    const nav = el("header-tabs");
+    const selected = nav ? nav.querySelector('.app-tab[aria-selected="true"]') : null;
+    if (!nav || !selected || nav.scrollWidth <= nav.clientWidth) return;
+
+    const navRect = nav.getBoundingClientRect();
+    const tabRect = selected.getBoundingClientRect();
+    const tabCenter = tabRect.left + tabRect.width / 2;
+    const navCenter = navRect.left + navRect.width / 2;
+    nav.scrollLeft += tabCenter - navCenter;
   }
 
   function setTitle(text) {

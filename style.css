@@ -1594,53 +1594,6 @@ header {
   max-height: 90vh;
 }
 
-/* KanaLoop-style OAuth login button style */
-.site-login-btn {
-  display: block;
-  margin: 14px auto;
-  padding: 12px 24px;
-  font-size: 1.15em;
-  border-radius: 30px;
-  width: 80%;
-  max-width: 320px;
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  transition: opacity 0.2s ease, transform 0.1s ease;
-}
-
-.site-login-btn:hover {
-  opacity: 0.9;
-}
-
-.site-login-btn:active {
-  transform: scale(0.98);
-}
-
-.google-btn {
-  background-color: #3b5998;
-  /* KanaLoop matching blue */
-  color: white;
-}
-
-.naver-btn {
-  background-color: #16ff25;
-  /* KanaLoop matching green */
-  color: #1f1f1f;
-}
-
-.kakao-btn {
-  background-color: #ebff32;
-  /* KanaLoop matching yellow */
-  color: #1f1f1f;
-}
-
-.logout-btn {
-  background-color: #333333;
-  color: white;
-}
-
 #sidebar-overlay {
   display: none !important;
 }
@@ -2766,4 +2719,45 @@ textarea.contact-input {
     width: auto;
     z-index: 10001;
   }
+}
+
+/* 메일 폼의 "현재 페이지 정보 추가": 체크 칸과 읽기 전용 페이지 이름 */
+.contact-page-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  cursor: pointer;
+}
+
+.contact-page-row input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--fg);
+}
+
+.contact-page-name {
+  background-color: var(--sunken);
+  color: var(--muted);
+  cursor: default;
+}
+
+.contact-page-name.is-off {
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+
+/* 탭은 링크지만 방문 여부로 색이 달라지지 않는다: 꺼진 탭은 흐린 글자, 켜진 탭은 본문 글자색 */
+.app-header .app-tab,
+.app-header .app-tab:link,
+.app-header .app-tab:visited {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.app-header .app-tab:hover,
+.app-header .app-tab[aria-selected="true"],
+.app-header .app-tab[aria-selected="true"]:visited {
+  color: var(--fg);
 }

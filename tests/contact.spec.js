@@ -89,4 +89,54 @@ test.describe('문의 창 (레일의 문의 아이콘)', () => {
     await expect(page.locator('#contact-message')).toHaveValue('실패해도 남아야 하는 내용');
     await expect(page.locator('#contact-submit-btn')).toBeEnabled();
   });
+
+  test('메일: 현재 페이지 정보는 기본으로 체크되어 있고, 읽기 전용 칸에 페이지 이름이 나온다', async ({ page }) => {
+    let sent = null;
+    await page.route(WEB3FORMS_URL, route => {
+      sent = route.request().postDataJSON();
+      route.fulfill({ json: { success: true } });
+    });
+
+    await page.evaluate(() => { window.location.hash = '#/info.html'; });
+    await expect(page.locator('#header-title')).toHaveText('사이트 소개');
+
+    await page.locator('#nav-kakao-channel').click();
+    await page.locator('#contact-mail-toggle').click();
+
+    const check = page.locator('#contact-page-check');
+    const pageName = page.locator('#contact-page-name');
+    await expect(check).toBeChecked();
+    await expect(pageName).toHaveValue('사이트 소개');
+    await expect(pageName).toHaveAttribute('readonly', '');
+
+    await page.locator('#contact-message').fill('페이지 정보가 붙는 문의');
+    await page.locator('#contact-submit-btn').click();
+    await expect(page.locator('#contact-result')).toContainText('보냈습니다');
+    expect(sent.subject).toContain('사이트 소개');
+    expect(sent.message).toContain('페이지: 사이트 소개');
+
+    // 체크를 끄면 페이지 정보 없이 내용만 보낸다
+    await check.uncheck();
+    await page.locator('#contact-message').fill('페이지 정보 없이 보내는 문의');
+    await page.locator('#contact-submit-btn').click();
+    await expect(page.locator('#contact-result')).toContainText('보냈습니다');
+    expect(sent.message).toBe('페이지 정보 없이 보내는 문의');
+    expect(sent.subject).not.toContain('사이트 소개');
+  });
+
+  test('로그인 · 문서별 건의 칸은 없고, Firebase 를 불러오지 않는다', async ({ page }) => {
+    const firebaseRequests = [];
+    page.on('request', request => {
+      if (/firebasejs|firestore.googleapis|identitytoolkit/.test(request.url())) firebaseRequests.push(request.url());
+    });
+
+    await page.goto('/index.html#/column/swimming/freestyle.html');
+    await expect(page.locator('article h1').first()).toBeVisible();
+    await page.waitForTimeout(1500);
+
+    await expect(page.locator('#nav-login')).toHaveCount(0);
+    await expect(page.locator('#login-modal-overlay')).toHaveCount(0);
+    await expect(page.locator('#page-feedback-area')).toHaveCount(0);
+    expect(firebaseRequests).toEqual([]);
+  });
 });

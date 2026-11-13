@@ -1,10 +1,10 @@
 /**
  * @file modules/core/navigation.js
  * @module SiteModules.Navigation
- * @description SPA 해시 라우터, 이중 사이드바(사이트맵/목차/검색 탭) UI, 로그인·도움말 모달을 담당하는 코어 모듈.
- *   검색은 SiteModules.Search, 질문/건의 폼은 SiteModules.Feedback, hierarchy 순회는 SiteModules.Hierarchy에 위임한다.
- * @requires SiteModules.Config, SiteModules.Icons, SiteModules.Header, SiteModules.FirebaseConfig, SiteModules.Auth, SiteModules.Hierarchy,
- *   SiteModules.Search, SiteModules.Feedback, SiteModules.TOC, SiteModules.Document
+ * @description SPA 해시 라우터와 이중 사이드바(사이트맵/목차/검색 탭) UI를 담당하는 코어 모듈.
+ *   검색은 SiteModules.Search, 문의 창은 SiteModules.Contact, hierarchy 순회는 SiteModules.Hierarchy에 위임한다.
+ * @requires SiteModules.Config, SiteModules.Icons, SiteModules.Header, SiteModules.Hierarchy,
+ *   SiteModules.Search, SiteModules.Contact, SiteModules.TOC, SiteModules.Document
  * @exports init, trigBoard, findHierarchyPath, registerPageCleanup
  * @state window.SiteModules.state (현재/이전/다음 문서), hierarchyListCached
  */
@@ -17,7 +17,6 @@ window.SiteModules.state = window.SiteModules.state || {
   next_doc: { title: "", dir: "", file: "" },
   currentPath: ""
 };
-window.SiteModules.authInitialized = false;
 // 페이지 종속 스크립트용 단축 진입점: window.SiteModules.registerPageCleanup(() => { ... })
 window.SiteModules.registerPageCleanup = function (cleanupFn) {
   window.SiteModules.Navigation.registerPageCleanup(cleanupFn);
@@ -41,7 +40,7 @@ window.SiteModules.Navigation = (function () {
   // 형제 문서를 탭으로 묶지 않는 경로 (서로 이어지는 글이 아닌 독립 프로젝트)
   const NO_SERIES_TAB_PREFIX = "/small-project/";
   // hierarchy.json에 없어도 SPA 본문으로 로드 가능한 루트 문서
-  const KNOWN_ROOT_ARTICLES = ["/index.html", "/admin.html", "/help.html", "/info.html", "/promo.html", "/"];
+  const KNOWN_ROOT_ARTICLES = ["/index.html", "/info.html", "/promo.html", "/"];
   // registerPageCleanup을 쓰지 않는 기존 소프로젝트들이 남기는 전역 이름 (신규 프로젝트는 registerPageCleanup 사용)
   const LEGACY_PAGE_GLOBALS = [
     "init", "initApp", "rebuildGrid", "positionTooltip", "guide", "stepsData", "inputs",
@@ -137,86 +136,9 @@ window.SiteModules.Navigation = (function () {
     }));
   }
 
-  // admin/help 문서는 관리자 여부에 따라 서로 교차 리다이렉트한다
-  function checkAdminAndLoadRoute(urlPath) {
-    window.SiteModules.FirebaseConfig.loadSDKs().then(() => {
-      const checkAndLoad = () => {
-        window.SiteModules.Auth.isAdmin().then(isAdmin => {
-          if (urlPath === "/admin.html") {
-            if (isAdmin) loadPageRoute(urlPath);
-            else window.location.hash = "#/help.html";
-          } else if (urlPath === "/help.html") {
-            if (isAdmin) window.location.hash = "#/admin.html";
-            else loadPageRoute(urlPath);
-          }
-        }).catch(err => {
-          console.error("Admin verification failed:", err);
-          if (urlPath === "/admin.html") window.location.hash = "#/help.html";
-          else loadPageRoute(urlPath);
-        });
-      };
-
-      if (window.SiteModules.authInitialized) {
-        checkAndLoad();
-      } else {
-        const unsubscribe = window.firebase.auth().onAuthStateChanged(() => {
-          unsubscribe();
-          checkAndLoad();
-        });
-      }
-    }).catch(err => {
-      console.error("Firebase SDK load failed:", err);
-      loadPageRoute(urlPath);
-    });
-  }
-
-
   function init() {
     const state = window.SiteModules.state;
     state.currentPath = window.location.pathname;
-
-    // 파이어베이스 인증 관찰자 및 로그인 처리기 초기화
-    window.SiteModules.FirebaseConfig.loadSDKs().then(() => {
-      window.firebase.auth().onAuthStateChanged((user) => {
-        window.SiteModules.authInitialized = true;
-
-        const loginBtn = document.getElementById("nav-login");
-        const modalUserInfo = document.getElementById("login-modal-title");
-        if (loginBtn) {
-          if (user) {
-            loginBtn.setAttribute("data-tooltip", (user.displayName || user.email || '사용자'));
-            loginBtn.style.color = "#4285F4";
-            if (modalUserInfo) {
-              modalUserInfo.textContent = "";
-              const nameSpan = document.createElement("span");
-              nameSpan.style.cssText = "font-weight: 800; color: #4285F4;";
-              nameSpan.textContent = user.displayName || '이름없음';
-              modalUserInfo.append(nameSpan, `님 (${user.email || ''})`);
-            }
-          } else {
-            loginBtn.setAttribute("data-tooltip", "게스트");
-            loginBtn.style.color = "";
-            if (modalUserInfo) {
-              modalUserInfo.innerHTML = `게스트<br><span style="font-size: 0.85em; color: #5f6368; font-weight: normal;">로그인되어 있지 않습니다.</span>`;
-            }
-          }
-        }
-
-        // Q&A 질답 폼 리렌더링 트리거 (로그인 상태 변화에 반응)
-        if (state && state.currentPath && state.currentPath !== "/index.html" && state.currentPath !== "/" && !state.currentPath.endsWith("/") && !document.getElementById("site-history")) {
-          window.SiteModules.Feedback.renderPageFeedbackArea(state.currentPath);
-        }
-
-        // 관리자 권한 상태에 따른 페이지 해시 리다이렉트
-        window.SiteModules.Auth.isAdmin().then(isAdmin => {
-          if (isAdmin && window.location.hash === "#/help.html") {
-            window.location.hash = "#/admin.html";
-          } else if (!isAdmin && window.location.hash === "#/admin.html") {
-            window.location.hash = "#/help.html";
-          }
-        }).catch(err => console.error("Admin check on auth change failed:", err));
-      });
-    }).catch(err => console.error("Firebase initialization failed:", err));
 
     // 1. 구글 머티리얼 심볼 링크 주입 및 기본 파비콘 동기화
     let faviconLink = document.querySelector("link[rel*='icon']");
@@ -292,9 +214,6 @@ window.SiteModules.Navigation = (function () {
             <svg viewBox="0 0 24 24" class="kakao-nav-svg" aria-hidden="true">
               <path d="M12 3C6.477 3 2 6.463 2 10.734c0 2.757 1.856 5.177 4.651 6.535-.153.553-.986 3.555-1.021 3.79-.044.294.108.29.228.211.094-.062 3.743-2.501 5.252-3.524.291.028.587.043.89.043 5.523 0 10-3.463 10-7.734S17.523 3 12 3z"/>
             </svg>
-          </div>
-          <div class="nav-item" id="nav-login" data-tooltip="게스트">
-            ${icon("user")}
           </div>
           <div class="nav-item" id="nav-info" data-tooltip="사이트 소개">
             ${icon("info")}
@@ -588,11 +507,7 @@ window.SiteModules.Navigation = (function () {
         return;
       }
 
-      if (targetFullPath === "/admin.html" || targetFullPath === "/help.html") {
-        checkAdminAndLoadRoute(targetFullPath);
-      } else {
-        loadPageRoute(targetFullPath);
-      }
+      loadPageRoute(targetFullPath);
     }
   }
 
@@ -724,6 +639,8 @@ window.SiteModules.Navigation = (function () {
 
     // 이전 페이지가 registerPageCleanup으로 등록한 정리 함수 실행
     runPageCleanups();
+    // 이전 화면의 필터/설정 패널을 내린다 (새 문서의 스크립트가 자기 패널을 등록할 수 있도록 본문을 넣기 전에 비운다)
+    window.SiteModules.Header.setPanels({});
 
     // SPA 페이지 전환 시 이전 소프로젝트 잔존 전역 함수 및 변수 일괄 소거 (네임스페이스 충돌 방어)
     LEGACY_PAGE_GLOBALS.forEach(key => {
@@ -849,7 +766,6 @@ window.SiteModules.Navigation = (function () {
       state.prv_doc = { title: "", dir: "", file: "" };
       state.next_doc = { title: "", dir: "", file: "" };
       document.title = "iseohyun.com";
-      document.body.classList.remove("admin-mode");
     } else {
       state.currentPath = urlPath;
 
@@ -859,9 +775,7 @@ window.SiteModules.Navigation = (function () {
         if (!found) {
           const fallbackTitles = {
             "/promo.html": "홍보",
-            "/info.html": "사이트 소개",
-            "/help.html": "질의 응답 및 건의사항",
-            "/admin.html": "관리자 대시보드"
+            "/info.html": "사이트 소개"
           };
           state.cur_doc = { title: docTitle || fallbackTitles[urlPath] || "", dir: "", file: urlPath.replace(/^\//, "") };
           state.prv_doc = { title: "", dir: "", file: "" };
@@ -870,13 +784,6 @@ window.SiteModules.Navigation = (function () {
         }
       }
 
-      // admin 페이지 여부에 따라 body.admin-mode 클래스 토글
-      const isAdminPage = urlPath.endsWith("/admin.html") || urlPath.endsWith("/admin.htm");
-      if (isAdminPage) {
-        document.body.classList.add("admin-mode");
-      } else {
-        document.body.classList.remove("admin-mode");
-      }
     }
 
     // A. 사이드바 트리 활성 메뉴 노드 표시 및 오토 익스팬드
@@ -931,20 +838,7 @@ window.SiteModules.Navigation = (function () {
 
     // 헤더: 제목을 맞추고, 홈이 아니면 홈 전용 필터/설정 패널을 내린다
     window.SiteModules.Header.setTitle(isHome ? "iseohyun.com" : (state.cur_doc.title || docTitle || ""));
-    if (!isHome) window.SiteModules.Header.setPanels({});
     window.SiteModules.Header.setTabs(buildHeaderTabs(isHome, urlPath));
-
-    // I-4. 모든 서브페이지 최하단 Q&A 피드백 영역 렌더링
-    const isAdminPage = urlPath && (urlPath.endsWith("/admin.html") || urlPath.endsWith("/admin.htm"));
-    if (!isHome && !isAdminPage && !(urlPath && urlPath.endsWith("/promo.html"))) {
-      window.SiteModules.Feedback.renderPageFeedbackArea(urlPath);
-      if (urlPath === "/help.html") {
-        window.SiteModules.Feedback.bindHelpSuggestionEvents(document.querySelector("article"));
-      }
-    } else {
-      const oldArea = document.getElementById("page-feedback-area");
-      if (oldArea) oldArea.remove();
-    }
 
     // J. 서브 앵커 스크롤바 정렬 (querySelector 대신 안전한 getElementById 사용)
     const hash = window.location.hash;
@@ -1243,28 +1137,6 @@ window.SiteModules.Navigation = (function () {
       body.appendChild(helpModal);
     }
 
-    // Login Modal
-    if (!document.getElementById("login-modal-overlay")) {
-      const loginModal = document.createElement("div");
-      loginModal.id = "login-modal-overlay";
-      loginModal.className = "site-modal-overlay";
-      loginModal.innerHTML = `
-        <div class="site-modal-card">
-          <div class="site-modal-header">
-            <span id="login-modal-title">로그인</span>
-            <span class="site-modal-close-btn" id="login-modal-close">&times;</span>
-          </div>
-          <div class="site-modal-body login-modal-body" style="text-align: center; padding: 20px;">
-            <button class="site-login-btn google-btn" id="login-google">구글 로그인</button>
-            <button class="site-login-btn naver-btn" id="login-naver">네이버 로그인</button>
-            <button class="site-login-btn kakao-btn" id="login-kakao">카카오 로그인</button>
-            <button class="site-login-btn logout-btn" id="login-logout">로그아웃</button>
-          </div>
-        </div>
-      `;
-      body.appendChild(loginModal);
-    }
-
   }
 
   function bindSidebarEvents() {
@@ -1430,53 +1302,6 @@ window.SiteModules.Navigation = (function () {
         });
       }
     });
-
-    const loginBtn = document.getElementById("nav-login");
-    const loginClose = document.getElementById("login-modal-close");
-    const loginOverlay = document.getElementById("login-modal-overlay");
-
-    if (loginBtn) {
-      loginBtn.addEventListener("click", () => {
-        if (loginOverlay) loginOverlay.classList.add("active");
-      });
-    }
-    if (loginClose) {
-      loginClose.addEventListener("click", () => {
-        if (loginOverlay) loginOverlay.classList.remove("active");
-      });
-    }
-
-    const loginGoogle = document.getElementById("login-google");
-    const loginNaver = document.getElementById("login-naver");
-    const loginKakao = document.getElementById("login-kakao");
-    const loginLogout = document.getElementById("login-logout");
-
-    if (loginGoogle) {
-      loginGoogle.addEventListener("click", () => {
-        window.SiteModules.Auth.googleLogin(() => {
-          alert("구글 로그인 성공!");
-          if (loginOverlay) loginOverlay.classList.remove("active");
-        });
-      });
-    }
-    if (loginNaver) {
-      loginNaver.addEventListener("click", () => {
-        window.SiteModules.Auth.naverLogin();
-      });
-    }
-    if (loginKakao) {
-      loginKakao.addEventListener("click", () => {
-        window.SiteModules.Auth.kakaoLogin();
-      });
-    }
-    if (loginLogout) {
-      loginLogout.addEventListener("click", () => {
-        window.SiteModules.Auth.logoutUser(() => {
-          alert("로그아웃 되었습니다.");
-          if (loginOverlay) loginOverlay.classList.remove("active");
-        });
-      });
-    }
 
     // 문의 창: 카카오톡 채널 추가 · 1:1 채팅 · 메일로 문의
     window.SiteModules.Contact.init({ closeDrawer: () => setMobileDrawerState(false) });
