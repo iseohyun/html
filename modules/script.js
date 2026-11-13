@@ -31,6 +31,8 @@ window.SiteVersion = "20261110v3";
     '/modules/core/firebase-config.js',
     '/modules/core/auth-handler.js',
     '/modules/core/keybind-manager.js',
+    '/modules/core/icons.js',
+    '/modules/core/header.js',
     '/modules/core/hierarchy.js',
     '/modules/core/search.js',
     '/modules/features/feedback.js',

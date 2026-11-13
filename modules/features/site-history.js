@@ -2,6 +2,7 @@
  * @file modules/features/site-history.js
  * @module SiteModules.UpdateLog
  * @description 홈 화면의 변경 이력 달력: changelog.json/holidays.json을 불러와 달력·필터·상세 팝업을 렌더링한다.
+ * @requires SiteModules.Header (달력의 필터와 화면별 설정을 헤더 패널에 등록)
  * @exports getUpdateList, clearUpdateList, toggle
  */
 
@@ -400,19 +401,14 @@ window.SiteModules.UpdateLog = (function () {
     modal.classList.add('active');
   }
 
-  function buildFloatingFilterUI(updateList, targetId) {
-    let floatingFilter = document.getElementById('cal-floating-filter');
-    if (floatingFilter) return floatingFilter;
+  // 달력의 필터와 화면별 설정을 만들어 헤더 패널(필터 아이콘 / 설정 아이콘)에 등록한다
+  function buildHeaderPanels(targetId) {
+    const filterContent = document.createElement('div');
+    filterContent.className = 'cal-filter-content';
+    const settingsContent = document.createElement('div');
+    settingsContent.className = 'cal-filter-content';
 
-    floatingFilter = document.createElement('div');
-    floatingFilter.id = 'cal-floating-filter';
-    floatingFilter.className = 'cal-floating-filter';
-
-    floatingFilter.innerHTML = `
-      <button type="button" class="cal-filter-toggle-btn" id="cal-filter-toggle-btn" title="달력 필터 옵션 열기/닫기" aria-expanded="false">
-        <span class="material-symbols-outlined">tune</span>
-      </button>
-      <div class="cal-filter-panel" id="cal-filter-panel">
+    filterContent.innerHTML = `
         <table class="cal-filter-table">
           <tbody>
             <tr>
@@ -510,7 +506,9 @@ window.SiteModules.UpdateLog = (function () {
             </tr>
           </tbody>
         </table>
-        <hr class="cal-filter-divider">
+    `;
+
+    settingsContent.innerHTML = `
         <table class="cal-filter-table cal-settings-table">
           <tbody>
             <tr>
@@ -542,33 +540,29 @@ window.SiteModules.UpdateLog = (function () {
             </tr>
           </tbody>
         </table>
-      </div>
     `;
 
-    updateList.parentNode.insertBefore(floatingFilter, updateList);
+    window.SiteModules.Header.setPanels({ filter: filterContent, settings: settingsContent });
 
-    const toggleBtn = floatingFilter.querySelector('#cal-filter-toggle-btn');
-    const panel = floatingFilter.querySelector('#cal-filter-panel');
-
-    if (toggleBtn && panel) {
-      toggleBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const isOpen = panel.classList.toggle('open');
-        toggleBtn.classList.toggle('active', isOpen);
-        toggleBtn.setAttribute('aria-expanded', String(isOpen));
-      });
+    // 기본값에서 하나라도 벗어나 있으면 필터가 걸린 것으로 본다
+    function isFilterApplied() {
+      return filterState.years.length !== DEFAULT_YEARS.length
+        || filterState.envs.length !== DEFAULT_ENVS.length
+        || filterState.types.length !== DEFAULT_TYPES.length
+        || filterState.searchTargets.length !== DEFAULT_SEARCH_TARGETS.length
+        || filterState.searchText.trim() !== '';
     }
 
     function syncFilterStateAndRender() {
-      const checkedYears = Array.from(floatingFilter.querySelectorAll('input[name="cal-year"]:checked'))
+      const checkedYears = Array.from(filterContent.querySelectorAll('input[name="cal-year"]:checked'))
         .map(el => parseInt(el.value, 10));
-      const checkedEnvs = Array.from(floatingFilter.querySelectorAll('input[name="cal-env"]:checked'))
+      const checkedEnvs = Array.from(filterContent.querySelectorAll('input[name="cal-env"]:checked'))
         .map(el => el.value);
-      const checkedTypes = Array.from(floatingFilter.querySelectorAll('input[name="cal-type"]:checked'))
+      const checkedTypes = Array.from(filterContent.querySelectorAll('input[name="cal-type"]:checked'))
         .map(el => el.value);
-      const checkedTargets = Array.from(floatingFilter.querySelectorAll('input[name="cal-search-target"]:checked'))
+      const checkedTargets = Array.from(filterContent.querySelectorAll('input[name="cal-search-target"]:checked'))
         .map(el => el.value);
-      const searchInput = floatingFilter.querySelector('#cal-search-input');
+      const searchInput = filterContent.querySelector('#cal-search-input');
 
       filterState.years = checkedYears;
       filterState.envs = checkedEnvs;
@@ -576,21 +570,22 @@ window.SiteModules.UpdateLog = (function () {
       filterState.searchTargets = checkedTargets;
       filterState.searchText = searchInput ? searchInput.value : '';
       filterState.hasUserFiltered = true;
+      window.SiteModules.Header.setFilterActive(isFilterApplied());
 
       renderCalendar(targetId);
     }
 
-    floatingFilter.querySelectorAll('input[type="checkbox"]').forEach(chk => {
+    filterContent.querySelectorAll('input[type="checkbox"]').forEach(chk => {
       chk.addEventListener('change', syncFilterStateAndRender);
     });
 
-    const searchInput = floatingFilter.querySelector('#cal-search-input');
+    const searchInput = filterContent.querySelector('#cal-search-input');
     if (searchInput) {
       searchInput.addEventListener('input', syncFilterStateAndRender);
     }
 
-    const bgSlider = floatingFilter.querySelector('#cal-bg-alpha-slider');
-    const bgLabel = floatingFilter.querySelector('#cal-bg-alpha-label');
+    const bgSlider = settingsContent.querySelector('#cal-bg-alpha-slider');
+    const bgLabel = settingsContent.querySelector('#cal-bg-alpha-label');
     if (bgSlider) {
       bgSlider.addEventListener('input', (e) => {
         const val = parseInt(e.target.value, 10);
@@ -599,8 +594,8 @@ window.SiteModules.UpdateLog = (function () {
       });
     }
 
-    const titleSlider = floatingFilter.querySelector('#cal-title-size-slider');
-    const titleLabel = floatingFilter.querySelector('#cal-title-size-label');
+    const titleSlider = settingsContent.querySelector('#cal-title-size-slider');
+    const titleLabel = settingsContent.querySelector('#cal-title-size-label');
     if (titleSlider) {
       titleSlider.addEventListener('input', (e) => {
         const val = parseInt(e.target.value, 10);
@@ -609,8 +604,8 @@ window.SiteModules.UpdateLog = (function () {
       });
     }
 
-    const contentSlider = floatingFilter.querySelector('#cal-content-size-slider');
-    const contentLabel = floatingFilter.querySelector('#cal-content-size-label');
+    const contentSlider = settingsContent.querySelector('#cal-content-size-slider');
+    const contentLabel = settingsContent.querySelector('#cal-content-size-label');
     if (contentSlider) {
       contentSlider.addEventListener('input', (e) => {
         const val = parseInt(e.target.value, 10);
@@ -618,8 +613,6 @@ window.SiteModules.UpdateLog = (function () {
         applyContentFontSizePx(val);
       });
     }
-
-    return floatingFilter;
   }
 
   function renderCalendar(targetId = 'site-history') {
@@ -1056,7 +1049,7 @@ window.SiteModules.UpdateLog = (function () {
         searchTargets: [...DEFAULT_SEARCH_TARGETS],
         hasUserFiltered: false
       };
-      buildFloatingFilterUI(updateList, targetId);
+      buildHeaderPanels(targetId);
     }
 
     try {

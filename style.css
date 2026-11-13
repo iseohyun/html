@@ -208,7 +208,7 @@ table pre {
 
 table thead {
   position: sticky;
-  top: 0;
+  top: var(--header-h);
   background-color: #999;
   color: white;
   text-align: center;
@@ -1641,15 +1641,6 @@ header {
   color: white;
 }
 
-/* 좁은 화면(<= 960px) 전용 좌상단 고정 삼선(햄버거) 메뉴 버튼 */
-#mobile-header {
-  display: none !important;
-}
-
-#mobile-menu-btn {
-  display: none !important;
-}
-
 #sidebar-overlay {
   display: none !important;
 }
@@ -1662,50 +1653,6 @@ header {
 
   body {
     padding-left: 0 !important;
-    padding-top: 0 !important;
-  }
-
-  #mobile-menu-btn {
-    display: flex !important;
-    position: fixed !important;
-    top: 8px !important;
-    left: 10px !important;
-    z-index: 9999 !important;
-    width: 42px !important;
-    height: 42px !important;
-    padding: 0 !important;
-    border-radius: 50% !important;
-    border: 1px solid var(--line) !important;
-    background-color: var(--surface) !important;
-    color: #334155 !important;
-    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.14) !important;
-    align-items: center !important;
-    justify-content: center !important;
-    cursor: pointer !important;
-    pointer-events: auto !important;
-    user-select: none !important;
-    transition: background-color var(--t-fast) ease, color var(--t-fast) ease, transform var(--t-fast) ease, box-shadow var(--t-fast) ease, opacity var(--t-fast) ease !important;
-  }
-
-  #mobile-menu-btn * {
-    pointer-events: none !important;
-  }
-
-  #mobile-menu-btn:hover,
-  #mobile-menu-btn.active {
-    background-color: #228be6 !important;
-    border-color: #228be6 !important;
-    color: var(--surface) !important;
-    transform: scale(1.05) !important;
-    box-shadow: 0 6px 18px rgba(34, 139, 230, 0.3) !important;
-  }
-
-  #mobile-menu-btn.hidden-by-sidebar,
-  body.mobile-nav-open #mobile-menu-btn {
-    display: none !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-    visibility: hidden !important;
   }
 
   #sidebar-container {
@@ -2509,4 +2456,279 @@ article a:hover {
 
 .kakao-action-chat:hover {
   background-color: #fada0a;
+}
+
+/* ==========================================================================
+   앱 헤더 (#app-header): [메뉴][제목] ── 탭 ── [필터][공유][설정]
+   - 화면 위에 고정. 사이드바가 본문을 밀어내는 만큼(--sidebar-width) 같이 밀린다.
+   - 필터/화면별 설정은 헤더 바로 아래로 펼쳐지는 같은 자리의 패널(.app-drop)
+   - 글자 크기는 사이트의 rem 축소(80%)와 무관하도록 px 로 적는다.
+   ========================================================================== */
+html {
+  scroll-padding-top: calc(var(--header-h) + 8px);
+}
+
+body {
+  padding-top: var(--header-h);
+}
+
+.ico {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+.ico-sm {
+  width: 14px;
+  height: 14px;
+}
+
+.icon-btn {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  background-color: var(--surface);
+  color: var(--fg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background-color var(--t-fast) ease, border-color var(--t-fast) ease, color var(--t-fast) ease;
+}
+
+.icon-btn:hover {
+  background-color: var(--active);
+  border-color: var(--muted);
+}
+
+.icon-btn[aria-expanded="true"] {
+  background-color: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+}
+
+.icon-btn.is-bare {
+  border-color: transparent;
+  background-color: transparent;
+}
+
+.icon-btn.is-bare:hover {
+  background-color: var(--active);
+}
+
+.icon-btn:focus-visible,
+#sidebar-nav .nav-item:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+}
+
+.app-header {
+  position: fixed;
+  top: 0;
+  left: var(--sidebar-width, 0px);
+  right: 0;
+  z-index: var(--z-header);
+  background-color: var(--sunken);
+  color: var(--fg);
+  font-family: var(--font-main);
+  font-size: 13px;
+  line-height: 1.4;
+  transition: left var(--t-base) ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.app-topbar {
+  height: var(--header-h);
+  padding: 0 16px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.app-header-left,
+.app-header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.app-header-left {
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+.app-page-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-left: 2px;
+}
+
+.app-tabs {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  margin-bottom: -1px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.app-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-dot {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 8px;
+  height: 8px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background-color: var(--alert);
+  border: 1.5px solid var(--surface);
+}
+
+.pop-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.app-toast {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 5;
+  white-space: nowrap;
+  background-color: var(--fg);
+  color: var(--bg);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--r-md);
+  pointer-events: none;
+}
+
+/* 필터 · 화면별 설정: 높이를 0에서 내용 높이까지 늘리며 펼친다 */
+.app-drop {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  background-color: var(--bg);
+  transition: grid-template-rows var(--t-base) ease, opacity var(--t-base) ease;
+}
+
+.app-drop.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+}
+
+.app-drop-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.app-drop.is-open .app-drop-inner {
+  max-height: min(70vh, 560px);
+  overflow-y: auto;
+}
+
+.app-drop-content {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 12px 16px;
+  box-sizing: border-box;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* 패널 머리(제목 · 닫기)와 하단 블록(빌드 표시) */
+#sidebar-panel .panel-head {
+  height: var(--header-h);
+  flex-shrink: 0;
+  box-sizing: border-box;
+  padding: 0 8px 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+  color: var(--fg);
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+#sidebar-panel .panel-foot {
+  flex-shrink: 0;
+  padding: 10px 16px 12px;
+  border-top: 1px solid var(--line);
+  font-family: var(--font-monospace);
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+#sidebar-panel .panel-foot:empty {
+  display: none;
+}
+
+/* 레일: 켜진 탭은 색이 아니라 글자색으로 채운 면으로 표시 */
+#sidebar-nav .nav-item {
+  border-radius: var(--r-pill);
+}
+
+#sidebar-nav .nav-item .ico {
+  width: 24px;
+  height: 24px;
+}
+
+#sidebar-nav .nav-item.active {
+  background-color: var(--fg);
+  color: var(--bg);
+}
+
+@media screen and (max-width: 960px) {
+  .app-header {
+    left: 0;
+  }
+
+  .app-topbar {
+    gap: 8px;
+  }
+
+  body {
+    padding-top: var(--header-h) !important;
+  }
+}
+
+@media screen and (max-width: 560px) {
+  .app-page-title {
+    display: none;
+  }
 }
