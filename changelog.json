@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-11-17",
+    "type": "Added",
+    "env": "WebApp",
+    "projectName": "NameQuiz",
+    "projectPath": "https://iseohyun.github.io/NameQuiz/",
+    "summary": "캐릭터 이름 퀴즈 놀이",
+    "detail": "산리오 40종, 티니핑 179종(1기~7기)의 그림과 이름을 맞히는 퀴즈 놀이 웹앱 공개"
+  },
+  {
     "date": "2026-11-14",
     "type": "Changed",
     "env": [

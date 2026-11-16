@@ -5,6 +5,36 @@
       "title": "Web App",
       "items": [
         {
+          "title": "캐릭터 이름 퀴즈 (NameQuiz)",
+          "projectId": "NameQuiz",
+          "icon": "source/NameQuiz/favicon.svg",
+          "links": [
+            {
+              "label": "NameQuiz",
+              "url": "https://iseohyun.github.io/NameQuiz/"
+            },
+            {
+              "label": "GitHub",
+              "url": "https://github.com/iseohyun/NameQuiz"
+            }
+          ],
+          "showUrl": false,
+          "description": "산리오 40종, 티니핑 179종(1기~7기) 캐릭터의 그림과 이름을 맞히는 퀴즈 놀이",
+          "overview": [
+            "그림을 보고 이름을, 이름을 보고 그림을 맞히는 양방향 퀴즈 (간격 반복)"
+          ],
+          "techStack": [
+            "JavaScript",
+            "GitHub Pages"
+          ],
+          "changelog": [
+            {
+              "date": "2026.11.17",
+              "content": "산리오 40종 · 티니핑 179종 퀴즈 공개"
+            }
+          ]
+        },
+        {
           "title": "해풍단",
           "projectId": "haepungdan",
           "icon": "source/haepungdan/Haepungdan-main.png",
@@ -479,7 +509,7 @@
           ]
         },
         {
-          "title": "일본어 글자 암기 (CharQuiz)",
+          "title": "영어·한국어·일본어 글자 암기 (CharQuiz)",
           "projectId": "CharQuiz",
           "icon": "source/CharQuiz/icon.svg",
           "links": [
@@ -493,9 +523,9 @@
             }
           ],
           "showUrl": false,
-          "description": "원어민 음성을 듣고 히라가나·카타카나를 빠르게 맞추는 반복 학습·타임어택 기록·실시간 관전 및 에빙하우스 망각곡선 복습 웹앱",
+          "description": "원어민 음성을 듣고 영어·한국어·일본어 글자를 빠르게 맞추는 반복 학습·타임어택 기록·실시간 관전 및 에빙하우스 망각곡선 복습 웹앱",
           "overview": [
-            "일본어 히라가나·카타카나 글자의 음성을 듣고 빠르게 선택하며 암기 효율을 극대화하는 오디오 반응형 학습 웹 애플리케이션입니다 (구 KanaLoop 통합).",
+            "영어·한국어·일본어 글자의 음성을 듣고 빠르게 선택하며 암기 효율을 극대화하는 오디오 반응형 학습 웹 애플리케이션입니다 (구 KanaLoop 통합).",
             "• 학습 모드(반복 오디오 퀴즈), 기록 모드(타임어택 속도 측정 및 리더보드), 실시간 관전 모드(LIVE), 단어장(응답속도·장기기억 망각 위험 단어 하이라이트 및 복습 알림 배지)",
             "• Local-First(0ms 로컬 캐싱 기동, 세션 종료 시 Lazy Batch Sync, 단어 단위 양방향 스마트 병합) 아키텍처로 Firebase DB 읽기/쓰기 비용 최소화",
             "• 다중 음성 지원 및 오디오 딜레이 최적화, FCM 푸시 알림 서비스 워커, 키보드 단축키 완벽 지원"
