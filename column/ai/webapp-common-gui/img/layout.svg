@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" font-family="'Malgun Gothic', sans-serif" font-size="15">
+  <title>화면 구성</title>
+  <rect width="640" height="400" fill="#ffffff"/>
+  <rect x="20" y="20" width="600" height="360" rx="10" fill="#f5f6f5" stroke="#1b1e1d" stroke-width="2"/>
+  <rect x="20" y="20" width="60" height="360" fill="#e9eceb" stroke="#1b1e1d" stroke-width="1.5"/>
+  <rect x="80" y="20" width="150" height="360" fill="#e9eceb" stroke="#1b1e1d" stroke-width="1.5"/>
+  <rect x="230" y="20" width="390" height="50" fill="#dce1de" stroke="#1b1e1d" stroke-width="1.5"/>
+  <text x="50" y="205" text-anchor="middle" fill="#1b1e1d" font-weight="700">레일</text>
+  <text x="50" y="226" text-anchor="middle" fill="#5c6461" font-size="12">60px</text>
+  <text x="155" y="205" text-anchor="middle" fill="#1b1e1d" font-weight="700">패널</text>
+  <text x="155" y="226" text-anchor="middle" fill="#5c6461" font-size="12">240px</text>
+  <text x="425" y="51" text-anchor="middle" fill="#1b1e1d" font-weight="700">헤더 · 48px</text>
+  <text x="425" y="220" text-anchor="middle" fill="#1b1e1d" font-weight="700">본문</text>
+  <text x="425" y="242" text-anchor="middle" fill="#5c6461" font-size="12">이 영역만 세로 스크롤 · 최대 1640px</text>
+</svg>

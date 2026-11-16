@@ -2244,7 +2244,8 @@ body {
   border-color: var(--muted);
 }
 
-.icon-btn[aria-expanded="true"] {
+.icon-btn[aria-expanded="true"],
+.icon-btn[aria-pressed="true"] {
   background-color: var(--fg);
   color: var(--bg);
   border-color: var(--fg);
@@ -2738,7 +2739,9 @@ textarea.contact-input {
 /* ==========================================================================
    단축키 안내 배지: Alt 를 누르는 동안만 해당 버튼의 오른쪽 아래 모서리에 보인다
    ========================================================================== */
-[data-key]::after {
+/* 배지는 헤더와 레일의 단추에만 붙는다. 본문 문서가 data-key 를 다른 뜻으로 써도 걸리지 않게 범위를 좁힌다 */
+#app-header [data-key]::after,
+#sidebar-nav [data-key]::after {
   content: attr(data-key);
   position: absolute;
   right: -5px;
@@ -2767,7 +2770,8 @@ textarea.contact-input {
   transition: opacity var(--t-fast) ease;
 }
 
-.show-keys [data-key]::after {
+.show-keys #app-header [data-key]::after,
+.show-keys #sidebar-nav [data-key]::after {
   opacity: 1;
 }
 
@@ -3121,4 +3125,29 @@ body:not(:has(#site-history)) #app-main > article {
 
 .app-tabs.is-dragging .app-tab {
   pointer-events: none;
+}
+
+/* ==========================================================================
+   마크다운 문서 (modules/ui/markdown.js 가 그린 본문)
+   ========================================================================== */
+table.md-table td {
+  text-align: left;
+}
+
+table.md-table .md-align-center {
+  text-align: center;
+}
+
+table.md-table .md-align-right {
+  text-align: right;
+}
+
+/* 인용은 코드 상자가 아니라 본문 글꼴로 */
+blockquote.md-quote {
+  font-family: inherit;
+}
+
+article img.md-img {
+  max-width: 100%;
+  height: auto;
 }

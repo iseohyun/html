@@ -2,13 +2,15 @@
  * @file modules/core/header.js
  * @module SiteModules.Header
  * @description 화면 위에 고정되는 헤더. 한 줄에 세 묶음을 둔다:
- *   [메뉴 아이콘][페이지 제목] ── 탭 ── [필터][페이지 공유][설정]
+ *   [메뉴 아이콘][페이지 제목] ── 탭 ── [화면별 동작 단추...][필터][페이지 공유][설정]
  *   탭 줄이 제목과 아이콘에 밀려 다 보이지 않으면 가려진 쪽에 스크롤 버튼이 생기고, 탭 줄을 끌어서도 밀 수 있다.
  *   필터와 화면별 설정은 헤더 바로 아래로 펼쳐지는 같은 자리의 패널이며 한 번에 하나만 열린다.
  *   패널의 내용은 각 화면이 setPanels() 로 등록한다. 필터 아이콘은 등록한 화면에서만 보이고,
  *   설정 아이콘은 어느 화면에나 있으며 맨 아래 줄에서 전체 설정 페이지로 간다.
+ *   화면별 동작 단추(재생/정지 등)는 각 화면이 setActions() 로 등록하고 updateAction() 으로 모양을 바꾼다.
+ *   패널과 동작 단추는 다른 문서로 옮길 때 라우터(navigation.js)가 비운다.
  * @requires SiteModules.Icons
- * @exports init, setTitle, setTabs, setPanels, togglePanel, closePanel, setFilterActive
+ * @exports init, setTitle, setTabs, setPanels, togglePanel, closePanel, setFilterActive, setActions, updateAction
  */
 
 window.SiteModules = window.SiteModules || {};
@@ -26,6 +28,8 @@ window.SiteModules.Header = (function () {
   let openKind = null;
   let toastTimer = null;
   const panels = { filter: null, settings: null };
+  // 지금 화면이 등록한 동작 단추: id → button
+  const actionButtons = new Map();
 
   function el(id) {
     return document.getElementById(id);
@@ -268,6 +272,66 @@ window.SiteModules.Header = (function () {
     if (dot) dot.hidden = !isActive;
   }
 
+  // 동작 단추의 아이콘 · 이름 · 눌림 상태 · 사용 가능 여부를 맞춘다 (넘기지 않은 값은 그대로 둔다)
+  function applyActionState(button, state) {
+    if (state.icon !== undefined) button.innerHTML = window.SiteModules.Icons.html(state.icon);
+    if (state.label !== undefined) {
+      button.setAttribute("aria-label", state.label);
+      button.title = state.label;
+    }
+    if (state.pressed !== undefined) {
+      // 켜고 끄는 단추가 아니면(null) 눌림 표시를 아예 없앤다
+      if (state.pressed === null) button.removeAttribute("aria-pressed");
+      else button.setAttribute("aria-pressed", String(!!state.pressed));
+    }
+    if (state.disabled !== undefined) button.disabled = !!state.disabled;
+  }
+
+  /**
+   * 지금 화면의 동작 단추를 바꾼다. 필터/공유/설정 아이콘 앞에 넘긴 순서대로 놓인다. 빈 배열이면 모두 지운다.
+   * 다른 문서로 옮기면 라우터가 비우므로, 문서 스크립트는 자기 화면이 그려질 때마다 등록한다.
+   * @param {Array<{id: string, icon: string, label: string, pressed?: boolean, disabled?: boolean,
+   *   onClick?: (event: MouseEvent, button: HTMLButtonElement) => void}>} actions
+   *   icon 은 SiteModules.Icons 의 이름. pressed 를 주면 켜고 끄는 단추(aria-pressed)가 된다.
+   */
+  function setActions(actions = []) {
+    actionButtons.forEach(button => button.remove());
+    actionButtons.clear();
+
+    const anchor = el("header-filter-btn");
+    if (!anchor || !Array.isArray(actions)) return;
+
+    actions.forEach(action => {
+      if (!action || !action.id || actionButtons.has(action.id)) {
+        console.warn("[Header] id 가 없거나 겹치는 동작 단추를 건너뜁니다:", action);
+        return;
+      }
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "icon-btn header-action";
+      button.id = `header-action-${action.id}`;
+      applyActionState(button, action);
+      if (typeof action.onClick === "function") {
+        button.addEventListener("click", (event) => action.onClick(event, button));
+      }
+      anchor.parentNode.insertBefore(button, anchor);
+      actionButtons.set(action.id, button);
+    });
+  }
+
+  /**
+   * 동작 단추 하나의 모양을 바꾼다. (예: 재생 ↔ 일시 정지)
+   * @param {string} id setActions 에 넘긴 id
+   * @param {{icon?: string, label?: string, pressed?: boolean|null, disabled?: boolean}} patch 바꿀 값만 넘긴다
+   * @returns {boolean} 그런 단추가 없으면 false
+   */
+  function updateAction(id, patch = {}) {
+    const button = actionButtons.get(id);
+    if (!button) return false;
+    applyActionState(button, patch);
+    return true;
+  }
+
   function showToast(message) {
     const toast = el("header-toast");
     if (!toast) return;
@@ -295,6 +359,8 @@ window.SiteModules.Header = (function () {
     setPanels: setPanels,
     togglePanel: togglePanel,
     closePanel: closePanel,
-    setFilterActive: setFilterActive
+    setFilterActive: setFilterActive,
+    setActions: setActions,
+    updateAction: updateAction
   };
 })();

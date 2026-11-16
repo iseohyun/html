@@ -96,7 +96,11 @@ window.SiteModules.Search = (function () {
         try {
           const res = await fetch(page.url);
           if (!res.ok) continue;
-          const htmlText = await res.text();
+          let htmlText = await res.text();
+          // 마크다운 문서는 화면에 그려지는 HTML 로 바꿔서 같은 방식으로 글자를 뽑는다
+          if (/\.md$/i.test(page.url)) {
+            htmlText = `<article>${window.SiteModules.Markdown.render(htmlText, { basePath: page.url })}</article>`;
+          }
           const doc = new DOMParser().parseFromString(htmlText, "text/html");
 
           const tagsEl = doc.querySelector("tags");

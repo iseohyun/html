@@ -4,7 +4,9 @@
  * @description 뼈대(레일·헤더·패널)에서 쓰는 선형 아이콘 묶음. 24px 격자, 선 굵기 1.75px, 끝과 모서리는 둥글게.
  *   한 기능에 아이콘 하나, 한 아이콘에 뜻 하나를 지킨다. 그림은 Lucide 아이콘 이름을 따른다.
  *   새 기능의 아이콘은 먼저 ICON_PATHS 에 더한 다음 쓴다.
- * @exports ensureSprite, html
+ *   한 문서에서만 쓰는 아이콘은 그 문서의 스크립트가 register() 로 더한다 (레일 항목·헤더 동작 단추에 쓰기 전에):
+ *     SiteModules.Icons.register("map", '<path d="..."/>');   // 24px 격자의 선 그림, 색은 currentColor
+ * @exports ensureSprite, html, register
  */
 
 window.SiteModules = window.SiteModules || {};
@@ -34,14 +36,18 @@ window.SiteModules.Icons = (function () {
     "user-plus": '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/>', // 친구 추가 (user-plus)
     "mail": '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>', // 메일 (mail)
     "chat": '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',                             // 채팅 (message-circle)
+    "play": '<path d="M6 3l14 9-14 9V3z"/>',                                          // 재생 (play)
+    "pause": '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>', // 일시 정지 (pause)
   };
+
+  function symbolMarkup(name) {
+    return `<symbol id="i-${name}" viewBox="0 0 24 24">${ICON_PATHS[name]}</symbol>`;
+  }
 
   /** 아이콘 모음(SVG sprite)을 문서에 한 번만 넣는다. */
   function ensureSprite() {
     if (document.getElementById(SPRITE_ID)) return;
-    const symbols = Object.keys(ICON_PATHS)
-      .map(name => `<symbol id="i-${name}" viewBox="0 0 24 24">${ICON_PATHS[name]}</symbol>`)
-      .join("");
+    const symbols = Object.keys(ICON_PATHS).map(symbolMarkup).join("");
     const holder = document.createElement("div");
     holder.innerHTML = `<svg id="${SPRITE_ID}" width="0" height="0" style="position:absolute" aria-hidden="true">${symbols}</svg>`;
     document.body.insertBefore(holder.firstChild, document.body.firstChild);
@@ -57,8 +63,33 @@ window.SiteModules.Icons = (function () {
     return `<svg class="ico${extraClass ? " " + extraClass : ""}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
   }
 
+  /**
+   * 아이콘을 더한다. 문서 스크립트가 자기만 쓰는 아이콘을 등록할 때 쓴다. 이미 있는 이름은 그대로 둔다.
+   * @param {string} name 영문 소문자와 숫자, 하이픈으로 된 이름
+   * @param {string} pathMarkup <symbol> 안에 들어갈 SVG 도형 마크업 (24px 격자)
+   * @returns {boolean} 새로 등록했으면 true
+   */
+  function register(name, pathMarkup) {
+    if (!/^[a-z0-9-]+$/.test(String(name)) || typeof pathMarkup !== "string") {
+      console.warn("[Icons] 등록할 수 없는 아이콘입니다:", name);
+      return false;
+    }
+    if (ICON_PATHS[name]) return false;
+    ICON_PATHS[name] = pathMarkup;
+
+    // 아이콘 모음이 이미 문서에 있으면 거기에도 더한다 (SVG 이름공간으로 풀리도록 <svg> 로 감싸 파싱한다)
+    const sprite = document.getElementById(SPRITE_ID);
+    if (sprite) {
+      const holder = document.createElement("div");
+      holder.innerHTML = `<svg>${symbolMarkup(name)}</svg>`;
+      sprite.appendChild(holder.firstChild.firstChild);
+    }
+    return true;
+  }
+
   return {
     ensureSprite: ensureSprite,
-    html: html
+    html: html,
+    register: register
   };
 })();

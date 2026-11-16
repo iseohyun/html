@@ -4,7 +4,7 @@
  * @description hierarchy.json에 등록된 모든 문서를 읽어 사이드바 검색용 정적 색인(/search-index.json)을 생성한다.
  *   사이트(modules/core/search.js)는 이 파일 하나만 받아 태그/전체 검색을 수행하며,
  *   파일이 없으면 런타임에 문서를 직접 수집하는 방식으로 대체된다.
- *   외부 의존성 없이 Node 내장 모듈만 사용한다.
+ *   외부 의존성 없이 Node 내장 모듈만 사용한다. 마크다운(.md) 문서는 modules/ui/markdown.js 로 HTML 로 바꿔 색인한다.
  *
  * 사용법:
  *   node scripts/build-search-index.js          색인 생성(덮어쓰기)
@@ -16,6 +16,8 @@
 
 const fs = require('fs');
 const path = require('path');
+// 마크다운(.md) 문서를 사이트와 같은 방식으로 풀기 위해 브라우저용 변환기를 그대로 쓴다 (DOM 을 쓰지 않는 모듈)
+const Markdown = require('../modules/ui/markdown.js');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 const HIERARCHY_PATH = path.join(ROOT_DIR, 'hierarchy.json');
@@ -112,7 +114,11 @@ function buildIndex() {
       missing.push(page.url);
       continue;
     }
-    const html = fs.readFileSync(filePath, 'utf8');
+    let html = fs.readFileSync(filePath, 'utf8');
+    // 마크다운 문서는 사이트와 같은 변환기로 HTML 로 바꾼 뒤 색인한다 (search.js 의 런타임 수집과 동일)
+    if (/\.md$/i.test(page.url)) {
+      html = `<article>${Markdown.render(html, { basePath: page.url })}</article>`;
+    }
     const articleHtml = extractArticle(html);
     entries.push({
       title: page.title,

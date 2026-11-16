@@ -1,0 +1,1486 @@
+/**
+ * @file modules/features/slides.css
+ * @module SiteModules.Slides (스타일)
+ * @description 보고서 형식 문서의 모양: 16:9 슬라이드와 스크립트의 짝, 전체 화면 보기, 읽어 주기 표시(읽는 곳 · 슬라이드 짚기 ·
+ *   자막 · 진행 막대), 슬라이드 안의 그림 크게 보기, 읽기 설정 줄, 그리고 항목 카드(.note / .note.claude).
+ *   규칙의 원문은 WebApp Common GUI 의 design/12-보고서.md, 13-그림-보기.md.
+ *
+ *   범위: 이 파일은 한 번 붙으면 떼어지지 않으므로 모든 선택자를 아래 넷 중 하나로 가둔다.
+ *     - .slides-doc      문서 본문을 감싼 상자 (article 안)
+ *     - .sl-settings     읽기 설정 줄 (헤더의 화면 설정 패널과 전체 화면 안의 설정 창이 같이 쓴다)
+ *     - .sl-playbar      화면 맨 아래의 진행 막대 (body 에 붙는다)
+ *     - .sl-viewer       그림 크게 보기 (슬라이드 안, 또는 좁은 화면에서는 body 에 붙는다)
+ *
+ *   색: 사이트의 문서(article)는 어떤 테마에서도 밝은 종이다. 그래서 자리마다 쓰는 색을 --c-* 로 한 번 더 감싼다.
+ *     - 종이 위(스크립트, 점선 카드, 장 제목): 종이에 맞춘 고정 잉크
+ *     - 표면 위(슬라이드, 실선 카드, 표, 전체 화면, 그림 보기): 사이트의 역할 토큰(--surface, --fg, --line ...) → 테마를 따른다
+ *   짚는 색(--sl-cue)과 자막 색(--sl-cap-*)은 읽기 설정 값이며 slides.js 가 :root 에 적는다.
+ */
+
+/* ---------- 자리별 색 ---------- */
+.slides-doc {
+  --c-bg: #ffffff;
+  --c-fg: #333333;
+  --c-muted: #6a706d;
+  --c-line: #d5dad7;
+  --c-sunken: #f1f3f2;
+  --c-mark: #ffe58a;
+  --sl-text: 1.1rem;        /* 스크립트와 카드의 글자 크기 */
+  --sl-prose-w: 65rem;      /* 긴 글의 폭 */
+  --sl-slide-w: 75rem;      /* 슬라이드의 최대 폭 */
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  line-height: 1.65;
+  word-break: keep-all;
+  text-align: left;
+}
+
+.slides-doc .slide,
+.slides-doc .note:not(.claude),
+.slides-doc .scroll,
+.slides-doc.is-full,
+.sl-viewer {
+  --c-bg: var(--surface);
+  --c-fg: var(--fg);
+  --c-muted: var(--muted);
+  --c-line: var(--line);
+  --c-sunken: var(--sunken);
+  color: var(--fg);
+}
+
+:root[data-skin="dark"] .slides-doc .slide,
+:root[data-skin="navy"] .slides-doc .slide,
+:root[data-skin="dark"] .slides-doc .note:not(.claude),
+:root[data-skin="navy"] .slides-doc .note:not(.claude) {
+  --c-mark: #6b5a16;
+  color-scheme: dark;
+}
+
+.slides-doc,
+.slides-doc *,
+.slides-doc *::before,
+.slides-doc *::after,
+.sl-settings,
+.sl-settings *,
+.sl-playbar,
+.sl-viewer,
+.sl-viewer * {
+  box-sizing: border-box;
+}
+
+/* ---------- 사이트의 넓은 규칙(p, ul, table, blockquote ...)을 이 상자 안에서 되돌린다 ---------- */
+.slides-doc p,
+.slides-doc ul,
+.slides-doc ol,
+.slides-doc dl,
+.slides-doc dd,
+.slides-doc figure,
+.slides-doc blockquote {
+  margin: 0;
+}
+
+.slides-doc p::before {
+  content: none;
+}
+
+.slides-doc ul,
+.slides-doc ol {
+  padding-left: 1.2em;
+}
+
+.slides-doc li > ul,
+.slides-doc li > ol {
+  font-size: inherit;
+}
+
+.slides-doc code {
+  font-family: var(--font-monospace);
+  font-size: 0.86em;
+  background: var(--c-sunken);
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-sm);
+  padding: 0 4px;
+  color: inherit;
+}
+
+.slides-doc mark {
+  background: var(--c-mark);
+  color: inherit;
+  border-radius: 3px;
+}
+
+/* ---------- 제목 ---------- */
+/* 장 제목에는 이미 "2장." 이 들어 있으므로 사이트의 번호(01.)를 붙이지 않는다 */
+article .slides-doc h1 {
+  width: auto;
+  margin: 0;
+  padding: 6px 0 10px;
+  font-size: 1.6rem;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+}
+
+article .slides-doc h1::before {
+  content: none;
+}
+
+/* 사이트가 문서 제목을 본문 위에 따로 보여 주는 장(슬라이드로 쓴 장)의 제목: 목차와 번호 매김에만 쓰고 화면에서는 감춘다 */
+article .slides-doc h1.sl-chapter {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* 묶음 제목: 번호는 사이트의 제목 번호 매김이 붙인다 (1-1. 1-2. ...) */
+.slides-doc > section > h2 {
+  width: auto;
+  margin: 0;
+  padding: 0 0 8px;
+  font-size: 1.3rem;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+
+/* ---------- 본문 공통 ---------- */
+.slides-doc > section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 26px;
+  min-width: 0;
+  scroll-margin-top: 12px;
+}
+
+.slides-doc > h1 + section {
+  margin-top: 0;
+}
+
+.slides-doc .prose {
+  max-width: var(--sl-prose-w);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-size: var(--sl-text);
+}
+
+.slides-doc > .prose {
+  margin-bottom: 10px;
+}
+
+.slides-doc .prose ul {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.slides-doc .lead {
+  color: var(--c-muted);
+  font-size: 1.1em;
+}
+
+.slides-doc .scroll {
+  max-width: var(--sl-prose-w);
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+
+.slides-doc table {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-collapse: collapse;
+  font-family: inherit;
+  font-size: 0.92em;
+  font-stretch: normal;
+  word-break: keep-all;
+}
+
+.slides-doc thead {
+  position: static;
+  background: none;
+  color: inherit;
+  text-align: left;
+}
+
+.slides-doc th,
+.slides-doc td {
+  padding: 9px 12px;
+  border: 0;
+  border-bottom: 1px solid var(--c-line);
+  text-align: left;
+  vertical-align: top;
+  line-height: inherit;
+}
+
+.slides-doc th {
+  font-size: 0.92em;
+  font-weight: 700;
+  color: var(--c-muted);
+  background: var(--c-sunken);
+  white-space: nowrap;
+}
+
+.slides-doc tr:last-child td {
+  border-bottom: 0;
+}
+
+.slides-doc td.nowrap {
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.slides-doc .callout {
+  max-width: var(--sl-prose-w);
+  border: 1px dashed var(--c-muted);
+  border-radius: var(--r-md);
+  padding: 10px 14px;
+  font-size: 0.95em;
+  color: var(--c-muted);
+}
+
+.slides-doc .tag {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: var(--r-sm);
+  background: var(--c-sunken);
+  color: var(--c-muted);
+  font-size: 0.8em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ---------- 항목 카드: 실선 = 내 경험과 생각, 점선 = Claude의 의견 ---------- */
+.slides-doc .note {
+  max-width: var(--sl-prose-w);
+  padding: 16px 20px 18px;
+  scroll-margin-top: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: var(--sl-text);
+}
+
+.slides-doc .note.claude {
+  background: transparent;
+  border: 1px dashed var(--c-muted);
+}
+
+.slides-doc .kind {
+  align-self: flex-start;
+  padding: 1px 9px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--c-fg);
+  background: var(--c-fg);
+  color: var(--c-bg);
+  font-size: 0.8em;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.slides-doc .note.claude .kind {
+  background: transparent;
+  color: var(--c-fg);
+}
+
+/* 항목 제목은 사이트 목차에 오르도록 h2 로 쓴다. 카드 안에서는 번호와 밑줄을 그리지 않는다 */
+.slides-doc .note h2 {
+  width: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 1.12em;
+  line-height: 1.45;
+}
+
+.slides-doc .note h2::before {
+  content: none;
+}
+
+.slides-doc .note ul,
+.slides-doc .note ol {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.slides-doc .note blockquote {
+  padding: 2px 0 2px 14px;
+  border: 0;
+  border-left: 2px solid var(--c-line);
+  border-radius: 0;
+  background: none;
+  font-family: inherit;
+  line-height: inherit;
+  color: var(--c-muted);
+  overflow: visible;
+}
+
+.slides-doc .note .scroll {
+  max-width: none;
+}
+
+.slides-doc .note .meta {
+  color: var(--c-muted);
+  font-size: 0.88em;
+  font-family: var(--font-monospace);
+  font-variant-numeric: tabular-nums;
+}
+
+.slides-doc .note[hidden] {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .slides-doc .note {
+    animation: sl-rise var(--t-base) ease both;
+  }
+}
+
+@keyframes sl-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes sl-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ---------- 보고서 형식: 16:9 슬라이드와 스크립트 ---------- */
+.slides-doc .slide-frame {
+  container: sl-frame / inline-size;
+  position: relative;
+  width: 100%;
+  max-width: var(--sl-slide-w);
+}
+
+.slides-doc .slide {
+  container: sl-slide / inline-size;
+  position: relative;
+  display: grid;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+}
+
+/* 슬라이드 안의 크기는 모두 슬라이드 폭에 비례한다. 전체 화면에서도 같은 비율로 커진다 */
+.slides-doc .slide-body {
+  min-height: 0;
+  padding: 3cqw 4cqw 2.6cqw;
+  font-size: 1.6cqw;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 2cqw;
+}
+
+.slides-doc .slide-eyebrow {
+  font-family: var(--font-monospace);
+  font-size: 0.8em;
+  color: var(--c-muted);
+}
+
+.slides-doc .slide-title {
+  margin: 0.15em 0 0;
+  font-size: 1.75em;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.slides-doc .slide-no {
+  margin-right: 0.8em;
+  padding: 0.05em 0.5em;
+  border-radius: var(--r-sm);
+  background: var(--c-fg);
+  color: var(--c-bg);
+  font-weight: 500;
+}
+
+.slides-doc .points {
+  padding-left: 1.15em;
+  list-style: square;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+}
+
+.slides-doc .points li::marker {
+  color: var(--c-muted);
+}
+
+.slides-doc .slide-foot {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  gap: 3cqw;
+  align-items: end;
+}
+
+.slides-doc .curve-box {
+  position: relative;
+  align-self: stretch;
+  min-height: 0;
+}
+
+.slides-doc .curve {
+  display: block;
+}
+
+.slides-doc .curve-box .curve {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+}
+
+.slides-doc .curve text {
+  font-family: inherit;
+  fill: var(--c-fg);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.slides-doc .curve text.sub {
+  fill: var(--c-muted);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-monospace);
+}
+
+.slides-doc .curve .seg {
+  fill: var(--active);
+  stroke: var(--c-bg);
+  stroke-width: 2;
+}
+
+.slides-doc .curve .ff {
+  fill: var(--c-fg);
+}
+
+.slides-doc .curve .chasm {
+  stroke: var(--alert);
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+}
+
+.slides-doc .curve .lead-line {
+  stroke: var(--c-muted);
+  stroke-width: 1;
+}
+
+.slides-doc .slide-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7em;
+  font-size: 0.86em;
+  line-height: 1.4;
+}
+
+.slides-doc .legend-head {
+  font-size: 0.9em;
+  font-weight: 700;
+  color: var(--c-muted);
+}
+
+.slides-doc .slide-legend dl {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  gap: 0.4em 0.8em;
+  align-items: baseline;
+}
+
+.slides-doc .slide-legend dt {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.slides-doc .slide-legend .pct {
+  font-family: var(--font-monospace);
+  font-size: 0.9em;
+  color: var(--c-muted);
+  text-align: right;
+}
+
+.slides-doc .slide-legend .keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4em 1.2em;
+  padding-top: 0.7em;
+  border-top: 1px solid var(--c-line);
+  color: var(--c-muted);
+}
+
+.slides-doc .keys span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.slides-doc .swatch {
+  width: 1.7em;
+  height: 0.95em;
+  flex-shrink: 0;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--c-line);
+  background: var(--c-bg);
+}
+
+.slides-doc .swatch.dashed {
+  background: transparent;
+  border: 1px dashed var(--c-muted);
+}
+
+.slides-doc .swatch.fill {
+  background: var(--c-fg);
+  border-color: var(--c-fg);
+}
+
+.slides-doc .swatch.chasm {
+  height: 0;
+  border: 0;
+  border-top: 2px dashed var(--alert);
+  background: none;
+  border-radius: 0;
+}
+
+/* 다섯 칸 그림: 필요 → 행동 → 장벽 → 착각 → 개선. 뒤의 장에서도 같은 모양으로 쓴다 */
+.slides-doc .flow-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-rows: max-content minmax(0, 1fr);
+  gap: 1.8cqw;
+}
+
+.slides-doc .flow {
+  display: contents;
+  list-style: none;
+}
+
+.slides-doc .flow > li {
+  position: relative;
+  min-height: 0;
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-md);
+  background: var(--bg);
+  padding: 0.7em 0.9em 0.8em;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
+  align-content: start;
+  align-items: baseline;
+  gap: 0.5em 0.6em;
+}
+
+/* 첫 칸은 두 줄을 차지하되, 윗줄 높이를 정하는 데는 끼지 않는다 */
+.slides-doc .flow > li:first-child {
+  grid-row: 1 / span 2;
+  contain: size;
+}
+
+.slides-doc .flow > li + li::before {
+  content: '→';
+  position: absolute;
+  left: -1.8cqw;
+  width: 1.8cqw;
+  top: 0.75em;
+  text-align: center;
+  color: var(--c-muted);
+  font-size: 0.9em;
+}
+
+.slides-doc .flow b {
+  font-size: 1.1em;
+}
+
+.slides-doc .flow .what {
+  font-size: 0.8em;
+  color: var(--c-muted);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.slides-doc .flow .ex {
+  grid-column: 1 / -1;
+  font-size: 0.9em;
+  line-height: 1.5;
+  padding-top: 0.6em;
+  border-top: 1px solid var(--c-line);
+}
+
+.slides-doc .flow ul.ex {
+  padding-left: 1.05em;
+  list-style: square;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35em;
+}
+
+.slides-doc .flow ul.ex li::marker {
+  color: var(--c-muted);
+}
+
+.slides-doc .flow .ex.is-fix {
+  margin-top: 0.5em;
+  padding-top: 0.5em;
+  border-top: 1px dashed var(--c-muted);
+  font-weight: 600;
+}
+
+/* 첫 칸 옆, 나머지 네 칸 아래의 빈 자리 */
+.slides-doc .rethink {
+  grid-column: 2 / -1;
+  grid-row: 2;
+  min-height: 0;
+  border: 1px solid var(--c-fg);
+  border-radius: var(--r-md);
+  padding: 0.8em 1.1em;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.5em;
+}
+
+.slides-doc .rethink-head {
+  font-size: 1.1em;
+}
+
+.slides-doc .rethink ol {
+  padding-left: 1.3em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+  font-size: 0.95em;
+}
+
+.slides-doc .rethink ol li::marker {
+  font-family: var(--font-monospace);
+  color: var(--c-muted);
+}
+
+.slides-doc .slide-note {
+  font-size: 0.8em;
+  color: var(--c-muted);
+}
+
+.slides-doc .slide-foot.is-stack {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: stretch;
+  gap: 1.6cqw;
+}
+
+.slides-doc .slide-foot.is-stack .keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4em 1.6em;
+  font-size: 0.86em;
+  color: var(--c-muted);
+}
+
+/* 주제 슬라이드: 장의 끝에서 결론 한 줄을 크게, 지면을 넉넉하게 쓴다 */
+.slides-doc .slide-body.is-thesis {
+  padding: 3cqw 6cqw 4cqw;
+}
+
+.slides-doc .thesis {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1.4cqw;
+}
+
+.slides-doc .thesis-kicker {
+  font-size: 1.5em;
+  color: var(--c-muted);
+}
+
+.slides-doc .thesis-line {
+  margin: 0;
+  font-size: 4em;
+  line-height: 1.22;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.slides-doc .thesis-points {
+  list-style: none;
+  margin: 0;
+  padding: 2.2cqw 0 0;
+  border-top: 1px solid var(--c-line);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4cqw;
+}
+
+.slides-doc .thesis-points li {
+  font-size: 1.05em;
+  line-height: 1.5;
+  color: var(--c-muted);
+}
+
+.slides-doc .thesis-points b {
+  display: block;
+  margin-bottom: 0.3em;
+  font-size: 1.15em;
+  color: var(--c-fg);
+}
+
+/* 썸네일: 흰 종이를 전제로 그린 그림이라 테마와 상관없이 흰 바탕에 올린다 */
+.slides-doc .thumbs {
+  grid-column: 1 / -1;
+  align-self: end;
+  padding-top: 0.2em;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5em;
+}
+
+/* 썸네일 줄의 두 가지 꼴: 본문(슬라이드 밖)에 늘어놓는 줄, 슬라이드 폭을 셋으로 나눠 채우는 줄 */
+.slides-doc .thumbs.is-body {
+  grid-template-columns: repeat(auto-fill, minmax(140px, 180px));
+  gap: 12px;
+  max-width: var(--sl-prose-w);
+}
+
+.slides-doc .thumbs.is-wide {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2cqw;
+  align-self: stretch;
+}
+
+.slides-doc .thumbs.is-wide .thumb {
+  aspect-ratio: 16 / 10;
+}
+
+.slides-doc .thumb {
+  display: block;
+  aspect-ratio: 1;
+  border: 1px solid var(--c-line);
+  border-radius: var(--r-sm);
+  background: #fff;
+  overflow: hidden;
+  cursor: zoom-in;
+  transition: border-color var(--t-fast) ease;
+}
+
+.slides-doc .thumb:hover {
+  border-color: var(--c-fg);
+}
+
+.slides-doc .thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  object-fit: contain;
+  padding: 6%;
+}
+
+/* ---------- 스크립트 ---------- */
+.slides-doc .script {
+  max-width: var(--sl-prose-w);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: var(--sl-text);
+  line-height: 1.8;
+}
+
+.slides-doc .script mark {
+  font-weight: 600;
+  padding: 1px 2px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.slides-doc .script a,
+.slides-doc .script a:visited {
+  color: inherit;
+  font-weight: inherit;
+  text-underline-offset: 3px;
+}
+
+.slides-doc .script .meta {
+  color: var(--c-muted);
+  font-size: 0.86em;
+  font-family: var(--font-monospace);
+  line-height: 1.6;
+}
+
+/* 읽는 곳 표시: 문단이나 문장은 선택 면, 단어는 글자색으로 채운 면 (면과 글자색을 짝으로 바꿔 어떤 테마에서도 읽힌다) */
+.slides-doc .script > p,
+.slides-doc .script .sent {
+  border-radius: var(--r-sm);
+  transition: background-color var(--t-fast) ease, box-shadow var(--t-fast) ease;
+}
+
+.slides-doc .script .sent {
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.slides-doc .script > p.is-reading {
+  background: var(--active);
+  color: var(--fg);
+  box-shadow: 0 0 0 6px var(--active);
+}
+
+.slides-doc .script .sent.is-reading {
+  background: var(--active);
+  color: var(--fg);
+  box-shadow: 0 0 0 2px var(--active);
+}
+
+.slides-doc .script .is-reading mark {
+  background: none;
+}
+
+::highlight(sl-tts-word) {
+  background-color: var(--fg);
+  color: var(--bg);
+}
+
+/* ---------- 슬라이드 짚기 (스크립트의 data-cue → 슬라이드의 data-key) ---------- */
+/* 짚는 색(--sl-cue)은 역할 토큰 밖의 유일한 강조색이다. 기본은 빨강이고 읽기 설정에서 바꾼다 */
+.slides-doc .cue-underline {
+  text-decoration: underline;
+  text-decoration-color: var(--sl-cue, #d32f2f);
+  text-decoration-thickness: 0.16em;
+  text-underline-offset: 0.28em;
+}
+
+.slides-doc .cue-box {
+  outline: max(2px, 0.25cqw) solid var(--sl-cue, #d32f2f);
+  outline-offset: max(2px, 0.25cqw);
+  border-radius: var(--r-sm);
+}
+
+.slides-doc .curve .cue-box {
+  outline: none;
+  stroke: var(--sl-cue, #d32f2f);
+  stroke-width: 5;
+}
+
+.slides-doc .curve .seg.cue-box,
+.slides-doc .curve .ff.cue-box {
+  stroke: var(--sl-cue, #d32f2f);
+  stroke-width: 4;
+}
+
+/* 사이트는 [data-key]::after 를 단축키 안내 배지(Alt 를 누르는 동안 보임)로 쓴다. 이 문서의 data-key 는 짚을 곳의 이름이므로
+   배지를 그리지 않게 막고, 체크 표시는 배지의 모양(절대 위치 · 면 · 고정폭 글씨)을 모두 되돌린 다음 그린다 */
+article .slides-doc [data-key]::after {
+  content: none;
+}
+
+article .slides-doc .cue-check::after {
+  content: '✓';
+  position: static;
+  display: inline-block;
+  min-width: 0;
+  height: auto;
+  margin-left: 0.5em;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--sl-cue, #d32f2f);
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 700;
+  line-height: inherit;
+  text-transform: none;
+  opacity: 1;
+  z-index: auto;
+  transition: none;
+  animation: sl-fade var(--t-base) ease both;
+}
+
+/* ---------- 슬라이드의 단추 줄: 왼쪽부터 자막 · 읽기 설정 · 스피커 · 전체 화면(닫기) ---------- */
+.slides-doc .sl-btn {
+  position: absolute;
+  top: 8px;
+  z-index: 1;
+  color: var(--muted);
+}
+
+.slides-doc .sl-btn .ico {
+  margin: 0;
+}
+
+.slides-doc .sl-full { right: 8px; }
+.slides-doc .sl-tts { right: 44px; }
+.slides-doc .sl-gear { right: 80px; }
+.slides-doc .sl-cc { right: 116px; }
+
+/* 스피커가 없는 브라우저에서는 전체 화면 단추만 남는다 */
+.slides-doc .sl-gear,
+.slides-doc .sl-cc {
+  display: none;
+}
+
+.slides-doc.is-full .sl-gear,
+.slides-doc.is-full .sl-cc {
+  display: inline-flex;
+}
+
+.slides-doc .sl-btn[aria-pressed="true"],
+.slides-doc .sl-btn[aria-expanded="true"] {
+  background-color: var(--fg);
+  color: var(--surface);
+  border-color: var(--fg);
+}
+
+/* 읽는 중이라는 표시: 단추의 바탕이 천천히 밝아졌다 어두워지기를 되풀이한다 */
+.slides-doc .sl-tts[aria-pressed="true"] {
+  animation: sl-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes sl-pulse {
+  0%, 100% { background-color: var(--fg); border-color: var(--fg); }
+  50% { background-color: var(--muted); border-color: var(--muted); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slides-doc .sl-tts[aria-pressed="true"] {
+    animation: none;
+  }
+}
+
+.slides-doc .slide-frame.is-viewing > .sl-btn {
+  display: none;
+}
+
+.slides-doc .sl-count {
+  position: absolute;
+  right: 14px;
+  bottom: 10px;
+  font-family: var(--font-monospace);
+  font-size: 12px;
+  color: var(--muted);
+  display: none;
+}
+
+/* ---------- 전체 화면: 문서 상자를 통째로 띄우고 고른 슬라이드 하나만 남긴다 ---------- */
+.slides-doc.is-full {
+  display: grid;
+  place-items: center;
+  gap: 0;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+/* 브라우저의 전체 화면을 쓸 수 없을 때: 창 안을 가득 채운다 (좁은 화면의 서랍 z-index 10000 보다 위) */
+.slides-doc.is-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+}
+
+.slides-doc.is-full > * {
+  display: none;
+}
+
+.slides-doc.is-full > section.has-active {
+  display: contents;
+}
+
+.slides-doc.is-full > section.has-active > :not(.slide-frame) {
+  display: none;
+}
+
+.slides-doc.is-full .slide-frame {
+  width: min(100vw, 177.78vh);
+  max-width: none;
+}
+
+.slides-doc.is-full .slide {
+  border: 0;
+  border-radius: 0;
+}
+
+.slides-doc.is-full .sl-count {
+  display: block;
+}
+
+/* 전체 화면 안의 설정 창: 헤더의 읽기 설정 줄을 그대로 옮겨 와 보여 준다 */
+.slides-doc .slide-frame > .sl-settings-pop {
+  position: absolute;
+  top: 48px;
+  right: 8px;
+  z-index: 3;
+  width: min(660px, calc(100vw - 16px));
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+  padding: 14px 16px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+}
+
+/* ---------- 자막: 전체 화면에서 읽는 문장을 보여 준다 ---------- */
+/* 영상 자막처럼 슬라이드 위에 겹치므로 테마 토큰이 아니라 읽기 설정 값을 쓴다 */
+.slides-doc.is-full > .sl-caption {
+  display: block;
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  max-width: min(84vw, 62em);
+  padding: 0.35em 0.9em;
+  border-radius: var(--r-md);
+  background: var(--sl-cap-bg, rgba(0, 0, 0, 0.3));
+  color: var(--sl-cap-fg, #fff);
+  font-size: calc(clamp(16px, 2.1vw, 46px) * var(--sl-cap-scale, 1));   /* 읽기 설정의 「글자 크기」 */
+  line-height: 1.45;
+  font-weight: 500;
+  -webkit-backdrop-filter: var(--sl-cap-blur, blur(4px));
+  backdrop-filter: var(--sl-cap-blur, blur(4px));
+}
+
+.slides-doc > .sl-caption[data-v="bottom"] { bottom: 5vh; }
+.slides-doc > .sl-caption[data-v="top"] { top: 5vh; }
+.slides-doc > .sl-caption[data-h="center"] { left: 50%; transform: translateX(-50%); text-align: center; width: max-content; }
+.slides-doc > .sl-caption[data-h="left"] { left: 4vw; text-align: left; }
+.slides-doc > .sl-caption[data-h="right"] { right: 4vw; text-align: right; }
+
+/* 자막에서 읽는 단어: 짚는 색 상자가 같은 줄에서는 다음 단어로 미끄러지고, 줄이 바뀌면 사라졌다가 나타난다 */
+.slides-doc .sl-caption-hl {
+  position: absolute;
+  z-index: -1;
+  border-radius: 0.2em;
+  background: var(--sl-cue, #d32f2f);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.13s ease;
+}
+
+.slides-doc .sl-caption-hl.is-slide {
+  transition: left 0.16s ease, width 0.16s ease, opacity 0.13s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slides-doc .sl-caption-hl,
+  .slides-doc .sl-caption-hl.is-slide {
+    transition: none;
+  }
+}
+
+/* ---------- 진행 막대: 화면 맨 아래에 붙은 1px 선. 누르는 자리는 그보다 넉넉하게 잡는다 ---------- */
+.sl-playbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 18px;
+  z-index: 9000;
+  display: flex;
+  align-items: flex-end;
+  cursor: pointer;
+}
+
+.sl-playbar[hidden] {
+  display: none !important;
+}
+
+.sl-playbar i {
+  display: block;
+  width: 0;
+  height: 1px;
+  background: var(--sl-cue, #d32f2f);
+}
+
+.sl-playbar:hover i {
+  height: 3px;
+}
+
+.slides-doc.is-full > .sl-playbar {
+  display: flex;
+  z-index: 4;
+}
+
+/* ---------- 그림 크게 보기: 그림이 놓인 슬라이드 안에서 연다 ---------- */
+.sl-viewer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  font-size: max(12px, 1.4cqw);
+  line-height: 1.5;
+  animation: sl-fade var(--t-fast) ease both;
+}
+
+.sl-viewer.is-window {
+  position: fixed;
+  z-index: 10060;
+  font-size: 13px;
+}
+
+.sl-viewer .sl-viewer-stage {
+  flex: 1;
+  min-height: 0;
+  margin: 3.4em 4.5em 0;
+  background: #fff;
+  border-radius: var(--r-md);
+}
+
+.sl-viewer .sl-viewer-stage img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  object-fit: contain;
+  padding: 1em;
+}
+
+.sl-viewer .sl-viewer-foot {
+  height: 3em;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2em;
+  color: var(--muted);
+}
+
+.sl-viewer .sl-viewer-count {
+  font-family: var(--font-monospace);
+  font-size: 0.9em;
+}
+
+/* 왼쪽 절반은 이전 그림, 오른쪽 절반은 다음 그림 */
+.sl-viewer .sl-viewer-nav {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  padding: 0 0.9em;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--fg);
+  font-size: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.sl-viewer .sl-viewer-nav:hover,
+.sl-viewer .sl-viewer-nav:focus {
+  background: none;
+}
+
+.sl-viewer .sl-viewer-nav.is-prev { left: 0; justify-content: flex-start; }
+.sl-viewer .sl-viewer-nav.is-next { right: 0; justify-content: flex-end; }
+
+.sl-viewer .sl-viewer-chip {
+  width: 2.6em;
+  height: 2.6em;
+  min-width: 30px;
+  min-height: 30px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  display: grid;
+  place-items: center;
+  opacity: 0.35;
+  transition: opacity var(--t-fast) ease, background-color var(--t-fast) ease, color var(--t-fast) ease;
+}
+
+.sl-viewer .sl-viewer-nav:hover .sl-viewer-chip,
+.sl-viewer .sl-viewer-nav:focus-visible .sl-viewer-chip {
+  opacity: 1;
+  background: var(--fg);
+  color: var(--surface);
+  border-color: var(--fg);
+}
+
+.sl-viewer .sl-viewer-nav:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.sl-viewer .sl-viewer-nav:disabled .sl-viewer-chip {
+  visibility: hidden;
+}
+
+.sl-viewer .sl-viewer-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+}
+
+/* ---------- 읽기 설정 줄 (헤더의 화면 설정 패널 · 전체 화면 안의 설정 창) ---------- */
+/* 글자 크기는 사이트의 rem 축소와 무관하도록 헤더처럼 px 로 적는다 */
+.sl-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: var(--fg);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.sl-settings .sl-row {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--line);
+}
+
+.sl-settings .sl-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.sl-settings .sl-label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.sl-settings .sl-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.sl-settings .sl-sep {
+  width: 1px;
+  height: 18px;
+  background: var(--line);
+  margin: 0 4px;
+}
+
+.sl-settings .sl-select {
+  height: 32px;
+  max-width: 100%;
+  padding: 0 8px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+  font-size: 13px;
+}
+
+/* 슬라이더: 자석 지점마다 막대 위에 점을 찍는다. 손잡이 폭(16px)만큼 양끝을 비워 점과 손잡이의 자리를 맞춘다 */
+.sl-settings .sl-range-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: min(360px, 100%);
+  height: 32px;
+}
+
+.sl-settings .sl-range-wrap.is-short {
+  width: 120px;
+}
+
+/* 막대는 바닥에, 점은 그 위에, 손잡이는 맨 위에 그린다 */
+.sl-settings .sl-range-wrap::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: var(--r-pill);
+  background: var(--line);
+}
+
+.sl-settings .sl-range {
+  position: relative;
+  z-index: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.sl-settings .sl-range::-webkit-slider-runnable-track { height: 4px; background: transparent; }
+.sl-settings .sl-range::-moz-range-track { height: 4px; background: transparent; }
+
+.sl-settings .sl-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--fg);
+}
+
+.sl-settings .sl-range::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--fg);
+}
+
+.sl-settings .sl-range:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+.sl-settings .sl-range-dots {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 50%;
+  height: 0;
+  pointer-events: none;
+}
+
+.sl-settings .sl-range-dots i {
+  position: absolute;
+  top: -4px;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  border-radius: 50%;
+  background: var(--muted);
+  border: 2px solid var(--bg);
+}
+
+.sl-settings .sl-range-dots i.is-on {
+  background: var(--fg);
+}
+
+.sl-settings .sl-range-value {
+  min-width: 3.2em;
+  font-family: var(--font-monospace);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.sl-settings .sl-range-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* 색 고르기 */
+.sl-settings .sl-swatch-btn i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.sl-settings .sl-color-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px 0 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.sl-settings .sl-color-pick.is-on {
+  border-color: var(--fg);
+  color: var(--fg);
+}
+
+.sl-settings .sl-color-pick input {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+@media (max-width: 560px) {
+  .sl-settings .sl-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+}
+
+/* ---------- 좁은 자리에서는 16:9를 풀고 세로로 쌓는다 ---------- */
+@container sl-frame (max-width: 560px) {
+  .slides-doc .slide {
+    aspect-ratio: auto;
+  }
+}
+
+@container sl-slide (max-width: 560px) {
+  .slides-doc .slide-body { font-size: 13px; padding: 16px 16px 18px; gap: 12px; }
+  .slides-doc .slide-title { padding-right: 70px; }
+  .slides-doc .slide-foot { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .slides-doc .curve-box .curve { position: static; height: auto; }
+  .slides-doc .flow-grid { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; gap: 18px; }
+  .slides-doc .slide-body.is-thesis { padding: 16px 16px 20px; }
+  .slides-doc .thesis { padding: 28px 0; gap: 8px; }
+  .slides-doc .thesis-line { font-size: 2em; padding-right: 0; }
+  .slides-doc .thesis-points { grid-template-columns: minmax(0, 1fr); gap: 12px; padding-top: 14px; }
+  .slides-doc .flow > li:first-child,
+  .slides-doc .rethink { grid-row: auto; grid-column: auto; contain: none; }
+  .slides-doc .flow > li + li::before { content: '↓'; left: 0; width: 100%; top: -18px; line-height: 18px; }
+  .slides-doc .thumbs { max-width: 220px; }
+}
+
+/* ---------- 인쇄: 단추와 덮개는 빼고, 슬라이드와 스크립트가 쪽 사이에서 갈라지지 않게 한다 ---------- */
+@media print {
+  .slides-doc .sl-btn,
+  .slides-doc .sl-count,
+  .slides-doc .sl-caption,
+  .slides-doc .sl-settings-pop,
+  .sl-playbar,
+  .sl-viewer {
+    display: none !important;
+  }
+
+  .slides-doc .slide-frame,
+  .slides-doc .script {
+    break-inside: avoid;
+  }
+}

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" font-family="'Malgun Gothic', sans-serif" font-size="14">
+  <title>올라가는 단계</title>
+  <rect width="640" height="400" fill="#ffffff"/>
+  <g stroke="#1b1e1d" stroke-width="2">
+    <rect x="30" y="300" width="108" height="60" rx="8" fill="#f5f6f5"/>
+    <rect x="148" y="240" width="108" height="120" rx="8" fill="#e9eceb"/>
+    <rect x="266" y="180" width="108" height="180" rx="8" fill="#dce1de"/>
+    <rect x="384" y="120" width="108" height="240" rx="8" fill="#b9c0bc"/>
+    <rect x="502" y="60" width="108" height="300" rx="8" fill="#1b1e1d"/>
+  </g>
+  <g text-anchor="middle" font-weight="700" fill="#1b1e1d">
+    <text x="84" y="336">0 웹앱</text>
+    <text x="202" y="276">1 워커</text>
+    <text x="320" y="216">2 코어</text>
+    <text x="438" y="156">3 로컬앱</text>
+    <text x="556" y="96" fill="#ffffff">4 명령줄</text>
+  </g>
+  <g text-anchor="middle" font-size="11" fill="#5c6461">
+    <text x="84" y="382">화면과 계산이 한 곳</text>
+    <text x="202" y="382">언어는 그대로</text>
+    <text x="320" y="382">Rust → WASM</text>
+    <text x="438" y="382">Tauri</text>
+    <text x="556" y="382">· MCP</text>
+  </g>
+  <text x="30" y="40" fill="#5c6461" font-size="12">필요가 생긴 만큼만 올라간다</text>
+</svg>

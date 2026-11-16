@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<!--
+  @file column/ai/webapp-common-gui/conveniences.html
+  @module column/ai/webapp-common-gui
+  @description WebApp Common GUI 견본의 「편의 기능」 탭을 사이트 문서로 옮긴 것. 기본 화면에 넣는 편의 기능과 선택 기능 목록.
+    본문 글과 표는 견본 원문 그대로이고, 사이트에 옮기며 달라진 점은 「사이트 이식판 안내」 상자에 따로 적는다.
+    견본의 동작과 헤더 필터 · 설정 패널, 레일의 「미리보기 설정」은 /modules/features/common-gui-demo.js 가 맡는다.
+-->
+
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <!-- 모바일 스케일 고정 -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta keywords="iseohyun, WebApp Common GUI, 기본 화면, 편의 기능">
+  <meta author="iseohyun">
+
+  <!-- 페이지 타이틀 -->
+  <title>편의 기능: WebApp Common GUI - iseohyun </title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-453XSP5W9M');
+  </script>
+
+  <!-- 목차 생성 -->
+  <script src="/modules/script.js" defer></script>
+
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("/style.css");
+  </style>
+
+  <!-- 이 묶음 전용 스타일: 모든 선택자가 .cg 아래로 묶여 있어 다른 문서에 영향을 주지 않는다 -->
+  <link rel="stylesheet" href="/modules/features/common-gui-demo.css">
+</head>
+
+<body>
+  <article>
+    <div class="cg cg-doc" data-cg-page="extras">
+
+    <section id="extras-overview">
+      <h1>개요</h1>
+      <div class="prose">
+        <p class="lead"><code>C:\git</code> 아래 프로젝트에서 사용자를 편하게 해 주는 기능을 찾아 모으고, 기본 화면에 넣을 것을 골랐습니다. 견본 열의 「반영됨」은 이 화면에서 동작하는 것, 「명세만」은 화면 탭에 규칙만 적은 것, 「표시만」과 「발송 제외」는 미리보기 환경 때문에 일부만 동작하는 것입니다.</p>
+        <div class="note">찾은 방법: 웹 프로젝트의 저장 키 이름, 단축키 처리, 파일 머리 설명을 검색했습니다. 대부분 코드 전체를 읽지는 않았기 때문에, 「어디에 있나」는 그 기능이 있는 자리이고 세부 동작은 채택할 때 다시 확인해야 합니다. 안드로이드와 파이썬 프로젝트(myLoreSync, TakeYourMark, movie-player-lite, beep-gen)는 화면 구조가 달라 깊이 보지 않았습니다.</div>
+      </div>
+
+<div class="port-note"><b>사이트 이식판 안내</b> 표의 「견본」 열은 원래 견본을 기준으로 적은 값입니다. 이 사이트에서는 테마 전환 · 글자 크기 · 단축키 바꾸기 · 변경 이력 · 의견 보내기(문의) · 목차 · 공유 복사가 사이트의 기능으로 동작합니다.</div>
+    </section>
+
+    <section id="extras-basic">
+      <h1>기본에 넣는 것</h1>
+      <div class="prose"><p>기본 화면에 넣기로 정한 기능입니다.</p></div>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>기능</th><th>무엇을 하나</th><th>어디에 있나</th><th>견본</th></tr></thead>
+          <tbody>
+            <tr><td class="nowrap">설정 기억</td><td>설정, 보기 방식, 사이드바 접힘 상태를 브라우저에 저장해 다음에 열 때 그대로. 키 끝에 판 번호를 붙이고, 읽기에 실패하면 기본값으로.</td><td>KoreaEvent 축약 설정, Geoje Swimmers 보기 방식·사이드바, haepungdan 테마</td><td><span class="tier tier-in">반영됨</span></td></tr>
+            <tr><td class="nowrap">오류 경계</td><td>화면 일부가 오류를 내도 전체가 하얗게 비지 않고 안내와 다시 시도 버튼을 보여 줌.</td><td>KoreaEvent, KoreaIssue의 AppErrorBoundary</td><td><span class="tier">명세만</span></td></tr>
+            <tr><td class="nowrap">버전 표시와 캐시 갱신</td><td>패널 하단 블록에 버전과 빌드 날짜 표시. 배포하면 새로 고침 없이 새 파일을 받게 파일 이름에 빌드 표시를 붙임.</td><td>KoreaEvent·KoreaIssue의 version.ts, Geoje Swimmers의 <code>?v=날짜</code></td><td><span class="tier">표시만</span></td></tr>
+            <tr><td class="nowrap">단축키와 안내 배지</td><td>숫자 키로 사이드바 탭 전환. Alt를 누르는 동안 버튼 옆에 단축키 배지를 보여 줌. 글자를 입력하는 중에는 동작하지 않음.</td><td>html의 keybind-manager</td><td><span class="tier tier-in">반영됨</span></td></tr>
+            <tr><td class="nowrap">스크롤 위치 되살리기</td><td>페이지나 탭을 옮겼다 돌아오면 보던 자리로.</td><td>Geoje Swimmers의 shortcut.js</td><td><span class="tier tier-in">반영됨</span></td></tr>
+            <tr><td class="nowrap">테마 전환</td><td>밝게, 어둡게, 스톤, 네이비 네 가지를 기본으로 제공하고 고른 것을 기억.</td><td>haepungdan의 테마 기억</td><td><span class="tier tier-in" data-feat="theme">반영됨</span></td></tr>
+            <tr><td class="nowrap">글자 크기 조절</td><td>화면 전체의 글자 크기를 몇 단계로 바꿈.</td><td>html 변경 이력 달력, janggi 설정</td><td><span class="tier tier-in" data-feat="font">반영됨</span></td></tr>
+            <tr><td class="nowrap">단축키 바꾸기</td><td>사용자가 단축키를 고쳐 쓰고 기억.</td><td>myLore의 useKeybindings</td><td><span class="tier tier-in" data-feat="rebind">반영됨</span></td></tr>
+            <tr><td class="nowrap">변경 이력</td><td>무엇이 언제 바뀌었는지를 문서 정보 페이지에서 보여 줌.</td><td>html의 site-history</td><td><span class="tier tier-in" data-feat="changelog">반영됨</span></td></tr>
+            <tr><td class="nowrap">의견 보내기</td><td>질문이나 건의를 보내는 폼. 서버 없이 Web3Forms로 화면에서 바로 발송.</td><td>html의 feedback.js</td><td><span class="tier" data-feat="feedback">발송 제외</span></td></tr>
+            <tr><td class="nowrap">로그인</td><td>로그인 페이지를 부르고 Google 계정을 기본으로 지원.</td><td>KoreaEvent, CharQuiz, haepungdan, html</td><td><span class="tier">화면만</span></td></tr>
+            <tr><td class="nowrap">목차 자동 생성</td><td>본문의 제목을 모아 사이드바 목차를 만들고, 스크롤에 따라 현재 항목을 강조.</td><td>html의 toc.js</td><td><span class="tier tier-in">반영됨</span></td></tr>
+            <tr><td class="nowrap">공유 복사 알림</td><td>공유 버튼을 누르면 주소를 복사하고 버튼 아래에 짧은 알림.</td><td>KoreaEvent 헤더</td><td><span class="tier tier-in">반영됨</span></td></tr>
+            <tr><td class="nowrap">필터 적용 표시</td><td>필터가 걸려 있으면 아이콘에 점.</td><td>KoreaEvent, KoreaIssue 헤더</td><td><span class="tier tier-in">반영됨</span></td></tr>
+            <tr><td class="nowrap">원래 이름 툴팁</td><td>말줄임되거나 줄인 이름에 마우스를 올리면 전체 이름.</td><td>KoreaEvent 달력 칩</td><td><span class="tier tier-in">반영됨</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="extras-optional">
+      <h1>선택 기능으로 남긴 것</h1>
+      <div class="prose"><p>기본에는 넣지 않고, 필요한 프로젝트가 정해진 자리에 답니다.</p></div>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>기능</th><th>무엇을 하나</th><th>어디에 있나</th><th>둘 자리</th></tr></thead>
+          <tbody>
+            <tr><td class="nowrap">통합 검색</td><td>사이드바 검색 탭에서 제목과 본문을 찾음. 미리 만든 색인 파일을 씀.</td><td>html의 search.js</td><td>레일 탭</td></tr>
+            <tr><td class="nowrap">내보내기</td><td>지금 걸러진 목록을 글, 엑셀용 CSV, PDF, 그림으로 저장.</td><td>Geoje Swimmers의 exportService</td><td>리스트 요약 줄</td></tr>
+            <tr><td class="nowrap">항목 고정</td><td>자주 보는 항목을 맨 위에 붙여 둠.</td><td>Geoje Swimmers</td><td>리스트 행, 카드</td></tr>
+            <tr><td class="nowrap">복사 버튼</td><td>코드나 인용 글 옆의 버튼으로 내용을 복사.</td><td>html의 clipboard.js</td><td>본문</td></tr>
+            <tr><td class="nowrap">작업 예상 시간</td><td>오래 걸리는 불러오기를 화면 구석에 알리고, 지난번 걸린 시간으로 남은 시간을 어림.</td><td>myLore의 loadingTracker</td><td>화면 오른쪽 아래</td></tr>
+            <tr><td class="nowrap">오늘 하루 보지 않기</td><td>공지 창에서 고르면 그날은 다시 띄우지 않음.</td><td>Geoje Swimmers</td><td>공지 창</td></tr>
+            <tr><td class="nowrap">다시 묻지 않기</td><td>확인 창에서 고르면 같은 질문을 건너뜀.</td><td>webpointer</td><td>확인 창</td></tr>
+            <tr><td class="nowrap">자료 백업과 복원</td><td>브라우저에 쌓인 자료를 JSON 파일로 내려받고 다시 올림.</td><td>haepungdan의 backup.ts</td><td>설정</td></tr>
+            <tr><td class="nowrap">명령 창</td><td>명령을 이름으로 찾아 실행.</td><td>myLore의 useKeybindings</td><td>단축키</td></tr>
+            <tr><td class="nowrap">맨 위로 가기 버튼</td><td>길게 스크롤하면 오른쪽 아래에 나타나는 버튼. 기존 프로젝트에는 없음.</td><td>새 제안</td><td>본문 오른쪽 아래</td></tr>
+            <tr><td class="nowrap">푸시 알림</td><td>알림 권한을 받아 예약한 때에 알림.</td><td>CharQuiz</td><td>설정</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="extras-edit">
+      <h1>편집 화면이 있을 때만</h1>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>기능</th><th>무엇을 하나</th><th>어디에 있나</th></tr></thead>
+          <tbody>
+            <tr><td class="nowrap">실행 취소와 다시 실행</td><td>편집 기록을 쌓아 되돌리고 다시 적용.</td><td>KakaotalkSimulator(최근 50개), webpointer</td></tr>
+            <tr><td class="nowrap">저장 안 한 변경 경고</td><td>고친 내용을 저장하지 않고 떠나려 하면 물어봄.</td><td>myLore</td></tr>
+            <tr><td class="nowrap">임시 저장 칸</td><td>작업을 번호가 붙은 칸에 저장해 두고 불러옴.</td><td>webpointer</td></tr>
+            <tr><td class="nowrap">설정 묶음 저장</td><td>설정 한 벌을 이름 붙여 저장하고 바꿔 가며 씀.</td><td>janggi</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="extras-note">
+      <h1>찾지 못한 것</h1>
+      <div class="prose">
+        <ul>
+          <li><b>언어 전환</b>: 웹 프로젝트에는 구현이 없습니다. 파이썬 프로젝트인 movie-player-lite에만 있습니다. 기본 화면의 언어 설정은 새로 설계해야 합니다.</li>
+          <li><b>쪽 나누기와 더 보기</b>: 참조한 세 프로젝트는 목록을 한 번에 그립니다. 더 보기 버튼은 이 문서에서 새로 정한 것입니다.</li>
+        </ul>
+      </div>
+    </section>
+    </div>
+  </article>
+
+  <!-- 견본 동작 · 헤더 패널 · 레일 「미리보기 설정」 (방문할 때마다 다시 실행된다) -->
+  <script src="/modules/features/common-gui-demo.js"></script>
+</body>

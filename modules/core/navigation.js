@@ -3,9 +3,15 @@
  * @module SiteModules.Navigation
  * @description SPA 해시 라우터와 이중 사이드바(사이트맵/목차/검색 탭) UI를 담당하는 코어 모듈.
  *   검색은 SiteModules.Search, 문의 창은 SiteModules.Contact, hierarchy 순회는 SiteModules.Hierarchy에 위임한다.
+ *   경로가 .md 로 끝나는 문서는 원문을 그대로 받아 SiteModules.Markdown 으로 그린다.
+ *
+ *   문서 스크립트가 쓰는 확장 지점 (모두 다른 문서로 옮길 때 자동으로 정리된다):
+ *   - onLeave(fn) / registerPageCleanup(fn): 화면을 떠날 때 한 번 부를 정리 함수 (타이머·음성·덮개 해제).
+ *     같은 시점에 document 에 "site:page-leave" 이벤트(detail.path = 떠나는 문서 경로)도 보낸다.
+ *   - addRailItem({ id, icon, label, renderPanel }): 왼쪽 레일에 항목과 패널을 더한다. 기본 항목은 그대로 둔다.
  * @requires SiteModules.Config, SiteModules.Icons, SiteModules.Header, SiteModules.Hierarchy,
- *   SiteModules.Search, SiteModules.Contact, SiteModules.TOC, SiteModules.Document
- * @exports init, trigBoard, findHierarchyPath, registerPageCleanup, getScroller
+ *   SiteModules.Search, SiteModules.Contact, SiteModules.TOC, SiteModules.Document, SiteModules.Markdown
+ * @exports init, trigBoard, findHierarchyPath, registerPageCleanup, onLeave, addRailItem, getScroller
  * @state window.SiteModules.state (현재/이전/다음 문서), hierarchyListCached
  */
 
@@ -59,10 +65,15 @@ window.SiteModules.Navigation = (function () {
   ];
   // 현재 페이지가 등록한 정리 함수 목록 (다음 페이지로 전환될 때 1회 실행 후 비워진다)
   let pageCleanups = [];
+  // 화면을 떠날 때 document 에 보내는 이벤트 이름
+  const PAGE_LEAVE_EVENT = "site:page-leave";
+  // 지금 문서가 addRailItem 으로 더한 레일 항목: { options, nav, pane, isOpen }
+  const pageRailItems = [];
 
   /**
-   * 페이지 종속 스크립트가 SPA 전환 시 실행할 정리 함수를 등록한다.
-   * (전역 변수 삭제, 타이머/리스너/Worker 해제 등)
+   * 페이지 종속 스크립트가 SPA 전환 시 실행할 정리 함수를 등록한다. (onLeave 는 같은 함수의 다른 이름)
+   * (전역 변수 삭제, 타이머/리스너/Worker 해제, 음성 합성 중지, 전체 화면 덮개 제거 등)
+   * 다음 화면(문서든 홈이든)을 그리기 직전에 등록한 순서대로 한 번씩 부르고 목록을 비운다.
    * @param {Function} cleanupFn
    */
   function registerPageCleanup(cleanupFn) {
@@ -79,6 +90,164 @@ window.SiteModules.Navigation = (function () {
         console.error("[Router] 페이지 정리 함수 실행 실패:", err);
       }
     });
+  }
+
+  /**
+   * 지금 화면을 떠난다: 다음 화면(문서 또는 홈)을 그리기 직전에 한 번 부른다.
+   * 화면이 등록한 정리 함수를 실행하고, 화면이 더한 헤더 동작 단추와 레일 항목을 거둔다.
+   * 같은 문서 안에서 앵커만 옮길 때는 부르지 않는다.
+   */
+  function leaveCurrentPage() {
+    runPageCleanups();
+    document.dispatchEvent(new CustomEvent(PAGE_LEAVE_EVENT, { detail: { path: window.SiteModules.state.currentPath || "" } }));
+    window.SiteModules.Header.setActions([]);
+    removePageRailItems();
+  }
+
+  // ---------------------------------------------------------------------------
+  // 레일 확장: 문서가 더하는 항목 (기본 항목 홈/사이트맵/목차/검색/문의/소개는 그대로 둔다)
+  // ---------------------------------------------------------------------------
+
+  // 패널을 여는 레일 항목 전부 (기본 탭 + 문서가 더한 탭)
+  function getRailTabs() {
+    return Array.from(document.querySelectorAll("#sidebar-nav .nav-item[data-tab]"));
+  }
+
+  function isRailItemOpen(item) {
+    const panel = document.getElementById("sidebar-panel");
+    const container = document.getElementById("sidebar-container");
+    if (!item.pane || !panel || panel.classList.contains("collapsed") || !item.nav.classList.contains("active")) return false;
+    // 좁은 화면에서는 서랍이 열려 있어야 보인다
+    return window.innerWidth > MOBILE_BREAKPOINT || (!!container && container.classList.contains("active"));
+  }
+
+  // 문서가 더한 항목의 패널이 열리고 닫힌 것을 알린다 (레일/패널/서랍의 상태가 바뀔 때마다 부른다)
+  function syncPageRailItems() {
+    pageRailItems.forEach(item => {
+      const isOpen = isRailItemOpen(item);
+      if (isOpen === item.isOpen) return;
+      item.isOpen = isOpen;
+      const callback = isOpen ? item.options.onOpen : item.options.onClose;
+      if (typeof callback !== "function") return;
+      try {
+        callback(item.pane);
+      } catch (err) {
+        console.error(`[Rail] "${item.options.id}" 항목의 ${isOpen ? "onOpen" : "onClose"} 실행 실패:`, err);
+      }
+    });
+  }
+
+  // 레일 탭을 누른 것처럼 그 탭의 패널을 연다
+  function activateRailTab(tabEl) {
+    getRailTabs().forEach(other => other.classList.remove("active"));
+    document.querySelectorAll("#sidebar-panel .tab-pane").forEach(pane => pane.classList.remove("active"));
+
+    tabEl.classList.add("active");
+    if (tabEl.id === "nav-search") window.SiteModules.Search.ensureIndex();
+    const paneEl = document.getElementById(tabEl.getAttribute("data-tab"));
+    if (paneEl) paneEl.classList.add("active");
+    updatePanelTitle();
+    trigBoard("visible");
+    syncPageRailItems();
+  }
+
+  function onRailTabClick(tabEl) {
+    const panel = document.getElementById("sidebar-panel");
+    const isPanelCollapsed = panel ? panel.classList.contains("collapsed") : true;
+    if (tabEl.classList.contains("active") && !isPanelCollapsed) {
+      // 이미 활성화된 탭을 열린 상태에서 또 누르면 좁게보기(접기)
+      trigBoard("hidden");
+    } else {
+      activateRailTab(tabEl);
+    }
+  }
+
+  /**
+   * 지금 문서 전용 레일 항목을 더한다. 기본 항목 아래(문서 기능 자리)에 놓이고, 다른 문서로 옮기면 저절로 사라진다.
+   * renderPanel 이 있으면 누를 때 사이드 패널에 자기 내용을 여는 탭이 되고(좁은 화면의 서랍에서도 같다),
+   * 없으면 onClick 만 부르는 단추가 된다. 단축키는 붙지 않는다.
+   * @param {{id: string, icon: string, label: string,
+   *   renderPanel?: (container: HTMLElement) => void,
+   *   onOpen?: (container: HTMLElement) => void, onClose?: (container: HTMLElement) => void,
+   *   onClick?: (event: MouseEvent) => void}} options
+   *   id: 영문/숫자/하이픈/밑줄. 요소 id 는 nav-page-<id>, 패널은 tab-page-<id>
+   *   icon: SiteModules.Icons 의 이름 (없는 그림은 Icons.register 로 먼저 더한다)
+   *   label: 풍선 도움말과 패널 제목
+   *   renderPanel: 패널 내용을 그린다. 더할 때 한 번만 부른다 (container 는 빈 div.tab-pane)
+   *   onOpen/onClose: 패널이 보이게 될 때/가려질 때마다
+   * @returns {Function} 항목을 지우는 함수. 실패하면 아무 일도 하지 않는 함수
+   */
+  function addRailItem(options) {
+    const noop = function () {};
+    const featuresContainer = document.getElementById("sidebar-page-features");
+    const panelBody = document.querySelector("#sidebar-panel .panel-body");
+    if (!options || !/^[A-Za-z0-9_-]+$/.test(String(options.id || "")) || !featuresContainer || !panelBody) {
+      console.warn("[Rail] 레일 항목을 더하지 못했습니다 (id 가 없거나 뼈대가 아직 없습니다):", options);
+      return noop;
+    }
+    if (pageRailItems.some(item => item.options.id === options.id)) {
+      console.warn(`[Rail] 이미 있는 레일 항목입니다: ${options.id}`);
+      return noop;
+    }
+
+    const label = options.label || "";
+    const nav = document.createElement("div");
+    nav.className = "nav-item nav-page-item";
+    nav.id = `nav-page-${options.id}`;
+    nav.setAttribute("role", "button");
+    nav.setAttribute("aria-label", label);
+    nav.setAttribute("data-tooltip", label);
+    nav.innerHTML = window.SiteModules.Icons.html(options.icon);
+
+    let pane = null;
+    if (typeof options.renderPanel === "function") {
+      pane = document.createElement("div");
+      pane.className = "tab-pane tab-page-pane";
+      pane.id = `tab-page-${options.id}`;
+      nav.setAttribute("data-tab", pane.id);
+      nav.setAttribute("data-panel-title", label);
+      panelBody.appendChild(pane);
+      try {
+        options.renderPanel(pane);
+      } catch (err) {
+        console.error(`[Rail] "${options.id}" 항목의 패널을 그리지 못했습니다:`, err);
+      }
+    }
+
+    const item = { options: options, nav: nav, pane: pane, isOpen: false };
+    nav.addEventListener("click", (event) => {
+      if (pane) onRailTabClick(nav);
+      if (typeof options.onClick === "function") options.onClick(event);
+    });
+    featuresContainer.appendChild(nav);
+    pageRailItems.push(item);
+
+    return function () { removeRailItem(item); };
+  }
+
+  function removeRailItem(item) {
+    const index = pageRailItems.indexOf(item);
+    if (index === -1) return;
+    pageRailItems.splice(index, 1);
+
+    const wasActive = item.nav.classList.contains("active");
+    item.nav.remove();
+    if (item.pane) item.pane.remove();
+    if (item.isOpen && typeof item.options.onClose === "function") {
+      try {
+        item.options.onClose(item.pane);
+      } catch (err) {
+        console.error(`[Rail] "${item.options.id}" 항목의 onClose 실행 실패:`, err);
+      }
+    }
+    // 보고 있던 패널이 사라졌으면 패널이 비지 않게 기본 탭(사이트맵)으로 돌린다
+    const panel = document.getElementById("sidebar-panel");
+    if (wasActive && item.pane && panel && !panel.classList.contains("collapsed")) setPanelCollapsed(false);
+  }
+
+  function removePageRailItems() {
+    // 지우는 함수가 목록을 고치므로 사본을 돈다
+    pageRailItems.slice().forEach(removeRailItem);
   }
 
   function isKnownArticlePage(absolutePath) {
@@ -388,6 +557,17 @@ window.SiteModules.Navigation = (function () {
               window.location.hash = "#" + currentPath + href;
             }
           } else if (!href.startsWith("http")) {
+            // 마크다운 문서 링크: 사이트맵에 등록된 문서면 SPA 로 열고, 아니면 브라우저가 원문을 열게 둔다
+            if (isMarkdownPath(href) && anchor.getAttribute("target") !== "_blank") {
+              const markdownPath = resolveRelativePath(window.SiteModules.state.currentPath || "/index.html", href.split(/[?#]/)[0]);
+              if (window.SiteModules.hierarchyListCached && isKnownArticlePage(markdownPath)) {
+                e.preventDefault();
+                const anchorIdx = href.indexOf("#");
+                window.location.hash = "#" + markdownPath + (anchorIdx !== -1 ? href.substring(anchorIdx) : "");
+              }
+              return;
+            }
+
             const isHtmlLink = href.includes(".html");
             const isTargetBlank = anchor.getAttribute("target") === "_blank";
             if (isHtmlLink && !isTargetBlank) {
@@ -489,6 +669,7 @@ window.SiteModules.Navigation = (function () {
       if (container) container.classList.remove("active");
       if (overlay) overlay.classList.remove("active");
       document.body.classList.remove("mobile-nav-open");
+      syncPageRailItems();
     }
 
     if (HOME_VIEW_BY_HASH[hash]) {
@@ -556,6 +737,7 @@ window.SiteModules.Navigation = (function () {
     const article = document.querySelector("article");
     if (!article) return;
 
+    leaveCurrentPage();
     window.SiteModules.state.homeView = view;
 
     if (window.SiteModules && window.SiteModules.state) {
@@ -643,11 +825,16 @@ window.SiteModules.Navigation = (function () {
     });
   }
 
-  // 해시 경로가 동일 출처의 HTML 문서인지 검증 (예: "#//evil.com/x.html" 같은 프로토콜 상대 URL 차단)
+  // 마크다운 문서 경로인지 (원문을 받아 SiteModules.Markdown 으로 그린다)
+  function isMarkdownPath(urlPath) {
+    return /\.md$/i.test(String(urlPath).split(/[?#]/)[0]);
+  }
+
+  // 해시 경로가 동일 출처의 HTML/마크다운 문서인지 검증 (예: "#//evil.com/x.html" 같은 프로토콜 상대 URL 차단)
   function isSafeInternalPath(urlPath) {
     try {
       const resolved = new URL(urlPath, window.location.origin);
-      return resolved.origin === window.location.origin && /\.html?$/i.test(resolved.pathname);
+      return resolved.origin === window.location.origin && /\.(html?|md)$/i.test(resolved.pathname);
     } catch (e) {
       return false;
     }
@@ -750,8 +937,8 @@ window.SiteModules.Navigation = (function () {
       window.activeWindowListeners = [];
     }
 
-    // 이전 페이지가 registerPageCleanup으로 등록한 정리 함수 실행
-    runPageCleanups();
+    // 이전 페이지가 등록한 정리 함수 실행, 이전 페이지가 더한 헤더 동작 단추와 레일 항목 제거
+    leaveCurrentPage();
     // 이전 화면의 필터/설정 패널을 내린다 (새 문서의 스크립트가 자기 패널을 등록할 수 있도록 본문을 넣기 전에 비운다)
     window.SiteModules.Header.setPanels({});
 
@@ -766,6 +953,11 @@ window.SiteModules.Navigation = (function () {
         throw new Error(`Failed to load: ${urlPath} (status ${response.status})`);
       }
       const htmlText = await response.text();
+
+      if (isMarkdownPath(urlPath)) {
+        renderMarkdownPage(article, urlPath, htmlText, response);
+        return;
+      }
 
       const parser = new DOMParser();
       const tempDoc = parser.parseFromString(htmlText, "text/html");
@@ -812,6 +1004,21 @@ window.SiteModules.Navigation = (function () {
       console.error(err);
       renderErrorState(article, err, () => loadPageRoute(urlPath));
     }
+  }
+
+  // 마크다운 문서: 원문(.md)을 그대로 받아 변환기로 그린 뒤 HTML 문서와 같은 후처리(제목·탭·목차·스크롤)를 한다
+  function renderMarkdownPage(article, urlPath, markdownText, response) {
+    // 정적 호스팅이 없는 경로에 SPA 껍데기(HTML)를 대신 돌려주는 경우를 걸러 낸다
+    if (/^\s*<!doctype html/i.test(markdownText)) {
+      throw new Error(`Failed to load: ${urlPath} (마크다운 문서가 아닙니다)`);
+    }
+    const parsed = window.SiteModules.Markdown.parse(markdownText, { basePath: urlPath });
+
+    const lastModifiedHeader = response.headers.get("Last-Modified");
+    window.SiteModules.state.lastModifiedDate = lastModifiedHeader ? new Date(lastModifiedHeader) : null;
+
+    article.innerHTML = parsed.html;
+    postLoadPageActions(false, urlPath, parsed.title);
   }
 
   function executePageScripts(tempDoc) {
@@ -1148,6 +1355,7 @@ window.SiteModules.Navigation = (function () {
       if (nextActive) {
         setPanelCollapsed(false);
       }
+      syncPageRailItems();
     } else {
       const isCollapsed = panel.classList.contains("collapsed");
       let nextState = isCollapsed;
@@ -1180,21 +1388,13 @@ window.SiteModules.Navigation = (function () {
       panel.classList.add("collapsed");
       document.documentElement.style.setProperty('--sidebar-width', isMobile ? '0px' : RAIL_WIDTH);
       // 패널이 접히면 모든 탭 아이콘에서 active 클래스를 제거하여 비활성 상태로 보이도록 합니다.
-      const tabs = ["nav-sitemap", "nav-toc", "nav-search"];
-      tabs.forEach(id => {
-        const tabEl = document.getElementById(id);
-        if (tabEl) tabEl.classList.remove("active");
-      });
+      getRailTabs().forEach(tabEl => tabEl.classList.remove("active"));
     } else {
       panel.classList.remove("collapsed");
       document.documentElement.style.setProperty('--sidebar-width', isMobile ? '0px' : RAIL_AND_PANEL_WIDTH);
 
       // 패널이 펼쳐질 때, 만약 활성화된 탭이 없다면 기본적으로 nav-sitemap을 활성화합니다.
-      const tabs = ["nav-sitemap", "nav-toc", "nav-search"];
-      const activeExists = tabs.some(id => {
-        const tabEl = document.getElementById(id);
-        return tabEl && tabEl.classList.contains("active");
-      });
+      const activeExists = getRailTabs().some(tabEl => tabEl.classList.contains("active"));
       if (!activeExists) {
         const defaultTab = document.getElementById("nav-sitemap");
         if (defaultTab) {
@@ -1210,6 +1410,7 @@ window.SiteModules.Navigation = (function () {
       }
       updatePanelTitle();
     }
+    syncPageRailItems();
   }
 
   function setDblClickListener(e) {
@@ -1267,6 +1468,7 @@ window.SiteModules.Navigation = (function () {
         // 삼선 메뉴가 열릴 때 패널이 접혀 있다면 펼쳐서 메뉴 항목을 활성화
         setPanelCollapsed(false);
       }
+      syncPageRailItems();
     }
 
     const panelCloseBtn = document.getElementById("panel-close-btn");
@@ -1382,38 +1584,9 @@ window.SiteModules.Navigation = (function () {
       });
     });
 
-    const tabs = ["nav-sitemap", "nav-toc", "nav-search"];
-    tabs.forEach(tabId => {
-      const el = document.getElementById(tabId);
-      if (el) {
-        el.addEventListener("click", () => {
-          const isActive = el.classList.contains("active");
-          const panel = document.getElementById("sidebar-panel");
-          const isPanelCollapsed = panel ? panel.classList.contains("collapsed") : true;
-
-          if (isActive && !isPanelCollapsed) {
-            // 이미 활성화된 탭을 열린 상태에서 또 누르면 좁게보기(접기)
-            trigBoard("hidden");
-          } else {
-            tabs.forEach(id => {
-              const tabEl = document.getElementById(id);
-              if (tabEl) tabEl.classList.remove("active");
-            });
-            document.querySelectorAll("#sidebar-panel .tab-pane").forEach(pane => {
-              pane.classList.remove("active");
-            });
-
-            el.classList.add("active");
-            if (tabId === "nav-search") window.SiteModules.Search.ensureIndex();
-            const targetTabPane = el.getAttribute("data-tab");
-            const paneEl = document.getElementById(targetTabPane);
-            if (paneEl) paneEl.classList.add("active");
-            updatePanelTitle();
-
-            trigBoard("visible");
-          }
-        });
-      }
+    // 기본 탭(사이트맵/목차/검색). 문서가 더하는 탭은 addRailItem 이 같은 처리기를 붙인다
+    getRailTabs().forEach(tabEl => {
+      tabEl.addEventListener("click", () => onRailTabClick(tabEl));
     });
 
     // 문의 창: 카카오톡 채널 추가 · 1:1 채팅 · 메일로 문의
@@ -1439,7 +1612,9 @@ window.SiteModules.Navigation = (function () {
   function updatePageFeatures() {
     const featuresContainer = document.getElementById("sidebar-page-features");
     if (!featuresContainer) return;
-    featuresContainer.innerHTML = "";
+    // 문서가 addRailItem 으로 더한 항목은 건드리지 않는다 (그쪽은 화면을 떠날 때 거둔다)
+    const oldTutorialBtn = document.getElementById("sidebar-tutorial-toggle");
+    if (oldTutorialBtn) oldTutorialBtn.remove();
 
     const tutorials = document.querySelectorAll(".tutorial");
     if (tutorials.length > 0) {
@@ -1459,7 +1634,7 @@ window.SiteModules.Navigation = (function () {
         trigTutorialInSidebar();
       });
 
-      featuresContainer.appendChild(tutorialBtn);
+      featuresContainer.insertBefore(tutorialBtn, featuresContainer.firstChild);
     }
   }
 
@@ -1500,6 +1675,8 @@ window.SiteModules.Navigation = (function () {
     trigBoard: trigBoard,
     findHierarchyPath: (hierarchy, title, currentPath) => window.SiteModules.Hierarchy.findPathByTitle(hierarchy, title, currentPath),
     registerPageCleanup: registerPageCleanup,
+    onLeave: registerPageCleanup,
+    addRailItem: addRailItem,
     getScroller: getScroller
   };
 })();

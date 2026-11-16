@@ -9,6 +9,15 @@
     "detail": "산리오 40종, 티니핑 179종(1기~7기)의 그림과 이름을 맞히는 퀴즈 놀이 웹앱 공개"
   },
   {
+    "date": "2026-11-16",
+    "type": "Added",
+    "env": "iseohyun.com",
+    "projectName": "AI 칼럼",
+    "projectPath": "/column/ai/fast-follower/ch1.html",
+    "summary": "칼럼에 AI 묶음 추가",
+    "detail": "AI 패스트 팔로워 노트(1장), WebApp Common GUI(화면·달력·리스트·지도·필터·단어 단축·구조·편의 기능·보고서·그림 보기), Full Code Review Checklist를 추가. 슬라이드와 스크립트를 짝지은 보고서 형식(전체 화면, 읽어 주기, 자막, 그림 보기)과 마크다운 문서 보기를 지원."
+  },
+  {
     "date": "2026-11-14",
     "type": "Changed",
     "env": [

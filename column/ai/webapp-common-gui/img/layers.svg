@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" font-family="'Malgun Gothic', sans-serif" font-size="15">
+  <title>세 층</title>
+  <rect width="640" height="400" fill="#ffffff"/>
+  <rect x="60" y="30" width="520" height="70" rx="10" fill="#ffffff" stroke="#1b1e1d" stroke-width="2"/>
+  <text x="320" y="62" text-anchor="middle" fill="#1b1e1d" font-weight="700">화면</text>
+  <text x="320" y="84" text-anchor="middle" fill="#5c6461" font-size="12">1벌 · 웹과 로컬앱이 같은 코드</text>
+  <path d="M320 104v26" stroke="#5c6461" stroke-width="2"/>
+  <text x="334" y="122" fill="#5c6461" font-size="12">플랫폼 창구만 부름</text>
+  <rect x="60" y="134" width="250" height="70" rx="10" fill="#f5f6f5" stroke="#1b1e1d" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="185" y="166" text-anchor="middle" fill="#1b1e1d" font-weight="700">웹 어댑터</text>
+  <text x="185" y="188" text-anchor="middle" fill="#5c6461" font-size="12">워커에 맡김</text>
+  <rect x="330" y="134" width="250" height="70" rx="10" fill="#f5f6f5" stroke="#1b1e1d" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="455" y="166" text-anchor="middle" fill="#1b1e1d" font-weight="700">로컬 어댑터</text>
+  <text x="455" y="188" text-anchor="middle" fill="#5c6461" font-size="12">기기의 기능 호출</text>
+  <path d="M185 208v48M455 208v48" stroke="#5c6461" stroke-width="2"/>
+  <rect x="60" y="260" width="520" height="90" rx="10" fill="#1b1e1d"/>
+  <text x="320" y="300" text-anchor="middle" fill="#ffffff" font-weight="700">코어</text>
+  <text x="320" y="324" text-anchor="middle" fill="#d5dad7" font-size="12">1벌 · 순수한 계산 · 웹에서는 WASM, 로컬에서는 기기용</text>
+</svg>
