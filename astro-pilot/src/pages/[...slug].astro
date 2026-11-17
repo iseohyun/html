@@ -1,0 +1,60 @@
+---
+/**
+ * 옮겨 온 문서마다 페이지 하나. 주소는 기존과 같다: /coding/C/function.html
+ * 본문은 기존 문서 HTML 을 빌드할 때 읽어 온다 (원본은 저장소 루트에 그대로 둔다).
+ */
+import Shell from '../layouts/Shell.astro';
+import { readLegacyDoc } from '../lib/legacy-doc.mjs';
+import { Hierarchy, LEGACY_BASE, MIGRATED_PREFIXES, headerTabs, migratedPages, neighbors, tree } from '../lib/site.mjs';
+
+export function getStaticPaths() {
+  return migratedPages().map((page: any) => ({
+    params: { slug: page.url.replace(/^\//, '').replace(/\.html$/, '') },
+    props: { page },
+  }));
+}
+
+const { page } = Astro.props as { page: any };
+const doc = readLegacyDoc(page.url);
+const title = page.item.주제;
+const { prev, next } = neighbors(page);
+const toDoc = (link: { title: string; href: string } | undefined) =>
+  link ? { title: link.title, dir: '', file: link.href.replace(/^\//, ''), parentDirs: '' } : { title: '', dir: '', file: '' };
+
+// 옮긴 범위 안의 개발중 문서 (브라우저에서 링크를 고를 때 쓴다)
+const devPaths: string[] = [];
+Hierarchy.setShowDev(true);
+Hierarchy.forEachPage(tree, (p: any) => {
+  if (MIGRATED_PREFIXES.some((prefix) => p.url.startsWith(prefix)) && Hierarchy.isDevPath(tree, p.url)) devPaths.push(p.url);
+});
+Hierarchy.setShowDev(false);
+
+const pageData = {
+  title,
+  tabs: headerTabs(page),
+  breadcrumb: page.ancestors.join(' > '),
+  lastModified: doc.lastModified,
+  migratedPrefixes: MIGRATED_PREFIXES,
+  devPaths,
+  legacyBase: LEGACY_BASE,
+  state: {
+    currentPath: page.url,
+    category: page.ancestors.join(' >> '),
+    cur_doc: { title, dir: page.item.디렉토리 || '', file: page.fileName },
+    prv_doc: toDoc(prev),
+    next_doc: toDoc(next),
+  },
+};
+---
+<Shell
+  path={page.url}
+  title={`${title} - ${page.ancestors[page.ancestors.length - 1]} | iseohyun.com`}
+  pageTitle={title}
+  description={doc.description}
+  keywords={doc.keywords || doc.tags}
+  breadcrumbs={page.ancestors}
+  html={doc.html}
+  stylesheets={doc.stylesheets}
+  scripts={doc.scripts}
+  pageData={pageData}
+/>

@@ -1,0 +1,9 @@
+---
+// 기존 SiteModules.Icons.html() 과 같은 마크업. 그림(<symbol>)은 브라우저에서 icons.js 의 ensureSprite() 가 넣는다.
+interface Props {
+  name: string;
+  class?: string;
+}
+const { name, class: extra } = Astro.props;
+---
+<svg class={extra ? `ico ${extra}` : 'ico'} aria-hidden="true"><use href={`#i-${name}`} /></svg>

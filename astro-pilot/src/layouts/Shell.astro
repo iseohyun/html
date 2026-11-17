@@ -1,0 +1,143 @@
+---
+/**
+ * 문서 페이지의 뼈대. 기존 사이트는 index.html 하나에 모든 문서를 끼워 넣었지만,
+ * 여기서는 문서마다 완성된 HTML 을 만든다 (제목 · 설명 · 본문 · 사이트맵이 처음부터 들어 있다).
+ * 브라우저 쪽 동작은 기존 모듈을 그대로 쓰고, 라우터(navigation.js)만 navigation-static.js 로 바꾼다.
+ */
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { REPO_ROOT } from '../lib/site.mjs';
+import Sidebar from '../components/Sidebar.astro';
+
+interface Script { src: string; type: string; defer: boolean; code: string }
+interface Props {
+  path: string;
+  title: string;
+  pageTitle: string;
+  description: string;
+  keywords: string;
+  breadcrumbs: string[];
+  html: string;
+  stylesheets: string[];
+  scripts: Script[];
+  pageData: Record<string, unknown>;
+}
+
+const { path, title, pageTitle, description, keywords, breadcrumbs, html, stylesheets, scripts, pageData } = Astro.props;
+const version = readFileSync(resolve(REPO_ROOT, 'modules/script.js'), 'utf8').match(/SiteVersion = "([^"]+)"/)?.[1] ?? 'dev';
+const v = (url: string) => `${url}?v=${version}`;
+const canonical = new URL(path, Astro.site).href;
+// <script> 안에 넣는 JSON: 본문에 </script> 가 있어도 끊기지 않게 < 를 바꿔 쓴다
+const safeJson = (value: unknown) => JSON.stringify(value).replace(/</g, "\u003c");
+
+// 기존 modules/script.js 가 불러오던 순서 그대로 (navigation.js 만 빼고 맨 끝에 정적 페이지판을 둔다)
+const MODULES = [
+  '/modules/core/site-config.js',
+  '/modules/core/auth.js',
+  '/modules/core/settings.js',
+  '/modules/core/keybind-manager.js',
+  '/modules/core/icons.js',
+  '/modules/core/header.js',
+  '/modules/core/hierarchy.js',
+  '/modules/core/search.js',
+  '/modules/features/contact.js',
+  '/modules/ui/markdown.js',
+  '/modules/core/toc.js',
+  '/modules/core/document.js',
+  '/modules/ui/clipboard.js',
+  '/modules/ui/quiz.js',
+  '/modules/ui/code-loader.js',
+];
+
+const breadcrumbLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: breadcrumbs.concat(pageTitle).map((name, i) => ({
+    '@type': 'ListItem', position: i + 1, name, ...(i === breadcrumbs.length ? { item: canonical } : {}),
+  })),
+};
+---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>{title}</title>
+  {description && <meta name="description" content={description} />}
+  {keywords && <meta name="keywords" content={keywords} />}
+  <meta name="author" content="iseohyun" />
+  <link rel="canonical" href={canonical} />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content={title} />
+  {description && <meta property="og:description" content={description} />}
+  <meta property="og:url" content={canonical} />
+  <meta property="og:locale" content="ko_KR" />
+  <script is:inline type="application/ld+json" set:html={safeJson(breadcrumbLd)} />
+  <link rel="shortcut icon" type="image/svg+xml" href="/source/icon_seohyun_reverse.svg" />
+
+  <!-- 저장해 둔 테마와 글자 크기를 화면이 그려지기 전에 적용한다 (modules/script.js 와 같은 일) -->
+  <script is:inline define:vars={{ version }}>
+    window.SiteVersion = version;
+    window.SiteSettingsStorageKey = "iseohyun_settings_v1";
+    try {
+      const saved = JSON.parse(localStorage.getItem(window.SiteSettingsStorageKey) || "{}");
+      let skin = saved.theme || "system";
+      if (skin === "system") skin = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      if (["dark", "gray", "navy"].includes(skin)) document.documentElement.setAttribute("data-skin", skin);
+      if (["0.9", "1", "1.1", "1.25"].includes(saved.fontScale)) document.documentElement.style.setProperty("--font-scale", saved.fontScale);
+    } catch (err) {
+      console.warn("[Pilot] 저장된 설정을 읽지 못했습니다:", err);
+    }
+  </script>
+  <!-- 문서 스크립트가 본문 안에서 바로 부르는 확장 지점. 정적 페이지는 떠날 때 통째로 사라지므로 정리 함수는 모아 두기만 한다 -->
+  <script is:inline>
+    window.SiteModules = window.SiteModules || {};
+    window.SiteModules.state = { category: "", cur_doc: {}, prv_doc: {}, next_doc: {}, currentPath: location.pathname };
+    (function () {
+      const cleanups = [];
+      const onLeave = (fn) => { if (typeof fn === "function") cleanups.push(fn); };
+      window.addEventListener("pagehide", () => cleanups.splice(0).forEach((fn) => { try { fn(); } catch (err) { console.error(err); } }));
+      window.SiteModules.Navigation = {
+        onLeave: onLeave,
+        registerPageCleanup: onLeave,
+        addRailItem: () => () => {},
+        getScroller: () => document.getElementById("app-main") || document.scrollingElement,
+        trigBoard: () => {},
+      };
+      window.SiteModules.registerPageCleanup = onLeave;
+    })();
+  </script>
+
+  <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script is:inline>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-453XSP5W9M');
+  </script>
+  <script is:inline src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/base16/cupertino.min.css" />
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.8.0/highlightjs-line-numbers.min.js"></script>
+  <link rel="stylesheet" id="material-symbols-link" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+  <link rel="stylesheet" href={v('/style.css')} />
+  {stylesheets.map((href) => <link rel="stylesheet" href={v(href)} />)}
+  {scripts.filter((s) => s.src).map((s) => (
+    s.defer
+      ? <script is:inline defer src={v(s.src)} type={s.type || undefined}></script>
+      : <script is:inline src={v(s.src)} type={s.type || undefined}></script>
+  ))}
+</head>
+<body>
+  <Sidebar current={path} version={version} />
+  <main id="app-main">
+    <article set:html={html} />
+  </main>
+
+  <script is:inline type="application/json" id="pilot-page-data" set:html={safeJson(pageData)} />
+  {MODULES.map((src) => <script is:inline src={v(src)}></script>)}
+  <script is:inline src={v('/pilot/navigation-static.js')}></script>
+  {scripts.filter((s) => !s.src).map((s) => <script is:inline type={s.type || undefined} set:html={s.code} />)}
+</body>
+</html>

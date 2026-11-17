@@ -1,0 +1,41 @@
+---
+/**
+ * 시범 전환의 첫 화면: 옮겨 온 문서 목록.
+ * 기존 사이트의 공유 주소(/#/coding/C/function.html)로 들어오면 새 주소로 넘겨 준다.
+ */
+import { LEGACY_BASE, MIGRATED_PREFIXES, migratedPages } from '../lib/site.mjs';
+
+const pages = migratedPages();
+---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iseohyun.com — Astro 시범 전환</title>
+  <script is:inline define:vars={{ prefixes: MIGRATED_PREFIXES, legacyBase: LEGACY_BASE }}>
+    // 예전 해시 주소 넘겨 주기: 옮긴 문서는 새 주소로, 나머지는 기존 사이트로
+    if (location.hash.startsWith("#/")) {
+      const rest = location.hash.slice(1);
+      const cut = rest.indexOf("#");
+      const path = cut >= 0 ? rest.slice(0, cut) : rest;
+      const anchor = cut >= 0 ? rest.slice(cut) : "";
+      location.replace(prefixes.some((p) => path.startsWith(p)) ? path + anchor : legacyBase + rest);
+    }
+  </script>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    body { max-width: 720px; margin: 40px auto; padding: 0 16px; line-height: 1.7; }
+    h1 { font-size: 1.6rem; }
+    ol { padding-left: 1.4em; }
+    .note { color: var(--muted, #666); font-size: 0.92rem; }
+  </style>
+</head>
+<body>
+  <h1>Astro 시범 전환</h1>
+  <p class="note">공학 &gt; 프로그래밍 언어 &gt; C 묶음만 옮겼습니다. 다른 문서로 가는 링크는 기존 사이트({LEGACY_BASE})로 이어집니다.</p>
+  <ol>
+    {pages.map((p: any) => <li><a href={p.url}>{p.item.주제}</a> <code>{p.url}</code></li>)}
+  </ol>
+</body>
+</html>

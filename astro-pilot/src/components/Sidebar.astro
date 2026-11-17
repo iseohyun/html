@@ -1,0 +1,78 @@
+---
+/**
+ * 왼쪽 레일과 사이드 패널 (기존 navigation.js 의 init 이 브라우저에서 만들던 마크업을 빌드할 때 그린다).
+ * 사이트맵 트리는 미리 그려 두므로 Javascript 없이도 모든 문서로 가는 링크가 있다.
+ * 목차와 검색 결과는 브라우저에서 기존 모듈(toc.js · search.js)이 채운다.
+ */
+import { tree } from '../lib/site.mjs';
+import Icon from './Icon.astro';
+import SitemapNode from './SitemapNode.astro';
+
+interface Props {
+  current: string;
+  version: string;
+}
+const { current, version } = Astro.props;
+---
+<div id="sidebar-overlay"></div>
+<div id="sidebar-container">
+  <div id="sidebar-nav">
+    <div class="nav-group">
+      <a class="nav-item" id="nav-home" href="/" data-tooltip="홈으로 이동" aria-label="홈으로 이동">
+        <svg viewBox="0 0 500 500" style="width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-linecap: round; stroke-width: 46px;">
+          <path d="M 84 440 C -1 341 38 223 68 161 S 151 23 234 34 S 363 164 327 217 S 245 273 198 229 S 187 105 245 77 S 432 108 432 212 S 354 371 393 420 C 431 460 468 436 468 407"></path>
+          <path d="M 99 289 C 183 296 239 392 188 468"></path>
+          <path d="M 246 311 C 335 320 324 390 291 462" style="stroke-miterlimit: 17;"></path>
+          <path d="M 341 267 C 339 260 360 313 400 309" style="stroke-miterlimit: 17;"></path>
+        </svg>
+      </a>
+      <div class="nav-item" id="nav-sitemap" data-tab="tab-sitemap" data-tooltip="사이트맵" data-panel-title="사이트맵"><Icon name="sitemap" /></div>
+      <div class="nav-item" id="nav-toc" data-tab="tab-toc" data-tooltip="목차" data-panel-title="목차"><Icon name="list" /></div>
+      <div class="nav-item" id="nav-search" data-tab="tab-search" data-tooltip="검색" data-panel-title="문서 검색"><Icon name="search" /></div>
+    </div>
+    <div class="nav-group" id="sidebar-page-features"></div>
+    <div class="nav-group">
+      <div class="nav-item" id="nav-kakao-channel" data-tooltip="문의 (카카오톡 · 메일)">
+        <svg viewBox="0 0 24 24" class="kakao-nav-svg" aria-hidden="true">
+          <path d="M12 3C6.477 3 2 6.463 2 10.734c0 2.757 1.856 5.177 4.651 6.535-.153.553-.986 3.555-1.021 3.79-.044.294.108.29.228.211.094-.062 3.743-2.501 5.252-3.524.291.028.587.043.89.043 5.523 0 10-3.463 10-7.734S17.523 3 12 3z"></path>
+        </svg>
+      </div>
+      <a class="nav-item" id="nav-info" data-legacy-href="/info.html" href="#" data-tooltip="사이트 소개" aria-label="사이트 소개"><Icon name="info" /></a>
+    </div>
+  </div>
+
+  <div id="sidebar-panel" class="collapsed">
+    <div class="panel-head">
+      <span id="panel-title">사이트맵</span>
+      <button class="icon-btn is-bare" type="button" id="panel-close-btn" aria-label="패널 닫기" title="패널 닫기"><Icon name="x" /></button>
+    </div>
+    <div class="panel-body">
+      <div class="tab-pane active" id="tab-sitemap">
+        <div class="sitemap-actions" style="margin-bottom: 10px; display: flex; gap: 8px;">
+          <a id="home-btn" class="site-action-btn" href="/">홈</a>
+          <button id="sitemap-toggle-all-btn" class="site-action-btn" type="button">전체 닫기</button>
+          <button id="sitemap-open-current-btn" class="site-action-btn" type="button">현재 문서</button>
+        </div>
+        <ul class="sitemap-panel-list" id="sitemap-tree">
+          <SitemapNode items={tree} parentDirs="" current={current} />
+        </ul>
+      </div>
+      <div class="tab-pane" id="tab-toc">
+        <div class="toc-breadcrumb" id="toc-breadcrumb-info" style="font-size:0.75em; color:#5f6368; margin-bottom:4px; font-weight: 500;"></div>
+        <ul class="toc-panel-list" id="toc-tree"></ul>
+      </div>
+      <div class="tab-pane" id="tab-search">
+        <div class="search-type-wrapper">
+          <label class="search-type-option active"><input type="radio" name="search-type" value="title" checked style="display: none;"> 제목</label>
+          <label class="search-type-option"><input type="radio" name="search-type" value="tag" style="display: none;"> Tag</label>
+          <label class="search-type-option"><input type="radio" name="search-type" value="all" style="display: none;"> 모든 문서</label>
+        </div>
+        <div class="search-input-wrapper" style="margin-bottom: 15px;">
+          <input type="text" id="sidebar-search-input" placeholder="문서 제목 검색..." />
+        </div>
+        <ul class="search-results-list" id="sidebar-search-results"></ul>
+      </div>
+    </div>
+    <div class="panel-foot" id="panel-foot">빌드 {version} · Astro 시범</div>
+  </div>
+</div>
