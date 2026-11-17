@@ -41,18 +41,20 @@ function hasOwn(obj, key) {
 function listPages(list, parentDirs = '', ancestors = [], pages = []) {
   for (const item of list) {
     const title = item.주제 || '';
-    const dir = item.디렉토리 || '';
+    // "/"로 시작하는 디렉토리는 사이트 루트 기준이다 (hierarchy.js의 resolveDirs와 같은 규칙)
+    const ownDir = item.디렉토리 || '';
+    const dirs = ownDir.startsWith('/') ? ownDir.slice(1) : parentDirs + ownDir;
     const isPage = hasOwn(item, '파일명') || !hasOwn(item, '목록');
     if (isPage) {
       const fileName = hasOwn(item, '파일명') ? item.파일명 : DEFAULT_FILE_NAME;
       pages.push({
         title: title,
-        url: `/${parentDirs}${dir}${fileName}`,
+        url: `/${dirs}${fileName}`,
         breadcrumb: ancestors.concat(title).join(' > ')
       });
     }
     if (item.목록 && item.목록.length > 0) {
-      listPages(item.목록, parentDirs + dir, ancestors.concat(title), pages);
+      listPages(item.목록, dirs, ancestors.concat(title), pages);
     }
   }
   return pages;

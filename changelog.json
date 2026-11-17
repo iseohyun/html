@@ -443,7 +443,6 @@
     "type": "Fixed",
     "env": "WebApp",
     "projectName": "유튜브 광고 자동 건너뛰기",
-    "projectPath": "/small-project/youtube_skip/index.html",
     "summary": "기존 배속모드에서 YouTube경고 팝업이 생김",
     "detail": "기존 배속모드에서 YouTube경고 팝업이 생김(정책위반). 정속, 정책 준수의 방향으로 진행하도록 변경(v1.2.0 beta)"
   },
@@ -476,7 +475,6 @@
     "type": "Added",
     "env": "WebApp",
     "projectName": "유튜브 광고 자동 건너뛰기",
-    "projectPath": "/small-project/youtube_skip/index.html",
     "summary": "크롬 확장 프로그램",
     "detail": "크롬 확장 프로그램"
   },

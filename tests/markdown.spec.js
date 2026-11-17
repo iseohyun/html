@@ -264,7 +264,7 @@ test.describe('칼럼 > AI 의 마크다운 문서', () => {
     await expect(article.locator('table.md-table').first().locator('tbody tr')).toHaveCount(18);
     await expect(article.locator('pre')).toHaveCount(1);
     await expect(article.locator('pre code.language-markdown')).toContainText('## 코드 전수 검사');
-    await expect(page.locator('#title-container')).toContainText('칼럼 > AI');
+    await expect(page.locator('#title-container')).toContainText('공학 > 개발 도구');
     await expect(page.locator('.error-state')).toHaveCount(0);
 
     await page.locator('#nav-toc').click();

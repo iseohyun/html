@@ -5,26 +5,38 @@ test.describe('헤더 탭과 홈의 리스트 보기', () => {
     await page.setViewportSize({ width: 1280, height: 800 });
   });
 
-  test('홈 탭: 달력 · 리스트 · 프로젝트를 오간다', async ({ page }) => {
+  test('홈 탭: 새소식 · 프로젝트를 오가고, 새소식 위쪽에서 달력 · 리스트를 바꾼다', async ({ page }) => {
     await page.goto('/index.html');
     const tabs = page.locator('#header-tabs .app-tab');
-    await expect(tabs).toHaveText(['달력', '리스트', '프로젝트']);
+    const views = page.locator('#home-view-switch a');
+    await expect(tabs).toHaveText(['새소식', '프로젝트']);
     await expect(tabs.nth(0)).toHaveAttribute('aria-selected', 'true');
+    await expect(views).toHaveText(['달력', '리스트']);
+    await expect(views.nth(0)).toHaveAttribute('aria-current', 'true');
     await expect(page.locator('.update-calendar-table')).toBeVisible();
 
-    await tabs.nth(1).click();
+    // 리스트로 바꿔도 탭은 새소식 그대로다
+    await views.nth(1).click();
     await expect(page).toHaveURL(/#\/list$/);
-    await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
+    await expect(views.nth(1)).toHaveAttribute('aria-current', 'true');
+    await expect(views.nth(0)).toHaveAttribute('aria-current', 'false');
+    await expect(tabs.nth(0)).toHaveAttribute('aria-selected', 'true');
     await expect(page.locator('table.list-data-table')).toBeVisible();
     await expect(page.locator('.update-calendar-table')).toHaveCount(0);
 
-    await tabs.nth(2).click();
+    await tabs.nth(1).click();
     await expect(page).toHaveURL(/#\/promo\.html$/);
-    await expect(tabs.nth(2)).toHaveAttribute('aria-selected', 'true');
+    await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('#home-view-switch')).toHaveCount(0);
     // 프로젝트 소개에서는 홈 전용 필터가 사라진다
     await expect(page.locator('#header-filter-btn')).toBeHidden();
 
+    // 새소식으로 돌아오면 마지막으로 보던 리스트가 나온다
     await tabs.nth(0).click();
+    await expect(page).toHaveURL(/#\/list$/);
+    await expect(page.locator('table.list-data-table')).toBeVisible();
+
+    await views.nth(0).click();
     await expect(page.locator('.update-calendar-table')).toBeVisible();
   });
 

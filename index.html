@@ -31,7 +31,7 @@
     src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.8.0/highlightjs-line-numbers.min.js"></script>
 
   <link rel="shortcut icon" type="image/svg+xml" href="/source/icon_seohyun_reverse.svg">
-  <link rel="stylesheet" href="/style.css?v=20261117v2">
+  <link rel="stylesheet" href="/style.css?v=20261118v1">
 
   <style type="text/css">
     /* 홈 화면: 본문 바탕과 켜진 탭의 색이 테마의 바탕색을 따른다 */
@@ -40,9 +40,23 @@
       --tab-selected-bg: var(--bg);
     }
 
+    /* 새소식 위쪽의 보기 전환 (달력 / 리스트) */
+    .home-view-switch {
+      width: 96%;
+      margin: 16px auto 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    article .home-view-switch a.pill-btn[aria-current="true"],
+    article .home-view-switch a.pill-btn[aria-current="true"]:visited {
+      color: var(--bg);
+    }
+
     #site-history {
       width: 96%;
-      margin: 24px auto 200px;
+      margin: 12px auto 200px;
       padding: 0;
       list-style: none;
       border: none;
@@ -881,7 +895,8 @@
       color: var(--fg);
     }
 
-    .pill-btn[aria-pressed="true"] {
+    .pill-btn[aria-pressed="true"],
+    .pill-btn[aria-current="true"] {
       background-color: var(--fg);
       border-color: var(--fg);
       color: var(--bg);
@@ -1096,7 +1111,7 @@
       }
     }
   </style>
-  <script src="/modules/script.js?v=20261117v2" defer></script>
+  <script src="/modules/script.js?v=20261118v1" defer></script>
 </head>
 
 <body>

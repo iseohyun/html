@@ -12,7 +12,8 @@ var state = {
 };
 
 var SELECTORS = {
-  svg: "svg",
+  // 문서 안의 그림만 고른다. 그냥 svg 로 고르면 페이지 맨 앞에 있는 사이트 뼈대의 아이콘(20px)이 잡힌다.
+  svg: "article svg",
   ground: "#ground",
   controlPath: "#control-path",
   animatePath: "#animate-path",

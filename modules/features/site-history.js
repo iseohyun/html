@@ -220,7 +220,7 @@ window.SiteModules.UpdateLog = (function () {
 
       for (const item of hierarchy) {
         if (item.주제 === currentTitle.trim()) {
-          path += item.디렉토리 || '';
+          path = window.SiteModules.Hierarchy.resolveDirs(path, item.디렉토리);
 
           if (item.목록) {
             hierarchy = item.목록;

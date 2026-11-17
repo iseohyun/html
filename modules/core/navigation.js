@@ -35,14 +35,19 @@ window.SiteModules.Navigation = (function () {
   // 본문을 밀어내는 사이드바 폭 (--sidebar-width 에 넣는 값)
   const RAIL_WIDTH = "var(--rail-w)";
   const RAIL_AND_PANEL_WIDTH = "calc(var(--rail-w) + var(--panel-w))";
-  // 홈의 보기 방식과 주소: 달력(#/), 리스트(#/list). 프로젝트 소개는 별도 문서(/promo.html)지만 같은 탭 줄에 둔다.
+  // 홈의 탭: 새소식(변경 이력), 프로젝트. 프로젝트 소개는 별도 문서(/promo.html)지만 같은 탭 줄에 둔다.
+  // 새소식의 보기 방식과 주소: 달력(#/), 리스트(#/list). 탭이 아니라 새소식 위쪽의 보기 전환으로 고른다.
   const HOME_VIEW_BY_HASH = { "#/list": "list" };
-  const HOME_TABS = [
+  const HOME_VIEWS = [
     { id: "calendar", label: "달력", href: "#/" },
-    { id: "list", label: "리스트", href: "#/list" },
-    { id: "promo", label: "프로젝트", href: "#/promo.html" }
+    { id: "list", label: "리스트", href: "#/list" }
   ];
+  const PROMO_TAB = { id: "promo", label: "프로젝트", href: "#/promo.html" };
   const PROMO_PATH = "/promo.html";
+  // 개론이 있는 묶음의 탭 줄에서 개론 탭의 이름
+  const OVERVIEW_TAB_LABEL = "개론";
+  // 자동 개론의 묶음 카드에 미리 보여 주는 하위 항목의 수
+  const AUTO_OVERVIEW_PREVIEW_COUNT = 5;
   // 형제 문서를 탭으로 묶지 않는 경로 (서로 이어지는 글이 아닌 독립 프로젝트)
   const NO_SERIES_TAB_PREFIX = "/small-project/";
   // 화면별 스크롤 위치 (키: 문서 경로, 홈은 보기 방식까지)
@@ -264,15 +269,11 @@ window.SiteModules.Navigation = (function () {
     const page = window.SiteModules.Hierarchy.findPage(list, targetPath.split('#')[0]);
     if (!page) return false;
 
-    const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
+    const Hierarchy = window.SiteModules.Hierarchy;
+    // 이웃이 문서가 아니라 분류면 갈 곳이 없다 (file 이 빈 값)
     const toNeighborDoc = (neighbor) => {
-      if (!neighbor) return { title: "", dir: "", file: "" };
-      return {
-        title: neighbor.주제,
-        dir: neighbor.디렉토리,
-        file: hasOwn(neighbor, '파일명') ? neighbor.파일명 : (hasOwn(neighbor, '목록') ? "" : "index.html"),
-        parentDirs: page.parentDirs
-      };
+      if (!neighbor || !Hierarchy.isPageItem(neighbor)) return { title: neighbor ? neighbor.주제 : "", dir: "", file: "" };
+      return { title: neighbor.주제, dir: "", file: Hierarchy.getItemUrl(page.parentDirs, neighbor).slice(1), parentDirs: "" };
     };
 
     const state = window.SiteModules.state;
@@ -288,8 +289,12 @@ window.SiteModules.Navigation = (function () {
   // 헤더 탭 구성: 홈과 프로젝트 소개는 홈 탭, 이어지는 문서는 같은 묶음의 형제 문서를 탭으로 보여 준다
   function buildHeaderTabs(isHome, urlPath) {
     if (isHome || urlPath === PROMO_PATH) {
-      const selectedId = isHome ? (window.SiteModules.state.homeView || "calendar") : "promo";
-      return HOME_TABS.map(tab => ({ label: tab.label, href: tab.href, selected: tab.id === selectedId }));
+      // 새소식 탭은 마지막으로 보던 보기 방식(달력/리스트)으로 돌아간다
+      const lastView = HOME_VIEWS.find(view => view.id === window.SiteModules.state.homeView) || HOME_VIEWS[0];
+      return [
+        { label: "새소식", href: lastView.href, selected: isHome },
+        { label: PROMO_TAB.label, href: PROMO_TAB.href, selected: !isHome }
+      ];
     }
 
     const list = window.SiteModules.hierarchyListCached;
@@ -299,14 +304,27 @@ window.SiteModules.Navigation = (function () {
     const page = Hierarchy.findPage(list, urlPath.split('#')[0]);
     if (!page) return [];
 
-    const seriesDocs = page.siblings.filter(Hierarchy.isPageItem);
-    if (seriesDocs.length < 2) return [];
+    // 개론이 있는 묶음: [개론][그 안의 문서들]. 개론을 보고 있을 때도, 그 안의 문서를 보고 있을 때도 같은 탭 줄이다.
+    const isOverview = Object.prototype.hasOwnProperty.call(page.item, '목록');
+    const tabs = [];
+    let seriesDocs;
+    let seriesDirs;
+    if (isOverview) {
+      tabs.push({ label: OVERVIEW_TAB_LABEL, href: `#${page.url}`, selected: true });
+      seriesDocs = page.item.목록.filter(Hierarchy.isPageItem);
+      seriesDirs = Hierarchy.resolveDirs(page.parentDirs, page.item.디렉토리);
+    } else {
+      if (page.parentOverviewUrl) tabs.push({ label: OVERVIEW_TAB_LABEL, href: `#${page.parentOverviewUrl}`, selected: false });
+      seriesDocs = page.siblings.filter(Hierarchy.isPageItem);
+      seriesDirs = page.parentDirs;
+    }
 
-    return seriesDocs.map(item => ({
+    seriesDocs.forEach(item => tabs.push({
       label: item.주제 || "",
-      href: `#/${page.parentDirs}${item.디렉토리 || ""}${Hierarchy.getFileName(item)}`,
+      href: `#${Hierarchy.getItemUrl(seriesDirs, item)}`,
       selected: item === page.item
     }));
+    return tabs.length < 2 ? [] : tabs;
   }
 
   // 본문 스크롤 영역(#app-main): 페이지 전체가 아니라 이 영역만 스크롤한다. 문서(article)를 감싸서 만든다.
@@ -502,13 +520,8 @@ window.SiteModules.Navigation = (function () {
       .then(list => {
         window.SiteModules.hierarchyListCached = list;
 
-        let directory = state.currentPath.split('/').join('/');
-        if (directory.startsWith('/')) {
-          directory = directory.substring(1);
-        }
-
-        // 초기 상태 로드
-        renderHierarchy(list, baseUl, '', directory);
+        // 초기 상태 로드 (지금 문서까지의 가지는 라우터가 highlightSitemapTree 로 펼친다)
+        renderHierarchy(list, baseUl, '');
 
         // 라우터 초기화
         initRouter();
@@ -656,14 +669,20 @@ window.SiteModules.Navigation = (function () {
   }
 
 
+  // 다음 화면 전환 한 번은 좁은 화면의 서랍을 닫지 않는다 (사이트맵에서 묶음을 열 때 켠다)
+  let keepDrawerOpenOnce = false;
+
   function handleRouteChange() {
     // 떠나는 화면의 스크롤 위치를 적어 둔다
     rememberScrollPosition();
 
     let hash = window.location.hash;
     const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
+    // 사이트맵에서 묶음을 열어 개론으로 온 경우에는 서랍을 닫지 않는다 (하위 목록을 이어서 고를 수 있게)
+    const keepDrawerOpen = keepDrawerOpenOnce;
+    keepDrawerOpenOnce = false;
 
-    if (isMobile) {
+    if (isMobile && !keepDrawerOpen) {
       const container = document.getElementById("sidebar-container");
       const overlay = document.getElementById("sidebar-overlay");
       if (container) container.classList.remove("active");
@@ -713,7 +732,12 @@ window.SiteModules.Navigation = (function () {
       }
 
       // 만약 현재 로드된 페이지와 이동하려는 페이지가 동일하다면, 페이지를 새로 페치하지 않고 스크롤만 수행
-      const targetFullPath = "/" + urlPath;
+      let targetFullPath = "/" + urlPath;
+      // 자동 개론의 주소는 한글 제목 경로다: 브라우저가 % 로 바꿔 둔 것을 되돌려 한 가지 모양으로 다룬다
+      const isAutoOverview = targetFullPath.startsWith(window.SiteModules.Hierarchy.AUTO_OVERVIEW_PREFIX);
+      if (isAutoOverview) {
+        try { targetFullPath = decodeURIComponent(targetFullPath); } catch (err) { /* 잘못된 % 표기는 그대로 둔다 */ }
+      }
       const state = window.SiteModules.state;
       if (state.currentPath === targetFullPath) {
         if (subAnchor) {
@@ -728,8 +752,91 @@ window.SiteModules.Navigation = (function () {
         return;
       }
 
-      loadPageRoute(targetFullPath);
+      if (isAutoOverview) loadAutoOverviewRoute(targetFullPath);
+      else loadPageRoute(targetFullPath);
     }
+  }
+
+  // 자동 개론: 개론 문서가 없는 묶음의 하위 목록을 사이트맵에서 만들어 본문에 보여 준다.
+  //   묶음은 카드(이름 · 글 수 · 안에 든 것 몇 가지)로, 낱개 문서는 목록으로 그린다.
+  function loadAutoOverviewRoute(urlPath) {
+    const article = document.querySelector("article");
+    if (!article) return;
+    const Hierarchy = window.SiteModules.Hierarchy;
+
+    leaveCurrentPage();
+    window.SiteModules.state.lastModifiedDate = null;
+
+    const found = Hierarchy.findFolderByUrl(window.SiteModules.hierarchyListCached || [], urlPath);
+    if (!found) {
+      window.SiteModules.state.currentPath = urlPath;
+      highlightSitemapTree(urlPath);
+      renderErrorState(article, new Error("사이트맵에 없는 묶음입니다."), () => loadAutoOverviewRoute(urlPath));
+      return;
+    }
+
+    const isFolderItem = (item) => Object.prototype.hasOwnProperty.call(item, '목록');
+    const folders = found.item.목록.filter(isFolderItem);
+    const pages = found.item.목록.filter(item => !isFolderItem(item));
+    // 하위 묶음으로 가는 주소: 개론 문서가 있으면 그 문서, 없으면 그 묶음의 자동 개론
+    const folderHref = (item) => Hierarchy.isPageItem(item)
+      ? Hierarchy.getItemUrl(found.dirs, item)
+      : Hierarchy.getAutoOverviewUrl(found.titles.concat(item.주제));
+
+    const wrap = document.createElement("div");
+    wrap.className = "auto-overview";
+
+    const lead = document.createElement("p");
+    lead.className = "auto-overview-lead";
+    const total = Hierarchy.countPages(found.item);
+    lead.textContent = total > 0 ? `이 묶음에는 글이 ${total}편 있습니다.` : "아직 글이 없습니다.";
+    wrap.appendChild(lead);
+
+    if (folders.length > 0) {
+      const grid = document.createElement("div");
+      grid.className = "auto-overview-grid";
+      folders.forEach(item => {
+        const card = document.createElement("a");
+        card.className = "auto-overview-card";
+        card.href = `#${folderHref(item)}`;
+
+        const name = document.createElement("strong");
+        name.className = "auto-overview-name";
+        name.textContent = item.주제;
+        const count = document.createElement("span");
+        count.className = "auto-overview-count";
+        count.textContent = `(${Hierarchy.countPages(item)})`;
+        name.appendChild(count);
+
+        const preview = document.createElement("span");
+        preview.className = "auto-overview-preview";
+        const names = item.목록.map(child => child.주제);
+        preview.textContent = names.slice(0, AUTO_OVERVIEW_PREVIEW_COUNT).join(" · ") + (names.length > AUTO_OVERVIEW_PREVIEW_COUNT ? " …" : "");
+
+        card.append(name, preview);
+        grid.appendChild(card);
+      });
+      wrap.appendChild(grid);
+    }
+
+    if (pages.length > 0) {
+      const listEl = document.createElement("ul");
+      listEl.className = "auto-overview-pages";
+      pages.forEach(item => {
+        const li = document.createElement("li");
+        if (item.형식) li.classList.add("is-app");
+        const link = document.createElement("a");
+        link.href = `#${Hierarchy.getItemUrl(found.dirs, item)}`;
+        link.textContent = item.주제;
+        li.appendChild(link);
+        listEl.appendChild(li);
+      });
+      wrap.appendChild(listEl);
+    }
+
+    article.replaceChildren(wrap);
+    document.title = `${found.item.주제} - iseohyun.com`;
+    postLoadPageActions(false, urlPath, found.item.주제);
   }
 
   // 홈 페이지 (index.html 기본 내용)를 동적으로 완전 빌드 (무한 대기 루프 완벽 제거)
@@ -745,7 +852,11 @@ window.SiteModules.Navigation = (function () {
     }
 
     // 구조 빌드
+    const viewSwitch = HOME_VIEWS.map(item =>
+      `<a class="pill-btn" href="${item.href}" data-view="${item.id}" aria-current="${item.id === view ? "true" : "false"}">${item.label}</a>`
+    ).join("");
     article.innerHTML = `
+      <nav class="home-view-switch" id="home-view-switch" aria-label="새소식 보기 방식">${viewSwitch}</nav>
       <ul id="site-history"></ul>
     `;
 
@@ -1100,7 +1211,8 @@ window.SiteModules.Navigation = (function () {
           state.cur_doc = { title: docTitle || fallbackTitles[urlPath] || "", dir: "", file: urlPath.replace(/^\//, "") };
           state.prv_doc = { title: "", dir: "", file: "" };
           state.next_doc = { title: "", dir: "", file: "" };
-          state.category = "";
+          const folder = window.SiteModules.Hierarchy.findFolderByUrl(list, urlPath);
+          state.category = folder ? folder.titles.slice(0, -1).join(" >> ") : "";
         }
       }
 
@@ -1188,9 +1300,13 @@ window.SiteModules.Navigation = (function () {
     if (currentPath === "/index.html" || currentPath === "/") return;
 
     const activeAnchor = sitemapTree.querySelector(`a[href$="${currentPath}"]`);
-    if (activeAnchor) {
-      let li = activeAnchor.parentElement;
+    const activeItem = activeAnchor
+      ? activeAnchor.closest("li")
+      : Array.from(sitemapTree.querySelectorAll("li[data-auto-overview]")).find(el => el.dataset.autoOverview === currentPath);
+    if (activeItem) {
+      let li = activeItem;
       li.classList.add("this-doc");
+      li.classList.remove("collapsed");
 
       let parent = li.parentElement;
       while (parent && parent !== sitemapTree) {
@@ -1265,73 +1381,103 @@ window.SiteModules.Navigation = (function () {
     }
   }
 
-  function renderHierarchy(data, parentElement, parentDirectories, directory) {
-    if (Array.isArray(data)) {
-      data.forEach((item) => {
-        const listItem = document.createElement('li');
-        const currentDirectory = item.디렉토리 || "";
+  // 사이트맵 트리를 그린다.
+  //   - 같은 단계 안에서는 묶음이 위쪽, 낱개 문서가 아래쪽이다.
+  //   - 묶음(하위 목록이 있는 항목)은 접고 펴는 화살표, 이름, 안에 든 글 수 "(n)" 으로 한 줄을 이룬다.
+  //   - 묶음을 열면 그 묶음의 개론이 본문에 열린다. 이때 좁은 화면의 서랍은 닫지 않는다. 접을 때는 문서를 바꾸지 않는다.
+  //     개론은 이 순서로 정한다: 자기 개론 문서 → 가장 가까운 위쪽 묶음의 개론 문서 → 자기 자동 개론(하위 목록).
+  //   - 묶음의 이름을 다시 누르면 접힌다. 다만 펼쳐진 채 다른 문서를 보고 있을 때는 접지 않고 자기 개론으로 간다
+  //     (한 번 더 누르면 접힌다). 화살표와 줄의 빈 곳은 언제나 접고 펴기만 한다.
+  // @param {string} inheritedOverviewUrl 위쪽 묶음에서 물려받은 개론 문서의 주소 (없으면 "")
+  // @param {string[]} ancestorTitles 위쪽 묶음들의 이름 (자동 개론의 주소를 만드는 데 쓴다)
+  function renderHierarchy(data, parentElement, parentDirectories, inheritedOverviewUrl = "", ancestorTitles = []) {
+    if (!Array.isArray(data)) return;
+    const Hierarchy = window.SiteModules.Hierarchy;
 
-        const hasFile = item.hasOwnProperty('파일명') || !item.hasOwnProperty('목록');
-        if (hasFile) {
-          const fileName = item.hasOwnProperty('파일명') ? item.파일명 : "index.html";
-          const anchor = document.createElement('a');
-          anchor.href = `/${parentDirectories}${currentDirectory}${fileName}`;
-          anchor.textContent = item.주제;
-          listItem.appendChild(anchor);
+    // 묶음을 위쪽에, 낱개 문서를 아래쪽에 둔다 (각각의 순서는 hierarchy.json 에 적힌 그대로)
+    const isFolderItem = (item) => Object.prototype.hasOwnProperty.call(item, '목록');
+    const ordered = data.filter(isFolderItem).concat(data.filter(item => !isFolderItem(item)));
 
-          if (item.hasOwnProperty('목록')) {
-            listItem.classList.add('folder');
-            if (directory.startsWith(currentDirectory)) {
-              directory = directory.substring(currentDirectory.length);
-              anchor.classList.add('this-path');
-              listItem.classList.add('this-path');
-            } else {
-              listItem.classList.add('collapsed');
-            }
+    ordered.forEach((item) => {
+      const listItem = document.createElement('li');
+      const isFolder = isFolderItem(item);
+      const isPage = Hierarchy.isPageItem(item);
+      const url = isPage ? Hierarchy.getItemUrl(parentDirectories, item) : "";
 
-            listItem.addEventListener('click', function (event) {
-              if (event.target.closest('li') !== this) return;
-              event.stopPropagation();
-              this.classList.toggle('collapsed');
-            });
-          }
-        } else {
-          const text = document.createElement('span');
-          text.textContent = item.주제;
+      let label;
+      if (isPage) {
+        label = document.createElement('a');
+        label.href = url;
+      } else {
+        label = document.createElement('span');
+      }
+      label.classList.add('tree-label');
+      label.textContent = item.주제;
+      if (item.형식) {
+        listItem.classList.add('is-app');
+        label.title = item.형식;
+      }
 
-          listItem.classList.add('folder');
-          listItem.appendChild(text);
-
-          if (directory.startsWith(currentDirectory)) {
-            directory = directory.substring(currentDirectory.length);
-            text.classList.add('this-path');
-          } else {
-            listItem.classList.add('collapsed');
-          }
-
-          listItem.addEventListener('click', function (event) {
-            if (event.target.closest('li') !== this) return;
-            event.stopPropagation();
-            this.classList.toggle('collapsed');
-          });
-        }
-
-        if (item.display == "hidden")
-          return;
-
-        if (item.목록 && item.목록.length > 0) {
-          const sublist = document.createElement('ul');
-          const previousParentDirectories = parentDirectories;
-          parentDirectories += currentDirectory;
-          renderHierarchy(item.목록, sublist, parentDirectories, directory);
-
-          parentDirectories = previousParentDirectories;
-          listItem.appendChild(sublist);
-        }
-
+      if (!isFolder) {
+        listItem.appendChild(label);
         parentElement.appendChild(listItem);
+        return;
+      }
+
+      listItem.classList.add('folder', 'collapsed');
+      const titles = ancestorTitles.concat(item.주제);
+      // 이 묶음을 열 때 보여 줄 개론, 그리고 그것이 이 묶음 자신의 것인지
+      const realOverviewUrl = url || inheritedOverviewUrl;
+      const overviewUrl = realOverviewUrl || Hierarchy.getAutoOverviewUrl(titles);
+      const ownOverviewUrl = url || (inheritedOverviewUrl ? "" : overviewUrl);
+      if (!realOverviewUrl) listItem.dataset.autoOverview = overviewUrl;
+
+      const row = document.createElement('div');
+      row.className = 'tree-row';
+
+      const toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'tree-toggle';
+      toggle.setAttribute('aria-label', `${item.주제} 접기/펴기`);
+      toggle.innerHTML = window.SiteModules.Icons.html("chevron-right");
+
+      const count = document.createElement('span');
+      count.className = 'tree-count';
+      count.textContent = `(${Hierarchy.countPages(item)})`;
+
+      row.append(toggle, label, count);
+      listItem.appendChild(row);
+
+      row.addEventListener('click', (event) => {
+        const wasCollapsed = listItem.classList.contains('collapsed');
+        const isNameClick = !!event.target.closest('.tree-label');
+        const isOwnOverviewShown = !!ownOverviewUrl && window.SiteModules.state.currentPath === ownOverviewUrl;
+        if (event.target.closest('a')) event.preventDefault(); // 문서 전환은 아래에서 직접 한다
+
+        if (isNameClick && !wasCollapsed && ownOverviewUrl && !isOwnOverviewShown) {
+          // 펼쳐진 채 다른 문서를 보는 중에 이름을 누르면: 접지 않고 자기 개론으로 간다
+          openOverview(ownOverviewUrl);
+          return;
+        }
+        listItem.classList.toggle('collapsed');
+        if (wasCollapsed) openOverview(overviewUrl); // 접을 때는 문서를 바꾸지 않는다
       });
-    }
+
+      if (item.display !== "hidden" && item.목록.length > 0) {
+        const sublist = document.createElement('ul');
+        renderHierarchy(item.목록, sublist, Hierarchy.resolveDirs(parentDirectories, item.디렉토리), realOverviewUrl, titles);
+        listItem.appendChild(sublist);
+      }
+
+      parentElement.appendChild(listItem);
+    });
+  }
+
+  // 사이트맵에서 묶음을 열었을 때: 그 묶음의 개론을 본문에 연다. 좁은 화면의 서랍은 그대로 둔다.
+  function openOverview(overviewUrl) {
+    if (!overviewUrl || window.SiteModules.state.currentPath === overviewUrl) return;
+    keepDrawerOpenOnce = true;
+    window.location.hash = `#${overviewUrl}`;
   }
 
   function trigBoard(mode = "trigger") {

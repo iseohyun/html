@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <!-- 모바일 스케일 고정 -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta keywords="iseohyun, 기초과학">
+  <meta author="iseohyun">
+
+  <!-- 페이지 타이틀 -->
+  <title>기초과학 - iseohyun</title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-453XSP5W9M');
+  </script>
+
+  <!-- 소스코드 스타일 -->
+  <link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css" />
+  <script src="/highlight/highlight.min.js"></script>
+  <script src="/highlight/highlightjs-line-numbers.js"></script>
+
+  <!-- 목차 생성 -->
+  <script src="/modules/script.js" defer></script>
+
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("/style.css");
+
+    #board .this-doc ul {
+      font-size: 0.7rem;
+    }
+
+    svg text {
+      align-items: center;
+    }
+  </style>
+</head>
+
+<body>
+  <article>
+    <style>
+      /* 과학 개론 그림: 칸을 누르면 그 단원으로 간다 */
+      .science-map {
+        display: block;
+        width: 100%;
+        max-width: 60rem;
+        margin: 0 auto;
+      }
+
+      .science-map .link rect {
+        fill: #ffffff;
+        stroke: #cbd5e1;
+        stroke-width: 1;
+        cursor: pointer;
+        transition: fill 0.15s ease, stroke 0.15s ease;
+      }
+
+      .science-map .link rect:hover,
+      .science-map .link rect:focus {
+        fill: #eef4ff;
+        stroke: #3b82f6;
+        outline: none;
+      }
+
+      /* 칸 위의 글자는 눌림을 칸에 넘긴다 (칸 전체가 한 단추처럼 움직이게) */
+      .science-map .link text {
+        fill: #1e293b;
+        font-weight: 600;
+        pointer-events: none;
+      }
+    </style>
+    <?xml version="1.0" encoding="utf-8"?>
+    <svg class="science-map" viewBox="-28 -14 696 968" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="중학교 1학년부터 고등학교까지 과학 단원의 흐름">
+      <marker id="arrow" markerWidth="9" markerHeight="9" viewBox="-9 -3 9 6" orient="auto">
+        <path d="M-9 -3L0 0L-9 3" stroke="#94a3b8" fill="none" />
+      </marker>
+      <g style="fill:none;stroke:#cbd5e1;stroke-width: 1px; stroke-linecap: round;stroke-dasharray: 3 3;">
+        <rect x="-20" y="0" width="680" height="235" rx="12" style="fill:#f6f8fa;stroke:none" />
+        <rect x="-20" y="490" width="680" height="205" rx="12" style="fill:#f6f8fa;stroke:none" />
+        <rect x="-20" y="900" width="680" height="40" rx="12" style="fill:#f6f8fa;stroke:none" />
+        <path
+          d="M40 40a10 10 0 0 0-10 10v530a10 10 0 0 0 10 10h120a10 10 0 0 0 10-10v-210a10 10 0 0 0-10-10h-60a10 10 0 0 1-10-10v-90a10 10 0 0 1 10-10h60a10 10 0 0 0 10-10v-190a10 10 0 0 0-10-10z"
+          style="fill:#6b8fd61a;stroke:#6b8fd666" />
+        <path
+          d="M350 165a10 10 0 0 0-10 10v405a10 10 0 0 0 10 10h100a10 10 0 0 0 10-10v-205a10 10 0 0 1 10-10h130a10 10 0 0 0 10-10v-60a10 10 0 0 0-10-10h-130a10 10 0 0 1-10-10v-100a10 10 0 0 0-10-10z"
+          style="fill:#d9776a1a;stroke:#d9776a66" />
+        <path d="M500 405a10 10 0 0 0-10 10v240a10 10 0 0 0 10 10h100a10 10 0 0 0 10-10v-240a10 10 0 0 0-10-10z"
+          style="fill:#4fa3701a;stroke:#4fa37066" />
+      </g>
+      <g class="link">
+        <rect x=" 50" y=" 60" rx="8" ry="8" width="100" height="30"
+          onclick="window.location.hash='#/basicStudy/science/middle/first/geosphere.html'" />
+        <rect x="350" y=" 60" rx="8" ry="8" width="100" height="30"
+          onclick="window.location.hash='#/basicStudy/science/middle/first/force.html'" />
+        <rect x="500" y=" 60" rx="8" ry="8" width="100" height="30"
+          onclick="window.location.hash='#/basicStudy/science/middle/first/taxonomy.html'" />
+        <rect x="200" y=" 60" rx="8" ry="8" width="100" height="30"
+          onclick="window.location.hash='#/basicStudy/science/middle/first/gas.html'" />
+        <rect x="280" y="120" rx="8" ry="8" width="100" height="30"
+          onclick="window.location.hash='#/basicStudy/science/middle/first/matter.html'" />
+        <rect x="350" y="185" rx="8" ry="8" width="100" height="30"
+          onclick="window.location.hash='#/basicStudy/science/middle/first/light.html'" />
+
+        <rect x="200" y="250" rx="8" ry="8" width="100" height="30"
+          onclick="window.location.hash='#/basicStudy/science/middle/second/atom.html'" />
+        <rect x="350" y="270" rx="8" ry="8" width="100" height="30"
+          onclick="window.location.hash='#/basicStudy/science/middle/second/electron.html'" />
+        <rect x="100" y="290" rx="8" ry="8" width="100" height="30"
+          onclick="window.location.hash='#/basicStudy/science/middle/second/solarSystem.html'" />
+        <rect x="500" y="310" rx="8" ry="8" width="100" height="30"
+          onclick="window.location.hash='#/basicStudy/science/middle/second/plant.html'" />
+        <rect x="500" y="430" rx="8" ry="8" width="100" height="30"
+          onclick="window.location.hash='#/basicStudy/science/middle/second/animal.html'" />
+        <rect x="280" y="350" rx="8" ry="8" width="100" height="30"
+          onclick="window.location.hash='#/basicStudy/science/middle/second/substance.html'" />
+        <rect x=" 50" y="400" rx="8" ry="8" width="100" height="30"
+          onclick="window.location.hash='#/basicStudy/science/middle/second/Hydrosphere.html'" />
+        <rect x="350" y="430" rx="8" ry="8" width="100" height="30"
+          onclick="window.location.hash='#/basicStudy/science/middle/second/heat.html'" />
+
+        <rect x="200" y="510" rx="8" ry="8" width="100" height="30"
+          onclick="window.location.hash='#/basicStudy/science/middle/third/equation.html'" />
+        <rect x=" 50" y="520" rx="8" ry="8" width="100" height="30"
+          onclick="window.location.hash='#/basicStudy/science/middle/third/atmosphere.html'" />
+        <rect x="350" y="530" rx="8" ry="8" width="100" height="30"
+          onclick="window.location.hash='#/basicStudy/science/middle/third/mechanics.html'" />
+        <rect x="500" y="540" rx="8" ry="8" width="100" height="30"
+          onclick="window.location.hash='#/basicStudy/science/middle/third/nervous.html'" />
+        <rect x="500" y="615" rx="8" ry="8" width="100" height="30"
+          onclick="window.location.hash='#/basicStudy/science/middle/third/gene.html'" />
+        <rect x="350" y="630" rx="8" ry="8" width="100" height="30"
+          onclick="window.location.hash='#/basicStudy/science/middle/third/energy.html'" />
+        <rect x=" 50" y="640" rx="8" ry="8" width="100" height="30"
+          onclick="window.location.hash='#/basicStudy/science/middle/third/stars.html'" />
+
+        <rect x=" 60" y="780" rx="8" ry="8" width="30" height="110"
+          onclick="window.location.hash='#/basicStudy/science/high/first/universe.html'" />
+        <rect x="110" y="780" rx="8" ry="8" width="30" height="110"
+          onclick="window.location.hash='#/basicStudy/science/high/first/nature.html'" />
+        <rect x="200" y="780" rx="8" ry="8" width="30" height="110"
+          onclick="window.location.hash='#/basicStudy/science/high/first/mechanics.html'" />
+        <rect x="240" y="780" rx="8" ry="8" width="30" height="110"
+          onclick="window.location.hash='#/basicStudy/science/high/first/earth.html'" />
+        <rect x="280" y="780" rx="8" ry="8" width="30" height="110"
+          onclick="window.location.hash='#/basicStudy/science/high/first/lifes.html'" />
+        <rect x="350" y="780" rx="8" ry="8" width="30" height="110"
+          onclick="window.location.hash='#/basicStudy/science/high/first/chemistry.html'" />
+        <rect x="400" y="780" rx="8" ry="8" width="30" height="110"
+          onclick="window.location.hash='#/basicStudy/science/high/first/biodiversity.html'" />
+        <rect x="500" y="780" rx="8" ry="8" width="30" height="110"
+          onclick="window.location.hash='#/basicStudy/science/high/first/ecosystem.html'" />
+        <rect x="550" y="780" rx="8" ry="8" width="30" height="110"
+          onclick="window.location.hash='#/basicStudy/science/high/first/energy.html'" />
+      </g>
+      <g style="text-anchor: start; font-family: var(--font-sans-serif);font-size:18;font-weight:700; fill:#334155">
+        <text x="-16" y="25">중1</text>
+        <text x="-16" y="265">중2</text>
+        <text x="-16" y="525">중3</text>
+        <text x="-16" y="730">고1<tspan x="-16" dy="1.2em" style="font-size:0.6em">(공통)</tspan></text>
+        <text x="-16" y="930">고2<tspan style="font-size:0.6em">(선택)</tspan></text>
+        <text x="15" y="130" style="font-size:16;fill:#4a6fc0">지구</text>
+        <text x="435" y="245" style="font-size:16;fill:#b9584b">에너지</text>
+        <text x="560" y="502" style="font-size:16;fill:#3a8a5c">기관계</text>
+      </g>
+      <g style="text-anchor: middle; font-family: var(--font-main);font-size:16;font-weight:600;fill:#475569">
+        <text x="100" y="25">지구과학</text>
+        <text x="250" y="25">화학</text>
+        <text x="400" y="25">물리</text>
+        <text x="550" y="25">생물</text>
+      </g>
+      <g class="link" style="text-anchor: middle; font-family: var(--font-main);font-size:14">
+        <text x="100" y="80" onclick="window.location.hash='#/basicStudy/science/middle/first/geosphere.html'">지각</text>
+        <text x="400" y="80" onclick="window.location.hash='#/basicStudy/science/middle/first/force.html'">힘</text>
+        <text x="550" y="80" onclick="window.location.hash='#/basicStudy/science/middle/first/taxonomy.html'">분류학</text>
+        <text x="250" y="80" onclick="window.location.hash='#/basicStudy/science/middle/first/gas.html'">모델링</text>
+        <text x="330" y="140" onclick="window.location.hash='#/basicStudy/science/middle/first/matter.html'">물질의 상태</text>
+        <text x="400" y="205" onclick="window.location.hash='#/basicStudy/science/middle/first/light.html'">빛</text>
+        <text x="250" y="270" onclick="window.location.hash='#/basicStudy/science/middle/second/atom.html'">원소</text>
+        <text x="400" y="290" onclick="window.location.hash='#/basicStudy/science/middle/second/electron.html'">전기</text>
+        <text x="150" y="310" onclick="window.location.hash='#/basicStudy/science/middle/second/solarSystem.html'">태양계</text>
+        <text x="550" y="330" onclick="window.location.hash='#/basicStudy/science/middle/second/plant.html'">식물</text>
+        <text x="550" y="450" onclick="window.location.hash='#/basicStudy/science/middle/second/animal.html'">동물</text>
+        <text x="330" y="370" onclick="window.location.hash='#/basicStudy/science/middle/second/substance.html'">물성</text>
+        <text x="100" y="420" onclick="window.location.hash='#/basicStudy/science/middle/second/Hydrosphere.html'">수권</text>
+        <text x="400" y="450" onclick="window.location.hash='#/basicStudy/science/middle/second/heat.html'">열</text>
+        <text x="250" y="530" onclick="window.location.hash='#/basicStudy/science/middle/third/equation.html'">반응식</text>
+        <text x="100" y="540" onclick="window.location.hash='#/basicStudy/science/middle/third/atmosphere.html'">기권</text>
+        <text x="400" y="550" onclick="window.location.hash='#/basicStudy/science/middle/third/mechanics.html'">운동 에너지</text>
+        <text x="550" y="560" onclick="window.location.hash='#/basicStudy/science/middle/third/nervous.html'">신경계</text>
+        <text x="550" y="635" onclick="window.location.hash='#/basicStudy/science/middle/third/gene.html'">유전</text>
+        <text x="400" y="650" onclick="window.location.hash='#/basicStudy/science/middle/third/energy.html'">에너지 전환</text>
+        <text x="100" y="660" onclick="window.location.hash='#/basicStudy/science/middle/third/stars.html'">우주</text>
+      </g>
+      <g class="link"
+        style="text-anchor: start; font-family: var(--font-main);font-size:14; writing-mode:vertical-rl">
+        <text x="75" y="785" onclick="window.location.hash='#/basicStudy/science/high/first/universe.html'">우주의 구성</text>
+        <text x="125" y="785" onclick="window.location.hash='#/basicStudy/science/high/first/nature.html'">지구의 구성</text>
+        <text x="215" y="785" onclick="window.location.hash='#/basicStudy/science/high/first/mechanics.html'">에너지 순환</text>
+        <text x="255" y="785" onclick="window.location.hash='#/basicStudy/science/high/first/earth.html'" style="font-size:11px">지구 에너지
+          순환</text>
+        <text x="295" y="785" onclick="window.location.hash='#/basicStudy/science/high/first/lifes.html'">생명의 순환</text>
+        <text x="365" y="785" onclick="window.location.hash='#/basicStudy/science/high/first/chemistry.html'">화학적 변화</text>
+        <text x="415" y="785" onclick="window.location.hash='#/basicStudy/science/high/first/biodiversity.html'">생명의 변화</text>
+        <text x="515" y="785" onclick="window.location.hash='#/basicStudy/science/high/first/ecosystem.html'">생태계 보존</text>
+        <text x="565" y="785" onclick="window.location.hash='#/basicStudy/science/high/first/energy.html'">에너지 보존</text>
+      </g>
+      <g style="text-anchor: start; font-family: var(--font-main);font-size:10;fill:#c4705f">
+        <text x="50" y="57">1.지권의 변화</text>
+        <text x="350" y="57">2.여러가지 힘</text>
+        <text x="500" y="57">3.생물의 다양성</text>
+        <text x="200" y="57">4.기체의 성질</text>
+        <text x="280" y="117">5.물질의 상태 변화</text>
+        <text x="350" y="182">6.빛과 파동</text>
+        <text x="200" y="247">1. 물질의 구성</text>
+        <text x="350" y="267">2. 전기와 자기</text>
+        <text x="100" y="287">3. 태양계</text>
+        <text x="500" y="307">4. 식물과 에너지</text>
+        <text x="500" y="427">5. 동물과 에너지</text>
+        <text x="280" y="347">6. 물질의 특성</text>
+        <text x="50" y="397">7. 수권과 해수의 순환</text>
+        <text x="350" y="427">8.열과 우리의 생활</text>
+        <text x="200" y="507">1. 화학 반응의 규칙과 에너지 변화</text>
+        <text x="50" y="517">2. 기권과 날씨</text>
+        <text x="350" y="527">3. 운동과 에너지</text>
+        <text x="500" y="537">4. 자극과 반응</text>
+        <text x="500" y="612">5. 생식과 유전</text>
+        <text x="350" y="627">6.에너지 전환과 보존</text>
+        <text x="50" y="637">7. 별과 우주</text>
+        <text x="50" y="735">1. 물질의 규칙성과 결합</text>
+        <text x="50" y="750">2. 자연의 구성물질</text>
+        <text x="200" y="735">3. 역학적 시스템</text>
+        <text x="200" y="750">4. 지구 시스템</text>
+        <text x="200" y="765">5. 생명 시스템</text>
+        <text x="350" y="735">6. 화학 변화</text>
+        <text x="350" y="750">7. 생물 다양성과 유지</text>
+        <text x="500" y="735">8. 생태계와 환경</text>
+        <text x="500" y="750">9. 발전과 신재생 에너지</text>
+      </g>
+      <g style="text-anchor: start; font-family: var(--font-main);font-size:10;fill:#64748b">
+        <text x="52" y="100">지구의 구성, 돌의 기원</text>
+        <text x="202" y="100">미세한 세상에 대한 탐구</text>
+        <text x="352" y="100">중력, 부력, 탄성력, 마찰력</text>
+        <text x="502" y="100">생물 분류 체계</text>
+        <text x="282" y="160">고체, 액체, 기체</text>
+        <text x="352" y="225">빛, 파동</text>
+        <text x="202" y="290">원자, 분자, 이온</text>
+        <text x="352" y="310">마찰력, 로렌츠 힘</text>
+        <text x="102" y="330">지구, 달, 태양, 행성, 별</text>
+        <text x="502" y="350">광합성, 포도당</text>
+        <text x="502" y="470">소화, 호흡, 순환, 배설</text>
+        <text x="282" y="390">증류, 여과, 크로마토그래피</text>
+        <text x="52" y="440">해수, 담수</text>
+        <text x="352" y="470">대류, 전도, 복사, 비열</text>
+        <text x="202" y="550">화학식, 이상기체법칙</text>
+        <text x="52" y="560">대기권, 오존, 기후</text>
+        <text x="352" y="570">일</text>
+        <text x="502" y="580">감각기관, 신경, 호르몬</text>
+        <text x="502" y="656">DNA, 형질</text>
+        <text x="352" y="670">위치E, 변환</text>
+        <text x="62" y="680">별의 탄생</text>
+        <text x="50" y="720">무엇으로 만들어졌나?</text>
+        <text x="200" y="720">어떤 식으로 서로 작동하나?</text>
+        <text x="350" y="720">계속 유지되는가?</text>
+        <text x="500" y="720">어떻게 할 것인가?</text>
+      </g>
+      <g style="fill:none;stroke:#94a3b8;stroke-width:1;stroke-dasharray:4 3;">
+        <!-- 지각 to 원소 -->
+        <path d="M130 105v80a10 10 0 0 0 10 10h70a10 10 0 0 1 10 10v25" marker-end="url(#arrow)" />
+        <!-- 모델링 to 원소 -->
+        <path d="M250 105v125" marker-end="url(#arrow)" />
+        <!-- 힘 to 에너지 -->
+        <path d="M400 105v55" marker-end="url(#arrow)" />
+        <!-- 분류학 to 식물 -->
+        <path d="M550 105v185" marker-end="url(#arrow)" />
+        <!-- 물질의 상태 to 물성 -->
+        <path d="M325 170v160" marker-end="url(#arrow)" />
+        <!-- 원소 to 태양계 -->
+        <path d="M195 265h-10a10 10 0 0 0-10 10v12" marker-end="url(#arrow)" />
+        <!-- 원소 to 지구 -->
+        <path d="M220 295v80a10 10 0 0 1-10 10h-35" marker-end="url(#arrow)" />
+        <!-- 원소 to 반응식 -->
+        <path d="M235 295v198" marker-end="url(#arrow)" />
+        <!-- 원소 to 물성 -->
+        <path d="M250 295v60a10 10 0 0 0 10 10h15" marker-end="url(#arrow)" />
+        <!-- 원소 to 식물 -->
+        <path d="M265 295v20a10 10 0 0 0 10 10h220" marker-end="url(#arrow)" />
+        <!-- 원소 to 전기 -->
+        <path d="M280 285a10 10 0 0 0 10 10h55" marker-end="url(#arrow)" />
+        <!-- 식물 to 동물 -->
+        <path d="M550 355v55" marker-end="url(#arrow)" />
+        <!-- 지구 to 우주 -->
+        <path d="M100 590v35" marker-end="url(#arrow)" />
+        <!-- 에너지 to 에너지 전환 -->
+        <path d="M400 590v25" marker-end="url(#arrow)" />
+      </g>
+      <g style="fill:none;stroke:#94a3b8;stroke-width:1;">
+        <path d="M145 835h50" marker-end="url(#arrow)" />
+        <path d="M315 835h30" marker-end="url(#arrow)" />
+        <path d="M435 835h60" marker-end="url(#arrow)" />
+      </g>
+      <g style="fill:#94a3b8;font-size:9">
+        <!-- 지각 to 원소 --><text x="150" y="190">쪼개진 돌</text>
+        <!-- 모델링 to 원소 --><text x="210" y="135">입자 모델</text>
+        <!-- 힘 to 에너지 --><text x="405" y="135">힘의 누적</text>
+        <!-- 분류학 to 식물 --><text x="555" y="135">식물계</text>
+        <!-- 물질의 상태 to 물성 --><text x="295" y="190">끊는점</text>
+        <!-- 원소 to 태양계 --><text x="165" y="260">원소</text>
+        <!-- 원소 to 지구 --><text x="195" y="380">분자</text>
+        <!-- 원소 to 반응식 --><text x="240" y="430">원소</text>
+        <!-- 원소 to 물성 --><text x="255" y="355">원소</text>
+        <!-- 원소 to 식물 --><text x="272" y="320">분자</text>
+        <!-- 원소 to 전기 --><text x="285" y="289">전자</text>
+        <!-- 식물 to 동물 --><text x="555" y="385">탄수화물</text>
+        <!-- 지구 to 우주 --><text x="105" y="607">종합</text>
+        <!-- 에너지 to 에너지 전환 --><text x="405" y="604">종합</text>
+      </g>
+    </svg>
+  </article>
+</body>
+
+</html>

@@ -3151,3 +3151,257 @@ article img.md-img {
   max-width: 100%;
   height: auto;
 }
+
+/* ==========================================================================
+   사이트맵 트리: 선으로 이은 가지, 묶음 안의 글 수
+   - 가지 선은 항목마다 그린다: 세로선(::after)은 위에서 아래로, 가로선(::before)은 이름 쪽으로.
+     마지막 항목의 세로선은 가로선 높이에서 끊어 ㄴ 모양이 된다.
+   ========================================================================== */
+#sitemap-tree {
+  --tree-indent: 16px;   /* 한 단계 들여쓰기 */
+  --tree-elbow: 13px;    /* 줄 위쪽에서 가로선까지의 높이 (줄 높이의 가운데) */
+  --tree-line: color-mix(in srgb, var(--muted) 55%, transparent);   /* 가지 선의 색 */
+  font-size: 13px;
+}
+
+#sitemap-tree li {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  line-height: 26px;
+}
+
+#sitemap-tree ul {
+  margin: 0;
+  padding-left: var(--tree-indent);
+}
+
+#sitemap-tree ul > li::before,
+#sitemap-tree ul > li::after {
+  content: "";
+  position: absolute;
+  left: calc(var(--tree-indent) * -1 + 9px);
+  pointer-events: none;
+}
+
+#sitemap-tree ul > li::before {
+  top: var(--tree-elbow);
+  width: calc(var(--tree-indent) - 11px);
+  border-top: 1px solid var(--tree-line);
+}
+
+#sitemap-tree ul > li::after {
+  top: 0;
+  bottom: 0;
+  border-left: 1px solid var(--tree-line);
+}
+
+#sitemap-tree ul > li:last-child::after {
+  bottom: auto;
+  height: var(--tree-elbow);
+}
+
+#sitemap-tree .tree-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+}
+
+#sitemap-tree .tree-row:hover {
+  background-color: var(--sidebar-hover-bg);
+}
+
+#sitemap-tree .tree-toggle {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  /* 가지 선 위에 놓이므로 바탕을 덮지 않고 선보다 앞에 둔다 */
+  position: relative;
+  z-index: 1;
+}
+
+#sitemap-tree .tree-toggle .ico {
+  width: 14px;
+  height: 14px;
+  transform: rotate(90deg);
+  transition: transform var(--t-fast) ease;
+}
+
+#sitemap-tree li.collapsed > .tree-row .tree-toggle .ico {
+  transform: none;
+}
+
+#sitemap-tree .tree-label {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 예전 폴더 그림(📁)과 굵은 글씨 규칙을 트리에서는 쓰지 않는다 */
+#sitemap-tree li.folder > .tree-row > .tree-label::before {
+  content: none;
+}
+
+#sitemap-tree li.folder > .tree-row > .tree-label {
+  display: block;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+#sitemap-tree li.folder > .tree-row > a.tree-label:hover {
+  background: transparent;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+#sitemap-tree .tree-count {
+  flex-shrink: 0;
+  margin-left: 2px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+/* 문서(잎): 묶음의 화살표 폭만큼 이름을 맞춰 준다 */
+#sitemap-tree li > a.tree-label {
+  display: block;
+  padding: 0 6px;
+}
+
+/* 시뮬레이터 표시 */
+#sitemap-tree li.is-app > a.tree-label::before {
+  content: "▶";
+  margin-right: 5px;
+  font-size: 9px;
+  vertical-align: 1px;
+  color: var(--muted);
+}
+
+/* 지금 문서: 줄만 칠한다 (개요가 있는 묶음이 지금 문서일 때 하위 목록까지 칠해지지 않게) */
+#sitemap-tree li.this-doc {
+  background-color: transparent;
+  font-weight: normal;
+}
+
+#sitemap-tree li.this-doc > a.tree-label,
+#sitemap-tree li.this-doc > .tree-row {
+  background-color: var(--sidebar-active-bg);
+  border-radius: var(--r-sm);
+  font-weight: 700;
+}
+
+#sitemap-tree li.this-doc > a.tree-label,
+#sitemap-tree li.this-doc > .tree-row > .tree-label {
+  color: var(--sidebar-active-color, var(--fg));
+}
+
+/* ==========================================================================
+   자동 개론: 개론 문서가 없는 묶음의 하위 목록 (묶음은 카드, 낱개 문서는 목록)
+   - 문서는 테마와 상관없이 밝은 종이 위에 그려지므로 색을 밝은 바탕 기준으로 고정한다
+   ========================================================================== */
+.auto-overview {
+  max-width: 60rem;
+  margin: 8px auto 48px;
+  color: #1e293b;
+}
+
+.auto-overview-lead {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.auto-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+article a.auto-overview-card,
+article a.auto-overview-card:visited {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--r-lg);
+  background-color: #ffffff;
+  color: #1e293b;
+  text-decoration: none;
+  transition: background-color var(--t-fast) ease, border-color var(--t-fast) ease;
+}
+
+article a.auto-overview-card:hover,
+article a.auto-overview-card:focus {
+  background-color: #eef4ff;
+  border-color: #3b82f6;
+}
+
+.auto-overview-name {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.auto-overview-count {
+  margin-left: 6px;
+  font-size: 12px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: #64748b;
+}
+
+.auto-overview-preview {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #64748b;
+  overflow-wrap: anywhere;
+}
+
+.auto-overview-pages {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid #e2e8f0;
+}
+
+.auto-overview-pages li {
+  margin: 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+article .auto-overview-pages a,
+article .auto-overview-pages a:visited {
+  display: block;
+  padding: 10px 4px;
+  font-size: 14px;
+  color: #1e293b;
+  text-decoration: none;
+}
+
+article .auto-overview-pages a:hover {
+  background-color: #f6f8fa;
+  color: #2563eb;
+}
+
+.auto-overview-pages li.is-app a::before {
+  content: "▶";
+  margin-right: 6px;
+  font-size: 9px;
+  vertical-align: 1px;
+  color: #64748b;
+}

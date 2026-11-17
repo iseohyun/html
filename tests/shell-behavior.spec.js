@@ -20,7 +20,7 @@ test.describe('홈 화면의 테마', () => {
     expect(colors.cell).toBe('rgb(22, 38, 61)');
     expect(colors.dateText).not.toBe('rgb(51, 65, 85)');
 
-    await page.locator('#header-tabs .app-tab', { hasText: '리스트' }).click();
+    await page.locator('#home-view-switch a', { hasText: '리스트' }).click();
     await expect(page.locator('table.list-data-table')).toBeVisible();
     const listBg = await page.locator('.list-table-scroll').evaluate(el => getComputedStyle(el).backgroundColor);
     expect(listBg).toBe('rgb(22, 38, 61)');
@@ -89,9 +89,10 @@ test.describe('스크롤 위치 기억', () => {
     await page.evaluate(() => document.getElementById('app-main').scrollTo({ top: 700, behavior: 'instant' }));
     await expect.poll(() => page.evaluate(() => Math.round(document.getElementById('app-main').scrollTop))).toBe(700);
 
-    await page.locator('#header-tabs .app-tab', { hasText: '리스트' }).click();
-    await expect(page.locator('table.list-data-table')).toBeVisible();
-    await page.locator('#header-tabs .app-tab', { hasText: '달력' }).click();
+    // 보기 전환은 새소식 맨 위에 있어 스크롤한 자리에서는 보이지 않는다. 늘 보이는 헤더 탭으로 다녀온다.
+    await page.locator('#header-tabs .app-tab', { hasText: '프로젝트' }).click();
+    await expect(page).toHaveURL(/#\/promo\.html$/);
+    await page.locator('#header-tabs .app-tab', { hasText: '새소식' }).click();
     await expect(page.locator('.update-calendar-table')).toBeVisible();
     await expect.poll(() => page.evaluate(() => Math.round(document.getElementById('app-main').scrollTop))).toBe(700);
   });
@@ -121,7 +122,7 @@ test.describe('본문 영역만 스크롤', () => {
   test('문서 맨 위에는 제목과 분류 경로가 나온다', async ({ page }) => {
     await page.goto('/index.html#/basicStudy/science/middle/first/force.html');
     await expect(page.locator('#title-container')).toBeVisible();
-    await expect(page.locator('#title-container')).toContainText('기초과학');
+    await expect(page.locator('#title-container')).toContainText('과학 > 중학 > 1학년');
     await expect(page.locator('#last-modified')).toBeAttached();
   });
 

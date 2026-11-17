@@ -91,7 +91,8 @@ test.describe('단축키', () => {
     await page.keyboard.press('Escape');
 
     await page.keyboard.press(']');
-    await expect(page).toHaveURL(/#\/list$/);
+    // 홈의 탭은 새소식 · 프로젝트 둘이다
+    await expect(page).toHaveURL(/#\/promo\.html$/);
     await page.keyboard.press('[');
     await expect(page.locator('.update-calendar-table')).toBeVisible();
   });

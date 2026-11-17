@@ -132,15 +132,15 @@ test.describe('헤더 탭 줄의 스크롤 버튼과 끌어서 밀기', () => {
   test('탭이 다 보이면 스크롤 버튼이 없다', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/index.html');
-    await expect(page.locator('#header-tabs .app-tab')).toHaveCount(3);
+    await expect(page.locator('#header-tabs .app-tab')).toHaveCount(2);
     await expect(page.locator('#header-tabs-prev')).toBeHidden();
     await expect(page.locator('#header-tabs-next')).toBeHidden();
   });
 
   test('탭이 넘치면 가려진 쪽에 버튼이 생기고, 누르면 그쪽으로 밀린다', async ({ page }) => {
     await page.setViewportSize({ width: 700, height: 800 });
-    // 초등수학 13편의 첫 문서: 탭 줄이 넘치고 켜진 탭은 맨 앞에 있다
-    await page.goto('/index.html#/basicStudy/math/elementary/overview.html');
+    // 초등 수학의 개론: 탭 줄(개론 + 12편)이 넘치고 켜진 탭은 맨 앞에 있다
+    await page.goto('/index.html#/basicStudy/math/elementary/index.html');
     await expect(page.locator('#header-tabs .app-tab[aria-selected="true"]')).toHaveCount(1);
 
     const nav = page.locator('#header-tabs');
@@ -162,7 +162,7 @@ test.describe('헤더 탭 줄의 스크롤 버튼과 끌어서 밀기', () => {
 
   test('탭 줄을 마우스로 끌어서 밀 수 있고, 끌다가 놓아도 탭이 눌리지 않는다', async ({ page }) => {
     await page.setViewportSize({ width: 700, height: 800 });
-    await page.goto('/index.html#/basicStudy/math/elementary/overview.html');
+    await page.goto('/index.html#/basicStudy/math/elementary/index.html');
     await expect(page.locator('#header-tabs .app-tab[aria-selected="true"]')).toHaveCount(1);
 
     const nav = page.locator('#header-tabs');
