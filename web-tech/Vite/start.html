@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta keywords="iseohyun, 튜토리얼, Vite, 비트, 빌드 도구, 개발 서버, 번들러, HMR">
+  <meta author="iseohyun">
+
+  <!-- 페이지 타이틀 -->
+  <title>시작하기: Vite - iseohyun </title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-453XSP5W9M');
+  </script>
+
+  <!-- 목차 및 공통 모듈 -->
+  <script src="/modules/script.js?v=20261118v2" defer></script>
+
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("/style.css?v=20261118v2");
+  </style>
+
+  <!-- 슬라이드 · 스크립트 (보고서 형식) -->
+  <link rel="stylesheet" href="/modules/features/slides.css?v=20261118v2">
+  <link rel="stylesheet" href="/web-tech/slides-web.css?v=20261118v2">
+  <script src="/modules/features/slides.js?v=20261118v2" defer></script>
+</head>
+
+<body>
+  <tags>Vite, 비트, 빌드 도구, 번들러, 개발 서버, HMR, ES 모듈, npm, Node.js, 시작하기</tags>
+  <article>
+    <!-- 형식: (슬라이드 + 대사 + 첨부) 의 반복. 공통 스타일은 /web-tech/slides-web.css -->
+    <div class="slides-doc" data-page="vite-start" lang="ko">
+      <h1 class="sl-chapter">Vite 시작하기</h1>
+
+      <!-- 1p. Vite가 필요한 이유 -->
+      <section id="vs-s1" data-title="1 Vite가 필요한 이유">
+        <h2>Vite가 필요한 이유</h2>
+        <div class="slide-frame">
+          <div class="slide">
+            <div class="slide-body">
+              <div class="w-head">
+                <span class="slide-eyebrow"><b class="slide-no">1</b>Vite · 시작하기 · 빌드 도구</span>
+                <div class="slide-title" role="heading" aria-level="3">Vite가 필요한 이유</div>
+              </div>
+              <ul class="points">
+                <li data-key="vs1-gap"><b>간격</b>: 우리가 쓰고 싶은 코드(JSX, TypeScript, npm 패키지)와 브라우저가 읽는 코드 사이를 메움</li>
+                <li data-key="vs1-two"><b>두 가지 일</b>: 개발할 때는 그때그때 변환해 주는 서버, 배포할 때는 최적화된 파일을 만드는 빌드 명령</li>
+              </ul>
+              <div class="w-stage">
+<svg class="w-svg" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 340" role="img">
+  <title>브라우저가 읽지 못하는 코드를 Vite 가 변환하는 구조</title>
+  <desc>왼쪽의 JSX, TypeScript, 패키지 이름만 적은 import, Sass 는 브라우저가 읽지 못하고, 가운데 Vite 가 개발 서버와 빌드로 변환해 오른쪽의 Javascript, CSS, HTML 로 내보냅니다.</desc>
+  <defs><marker id="wm16-s3kh-blue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#2563eb"/></marker><marker id="wm16-s3kh-blue-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#2563eb"/></marker><marker id="wm16-s3kh-green" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#059669"/></marker><marker id="wm16-s3kh-green-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#059669"/></marker><marker id="wm16-s3kh-orange" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#d97706"/></marker><marker id="wm16-s3kh-orange-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#d97706"/></marker><marker id="wm16-s3kh-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#7c3aed"/></marker><marker id="wm16-s3kh-purple-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#7c3aed"/></marker><marker id="wm16-s3kh-red" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#dc2626"/></marker><marker id="wm16-s3kh-red-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#dc2626"/></marker><marker id="wm16-s3kh-gray" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#64748b"/></marker><marker id="wm16-s3kh-gray-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#64748b"/></marker><marker id="wm16-s3kh-teal" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#0891b2"/></marker><marker id="wm16-s3kh-teal-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#0891b2"/></marker></defs>
+  <rect x="20" y="10" width="290" height="320" rx="10" fill="#64748b" fill-opacity="0.05" stroke="#64748b" stroke-width="1.6" data-key="vs1-left"/>
+  <text x="165" y="38" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">우리가 쓰는 코드</text>
+  <rect x="40" y="54" width="250" height="56" rx="10" fill="#d97706" fill-opacity="0.12" stroke="#d97706" stroke-width="1.6"/><text x="165" y="76.4" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor" class="mono">App.jsx</text><text x="165" y="96.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">return &lt;h1&gt;안녕&lt;/h1&gt;</text>
+  <rect x="40" y="120" width="250" height="56" rx="10" fill="#d97706" fill-opacity="0.12" stroke="#d97706" stroke-width="1.6"/><text x="165" y="142.4" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor" class="mono">main.ts</text><text x="165" y="162.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66" class="mono">let count: number = 0</text>
+  <rect x="40" y="186" width="250" height="56" rx="10" fill="#d97706" fill-opacity="0.12" stroke="#d97706" stroke-width="1.6"/><text x="165" y="208.4" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">패키지 이름만 적은 import</text><text x="165" y="228.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66" class="mono">import { useState } from 'react'</text>
+  <rect x="40" y="252" width="250" height="56" rx="10" fill="#d97706" fill-opacity="0.12" stroke="#d97706" stroke-width="1.6"/><text x="165" y="274.4" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor" class="mono">style.scss</text><text x="165" y="294.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66" class="mono">.card { h2 { color: red } }</text>
+  <line x1="310" y1="170" x2="348" y2="170" stroke="#64748b" stroke-width="2" marker-end="url(#wm16-s3kh-gray)"/>
+  <rect x="350" y="40" width="260" height="260" rx="10" fill="#7c3aed" fill-opacity="0.1" stroke="#7c3aed" stroke-width="1.6" data-key="vs1-vite"/>
+  <text x="480" y="74" text-anchor="middle" font-size="24" font-weight="800" fill="#7c3aed">Vite</text>
+  <rect x="368" y="94" width="224" height="90" rx="10" fill="#2563eb" fill-opacity="0.12" stroke="#2563eb" stroke-width="1.6" data-key="vs1-dev"/><text x="480" y="114.9" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">개발 서버</text><text x="480" y="135.2" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">npm run dev</text><text x="480" y="153.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">요청받은 파일을 바로 변환</text><text x="480" y="172.2" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">저장하면 화면에 즉시 반영</text>
+  <rect x="368" y="196" width="224" height="90" rx="10" fill="#059669" fill-opacity="0.12" stroke="#059669" stroke-width="1.6" data-key="vs1-build"/><text x="480" y="216.9" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">빌드</text><text x="480" y="237.2" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">npm run build</text><text x="480" y="255.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">전부 모아 묶고 줄여서</text><text x="480" y="274.2" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">dist 폴더에 출력</text>
+  <line x1="610" y1="170" x2="648" y2="170" stroke="#64748b" stroke-width="2" marker-end="url(#wm16-s3kh-gray)"/>
+  <rect x="650" y="10" width="290" height="320" rx="10" fill="#64748b" fill-opacity="0.05" stroke="#64748b" stroke-width="1.6" data-key="vs1-right"/>
+  <text x="795" y="38" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">브라우저가 읽는 코드</text>
+  <rect x="670" y="62" width="250" height="70" rx="10" fill="#059669" fill-opacity="0.12" stroke="#059669" stroke-width="1.6"/><text x="795" y="82.1" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">Javascript</text><text x="795" y="102.4" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">ES 모듈 (.js)</text><text x="795" y="120.9" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">경로가 적힌 import</text>
+  <rect x="670" y="146" width="250" height="70" rx="10" fill="#059669" fill-opacity="0.12" stroke="#059669" stroke-width="1.6"/><text x="795" y="175.4" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">CSS</text><text x="795" y="195.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">표준 CSS (.css)</text>
+  <rect x="670" y="230" width="250" height="70" rx="10" fill="#059669" fill-opacity="0.12" stroke="#059669" stroke-width="1.6"/><text x="795" y="259.4" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">HTML · 이미지</text><text x="795" y="279.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">index.html, .png, .svg</text>
+</svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="script">
+          <p data-cue="vs1-right:box">첫 번째 슬라이드는 Vite가 왜 필요한지입니다. <a href="/web-tech/html/syntax.html">HTML</a>, <a href="/web-tech/CSS/basic.html">CSS</a>, <a href="/web-tech/Javascript/basic.html">Javascript</a> 문서에서는 파일을 저장하고 브라우저로 열면 바로 동작했습니다. 브라우저가 이 세 가지를 직접 읽기 때문입니다.</p>
+          <p data-cue="vs1-gap:check vs1-left:box">하지만 요즘 웹 개발에서 쓰는 코드는 브라우저가 그대로 읽지 못합니다. React의 JSX, 타입을 적는 TypeScript, 중첩해서 쓰는 Sass가 그렇습니다. <code>import</code> 뒤에 경로 대신 <code>react</code>처럼 패키지 이름만 적는 것도 브라우저는 이해하지 못합니다. 그 패키지가 어느 폴더에 있는지 모르기 때문입니다.</p>
+          <p data-cue="vs1-vite:box"><mark>Vite는 이 간격을 메우는 빌드 도구입니다. 우리가 쓴 코드를 브라우저가 읽는 코드로 바꿔 줍니다.</mark> 이름은 프랑스어로 "빠르다"는 뜻이고 "비트"라고 읽습니다.</p>
+          <p data-cue="vs1-two:check vs1-dev:box vs1-build:box">Vite가 하는 일은 두 가지입니다. 개발하는 동안에는 서버로 떠서, 브라우저가 요청한 파일을 그 자리에서 변환해 돌려줍니다. 배포할 때는 모든 파일을 모아 묶고 크기를 줄여 <code>dist</code> 폴더에 내놓습니다. 이 문서는 개발 서버를, 다음 문서는 설정과 빌드를 다룹니다.</p>
+          <p class="meta"><time datetime="2026-11-18">2026-11-18</time> · React 뿐 아니라 Vue · Svelte · 순수 Javascript 프로젝트에도 씁니다</p>
+        </div>
+
+        <div class="w-att">
+          <details>
+            <summary>첨부 · 용어 (Term)</summary>
+            <div class="w-att-body">
+<table><thead><tr><th>용어</th><th>한국어</th><th>의미</th></tr></thead><tbody><tr><td class="nowrap">Build tool</td><td>빌드 도구</td><td>소스 코드를 배포할 수 있는 형태로 바꿔 주는 프로그램</td></tr><tr><td class="nowrap">Module</td><td>모듈</td><td><code>export</code>로 내보내고 <code>import</code>로 가져오는 파일 단위. 브라우저 표준 방식을 ES 모듈(ESM)이라 합니다.</td></tr><tr><td class="nowrap">Bundle</td><td>번들</td><td>여러 모듈을 적은 수의 파일로 묶은 것. 묶는 프로그램이 번들러입니다.</td></tr><tr><td class="nowrap">Transpile</td><td>트랜스파일</td><td>한 문법을 다른 문법으로 옮기는 것 (JSX → JS, TS → JS)</td></tr><tr><td class="nowrap">Dependency</td><td>의존성</td><td>프로젝트가 가져다 쓰는 외부 패키지. <code>node_modules</code>에 설치됩니다.</td></tr><tr><td class="nowrap">Dev server</td><td>개발 서버</td><td>개발 중에 내 컴퓨터에서 띄우는 웹 서버</td></tr><tr><td class="nowrap">HMR</td><td>핫 모듈 교체</td><td>저장한 모듈만 실행 중인 화면에 갈아 끼우는 기능 (Hot Module Replacement)</td></tr><tr><td class="nowrap">Minify</td><td>압축</td><td>공백을 지우고 이름을 줄여 파일 크기를 작게 만드는 것</td></tr></tbody></table>
+            </div>
+          </details>
+          <details>
+            <summary>첨부 · Vite란</summary>
+            <div class="w-att-body">
+<p>Vite는 Vue를 만든 에반 유(Evan You)가 2020년에 공개한 빌드 도구입니다. 그전에는 Webpack이 표준처럼 쓰였는데, 프로젝트가 커질수록 개발 서버를 켜는 데 수십 초가 걸렸습니다. Vite는 브라우저가 ES 모듈을 직접 지원하게 된 점을 이용해, 미리 다 묶지 않고 요청받은 파일만 변환하는 방식으로 이 시간을 없앴습니다.</p>
+<ul>
+  <li>특정 화면 라이브러리에 묶여 있지 않습니다. 플러그인으로 React, Vue, Svelte 등을 지원합니다.</li>
+  <li>React 공식 문서가 Create React App의 대안으로 권하는 빌드 도구 가운데 하나입니다.</li>
+  <li>설정 없이 시작할 수 있고, 필요할 때 <code>vite.config.js</code>로 조정합니다.</li>
+</ul>
+            </div>
+          </details>
+          <details>
+            <summary>첨부 · 빌드 도구 없이 개발할 수는 없나</summary>
+            <div class="w-att-body">
+<p>가능합니다. 이 사이트(iseohyun.com)도 빌드 도구 없이 HTML · CSS · Javascript 파일을 그대로 올립니다. 다음에 해당하면 빌드 도구가 필요합니다.</p>
+<ul>
+  <li>JSX, TypeScript처럼 변환이 필요한 문법을 쓴다</li>
+  <li>npm 패키지를 <code>import</code>해서 쓴다</li>
+  <li>파일이 수백 개라 그대로 올리면 요청 수가 너무 많다</li>
+  <li>배포할 때 압축하고, 파일 이름에 버전(해시)을 자동으로 붙이고 싶다</li>
+</ul>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- 2p. 프로젝트 만들기와 세 가지 명령 -->
+      <section id="vs-s2" data-title="2 프로젝트 만들기와 세 가지 명령">
+        <h2>프로젝트 만들기와 세 가지 명령</h2>
+        <div class="slide-frame">
+          <div class="slide">
+            <div class="slide-body">
+              <div class="w-head">
+                <span class="slide-eyebrow"><b class="slide-no">2</b>Vite · 시작하기 · create vite</span>
+                <div class="slide-title" role="heading" aria-level="3">프로젝트 만들기와 세 가지 명령</div>
+              </div>
+              <ul class="points">
+                <li data-key="vs2-create"><b>만들기</b>: <code>npm create vite@latest</code>로 템플릿을 골라 프로젝트 폴더를 생성</li>
+                <li data-key="vs2-cmd"><b>명령</b>: <code>dev</code>(개발 서버) · <code>build</code>(배포 파일 만들기) · <code>preview</code>(빌드 결과 확인)</li>
+              </ul>
+              <div class="w-split">
+                <div class="w-code">
+                  <div class="w-code-top">터미널 (PowerShell · bash)</div>
+                  <div class="w-code-lines"><span class="w-ln"><span class="c"># 질문에 답하며 만들기</span></span><span class="w-ln" data-key="vs2-c1">npm create vite@latest</span><span class="w-ln"> </span><span class="w-ln"><span class="c"># 이름과 템플릿을 한 번에 지정</span></span><span class="w-ln" data-key="vs2-c2">npm create vite@latest my-app -- --template vanilla</span><span class="w-ln"> </span><span class="w-ln" data-key="vs2-c3">cd my-app</span><span class="w-ln" data-key="vs2-c3b">npm install</span><span class="w-ln"> </span><span class="w-ln" data-key="vs2-c4">npm run dev       <span class="c"># 개발 서버</span></span><span class="w-ln" data-key="vs2-c5">npm run build     <span class="c"># 배포 파일 만들기</span></span><span class="w-ln" data-key="vs2-c6">npm run preview   <span class="c"># 빌드 결과 확인</span></span></div>
+                </div>
+                <div class="w-stage">
+<svg class="w-svg" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 350" role="img">
+  <title>Vite 의 템플릿과 package.json 에 등록된 세 가지 명령</title>
+  <desc>템플릿으로 vanilla, react, vue, svelte 를 고를 수 있고, package.json 의 scripts 에 dev, build, preview 명령이 등록되어 있습니다.</desc>
+  <defs><marker id="wm17-kc1g-blue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#2563eb"/></marker><marker id="wm17-kc1g-blue-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#2563eb"/></marker><marker id="wm17-kc1g-green" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#059669"/></marker><marker id="wm17-kc1g-green-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#059669"/></marker><marker id="wm17-kc1g-orange" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#d97706"/></marker><marker id="wm17-kc1g-orange-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#d97706"/></marker><marker id="wm17-kc1g-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#7c3aed"/></marker><marker id="wm17-kc1g-purple-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#7c3aed"/></marker><marker id="wm17-kc1g-red" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#dc2626"/></marker><marker id="wm17-kc1g-red-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#dc2626"/></marker><marker id="wm17-kc1g-gray" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#64748b"/></marker><marker id="wm17-kc1g-gray-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#64748b"/></marker><marker id="wm17-kc1g-teal" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#0891b2"/></marker><marker id="wm17-kc1g-teal-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#0891b2"/></marker></defs>
+  <text x="20" y="22" text-anchor="start" font-size="13" font-weight="700" fill="currentColor" fill-opacity="0.66">템플릿 (--template)</text>
+  <rect x="20" y="32" width="122" height="50" rx="10" fill="#64748b" fill-opacity="0.12" stroke="#64748b" stroke-width="1.6" data-key="vs2-t1"/><text x="81" y="51.4" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor" class="mono">vanilla</text><text x="81" y="71.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">순수 JS</text>
+  <rect x="156" y="32" width="122" height="50" rx="10" fill="#2563eb" fill-opacity="0.12" stroke="#2563eb" stroke-width="1.6" data-key="vs2-t2"/><text x="217" y="51.4" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor" class="mono">react</text><text x="217" y="71.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">React</text>
+  <rect x="292" y="32" width="122" height="50" rx="10" fill="#059669" fill-opacity="0.12" stroke="#059669" stroke-width="1.6"/><text x="353" y="51.4" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor" class="mono">vue</text><text x="353" y="71.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">Vue</text>
+  <rect x="428" y="32" width="112" height="50" rx="10" fill="#d97706" fill-opacity="0.12" stroke="#d97706" stroke-width="1.6"/><text x="484" y="51.4" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor" class="mono">svelte</text><text x="484" y="71.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">Svelte</text>
+  <text x="20" y="104" text-anchor="start" font-size="12.5" fill="currentColor" fill-opacity="0.66">이름 뒤에 -ts 를 붙이면 TypeScript 템플릿 (예: react-ts)</text>
+  <text x="20" y="138" text-anchor="start" font-size="13" font-weight="700" fill="currentColor" fill-opacity="0.66">package.json 의 scripts</text>
+  <rect x="20" y="148" width="170" height="54" rx="10" fill="#2563eb" fill-opacity="0.12" stroke="#2563eb" stroke-width="1.6"/><text x="105" y="179.5" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor" class="mono">npm run dev</text>
+  <line x1="190" y1="175" x2="208" y2="175" stroke="#2563eb" stroke-width="2" marker-end="url(#wm17-kc1g-blue)"/>
+  <rect x="210" y="148" width="330" height="54" rx="10" fill="#2563eb" fill-opacity="0.12" stroke="#2563eb" stroke-width="1.6" data-key="vs2-dev"/><text x="375" y="169.4" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor" class="mono">vite</text><text x="375" y="189.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">개발 서버 → http://localhost:5173</text>
+  <rect x="20" y="212" width="170" height="54" rx="10" fill="#059669" fill-opacity="0.12" stroke="#059669" stroke-width="1.6"/><text x="105" y="243.5" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor" class="mono">npm run build</text>
+  <line x1="190" y1="239" x2="208" y2="239" stroke="#059669" stroke-width="2" marker-end="url(#wm17-kc1g-green)"/>
+  <rect x="210" y="212" width="330" height="54" rx="10" fill="#059669" fill-opacity="0.12" stroke="#059669" stroke-width="1.6" data-key="vs2-build"/><text x="375" y="233.4" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor" class="mono">vite build</text><text x="375" y="253.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">dist 폴더에 배포용 파일 출력</text>
+  <rect x="20" y="276" width="170" height="54" rx="10" fill="#7c3aed" fill-opacity="0.12" stroke="#7c3aed" stroke-width="1.6"/><text x="105" y="307.5" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor" class="mono">npm run preview</text>
+  <line x1="190" y1="303" x2="208" y2="303" stroke="#7c3aed" stroke-width="2" marker-end="url(#wm17-kc1g-purple)"/>
+  <rect x="210" y="276" width="330" height="54" rx="10" fill="#7c3aed" fill-opacity="0.12" stroke="#7c3aed" stroke-width="1.6" data-key="vs2-preview"/><text x="375" y="297.4" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor" class="mono">vite preview</text><text x="375" y="317.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">dist 를 서버로 띄워 확인 → :4173</text>
+</svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="script">
+          <p data-cue="vs2-create:check vs2-c1:box">두 번째 슬라이드는 프로젝트를 만들고 실행하는 방법입니다. Node.js가 설치되어 있다면 터미널에서 첫 번째 명령을 실행합니다. 프로젝트 이름, 쓸 라이브러리, Javascript인지 TypeScript인지를 차례로 묻습니다.</p>
+          <p data-cue="vs2-c2:box vs2-t1:box vs2-t2:box">질문에 답하는 대신 두 번째 명령처럼 한 줄로 지정할 수도 있습니다. <code>vanilla</code>는 아무 라이브러리도 쓰지 않는 순수 Javascript 템플릿입니다. Vite 자체를 익히기에는 이것이 가장 단순합니다. React를 쓴다면 <code>react</code>를 고릅니다.</p>
+          <p data-cue="vs2-c3:box vs2-c3b:box">만들어진 폴더로 들어가 <code>npm install</code>로 패키지를 설치합니다. Vite 자신도 이 프로젝트의 패키지로 설치됩니다. 컴퓨터 전체에 설치하는 것이 아니므로 프로젝트마다 다른 버전을 쓸 수 있습니다.</p>
+          <p data-cue="vs2-cmd:check vs2-c4:box vs2-dev:box"><mark>그 뒤로 쓰는 명령은 세 가지뿐입니다.</mark> <code>npm run dev</code>는 개발 서버를 띄웁니다. 출력된 주소를 브라우저로 열고 코드를 고치면 됩니다. 끌 때는 터미널에서 Ctrl+C를 누릅니다.</p>
+          <p data-cue="vs2-c5:box vs2-build:box vs2-c6:box vs2-preview:box"><code>npm run build</code>는 배포할 파일을 <code>dist</code> 폴더에 만듭니다. <code>npm run preview</code>는 그 <code>dist</code> 폴더를 작은 서버로 띄워, 배포하기 전에 빌드 결과가 제대로 동작하는지 확인하게 해 줍니다.</p>
+          <p class="meta"><time datetime="2026-11-18">2026-11-18</time> · npm run 뒤의 이름은 package.json 의 scripts 에 적힌 이름입니다</p>
+        </div>
+
+        <div class="w-att">
+          <details>
+            <summary>첨부 · 환경 준비 — Node.js 버전</summary>
+            <div class="w-att-body">
+<p>Vite는 Node.js 위에서 실행됩니다. 설치는 <a href="/web-tech/Javascript/basic.html">Javascript 기초문법</a>의 「환경2 : Node.js」를 참고합니다. Vite 7 이상은 Node.js 20.19 이상 또는 22.12 이상을 요구하므로, 오래전에 설치했다면 버전을 확인합니다.</p>
+<blockquote><pre>node --version
+npm --version</pre></blockquote>
+<p><b>Windows PowerShell에서 실행 정책 오류가 날 때</b>: <code>npm</code> 대신 <code>npm.cmd</code>, <code>npx</code> 대신 <code>npx.cmd</code>로 실행합니다.</p>
+<blockquote><pre>npm.cmd create vite@latest
+npm.cmd run dev</pre></blockquote>
+            </div>
+          </details>
+          <details>
+            <summary>첨부 · package.json 읽기</summary>
+            <div class="w-att-body">
+<blockquote><pre>{
+  &quot;name&quot;: &quot;my-app&quot;,
+  &quot;private&quot;: true,
+  &quot;version&quot;: &quot;0.0.0&quot;,
+  &quot;type&quot;: &quot;module&quot;,
+  &quot;scripts&quot;: {
+    &quot;dev&quot;: &quot;vite&quot;,
+    &quot;build&quot;: &quot;vite build&quot;,
+    &quot;preview&quot;: &quot;vite preview&quot;
+  },
+  &quot;devDependencies&quot;: {
+    &quot;vite&quot;: &quot;^7.0.0&quot;
+  }
+}</pre></blockquote>
+<table><thead><tr><th>항목</th><th>의미</th></tr></thead><tbody><tr><td class="nowrap"><code>type: "module"</code></td><td>이 프로젝트의 <code>.js</code> 파일은 <code>import</code> / <code>export</code>를 쓰는 ES 모듈</td></tr><tr><td class="nowrap"><code>scripts</code></td><td><code>npm run 이름</code>으로 실행할 명령의 별명</td></tr><tr><td class="nowrap"><code>dependencies</code></td><td>실행에 필요한 패키지 (예: <code>react</code>). <code>npm install 이름</code>으로 추가</td></tr><tr><td class="nowrap"><code>devDependencies</code></td><td>개발과 빌드에만 필요한 패키지 (예: <code>vite</code>). <code>npm install -D 이름</code>으로 추가</td></tr><tr><td class="nowrap"><code>^7.0.0</code></td><td>7.x.x 범위에서 최신을 허용한다는 뜻. 실제 설치된 버전은 <code>package-lock.json</code>에 고정</td></tr></tbody></table>
+<p><code>package.json</code>과 <code>package-lock.json</code>은 Git에 올리고, <code>node_modules</code>와 <code>dist</code>는 올리지 않습니다. 템플릿의 <code>.gitignore</code>에 이미 적혀 있습니다.</p>
+            </div>
+          </details>
+          <details>
+            <summary>첨부 · vanilla 템플릿의 폴더</summary>
+            <div class="w-att-body">
+<blockquote><pre>my-app/
+├─ index.html          진입 문서. &lt;script type=&quot;module&quot; src=&quot;/src/main.js&quot;&gt;
+├─ package.json
+├─ public/             그대로 복사되는 파일
+└─ src/
+   ├─ main.js          진입 스크립트
+   ├─ counter.js
+   └─ style.css</pre></blockquote>
+<p>다른 번들러와 달리 <code>index.html</code>이 <code>public</code> 안이 아니라 <b>프로젝트 루트</b>에 있습니다. Vite는 이 HTML을 출발점으로 삼아, 그 안의 <code>&lt;script&gt;</code>와 <code>&lt;link&gt;</code>를 따라가며 필요한 파일을 찾습니다.</p>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- 3p. 개발 서버가 빠른 이유 -->
+      <section id="vs-s3" data-title="3 개발 서버가 빠른 이유">
+        <h2>개발 서버가 빠른 이유</h2>
+        <div class="slide-frame">
+          <div class="slide">
+            <div class="slide-body">
+              <div class="w-head">
+                <span class="slide-eyebrow"><b class="slide-no">3</b>Vite · 시작하기 · 개발 서버와 HMR</span>
+                <div class="slide-title" role="heading" aria-level="3">개발 서버가 빠른 이유</div>
+              </div>
+              <ul class="points">
+                <li data-key="vs3-ondemand"><b>요청할 때 변환</b>: 미리 전부 묶지 않고, 브라우저가 <code>import</code>를 따라 요청한 파일만 변환</li>
+                <li data-key="vs3-hmr"><b>HMR</b>: 저장하면 바뀐 모듈만 갈아 끼우므로, 새로 고침 없이 화면과 입력 상태가 유지됨</li>
+              </ul>
+              <div class="w-stage">
+<svg class="w-svg" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 340" role="img">
+  <title>미리 묶는 개발 서버와 Vite 개발 서버의 시작 방식 비교</title>
+  <desc>미리 묶는 방식은 소스 전체를 묶은 뒤에야 서버가 준비되고, Vite 는 서버를 바로 시작해 브라우저가 요청한 파일만 변환하며 패키지는 한 번만 미리 묶어 캐시합니다.</desc>
+  <defs><marker id="wm18-mpdj-blue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#2563eb"/></marker><marker id="wm18-mpdj-blue-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#2563eb"/></marker><marker id="wm18-mpdj-green" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#059669"/></marker><marker id="wm18-mpdj-green-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#059669"/></marker><marker id="wm18-mpdj-orange" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#d97706"/></marker><marker id="wm18-mpdj-orange-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#d97706"/></marker><marker id="wm18-mpdj-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#7c3aed"/></marker><marker id="wm18-mpdj-purple-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#7c3aed"/></marker><marker id="wm18-mpdj-red" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#dc2626"/></marker><marker id="wm18-mpdj-red-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#dc2626"/></marker><marker id="wm18-mpdj-gray" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#64748b"/></marker><marker id="wm18-mpdj-gray-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#64748b"/></marker><marker id="wm18-mpdj-teal" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#0891b2"/></marker><marker id="wm18-mpdj-teal-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#0891b2"/></marker></defs>
+  <rect x="20" y="10" width="440" height="320" rx="10" fill="#64748b" fill-opacity="0.05" stroke="#64748b" stroke-width="1.6" data-key="vs3-left"/>
+  <text x="240" y="38" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">미리 묶는 방식</text>
+  <rect x="40" y="70" width="120" height="110" rx="10" fill="#d97706" fill-opacity="0.12" stroke="#d97706" stroke-width="1.6"/><text x="100" y="110.1" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">소스 전체</text><text x="100" y="130.4" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">수백 개의 모듈</text><text x="100" y="148.9" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">+ 패키지</text>
+  <line x1="160" y1="125" x2="178" y2="125" stroke="#d97706" stroke-width="2" marker-end="url(#wm18-mpdj-orange)"/>
+  <rect x="180" y="70" width="120" height="110" rx="10" fill="#d97706" fill-opacity="0.12" stroke="#d97706" stroke-width="1.6" data-key="vs3-bundle"/><text x="240" y="110.1" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">전부 묶기</text><text x="240" y="130.4" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">끝날 때까지</text><text x="240" y="148.9" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">기다린다</text>
+  <line x1="300" y1="125" x2="318" y2="125" stroke="#d97706" stroke-width="2" marker-end="url(#wm18-mpdj-orange)"/>
+  <rect x="320" y="70" width="120" height="110" rx="10" fill="#d97706" fill-opacity="0.12" stroke="#d97706" stroke-width="1.6"/><text x="380" y="110.1" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">서버 준비</text><text x="380" y="130.4" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">이제야 화면이</text><text x="380" y="148.9" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">열린다</text>
+  <text x="240" y="226" text-anchor="middle" font-size="13" font-weight="600" fill="#d97706">프로젝트가 커질수록 시작이 느려진다</text>
+  <text x="240" y="250" text-anchor="middle" font-size="13" fill="currentColor" fill-opacity="0.66">한 줄을 고쳐도 묶음을 다시 만든다</text>
+  <rect x="500" y="10" width="440" height="320" rx="10" fill="#64748b" fill-opacity="0.05" stroke="#64748b" stroke-width="1.6" data-key="vs3-right"/>
+  <text x="720" y="38" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">Vite</text>
+  <rect x="520" y="54" width="190" height="66" rx="10" fill="#2563eb" fill-opacity="0.12" stroke="#2563eb" stroke-width="1.6" data-key="vs3-start"/><text x="615" y="81.4" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">서버를 바로 시작</text><text x="615" y="101.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">아무것도 묶지 않는다</text>
+  <rect x="730" y="54" width="190" height="66" rx="10" fill="#2563eb" fill-opacity="0.12" stroke="#2563eb" stroke-width="1.6" data-key="vs3-req"/><text x="825" y="81.4" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">브라우저가 요청</text><text x="825" y="101.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">main.jsx → App.jsx → …</text>
+  <line x1="710" y1="87" x2="728" y2="87" stroke="#2563eb" stroke-width="2" marker-end="url(#wm18-mpdj-blue)" marker-start="url(#wm18-mpdj-blue-s)"/>
+  <rect x="520" y="134" width="190" height="66" rx="10" fill="#7c3aed" fill-opacity="0.12" stroke="#7c3aed" stroke-width="1.6" data-key="vs3-transform"/><text x="615" y="162.4" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">요청받은 파일만 변환</text><text x="615" y="181.1" text-anchor="middle" font-size="11.5" fill="currentColor" fill-opacity="0.66">안 여는 화면의 코드는 손대지 않음</text>
+  <rect x="730" y="134" width="190" height="66" rx="10" fill="#7c3aed" fill-opacity="0.12" stroke="#7c3aed" stroke-width="1.6" data-key="vs3-prebundle"/><text x="825" y="161.4" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">패키지는 한 번만</text><text x="825" y="181.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">미리 묶어 캐시에 보관</text>
+  <rect x="520" y="218" width="400" height="62" rx="10" fill="#059669" fill-opacity="0.12" stroke="#059669" stroke-width="1.6" data-key="vs3-hmrbox"/><text x="720" y="243.4" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">저장하면 — HMR</text><text x="720" y="263.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">바뀐 모듈만 브라우저로 보내 갈아 끼운다</text>
+  <text x="720" y="308" text-anchor="middle" font-size="13" font-weight="600" fill="#2563eb">프로젝트 크기와 거의 무관하게 빠르다</text>
+</svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="script">
+          <p data-cue="vs3-left:box vs3-bundle:box">세 번째 슬라이드는 Vite의 개발 서버가 빠른 이유입니다. 왼쪽은 예전 방식입니다. 서버를 켜면 소스 전체와 패키지를 하나로 묶는 작업부터 했고, 그 작업이 끝나야 화면이 열렸습니다. 모듈이 수천 개가 되면 수십 초가 걸렸습니다.</p>
+          <p data-cue="vs3-ondemand:check vs3-start:box vs3-req:box vs3-transform:box">오른쪽의 Vite는 아무것도 묶지 않고 서버를 바로 시작합니다. 브라우저가 <code>index.html</code>을 받아 <code>main.jsx</code>를 요청하면, Vite는 그 파일 하나만 변환해 돌려줍니다. 브라우저는 그 안의 <code>import</code>를 보고 다음 파일을 요청합니다. <mark>브라우저가 ES 모듈을 직접 이해한다는 점을 이용해, 필요한 파일만 필요한 때에 변환하는 것입니다.</mark></p>
+          <p data-cue="vs3-prebundle:box">다만 <code>node_modules</code>의 패키지는 예외입니다. 패키지 하나가 수백 개의 작은 파일로 이루어진 경우가 많아, 그대로 두면 요청이 수백 번 일어납니다. 그래서 패키지는 처음 한 번만 미리 묶어 캐시에 두고 다시 씁니다.</p>
+          <p data-cue="vs3-hmr:check vs3-hmrbox:box">파일을 저장하면 Vite는 바뀐 모듈만 브라우저로 보내 실행 중인 화면에 갈아 끼웁니다. 이것을 핫 모듈 교체, 줄여서 HMR이라고 합니다. 페이지를 새로 고치지 않으므로 입력해 둔 값이나 열어 둔 창이 그대로 남습니다.</p>
+          <p class="meta"><time datetime="2026-11-18">2026-11-18</time> · 개발 서버는 개발용입니다. 실제 서비스는 빌드한 결과를 올립니다</p>
+        </div>
+
+        <div class="w-att">
+          <details>
+            <summary>첨부 · 참조 — 의존성 사전 번들링</summary>
+            <div class="w-att-body">
+<p>개발 서버를 처음 켤 때 Vite는 소스에서 <code>import</code>하는 패키지를 찾아 미리 묶습니다. 결과는 <code>node_modules/.vite</code>에 저장되고, <code>package-lock.json</code>이 바뀌지 않는 한 다시 하지 않습니다.</p>
+<ul>
+  <li><b>형식 통일</b>: 오래된 패키지는 ES 모듈이 아닌 CommonJS(<code>require</code>) 형식입니다. 브라우저가 읽을 수 있게 ES 모듈로 바꿉니다.</li>
+  <li><b>요청 수 줄이기</b>: 수백 개의 내부 파일로 된 패키지를 파일 하나로 합칩니다.</li>
+  <li><b>경로 채우기</b>: <code>from 'react'</code>를 <code>from '/node_modules/.vite/deps/react.js'</code>처럼 브라우저가 찾아갈 수 있는 경로로 바꿉니다.</li>
+</ul>
+<p>패키지를 바꿨는데 옛 코드가 계속 나오면 캐시를 무시하고 다시 묶습니다.</p>
+<blockquote><pre>npm run dev -- --force</pre></blockquote>
+            </div>
+          </details>
+          <details>
+            <summary>첨부 · 참조 — 브라우저 개발자 도구로 확인하기</summary>
+            <div class="w-att-body">
+<p>개발 서버를 켠 채로 브라우저의 개발자 도구(F12) → 네트워크 탭을 열고 새로 고칩니다.</p>
+<ul>
+  <li><code>main.jsx</code>, <code>App.jsx</code>가 <b>파일마다 따로</b> 요청됩니다. 묶지 않았다는 증거입니다.</li>
+  <li><code>App.jsx</code>의 응답을 열어 보면 JSX가 아니라 변환된 Javascript입니다.</li>
+  <li><code>App.css</code>의 응답도 Javascript입니다. 개발 중에는 CSS를 <code>&lt;style&gt;</code> 태그로 넣어 주는 코드로 바꿔 HMR이 가능하게 합니다.</li>
+  <li>WS(웹소켓) 연결이 하나 있습니다. 파일이 바뀌었다는 소식이 이 연결로 옵니다.</li>
+</ul>
+            </div>
+          </details>
+          <details>
+            <summary>첨부 · 개발 서버 옵션</summary>
+            <div class="w-att-body">
+<table><thead><tr><th>명령</th><th>하는 일</th></tr></thead><tbody><tr><td class="nowrap"><code>npm run dev -- --port 3000</code></td><td>포트를 바꿉니다. 5173이 사용 중이면 자동으로 다음 번호를 씁니다.</td></tr><tr><td class="nowrap"><code>npm run dev -- --host</code></td><td>같은 네트워크의 다른 기기(휴대폰)에서 접속할 수 있게 엽니다.</td></tr><tr><td class="nowrap"><code>npm run dev -- --open</code></td><td>서버가 뜨면 브라우저를 자동으로 엽니다.</td></tr><tr><td class="nowrap"><code>npm run dev -- --force</code></td><td>패키지 캐시를 무시하고 다시 묶습니다.</td></tr></tbody></table>
+<p><code>--</code> 뒤의 옵션은 npm이 아니라 <code>vite</code> 명령에 전달됩니다. 매번 적기 번거로우면 <code>vite.config.js</code>의 <code>server</code>에 적어 둡니다.</p>
+            </div>
+          </details>
+        </div>
+      </section>
+    </div>
+  </article>
+</body>
+
+</html>

@@ -25,13 +25,15 @@ const FAKE_FIREBASE_APP = `
 `;
 
 async function mockSite(page, { user }) {
-  // 사이트맵: 문서 하나를 개발중으로 표시한다
+  // 사이트맵: 문서 하나만 개발중으로 표시한다.
+  // 실제 사이트맵에 이미 개발중인 항목이 있어도 글 수가 흔들리지 않게, 원래의 개발중 표시는 먼저 지운다.
   await page.route('**/hierarchy.json', async route => {
     const response = await route.fetch();
     const tree = await response.json();
     let marked = 0;
     (function walk(list) {
       list.forEach(item => {
+        delete item.상태;
         if (item.주제 === DEV_PAGE_TITLE) { item.상태 = '개발중'; marked++; }
         if (item.목록) walk(item.목록);
       });
