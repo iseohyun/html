@@ -3405,3 +3405,46 @@ article .auto-overview-pages a:hover {
   vertical-align: 1px;
   color: #64748b;
 }
+
+/* ==========================================================================
+   로그인 항목(문의 창)과 개발 중인 문서 표시(사이트맵, 관리자에게만 보인다)
+   ========================================================================== */
+.contact-auth-status {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.contact-auth-status:empty {
+  display: none;
+}
+
+.contact-auth-status.is-error {
+  color: var(--dev-mark);
+}
+
+:root {
+  --dev-mark: #d32f2f;   /* 개발 중 표시의 빨강 (테마와 상관없이 같은 색) */
+}
+
+#sitemap-tree .tree-dev-count {
+  flex-shrink: 0;
+  margin-left: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--dev-mark);
+}
+
+/* 개발 중인 문서와 묶음의 이름 앞에 빨간 점 */
+#sitemap-tree li.is-dev > a.tree-label::after,
+#sitemap-tree li.is-dev > .tree-row > .tree-label::after {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background-color: var(--dev-mark);
+  vertical-align: middle;
+}

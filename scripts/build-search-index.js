@@ -40,6 +40,8 @@ function hasOwn(obj, key) {
 // modules/core/hierarchy.js의 forEachPage와 동일한 규칙으로 문서 목록을 만든다
 function listPages(list, parentDirs = '', ancestors = [], pages = []) {
   for (const item of list) {
+    // 개발중인 문서(와 개발중 묶음 전체)는 공개 색인에 넣지 않는다 (hierarchy.js 의 isDevItem 과 같은 규칙)
+    if (item.상태 === '개발중') continue;
     const title = item.주제 || '';
     // "/"로 시작하는 디렉토리는 사이트 루트 기준이다 (hierarchy.js의 resolveDirs와 같은 규칙)
     const ownDir = item.디렉토리 || '';

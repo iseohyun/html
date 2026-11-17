@@ -1,9 +1,9 @@
 /**
  * @file modules/core/site-config.js
  * @module SiteModules.Config
- * @description 사이트 전역 설정의 단일 출처. 문의 메일(Web3Forms) 주소와 접근 키, 레이아웃 기준 너비를 보관한다.
- *   여기의 값은 모두 브라우저에 공개되는 값이며 비밀이 아니다.
- * @exports feedback, layout
+ * @description 사이트 전역 설정의 단일 출처. 문의 메일(Web3Forms) 주소와 접근 키, 로그인(Firebase) 설정,
+ *   관리자 판정 값, 레이아웃 기준 너비를 보관한다. 여기의 값은 모두 브라우저에 공개되는 값이며 비밀이 아니다.
+ * @exports feedback, firebase, firebaseSdkVersion, admin, layout
  */
 
 window.SiteModules = window.SiteModules || {};
@@ -13,6 +13,21 @@ window.SiteModules.Config = window.SiteModules.Config || Object.freeze({
   feedback: Object.freeze({
     web3formsEndpoint: "https://api.web3forms.com/submit",
     web3formsAccessKey: "8ffc27ff-bbd8-4d15-949b-e0a99e11cded"
+  }),
+
+  // 로그인(구글)에 쓰는 Firebase 프로젝트. 웹용 설정값이라 공개되어도 된다.
+  firebase: Object.freeze({
+    apiKey: "AIzaSyBu8rZQ_E_LKiGXu9jeIWn5FCPU7cWu734",
+    authDomain: "iseohyun.firebaseapp.com",
+    projectId: "iseohyun",
+    appId: "1:480884385518:web:e624e46512c8c3834675ff"
+  }),
+  // gstatic compat SDK 버전 (modules/core/auth.js 가 로그인할 때만 불러온다)
+  firebaseSdkVersion: "10.0.0",
+
+  // 관리자: 메일 주소를 그대로 적지 않고 소문자 주소의 SHA-256 값으로 적는다.
+  admin: Object.freeze({
+    emailHashes: Object.freeze(["f15e2c6f064fa98d71a827aa527ab58d092bcabe4dd9839d0b269cfe7f24d7fd"])
   }),
 
   layout: Object.freeze({

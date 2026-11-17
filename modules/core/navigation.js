@@ -255,6 +255,34 @@ window.SiteModules.Navigation = (function () {
     pageRailItems.slice().forEach(removeRailItem);
   }
 
+  // 로그인 상태가 바뀌었을 때: 사이트맵 트리와 헤더 탭을 다시 그리고, 지금 화면이 영향을 받으면 다시 불러온다
+  function refreshForAuth() {
+    const Hierarchy = window.SiteModules.Hierarchy;
+    const nextShowDev = window.SiteModules.Auth.isAdmin();
+    if (Hierarchy.isShowingDev() === nextShowDev) return;
+    Hierarchy.setShowDev(nextShowDev);
+
+    const list = window.SiteModules.hierarchyListCached;
+    const tree = document.getElementById("sitemap-tree");
+    const state = window.SiteModules.state;
+    if (!list || !tree) return;
+
+    tree.innerHTML = "";
+    renderHierarchy(list, tree, '');
+    highlightSitemapTree(state.currentPath);
+
+    const currentPath = state.currentPath || "";
+    if (Hierarchy.isDevPath(list, currentPath)) {
+      // 막혀 있던 개발중 문서를 열거나, 보고 있던 개발중 문서를 가린다
+      state.currentPath = "";
+      loadPageRoute(currentPath);
+    } else if (currentPath.startsWith(Hierarchy.AUTO_OVERVIEW_PREFIX)) {
+      loadAutoOverviewRoute(currentPath);
+    } else {
+      window.SiteModules.Header.setTabs(buildHeaderTabs(currentPath === "/index.html", currentPath));
+    }
+  }
+
   function isKnownArticlePage(absolutePath) {
     if (KNOWN_ROOT_ARTICLES.includes(absolutePath)) return true;
 
@@ -311,7 +339,7 @@ window.SiteModules.Navigation = (function () {
     let seriesDirs;
     if (isOverview) {
       tabs.push({ label: OVERVIEW_TAB_LABEL, href: `#${page.url}`, selected: true });
-      seriesDocs = page.item.목록.filter(Hierarchy.isPageItem);
+      seriesDocs = Hierarchy.visibleItems(page.item.목록).filter(Hierarchy.isPageItem);
       seriesDirs = Hierarchy.resolveDirs(page.parentDirs, page.item.디렉토리);
     } else {
       if (page.parentOverviewUrl) tabs.push({ label: OVERVIEW_TAB_LABEL, href: `#${page.parentOverviewUrl}`, selected: false });
@@ -522,6 +550,10 @@ window.SiteModules.Navigation = (function () {
 
         // 초기 상태 로드 (지금 문서까지의 가지는 라우터가 highlightSitemapTree 로 펼친다)
         renderHierarchy(list, baseUl, '');
+
+        // 관리자로 로그인하거나 로그아웃하면 개발중 문서가 보이거나 사라지도록 다시 그린다
+        window.SiteModules.Auth.onChange(refreshForAuth);
+        window.SiteModules.Auth.init();
 
         // 라우터 초기화
         initRouter();
@@ -776,8 +808,9 @@ window.SiteModules.Navigation = (function () {
     }
 
     const isFolderItem = (item) => Object.prototype.hasOwnProperty.call(item, '목록');
-    const folders = found.item.목록.filter(isFolderItem);
-    const pages = found.item.목록.filter(item => !isFolderItem(item));
+    const children = Hierarchy.visibleItems(found.item.목록);
+    const folders = children.filter(isFolderItem);
+    const pages = children.filter(item => !isFolderItem(item));
     // 하위 묶음으로 가는 주소: 개론 문서가 있으면 그 문서, 없으면 그 묶음의 자동 개론
     const folderHref = (item) => Hierarchy.isPageItem(item)
       ? Hierarchy.getItemUrl(found.dirs, item)
@@ -810,7 +843,7 @@ window.SiteModules.Navigation = (function () {
 
         const preview = document.createElement("span");
         preview.className = "auto-overview-preview";
-        const names = item.목록.map(child => child.주제);
+        const names = Hierarchy.visibleItems(item.목록).map(child => child.주제);
         preview.textContent = names.slice(0, AUTO_OVERVIEW_PREVIEW_COUNT).join(" · ") + (names.length > AUTO_OVERVIEW_PREVIEW_COUNT ? " …" : "");
 
         card.append(name, preview);
@@ -953,14 +986,15 @@ window.SiteModules.Navigation = (function () {
 
   // 본문 영역의 오류 경계: 문서를 그리다 오류가 나도 하얀 화면 대신 안내와 다시 시도 버튼을 보여 준다.
   // 헤더와 사이드바는 그대로 살아 있어 다른 페이지로 옮길 수 있다.
-  function renderErrorState(article, err, retry) {
+  // @param {string} [titleText] 안내의 제목 (기본: "문제가 생겼습니다")
+  function renderErrorState(article, err, retry, titleText = "문제가 생겼습니다") {
     const box = document.createElement("div");
     box.className = "error-state";
     box.setAttribute("role", "alert");
 
     const title = document.createElement("strong");
     title.className = "error-state-title";
-    title.textContent = "문제가 생겼습니다";
+    title.textContent = titleText;
     const detail = document.createElement("p");
     detail.className = "error-state-detail";
     detail.textContent = (err && err.message) ? err.message : "알 수 없는 오류입니다.";
@@ -983,7 +1017,7 @@ window.SiteModules.Navigation = (function () {
 
     box.append(title, detail, actions);
     article.replaceChildren(box);
-    window.SiteModules.Header.setTitle("문제가 생겼습니다");
+    window.SiteModules.Header.setTitle(titleText);
     window.SiteModules.Header.setTabs([]);
   }
 
@@ -1031,6 +1065,17 @@ window.SiteModules.Navigation = (function () {
     if (!isSafeInternalPath(urlPath)) {
       console.warn("[Router] 허용되지 않은 경로를 차단했습니다:", urlPath);
       window.location.hash = "#/";
+      return;
+    }
+
+    // 개발중인 문서는 관리자에게만 보여 준다 (가리는 것일 뿐이다: 파일은 공개되어 있다)
+    const hierarchyList = window.SiteModules.hierarchyListCached;
+    if (hierarchyList && !window.SiteModules.Hierarchy.isShowingDev() && window.SiteModules.Hierarchy.isDevPath(hierarchyList, urlPath)) {
+      leaveCurrentPage();
+      window.SiteModules.Header.setPanels({});
+      window.SiteModules.state.currentPath = urlPath;
+      highlightSitemapTree(urlPath);
+      renderErrorState(article, new Error("관리자로 로그인하면 볼 수 있습니다. 왼쪽의 문의 아이콘에서 로그인합니다."), () => loadPageRoute(urlPath), "개발 중인 문서입니다");
       return;
     }
 
@@ -1383,6 +1428,7 @@ window.SiteModules.Navigation = (function () {
 
   // 사이트맵 트리를 그린다.
   //   - 같은 단계 안에서는 묶음이 위쪽, 낱개 문서가 아래쪽이다.
+  //   - "상태": "개발중" 인 항목은 관리자에게만 보인다. 관리자에게는 묶음의 글 수 옆에 개발중 글 수가 빨간 "+n" 으로 붙는다.
   //   - 묶음(하위 목록이 있는 항목)은 접고 펴는 화살표, 이름, 안에 든 글 수 "(n)" 으로 한 줄을 이룬다.
   //   - 묶음을 열면 그 묶음의 개론이 본문에 열린다. 이때 좁은 화면의 서랍은 닫지 않는다. 접을 때는 문서를 바꾸지 않는다.
   //     개론은 이 순서로 정한다: 자기 개론 문서 → 가장 가까운 위쪽 묶음의 개론 문서 → 자기 자동 개론(하위 목록).
@@ -1396,10 +1442,13 @@ window.SiteModules.Navigation = (function () {
 
     // 묶음을 위쪽에, 낱개 문서를 아래쪽에 둔다 (각각의 순서는 hierarchy.json 에 적힌 그대로)
     const isFolderItem = (item) => Object.prototype.hasOwnProperty.call(item, '목록');
-    const ordered = data.filter(isFolderItem).concat(data.filter(item => !isFolderItem(item)));
+    // 개발중 항목은 관리자에게만 보인다
+    const visible = Hierarchy.visibleItems(data);
+    const ordered = visible.filter(isFolderItem).concat(visible.filter(item => !isFolderItem(item)));
 
     ordered.forEach((item) => {
       const listItem = document.createElement('li');
+      if (Hierarchy.isDevItem(item)) listItem.classList.add('is-dev');
       const isFolder = isFolderItem(item);
       const isPage = Hierarchy.isPageItem(item);
       const url = isPage ? Hierarchy.getItemUrl(parentDirectories, item) : "";
@@ -1446,6 +1495,15 @@ window.SiteModules.Navigation = (function () {
       count.textContent = `(${Hierarchy.countPages(item)})`;
 
       row.append(toggle, label, count);
+      // 관리자에게는 이 묶음 안의 개발중 글 수를 빨간 "+n" 으로 덧붙인다
+      const devCount = Hierarchy.isShowingDev() ? Hierarchy.countDevPages(item, Hierarchy.isDevItem(item)) : 0;
+      if (devCount > 0) {
+        const dev = document.createElement('span');
+        dev.className = 'tree-dev-count';
+        dev.textContent = `+${devCount}`;
+        dev.title = `개발 중인 글 ${devCount}편 (관리자에게만 보입니다)`;
+        row.appendChild(dev);
+      }
       listItem.appendChild(row);
 
       row.addEventListener('click', (event) => {

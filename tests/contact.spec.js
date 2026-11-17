@@ -21,7 +21,7 @@ test.describe('문의 창 (레일의 문의 아이콘)', () => {
 
     await page.locator('#nav-kakao-channel').click();
     await expect(popover).toBeVisible();
-    await expect(popover.locator('.contact-action')).toHaveText(['카카오톡 채널 추가', '카카오톡 1:1 채팅', '메일로 문의']);
+    await expect(popover.locator('.contact-action')).toHaveText(['카카오톡 채널 추가', '카카오톡 1:1 채팅', '메일로 문의', '로그인 (Google)']);
     await expect(popover.locator('a.contact-action').nth(0)).toHaveAttribute('href', 'http://pf.kakao.com/_ETRrX');
     await expect(popover.locator('a.contact-action').nth(1)).toHaveAttribute('href', 'http://pf.kakao.com/_ETRrX/chat');
 

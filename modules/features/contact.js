@@ -3,8 +3,9 @@
  * @module SiteModules.Contact
  * @description 레일의 문의 아이콘(#nav-kakao-channel)을 누르면 뜨는 문의 창.
  *   세 가지 길을 보여 준다: 카카오톡 채널 추가, 카카오톡 1:1 채팅, 메일로 문의.
+ *   맨 아래에는 로그인 항목이 있다(구글). 관리자로 로그인하면 개발 중인 문서가 사이트맵에 보인다.
  *   메일은 서버 없이 화면에서 바로 Web3Forms 로 보낸다(접근 키와 주소는 SiteModules.Config.feedback).
- * @requires SiteModules.Config, SiteModules.Icons
+ * @requires SiteModules.Config, SiteModules.Icons, SiteModules.Auth
  * @exports init
  */
 
@@ -36,6 +37,8 @@ window.SiteModules.Contact = (function () {
         <a class="contact-action" href="${KAKAO_CHANNEL_URL}" target="_blank" rel="noopener noreferrer">${icon("user-plus")}<span>카카오톡 채널 추가</span></a>
         <a class="contact-action" href="${KAKAO_CHAT_URL}" target="_blank" rel="noopener noreferrer">${icon("chat")}<span>카카오톡 1:1 채팅</span></a>
         <button class="contact-action" type="button" id="contact-mail-toggle" aria-expanded="false" aria-controls="contact-mail-form">${icon("mail")}<span>메일로 문의</span></button>
+        <button class="contact-action" type="button" id="contact-login-btn"></button>
+        <span class="contact-auth-status" id="contact-auth-status" role="status"></span>
       </div>
       <form class="contact-form" id="contact-mail-form" novalidate hidden>
         <label class="contact-label" for="contact-message">내용</label>
@@ -77,6 +80,41 @@ window.SiteModules.Contact = (function () {
     if (isOpen) refreshPageInfo();
     popover.hidden = !isOpen;
     if (railButton) railButton.classList.toggle("active", isOpen);
+  }
+
+  // 로그인 항목의 글자와 아래 한 줄 안내를 지금 로그인 상태에 맞춘다
+  function refreshLoginAction(message, isError) {
+    const Auth = window.SiteModules.Auth;
+    const icon = window.SiteModules.Icons.html;
+    const button = popover.querySelector("#contact-login-btn");
+    const status = popover.querySelector("#contact-auth-status");
+    const isSignedIn = Auth.isSignedIn();
+
+    button.innerHTML = `${icon(isSignedIn ? "log-out" : "log-in")}<span>${isSignedIn ? "로그아웃" : "로그인 (Google)"}</span>`;
+    let text = message || "";
+    if (!text && isSignedIn) {
+      text = Auth.isAdmin() ? "관리자로 로그인했습니다. 개발 중인 문서가 보입니다." : "로그인했습니다. 관리자 계정은 아닙니다.";
+    }
+    status.textContent = text;
+    status.classList.toggle("is-error", !!isError);
+  }
+
+  async function onLoginClick() {
+    const Auth = window.SiteModules.Auth;
+    const button = popover.querySelector("#contact-login-btn");
+    button.disabled = true;
+    try {
+      if (Auth.isSignedIn()) await Auth.logout();
+      else await Auth.login();
+      refreshLoginAction();
+    } catch (err) {
+      // 창을 그냥 닫은 것은 오류로 알리지 않는다
+      const isCancelled = err && (err.code === "auth/popup-closed-by-user" || err.code === "auth/cancelled-popup-request");
+      if (!isCancelled) console.error("[Contact] 로그인 실패:", err);
+      refreshLoginAction(isCancelled ? "" : `로그인하지 못했습니다: ${err.message}`, !isCancelled);
+    } finally {
+      button.disabled = false;
+    }
   }
 
   function setMailFormOpen(isOpen) {
@@ -176,6 +214,9 @@ window.SiteModules.Contact = (function () {
     });
     popover.querySelector("#contact-mail-form").addEventListener("submit", submitMail);
     popover.querySelector("#contact-page-check").addEventListener("change", refreshPageInfo);
+    popover.querySelector("#contact-login-btn").addEventListener("click", onLoginClick);
+    window.SiteModules.Auth.onChange(() => refreshLoginAction());
+    refreshLoginAction();
     // 문의 창을 연 채로 다른 문서로 옮겨도 페이지 이름이 따라오게 한다
     window.addEventListener("hashchange", () => {
       if (!popover.hidden) setTimeout(refreshPageInfo, 600);
