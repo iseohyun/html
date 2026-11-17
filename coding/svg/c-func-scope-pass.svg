@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="440" viewBox="0 0 960 440" font-family="'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif">
+  <title>변수의 생명주기(전역·static·지역)와 함수 인자 전달 방식(Value vs Pointer/Reference)</title>
+  <desc>좌측에는 Data 영역(전역·static 변수)과 Stack 영역(중괄호 블록 지역변수)의 메모리 수명 차이를, 우측에는 값 복사(Call by Value)와 주소·참조 전달(Call by Pointer / Reference)의 원본 변경 여부를 비교한 도식입니다.</desc>
+
+  <defs>
+    <filter id="spShadow" x="-3%" y="-4%" width="106%" height="110%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#0f172a" flood-opacity="0.06"/>
+    </filter>
+    <marker id="spArrBlue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M1,1.5 L9,5 L1,8.5 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="spArrOrange" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M1,1.5 L9,5 L1,8.5 Z" fill="#ea580c"/>
+    </marker>
+    <clipPath id="clipSpLeft"><rect x="14" y="14" width="454" height="412" rx="12"/></clipPath>
+    <clipPath id="clipSpRight"><rect x="484" y="14" width="462" height="412" rx="12"/></clipPath>
+  </defs>
+
+  <rect width="960" height="440" rx="14" fill="#fcfcfa" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- ==================== [LEFT] 변수의 생명주기 (Scope & static) ==================== -->
+  <g clip-path="url(#clipSpLeft)" filter="url(#spShadow)">
+    <rect x="14" y="14" width="454" height="412" fill="#ffffff"/>
+    <rect x="14" y="14" width="454" height="38" fill="#ede9fe"/>
+  </g>
+  <rect data-key="sp-life" x="14" y="14" width="454" height="412" rx="12" fill="none" stroke="#7c3aed" stroke-width="1.8"/>
+  <text x="30" y="38" font-size="14" font-weight="800" fill="#4c1d95">변수의 생명주기 (Life Cycle)와 메모리 영역</text>
+
+  <!-- 1. Data 영역 (전역 + static) -->
+  <rect data-key="sp-static" x="28" y="64" width="426" height="148" rx="9" fill="#faf5ff" stroke="#a78bfa" stroke-width="1.6"/>
+  <rect x="40" y="74" width="168" height="22" rx="11" fill="#7c3aed"/>
+  <text x="124" y="89" text-anchor="middle" font-size="10.8" font-weight="800" fill="#ffffff">데이터(Data) 영역 · 영구 상주</text>
+  <text x="440" y="89" text-anchor="end" font-size="10.3" font-weight="700" fill="#5b21b6">프로그램 시작 ~ 종료까지 유지</text>
+
+  <rect x="40" y="106" width="194" height="94" rx="7" fill="#ffffff" stroke="#c4b5fd"/>
+  <text x="52" y="126" font-size="11.5" font-weight="800" fill="#4c1d95">전역변수 (Global)</text>
+  <text x="52" y="145" font-size="10.4" fill="#334155">· 함수 바깥에 선언</text>
+  <text x="52" y="163" font-size="10.4" fill="#334155">· 모든 함수에서 접근 가능</text>
+  <text x="52" y="181" font-size="10.2" fill="#b91c1c">· 남용 시 메모리 점유·결합도↑</text>
+
+  <rect x="246" y="106" width="196" height="94" rx="7" fill="#ffffff" stroke="#c4b5fd"/>
+  <text x="258" y="126" font-size="11.5" font-weight="800" fill="#065f46">static 지역변수</text>
+  <text x="258" y="145" font-family="'D2Coding', monospace" font-size="10.2" font-weight="700" fill="#047857">static int cnt = 0;</text>
+  <text x="258" y="164" font-size="10.4" fill="#334155">· 접근은 해당 함수 내부로만 제한</text>
+  <text x="258" y="182" font-size="10.4" font-weight="700" fill="#065f46">· 함수가 끝나도 값이 유지됨!</text>
+
+  <!-- 2. Stack 영역 (지역변수 & 중괄호 스코프) -->
+  <rect data-key="sp-local" x="28" y="224" width="426" height="188" rx="9" fill="#eff6ff" stroke="#60a5fa" stroke-width="1.6"/>
+  <rect x="40" y="234" width="168" height="22" rx="11" fill="#2563eb"/>
+  <text x="124" y="249" text-anchor="middle" font-size="10.8" font-weight="800" fill="#ffffff">스택(Stack) 영역 · 임시 생성</text>
+  <text x="440" y="249" text-anchor="end" font-size="10.3" font-weight="700" fill="#1d4ed8">선언 시 생성 ➔ '}' 만나면 소멸</text>
+
+  <!-- 중첩 블록 스코프 시각화 -->
+  <rect x="40" y="266" width="402" height="134" rx="7" fill="#0f172a"/>
+  <g font-family="'D2Coding', Consolas, monospace" font-size="10.6">
+    <text x="52" y="286" fill="#93c5fd">int main() { <tspan fill="#fde68a">int i = 8;</tspan>         <tspan fill="#94a3b8">// 바깥 지역변수 i</tspan></text>
+    <rect x="64" y="295" width="366" height="58" rx="5" fill="#1e293b" stroke="#475569" stroke-dasharray="3 2"/>
+    <text x="74" y="314" fill="#67e8f9">  { <tspan fill="#86efac">int i = 7;</tspan>                  <tspan fill="#cbd5e1">// 안쪽 블록: 가까운 7 우선 참조</tspan></text>
+    <text x="74" y="334" fill="#67e8f9">  } <tspan fill="#fca5a5">◀ 여기서 안쪽 i(7) 즉시 소멸!</tspan></text>
+    <text x="52" y="372" fill="#93c5fd">  printf("%d", i);              <tspan fill="#fde68a">// 다시 살아있는 바깥 i(8) 참조</tspan></text>
+    <text x="52" y="391" fill="#93c5fd">} <tspan fill="#fca5a5">◀ main 종료 시 바깥 i(8)도 소멸</tspan></text>
+  </g>
+
+
+  <!-- ==================== [RIGHT] 인자 전달 방식 (Value vs Pointer/Reference) ==================== -->
+  <g clip-path="url(#clipSpRight)" filter="url(#spShadow)">
+    <rect x="484" y="14" width="462" height="412" fill="#ffffff"/>
+    <rect x="484" y="14" width="462" height="38" fill="#ffedd5"/>
+  </g>
+  <rect data-key="sp-pass" x="484" y="14" width="462" height="412" rx="12" fill="none" stroke="#f97316" stroke-width="1.8"/>
+  <text x="500" y="38" font-size="14" font-weight="800" fill="#9a3412">함수 인자 전달 방식 — 원본 변수가 바뀌는가?</text>
+
+  <!-- 1. Call by Value -->
+  <rect data-key="sp-val" x="498" y="64" width="434" height="162" rx="9" fill="#f8fafc" stroke="#93c5fd" stroke-width="1.6"/>
+  <rect x="510" y="74" width="146" height="22" rx="11" fill="#2563eb"/>
+  <text x="583" y="89" text-anchor="middle" font-size="10.8" font-weight="800" fill="#ffffff">① Call by Value (값 복사)</text>
+  <text x="918" y="89" text-anchor="end" font-family="'D2Coding', monospace" font-size="10.5" font-weight="700" fill="#1d4ed8">void func(int a); ➔ func(x);</text>
+
+  <!-- 메모리 상자 비교 -->
+  <rect x="514" y="108" width="164" height="68" rx="7" fill="#ffffff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="596" y="128" text-anchor="middle" font-size="10.8" font-weight="800" fill="#1e3a8a">원본 input (0x100)</text>
+  <text x="596" y="156" text-anchor="middle" font-family="'D2Coding', monospace" font-size="18" font-weight="800" fill="#0f172a">10 <tspan font-size="11" fill="#059669">(불변!)</tspan></text>
+
+  <line x1="680" y1="142" x2="746" y2="142" stroke="#2563eb" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#spArrBlue)"/>
+  <text x="713" y="132" text-anchor="middle" font-size="9.8" font-weight="700" fill="#2563eb">값만 복사</text>
+
+  <rect x="752" y="108" width="164" height="68" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="834" y="128" text-anchor="middle" font-size="10.8" font-weight="800" fill="#475569">복사본 a (0x200)</text>
+  <text x="834" y="156" text-anchor="middle" font-family="'D2Coding', monospace" font-size="15" font-weight="700" fill="#64748b">10 ➔ 99 변경 후 소멸</text>
+
+  <text x="715" y="206" text-anchor="middle" font-size="10.8" font-weight="700" fill="#334155">다른 메모리 칸에 값만 베껴 가므로, 함수 안에서 고쳐도 원본은 안전함</text>
+
+  <!-- 2. Call by Pointer / Reference -->
+  <rect data-key="sp-ref" x="498" y="238" width="434" height="174" rx="9" fill="#fff7ed" stroke="#fb923c" stroke-width="1.6"/>
+  <rect x="510" y="248" width="212" height="22" rx="11" fill="#ea580c"/>
+  <text x="616" y="263" text-anchor="middle" font-size="10.8" font-weight="800" fill="#ffffff">② Call by Pointer · Reference (주소·참조)</text>
+  <text x="918" y="263" text-anchor="end" font-size="10.3" font-weight="700" fill="#9a3412">원본 직접 수정 가능!</text>
+
+  <!-- 메모리 화살표 비교 -->
+  <rect x="514" y="282" width="164" height="72" rx="7" fill="#ffffff" stroke="#ea580c" stroke-width="1.8"/>
+  <text x="596" y="302" text-anchor="middle" font-size="10.8" font-weight="800" fill="#9a3412">원본 input (0x100)</text>
+  <text x="596" y="332" text-anchor="middle" font-family="'D2Coding', monospace" font-size="17" font-weight="800" fill="#dc2626">10 ➔ 99 변경됨!</text>
+
+  <line x1="750" y1="318" x2="682" y2="318" stroke="#ea580c" stroke-width="2.2" marker-end="url(#spArrOrange)"/>
+  <text x="716" y="308" text-anchor="middle" font-size="9.8" font-weight="800" fill="#c2410c">주소 역참조</text>
+
+  <rect x="752" y="282" width="164" height="72" rx="7" fill="#ffedd5" stroke="#fdba74" stroke-width="1.5"/>
+  <text x="834" y="301" text-anchor="middle" font-size="10.5" font-weight="800" fill="#9a3412">포인터 p / 참조자 r</text>
+  <text x="834" y="321" text-anchor="middle" font-family="'D2Coding', monospace" font-size="10.2" fill="#7c2d12">C: int *p = &amp;input;</text>
+  <text x="834" y="339" text-anchor="middle" font-family="'D2Coding', monospace" font-size="10.2" fill="#7c2d12">C++: int &amp;r = input;</text>
+
+  <text x="715" y="382" text-anchor="middle" font-size="10.6" font-weight="700" fill="#9a3412">C는 주소(&amp;)를 넘겨 포인터(*)로 접근하고, C++은 참조자(&amp;) 별명 문법도 지원</text>
+  <text x="715" y="399" text-anchor="middle" font-size="10.2" fill="#7c2d12">원본 메모리(0x100)를 직접 찾아가 값을 바꾸므로 함수 종료 후에도 반영됨</text>
+</svg>

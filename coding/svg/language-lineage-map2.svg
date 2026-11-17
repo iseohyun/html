@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1260" height="826" viewBox="0 0 1260 826" font-family="'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif">
+  <title>주류 프로그래밍 언어 구동 패러다임과 진화 계통도</title>
+  <desc>기계어·어셈블리에서 출발해 하드웨어 네이티브(C → C++ → Rust), 가상머신(Java → C#, Kotlin), 스크립트(Python, JavaScript → TypeScript)의 핵심 언어 계통도입니다.</desc>
+
+  <defs>
+    <filter id="cardShadow" x="-3%" y="-4%" width="106%" height="110%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.06"/>
+    </filter>
+
+    <marker id="arrDark" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+      <path d="M1,1.5 L9,5 L1,8.5 Z" fill="#334155"/>
+    </marker>
+    <marker id="arrBlue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+      <path d="M1,1.5 L9,5 L1,8.5 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrAmber" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+      <path d="M1,1.5 L9,5 L1,8.5 Z" fill="#d97706"/>
+    </marker>
+    <marker id="arrTeal" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+      <path d="M1,1.5 L9,5 L1,8.5 Z" fill="#059669"/>
+    </marker>
+    <marker id="arrSlate" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+      <path d="M1,1.5 L9,5 L1,8.5 Z" fill="#64748b"/>
+    </marker>
+
+    <clipPath id="clipCol1"><rect x="32" y="108" width="366" height="698" rx="14"/></clipPath>
+    <clipPath id="clipCol2"><rect x="422" y="108" width="416" height="698" rx="14"/></clipPath>
+    <clipPath id="clipCol3"><rect x="862" y="108" width="366" height="698" rx="14"/></clipPath>
+  </defs>
+
+  <!-- 전체 종이 배경 -->
+  <rect width="1260" height="826" rx="16" fill="#fcfcfa" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- ==================== 우측 상단 범례 (기계어 옆 2줄 배치) ==================== -->
+  <rect x="968" y="20" width="260" height="54" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <line x1="984" y1="37" x2="1020" y2="37" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrBlue)"/>
+  <text x="1030" y="41" font-size="11.3" font-weight="700" fill="#334155">직계 계승 · 한계 극복 진화</text>
+  <line x1="984" y1="57" x2="1020" y2="57" stroke="#64748b" stroke-width="1.8" stroke-dasharray="5 3" marker-end="url(#arrSlate)"/>
+  <text x="1030" y="61" font-size="11.3" font-weight="700" fill="#334155">생태계 확장 · 하부 기반</text>
+
+  
+  
+  
+
+  <!-- ==================== 최상단 뿌리: 기계어 / 어셈블리 ==================== -->
+  <g filter="url(#cardShadow)">
+    <rect data-key="asm-root" x="390" y="20" width="480" height="54" rx="12" fill="#1e293b" stroke="#0f172a" stroke-width="1.8"/>
+    <rect x="404" y="30" width="114" height="34" rx="7" fill="#0f172a" stroke="#475569"/>
+    <text x="461" y="51" text-anchor="middle" font-family="'D2Coding', Consolas, monospace" font-size="11.5" font-weight="700" fill="#67e8f9">0101 · pushq</text>
+    <text x="534" y="44" font-size="15" font-weight="800" fill="#ffffff">기계어 (0101)  /  어셈블리 (CPU 1:1 대응)</text>
+    <text x="534" y="63" font-size="11.2" fill="#cbd5e1">하드웨어 종속 저수준 명령</text>
+  </g>
+
+  <!-- 최상단 3갈래 분기 트리 선 -->
+  <line x1="630" y1="74" x2="630" y2="90" stroke="#334155" stroke-width="2.2"/>
+  <path d="M215,90 L1045,90" fill="none" stroke="#334155" stroke-width="2.2"/>
+  <line x1="215" y1="90" x2="215" y2="104" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrBlue)"/>
+  <line x1="630" y1="90" x2="630" y2="104" stroke="#d97706" stroke-width="2.2" marker-end="url(#arrAmber)"/>
+  <line x1="1045" y1="90" x2="1045" y2="104" stroke="#059669" stroke-width="2.2" marker-end="url(#arrTeal)"/>
+
+
+  <!-- ====================================================================== -->
+  <!-- 좌측 컬럼: 하드웨어 네이티브 (성능 중시) — C → C++ → Rust     -->
+  <!-- ====================================================================== -->
+  <g clip-path="url(#clipCol1)">
+    <rect x="32" y="108" width="366" height="698" fill="#f0f7ff"/>
+    <rect x="32" y="108" width="366" height="86" fill="#dbeafe"/>
+    <line x1="32" y1="194" x2="398" y2="194" stroke="#93c5fd" stroke-width="1.5"/>
+  </g>
+  <rect data-key="col-native" x="32" y="108" width="366" height="698" rx="14" fill="none" stroke="#93c5fd" stroke-width="1.8"/>
+
+  <!-- 컬럼 1 헤더 -->
+  <rect x="48" y="119" width="114" height="22" rx="11" fill="#1d4ed8"/>
+  <text x="105" y="134" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">기계어 직행</text>
+  <rect x="210" y="119" width="172" height="22" rx="5" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="296" y="134" text-anchor="middle" font-family="'D2Coding', Consolas, monospace" font-size="10.8" font-weight="700" fill="#1d4ed8">코드 → 컴파일러 → .exe</text>
+  <text x="48" y="162" font-size="18" font-weight="800" fill="#1e3a8a">하드웨어 네이티브</text>
+  <text x="48" y="183" font-size="12.2" font-weight="700" fill="#1d4ed8">성능 중시 <tspan font-weight="500" fill="#334155">· CPU 직접 실행</tspan></text>
+
+  <!-- [① C] -->
+  <g filter="url(#cardShadow)">
+    <rect data-key="lang-c" x="48" y="210" width="334" height="150" rx="12" fill="#ffffff" stroke="#1d4ed8" stroke-width="2.4"/>
+    <text x="64" y="239" font-size="19.5" font-weight="800" fill="#1e3a8a">① C</text>
+    <rect x="122" y="222" width="142" height="21" rx="5" fill="#dbeafe"/>
+    <text x="193" y="237" text-anchor="middle" font-size="11" font-weight="700" fill="#1e40af">절차적 언어 · 현대의 뿌리</text>
+    <rect x="324" y="222" width="44" height="21" rx="10.5" fill="#1d4ed8"/>
+    <text x="346" y="237" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">1972</text>
+
+    <text x="64" y="266" font-size="11.6" fill="#334155">· OS 커널 · 임베디드 · 펌웨어 독점적 표준</text>
+    <text x="64" y="286" font-size="11.6" fill="#334155">· 포인터와 수동 메모리 제어로 하드웨어 직결</text>
+
+    <rect x="60" y="300" width="310" height="48" rx="7" fill="#fef2f2" stroke="#fca5a5"/>
+    <text x="72" y="318" font-size="11" font-weight="800" fill="#b91c1c">[한계] 대규모 소프트웨어 설계·추상화 어려움</text>
+    <text x="72" y="336" font-size="10.8" fill="#991b1b">수동 메모리 관리 실수 시 치명적 버그·보안 위험</text>
+  </g>
+
+  <!-- 화살표 ① -> ② -->
+  <line x1="215" y1="360" x2="215" y2="400" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrBlue)"/>
+  <rect x="143" y="370" width="144" height="20" rx="10" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="215" y="384" text-anchor="middle" font-size="10.8" font-weight="700" fill="#1e40af">대형화 · 객체지향 진화</text>
+
+  <!-- [② C++] -->
+  <g filter="url(#cardShadow)">
+    <rect data-key="lang-cpp" x="48" y="404" width="334" height="150" rx="12" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+    <text x="64" y="433" font-size="19" font-weight="800" fill="#1e3a8a">② C++</text>
+    <rect x="142" y="416" width="146" height="21" rx="5" fill="#eff6ff" stroke="#bfdbfe"/>
+    <text x="215" y="431" text-anchor="middle" font-size="11" font-weight="700" fill="#1d4ed8">C + 객체지향 · 템플릿(STL)</text>
+    <rect x="324" y="416" width="44" height="21" rx="10.5" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="346" y="431" text-anchor="middle" font-size="11" font-weight="700" fill="#1d4ed8">1985</text>
+
+    <text x="64" y="460" font-size="11.6" fill="#334155">· 게임 엔진(Unreal) · 웹 브라우저 · 로봇 제어</text>
+    <text x="64" y="480" font-size="11.6" fill="#334155">· AI 고속 연산 코어(PyTorch · CUDA) 하부 구현</text>
+
+    <rect x="60" y="494" width="310" height="48" rx="7" fill="#fef2f2" stroke="#fca5a5"/>
+    <text x="72" y="512" font-size="11" font-weight="800" fill="#b91c1c">[한계] 기능 누적으로 인한 극단적 문법 복잡도</text>
+    <text x="72" y="530" font-size="10.8" fill="#991b1b">여전히 남아 있는 메모리 침범 · 해제 누락 버그</text>
+  </g>
+
+  <!-- 화살표 ② -> ③ -->
+  <line x1="215" y1="554" x2="215" y2="594" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrBlue)"/>
+  <rect x="143" y="564" width="144" height="20" rx="10" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="215" y="578" text-anchor="middle" font-size="10.8" font-weight="700" fill="#1e40af">메모리 안전성 진화</text>
+
+  <!-- [③ Rust] -->
+  <g filter="url(#cardShadow)">
+    <rect data-key="lang-rust" x="48" y="598" width="334" height="146" rx="12" fill="#ffffff" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="64" y="627" font-size="19" font-weight="800" fill="#1e3a8a">③ Rust</text>
+    <rect x="146" y="610" width="152" height="21" rx="5" fill="#dbeafe"/>
+    <text x="222" y="625" text-anchor="middle" font-size="11" font-weight="700" fill="#1e40af">무GC + 메모리 안전 보장</text>
+    <rect x="324" y="610" width="44" height="21" rx="10.5" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="346" y="625" text-anchor="middle" font-size="11" font-weight="700" fill="#1d4ed8">2015</text>
+
+    <text x="64" y="654" font-size="11.6" fill="#334155">· GC(자동 회수기) 없이 컴파일 시점 메모리 버그 차단</text>
+    <text x="64" y="674" font-size="11.6" fill="#334155">· '소유권(Ownership)' 규칙 · Linux 커널 · 차세대 코어</text>
+
+    <rect x="60" y="692" width="310" height="38" rx="7" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="215" y="716" text-anchor="middle" font-size="11" font-weight="800" fill="#1e40af">✓ 네이티브 최고 속도 + 메모리 안전성 동시 달성</text>
+  </g>
+
+  <!-- 컬럼 1 하단 보충 노트 -->
+  <rect x="48" y="756" width="334" height="36" rx="8" fill="#ffffff" stroke="#93c5fd" stroke-dasharray="4 3"/>
+  <text x="215" y="779" text-anchor="middle" font-size="10.3" fill="#334155">※ 방계 <tspan font-weight="800" fill="#0369a1">Go(2009)</tspan>: C의 단순함·네이티브 빌드에 GC 결합(클라우드)</text>
+
+
+  <!-- ====================================================================== -->
+  <!-- 중앙 컬럼: 가상머신 (이식성·대규모 협업 중시) — Java → C#, Kotlin -->
+  <!-- ====================================================================== -->
+  <g clip-path="url(#clipCol2)">
+    <rect x="422" y="108" width="416" height="698" fill="#fffbeb"/>
+    <rect x="422" y="108" width="416" height="86" fill="#fef3c7"/>
+    <line x1="422" y1="194" x2="838" y2="194" stroke="#fcd34d" stroke-width="1.5"/>
+  </g>
+  <rect data-key="col-vm" x="422" y="108" width="416" height="698" rx="14" fill="none" stroke="#fbbf24" stroke-width="1.8"/>
+
+  <!-- 컬럼 2 헤더 -->
+  <rect x="438" y="119" width="124" height="22" rx="11" fill="#d97706"/>
+  <text x="500" y="134" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">중간어 + VM</text>
+  <rect x="612" y="119" width="210" height="22" rx="5" fill="#ffffff" stroke="#fcd34d"/>
+  <text x="717" y="134" text-anchor="middle" font-family="'D2Coding', Consolas, monospace" font-size="10.8" font-weight="700" fill="#b45309">코드 → 바이트코드 → JVM / CLR</text>
+  <text x="438" y="162" font-size="18" font-weight="800" fill="#92400e">가상머신 (Bytecode + VM)</text>
+  <text x="438" y="183" font-size="12.2" font-weight="700" fill="#b45309">이식성, 대규모 협업 중시 <tspan font-weight="500" fill="#334155">· 자동 메모리(GC)</tspan></text>
+
+  <!-- VM 등장 브릿지 박스 -->
+  <rect x="446" y="210" width="368" height="52" rx="9" fill="#ffffff" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <text x="630" y="231" text-anchor="middle" font-size="11.2" font-weight="800" fill="#b45309">왜 갈라졌나? — OS별 재컴파일 고통과 포인터 메모리 오류 해결</text>
+  <text x="630" y="250" text-anchor="middle" font-size="10.3" fill="#475569">C/C++ 문법은 계승하되 포인터를 감추고 가상머신(VM) 위에서 구동</text>
+
+  <!-- C -> VM 브릿지 점선 연결 -->
+  <line x1="382" y1="236" x2="442" y2="236" stroke="#64748b" stroke-width="1.8" stroke-dasharray="5 3" marker-end="url(#arrSlate)"/>
+
+  <line x1="630" y1="262" x2="630" y2="286" stroke="#d97706" stroke-width="2" marker-end="url(#arrAmber)"/>
+
+  <!-- [④ Java] -->
+  <g filter="url(#cardShadow)">
+    <rect data-key="lang-java" x="446" y="290" width="368" height="162" rx="12" fill="#ffffff" stroke="#d97706" stroke-width="2.4"/>
+    <text x="464" y="319" font-size="19.5" font-weight="800" fill="#92400e">④ Java</text>
+    <rect x="546" y="302" width="166" height="21" rx="5" fill="#fef3c7"/>
+    <text x="629" y="317" text-anchor="middle" font-size="11" font-weight="700" fill="#92400e">.class 바이트코드 + JVM</text>
+    <rect x="754" y="302" width="44" height="21" rx="10.5" fill="#d97706"/>
+    <text x="776" y="317" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">1995</text>
+
+    <text x="464" y="345" font-size="11.6" fill="#334155">· 포인터 제거 + 가비지 컬렉션(GC) 자동 메모리 회수</text>
+    <text x="464" y="365" font-size="11.6" fill="#334155">· JVM: "한 번 작성하면 어디서나 실행" · 기업/금융 서버 표준</text>
+
+    <rect x="458" y="382" width="344" height="56" rx="7" fill="#fef2f2" stroke="#fca5a5"/>
+    <text x="472" y="402" font-size="11" font-weight="800" fill="#b91c1c">[한계] 상용구(보일러플레이트)가 많아 코드가 길고 장황함</text>
+    <text x="472" y="422" font-size="10.8" fill="#991b1b">실행 중 Null 참조 오류(NullPointerException) 빈발</text>
+  </g>
+
+  <!-- Java -> C# / Kotlin 양갈래 진화 화살표 -->
+  <path d="M580,452 L580,470 L530,470 L530,514" fill="none" stroke="#64748b" stroke-width="1.9" stroke-dasharray="5 3" marker-end="url(#arrSlate)"/>
+  <rect x="466" y="479" width="128" height="20" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="530" y="493" text-anchor="middle" font-size="10.5" font-weight="700" fill="#475569">생태계 확장 · 경쟁</text>
+
+  <path d="M680,452 L680,470 L730,470 L730,514" fill="none" stroke="#d97706" stroke-width="2.2" marker-end="url(#arrAmber)"/>
+  <rect x="666" y="479" width="128" height="20" rx="10" fill="#fef3c7" stroke="#fcd34d"/>
+  <text x="730" y="493" text-anchor="middle" font-size="10.5" font-weight="700" fill="#92400e">직계 현대화 진화</text>
+
+  <!-- [⑤ C#] -->
+  <g filter="url(#cardShadow)">
+    <rect data-key="lang-csharp" x="438" y="518" width="185" height="226" rx="12" fill="#ffffff" stroke="#d97706" stroke-width="2"/>
+    <text x="452" y="547" font-size="18.5" font-weight="800" fill="#92400e">⑤ C#</text>
+    <rect x="567" y="530" width="42" height="20" rx="10" fill="#fffbeb" stroke="#fcd34d"/>
+    <text x="588" y="544" text-anchor="middle" font-size="10.8" font-weight="700" fill="#b45309">2000</text>
+    <rect x="450" y="558" width="161" height="21" rx="5" fill="#fef3c7"/>
+    <text x="530" y="573" text-anchor="middle" font-size="10.8" font-weight="700" fill="#92400e">MS .NET CLR + IL</text>
+
+    <g font-size="11.2" fill="#334155">
+      <text x="450" y="600">· MS 플랫폼 독자 확장</text>
+      <text x="450" y="621">· LINQ·async 문법 혁신</text>
+      <text x="450" y="642">· Unity 게임 개발 표준</text>
+      <text x="450" y="663">· 윈도우 · 기업 웹 서버</text>
+    </g>
+
+    <rect x="450" y="684" width="161" height="46" rx="7" fill="#fffbeb" stroke="#fcd34d"/>
+    <text x="530" y="704" text-anchor="middle" font-size="10.5" font-weight="700" fill="#92400e">VM 안전성 + C++급 표현력</text>
+    <text x="530" y="720" text-anchor="middle" font-size="10.2" fill="#b45309">게임 · 기업 풀스택 장악</text>
+  </g>
+
+  <!-- [⑥ Kotlin] -->
+  <g filter="url(#cardShadow)">
+    <rect data-key="lang-kotlin" x="637" y="518" width="185" height="226" rx="12" fill="#ffffff" stroke="#d97706" stroke-width="2"/>
+    <text x="651" y="547" font-size="18.5" font-weight="800" fill="#92400e">⑥ Kotlin</text>
+    <rect x="766" y="530" width="42" height="20" rx="10" fill="#fffbeb" stroke="#fcd34d"/>
+    <text x="787" y="544" text-anchor="middle" font-size="10.8" font-weight="700" fill="#b45309">2011</text>
+    <rect x="649" y="558" width="161" height="21" rx="5" fill="#fef3c7"/>
+    <text x="729" y="573" text-anchor="middle" font-size="10.8" font-weight="700" fill="#92400e">JVM 100% 호환 계승</text>
+
+    <g font-size="11.2" fill="#334155">
+      <text x="649" y="600">· 기존 Java 코드 완벽 호환</text>
+      <text x="649" y="621">· 간결하고 응축된 문법</text>
+      <text x="649" y="642">· 언어 차원 Null 안전성</text>
+      <text x="649" y="663">· Android 앱 공식 1순위</text>
+    </g>
+
+    <rect x="649" y="684" width="161" height="46" rx="7" fill="#fffbeb" stroke="#fcd34d"/>
+    <text x="729" y="704" text-anchor="middle" font-size="10.5" font-weight="700" fill="#92400e">✓ Java의 장황함·Null 해결</text>
+    <text x="729" y="720" text-anchor="middle" font-size="10.2" fill="#b45309">모바일 · Spring 차세대 주력</text>
+  </g>
+
+  <!-- 컬럼 2 하단 보충 노트 -->
+  <rect x="438" y="756" width="384" height="36" rx="8" fill="#ffffff" stroke="#fcd34d"/>
+  <text x="630" y="779" text-anchor="middle" font-size="10.8" fill="#334155">※ 수백 명이 협업하는 초대형 시스템에서 일관된 구조와 안정성 보장</text>
+
+
+  <!-- ====================================================================== -->
+  <!-- 우측 컬럼: 스크립트 (빠른 개발) — Python, JS → TypeScript     -->
+  <!-- ====================================================================== -->
+  <g clip-path="url(#clipCol3)">
+    <rect x="862" y="108" width="366" height="698" fill="#f0fdf4"/>
+    <rect x="862" y="108" width="366" height="86" fill="#dcfce7"/>
+    <line x1="862" y1="194" x2="1228" y2="194" stroke="#86efac" stroke-width="1.5"/>
+  </g>
+  <rect data-key="col-script" x="862" y="108" width="366" height="698" rx="14" fill="none" stroke="#6ee7b7" stroke-width="1.8"/>
+
+  <!-- 컬럼 3 헤더 -->
+  <rect x="878" y="119" width="128" height="22" rx="11" fill="#059669"/>
+  <text x="942" y="134" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">원문 즉시 실행</text>
+  <rect x="1036" y="119" width="176" height="22" rx="5" fill="#ffffff" stroke="#86efac"/>
+  <text x="1124" y="134" text-anchor="middle" font-family="'D2Coding', Consolas, monospace" font-size="10.8" font-weight="700" fill="#047857">.py / .js → 실행기(엔진)</text>
+  <text x="878" y="162" font-size="18" font-weight="800" fill="#065f46">스크립트 (인터프리터 · JIT)</text>
+  <text x="878" y="183" font-size="12.2" font-weight="700" fill="#047857">빠른 개발 중시 <tspan font-weight="500" fill="#334155">· 동적 타입</tspan></text>
+
+  <!-- [⑦ Python] -->
+  <g filter="url(#cardShadow)">
+    <rect data-key="lang-python" x="878" y="210" width="334" height="128" rx="12" fill="#ffffff" stroke="#059669" stroke-width="2.4"/>
+    <text x="894" y="239" font-size="19.5" font-weight="800" fill="#065f46">⑦ Python</text>
+    <rect x="996" y="222" width="150" height="21" rx="5" fill="#dcfce7"/>
+    <text x="1071" y="237" text-anchor="middle" font-size="11" font-weight="700" fill="#065f46">압도적 가독성 · CPython</text>
+    <rect x="1154" y="222" width="44" height="21" rx="10.5" fill="#059669"/>
+    <text x="1176" y="237" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">1991</text>
+
+    <text x="894" y="268" font-size="11.6" fill="#334155">· AI · 머신러닝 · 데이터 과학 · 자동화 절대 강자</text>
+    <text x="894" y="288" font-size="11.6" fill="#334155">· 고속 행렬 연산은 C/C++ 엔진 부품 결합으로 해결</text>
+    <text x="894" y="308" font-size="11.2" fill="#047857" font-weight="700">· 직관적 문법으로 비전공자~연구원까지 생태계 장악</text>
+  </g>
+
+  <!-- ⑦ Python - ⑧ JavaScript 쌍두마차 연결 -->
+  <line x1="1045" y1="338" x2="1045" y2="378" stroke="#059669" stroke-width="1.8" stroke-dasharray="4 3"/>
+  <rect x="951" y="348" width="188" height="20" rx="10" fill="#dcfce7" stroke="#86efac"/>
+  <text x="1045" y="362" text-anchor="middle" font-size="10.5" font-weight="700" fill="#065f46">동적 스크립트 쌍두마차 (영역 분담)</text>
+
+  <!-- [⑧ JavaScript] -->
+  <g filter="url(#cardShadow)">
+    <rect data-key="lang-js" x="878" y="378" width="334" height="176" rx="12" fill="#ffffff" stroke="#059669" stroke-width="2"/>
+    <text x="894" y="407" font-size="18.5" font-weight="800" fill="#065f46">⑧ JavaScript</text>
+    <rect x="1024" y="390" width="124" height="21" rx="5" fill="#dcfce7"/>
+    <text x="1086" y="405" text-anchor="middle" font-size="10.8" font-weight="700" fill="#065f46">웹 독점 · V8 JIT</text>
+    <rect x="1154" y="390" width="44" height="21" rx="10.5" fill="#f0fdf4" stroke="#86efac"/>
+    <text x="1176" y="405" text-anchor="middle" font-size="11" font-weight="700" fill="#047857">1995</text>
+
+    <text x="894" y="434" font-size="11.6" fill="#334155">· 모든 웹 브라우저 화면(UI) 독점 표준 언어</text>
+    <text x="894" y="454" font-size="11.6" fill="#334155">· V8 JIT 고속 엔진 + Node.js로 서버·앱까지 통합</text>
+
+    <rect x="890" y="468" width="310" height="72" rx="7" fill="#fef2f2" stroke="#fca5a5"/>
+    <text x="902" y="487" font-size="11" font-weight="800" fill="#b91c1c">[⑦·⑧ 동적 스크립트 공통 한계]</text>
+    <text x="902" y="506" font-size="10.8" fill="#991b1b">실행 전까지 변수·함수 타입 오류를 잡아내지 못함</text>
+    <text x="902" y="524" font-size="10.8" fill="#991b1b">규모가 커질수록 런타임 버그 급증 (대형화 장벽)</text>
+  </g>
+
+  <!-- 화살표 ⑧ -> ⑨ -->
+  <line x1="1045" y1="554" x2="1045" y2="594" stroke="#059669" stroke-width="2.2" marker-end="url(#arrTeal)"/>
+  <rect x="963" y="564" width="164" height="20" rx="10" fill="#dcfce7" stroke="#86efac"/>
+  <text x="1045" y="578" text-anchor="middle" font-size="10.8" font-weight="700" fill="#065f46">정적 타입 결합 진화</text>
+
+  <!-- [⑨ TypeScript] -->
+  <g filter="url(#cardShadow)">
+    <rect data-key="lang-ts" x="878" y="598" width="334" height="146" rx="12" fill="#ffffff" stroke="#0d9488" stroke-width="2"/>
+    <text x="894" y="627" font-size="18.5" font-weight="800" fill="#0f766e">⑨ TypeScript</text>
+    <rect x="1024" y="610" width="124" height="21" rx="5" fill="#ccfbf1"/>
+    <text x="1086" y="625" text-anchor="middle" font-size="10.8" font-weight="700" fill="#0f766e">JS + 정적 타입</text>
+    <rect x="1154" y="610" width="44" height="21" rx="10.5" fill="#f0fdfa" stroke="#5eead4"/>
+    <text x="1176" y="625" text-anchor="middle" font-size="11" font-weight="700" fill="#0f766e">2012</text>
+
+    <text x="894" y="654" font-size="11.6" fill="#334155">· 컴파일(변환) 단계에서 타입 버그를 사전 원천 차단</text>
+    <text x="894" y="674" font-size="11.6" fill="#334155">· 검증 후 JS로 변환 실행 · 현대 대규모 웹 실무 표준</text>
+
+    <rect x="890" y="692" width="310" height="38" rx="7" fill="#f0fdfa" stroke="#5eead4"/>
+    <text x="1045" y="716" text-anchor="middle" font-size="11" font-weight="800" fill="#0f766e">✓ 빠른 스크립트 개발 + 대규모 협업 안전망 완성</text>
+  </g>
+
+  <!-- 컬럼 3 하단 Python 병행 진화 노트 -->
+  <rect x="878" y="756" width="334" height="36" rx="8" fill="#ffffff" stroke="#86efac" stroke-dasharray="4 3"/>
+  <text x="1045" y="779" text-anchor="middle" font-size="10.8" fill="#334155">※ <tspan font-weight="800" fill="#065f46">Python</tspan>도 동일 흐름으로 <tspan font-weight="700" fill="#047857">Type Hints + Rust 고속화</tspan> 진화 중</text>
+
+
+
+</svg>

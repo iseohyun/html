@@ -148,7 +148,8 @@ window.SiteModules.Document = (function() {
       details[i].id = `detail-${i}`;
       details[i].innerHTML = `[${i + 1}]`;
 
-      const description = detailsInfos[i].querySelector('.description');
+      const infoEl = detailsInfos[i];
+      const description = infoEl ? infoEl.querySelector('.description') : null;
       if (description) {
         description.style.left = (- details[i].offsetLeft + article.offsetLeft + 50) + "px";
         description.style.width = ((article.offsetWidth > 860) ? 760 : article.offsetWidth * 0.9) + "px";
@@ -158,7 +159,8 @@ window.SiteModules.Document = (function() {
       refSpan.style.textAlign = 'left';
       refSpan.style.textIndent = '-2em';
       refSpan.style.paddingLeft = '2em';
-      const reference = detailsInfos[i].querySelector('.reference');
+      const reference = infoEl ? infoEl.querySelector('.reference') : null;
+      if (!reference) continue;
 
       refSpan.innerHTML = `[ <a href="#detail-${i}">${i + 1}</a> ] ${reference.innerHTML}`;
       if (lastMod) {
@@ -180,6 +182,20 @@ window.SiteModules.Document = (function() {
       return;
     }
 
+    const citedItems = [];
+    for (let i = 0; i < imgBoxs.length; i++) {
+      imgBoxs[i].id = `ImageBox-${i}`;
+      const caption = imgBoxs[i].querySelector('.caption');
+      const description = imgBoxs[i].querySelector('.description');
+      if (caption && description && description.innerHTML.trim() !== "") {
+        citedItems.push({ index: i, caption, description });
+      }
+    }
+
+    if (citedItems.length < 1) {
+      return;
+    }
+
     let refheader;
     if (args === "no-reference") {
       refheader = document.createElement("h1");
@@ -196,22 +212,16 @@ window.SiteModules.Document = (function() {
       article.appendChild(refheader);
     }
 
-    for (let i = 0; i < imgBoxs.length; i++) {
-      const caption = imgBoxs[i].querySelector('.caption');
-      imgBoxs[i].id = `ImageBox-${i}`;
-      if (caption) {
-        const imgInfoLine = document.createElement('p');
-        imgInfoLine.style.textAlign = 'left';
-        imgInfoLine.style.textIndent = '-2em';
-        imgInfoLine.style.paddingLeft = '2em';
-
-        const description = imgBoxs[i].querySelector('.description');
-        imgInfoLine.innerHTML = `[<a href="#ImageBox-${i}"> ${i + 1} </a>] ${caption.innerHTML}: ${description.innerHTML}<br>`;
-        if (lastMod) {
-          article.insertBefore(imgInfoLine, lastMod);
-        } else {
-          article.appendChild(imgInfoLine);
-        }
+    for (const item of citedItems) {
+      const imgInfoLine = document.createElement('p');
+      imgInfoLine.style.textAlign = 'left';
+      imgInfoLine.style.textIndent = '-2em';
+      imgInfoLine.style.paddingLeft = '2em';
+      imgInfoLine.innerHTML = `[<a href="#ImageBox-${item.index}"> ${item.index + 1} </a>] ${item.caption.innerHTML}: ${item.description.innerHTML}<br>`;
+      if (lastMod) {
+        article.insertBefore(imgInfoLine, lastMod);
+      } else {
+        article.appendChild(imgInfoLine);
       }
     }
   }

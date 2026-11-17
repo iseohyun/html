@@ -78,6 +78,7 @@ window.SiteModules.Slides = (function () {
     "stop": '<rect x="5" y="5" width="14" height="14" rx="2"/>',
     "volume": '<path d="M11 5 6 9H2v6h4l5 4V5zM15.5 8.5a5 5 0 0 1 0 7M18.4 5.6a9 9 0 0 1 0 12.8"/>',
     "captions": '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 15h4M15 15h2M7 11h2M13 11h4"/>',
+    "image": '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>',
     "fullscreen": '<path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>'
   };
 
@@ -165,7 +166,7 @@ window.SiteModules.Slides = (function () {
   // 스크립트 문단을 문장으로 나눠 <span class="sent">로 감싼다. 마침표·물음표·느낌표에서 끊는다.
   // ---------------------------------------------------------------------------
   function splitSentences(p) {
-    if (p.querySelector(":scope > .sent")) return;   // 이미 나눈 문단 (같은 본문에 두 번 붙을 때)
+    if (p.querySelector(".sent")) return;   // 이미 나눈 문단 (같은 본문에 두 번 붙거나 직접 .sent를 적은 경우)
     const nodes = Array.prototype.slice.call(p.childNodes);
     let cur = null;
     function open() {
@@ -585,6 +586,7 @@ window.SiteModules.Slides = (function () {
   function applyCues(sent) {
     const slide = reading.frame.querySelector(".slide");
     const holders = all("[data-cue]", sent);
+    if (sent.hasAttribute("data-cue")) holders.push(sent);
     const p = sent.closest("p");
     if (p && p.hasAttribute("data-cue")) holders.push(p);
     holders.forEach(function (holder) {
@@ -648,6 +650,70 @@ window.SiteModules.Slides = (function () {
       pos += len;
     }
     return null;
+  }
+
+  // 문장(.sent)에서 실제로 읽을 문자열(text)과, 읽는 글자 위치 -> 화면 글자 위치 변환기(toDom)를 만든다.
+  // .sent 자체의 data-say 또는 문장 안쪽 요소의 data-say="읽을 말"을 모두 지원한다.
+  function speechPlan(sent) {
+    const domText = sent.textContent;
+    const direct = sent.getAttribute("data-say");
+    if (direct === null && !sent.querySelector("[data-say]")) {
+      return {
+        text: domText,
+        toDom: function (start, len) { return [start, start + len]; }
+      };
+    }
+    const domWords = [];
+    domText.replace(/\S+/g, function (m, i) { domWords.push([i, i + m.length]); return m; });
+    if (direct !== null) {
+      const total = Math.max(1, direct.length);
+      return {
+        text: direct,
+        toDom: function (start, len) {
+          if (!domWords.length || !len) return [0, 0];
+          const idx = Math.min(domWords.length - 1, Math.max(0, Math.floor((start / total) * domWords.length)));
+          return domWords[idx];
+        }
+      };
+    }
+    const segs = [];
+    let sayText = "", domPos = 0;
+    function walk(node) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const t = node.nodeValue;
+        segs.push([sayText.length, sayText.length + t.length, domPos, domPos + t.length, true]);
+        sayText += t;
+        domPos += t.length;
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        const say = node.getAttribute("data-say");
+        if (say !== null) {
+          const dLen = node.textContent.length;
+          segs.push([sayText.length, sayText.length + say.length, domPos, domPos + dLen, false]);
+          sayText += say;
+          domPos += dLen;
+        } else {
+          for (let c = node.firstChild; c; c = c.nextSibling) walk(c);
+        }
+      }
+    }
+    for (let c = sent.firstChild; c; c = c.nextSibling) walk(c);
+    return {
+      text: sayText,
+      toDom: function (start, len) {
+        if (!len) return [0, 0];
+        for (let i = 0; i < segs.length; i++) {
+          const s = segs[i];
+          if (start >= s[0] && start < s[1]) {
+            if (s[4]) {
+              const d0 = s[2] + (start - s[0]);
+              return [d0, Math.min(s[3], d0 + len)];
+            }
+            return [s[2], s[3]];
+          }
+        }
+        return domWords.length ? domWords[domWords.length - 1] : [0, 0];
+      }
+    };
   }
 
   function markWord(sent, start, len) {
@@ -805,7 +871,8 @@ window.SiteModules.Slides = (function () {
     paintTts();
     paintProg();
     const sent = r.list[r.at];
-    const utter = new SpeechSynthesisUtterance(sent.textContent);
+    const plan = speechPlan(sent);
+    const utter = new SpeechSynthesisUtterance(plan.text);
     const voice = pickVoice();
     utter.lang = voice ? voice.lang : "ko-KR";
     if (voice) utter.voice = voice;
@@ -824,7 +891,8 @@ window.SiteModules.Slides = (function () {
       utter.text.replace(/\S+/g, function (m, i) { words.push([i, m]); return m; });
       (function tick() {
         if (reading !== r || real || k >= words.length) return;
-        markWord(sent, words[k][0], words[k][1].length);
+        const dom = plan.toDom(words[k][0], words[k][1].length);
+        markWord(sent, dom[0], dom[1] - dom[0]);
         r.guess = setTimeout(tick, wordUnits(words[k][1]) * per);
         k++;
       })();
@@ -835,7 +903,8 @@ window.SiteModules.Slides = (function () {
       real = true;
       clearTimeout(r.guess);
       const len = e.charLength || (utter.text.slice(e.charIndex).match(/^\S+/) || [""])[0].length;
-      markWord(sent, e.charIndex, len);
+      const dom = plan.toDom(e.charIndex, len);
+      markWord(sent, dom[0], dom[1] - dom[0]);
     };
     utter.onend = function () {
       if (reading !== r) return;
@@ -971,6 +1040,16 @@ window.SiteModules.Slides = (function () {
   // ---------------------------------------------------------------------------
   // 슬라이드 전체 화면: 문서 상자를 통째로 띄우고 고른 슬라이드 하나만 남긴다
   // ---------------------------------------------------------------------------
+  function slideImageInfo(frame) {
+    const holder = frame.hasAttribute("data-img") ? frame : frame.querySelector("[data-img]");
+    if (!holder) return null;
+    const src = holder.getAttribute("data-img");
+    if (!src) return null;
+    const titleEl = frame.querySelector(".slide-title");
+    const caption = holder.getAttribute("data-img-caption") || (titleEl && titleEl.textContent.trim()) || "";
+    return { frame: frame, src: src, caption: caption };
+  }
+
   function buildFrameButtons() {
     frames.forEach(function (frame, index) {
       const make = function (className, name) {
@@ -981,6 +1060,12 @@ window.SiteModules.Slides = (function () {
         frame.appendChild(b);
         return b;
       };
+      if (slideImageInfo(frame)) {
+        const imgBtn = make("sl-img", "image");
+        imgBtn.setAttribute("aria-label", "이미지 크게 보기");
+        imgBtn.title = "이미지 크게 보기";
+        imgBtn.addEventListener("click", function () { openSlideImage(frame, imgBtn); });
+      }
       if (synth) {
         make("sl-tts", "volume").addEventListener("click", function () {
           if (reading && reading.frame === frame) stopTts();
@@ -1096,13 +1181,80 @@ window.SiteModules.Slides = (function () {
   // 그림 크게 보기: data-view가 붙은 그림을 누르면, 그 그림이 놓인 슬라이드 안에서 크게 보여 준다.
   // 넘기는 범위는 같은 슬라이드의 그림이다. 슬라이드 밖의 그림은 같은 문서의 슬라이드 밖 그림끼리 창 전체에서 본다.
   // ---------------------------------------------------------------------------
+  const svgCache = {};   // 크게 보기에서 텍스트를 선택·클릭할 수 있도록 불러온 SVG 원문 캐시
+  let viewToken = 0;
+
+  // 문서 안의 다른 인라인 SVG 와 defs/clipPath/marker id 가 부딪히지 않게 접두어를 붙인다
+  function namespaceSvgMarkup(rawSvg) {
+    const cleaned = rawSvg
+      .replace(/^\s*<\?xml[^>]*\?>\s*/i, "")
+      .replace(/<script[\s\S]*?<\/script>/gi, "");
+    const ids = {};
+    cleaned.replace(/\bid="([^"]+)"/g, function (_, id) { ids[id] = true; return _; });
+    if (!Object.keys(ids).length) return cleaned;
+    return cleaned
+      .replace(/\bid="([^"]+)"/g, function (m, id) { return ids[id] ? 'id="slv-' + id + '"' : m; })
+      .replace(/url\(#([^)\s"']+)\)/g, function (m, id) { return ids[id] ? "url(#slv-" + id + ")" : m; })
+      .replace(/\b(xlink:href|href)="#([^"]+)"/g, function (m, attr, id) { return ids[id] ? attr + '="#slv-' + id + '"' : m; });
+  }
+
+  function renderViewerStage(stage, src, alt, inlineFrame) {
+    stage.innerHTML = "";
+    stage.dataset.src = src;
+    const isSvg = /\.svg(?:[?#]|$)/i.test(src);
+    if (!isSvg) {
+      const img = document.createElement("img");
+      img.src = src;
+      img.alt = alt || "";
+      stage.appendChild(img);
+      return;
+    }
+    const mountMarkup = function (markup) {
+      const parsed = new DOMParser().parseFromString(namespaceSvgMarkup(markup), "image/svg+xml");
+      const svgEl = parsed.querySelector("svg");
+      if (!svgEl || parsed.querySelector("parsererror")) return false;
+      svgEl.removeAttribute("class");
+      svgEl.setAttribute("preserveAspectRatio", "xMidYMid meet");
+      if (alt) svgEl.setAttribute("aria-label", alt);
+      stage.innerHTML = "";
+      stage.appendChild(document.importNode(svgEl, true));
+      return true;
+    };
+    // 슬라이드 안에 이미 인라인 SVG 가 들어 있으면 네트워크 요청 없이 즉시 복제해 그린다
+    const inlineSvg = inlineFrame && inlineFrame.querySelector(".slide svg.c-rich-svg");
+    if (inlineSvg && mountMarkup(inlineSvg.outerHTML)) return;
+    if (svgCache[src] && mountMarkup(svgCache[src])) return;
+
+    // 불러오는 동안에는 먼저 img 로 보여 주고, 원문을 받는 즉시 텍스트 선택이 되는 인라인 SVG 로 바꾼다
+    const fallbackImg = document.createElement("img");
+    fallbackImg.src = src;
+    fallbackImg.alt = alt || "";
+    stage.appendChild(fallbackImg);
+    const myToken = ++viewToken;
+    fetch(src)
+      .then(function (r) { return r.ok ? r.text() : Promise.reject(new Error(r.status)); })
+      .then(function (txt) {
+        svgCache[src] = txt;
+        if (viewer && myToken === viewToken && stage.isConnected) mountMarkup(txt);
+      })
+      .catch(function () {});
+  }
+
   function paintViewer() {
-    const link = viewList[viewAt];
-    const img = viewer.querySelector("img");
-    const thumb = link.querySelector("img");
-    img.src = link.getAttribute("href");
-    img.alt = (thumb && thumb.alt) || "";
-    viewer.querySelector(".sl-viewer-cap").textContent = link.dataset.caption || img.alt;
+    const item = viewList[viewAt];
+    const stage = viewer.querySelector(".sl-viewer-stage");
+    let src, caption, inlineFrame = null;
+    if (item && item.src) {
+      src = item.src;
+      caption = item.caption || "";
+      inlineFrame = item.frame || null;
+    } else {
+      const thumb = item.querySelector("img");
+      src = item.getAttribute("href");
+      caption = item.dataset.caption || (thumb && thumb.alt) || "";
+    }
+    renderViewerStage(stage, src, caption, inlineFrame);
+    viewer.querySelector(".sl-viewer-cap").textContent = caption;
     viewer.querySelector(".sl-viewer-count").textContent = viewList.length > 1 ? (viewAt + 1) + " / " + viewList.length : "";
     viewer.querySelector(".is-prev").disabled = viewAt === 0;
     viewer.querySelector(".is-next").disabled = viewAt === viewList.length - 1;
@@ -1117,10 +1269,82 @@ window.SiteModules.Slides = (function () {
 
   function closeViewer() {
     if (!viewer) return;
+    viewToken++;
     all(".slide-frame.is-viewing", root).forEach(function (f) { f.classList.remove("is-viewing"); });
     viewer.remove();
     viewer = null;
     if (viewFrom && viewFrom.isConnected) viewFrom.focus({ preventScroll: true });   // 눌렀던 썸네일로 초점을 돌려준다
+  }
+
+  function attachViewerSwipe(el) {
+    let startX = null, startY = null, onText = false;
+    let wheelLock = 0;
+    el.addEventListener("pointerdown", function (e) {
+      if (e.button && e.button !== 0) return;
+      if (e.target.closest("button, a")) return;
+      onText = e.pointerType === "mouse" && !!e.target.closest("text, tspan");
+      if (onText) { startX = null; return; }   // 마우스로 글자 위를 긁을 때는 텍스트 선택만 동작한다
+      startX = e.clientX;
+      startY = e.clientY;
+    });
+    el.addEventListener("pointerup", function (e) {
+      if (startX === null) return;
+      const dx = e.clientX - startX, dy = e.clientY - startY;
+      startX = null;
+      if (e.pointerType === "mouse") {
+        const sel = window.getSelection && window.getSelection();
+        if (sel && String(sel).length > 0) return;
+      }
+      const minDx = e.pointerType === "mouse" ? 50 : 36;
+      if (Math.abs(dx) >= minDx && Math.abs(dx) > Math.abs(dy) * 1.3) {
+        stepViewer(dx < 0 ? 1 : -1);
+      }
+    });
+    el.addEventListener("pointercancel", function () { startX = null; });
+    // 트랙패드 가로 두 손가락 스와이프 지원
+    el.addEventListener("wheel", function (e) {
+      if (Math.abs(e.deltaX) > 40 && Math.abs(e.deltaX) > Math.abs(e.deltaY) * 1.5) {
+        const now = Date.now();
+        if (now - wheelLock < 350) return;
+        wheelLock = now;
+        e.preventDefault();
+        stepViewer(e.deltaX > 0 ? 1 : -1);
+      }
+    }, { passive: false });
+  }
+
+  function mountViewer(host, inSlide) {
+    viewer = document.createElement("div");
+    viewer.className = "sl-viewer" + (inSlide ? "" : " is-window");
+    viewer.setAttribute("role", "dialog");
+    viewer.setAttribute("aria-label", "그림 크게 보기");
+    viewer.innerHTML =
+      '<div class="sl-viewer-stage"></div>' +
+      '<div class="sl-viewer-foot"><span class="sl-viewer-cap"></span><span class="sl-viewer-count"></span></div>' +
+      '<button class="sl-viewer-nav is-prev" type="button" aria-label="이전 그림" title="이전 그림"><span class="sl-viewer-chip">' + icon("chevron-left") + "</span></button>" +
+      '<button class="sl-viewer-nav is-next" type="button" aria-label="다음 그림" title="다음 그림"><span class="sl-viewer-chip">' + icon("chevron-right") + "</span></button>" +
+      '<button class="icon-btn sl-viewer-close" type="button" aria-label="닫기" title="닫기 (Esc)">' + icon("x") + "</button>";
+    viewer.querySelector(".is-prev").addEventListener("click", function () { stepViewer(-1); });
+    viewer.querySelector(".is-next").addEventListener("click", function () { stepViewer(1); });
+    viewer.querySelector(".sl-viewer-close").addEventListener("click", closeViewer);
+    attachViewerSwipe(viewer);
+    // 빠르게 두 번 누르는 것이 사이트의 「본문 두 번 눌러 패널 열기」로 넘어가지 않게 한다
+    viewer.addEventListener("dblclick", function (e) { e.stopPropagation(); });
+    host.appendChild(viewer);
+    if (inSlide) host.closest(".slide-frame").classList.add("is-viewing");
+    paintViewer();
+    viewer.querySelector(".sl-viewer-close").focus({ preventScroll: true });
+  }
+
+  function openSlideImage(frame, trigger) {
+    closeViewer();
+    viewList = frames.map(slideImageInfo).filter(Boolean);
+    viewAt = 0;
+    for (let i = 0; i < viewList.length; i++) {
+      if (viewList[i].frame === frame) { viewAt = i; break; }
+    }
+    viewFrom = trigger;
+    mountViewer(fullOn ? root : document.body, false);
   }
 
   function openViewer(link) {
@@ -1132,25 +1356,7 @@ window.SiteModules.Slides = (function () {
       : all("[data-view]", root).filter(function (x) { return !x.closest(".slide"); });
     viewAt = viewList.indexOf(link);
     viewFrom = link;
-    viewer = document.createElement("div");
-    viewer.className = "sl-viewer" + (inSlide ? "" : " is-window");
-    viewer.setAttribute("role", "dialog");
-    viewer.setAttribute("aria-label", "그림 크게 보기");
-    viewer.innerHTML =
-      '<div class="sl-viewer-stage"><img alt=""></div>' +
-      '<div class="sl-viewer-foot"><span class="sl-viewer-cap"></span><span class="sl-viewer-count"></span></div>' +
-      '<button class="sl-viewer-nav is-prev" type="button" aria-label="이전 그림" title="이전 그림"><span class="sl-viewer-chip">' + icon("chevron-left") + "</span></button>" +
-      '<button class="sl-viewer-nav is-next" type="button" aria-label="다음 그림" title="다음 그림"><span class="sl-viewer-chip">' + icon("chevron-right") + "</span></button>" +
-      '<button class="icon-btn sl-viewer-close" type="button" aria-label="닫기" title="닫기 (Esc)">' + icon("x") + "</button>";
-    viewer.querySelector(".is-prev").addEventListener("click", function () { stepViewer(-1); });
-    viewer.querySelector(".is-next").addEventListener("click", function () { stepViewer(1); });
-    viewer.querySelector(".sl-viewer-close").addEventListener("click", closeViewer);
-    // 빠르게 두 번 누르는 것이 사이트의 「본문 두 번 눌러 패널 열기」로 넘어가지 않게 한다
-    viewer.addEventListener("dblclick", function (e) { e.stopPropagation(); });
-    (inSlide ? slide : (fullOn ? root : document.body)).appendChild(viewer);
-    if (inSlide) slide.closest(".slide-frame").classList.add("is-viewing");
-    paintViewer();
-    viewer.querySelector(".sl-viewer-close").focus({ preventScroll: true });
+    mountViewer(inSlide ? slide : (fullOn ? root : document.body), inSlide);
   }
 
   function onRootClick(e) {

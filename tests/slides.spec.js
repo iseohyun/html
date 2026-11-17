@@ -582,18 +582,18 @@ test.describe('그림 크게 보기', () => {
     await expect(page.locator('#s1-2 .sl-full')).toBeHidden();
     await expect(viewer.locator('.sl-viewer-close')).toBeFocused();
 
-    await expect(viewer.locator('img')).toHaveAttribute('src', /taxonomy\.svg$/);
+    await expect(viewer.locator('.sl-viewer-stage')).toHaveAttribute('data-src', /taxonomy\.svg$/);
     await expect(viewer.locator('.sl-viewer-cap')).toHaveText('그림 5 · 계통도');
     await expect(viewer.locator('.sl-viewer-count')).toHaveText('1 / 2');
     await expect(viewer.locator('.is-prev')).toBeDisabled();
 
-    // 오른쪽 절반의 아무 곳이나 누르면 다음 그림
-    await viewer.click({ position: { x: viewerBox.width * 0.7, y: viewerBox.height * 0.4 } });
+    // 다음 단추를 누르면 다음 그림
+    await viewer.locator('.is-next').click();
     await expect(viewer.locator('.sl-viewer-count')).toHaveText('2 / 2');
     await expect(viewer.locator('.sl-viewer-cap')).toHaveText('그림 6 · 지질역사');
     await expect(viewer.locator('.is-next')).toBeDisabled();
-    // 왼쪽 절반 → 이전, 화살표 키 → 다음. 끝에서는 돌아가지 않는다
-    await viewer.click({ position: { x: viewerBox.width * 0.3, y: viewerBox.height * 0.6 } });
+    // 이전 단추 → 이전, 화살표 키 → 다음. 끝에서는 돌아가지 않는다
+    await viewer.locator('.is-prev').click();
     await expect(viewer.locator('.sl-viewer-count')).toHaveText('1 / 2');
     await page.keyboard.press('ArrowRight');
     await page.keyboard.press('ArrowRight');

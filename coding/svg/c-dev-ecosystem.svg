@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="620" viewBox="0 0 1240 620" font-family="'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif">
+  <title>통합개발환경(IDE) · Code Editor · Toolchain 포함 관계와 Extensions 생태계</title>
+  <desc>좌측에는 Text Editor와 LSP가 합쳐진 Code Editor, 여기에 Toolchain(컴파일러·디버거·표준 라이브러리)이 더해진 통합개발환경(IDE)의 중첩 구조를 보여주고, 우측에는 AI Agent를 중심으로 형상 관리(Git), 가상·원격 환경(WSL·Docker·SSH), 포매터·린터, 특수 뷰어·테마가 Extensions/Plug-ins로 결합되는 구조를 나타낸 도식입니다.</desc>
+
+  <defs>
+    <marker id="eco-arr-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M1,1.5 L8.5,5 L1,8.5 Z" fill="#7c3aed"/>
+    </marker>
+
+    <filter id="eco-shadow" x="-2%" y="-2%" width="104%" height="106%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.06"/>
+    </filter>
+    <filter id="agent-glow" x="-3%" y="-4%" width="106%" height="110%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#7c3aed" flood-opacity="0.18"/>
+    </filter>
+
+    <clipPath id="clip-ide-outer"><rect x="28" y="20" width="680" height="580" rx="14"/></clipPath>
+    <clipPath id="clip-txt-ed"><rect x="64" y="138" width="252" height="150" rx="9"/></clipPath>
+    <clipPath id="clip-lsp-ed"><rect x="364" y="138" width="308" height="150" rx="9"/></clipPath>
+    <clipPath id="clip-ext-outer"><rect x="764" y="20" width="448" height="580" rx="14"/></clipPath>
+    <clipPath id="clip-agent-card"><rect x="780" y="84" width="416" height="132" rx="11"/></clipPath>
+  </defs>
+
+  <!-- 전체 종이 배경 -->
+  <rect width="1240" height="620" rx="16" fill="#fcfcfa" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- ================================================================================= -->
+  <!-- [LEFT] 통합개발환경 (IDE) 중첩 포함 구조                                          -->
+  <!-- ================================================================================= -->
+  <g clip-path="url(#clip-ide-outer)" filter="url(#eco-shadow)">
+    <rect x="28" y="20" width="680" height="580" rx="14" fill="#ffffff"/>
+    <rect x="28" y="20" width="680" height="54" fill="#f1f5f9"/>
+  </g>
+  <rect data-key="ide" x="28" y="20" width="680" height="580" rx="14" fill="none" stroke="#1e293b" stroke-width="2.6"/>
+  <line x1="28" y1="74" x2="708" y2="74" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <text x="48" y="53" font-size="17" font-weight="800" fill="#0f172a">통합개발환경 (IDE)</text>
+  <rect x="218" y="34" width="470" height="26" rx="13" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="453" y="51" text-anchor="middle" font-size="11.8" font-weight="700" fill="#334155">예: MSVS (Visual Studio), CLion, Xcode, Eclipse, IntelliJ</text>
+
+  <!-- ==================== [LEFT-UPPER] Code Editor ==================== -->
+  <rect data-key="codeeditor" x="48" y="90" width="640" height="214" rx="12" fill="#eff6ff" stroke="#2563eb" stroke-width="2.2"/>
+  <text x="66" y="118" font-size="15.5" font-weight="800" fill="#1e3a8a">Code Editor (코드 에디터)</text>
+  <rect x="272" y="100" width="224" height="24" rx="12" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="384" y="116" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1d4ed8">예: VS Code, Cursor, Neovim</text>
+  <text x="672" y="116" text-anchor="end" font-size="11" font-weight="700" fill="#2563eb">가볍고 빠른 코드 편집</text>
+
+  <!-- [Inner 1] Text Editor -->
+  <g clip-path="url(#clip-txt-ed)">
+    <rect x="64" y="138" width="252" height="150" rx="9" fill="#ffffff"/>
+    <rect x="64" y="138" width="252" height="34" fill="#f8fafc"/>
+  </g>
+  <rect data-key="texteditor" x="64" y="138" width="252" height="150" rx="9" fill="none" stroke="#94a3b8" stroke-width="1.6"/>
+  <line x1="64" y1="172" x2="316" y2="172" stroke="#e2e8f0" stroke-width="1.2"/>
+  <text x="78" y="160" font-size="13.5" font-weight="800" fill="#1e293b">Text Editor</text>
+  <rect x="192" y="145" width="112" height="20" rx="10" fill="#e2e8f0"/>
+  <text x="248" y="159" text-anchor="middle" font-size="10.5" font-weight="700" fill="#334155">Notepad (메모장)</text>
+
+  <g font-size="11.5" fill="#334155">
+    <text x="78" y="196">· 단순 텍스트 입력 및 저장</text>
+    <text x="78" y="218">· 문자 인코딩(UTF-8) 처리</text>
+    <text x="78" y="240" fill="#64748b">· 문법 검사 · 자동완성 없음</text>
+  </g>
+  <text x="78" y="272" font-size="10.3" font-weight="700" fill="#64748b">가장 기본적인 문서 작성 도구</text>
+
+  <!-- [+] 기호 (Text Editor + LSP) -->
+  <circle cx="340" cy="213" r="14" fill="#2563eb"/>
+  <text x="340" y="219" text-anchor="middle" font-size="18" font-weight="800" fill="#ffffff">+</text>
+
+  <!-- [Inner 2] 언어 지능: LSP -->
+  <g clip-path="url(#clip-lsp-ed)">
+    <rect x="364" y="138" width="308" height="150" rx="9" fill="#ffffff"/>
+    <rect x="364" y="138" width="308" height="34" fill="#dbeafe"/>
+  </g>
+  <rect data-key="lsp" x="364" y="138" width="308" height="150" rx="9" fill="none" stroke="#3b82f6" stroke-width="1.8"/>
+  <line x1="364" y1="172" x2="672" y2="172" stroke="#bfdbfe" stroke-width="1.2"/>
+  <text x="378" y="160" font-size="13.5" font-weight="800" fill="#1e3a8a">언어 지능: LSP</text>
+  <rect x="546" y="145" width="114" height="20" rx="10" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="603" y="159" text-anchor="middle" font-size="10.5" font-weight="700" fill="#1d4ed8">MS: IntelliSense</text>
+
+  <g font-size="11.5" fill="#334155">
+    <text x="378" y="196">· 실시간 문법 검사 · <tspan font-weight="700" fill="#1d4ed8">Tab 자동완성</tspan></text>
+    <text x="378" y="218">· <tspan font-weight="700" fill="#1d4ed8">F12 정의 이동</tspan> · 구문 강조(색상)</text>
+    <text x="378" y="240">· 함수 매개변수 힌트 · 심볼 참조 검색</text>
+  </g>
+  <text x="378" y="272" font-size="10.3" font-weight="700" fill="#2563eb">Language Server Protocol (clangd, C/C++ Ext)</text>
+
+  <!-- ==================== [+] 기호 (Code Editor + Toolchain) ==================== -->
+  <circle cx="368" cy="323" r="14" fill="#1e293b"/>
+  <text x="368" y="329" text-anchor="middle" font-size="18" font-weight="800" fill="#ffffff">+</text>
+
+  <!-- ==================== [LEFT-LOWER] 툴체인 (Toolchain / SDK) ==================== -->
+  <rect data-key="toolchain" x="48" y="342" width="640" height="242" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2.2"/>
+  <text x="66" y="370" font-size="15.5" font-weight="800" fill="#9a3412">툴체인 (Toolchain / SDK)</text>
+  <rect x="282" y="351" width="390" height="25" rx="12.5" fill="#ffedd5" stroke="#fdba74"/>
+  <text x="477" y="368" text-anchor="middle" font-size="11.2" font-weight="800" fill="#c2410c">VS Code는 외부 별도 설치(PATH)  │  IDE는 기본 내장</text>
+
+  <!-- ① 빌드 컴파일러 묶음 -->
+  <rect data-key="tc-compiler" x="64" y="388" width="608" height="52" rx="8" fill="#ffffff" stroke="#fdba74" stroke-width="1.4"/>
+  <rect x="74" y="399" width="144" height="30" rx="6" fill="#fff7ed"/>
+  <text x="146" y="419" text-anchor="middle" font-size="12" font-weight="800" fill="#9a3412">① 빌드 컴파일러 묶음</text>
+  <text x="230" y="419" font-size="11.8" fill="#334155">전처리기 + 컴파일러 + 어셈블러 + 링커 <tspan font-weight="700" fill="#c2410c">(gcc, Clang, MSVC)</tspan></text>
+
+  <!-- ② 디버거 -->
+  <rect data-key="tc-debugger" x="64" y="448" width="608" height="52" rx="8" fill="#ffffff" stroke="#fdba74" stroke-width="1.4"/>
+  <rect x="74" y="459" width="144" height="30" rx="6" fill="#ecfdf5"/>
+  <text x="146" y="479" text-anchor="middle" font-size="12" font-weight="800" fill="#065f46">② 디버거 (Debugger)</text>
+  <text x="230" y="479" font-size="11.8" fill="#334155">실행 중 메모리 · 변수 · 중단점(Breakpoint) 추적 <tspan font-weight="700" fill="#047857">(GDB, LLDB)</tspan></text>
+
+  <!-- ③ 표준 라이브러리 -->
+  <rect data-key="tc-stdlib" x="64" y="508" width="608" height="64" rx="8" fill="#ffffff" stroke="#fdba74" stroke-width="1.4"/>
+  <rect x="74" y="520" width="144" height="40" rx="6" fill="#eff6ff"/>
+  <text x="146" y="545" text-anchor="middle" font-size="12" font-weight="800" fill="#1e3a8a">③ 표준 라이브러리</text>
+  <text x="230" y="533" font-size="11.8" fill="#334155">언어 기본 동봉 부품 <tspan font-weight="700" fill="#1d4ed8">(C libc, C++ STL)</tspan></text>
+  <text x="230" y="555" font-size="11" fill="#64748b">(+ 필요 시 외부 라이브러리 / 패키지 연결: OpenCV, SDL 등)</text>
+
+  <!-- ================================================================================= -->
+  <!-- [CENTER] 좌우 결합 기호 (➕) 및 Agent 실선 제어 화살표                             -->
+  <!-- ================================================================================= -->
+  <line x1="776" y1="150" x2="692" y2="150" stroke="#7c3aed" stroke-width="2.2" marker-end="url(#eco-arr-purple)"/>
+
+  <line x1="708" y1="310" x2="764" y2="310" stroke="#334155" stroke-width="2.2"/>
+  <circle cx="736" cy="310" r="17" fill="#0f172a"/>
+  <text x="736" y="317" text-anchor="middle" font-size="20" font-weight="800" fill="#ffffff">+</text>
+
+  <!-- ================================================================================= -->
+  <!-- [RIGHT] Extensions / Plug-ins & AI Agent 중심 허브                                -->
+  <!-- ================================================================================= -->
+  <g clip-path="url(#clip-ext-outer)" filter="url(#eco-shadow)">
+    <rect x="764" y="20" width="448" height="580" rx="14" fill="#faf5ff"/>
+    <rect x="764" y="20" width="448" height="54" fill="#ede9fe"/>
+  </g>
+  <rect data-key="extensions" x="764" y="20" width="448" height="580" rx="14" fill="none" stroke="#7c3aed" stroke-width="2.2" stroke-dasharray="8 4"/>
+  <line x1="764" y1="74" x2="1212" y2="74" stroke="#ddd6fe" stroke-width="1.5"/>
+
+  <text x="782" y="52" font-size="16" font-weight="800" fill="#4c1d95">➕ Extensions / Plug-ins</text>
+  <text x="1196" y="52" text-anchor="end" font-size="11.5" font-weight="700" fill="#6d28d9">플러그인 · 확장팩</text>
+
+  <!-- [Ext 1 / CENTER HUB] AI Agent -->
+  <g clip-path="url(#clip-agent-card)" filter="url(#agent-glow)">
+    <rect x="780" y="84" width="416" height="132" rx="11" fill="#ffffff"/>
+    <rect x="780" y="84" width="416" height="36" fill="#7c3aed"/>
+  </g>
+  <rect data-key="ext-agent" x="780" y="84" width="416" height="132" rx="11" fill="none" stroke="#6d28d9" stroke-width="2.6"/>
+  <text x="794" y="107" font-size="13.8" font-weight="800" fill="#ffffff">✦ AI Agent (에이전트)</text>
+  <rect x="984" y="91" width="200" height="22" rx="11" fill="#fef08a"/>
+  <text x="1084" y="106" text-anchor="middle" font-size="10.5" font-weight="800" fill="#713f12">최근: 플러그인 ➔ 개발의 중심!</text>
+
+  <text x="794" y="140" font-size="11.5" font-weight="700" fill="#4c1d95">예: Antigravity, Claude, Copilot, Cursor</text>
+  <text x="794" y="160" font-size="11.3" fill="#334155">· 코드 생성 · 리팩토링 · 빌드/런타임 오류 자율 분석</text>
+  <rect x="792" y="172" width="392" height="32" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/>
+  <text x="988" y="192" text-anchor="middle" font-size="10.8" font-weight="800" fill="#5b21b6">▼ 아래 도구(Git · 원격환경 등)도 Agent의 Extension(MCP·스킬)으로 결합</text>
+
+  <!-- Agent -> 하위 확장팩 수직 제어 트리 버스 (├─, ├─, ├─, └─) -->
+  <path d="M798,216 L798,539" fill="none" stroke="#7c3aed" stroke-width="2.4"/>
+  <line x1="798" y1="268" x2="816" y2="268" stroke="#7c3aed" stroke-width="2.2" marker-end="url(#eco-arr-purple)"/>
+  <line x1="798" y1="356" x2="816" y2="356" stroke="#7c3aed" stroke-width="2.2" marker-end="url(#eco-arr-purple)"/>
+  <line x1="798" y1="444" x2="816" y2="444" stroke="#7c3aed" stroke-width="2.2" marker-end="url(#eco-arr-purple)"/>
+  <line x1="798" y1="539" x2="816" y2="539" stroke="#7c3aed" stroke-width="2.2" marker-end="url(#eco-arr-purple)"/>
+
+  <!-- [Ext 2] 형상 관리 연동 -->
+  <rect data-key="ext-vcs" x="818" y="230" width="378" height="76" rx="9" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="832" y="253" font-size="13" font-weight="800" fill="#1e293b">⎇ 형상 관리 연동</text>
+  <rect x="1038" y="238" width="146" height="20" rx="10" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="1111" y="252" text-anchor="middle" font-size="10.2" font-weight="700" fill="#334155">Git 내장 UI · GitLens</text>
+  <text x="832" y="275" font-size="11.2" fill="#334155">· Git 변경 이력 시각화 · 브랜치 비교 · 충돌 해결</text>
+  <text x="832" y="294" font-size="10.5" font-weight="700" fill="#6d28d9">· Agent 확장: 변경 요약, 커밋/PR 초안 및 이력 추적</text>
+
+  <!-- [Ext 3] 가상 · 원격 환경 -->
+  <rect data-key="ext-remote" x="818" y="318" width="378" height="76" rx="9" fill="#ffffff" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="832" y="341" font-size="13" font-weight="800" fill="#0c4a6e">☁ 가상 · 원격 환경</text>
+  <rect x="1024" y="326" width="160" height="20" rx="10" fill="#e0f2fe" stroke="#7dd3fc"/>
+  <text x="1104" y="340" text-anchor="middle" font-size="10.2" font-weight="700" fill="#0369a1">WSL · Docker · SSH · venv</text>
+  <text x="832" y="363" font-size="11.2" fill="#334155">· 타 OS(Linux) · 컨테이너 · 원격 서버 직접 접속 코딩</text>
+  <text x="832" y="382" font-size="10.5" font-weight="700" fill="#6d28d9">· Agent 확장: 격리 샌드박스·원격 서버에 직접 명령 실행</text>
+
+  <!-- [Ext 4] 포매터 · 린터 -->
+  <rect data-key="ext-lint" x="818" y="406" width="378" height="76" rx="9" fill="#ffffff" stroke="#34d399" stroke-width="1.5"/>
+  <text x="832" y="429" font-size="13" font-weight="800" fill="#065f46">✨ 포매터 · 린터</text>
+  <rect x="1032" y="414" width="152" height="20" rx="10" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="1108" y="428" text-anchor="middle" font-size="10.2" font-weight="700" fill="#047857">Clang-Format · Prettier</text>
+  <text x="832" y="451" font-size="11.2" fill="#334155">· 코딩 스타일(들여쓰기 · 중괄호) 규칙 자동 정렬</text>
+  <text x="832" y="470" font-size="10.5" fill="#64748b">· 잠재적 코드 결함 사전 경고 · 협업 코드 일관성 유지</text>
+
+  <!-- [Ext 5] 특수 뷰어 · 테마 -->
+  <rect data-key="ext-viewer" x="818" y="494" width="378" height="90" rx="9" fill="#ffffff" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="832" y="517" font-size="13" font-weight="800" fill="#92400e">🔍 특수 뷰어 · 테마</text>
+  <rect x="1038" y="502" width="146" height="20" rx="10" fill="#fefce8" stroke="#fde047"/>
+  <text x="1111" y="516" text-anchor="middle" font-size="10.2" font-weight="700" fill="#a16207">Hex Editor · MD/SVG</text>
+  <text x="832" y="539" font-size="11.2" fill="#334155">· 이진수(.o / .exe) 내부 분석용 Hex Editor</text>
+  <text x="832" y="558" font-size="11.2" fill="#334155">· 마크다운 / SVG 미리보기 뷰어, 한글 언어팩 · 테마</text>
+  <text x="832" y="575" font-size="10.3" fill="#64748b">· 목적에 맞춰 개발 환경을 시각적으로 커스터마이징</text>
+</svg>

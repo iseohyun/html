@@ -1,172 +1,1524 @@
-<tags>C, Coding, 코딩, C언어, C++, 개발환경</tags>
-<article>
-  <h1>C 언어의 특징</h1>
-  <P>
-    어떤 관광지에 관람객을 모집한다고 할 때, 안내판을 작성하는 회의를 하고 있습니다.
-  </P>
-  <style>
-    ol#info-example {
-      list-style: none;
-      counter-reset: exam;
-    }
+<!DOCTYPE html>
 
-    #info-example li:before {
-      counter-increment: exam;
-      content: "예제" counter(exam) ". ";
-      font-weight: bold;
-    }
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta keywords="iseohyun, 튜토리얼, C, Coding, 코딩, C언어, C++, 개발환경">
+  <meta author="iseohyun">
+
+  <!-- 페이지 타이틀 -->
+  <title>환경 설정: C - iseohyun </title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-453XSP5W9M');
+  </script>
+
+  <!-- 목차 및 공통 모듈 -->
+  <script src="/modules/script.js?v=20261118v1" defer></script>
+
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("/style.css?v=20261118v1");
   </style>
-  <ol id="info-example">
-    <li>많이 오는 국가순으로 그 국가의 언어로 추가로 작성합니다.
-      <blockquote>화장실 │ toilet │ 化粧室 │ トイレ</blockquote>
-    </li>
-    <li>
-      공용어(이를테면 영어)만 추가로 작성합니다.
-      <blockquote>화장실 │ toilet</blockquote>
-    </li>
-    <li>
-      안내판마다 QR코드를 삽입, 번역 어플 배포
-      <blockquote>화장실 <!-- TODO: QR코드로 인식될만한 아이콘을 넣습니다. --> </blockquote>
-    </li>
-  </ol>
-  <style>
-    #info-example-compare td {
-      text-align: left;
-    }
-  </style>
-  <table id="info-example-compare">
-    <thead>
-      <tr>
-        <td>No.</td>
-        <td>스타일</td>
-        <td>장점</td>
-        <td>단점</td>
-      </tr>
-    </thead>
-    <tr>
-      <td>예제 1</td>
-      <td>C</td>
-      <td>대부분의 여행객이 사전 없이 편하게 여행</td>
-      <td>일부 여행객은 대책 없음</td>
-    </tr>
-    <tr>
-      <td>예제 2</td>
-      <td>java</td>
-      <td>영어 가능한 대부분의 여행객에게 유리</td>
-      <td>영어가 쉽지 않다</td>
-    </tr>
-    <tr>
-      <td>예제 3</td>
-      <td>python</td>
-      <td>모든 여행객 대응</td>
-      <td>어플 깔아야 함</td>
-    </tr>
-  </table>
-  <p>
-    <b>※ 언어의 선택은 환경의 문제에 달린 것이지 어느 언어가 더 우수하다고 보기 어렵습니다.</b>
-  </p>
-  <div class="simple-box">
-    <details>
-      <summary>언어별 실제 구동 사례(클릭)</summary>
-      <table>
-        <thead>
-          <tr>
-            <th width="20%">언어</th>
-            <th width="40%">컴파일</th>
-            <th width="40%">동작</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>C</td>
-            <td>cl.exe(또는 gcc.exe)로 수행</td>
-            <td>결과물 직접 실행</td>
-          </tr>
-          <tr>
-            <td>Java</td>
-            <td>javac.exe로 수행</td>
-            <td>java.exe를 통해 실행</td>
-          </tr>
-          <tr>
-            <td>python</td>
-            <td colspan="2">py.exe로 실행</td>
-          </tr>
-        </tbody>
-      </table>
-      <iframe width="560" height="315" src="https://www.youtube.com/embed/TLqLKbmBOrk" title="YouTube video player"
-        frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen></iframe>
-      <div class="simple-box">
-        <p>
-          &nbsp;임베디드 환경(가전등에 들어가는 MPU)개발을 경험해보지 않은 개발자의 경우, C도 어차피 runtime library가 들어가지 않느냐는 생각을 할지도 모르겠습니다.
-          실제로도 내가 작성한 C 프로그램이나 게임이 타인의 컴퓨터에서 수행되기 위해서는 Redistribution Code나 .Net Framework가 설치되어야 수행되니 말입니다.
-          (수Gbyte에 이릅니다. 심지어 버전별로 따로 설치해야합니다.)<br>
-          &nbsp;비유를 들어 설명하다보면 이런 디테일이 망가지는 것은 어쩔 수 없나봅니다.<br>
-        </p>
-        <p>
-          &nbsp;아마도 이런 이유에서 Java나 python에서는 이럴바에 virtual machine을 넣어버리자는 생각을 하게된 것이 아닌가 합리적인 의심이 듭니다.
-        </p>
-      </div>
-    </details>
-  </div>
 
-  <h3>프로그래밍 관련 썰</h3>
-  <iframe width="560" height="315" src="https://www.youtube.com/embed/OrjJoXKBYSA" title="YouTube video player"
-    frameborder="0"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-    allowfullscreen></iframe>
+  <!-- 슬라이드 · 스크립트 (보고서 형식). 문서를 열 때마다 다시 실행된다 -->
+  <link rel="stylesheet" href="/modules/features/slides.css?v=20261118v1">
+  <script src="/modules/features/slides.js?v=20261118v1" defer></script>
+</head>
 
-  <h1>용어</h1>
-  <style>
-    #term tr>td:last-child {
-      text-align: left;
-    }
-  </style>
-  <table id="term">
-    <thead>
-      <tr>
-        <td>용어</td>
-        <td>의미</td>
-      </tr>
-    </thead>
-    <tr>
-      <td>코드(code)</td>
-      <td>인간이 알아볼 수 있는 프로그램 언어<br>
-        순수 기계어는 binary code(또는 바이너리, bin)으로 구분</td>
-    </tr>
-    <tr>
-      <td style="white-space: nowrap;">컴파일러(compiler)</td>
-      <td>코드를 바이너리로 번역해주는 도구<br>
-        크로스 컴파일러(Cross Compiler)는 컴파일 머신과 타겟 머신의 언어가 다를 때, 사용되는 컴파일러</td>
-    </tr>
-    <tr>
-      <td style="white-space: nowrap;">편집기(editor)</td>
-      <td>코드를 작성하기 위한 도구. 메모장(notepad), emacs, vi, notepad++, ultraeditor, source insight, vscode 등.<br>
-        MSVS(Micosoft Visual Studio), eclipse, IntelliJ IDEA, Xcode 등 통합개발환경(IDE)을 제공하는 에디터도 다수 존재</td>
-    </tr>
-    <tr>
-      <td>통합개발환경</td>
-      <td>IDE(Integrated Development Environment)는 편집기, 디버거, 컴파일러, 빌드시스템, 버전관리 도구 등을 지원</td>
-    </tr>
-    <tr>
-      <td>디버깅(Debug)</td>
-      <td>예상되지 않은 동작(오류)을 수정하는 행위<br>
-        runtime(수행 중)발견되므로 문법 오류(syntax error)를 디버깅이라 하지 않음(문법 오류는 실행이 되지 않음)</td>
-    </tr>
-    <tr>
-      <td>어셈블리(assembly)</td>
-      <td>기계어를 인간의 언어로 1:1 매칭한 낮은(직관적인) 단계의 코드<br>
-        C파일(.c) -> 어셈블리(.s) -> 오브젝트(.o) -> 아카이브(.a, 옵션) -> 실행파일(.exe)</td>
-    </tr>
-  </table>
-  <details>
+<body>
+  <tags>C, Coding, 코딩, C언어, C++, 개발환경</tags>
+  <article>
+    <style>
+      /* C 강의 슬라이드 전용 스타일 (.slides-doc 내부로 범위 격리) */
+      .slides-doc .c-svg-wide {
+        flex: 1;
+        min-height: 0;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
 
-    <summary>▼ 코드와 0101... 사이에 존재하는 <b>어셈블리</b>에 대한 예시(클릭).</summary>
-    <div class="simple-box">
-      <div class="blockquote-title">C 코드</div>
+      .slides-doc .c-rich-svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
+      }
 
-      <pre>
+      /* 읽어 주기(TTS) 시 SVG 내부 해당 카드 테두리 강조 */
+      .slides-doc .c-rich-svg [data-key].cue-box {
+        outline: none;
+        stroke: var(--sl-cue, #d32f2f) !important;
+        stroke-width: 4.5px !important;
+        stroke-dasharray: none !important;
+      }
+
+      /* 1p: 주력 계보도(1260x826, 비율 1.53)를 크게 띄우고 좌측 부가설명은 최소화하는 레이아웃 */
+      .slides-doc .slide-body.is-s1-split {
+        display: grid;
+        grid-template-columns: minmax(0, 0.72fr) minmax(0, 2.28fr);
+        gap: 1.8cqw;
+        padding: 2.5cqw 3cqw 2.2cqw;
+        align-items: stretch;
+      }
+
+      .slides-doc .c-s1-side {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 1.4cqw;
+        min-width: 0;
+        min-height: 0;
+      }
+
+      .slides-doc .c-s1-side .slide-title {
+        font-size: 1.55em;
+        line-height: 1.28;
+      }
+
+      .slides-doc .c-s1-thesis {
+        border-left: 3px solid var(--c-fg);
+        padding: 0.45em 0 0.45em 0.75em;
+        font-size: 0.96em;
+        line-height: 1.5;
+        color: var(--c-fg);
+      }
+
+      .slides-doc .c-s1-thesis b {
+        display: block;
+        margin-bottom: 0.2em;
+        font-size: 1.04em;
+      }
+
+      .slides-doc .c-vid-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4em;
+        align-self: flex-start;
+        padding: 0.42em 0.85em;
+        border-radius: var(--r-pill);
+        border: 1px solid var(--c-fg);
+        background: var(--bg);
+        color: var(--c-fg);
+        font-size: 0.86em;
+        font-weight: 700;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+
+      .slides-doc .c-vid-btn:hover {
+        background: var(--c-fg);
+        color: var(--c-bg);
+      }
+
+      .slides-doc .c-s1-fig {
+        position: relative;
+        min-width: 0;
+        min-height: 0;
+        padding-top: 2.2cqw;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* 2p~4p: 상단 요약 + 하단 가로형 주력 SVG 구성 (우측 상단 단추 줄 여백 확보) */
+      .slides-doc .slide-body.is-wide-fig {
+        padding: 2.4cqw 3.2cqw 2cqw;
+        gap: 1.1cqw;
+      }
+
+      .slides-doc .slide-body.is-wide-fig .slide-head-pad {
+        padding-right: 12cqw;
+      }
+
+      .slides-doc .slide-body.is-wide-fig .points {
+        gap: 0.22em;
+        font-size: 0.94em;
+      }
+
+      /* 하단 참조 접기 목록 정돈 */
+      .c-ref-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .c-ref-list > details {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 10px 16px;
+        background: #fafafa;
+      }
+
+      .c-ref-list > details > summary {
+        cursor: pointer;
+        font-weight: 700;
+        color: #222;
+      }
+
+      .c-ref-lines {
+        margin-top: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .c-ref-lines > p {
+        margin: 0;
+      }
+
+      @container sl-slide (max-width: 560px) {
+        .slides-doc .slide-body.is-s1-split {
+          grid-template-columns: minmax(0, 1fr);
+          padding: 16px 16px 18px;
+          gap: 14px;
+        }
+        .slides-doc .c-s1-fig {
+          padding-top: 0;
+        }
+        .slides-doc .slide-body.is-wide-fig {
+          padding: 16px 16px 18px;
+          gap: 12px;
+        }
+        .slides-doc .slide-body.is-wide-fig .slide-head-pad {
+          padding-right: 90px;
+        }
+        .slides-doc .c-rich-svg {
+          height: auto;
+        }
+      }
+    </style>
+
+    <!-- ==================== 슬라이드 강의 섹션 (1p ~ 4p) ==================== -->
+    <div class="slides-doc" data-page="c-start" lang="ko">
+      <h1 class="sl-chapter">C 언어와 현대적 개발 환경</h1>
+
+      <!-- 1p. 현존 언어들의 비교 (언어 계보) -->
+      <section id="s1" data-title="1 현존 언어들의 비교">
+        <h2>현존 언어들의 비교</h2>
+        <div class="slide-frame" data-img="/coding/svg/language-lineage-map2.svg" data-img-caption="주류 프로그래밍 언어 구동 패러다임과 진화 계통도">
+          <div class="slide">
+            <div class="slide-body is-s1-split">
+              <div class="c-s1-side">
+                <div>
+                  <span class="slide-eyebrow"><b class="slide-no">1</b>언어 계보</span>
+                  <div class="slide-title" role="heading" aria-level="3">현존 언어들의<br>비교</div>
+                </div>
+                <div class="c-s1-thesis" data-key="choice">
+                  <b>언어의 선택 기준은<br>우열이 아닌 환경의 문제</b>
+                  성능(네이티브) · 이식성(VM) · 빠른 개발(스크립트) 중 목적에 맞춰 선택
+                </div>
+                <a class="c-vid-btn" data-key="vidlink" href="https://www.youtube.com/watch?v=TLqLKbmBOrk" target="_blank" rel="noopener">▶ 구동 비교 영상 ↗</a>
+              </div>
+              <div class="c-s1-fig">
+                <svg class="c-rich-svg" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="1260" height="826" viewBox="0 0 1260 826" font-family="'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif">
+  <title>주류 프로그래밍 언어 구동 패러다임과 진화 계통도</title>
+  <desc>기계어·어셈블리에서 출발해 하드웨어 네이티브(C → C++ → Rust), 가상머신(Java → C#, Kotlin), 스크립트(Python, JavaScript → TypeScript)의 핵심 언어 계통도입니다.</desc>
+
+  <defs>
+    <filter id="cardShadow" x="-3%" y="-4%" width="106%" height="110%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.06"/>
+    </filter>
+
+    <marker id="arrDark" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+      <path d="M1,1.5 L9,5 L1,8.5 Z" fill="#334155"/>
+    </marker>
+    <marker id="arrBlue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+      <path d="M1,1.5 L9,5 L1,8.5 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrAmber" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+      <path d="M1,1.5 L9,5 L1,8.5 Z" fill="#d97706"/>
+    </marker>
+    <marker id="arrTeal" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+      <path d="M1,1.5 L9,5 L1,8.5 Z" fill="#059669"/>
+    </marker>
+    <marker id="arrSlate" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+      <path d="M1,1.5 L9,5 L1,8.5 Z" fill="#64748b"/>
+    </marker>
+
+    <clipPath id="clipCol1"><rect x="32" y="108" width="366" height="698" rx="14"/></clipPath>
+    <clipPath id="clipCol2"><rect x="422" y="108" width="416" height="698" rx="14"/></clipPath>
+    <clipPath id="clipCol3"><rect x="862" y="108" width="366" height="698" rx="14"/></clipPath>
+  </defs>
+
+  <!-- 전체 종이 배경 -->
+  <rect width="1260" height="826" rx="16" fill="#fcfcfa" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- ==================== 우측 상단 범례 (기계어 옆 2줄 배치) ==================== -->
+  <rect x="968" y="20" width="260" height="54" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <line x1="984" y1="37" x2="1020" y2="37" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrBlue)"/>
+  <text x="1030" y="41" font-size="11.3" font-weight="700" fill="#334155">직계 계승 · 한계 극복 진화</text>
+  <line x1="984" y1="57" x2="1020" y2="57" stroke="#64748b" stroke-width="1.8" stroke-dasharray="5 3" marker-end="url(#arrSlate)"/>
+  <text x="1030" y="61" font-size="11.3" font-weight="700" fill="#334155">생태계 확장 · 하부 기반</text>
+
+  
+  
+  
+
+  <!-- ==================== 최상단 뿌리: 기계어 / 어셈블리 ==================== -->
+  <g filter="url(#cardShadow)">
+    <rect data-key="asm-root" x="390" y="20" width="480" height="54" rx="12" fill="#1e293b" stroke="#0f172a" stroke-width="1.8"/>
+    <rect x="404" y="30" width="114" height="34" rx="7" fill="#0f172a" stroke="#475569"/>
+    <text x="461" y="51" text-anchor="middle" font-family="'D2Coding', Consolas, monospace" font-size="11.5" font-weight="700" fill="#67e8f9">0101 · pushq</text>
+    <text x="534" y="44" font-size="15" font-weight="800" fill="#ffffff">기계어 (0101)  /  어셈블리 (CPU 1:1 대응)</text>
+    <text x="534" y="63" font-size="11.2" fill="#cbd5e1">하드웨어 종속 저수준 명령</text>
+  </g>
+
+  <!-- 최상단 3갈래 분기 트리 선 -->
+  <line x1="630" y1="74" x2="630" y2="90" stroke="#334155" stroke-width="2.2"/>
+  <path d="M215,90 L1045,90" fill="none" stroke="#334155" stroke-width="2.2"/>
+  <line x1="215" y1="90" x2="215" y2="104" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrBlue)"/>
+  <line x1="630" y1="90" x2="630" y2="104" stroke="#d97706" stroke-width="2.2" marker-end="url(#arrAmber)"/>
+  <line x1="1045" y1="90" x2="1045" y2="104" stroke="#059669" stroke-width="2.2" marker-end="url(#arrTeal)"/>
+
+
+  <!-- ====================================================================== -->
+  <!-- 좌측 컬럼: 하드웨어 네이티브 (성능 중시) — C → C++ → Rust     -->
+  <!-- ====================================================================== -->
+  <g clip-path="url(#clipCol1)">
+    <rect x="32" y="108" width="366" height="698" fill="#f0f7ff"/>
+    <rect x="32" y="108" width="366" height="86" fill="#dbeafe"/>
+    <line x1="32" y1="194" x2="398" y2="194" stroke="#93c5fd" stroke-width="1.5"/>
+  </g>
+  <rect data-key="col-native" x="32" y="108" width="366" height="698" rx="14" fill="none" stroke="#93c5fd" stroke-width="1.8"/>
+
+  <!-- 컬럼 1 헤더 -->
+  <rect x="48" y="119" width="114" height="22" rx="11" fill="#1d4ed8"/>
+  <text x="105" y="134" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">기계어 직행</text>
+  <rect x="210" y="119" width="172" height="22" rx="5" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="296" y="134" text-anchor="middle" font-family="'D2Coding', Consolas, monospace" font-size="10.8" font-weight="700" fill="#1d4ed8">코드 → 컴파일러 → .exe</text>
+  <text x="48" y="162" font-size="18" font-weight="800" fill="#1e3a8a">하드웨어 네이티브</text>
+  <text x="48" y="183" font-size="12.2" font-weight="700" fill="#1d4ed8">성능 중시 <tspan font-weight="500" fill="#334155">· CPU 직접 실행</tspan></text>
+
+  <!-- [① C] -->
+  <g filter="url(#cardShadow)">
+    <rect data-key="lang-c" x="48" y="210" width="334" height="150" rx="12" fill="#ffffff" stroke="#1d4ed8" stroke-width="2.4"/>
+    <text x="64" y="239" font-size="19.5" font-weight="800" fill="#1e3a8a">① C</text>
+    <rect x="122" y="222" width="142" height="21" rx="5" fill="#dbeafe"/>
+    <text x="193" y="237" text-anchor="middle" font-size="11" font-weight="700" fill="#1e40af">절차적 언어 · 현대의 뿌리</text>
+    <rect x="324" y="222" width="44" height="21" rx="10.5" fill="#1d4ed8"/>
+    <text x="346" y="237" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">1972</text>
+
+    <text x="64" y="266" font-size="11.6" fill="#334155">· OS 커널 · 임베디드 · 펌웨어 독점적 표준</text>
+    <text x="64" y="286" font-size="11.6" fill="#334155">· 포인터와 수동 메모리 제어로 하드웨어 직결</text>
+
+    <rect x="60" y="300" width="310" height="48" rx="7" fill="#fef2f2" stroke="#fca5a5"/>
+    <text x="72" y="318" font-size="11" font-weight="800" fill="#b91c1c">[한계] 대규모 소프트웨어 설계·추상화 어려움</text>
+    <text x="72" y="336" font-size="10.8" fill="#991b1b">수동 메모리 관리 실수 시 치명적 버그·보안 위험</text>
+  </g>
+
+  <!-- 화살표 ① -> ② -->
+  <line x1="215" y1="360" x2="215" y2="400" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrBlue)"/>
+  <rect x="143" y="370" width="144" height="20" rx="10" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="215" y="384" text-anchor="middle" font-size="10.8" font-weight="700" fill="#1e40af">대형화 · 객체지향 진화</text>
+
+  <!-- [② C++] -->
+  <g filter="url(#cardShadow)">
+    <rect data-key="lang-cpp" x="48" y="404" width="334" height="150" rx="12" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+    <text x="64" y="433" font-size="19" font-weight="800" fill="#1e3a8a">② C++</text>
+    <rect x="142" y="416" width="146" height="21" rx="5" fill="#eff6ff" stroke="#bfdbfe"/>
+    <text x="215" y="431" text-anchor="middle" font-size="11" font-weight="700" fill="#1d4ed8">C + 객체지향 · 템플릿(STL)</text>
+    <rect x="324" y="416" width="44" height="21" rx="10.5" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="346" y="431" text-anchor="middle" font-size="11" font-weight="700" fill="#1d4ed8">1985</text>
+
+    <text x="64" y="460" font-size="11.6" fill="#334155">· 게임 엔진(Unreal) · 웹 브라우저 · 로봇 제어</text>
+    <text x="64" y="480" font-size="11.6" fill="#334155">· AI 고속 연산 코어(PyTorch · CUDA) 하부 구현</text>
+
+    <rect x="60" y="494" width="310" height="48" rx="7" fill="#fef2f2" stroke="#fca5a5"/>
+    <text x="72" y="512" font-size="11" font-weight="800" fill="#b91c1c">[한계] 기능 누적으로 인한 극단적 문법 복잡도</text>
+    <text x="72" y="530" font-size="10.8" fill="#991b1b">여전히 남아 있는 메모리 침범 · 해제 누락 버그</text>
+  </g>
+
+  <!-- 화살표 ② -> ③ -->
+  <line x1="215" y1="554" x2="215" y2="594" stroke="#2563eb" stroke-width="2.2" marker-end="url(#arrBlue)"/>
+  <rect x="143" y="564" width="144" height="20" rx="10" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="215" y="578" text-anchor="middle" font-size="10.8" font-weight="700" fill="#1e40af">메모리 안전성 진화</text>
+
+  <!-- [③ Rust] -->
+  <g filter="url(#cardShadow)">
+    <rect data-key="lang-rust" x="48" y="598" width="334" height="146" rx="12" fill="#ffffff" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="64" y="627" font-size="19" font-weight="800" fill="#1e3a8a">③ Rust</text>
+    <rect x="146" y="610" width="152" height="21" rx="5" fill="#dbeafe"/>
+    <text x="222" y="625" text-anchor="middle" font-size="11" font-weight="700" fill="#1e40af">무GC + 메모리 안전 보장</text>
+    <rect x="324" y="610" width="44" height="21" rx="10.5" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="346" y="625" text-anchor="middle" font-size="11" font-weight="700" fill="#1d4ed8">2015</text>
+
+    <text x="64" y="654" font-size="11.6" fill="#334155">· GC(자동 회수기) 없이 컴파일 시점 메모리 버그 차단</text>
+    <text x="64" y="674" font-size="11.6" fill="#334155">· '소유권(Ownership)' 규칙 · Linux 커널 · 차세대 코어</text>
+
+    <rect x="60" y="692" width="310" height="38" rx="7" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="215" y="716" text-anchor="middle" font-size="11" font-weight="800" fill="#1e40af">✓ 네이티브 최고 속도 + 메모리 안전성 동시 달성</text>
+  </g>
+
+  <!-- 컬럼 1 하단 보충 노트 -->
+  <rect x="48" y="756" width="334" height="36" rx="8" fill="#ffffff" stroke="#93c5fd" stroke-dasharray="4 3"/>
+  <text x="215" y="779" text-anchor="middle" font-size="10.3" fill="#334155">※ 방계 <tspan font-weight="800" fill="#0369a1">Go(2009)</tspan>: C의 단순함·네이티브 빌드에 GC 결합(클라우드)</text>
+
+
+  <!-- ====================================================================== -->
+  <!-- 중앙 컬럼: 가상머신 (이식성·대규모 협업 중시) — Java → C#, Kotlin -->
+  <!-- ====================================================================== -->
+  <g clip-path="url(#clipCol2)">
+    <rect x="422" y="108" width="416" height="698" fill="#fffbeb"/>
+    <rect x="422" y="108" width="416" height="86" fill="#fef3c7"/>
+    <line x1="422" y1="194" x2="838" y2="194" stroke="#fcd34d" stroke-width="1.5"/>
+  </g>
+  <rect data-key="col-vm" x="422" y="108" width="416" height="698" rx="14" fill="none" stroke="#fbbf24" stroke-width="1.8"/>
+
+  <!-- 컬럼 2 헤더 -->
+  <rect x="438" y="119" width="124" height="22" rx="11" fill="#d97706"/>
+  <text x="500" y="134" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">중간어 + VM</text>
+  <rect x="612" y="119" width="210" height="22" rx="5" fill="#ffffff" stroke="#fcd34d"/>
+  <text x="717" y="134" text-anchor="middle" font-family="'D2Coding', Consolas, monospace" font-size="10.8" font-weight="700" fill="#b45309">코드 → 바이트코드 → JVM / CLR</text>
+  <text x="438" y="162" font-size="18" font-weight="800" fill="#92400e">가상머신 (Bytecode + VM)</text>
+  <text x="438" y="183" font-size="12.2" font-weight="700" fill="#b45309">이식성, 대규모 협업 중시 <tspan font-weight="500" fill="#334155">· 자동 메모리(GC)</tspan></text>
+
+  <!-- VM 등장 브릿지 박스 -->
+  <rect x="446" y="210" width="368" height="52" rx="9" fill="#ffffff" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <text x="630" y="231" text-anchor="middle" font-size="11.2" font-weight="800" fill="#b45309">왜 갈라졌나? — OS별 재컴파일 고통과 포인터 메모리 오류 해결</text>
+  <text x="630" y="250" text-anchor="middle" font-size="10.3" fill="#475569">C/C++ 문법은 계승하되 포인터를 감추고 가상머신(VM) 위에서 구동</text>
+
+  <!-- C -> VM 브릿지 점선 연결 -->
+  <line x1="382" y1="236" x2="442" y2="236" stroke="#64748b" stroke-width="1.8" stroke-dasharray="5 3" marker-end="url(#arrSlate)"/>
+
+  <line x1="630" y1="262" x2="630" y2="286" stroke="#d97706" stroke-width="2" marker-end="url(#arrAmber)"/>
+
+  <!-- [④ Java] -->
+  <g filter="url(#cardShadow)">
+    <rect data-key="lang-java" x="446" y="290" width="368" height="162" rx="12" fill="#ffffff" stroke="#d97706" stroke-width="2.4"/>
+    <text x="464" y="319" font-size="19.5" font-weight="800" fill="#92400e">④ Java</text>
+    <rect x="546" y="302" width="166" height="21" rx="5" fill="#fef3c7"/>
+    <text x="629" y="317" text-anchor="middle" font-size="11" font-weight="700" fill="#92400e">.class 바이트코드 + JVM</text>
+    <rect x="754" y="302" width="44" height="21" rx="10.5" fill="#d97706"/>
+    <text x="776" y="317" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">1995</text>
+
+    <text x="464" y="345" font-size="11.6" fill="#334155">· 포인터 제거 + 가비지 컬렉션(GC) 자동 메모리 회수</text>
+    <text x="464" y="365" font-size="11.6" fill="#334155">· JVM: "한 번 작성하면 어디서나 실행" · 기업/금융 서버 표준</text>
+
+    <rect x="458" y="382" width="344" height="56" rx="7" fill="#fef2f2" stroke="#fca5a5"/>
+    <text x="472" y="402" font-size="11" font-weight="800" fill="#b91c1c">[한계] 상용구(보일러플레이트)가 많아 코드가 길고 장황함</text>
+    <text x="472" y="422" font-size="10.8" fill="#991b1b">실행 중 Null 참조 오류(NullPointerException) 빈발</text>
+  </g>
+
+  <!-- Java -> C# / Kotlin 양갈래 진화 화살표 -->
+  <path d="M580,452 L580,470 L530,470 L530,514" fill="none" stroke="#64748b" stroke-width="1.9" stroke-dasharray="5 3" marker-end="url(#arrSlate)"/>
+  <rect x="466" y="479" width="128" height="20" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="530" y="493" text-anchor="middle" font-size="10.5" font-weight="700" fill="#475569">생태계 확장 · 경쟁</text>
+
+  <path d="M680,452 L680,470 L730,470 L730,514" fill="none" stroke="#d97706" stroke-width="2.2" marker-end="url(#arrAmber)"/>
+  <rect x="666" y="479" width="128" height="20" rx="10" fill="#fef3c7" stroke="#fcd34d"/>
+  <text x="730" y="493" text-anchor="middle" font-size="10.5" font-weight="700" fill="#92400e">직계 현대화 진화</text>
+
+  <!-- [⑤ C#] -->
+  <g filter="url(#cardShadow)">
+    <rect data-key="lang-csharp" x="438" y="518" width="185" height="226" rx="12" fill="#ffffff" stroke="#d97706" stroke-width="2"/>
+    <text x="452" y="547" font-size="18.5" font-weight="800" fill="#92400e">⑤ C#</text>
+    <rect x="567" y="530" width="42" height="20" rx="10" fill="#fffbeb" stroke="#fcd34d"/>
+    <text x="588" y="544" text-anchor="middle" font-size="10.8" font-weight="700" fill="#b45309">2000</text>
+    <rect x="450" y="558" width="161" height="21" rx="5" fill="#fef3c7"/>
+    <text x="530" y="573" text-anchor="middle" font-size="10.8" font-weight="700" fill="#92400e">MS .NET CLR + IL</text>
+
+    <g font-size="11.2" fill="#334155">
+      <text x="450" y="600">· MS 플랫폼 독자 확장</text>
+      <text x="450" y="621">· LINQ·async 문법 혁신</text>
+      <text x="450" y="642">· Unity 게임 개발 표준</text>
+      <text x="450" y="663">· 윈도우 · 기업 웹 서버</text>
+    </g>
+
+    <rect x="450" y="684" width="161" height="46" rx="7" fill="#fffbeb" stroke="#fcd34d"/>
+    <text x="530" y="704" text-anchor="middle" font-size="10.5" font-weight="700" fill="#92400e">VM 안전성 + C++급 표현력</text>
+    <text x="530" y="720" text-anchor="middle" font-size="10.2" fill="#b45309">게임 · 기업 풀스택 장악</text>
+  </g>
+
+  <!-- [⑥ Kotlin] -->
+  <g filter="url(#cardShadow)">
+    <rect data-key="lang-kotlin" x="637" y="518" width="185" height="226" rx="12" fill="#ffffff" stroke="#d97706" stroke-width="2"/>
+    <text x="651" y="547" font-size="18.5" font-weight="800" fill="#92400e">⑥ Kotlin</text>
+    <rect x="766" y="530" width="42" height="20" rx="10" fill="#fffbeb" stroke="#fcd34d"/>
+    <text x="787" y="544" text-anchor="middle" font-size="10.8" font-weight="700" fill="#b45309">2011</text>
+    <rect x="649" y="558" width="161" height="21" rx="5" fill="#fef3c7"/>
+    <text x="729" y="573" text-anchor="middle" font-size="10.8" font-weight="700" fill="#92400e">JVM 100% 호환 계승</text>
+
+    <g font-size="11.2" fill="#334155">
+      <text x="649" y="600">· 기존 Java 코드 완벽 호환</text>
+      <text x="649" y="621">· 간결하고 응축된 문법</text>
+      <text x="649" y="642">· 언어 차원 Null 안전성</text>
+      <text x="649" y="663">· Android 앱 공식 1순위</text>
+    </g>
+
+    <rect x="649" y="684" width="161" height="46" rx="7" fill="#fffbeb" stroke="#fcd34d"/>
+    <text x="729" y="704" text-anchor="middle" font-size="10.5" font-weight="700" fill="#92400e">✓ Java의 장황함·Null 해결</text>
+    <text x="729" y="720" text-anchor="middle" font-size="10.2" fill="#b45309">모바일 · Spring 차세대 주력</text>
+  </g>
+
+  <!-- 컬럼 2 하단 보충 노트 -->
+  <rect x="438" y="756" width="384" height="36" rx="8" fill="#ffffff" stroke="#fcd34d"/>
+  <text x="630" y="779" text-anchor="middle" font-size="10.8" fill="#334155">※ 수백 명이 협업하는 초대형 시스템에서 일관된 구조와 안정성 보장</text>
+
+
+  <!-- ====================================================================== -->
+  <!-- 우측 컬럼: 스크립트 (빠른 개발) — Python, JS → TypeScript     -->
+  <!-- ====================================================================== -->
+  <g clip-path="url(#clipCol3)">
+    <rect x="862" y="108" width="366" height="698" fill="#f0fdf4"/>
+    <rect x="862" y="108" width="366" height="86" fill="#dcfce7"/>
+    <line x1="862" y1="194" x2="1228" y2="194" stroke="#86efac" stroke-width="1.5"/>
+  </g>
+  <rect data-key="col-script" x="862" y="108" width="366" height="698" rx="14" fill="none" stroke="#6ee7b7" stroke-width="1.8"/>
+
+  <!-- 컬럼 3 헤더 -->
+  <rect x="878" y="119" width="128" height="22" rx="11" fill="#059669"/>
+  <text x="942" y="134" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">원문 즉시 실행</text>
+  <rect x="1036" y="119" width="176" height="22" rx="5" fill="#ffffff" stroke="#86efac"/>
+  <text x="1124" y="134" text-anchor="middle" font-family="'D2Coding', Consolas, monospace" font-size="10.8" font-weight="700" fill="#047857">.py / .js → 실행기(엔진)</text>
+  <text x="878" y="162" font-size="18" font-weight="800" fill="#065f46">스크립트 (인터프리터 · JIT)</text>
+  <text x="878" y="183" font-size="12.2" font-weight="700" fill="#047857">빠른 개발 중시 <tspan font-weight="500" fill="#334155">· 동적 타입</tspan></text>
+
+  <!-- [⑦ Python] -->
+  <g filter="url(#cardShadow)">
+    <rect data-key="lang-python" x="878" y="210" width="334" height="128" rx="12" fill="#ffffff" stroke="#059669" stroke-width="2.4"/>
+    <text x="894" y="239" font-size="19.5" font-weight="800" fill="#065f46">⑦ Python</text>
+    <rect x="996" y="222" width="150" height="21" rx="5" fill="#dcfce7"/>
+    <text x="1071" y="237" text-anchor="middle" font-size="11" font-weight="700" fill="#065f46">압도적 가독성 · CPython</text>
+    <rect x="1154" y="222" width="44" height="21" rx="10.5" fill="#059669"/>
+    <text x="1176" y="237" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">1991</text>
+
+    <text x="894" y="268" font-size="11.6" fill="#334155">· AI · 머신러닝 · 데이터 과학 · 자동화 절대 강자</text>
+    <text x="894" y="288" font-size="11.6" fill="#334155">· 고속 행렬 연산은 C/C++ 엔진 부품 결합으로 해결</text>
+    <text x="894" y="308" font-size="11.2" fill="#047857" font-weight="700">· 직관적 문법으로 비전공자~연구원까지 생태계 장악</text>
+  </g>
+
+  <!-- ⑦ Python - ⑧ JavaScript 쌍두마차 연결 -->
+  <line x1="1045" y1="338" x2="1045" y2="378" stroke="#059669" stroke-width="1.8" stroke-dasharray="4 3"/>
+  <rect x="951" y="348" width="188" height="20" rx="10" fill="#dcfce7" stroke="#86efac"/>
+  <text x="1045" y="362" text-anchor="middle" font-size="10.5" font-weight="700" fill="#065f46">동적 스크립트 쌍두마차 (영역 분담)</text>
+
+  <!-- [⑧ JavaScript] -->
+  <g filter="url(#cardShadow)">
+    <rect data-key="lang-js" x="878" y="378" width="334" height="176" rx="12" fill="#ffffff" stroke="#059669" stroke-width="2"/>
+    <text x="894" y="407" font-size="18.5" font-weight="800" fill="#065f46">⑧ JavaScript</text>
+    <rect x="1024" y="390" width="124" height="21" rx="5" fill="#dcfce7"/>
+    <text x="1086" y="405" text-anchor="middle" font-size="10.8" font-weight="700" fill="#065f46">웹 독점 · V8 JIT</text>
+    <rect x="1154" y="390" width="44" height="21" rx="10.5" fill="#f0fdf4" stroke="#86efac"/>
+    <text x="1176" y="405" text-anchor="middle" font-size="11" font-weight="700" fill="#047857">1995</text>
+
+    <text x="894" y="434" font-size="11.6" fill="#334155">· 모든 웹 브라우저 화면(UI) 독점 표준 언어</text>
+    <text x="894" y="454" font-size="11.6" fill="#334155">· V8 JIT 고속 엔진 + Node.js로 서버·앱까지 통합</text>
+
+    <rect x="890" y="468" width="310" height="72" rx="7" fill="#fef2f2" stroke="#fca5a5"/>
+    <text x="902" y="487" font-size="11" font-weight="800" fill="#b91c1c">[⑦·⑧ 동적 스크립트 공통 한계]</text>
+    <text x="902" y="506" font-size="10.8" fill="#991b1b">실행 전까지 변수·함수 타입 오류를 잡아내지 못함</text>
+    <text x="902" y="524" font-size="10.8" fill="#991b1b">규모가 커질수록 런타임 버그 급증 (대형화 장벽)</text>
+  </g>
+
+  <!-- 화살표 ⑧ -> ⑨ -->
+  <line x1="1045" y1="554" x2="1045" y2="594" stroke="#059669" stroke-width="2.2" marker-end="url(#arrTeal)"/>
+  <rect x="963" y="564" width="164" height="20" rx="10" fill="#dcfce7" stroke="#86efac"/>
+  <text x="1045" y="578" text-anchor="middle" font-size="10.8" font-weight="700" fill="#065f46">정적 타입 결합 진화</text>
+
+  <!-- [⑨ TypeScript] -->
+  <g filter="url(#cardShadow)">
+    <rect data-key="lang-ts" x="878" y="598" width="334" height="146" rx="12" fill="#ffffff" stroke="#0d9488" stroke-width="2"/>
+    <text x="894" y="627" font-size="18.5" font-weight="800" fill="#0f766e">⑨ TypeScript</text>
+    <rect x="1024" y="610" width="124" height="21" rx="5" fill="#ccfbf1"/>
+    <text x="1086" y="625" text-anchor="middle" font-size="10.8" font-weight="700" fill="#0f766e">JS + 정적 타입</text>
+    <rect x="1154" y="610" width="44" height="21" rx="10.5" fill="#f0fdfa" stroke="#5eead4"/>
+    <text x="1176" y="625" text-anchor="middle" font-size="11" font-weight="700" fill="#0f766e">2012</text>
+
+    <text x="894" y="654" font-size="11.6" fill="#334155">· 컴파일(변환) 단계에서 타입 버그를 사전 원천 차단</text>
+    <text x="894" y="674" font-size="11.6" fill="#334155">· 검증 후 JS로 변환 실행 · 현대 대규모 웹 실무 표준</text>
+
+    <rect x="890" y="692" width="310" height="38" rx="7" fill="#f0fdfa" stroke="#5eead4"/>
+    <text x="1045" y="716" text-anchor="middle" font-size="11" font-weight="800" fill="#0f766e">✓ 빠른 스크립트 개발 + 대규모 협업 안전망 완성</text>
+  </g>
+
+  <!-- 컬럼 3 하단 Python 병행 진화 노트 -->
+  <rect x="878" y="756" width="334" height="36" rx="8" fill="#ffffff" stroke="#86efac" stroke-dasharray="4 3"/>
+  <text x="1045" y="779" text-anchor="middle" font-size="10.8" fill="#334155">※ <tspan font-weight="800" fill="#065f46">Python</tspan>도 동일 흐름으로 <tspan font-weight="700" fill="#047857">Type Hints + Rust 고속화</tspan> 진화 중</text>
+
+
+
+</svg>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="script">
+          <p data-cue="choice:box">외국인 관람객이 찾는 관광지에 안내판을 세운다고 상상해 보겠습니다. 많이 오는 국가의 언어를 안내판에 직접 적어 두면 사전 없이 가장 빠르게 읽을 수 있는데 이것이 C 언어의 방식이고, 영어라는 공용어로 통일하는 방식이 Java, 안내판마다 QR 코드를 넣고 번역 앱으로 읽게 하는 방식이 Python입니다.</p>
+          <p data-cue="asm-root:box">계통도의 맨 위 뿌리인 기계어와 어셈블리에서 출발해 현존 주류 언어들은 크게 세 갈래로 진화했습니다. <span data-cue="col-native:box lang-c:box">첫째는 하드웨어 네이티브 계열입니다. OS와 임베디드의 뿌리인 C에서 시작해</span> <span data-cue="lang-cpp:box">대형 객체지향을 더한 C++,</span> <span data-cue="lang-rust:box">그리고 가비지 컬렉터 없이도 메모리 안전성을 보장하는 Rust로 발전하며 최고의 실행 성능을 담당합니다.</span></p>
+          <p data-cue="col-vm:box lang-java:box">둘째는 가상머신 계열입니다. OS마다 재컴파일해야 하는 고통과 포인터 실수를 없애기 위해 중간 바이트코드로 번역하고 JVM 위에서 구동하는 Java가 등장했고, <span data-cue="lang-csharp:box lang-kotlin:box">이후 C#과 Kotlin이 문법의 장황함과 Null 오류를 해결하며 대규모 기업·모바일 협업 표준으로 자리 잡았습니다.</span></p>
+          <p data-cue="col-script:box lang-python:box lang-js:box">셋째는 원문을 즉시 실행해 빠른 개발을 중시하는 스크립트 계열로, AI 생태계를 장악한 Python과 웹 표준인 JavaScript가 대표적이며 <span data-cue="lang-ts:box">대규모 프로젝트의 타입 오류를 막기 위해 TypeScript로 진화했습니다.</span> <mark data-cue="choice:underline vidlink:box">결국 어느 언어가 더 우수하다기보다 실행될 환경과 목적의 문제이며, 메모장만으로 각 언어를 직접 구동해 비교한 사례는 왼쪽 아래 구동 비교 영상에서 확인하실 수 있습니다.</mark></p>
+          <p class="meta"><time datetime="2026-11-17">2026-11-17</time> · 오른쪽 위 그림 아이콘을 누르면 계통도를 창 전체 크기로 확대하고 텍스트를 선택할 수 있습니다</p>
+        </div>
+      </section>
+
+      <!-- 2p. 코딩 환경의 진화 (IDE 중심 -> AI Agent 중심) -->
+      <section id="s2" data-title="2 코딩 환경의 진화">
+        <h2>코딩 환경의 진화</h2>
+        <div class="slide-frame" data-img="/coding/svg/c-dev-ecosystem.svg" data-img-caption="통합개발환경(IDE) · Code Editor · Toolchain 포함 관계와 AI Agent 중심 생태계">
+          <div class="slide">
+            <div class="slide-body is-wide-fig">
+              <div class="slide-head-pad">
+                <span class="slide-eyebrow"><b class="slide-no">2</b>코딩 환경</span>
+                <div class="slide-title" role="heading" aria-level="3">코딩 환경의 진화 — IDE 중심에서 AI Agent 중심으로</div>
+              </div>
+              <ul class="points">
+                <li data-key="p2shift"><b>중심축 이동</b>: 개발 환경이 무거운 <b>IDE 중심 ➔ AI Agent 중심</b>으로 재편 (형상관리·원격환경까지 에이전트의 Extension으로 결합)</li>
+                <li data-key="p2lesscode"><b>역할의 변화</b>: 에이전트가 작성·빌드·디버깅을 대행하면서 <b>사람이 코드를 직접 들여다보고 타이핑할 일이 급격히 감소</b></li>
+              </ul>
+              <div class="c-svg-wide">
+                <svg class="c-rich-svg" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="1240" height="620" viewBox="0 0 1240 620" font-family="'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif">
+  <title>통합개발환경(IDE) · Code Editor · Toolchain 포함 관계와 Extensions 생태계</title>
+  <desc>좌측에는 Text Editor와 LSP가 합쳐진 Code Editor, 여기에 Toolchain(컴파일러·디버거·표준 라이브러리)이 더해진 통합개발환경(IDE)의 중첩 구조를 보여주고, 우측에는 AI Agent를 중심으로 형상 관리(Git), 가상·원격 환경(WSL·Docker·SSH), 포매터·린터, 특수 뷰어·테마가 Extensions/Plug-ins로 결합되는 구조를 나타낸 도식입니다.</desc>
+
+  <defs>
+    <marker id="eco-arr-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M1,1.5 L8.5,5 L1,8.5 Z" fill="#7c3aed"/>
+    </marker>
+
+    <filter id="eco-shadow" x="-2%" y="-2%" width="104%" height="106%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.06"/>
+    </filter>
+    <filter id="agent-glow" x="-3%" y="-4%" width="106%" height="110%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#7c3aed" flood-opacity="0.18"/>
+    </filter>
+
+    <clipPath id="clip-ide-outer"><rect x="28" y="20" width="680" height="580" rx="14"/></clipPath>
+    <clipPath id="clip-txt-ed"><rect x="64" y="138" width="252" height="150" rx="9"/></clipPath>
+    <clipPath id="clip-lsp-ed"><rect x="364" y="138" width="308" height="150" rx="9"/></clipPath>
+    <clipPath id="clip-ext-outer"><rect x="764" y="20" width="448" height="580" rx="14"/></clipPath>
+    <clipPath id="clip-agent-card"><rect x="780" y="84" width="416" height="132" rx="11"/></clipPath>
+  </defs>
+
+  <!-- 전체 종이 배경 -->
+  <rect width="1240" height="620" rx="16" fill="#fcfcfa" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- ================================================================================= -->
+  <!-- [LEFT] 통합개발환경 (IDE) 중첩 포함 구조                                          -->
+  <!-- ================================================================================= -->
+  <g clip-path="url(#clip-ide-outer)" filter="url(#eco-shadow)">
+    <rect x="28" y="20" width="680" height="580" rx="14" fill="#ffffff"/>
+    <rect x="28" y="20" width="680" height="54" fill="#f1f5f9"/>
+  </g>
+  <rect data-key="ide" x="28" y="20" width="680" height="580" rx="14" fill="none" stroke="#1e293b" stroke-width="2.6"/>
+  <line x1="28" y1="74" x2="708" y2="74" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <text x="48" y="53" font-size="17" font-weight="800" fill="#0f172a">통합개발환경 (IDE)</text>
+  <rect x="218" y="34" width="470" height="26" rx="13" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="453" y="51" text-anchor="middle" font-size="11.8" font-weight="700" fill="#334155">예: MSVS (Visual Studio), CLion, Xcode, Eclipse, IntelliJ</text>
+
+  <!-- ==================== [LEFT-UPPER] Code Editor ==================== -->
+  <rect data-key="codeeditor" x="48" y="90" width="640" height="214" rx="12" fill="#eff6ff" stroke="#2563eb" stroke-width="2.2"/>
+  <text x="66" y="118" font-size="15.5" font-weight="800" fill="#1e3a8a">Code Editor (코드 에디터)</text>
+  <rect x="272" y="100" width="224" height="24" rx="12" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="384" y="116" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1d4ed8">예: VS Code, Cursor, Neovim</text>
+  <text x="672" y="116" text-anchor="end" font-size="11" font-weight="700" fill="#2563eb">가볍고 빠른 코드 편집</text>
+
+  <!-- [Inner 1] Text Editor -->
+  <g clip-path="url(#clip-txt-ed)">
+    <rect x="64" y="138" width="252" height="150" rx="9" fill="#ffffff"/>
+    <rect x="64" y="138" width="252" height="34" fill="#f8fafc"/>
+  </g>
+  <rect data-key="texteditor" x="64" y="138" width="252" height="150" rx="9" fill="none" stroke="#94a3b8" stroke-width="1.6"/>
+  <line x1="64" y1="172" x2="316" y2="172" stroke="#e2e8f0" stroke-width="1.2"/>
+  <text x="78" y="160" font-size="13.5" font-weight="800" fill="#1e293b">Text Editor</text>
+  <rect x="192" y="145" width="112" height="20" rx="10" fill="#e2e8f0"/>
+  <text x="248" y="159" text-anchor="middle" font-size="10.5" font-weight="700" fill="#334155">Notepad (메모장)</text>
+
+  <g font-size="11.5" fill="#334155">
+    <text x="78" y="196">· 단순 텍스트 입력 및 저장</text>
+    <text x="78" y="218">· 문자 인코딩(UTF-8) 처리</text>
+    <text x="78" y="240" fill="#64748b">· 문법 검사 · 자동완성 없음</text>
+  </g>
+  <text x="78" y="272" font-size="10.3" font-weight="700" fill="#64748b">가장 기본적인 문서 작성 도구</text>
+
+  <!-- [+] 기호 (Text Editor + LSP) -->
+  <circle cx="340" cy="213" r="14" fill="#2563eb"/>
+  <text x="340" y="219" text-anchor="middle" font-size="18" font-weight="800" fill="#ffffff">+</text>
+
+  <!-- [Inner 2] 언어 지능: LSP -->
+  <g clip-path="url(#clip-lsp-ed)">
+    <rect x="364" y="138" width="308" height="150" rx="9" fill="#ffffff"/>
+    <rect x="364" y="138" width="308" height="34" fill="#dbeafe"/>
+  </g>
+  <rect data-key="lsp" x="364" y="138" width="308" height="150" rx="9" fill="none" stroke="#3b82f6" stroke-width="1.8"/>
+  <line x1="364" y1="172" x2="672" y2="172" stroke="#bfdbfe" stroke-width="1.2"/>
+  <text x="378" y="160" font-size="13.5" font-weight="800" fill="#1e3a8a">언어 지능: LSP</text>
+  <rect x="546" y="145" width="114" height="20" rx="10" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="603" y="159" text-anchor="middle" font-size="10.5" font-weight="700" fill="#1d4ed8">MS: IntelliSense</text>
+
+  <g font-size="11.5" fill="#334155">
+    <text x="378" y="196">· 실시간 문법 검사 · <tspan font-weight="700" fill="#1d4ed8">Tab 자동완성</tspan></text>
+    <text x="378" y="218">· <tspan font-weight="700" fill="#1d4ed8">F12 정의 이동</tspan> · 구문 강조(색상)</text>
+    <text x="378" y="240">· 함수 매개변수 힌트 · 심볼 참조 검색</text>
+  </g>
+  <text x="378" y="272" font-size="10.3" font-weight="700" fill="#2563eb">Language Server Protocol (clangd, C/C++ Ext)</text>
+
+  <!-- ==================== [+] 기호 (Code Editor + Toolchain) ==================== -->
+  <circle cx="368" cy="323" r="14" fill="#1e293b"/>
+  <text x="368" y="329" text-anchor="middle" font-size="18" font-weight="800" fill="#ffffff">+</text>
+
+  <!-- ==================== [LEFT-LOWER] 툴체인 (Toolchain / SDK) ==================== -->
+  <rect data-key="toolchain" x="48" y="342" width="640" height="242" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="2.2"/>
+  <text x="66" y="370" font-size="15.5" font-weight="800" fill="#9a3412">툴체인 (Toolchain / SDK)</text>
+  <rect x="282" y="351" width="390" height="25" rx="12.5" fill="#ffedd5" stroke="#fdba74"/>
+  <text x="477" y="368" text-anchor="middle" font-size="11.2" font-weight="800" fill="#c2410c">VS Code는 외부 별도 설치(PATH)  │  IDE는 기본 내장</text>
+
+  <!-- ① 빌드 컴파일러 묶음 -->
+  <rect data-key="tc-compiler" x="64" y="388" width="608" height="52" rx="8" fill="#ffffff" stroke="#fdba74" stroke-width="1.4"/>
+  <rect x="74" y="399" width="144" height="30" rx="6" fill="#fff7ed"/>
+  <text x="146" y="419" text-anchor="middle" font-size="12" font-weight="800" fill="#9a3412">① 빌드 컴파일러 묶음</text>
+  <text x="230" y="419" font-size="11.8" fill="#334155">전처리기 + 컴파일러 + 어셈블러 + 링커 <tspan font-weight="700" fill="#c2410c">(gcc, Clang, MSVC)</tspan></text>
+
+  <!-- ② 디버거 -->
+  <rect data-key="tc-debugger" x="64" y="448" width="608" height="52" rx="8" fill="#ffffff" stroke="#fdba74" stroke-width="1.4"/>
+  <rect x="74" y="459" width="144" height="30" rx="6" fill="#ecfdf5"/>
+  <text x="146" y="479" text-anchor="middle" font-size="12" font-weight="800" fill="#065f46">② 디버거 (Debugger)</text>
+  <text x="230" y="479" font-size="11.8" fill="#334155">실행 중 메모리 · 변수 · 중단점(Breakpoint) 추적 <tspan font-weight="700" fill="#047857">(GDB, LLDB)</tspan></text>
+
+  <!-- ③ 표준 라이브러리 -->
+  <rect data-key="tc-stdlib" x="64" y="508" width="608" height="64" rx="8" fill="#ffffff" stroke="#fdba74" stroke-width="1.4"/>
+  <rect x="74" y="520" width="144" height="40" rx="6" fill="#eff6ff"/>
+  <text x="146" y="545" text-anchor="middle" font-size="12" font-weight="800" fill="#1e3a8a">③ 표준 라이브러리</text>
+  <text x="230" y="533" font-size="11.8" fill="#334155">언어 기본 동봉 부품 <tspan font-weight="700" fill="#1d4ed8">(C libc, C++ STL)</tspan></text>
+  <text x="230" y="555" font-size="11" fill="#64748b">(+ 필요 시 외부 라이브러리 / 패키지 연결: OpenCV, SDL 등)</text>
+
+  <!-- ================================================================================= -->
+  <!-- [CENTER] 좌우 결합 기호 (➕) 및 Agent 실선 제어 화살표                             -->
+  <!-- ================================================================================= -->
+  <line x1="776" y1="150" x2="692" y2="150" stroke="#7c3aed" stroke-width="2.2" marker-end="url(#eco-arr-purple)"/>
+
+  <line x1="708" y1="310" x2="764" y2="310" stroke="#334155" stroke-width="2.2"/>
+  <circle cx="736" cy="310" r="17" fill="#0f172a"/>
+  <text x="736" y="317" text-anchor="middle" font-size="20" font-weight="800" fill="#ffffff">+</text>
+
+  <!-- ================================================================================= -->
+  <!-- [RIGHT] Extensions / Plug-ins & AI Agent 중심 허브                                -->
+  <!-- ================================================================================= -->
+  <g clip-path="url(#clip-ext-outer)" filter="url(#eco-shadow)">
+    <rect x="764" y="20" width="448" height="580" rx="14" fill="#faf5ff"/>
+    <rect x="764" y="20" width="448" height="54" fill="#ede9fe"/>
+  </g>
+  <rect data-key="extensions" x="764" y="20" width="448" height="580" rx="14" fill="none" stroke="#7c3aed" stroke-width="2.2" stroke-dasharray="8 4"/>
+  <line x1="764" y1="74" x2="1212" y2="74" stroke="#ddd6fe" stroke-width="1.5"/>
+
+  <text x="782" y="52" font-size="16" font-weight="800" fill="#4c1d95">➕ Extensions / Plug-ins</text>
+  <text x="1196" y="52" text-anchor="end" font-size="11.5" font-weight="700" fill="#6d28d9">플러그인 · 확장팩</text>
+
+  <!-- [Ext 1 / CENTER HUB] AI Agent -->
+  <g clip-path="url(#clip-agent-card)" filter="url(#agent-glow)">
+    <rect x="780" y="84" width="416" height="132" rx="11" fill="#ffffff"/>
+    <rect x="780" y="84" width="416" height="36" fill="#7c3aed"/>
+  </g>
+  <rect data-key="ext-agent" x="780" y="84" width="416" height="132" rx="11" fill="none" stroke="#6d28d9" stroke-width="2.6"/>
+  <text x="794" y="107" font-size="13.8" font-weight="800" fill="#ffffff">✦ AI Agent (에이전트)</text>
+  <rect x="984" y="91" width="200" height="22" rx="11" fill="#fef08a"/>
+  <text x="1084" y="106" text-anchor="middle" font-size="10.5" font-weight="800" fill="#713f12">최근: 플러그인 ➔ 개발의 중심!</text>
+
+  <text x="794" y="140" font-size="11.5" font-weight="700" fill="#4c1d95">예: Antigravity, Claude, Copilot, Cursor</text>
+  <text x="794" y="160" font-size="11.3" fill="#334155">· 코드 생성 · 리팩토링 · 빌드/런타임 오류 자율 분석</text>
+  <rect x="792" y="172" width="392" height="32" rx="6" fill="#f5f3ff" stroke="#c4b5fd"/>
+  <text x="988" y="192" text-anchor="middle" font-size="10.8" font-weight="800" fill="#5b21b6">▼ 아래 도구(Git · 원격환경 등)도 Agent의 Extension(MCP·스킬)으로 결합</text>
+
+  <!-- Agent -> 하위 확장팩 수직 제어 트리 버스 (├─, ├─, ├─, └─) -->
+  <path d="M798,216 L798,539" fill="none" stroke="#7c3aed" stroke-width="2.4"/>
+  <line x1="798" y1="268" x2="816" y2="268" stroke="#7c3aed" stroke-width="2.2" marker-end="url(#eco-arr-purple)"/>
+  <line x1="798" y1="356" x2="816" y2="356" stroke="#7c3aed" stroke-width="2.2" marker-end="url(#eco-arr-purple)"/>
+  <line x1="798" y1="444" x2="816" y2="444" stroke="#7c3aed" stroke-width="2.2" marker-end="url(#eco-arr-purple)"/>
+  <line x1="798" y1="539" x2="816" y2="539" stroke="#7c3aed" stroke-width="2.2" marker-end="url(#eco-arr-purple)"/>
+
+  <!-- [Ext 2] 형상 관리 연동 -->
+  <rect data-key="ext-vcs" x="818" y="230" width="378" height="76" rx="9" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="832" y="253" font-size="13" font-weight="800" fill="#1e293b">⎇ 형상 관리 연동</text>
+  <rect x="1038" y="238" width="146" height="20" rx="10" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="1111" y="252" text-anchor="middle" font-size="10.2" font-weight="700" fill="#334155">Git 내장 UI · GitLens</text>
+  <text x="832" y="275" font-size="11.2" fill="#334155">· Git 변경 이력 시각화 · 브랜치 비교 · 충돌 해결</text>
+  <text x="832" y="294" font-size="10.5" font-weight="700" fill="#6d28d9">· Agent 확장: 변경 요약, 커밋/PR 초안 및 이력 추적</text>
+
+  <!-- [Ext 3] 가상 · 원격 환경 -->
+  <rect data-key="ext-remote" x="818" y="318" width="378" height="76" rx="9" fill="#ffffff" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="832" y="341" font-size="13" font-weight="800" fill="#0c4a6e">☁ 가상 · 원격 환경</text>
+  <rect x="1024" y="326" width="160" height="20" rx="10" fill="#e0f2fe" stroke="#7dd3fc"/>
+  <text x="1104" y="340" text-anchor="middle" font-size="10.2" font-weight="700" fill="#0369a1">WSL · Docker · SSH · venv</text>
+  <text x="832" y="363" font-size="11.2" fill="#334155">· 타 OS(Linux) · 컨테이너 · 원격 서버 직접 접속 코딩</text>
+  <text x="832" y="382" font-size="10.5" font-weight="700" fill="#6d28d9">· Agent 확장: 격리 샌드박스·원격 서버에 직접 명령 실행</text>
+
+  <!-- [Ext 4] 포매터 · 린터 -->
+  <rect data-key="ext-lint" x="818" y="406" width="378" height="76" rx="9" fill="#ffffff" stroke="#34d399" stroke-width="1.5"/>
+  <text x="832" y="429" font-size="13" font-weight="800" fill="#065f46">✨ 포매터 · 린터</text>
+  <rect x="1032" y="414" width="152" height="20" rx="10" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="1108" y="428" text-anchor="middle" font-size="10.2" font-weight="700" fill="#047857">Clang-Format · Prettier</text>
+  <text x="832" y="451" font-size="11.2" fill="#334155">· 코딩 스타일(들여쓰기 · 중괄호) 규칙 자동 정렬</text>
+  <text x="832" y="470" font-size="10.5" fill="#64748b">· 잠재적 코드 결함 사전 경고 · 협업 코드 일관성 유지</text>
+
+  <!-- [Ext 5] 특수 뷰어 · 테마 -->
+  <rect data-key="ext-viewer" x="818" y="494" width="378" height="90" rx="9" fill="#ffffff" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="832" y="517" font-size="13" font-weight="800" fill="#92400e">🔍 특수 뷰어 · 테마</text>
+  <rect x="1038" y="502" width="146" height="20" rx="10" fill="#fefce8" stroke="#fde047"/>
+  <text x="1111" y="516" text-anchor="middle" font-size="10.2" font-weight="700" fill="#a16207">Hex Editor · MD/SVG</text>
+  <text x="832" y="539" font-size="11.2" fill="#334155">· 이진수(.o / .exe) 내부 분석용 Hex Editor</text>
+  <text x="832" y="558" font-size="11.2" fill="#334155">· 마크다운 / SVG 미리보기 뷰어, 한글 언어팩 · 테마</text>
+  <text x="832" y="575" font-size="10.3" fill="#64748b">· 목적에 맞춰 개발 환경을 시각적으로 커스터마이징</text>
+</svg>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="script">
+          <p data-cue="texteditor:box lsp:box codeeditor:box">두 번째 슬라이드는 개발 도구의 포함 구조와 최근의 거대한 패러다임 변화를 보여 줍니다. 단순 텍스트만 적는 메모장(Text Editor)에 자동완성과 문법 검사를 맡는 언어 지능(LSP)을 더한 것이 VS Code 같은 코드 에디터입니다.</p>
+          <p data-cue="toolchain:box tc-compiler:box tc-debugger:box tc-stdlib:box ide:box">여기에 실제 번역기인 컴파일러 묶음과 디버거, 표준 라이브러리를 뜻하는 툴체인(Toolchain)까지 한 상자에 기본 내장한 것이 Visual Studio 같은 통합개발환경(IDE)입니다. VS Code는 이 툴체인을 외부에서 별도로 설치해 조립한다는 점이 다릅니다.</p>
+          <p data-cue="extensions:box ext-vcs:box ext-remote:box ext-lint:box ext-viewer:box">오른쪽의 확장팩(Extensions) 영역에는 Git 형상 관리, WSL이나 Docker 같은 가상·원격 환경, 코드 정렬 포매터, 이진수를 분석하는 Hex 뷰어 등이 플러그인으로 결합됩니다.</p>
+          <p data-cue="p2shift:check p2lesscode:check ext-agent:box"><mark>여기서 가장 주목할 변화는 코딩 환경의 중심이 과거의 IDE 중심에서 AI Agent 중심으로 빠르게 옮겨 가고 있다는 점입니다.</mark> 예전에는 AI가 에디터에 꽂히는 작은 보조 플러그인에 불과했지만, 최근의 Antigravity나 Claude 같은 에이전트는 오히려 자신이 중심 사령탑이 되어 에디터와 컴파일러는 물론 Git과 원격 서버 환경까지 자기 도구(Extension)로 직접 부립니다. <mark>그만큼 개발자가 모든 코드 줄을 직접 눈으로 읽고 손으로 칠 일이 크게 줄어들었으며, 이제는 각 도구의 역할과 원리를 이해하고 에이전트를 올바르게 지휘·검증하는 역량이 핵심이 되었습니다.</mark></p>
+          <p class="meta"><time datetime="2026-11-17">2026-11-17</time> · 오른쪽 위 그림 아이콘을 누르면 전체 생태계 도식을 크게 볼 수 있습니다</p>
+        </div>
+      </section>
+
+      <!-- 3p. IDE · 모던 에디터의 공통 화면 구성 -->
+      <section id="s3" data-title="3 IDE 환경의 공통 화면 구성">
+        <h2>IDE 환경의 공통 화면 구성</h2>
+        <div class="slide-frame" data-img="/coding/svg/c-ide-layout.svg" data-img-caption="IDE 및 모던 코드 에디터의 공통 화면 구성 블록도">
+          <div class="slide">
+            <div class="slide-body is-wide-fig">
+              <div class="slide-head-pad">
+                <span class="slide-eyebrow"><b class="slide-no">3</b>IDE 화면</span>
+                <div class="slide-title" role="heading" aria-level="3">IDE · 모던 에디터의 공통 화면 구성</div>
+              </div>
+              <ul class="points">
+                <li data-key="uistd"><b>주요 패널</b>: 상단 Menu Bar(명령 팔레트) · 좌측 Activity/Left Side Bar · 중앙 Editor Area · 우측 AI Side Bar · 하단 <b>Drawer</b> · 최하단 Status Bar</li>
+                <li data-key="uisub"><b>부가 핵심 UI</b>: 문맥을 고정하는 <b>Breadcrumbs · Sticky Scroll</b>과 하단 Drawer의 <b>Terminal · Log/Debug Console · Problems</b></li>
+              </ul>
+              <div class="c-svg-wide">
+                <svg class="c-rich-svg" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="960" height="480" viewBox="0 0 960 480" font-family="'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif">
+  <title>IDE 및 모던 코드 에디터의 공통 화면 구성 블록도</title>
+  <desc>상단 Menu Bar, 좌측 끝 Activity Bar, 좌측 Left Side Bar, 중앙 Editor Area와 그 위에 뜨는 Command Palette(명령 팔레트), 하단 Panel, 우측 Right Side Bar, 최하단 Status Bar로 이루어진 현대 개발 도구의 표준 화면 구성도입니다.</desc>
+
+  <defs>
+    <filter id="paletteShadow" x="-6%" y="-8%" width="112%" height="124%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#0f172a" flood-opacity="0.38"/>
+    </filter>
+    <clipPath id="clipLeftSb"><rect x="86" y="58" width="178" height="368" rx="8"/></clipPath>
+    <clipPath id="clipRightSb"><rect x="756" y="58" width="192" height="368" rx="8"/></clipPath>
+    <clipPath id="clipEditor"><rect x="272" y="58" width="476" height="238" rx="8"/></clipPath>
+    <clipPath id="clipPanel"><rect x="272" y="304" width="476" height="122" rx="8"/></clipPath>
+  </defs>
+
+  <!-- 외부 창 프레임 -->
+  <rect width="960" height="480" rx="14" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+
+  <!-- ==================== 1. Menu Bar (상단 메뉴 바) ==================== -->
+  <rect data-key="menubar" x="12" y="12" width="936" height="38" rx="8" fill="#eff6ff" stroke="#60a5fa" stroke-width="1.6"/>
+  <circle cx="30" cy="31" r="4.8" fill="#f87171"/>
+  <circle cx="45" cy="31" r="4.8" fill="#fbbf24"/>
+  <circle cx="60" cy="31" r="4.8" fill="#34d399"/>
+  <text x="80" y="35" font-size="12.5" font-weight="800" fill="#1e3a8a">Menu Bar</text>
+  <text x="162" y="35" font-size="11.3" fill="#475569">File    Edit    Selection    View    Build    Run    Help</text>
+
+  <!-- 상단 중앙 팔레트 호출 검색창 -->
+  <rect x="492" y="19" width="268" height="24" rx="12" fill="#ffffff" stroke="#93c5fd" stroke-width="1.2"/>
+  <text x="626" y="35" text-anchor="middle" font-size="10.8" font-weight="700" fill="#2563eb">⌘/Ctrl+Shift+P  ·  명령 팔레트 호출</text>
+
+  <!-- 우측 창 구획 토글 배지 -->
+  <rect x="780" y="20" width="154" height="22" rx="6" fill="#dbeafe"/>
+  <text x="857" y="35" text-anchor="middle" font-size="10.2" font-weight="700" fill="#1e40af">좌 · 하 · 우 보조창 개폐</text>
+
+
+  <!-- ==================== 2. Activity Bar (좌측 아이콘 레일) ==================== -->
+  <rect data-key="activitybar" x="12" y="58" width="66" height="368" rx="8" fill="#f5f3ff" stroke="#a78bfa" stroke-width="1.6"/>
+  <text x="45" y="79" text-anchor="middle" font-size="10.8" font-weight="800" fill="#5b21b6">Activity</text>
+  <text x="45" y="93" text-anchor="middle" font-size="10.3" font-weight="700" fill="#6d28d9">Bar</text>
+
+  <rect x="23" y="108" width="44" height="32" rx="7" fill="#7c3aed"/>
+  <text x="45" y="128" text-anchor="middle" font-size="10.5" font-weight="700" fill="#ffffff">탐색</text>
+
+  <rect x="23" y="148" width="44" height="32" rx="7" fill="#ffffff" stroke="#c4b5fd"/>
+  <text x="45" y="168" text-anchor="middle" font-size="10.5" fill="#5b21b6">검색</text>
+
+  <rect x="23" y="188" width="44" height="32" rx="7" fill="#ffffff" stroke="#c4b5fd"/>
+  <text x="45" y="208" text-anchor="middle" font-size="10.5" fill="#5b21b6">Git</text>
+
+  <rect x="23" y="228" width="44" height="32" rx="7" fill="#ffffff" stroke="#c4b5fd"/>
+  <text x="45" y="248" text-anchor="middle" font-size="10" fill="#5b21b6">디버그</text>
+
+  <rect x="23" y="268" width="44" height="32" rx="7" fill="#ffffff" stroke="#c4b5fd"/>
+  <text x="45" y="288" text-anchor="middle" font-size="10.5" fill="#5b21b6">확장</text>
+
+  <rect x="23" y="382" width="44" height="30" rx="7" fill="#ede9fe" stroke="#c4b5fd"/>
+  <text x="45" y="401" text-anchor="middle" font-size="10" font-weight="700" fill="#5b21b6">설정</text>
+
+
+  <!-- ==================== 3. Left Side Bar (좌측 사이드 바) ==================== -->
+  <g clip-path="url(#clipLeftSb)">
+    <rect x="86" y="58" width="178" height="368" fill="#ffffff"/>
+    <rect x="86" y="58" width="178" height="32" fill="#f1f5f9"/>
+    <line x1="86" y1="90" x2="264" y2="90" stroke="#e2e8f0" stroke-width="1.2"/>
+  </g>
+  <rect data-key="leftsidebar sidebar" x="86" y="58" width="178" height="368" rx="8" fill="none" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="98" y="79" font-size="12" font-weight="800" fill="#1e293b">Left Side Bar</text>
+  <rect x="214" y="65" width="40" height="18" rx="9" fill="#e2e8f0"/>
+  <text x="234" y="78" text-anchor="middle" font-size="9.8" font-weight="700" fill="#334155">좌측</text>
+
+  <text x="98" y="110" font-size="10.5" font-weight="700" fill="#475569">프로젝트 파일 트리 · Git</text>
+
+  <g font-family="'D2Coding', 'Consolas', monospace" font-size="10.8" fill="#334155">
+    <text x="98" y="132" font-weight="700" fill="#334155">▼ C-TUTORIAL</text>
+    <text x="110" y="152" fill="#64748b">▶ .vscode</text>
+    <text x="122" y="171" fill="#64748b">tasks.json</text>
+    <text x="122" y="190" fill="#64748b">launch.json</text>
+    <rect x="94" y="200" width="162" height="23" rx="5" fill="#dbeafe"/>
+    <text x="110" y="216" font-weight="700" fill="#1d4ed8">📄 hello.c</text>
+    <text x="110" y="240" fill="#475569">📄 utils.h</text>
+    <text x="110" y="260" fill="#64748b">⚙ hello.exe</text>
+  </g>
+
+  <!-- 좌측 하단 심볼 목차(Outline) -->
+  <rect x="96" y="294" width="158" height="120" rx="7" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.2"/>
+  <text x="108" y="315" font-size="10.8" font-weight="800" fill="#334155">▼ 심볼 목차 (Outline)</text>
+  <g font-family="'D2Coding', 'Consolas', monospace" font-size="10.5">
+    <text x="116" y="338" fill="#2563eb" font-weight="700">ƒ main(void)</text>
+    <text x="116" y="358" fill="#059669">ƒ print_msg()</text>
+    <text x="116" y="378" fill="#64748b"># BUFFER_SIZE</text>
+    <text x="116" y="398" fill="#64748b">v global_cnt</text>
+  </g>
+
+
+  <!-- ==================== 4. Editor Area (중앙 코드 편집 영역) ==================== -->
+  <g clip-path="url(#clipEditor)">
+    <rect x="272" y="58" width="476" height="238" fill="#0f172a"/>
+    <rect x="272" y="58" width="476" height="32" fill="#1e293b"/>
+  </g>
+  <rect data-key="editorarea" x="272" y="58" width="476" height="238" rx="8" fill="none" stroke="#2563eb" stroke-width="2.2"/>
+
+  <!-- 에디터 탭 줄 -->
+  <rect x="278" y="63" width="106" height="27" rx="5" fill="#0f172a"/>
+  <text x="331" y="80" text-anchor="middle" font-family="'D2Coding', 'Consolas', monospace" font-size="11" font-weight="700" fill="#93c5fd">hello.c  ×</text>
+  <text x="424" y="80" text-anchor="middle" font-family="'D2Coding', 'Consolas', monospace" font-size="10.8" fill="#94a3b8">utils.h</text>
+  <rect x="572" y="64" width="166" height="20" rx="10" fill="#1d4ed8"/>
+  <text x="655" y="78" text-anchor="middle" font-size="10.5" font-weight="800" fill="#ffffff">Editor Area (편집 영역)</text>
+
+  <!-- Breadcrumbs & Sticky Scroll (경로 탐색줄 · 상단 고정 스크롤) -->
+  <rect data-key="sticky breadcrumbs" x="274" y="90" width="472" height="22" fill="#172554"/>
+  <line x1="274" y1="112" x2="746" y2="112" stroke="#1e3a8a" stroke-width="1"/>
+  <text x="284" y="105" font-family="'D2Coding', 'Consolas', monospace" font-size="10.2" fill="#93c5fd">src &gt; hello.c &gt; <tspan font-weight="700" fill="#fde68a">int main(void) {</tspan></text>
+  <text x="738" y="105" text-anchor="end" font-size="9.8" font-weight="700" fill="#bfdbfe">Breadcrumbs · Sticky Scroll</text>
+
+  <!-- 코드 줄 번호 + 중단점 + C 소스 코드 -->
+  <g font-family="'D2Coding', 'Consolas', monospace" font-size="11.2">
+    <text x="296" y="213" fill="#64748b">1</text>
+    <text x="316" y="213" fill="#93c5fd">#include &lt;stdio.h&gt;</text>
+
+    <text x="296" y="231" fill="#64748b">2</text>
+    <text x="316" y="231" fill="#e2e8f0"><tspan fill="#c084fc">int</tspan> main(<tspan fill="#c084fc">void</tspan>) {</text>
+
+    <!-- 3번 줄 중단점(Breakpoint) -->
+    <circle cx="285" cy="246" r="4.3" fill="#ef4444"/>
+    <rect x="310" y="237" width="426" height="19" rx="3" fill="#1e293b"/>
+    <text x="296" y="250" fill="#e2e8f0">3</text>
+    <text x="316" y="250" fill="#e2e8f0">    printf(<tspan fill="#86efac">"Hello, C!\n"</tspan>);</text>
+    <text x="598" y="250" font-size="10" fill="#fca5a5">◀ 중단점(Breakpoint)</text>
+
+    <text x="296" y="268" fill="#64748b">4</text>
+    <text x="316" y="268" fill="#e2e8f0">    <tspan fill="#c084fc">return</tspan> <tspan fill="#fde68a">0</tspan>;</text>
+
+    <text x="296" y="286" fill="#64748b">5</text>
+    <text x="316" y="286" fill="#e2e8f0">}</text>
+  </g>
+
+  <!-- ==================== [플로팅 오버레이] Command Palette (명령 팔레트) ==================== -->
+  <g filter="url(#paletteShadow)">
+    <rect data-key="palette" x="322" y="117" width="376" height="80" rx="9" fill="#ffffff" stroke="#7c3aed" stroke-width="2"/>
+    <!-- 입력창 -->
+    <rect x="332" y="124" width="356" height="24" rx="5" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1.2"/>
+    <text x="342" y="140" font-family="'D2Coding', 'Consolas', monospace" font-size="10.8" font-weight="700" fill="#5b21b6">&gt; C/C++: Build</text>
+    <rect x="556" y="127" width="126" height="18" rx="9" fill="#7c3aed"/>
+    <text x="619" y="139" text-anchor="middle" font-size="9.6" font-weight="800" fill="#ffffff">Command Palette</text>
+
+    <!-- 자동완성 명령 목록 -->
+    <rect x="332" y="152" width="356" height="20" rx="4" fill="#ede9fe"/>
+    <text x="342" y="166" font-size="10.3" font-weight="700" fill="#4c1d95">⚙ C/C++: 활성 파일 빌드 및 디버그</text>
+    <text x="678" y="166" text-anchor="end" font-family="'D2Coding', 'Consolas', monospace" font-size="10" font-weight="700" fill="#6d28d9">F5</text>
+
+    <text x="342" y="187" font-size="10.1" fill="#64748b">📄 Preferences: 설정 열기 (JSON)</text>
+    <text x="678" y="187" text-anchor="end" font-family="'D2Coding', 'Consolas', monospace" font-size="9.8" fill="#94a3b8">Ctrl+,</text>
+  </g>
+
+
+  <!-- ==================== 5. Drawer (하단 서랍) ==================== -->
+  <g clip-path="url(#clipPanel)">
+    <rect x="272" y="304" width="476" height="122" fill="#fff7ed"/>
+    <rect x="272" y="304" width="476" height="28" fill="#ffedd5"/>
+    <line x1="272" y1="332" x2="748" y2="332" stroke="#fed7aa" stroke-width="1.2"/>
+  </g>
+  <rect data-key="drawer panel" x="272" y="304" width="476" height="122" rx="8" fill="none" stroke="#f97316" stroke-width="1.8"/>
+  <text x="284" y="323" font-size="12" font-weight="800" fill="#9a3412">Drawer (하단 서랍)</text>
+  <text x="412" y="323" font-size="10.2" fill="#9a3412">문제(Problems)  ·  로그(Log Console)  ·  <tspan font-weight="800" text-decoration="underline">터미널(Terminal)</tspan></text>
+
+  <!-- 좌측: Terminal (CLI 쉘) -->
+  <rect data-key="terminal" x="282" y="339" width="242" height="77" rx="6" fill="#0f172a"/>
+  <text x="292" y="354" font-size="9.6" font-weight="800" fill="#fde68a">▶ Terminal (명령줄 실행 · 표준 입출력)</text>
+  <g font-family="'D2Coding', 'Consolas', monospace" font-size="10.2">
+    <text x="292" y="372" fill="#94a3b8">$ <tspan fill="#e2e8f0">gcc hello.c -o hello.exe</tspan></text>
+    <text x="292" y="389" fill="#94a3b8">$ <tspan fill="#e2e8f0">.\hello.exe</tspan></text>
+    <text x="292" y="406" fill="#86efac" font-weight="700">Hello, C! <tspan fill="#64748b" font-weight="400">[Exit: 0]</tspan></text>
+  </g>
+
+  <!-- 우측: Log / Debug Console & Problems -->
+  <rect data-key="logconsole problems" x="530" y="339" width="208" height="77" rx="6" fill="#1e293b"/>
+  <text x="540" y="354" font-size="9.6" font-weight="800" fill="#93c5fd">▶ Log / Debug Console · Problems</text>
+  <g font-family="'D2Coding', 'Consolas', monospace" font-size="9.8">
+    <text x="540" y="372" fill="#cbd5e1">[Build] 0 errors, 0 warnings</text>
+    <text x="540" y="389" fill="#c4b5fd">[Debug] Bp #1 hit: hello.c:3</text>
+    <text x="540" y="406" fill="#67e8f9">[Log] LSP clangd indexed (12ms)</text>
+  </g>
+
+
+  <!-- ==================== 6. Right Side Bar (우측 사이드 바) ==================== -->
+  <g clip-path="url(#clipRightSb)">
+    <rect x="756" y="58" width="192" height="368" fill="#ffffff"/>
+    <rect x="756" y="58" width="192" height="32" fill="#ede9fe"/>
+    <line x1="756" y1="90" x2="948" y2="90" stroke="#ddd6fe" stroke-width="1.2"/>
+  </g>
+  <rect data-key="rightsidebar" x="756" y="58" width="192" height="368" rx="8" fill="none" stroke="#8b5cf6" stroke-width="1.8"/>
+  <text x="768" y="79" font-size="12" font-weight="800" fill="#4c1d95">Right Side Bar</text>
+  <rect x="898" y="65" width="40" height="18" rx="9" fill="#ddd6fe"/>
+  <text x="918" y="78" text-anchor="middle" font-size="9.8" font-weight="700" fill="#4c1d95">우측</text>
+
+  <text x="768" y="110" font-size="10.5" font-weight="700" fill="#5b21b6">✦ AI 에이전트 · 보조 뷰</text>
+
+  <!-- 대화 카드 1 -->
+  <rect x="768" y="120" width="168" height="48" rx="7" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="778" y="138" font-size="10.3" font-weight="700" fill="#334155">질문: 경고 원인 분석</text>
+  <text x="778" y="156" font-size="10" fill="#64748b">반환형 누락 문제 설명해 줘</text>
+
+  <!-- 대화 카드 2 -->
+  <rect x="768" y="176" width="168" height="96" rx="7" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1.2"/>
+  <text x="778" y="195" font-size="10.5" font-weight="800" fill="#5b21b6">✦ AI 코드 분석 · 제안</text>
+  <text x="778" y="214" font-size="10" fill="#4c1d95">main 함수의 종료 코드를</text>
+  <text x="778" y="231" font-size="10" fill="#4c1d95">명시하도록 수정했습니다.</text>
+  <rect x="778" y="242" width="148" height="20" rx="5" fill="#ede9fe"/>
+  <text x="852" y="256" text-anchor="middle" font-size="9.8" font-weight="700" fill="#5b21b6">변경점 비교(Diff) · 적용</text>
+
+  <!-- 우측 하단 기타 도킹 안내 -->
+  <rect x="768" y="282" width="168" height="94" rx="7" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.2"/>
+  <text x="778" y="302" font-size="10.5" font-weight="800" fill="#334155">우측 도킹 활용 예시</text>
+  <text x="778" y="322" font-size="10" fill="#64748b">· 마크다운 / 웹 미리보기</text>
+  <text x="778" y="340" font-size="10" fill="#64748b">· 디버그 변수 · 메모리 창</text>
+  <text x="778" y="358" font-size="10" fill="#64748b">· 속성 / 리소스 관리자</text>
+
+  <!-- 프롬프트 입력줄 -->
+  <rect x="768" y="386" width="168" height="28" rx="6" fill="#ffffff" stroke="#c4b5fd" stroke-width="1.2"/>
+  <text x="778" y="404" font-size="10" fill="#94a3b8">질문 또는 명령 입력...</text>
+  <text x="926" y="404" text-anchor="end" font-size="10.5" font-weight="800" fill="#7c3aed">↵</text>
+
+
+  <!-- ==================== 7. Status Bar (최하단 상태 표시줄) ==================== -->
+  <rect data-key="statusbar" x="12" y="434" width="936" height="34" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="1.6"/>
+  <text x="28" y="455" font-size="12" font-weight="800" fill="#065f46">Status Bar</text>
+  <text x="116" y="455" font-family="'D2Coding', 'Consolas', monospace" font-size="11" fill="#047857">⎇ main*   │   ✕ 0   ⚠ 0   │   빌드 준비 완료</text>
+  <text x="932" y="455" text-anchor="end" font-family="'D2Coding', 'Consolas', monospace" font-size="11" font-weight="700" fill="#065f46">Ln 3, Col 28   │   UTF-8   │   CRLF   │   C17 (GCC)</text>
+</svg>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="script">
+          <p data-cue="uistd:check menubar:box palette:box">세 번째 슬라이드는 현대 IDE와 코드 에디터가 공통으로 채택한 화면 구성도입니다. 맨 위 메뉴 바(Menu Bar)에서는 전체 기능을 호출하며, 실무에서는 마우스로 메뉴를 찾는 대신 단축키(<code>Ctrl+Shift+P</code>)로 중앙의 명령 팔레트(Command Palette)를 띄워 빌드나 설정 명령을 즉시 검색해 실행합니다.</p>
+          <p data-cue="activitybar:box leftsidebar:box rightsidebar:box">좌측 끝 액티비티 바(Activity Bar)는 기능 전환 아이콘 열이며, 그 옆 좌측 사이드 바(Left Side Bar)에는 프로젝트 파일 트리와 함수 목록을 보여 주는 심볼 목차(Outline)가 자리합니다. 반대로 우측 사이드 바(Right Side Bar)에는 최근 대세가 된 AI 에이전트 대화창이나 웹·마크다운 미리보기 같은 보조 뷰를 도킹해 코드와 나란히 띄워 둡니다.</p>
+          <p data-cue="uisub:check editorarea:box sticky:box">중앙의 에디터 영역(Editor Area)은 코드를 읽고 중단점(Breakpoint)을 지정하는 주 무대입니다. 탭 줄 바로 아래에는 현재 파일 경로와 함수 위치를 알려 주는 브레드크럼(Breadcrumbs)과, 긴 코드를 아래로 스크롤해도 현재 속한 함수 선언부 줄을 상단에 고정해 문맥을 잃지 않게 해 주는 스티키 스크롤(Sticky Scroll)이 제공됩니다.</p>
+          <p data-cue="drawer:box terminal:box logconsole:box statusbar:box">에디터 아래에서 서랍처럼 여닫는 하단 영역은 드로어(Drawer)라고 부릅니다. 드로어 안에는 직접 컴파일 명령을 입력하고 프로그램의 표준 입출력을 확인하는 터미널(Terminal)과, 빌드 결과·디버거 상태·언어 서버의 내부 기록을 쏟아내는 로그 및 디버그 콘솔(Log · Debug Console), 그리고 문법 오류 위치만 모아 놓은 문제(Problems) 탭이 함께 들어 있습니다. <mark>맨 아래 상태 표시줄(Status Bar)에서는 현재 Git 브랜치와 오류 개수, UTF-8 인코딩, C 표준 버전을 한눈에 점검할 수 있습니다.</mark></p>
+          <p class="meta"><time datetime="2026-11-17">2026-11-17</time> · 오른쪽 위 그림 아이콘을 누르면 화면 구획도를 창 전체로 확대해 볼 수 있습니다</p>
+        </div>
+      </section>
+
+      <!-- 4p. 관련 개념 -->
+      <section id="s4" data-title="4 관련 개념">
+        <h2>관련 개념</h2>
+        <div class="slide-frame" data-img="/coding/svg/c-troubleshooting-map.svg" data-img-caption="관련 개념 (환경설정 · 어셈블리와 Binary · 형상관리)">
+          <div class="slide">
+            <div class="slide-body is-wide-fig">
+              <div class="slide-head-pad">
+                <span class="slide-eyebrow"><b class="slide-no">4</b>관련 개념</span>
+                <div class="slide-title" role="heading" aria-level="3">관련 개념</div>
+              </div>
+              <ul class="points">
+                <li data-key="p4envbin"><b>실행 흐름과 규칙</b>: 에디터와 OS 사이의 연결 규칙인 <b>환경설정</b>, 그리고 소스 코드가 <b>어셈블리·Binary</b>로 번역되어 OS를 거쳐 하드웨어에서 도는 과정</li>
+                <li data-key="p4vcs"><b>이력 분리 보관</b>: 원본 코드와 설정만 저장소에 기록하고 빌드 산출물(<code>.exe</code>·<code>.o</code>)은 제외해 관리하는 <b>형상관리(Git)</b></li>
+              </ul>
+              <div class="c-svg-wide">
+                <svg class="c-rich-svg" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="1240" height="652" viewBox="0 0 1240 652" font-family="'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif">
+  <title>개발 환경 개념(환경설정 · Binary · 형상관리)</title>
+  <desc>IDE와 OS(Platform)의 관계를 환경설정으로, IDE가 관리하는 CODE가 Binary(bin)로 번역되어 OS를 통과해 HW와 통화하는 과정을 어셈블리·바이너리로, CODE와 STORAGE의 관계를 형상관리(Git)로 정의한 아키텍처 다이어그램입니다.</desc>
+
+  <defs>
+    <filter id="tm-cardShadow" x="-3%" y="-4%" width="106%" height="110%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.06"/>
+    </filter>
+
+    <marker id="tm-arrDark" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M1,1.5 L9,5 L1,8.5 Z" fill="#1e293b"/>
+    </marker>
+    <marker id="tm-arrBlue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M1,1.5 L9,5 L1,8.5 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="tm-arrAmber" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M1,1.5 L9,5 L1,8.5 Z" fill="#d97706"/>
+    </marker>
+    <marker id="tm-arrGreen" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M1,1.5 L9,5 L1,8.5 Z" fill="#059669"/>
+    </marker>
+    <marker id="tm-arrRed" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M1,1.5 L9,5 L1,8.5 Z" fill="#dc2626"/>
+    </marker>
+
+    <clipPath id="tm-clipIde"><rect x="32" y="20" width="380" height="118" rx="12"/></clipPath>
+    <clipPath id="tm-clipEnv"><rect x="32" y="166" width="380" height="310" rx="12"/></clipPath>
+    <clipPath id="tm-clipCode"><rect x="492" y="20" width="340" height="148" rx="12"/></clipPath>
+    <clipPath id="tm-clipBin"><rect x="492" y="204" width="340" height="266" rx="12"/></clipPath>
+    <clipPath id="tm-clipVcs"><rect x="916" y="20" width="292" height="240" rx="12"/></clipPath>
+    <clipPath id="tm-clipHw"><rect x="916" y="448" width="292" height="184" rx="12"/></clipPath>
+  </defs>
+
+  <!-- 전체 종이 배경 -->
+  <rect width="1240" height="652" rx="16" fill="#fcfcfa" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- ====================================================================== -->
+  <!-- [좌측 상단 노드] IDE / Code Editor                                      -->
+  <!-- ====================================================================== -->
+  <g clip-path="url(#tm-clipIde)" filter="url(#tm-cardShadow)">
+    <rect x="32" y="20" width="380" height="118" fill="#ffffff"/>
+    <rect x="32" y="20" width="380" height="36" fill="#f1f5f9"/>
+    <line x1="32" y1="56" x2="412" y2="56" stroke="#cbd5e1" stroke-width="1.2"/>
+  </g>
+  <rect data-key="node-ide" x="32" y="20" width="380" height="118" rx="12" fill="none" stroke="#1e293b" stroke-width="2.2"/>
+  <text x="48" y="43" font-size="15" font-weight="800" fill="#0f172a">IDE / Code Editor</text>
+  
+
+  <text x="48" y="79" font-size="11" font-weight="700" fill="#2563eb">· 도구 실행과 파일 접근은 아래 OS(Platform)에 요청해 수행</text>
+  <text x="48" y="100" font-size="11.5" fill="#334155">· VS Code · Cursor · MSVS</text>
+
+
+
+  <!-- ==================== 브릿지: IDE ──▶ CODE (코드 관리) ==================== -->
+  <line x1="414" y1="79" x2="486" y2="79" stroke="#1e293b" stroke-width="2.2" marker-end="url(#tm-arrDark)"/>
+  <text x="452" y="68" text-anchor="middle" font-size="11" font-weight="800" fill="#0f172a">코드 관리</text>
+  <text x="452" y="97" text-anchor="middle" font-size="10" font-weight="600" fill="#475569">작성 · 분석</text>
+
+
+  <!-- ====================================================================== -->
+  <!-- [중앙 상단 노드] CODE (.c / .h)                                         -->
+  <!-- ====================================================================== -->
+  <g clip-path="url(#tm-clipCode)" filter="url(#tm-cardShadow)">
+    <rect x="492" y="20" width="340" height="148" fill="#ffffff"/>
+    <rect x="492" y="20" width="340" height="36" fill="#dbeafe"/>
+    <line x1="492" y1="56" x2="832" y2="56" stroke="#93c5fd" stroke-width="1.2"/>
+  </g>
+  <rect data-key="node-code" x="492" y="20" width="340" height="148" rx="12" fill="none" stroke="#2563eb" stroke-width="2.2"/>
+  <text x="508" y="43" font-size="15" font-weight="800" fill="#1e3a8a">CODE (소스 코드)</text>
+  <rect x="682" y="28" width="136" height="20" rx="10" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="750" y="42" text-anchor="middle" font-family="'D2Coding', Consolas, monospace" font-size="10.5" font-weight="700" fill="#1d4ed8">hello.c · .h (UTF-8)</text>
+
+  <text x="508" y="78" font-size="11.4" fill="#334155">· 인간이 읽고 설계하는 고수준 텍스트 원본</text>
+  <rect x="506" y="88" width="312" height="68" rx="7" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="518" y="107" font-size="11" font-weight="800" fill="#1e293b">에러 3단 구분 &amp; 언어 표준 (-std=c17 · c23)</text>
+  <text x="518" y="126" font-size="10.3" fill="#475569">· 에디터 밑줄(LSP) vs 문법 에러(컴파일) vs 링크 에러(ld)</text>
+  <text x="518" y="144" font-size="10.3" font-weight="700" fill="#2563eb">· 컴파일러 프로그램 버전(GCC) ≠ 언어 문법 표준(-std)</text>
+
+
+  <!-- ==================== 브릿지: CODE ◀──▶ STORAGE (형상관리) ==================== -->
+  <line x1="836" y1="94" x2="910" y2="94" stroke="#059669" stroke-width="2.4" marker-start="url(#tm-arrGreen)" marker-end="url(#tm-arrGreen)"/>
+  <rect x="840" y="63" width="68" height="21" rx="10.5" fill="#059669"/>
+  <text x="874" y="77" text-anchor="middle" font-size="10.5" font-weight="800" fill="#ffffff">형상관리</text>
+  <text x="874" y="113" text-anchor="middle" font-size="10" font-weight="700" fill="#065f46">Git 동기화</text>
+
+
+  <!-- ====================================================================== -->
+  <!-- [우측 상단 노드] ③ 형상관리 & STORAGE                                   -->
+  <!-- ====================================================================== -->
+  <g clip-path="url(#tm-clipVcs)" filter="url(#tm-cardShadow)">
+    <rect x="916" y="20" width="292" height="240" fill="#f0fdf4"/>
+    <rect x="916" y="20" width="292" height="38" fill="#059669"/>
+  </g>
+  <rect data-key="rel-vcs" x="916" y="20" width="292" height="240" rx="12" fill="none" stroke="#059669" stroke-width="2.2"/>
+  <text x="1062" y="44" text-anchor="middle" font-size="14" font-weight="800" fill="#ffffff">③ 형상관리 &amp; STORAGE</text>
+
+  <text x="932" y="80" font-size="11.5" font-weight="800" fill="#065f46">로컬 저장소(.git) · 원격 서버(GitHub)</text>
+  <text x="932" y="101" font-size="11" fill="#334155">· 코드 변경 이력(commit) 기록 및 시점 복구</text>
+  <text x="932" y="121" font-size="11" fill="#334155">· 브랜치(branch) 분리 실험 · 안전한 원격 백업</text>
+
+  <rect x="930" y="136" width="264" height="110" rx="8" fill="#ffffff" stroke="#86efac" stroke-width="1.3"/>
+  <text x="942" y="156" font-size="11.2" font-weight="800" fill="#065f46">핵심 원칙: .gitignore 분리 보관</text>
+  <text x="942" y="176" font-size="10.5" font-weight="700" fill="#047857">✓ 저장함: CODE (.c · .h) · 설정(.json)</text>
+  <text x="942" y="195" font-size="10.5" font-weight="700" fill="#b91c1c">✕ 제외함: Binary (.exe · .o · .s)</text>
+  <text x="942" y="216" font-size="10" fill="#64748b">언제든 다시 빌드해 만들 수 있는 기계어 파일은</text>
+  <text x="942" y="232" font-size="10" fill="#64748b">충돌·용량 낭비를 막기 위해 저장소에서 제외</text>
+
+
+  <!-- ====================================================================== -->
+  <!-- [좌측 중단 브릿지 허브] ① 환경설정 (IDE ⇅ OS 관계)                      -->
+  <!-- ====================================================================== -->
+  <line x1="222" y1="140" x2="222" y2="164" stroke="#2563eb" stroke-width="2.6" marker-start="url(#tm-arrBlue)" marker-end="url(#tm-arrBlue)"/>
+  <line x1="222" y1="478" x2="222" y2="502" stroke="#2563eb" stroke-width="2.6" marker-start="url(#tm-arrBlue)" marker-end="url(#tm-arrBlue)"/>
+
+  <g clip-path="url(#tm-clipEnv)" filter="url(#tm-cardShadow)">
+    <rect x="32" y="166" width="380" height="310" fill="#eff6ff"/>
+    <rect x="32" y="166" width="380" height="38" fill="#2563eb"/>
+  </g>
+  <rect data-key="rel-env" x="32" y="166" width="380" height="310" rx="12" fill="none" stroke="#2563eb" stroke-width="2"/>
+  <text x="222" y="190" text-anchor="middle" font-size="14" font-weight="800" fill="#ffffff">① 환경설정 (IDE ↔ OS 연결 규칙)</text>
+
+  <!-- 환경세팅 기본: PATH & JSON -->
+  <rect x="46" y="214" width="352" height="64" rx="8" fill="#ffffff" stroke="#93c5fd" stroke-width="1.2"/>
+  <text x="58" y="233" font-size="11.5" font-weight="800" fill="#1e3a8a">실행 경로 등록: 시스템 환경 변수 (PATH)</text>
+  <text x="58" y="252" font-size="10.6" fill="#334155">· IDE와 터미널이 OS에서 gcc.exe · gdb.exe 위치를 찾는 이정표</text>
+  <text x="58" y="269" font-size="10.4" font-weight="700" fill="#b91c1c">· 누락 시: 'gcc'은(는) 내부 또는 외부 명령이 아닙니다 오류</text>
+
+  <!-- 환경세팅 1번: Permission denied & 백신 오진 -->
+  <rect x="46" y="286" width="352" height="84" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.3"/>
+  <text x="58" y="305" font-size="11.4" font-weight="800" fill="#b91c1c">프로세스 점유(Permission denied) · 백신 차단</text>
+  <text x="58" y="324" font-size="10.5" fill="#7f1d1d">· 이전 실행 창(.exe)이 열려 있으면 OS가 파일 덮어쓰기를 거부</text>
+  <text x="58" y="342" font-size="10.5" fill="#7f1d1d">· 서명 없는 자작 .exe를 백신(Defender)이 악성코드로 오진 격리</text>
+  <text x="58" y="360" font-size="10.3" font-weight="700" fill="#991b1b">➔ 기존 실행 창 종료 후 재빌드 / 실습 폴더 백신 예외 설정</text>
+
+  <!-- 환경세팅 2번: 한글·공백 경로, PowerShell .\ 규칙, UTF-8 인코딩 -->
+  <rect x="46" y="378" width="352" height="86" rx="8" fill="#ffffff" stroke="#93c5fd" stroke-width="1.2"/>
+  <text x="58" y="397" font-size="11.4" font-weight="800" fill="#1e3a8a">한글·공백 경로 · 터미널 셸(PowerShell) · 인코딩</text>
+  <text x="58" y="416" font-size="10.5" fill="#334155">· 폴더 경로에 한글·공백 포함 시 명령줄 인자 분리 오류 발생</text>
+  <text x="58" y="434" font-size="10.5" fill="#334155">· PowerShell 보안 정책: 현재 폴더 실행 시 .\hello.exe 명시 필수</text>
+  <text x="58" y="452" font-size="10.5" font-weight="700" fill="#1d4ed8">· 한글 깨짐 방지: 소스(UTF-8) ↔ 콘솔 코드페이지(65001) 일치</text>
+
+
+  <!-- ====================================================================== -->
+  <!-- [중앙 중단 브릿지] ② 어셈블리 & Binary (CODE ➔ OS 통과 ➔ HW)            -->
+  <!-- ====================================================================== -->
+  <line x1="662" y1="168" x2="662" y2="200" stroke="#d97706" stroke-width="2.4" marker-end="url(#tm-arrAmber)"/>
+  <text x="674" y="189" font-size="10.5" font-weight="700" fill="#b45309">컴파일 번역</text>
+
+  <g clip-path="url(#tm-clipBin)" filter="url(#tm-cardShadow)">
+    <rect x="492" y="204" width="340" height="266" fill="#fffbeb"/>
+    <rect x="492" y="204" width="340" height="38" fill="#d97706"/>
+  </g>
+  <rect data-key="rel-bin" x="492" y="204" width="340" height="266" rx="12" fill="none" stroke="#d97706" stroke-width="2.2"/>
+  <text x="662" y="228" text-anchor="middle" font-size="13.8" font-weight="800" fill="#ffffff">② 어셈블리(.s) &amp; Binary (bin / .exe)</text>
+
+  <!-- 어셈블리 개념 -->
+  <rect x="506" y="252" width="312" height="74" rx="8" fill="#ffffff" stroke="#fcd34d" stroke-width="1.3"/>
+  <text x="518" y="271" font-size="11.4" font-weight="800" fill="#92400e">어셈블리 (Assembly, .s) — 기계어 1:1 기호</text>
+  <text x="518" y="290" font-size="10.5" fill="#334155">· 인간 언어(CODE)와 0101 기계어 사이의 직관적 번역 단계</text>
+  <text x="518" y="309" font-family="'D2Coding', Consolas, monospace" font-size="10.3" font-weight="700" fill="#b45309">· gcc -S hello.c ➔ pushq, movq, call 명령 확인</text>
+
+  <line x1="662" y1="326" x2="662" y2="346" stroke="#d97706" stroke-width="2" marker-end="url(#tm-arrAmber)"/>
+  <text x="674" y="341" font-size="10" font-weight="700" fill="#92400e">어셈블(.o) + 링크(.a)</text>
+
+  <!-- Binary(bin) 개념 -->
+  <rect x="506" y="350" width="312" height="108" rx="8" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="518" y="371" font-size="12" font-weight="800" fill="#fde68a">Binary (bin / hello.exe)</text>
+  <text x="518" y="391" font-family="'D2Coding', Consolas, monospace" font-size="10.5" fill="#67e8f9">01001101 01011010 ... (실행 헤더 + 순수 기계어)</text>
+  <text x="518" y="412" font-size="10.5" fill="#e2e8f0">· 타겟 OS 규격(PE/ELF)과 CPU 명령어 집합에 종속됨</text>
+  <text x="518" y="432" font-size="10.4" font-weight="700" fill="#86efac">· 디버그 심볼(-g): bin 내부에 .c 줄 번호표를 함께 심어</text>
+  <text x="518" y="448" font-size="10.2" fill="#86efac">  중단점(Breakpoint) 디버깅을 가능하게 함</text>
+
+  <!-- Binary -> OS 관문 진입 화살표 -->
+  <line x1="662" y1="470" x2="662" y2="516" stroke="#d97706" stroke-width="2.6" marker-end="url(#tm-arrAmber)"/>
+
+
+  <!-- ====================================================================== -->
+  <!-- [하단 플랫폼 계층] OS (Platform: Windows · Linux · macOS)               -->
+  <!-- ====================================================================== -->
+  <g filter="url(#tm-cardShadow)">
+    <rect data-key="node-os" x="32" y="506" width="800" height="126" rx="12" fill="#f1f5f9" stroke="#334155" stroke-width="2.2"/>
+  </g>
+
+  <!-- OS 좌측 설명 (환경설정 대응부) -->
+  <rect x="48" y="520" width="194" height="24" rx="6" fill="#1e293b"/>
+  <text x="145" y="536" text-anchor="middle" font-size="11.8" font-weight="800" fill="#ffffff">Platform (OS(운영체제))</text>
+  <text x="48" y="564" font-size="11.3" font-weight="700" fill="#1e293b">· PATH 탐색 · 파일 잠금 · 실행 권한 및 보안 통제</text>
+  <text x="48" y="585" font-size="11" fill="#475569">· 터미널 셸(PowerShell · cmd) 및 콘솔 코드페이지 제공</text>
+  <text x="48" y="606" font-size="11" fill="#475569">· 하드웨어를 직접 건드리지 못하도록 보호하는 중재 계층</text>
+
+  <!-- OS 우측 내부 통과 게이트 (Binary 통과 지점) -->
+  <rect x="492" y="520" width="326" height="98" rx="9" fill="#ffffff" stroke="#d97706" stroke-width="1.8" stroke-dasharray="5 3"/>
+  <text x="655" y="542" text-anchor="middle" font-size="11.8" font-weight="800" fill="#92400e">OS 실행 관문 통과 (Loader &amp; System Call)</text>
+  <text x="655" y="564" text-anchor="middle" font-size="10.6" fill="#334155">1) 로더(Loader)가 Binary(.exe)를 메모리(RAM)에 적재</text>
+  <text x="655" y="583" text-anchor="middle" font-size="10.6" fill="#334155">2) 화면 출력(printf)·파일 접근 시 OS 시스템 콜 통과</text>
+  <text x="655" y="603" text-anchor="middle" font-size="10.3" font-weight="700" fill="#b45309">※ OS 없는 임베디드(MCU)만 Binary가 HW에 바로 기록됨</text>
+
+
+  <!-- ==================== 브릿지: OS ══▶ HW (기계어 통화) ==================== -->
+  <line x1="834" y1="569" x2="910" y2="569" stroke="#dc2626" stroke-width="2.8" marker-end="url(#tm-arrRed)"/>
+  <text x="874" y="555" text-anchor="middle" font-size="10.8" font-weight="800" fill="#b91c1c">0101 통화</text>
+  <text x="874" y="588" text-anchor="middle" font-size="10" font-weight="700" fill="#475569">기계어 직결</text>
+
+
+  <!-- ====================================================================== -->
+  <!-- [우측 하단 노드] HW (Hardware: CPU · RAM)                               -->
+  <!-- ====================================================================== -->
+  <g clip-path="url(#tm-clipHw)" filter="url(#tm-cardShadow)">
+    <rect x="916" y="448" width="292" height="184" fill="#0f172a"/>
+    <rect x="916" y="448" width="292" height="38" fill="#991b1b"/>
+  </g>
+  <rect data-key="node-hw" x="916" y="448" width="292" height="184" rx="12" fill="none" stroke="#dc2626" stroke-width="2.2"/>
+  <text x="1062" y="472" text-anchor="middle" font-size="14" font-weight="800" fill="#ffffff">HW (하드웨어 · 실리콘 칩셋)</text>
+
+  <rect x="930" y="498" width="264" height="56" rx="7" fill="#1e293b" stroke="#475569"/>
+  <text x="942" y="518" font-size="11.6" font-weight="800" fill="#fca5a5">CPU (x86_64 · ARM · RISC-V)</text>
+  <text x="942" y="538" font-size="10.5" fill="#cbd5e1">0과 1의 전압 신호로 기계어 명령 직접 연산</text>
+
+  <rect x="930" y="562" width="264" height="56" rx="7" fill="#1e293b" stroke="#475569"/>
+  <text x="942" y="582" font-size="11.6" font-weight="800" fill="#67e8f9">RAM (메모리) &amp; 주변 입출력 장치</text>
+  <text x="942" y="602" font-size="10.5" fill="#cbd5e1">실행 코드·변수 주소 공간 및 모니터·키보드 제어</text>
+</svg>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="script">
+          <p data-cue="node-ide:box node-code:box">네 번째 슬라이드는 개발 도구를 다룰 때 함께 알아 두어야 할 관련 개념들을 전체 흐름 속에서 정리한 그림입니다. 에디터나 IDE는 사람이 읽고 설계하는 원본 소스 코드(CODE)를 관리하며, 컴파일러 버전과 언어 문법 표준(<code>-std</code>)이 서로 다르다는 점이나 에러가 발생하는 단계도 이 지점에서 구분됩니다.</p>
+          <p data-cue="p4envbin:check rel-env:box node-os:box">왼쪽의 환경설정은 에디터가 아래쪽 운영체제(OS)와 소통하기 위한 규칙입니다. 어느 위치에서든 컴파일러를 찾게 해 주는 시스템 환경변수(<code>PATH</code>), 실행 중인 파일 덮어쓰기 거부(<code>Permission denied</code>)나 백신 오진 차단, 한글·공백 경로 문제와 터미널 셸 규칙, 그리고 소스 파일과 콘솔 코드페이지(<code>65001</code>)의 UTF-8 인코딩 일치가 여기에 해당합니다.</p>
+          <p data-cue="rel-bin:box node-hw:box">가운데 경로는 코드가 기계어로 바뀌어 하드웨어까지 내려가는 과정입니다. C 코드는 기계어와 일대일로 대응하는 어셈블리(<code>.s</code>)를 거쳐 어셈블과 링크를 마친 뒤 실행 가능한 바이너리(<code>.exe</code>)가 됩니다. 이 바이너리는 운영체제의 로더를 통해 메모리에 적재되고 시스템 콜 관문을 통과해 비로소 CPU와 RAM 같은 실제 하드웨어를 움직입니다.</p>
+          <p data-cue="p4vcs:check rel-vcs:box">오른쪽의 형상관리는 코드와 저장소(Storage) 사이의 관계입니다. 로컬(<code>.git</code>)과 원격(GitHub) 저장소에 변경 이력을 기록해 언제든 복구할 수 있게 하되, <mark>언제든 다시 빌드해 만들 수 있는 실행 파일과 오브젝트 파일은 <code>.gitignore</code>로 제외하고 순수 소스 코드와 설정 파일만 보관하는 것이 핵심 원칙입니다.</mark></p>
+          <p class="meta"><time datetime="2026-11-17">2026-11-17</time> · 세부 설치 절차와 예시 설정값은 아래 참조 항목을 펼쳐 확인할 수 있습니다</p>
+        </div>
+      </section>
+    </div>
+    <!-- ==================== /슬라이드 강의 섹션 끝 ==================== -->
+
+    <h1>하단 참조</h1>
+    <div class="c-ref-list">
+      <!-- 1. 환경설정 - C컴파일러(접기) -->
+      <details>
+        <summary>환경설정 - C 컴파일러</summary>
+        <div class="simple-box">
+          <p>
+            GCC 컴파일러는 기본적으로 Linux 환경을 타겟으로 하므로, Windows 환경에서는 별도로 설치해 주어야 합니다.
+            아래 사이트에서 Windows용 GCC 묶음인 MinGW(winlibs)를 내려받을 수 있습니다.
+          </p>
+          <p>
+            <a href="https://winlibs.com/#download-release" target="_blank" rel="noopener">https://winlibs.com/#download-release</a>
+          </p>
+          <p>
+            <q>최신 버전의 UCRT 64bit 7-Zip</q>(용량이 작은 압축본)을 받아 압축을 해제하면 <code>mingw64</code> 폴더가 나옵니다
+            (예: <code>C:\mingw64</code> 또는 <code>C:\Program Files\mingw64</code>).
+          </p>
+          <div class="blockquote-title">시스템 환경 변수(Path) 등록</div>
+          <p>
+            <code>mingw64\bin</code> 폴더 안의 <code>gcc.exe</code>를 어디서든 실행할 수 있도록 시스템 환경 변수 <code>Path</code>에 경로를 추가합니다.
+          </p>
+          <blockquote>
+            C:\Program Files\mingw64\bin
+          </blockquote>
+          <p>정상 설정 확인 명령어:</p>
+          <blockquote>
+            C:\Users\iseoh&gt;gcc --version<br>
+            gcc (MinGW-W64 x86_64-ucrt-posix-seh, built by Brecht Sanders) 12.2.0
+          </blockquote>
+          <p>컴파일러 프로그램 버전과 C/C++ 언어 표준(<code>-std</code>)은 서로 다릅니다.</p>
+          <table>
+            <thead>
+              <tr>
+                <td style="white-space: nowrap;">C/C++ 표준</td>
+                <td style="white-space: nowrap;">발행 연도</td>
+                <td style="white-space: nowrap;">-std 옵션</td>
+                <td style="white-space: nowrap;">주요 변경 사항</td>
+              </tr>
+            </thead>
+            <tr>
+              <td>C89</td>
+              <td>1989</td>
+              <td>c89</td>
+              <td>프로토타입 부재, "void" 부재, '//' 주석 미포함</td>
+            </tr>
+            <tr>
+              <td>C99</td>
+              <td>1999</td>
+              <td>c99, C++98</td>
+              <td>한 줄 주석 지원, 가변길이 배열(VLA) 추가 등</td>
+            </tr>
+            <tr>
+              <td>C++11</td>
+              <td>2011</td>
+              <td>c11, c++11</td>
+              <td>자동 형식 추론(auto), 오른값 참조(&amp;&amp;), 초기화 리스트 등</td>
+            </tr>
+            <tr>
+              <td>C++14</td>
+              <td>2014</td>
+              <td>c++14</td>
+              <td>제네릭 람다, 이진 리터럴 등 <sub><sup>*</sup>MSVS default</sub></td>
+            </tr>
+            <tr>
+              <td>C++17</td>
+              <td>2017</td>
+              <td>c17, c++17</td>
+              <td>구조화 바인딩, 파일 시스템 라이브러리 등 <sub><sup>*</sup>GDB default</sub></td>
+            </tr>
+            <tr>
+              <td>C++20</td>
+              <td>2020</td>
+              <td>c2x, c++20</td>
+              <td>모듈 시스템, 코루틴, 레인지 기반 for 확장 등</td>
+            </tr>
+            <tr>
+              <td>C++23</td>
+              <td>2023</td>
+              <td>latest</td>
+              <td>표준 라이브러리 모듈(import std), 코루틴 개선 등</td>
+            </tr>
+          </table>
+        </div>
+      </details>
+
+      <!-- 2. 환경설정 - VS 인코딩 설정(접기) -->
+      <details>
+        <summary>환경설정 - VS 인코딩 설정</summary>
+        <div class="simple-box">
+          <p>
+            컴파일러를 기본 내장한 올인원 IDE인 <a href="https://visualstudio.microsoft.com/ko/" target="_blank" rel="noopener">Microsoft Visual Studio(MSVS)</a>는 Windows 기본 인코딩(EUC-KR)을 따르므로, 다국어 호환과 배포를 위해 소스 해석 인코딩을 UTF-8로 맞추는 옵션은 다음과 같습니다.
+          </p>
+          <div class="blockquote-title">"메뉴" &gt; "디버그" &gt; "... 속성 페이지" &gt; "C/C++" &gt; "명령줄" &gt; "추가 옵션(D)"에 추가</div>
+          <blockquote>
+            /source-charset:utf-8
+          </blockquote>
+        </div>
+      </details>
+
+      <!-- 3. 환경설정 - C/C++환경설정(접기) -->
+      <details>
+        <summary>환경설정 - C/C++ 환경설정</summary>
+        <div class="simple-box">
+          <p>
+            VS Code는 범용 에디터이므로 C/C++ 확장팩과 작업 폴더 하위 <code>.vscode/*.json</code> 설정을 연결해 사용합니다 (기본 사용법은 <a href="/coding/tools/vscode/start.html">VS Code 시작하기</a> 참조).
+          </p>
+          <p>
+            <b>C/C++ Extension Pack</b>: 컴파일러 자체를 포함하지 않으며, 외부 컴파일러 결과를 에디터 환경에 연결하고 자동완성을 돕습니다 (<var>Ctrl</var>+<var>Shift</var>+<var>X</var> 검색 또는 <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools-extension-pack" target="_blank" rel="noopener">마켓플레이스 링크</a>).
+          </p>
+          <table>
+            <caption>참고: <a href="https://code.visualstudio.com/docs/cpp/config-mingw" target="_blank" rel="noopener">https://code.visualstudio.com/docs/cpp/config-mingw</a></caption>
+            <thead>
+              <tr>
+                <td>파일명</td>
+                <td>설명</td>
+              </tr>
+            </thead>
+            <tr>
+              <td>c_cpp_properties.json</td>
+              <td>컴파일러 경로와 IntelliSense(자동완성) 규격을 기술합니다.</td>
+            </tr>
+            <tr>
+              <td>launch.json</td>
+              <td>디버거 조건을 기술합니다.</td>
+            </tr>
+            <tr>
+              <td>tasks.json</td>
+              <td>컴파일 명령과 인자를 기술합니다.</td>
+            </tr>
+          </table>
+
+          <div class="blockquote-title">c_cpp_properties.json</div>
+          <pre class="language-json">
+{
+  "configurations": [
+      {
+          "name": "Win32",
+          "includePath": [
+              "${workspaceFolder}/**"
+          ],
+          "defines": [
+              "_DEBUG",
+              "UNICODE",
+              "_UNICODE"
+          ],
+          "compilerPath": "C:\\Program Files\\mingw64\\bin\\gcc.exe",
+          "cStandard": "c17",
+          "cppStandard": "gnu++17",
+          "intelliSenseMode": "windows-gcc-x64"
+      }
+  ],
+  "version": 4
+}</pre>
+
+          <div class="blockquote-title">tasks.json</div>
+          <pre class="language-json">
+{
+  "tasks": [
+      {
+          "type": "cppbuild",
+          "label": "C/C++: gcc.exe build active file",
+          "command": "C:\\Program Files\\mingw64\\bin\\gcc.exe",
+          "args": [
+              "-fdiagnostics-color=always",
+              "-g",
+              "${file}",
+              "-lstdc++", // 만약 C++ 표준 라이브러리를 추가하려면 이 옵션을 포함합니다.
+              "-o",
+              "${fileDirname}\\${fileBasenameNoExtension}.exe"
+          ],
+          "options": {
+              "cwd": "C:\\Program Files\\mingw64\\bin"
+          },
+          "problemMatcher": [
+              "$gcc"
+          ],
+          "group": {
+              "kind": "build",
+              "isDefault": true
+          },
+          "detail": "Task generated by Debugger."
+      }
+  ],
+  "version": "2.0.0"
+}</pre>
+          <p>
+            ※ C++ 표준 라이브러리를 추가하지 않고 <code>std::cout</code> 등을 사용하면 <var>undefined reference to 'std::cout'</var> 링크 에러가 발생합니다. 설정 후 아래 코드를 작성해 <var>F5</var>로 테스트할 수 있습니다.
+          </p>
+          <pre>
+int main() {
+  printf("Hello World");
+}</pre>
+        </div>
+      </details>
+
+      <!-- 4. 환경설정 - UTF-8 인코딩 설정(접기) -->
+      <details>
+        <summary>환경설정 - UTF-8 인코딩 설정</summary>
+        <div class="simple-box">
+          <p>
+            Windows 명령 프롬프트(cmd)의 기본 코드페이지(<code>chcp</code>)는 EUC-KR(949)입니다. UTF-8(65001) 소스의 한글 출력이 깨지지 않도록 맞추는 방법은 다음과 같습니다.
+          </p>
+          <div class="blockquote-title">1회 변경 (현재 창)</div>
+          <blockquote>
+            chcp 65001
+          </blockquote>
+          <div class="blockquote-title">영구 변경 (레지스트리 AutoRun)</div>
+          <blockquote>
+            \HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Command Processor\AutoRun "chcp 65001"
+          </blockquote>
+          <p>
+            <code>AutoRun</code> 항목이 없다면 우클릭 &gt; 새로 만들기 &gt; 문자열 값(S) &gt; <code>AutoRun</code> 생성 후 값에 <code>chcp 65001</code>을 입력합니다.
+          </p>
+        </div>
+      </details>
+
+      <!-- 5. 어셈블리(접기) -->
+      <details>
+        <summary>어셈블리</summary>
+        <div class="simple-box">
+          <p>코드(<code>.c</code>)와 순수 기계어(<code>0101...</code>) 사이에 존재하는 어셈블리(<code>.s</code>) 변환 예시입니다.</p>
+          <div class="blockquote-title">C 코드</div>
+          <pre>
 #include &lt;stdio.h&gt;
 
 int main()
@@ -174,14 +1526,13 @@ int main()
     printf("Hello World!\n");
 }</pre>
 
+          <div class="blockquote-title">컴파일 명령어 (옵션 -S, 대문자)</div>
+          <blockquote>
+            gcc -S 1_01_HelloWorld.cpp -o 1_01_HelloWorld.s
+          </blockquote>
 
-      <div class="blockquote-title">컴파일 명령어(option=S(대문자))</div>
-      <blockquote>
-        gcc -S 1_01_HelloWorld.cpp -o 1_01_HelloWorld.s
-      </blockquote>
-
-      <div class="blockquote-title">결과</div>
-      <pre>
+          <div class="blockquote-title">어셈블리 결과 (.s)</div>
+          <pre>
   .file	"1_01_HelloWorld.cpp"
   .text
   .def	__main;	.scl	2;	.type	32;	.endef
@@ -212,337 +1563,16 @@ main:
   .seh_endproc
   .ident	"GCC: (MinGW-W64 x86_64-ucrt-posix-seh, built by Brecht Sanders) 12.2.0"
   .def	puts;	.scl	2;	.type	32;	.endef</pre>
+        </div>
+      </details>
     </div>
-  </details>
 
+    <!-- 6. 형상관리(1줄) & 7. 예제코드(1줄) -->
+    <div class="c-ref-lines">
+      <p><b>형상관리</b>: Git 설치 및 기본 이력 관리 방법은 <a href="/coding/tools/git/init.html">Git 시작하기</a> 문서를 참조하십시오.</p>
+      <p><b>예제코드</b>: 강의 전체 실습 코드는 <a href="https://github.com/iseohyun/C-tutorial" target="_blank" rel="noopener">https://github.com/iseohyun/C-tutorial</a>에서 확인할 수 있습니다.</p>
+    </div>
+  </article>
+</body>
 
-  <h1>C 작업환경 준비하기</h1>
-  <table>
-    <thead>
-      <tr>
-        <th>분류</th>
-        <th>설명</th>
-        <th>중요도</th>
-        <th>대표 예시 및 비고</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><b>에디터 (Editor)</b></td>
-        <td>소스코드 텍스트를 작성하고 편집하는 인터페이스</td>
-        <td><b>필수</b></td>
-        <td>VS Code, Cursor, ...</td>
-      </tr>
-      <tr>
-        <td><b>컴파일러 (Compiler)</b></td>
-        <td>인간이 짠 코드를 컴퓨터가 읽는 기계어로 번역/빌드</td>
-        <td><b>절대 필수</b></td>
-        <td>GCC, Clang, MSVC, ...</td>
-      </tr>
-      <tr>
-        <td><b>형상 관리 (VCS)</b></td>
-        <td>코드의 변경 이력을 추적하고 백업/협업을 지원</td>
-        <td>선택 (권장)</td>
-        <td>Git (GitHub), SVN, ...</td>
-      </tr>
-      <tr>
-        <td><b>AI 에이전트 (LLM)</b></td>
-        <td>코드 자동 완성, 오류 디버깅 및 리팩토링 보조</td>
-        <td>선택 (생산성)</td>
-        <td>Antigravity, Claude, Gemini, ...</td>
-      </tr>
-    </tbody>
-  </table>
-  <div class="simple-box">
-    <p>
-      <b>컴파일러</b>를 구하기 앞서서 컴파일러에 대해서 간단하게 알아봐야 합니다.
-    </p>
-    <p>
-      칩의 언어를 각각 대응한다는 말은 칩셋 제조사마다 C언어 번역기(컴파일러)가 있어야 한다는 의미입니다.
-      다행히 C언어는 매우 간단한 언어이기 때문에 거의 모든 제조사는 칩셋을 구매하는 고객에게 컴파일러를 제공합니다.
-      앞으로 다룰 주제가 범용PC에서 Windows를 설치하고 그 위에 돌아가는 프로그램을 만들어야 하기 때문에 이에 적합한 컴파일러를 구해야합니다.
-    </p>
-    <hr>
-    <p>
-      외국 자료에는 이 프로그램이 이런 기능을 하고, 이 행위를 왜 하는지에 대한 설명을 자세히 기술한 문서가 종종 눈에 띄는 반면, 국내 문서들은 일단 따라해보자는 취지가 많은 것 같습니다.<br>
-      &nbsp;APM(apache + php + mySQL)이나, eclipse, Visual Studio와 같이 통합환경을 제공하는 툴은 왜 라는 질문을 할 이유가 없었던 것 같습니다.
-      오픈마켓형태인 Visual Studio Code환경을 만들면서, 해야 할 것들이 늘어난건 아쉬운 일입니다.
-      게다가 그냥 문자나 디엠을 쓰면 되는데 카톡을 왜 설치해야하는지도 설명해야하지 않습니까?
-    </p>
-  </div>
-
-  <h2>C 컴파일러</h2>
-  <p>
-    C컴파일러인 gcc컴파일러는 Linux OS를 타겟으로 하기 때문에, Windows환경에서 컴파일러를 따로 설치해 주어야 합니다.
-    아래사이트는 minGW(minimalist for GCC for Windows)를 다운로드 받을 수 있는 사이트입니다.
-  </p>
-  <p>
-    <a href="https://winlibs.com/#download-release" target="_blank">https://winlibs.com/#download-release</a>
-  </p>
-  <p>
-    <q>최신버전의 UCRT 64bit 7-Zip</q>(용량이 작은)을 다운로드 받습니다.
-    압축을 해제하면 mingw64폴더가 나옵니다.
-    <span style="font-family: serif;">C:\mingw64</span>폴더에 넣는 예제도 있습니다. 선택입니다.
-    저는 <span style="font-family:serif">C:\program files\mingw64</span>에 넣었습니다.
-  </p>
-
-  <h3>시스템 환경 변수 편집</h3>
-  <p>
-    mingw64이하 bin폴더의 gcc.exe와 같은 프로그램을 수행하는 것이 목표이기 때문에 path에 해당 폴더를 등록하면 앞으로 편하게 사용할 수 있습니다.<br>
-    제 경우 Path에 다음 경로를 추가하였습니다. <br>
-  <div class="blockquote-title"> Path </div>
-  <blockquote>
-    <span style="font-family: serif;">C:\Program Files\mingw64\bin</span>
-  </blockquote>
-  정상적으로 설정되었는지 확인하는 방법은:
-  <blockquote>
-    C:\Users\iseoh>gcc --version<br>
-    gcc (MinGW-W64 x86_64-ucrt-posix-seh, built by Brecht Sanders) 12.2.0<br>
-    Copyright (C) 2022 Free Software Foundation, Inc.<br>
-    This is free software; see the source for copying conditions. There is NO<br>
-    warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.<br>
-  </blockquote>
-  </p>
-
-  <p>
-    컴파일러 버전과 C++표준은 다릅니다. 다음은 C/C++ 표준을 정리한 것입니다.
-  </p>
-  <table>
-    <thead>
-      <tr>
-        <td style="white-space: nowrap;">C/C++ 표준</td>
-        <td style="white-space: nowrap;">발행 연도</td>
-        <td style="white-space: nowrap;">-std 옵션</td>
-        <td style="white-space: nowrap;">주요 변경 사항</td>
-      </tr>
-    </thead>
-    <tr>
-      <td>C89</td>
-      <td>1989</td>
-      <td>c89</td>
-      <td>프로토타입 부재, "void"부재, '//'주석 미포함</td>
-    </tr>
-    <tr>
-      <td>C99</td>
-      <td>1999</td>
-      <td>c99, C++98</td>
-      <td>한줄 주석 지원, 가변길이 배열(VLA)추가 등</td>
-    </tr>
-    <tr>
-      <td>C++11</td>
-      <td>2011</td>
-      <td>c11, c++11</td>
-      <td>자동 형식 추론(auto), 오른 값 참조(Rvalue Reference, &&), 초기화 리스트(Initializer Lists) 등</td>
-    </tr>
-    <tr>
-      <td>C++14</td>
-      <td>2014</td>
-      <td>c++14</td>
-      <td>제네릭 람다 표현식(Generic Lambda Expressions), 이진 리터럴(Binary Literals), 유니코드 문자열 리터럴(Unicode String Literals)등
-        <sub><sup>*</sup>MSVS default</sub>
-      </td>
-    </tr>
-    <tr>
-      <td>C++17</td>
-      <td>2017</td>
-      <td>c17, c++17</td>
-      <td>구조화 바인딩(Structured Bindings), 표현식 평가 순서 변경(Evaluation Order of Expressions), 파일 시스템 라이브러리(Filesystem
-        Library)등<sub><sup>*</sup>GDB default</sub></td>
-    </tr>
-    <tr>
-      <td>C++20</td>
-      <td>2020</td>
-      <td>c2x, c++20</td>
-      <td>개선된 모듈 시스템(Improved Modules), 공식적인 코루틴 지원(Coroutines), 레인지 기반 for 루프(Range-based for Loop)확장 등</td>
-    </tr>
-    <tr>
-      <td>C++23</td>
-      <td>2023</td>
-      <td>latest (support?)</td>
-      <td>표준라이브러리 지원(import std), 코루틴 지원 등</td>
-    </tr>
-  </table>
-
-  <h2>VS code</h2>
-  <p>
-    <b>VS Code는 범용 에디터이기 때문에 C용 환경설정을 추가로 해주어야</b> 합니다. VS Code에 대한 자세한 사용방법은 <a
-      href="/coding/tools/vscode/start.html">여기</a>를 참조해주세요.
-  </p>
-  <h3>C/C++ Extension Pack</h3>
-  <p>
-    이 확장팩은 실질적으로 컴파일러를 제공하지는 않고, 컴파일러 명령으로 나온 결과물을 VSCode의 환경에 맞게 출력하는 기능을 도와준다.
-    아래 페이지는 참조를 위한 페이지이고, 툴에서 <var>Ctrl</var> + <var>shift</var> + <var>X</var>로 검색해서 설치하면 된다.
-  </p>
-  <p>
-    <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools-extension-pack"
-      target="_blank">https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools-extension-pack</a>
-  </p>
-  <h3>.json 설정</h3>
-  <p>
-    json은 VSCode가 채택한 데이터 관리기법입니다.
-    Excel파일과 같이 데이터를 저장하는 약속 중 하나입니다.
-    리스트는 []로, MAP은 {}로 표현하는 방식으로 기술됩니다.
-  </p>
-  <p>
-    작업디렉토리 이하 .vscode폴더에 아래와 같은 파일을 생성(또는 자동생성됨)하면 VSCode가 알아서 읽어가는 방식입니다.
-  </p>
-
-  <table>
-    <caption>참고: <a href="https://code.visualstudio.com/docs/cpp/config-mingw"
-        target="_blank">https://code.visualstudio.com/docs/cpp/config-mingw</a></caption>
-    <thead>
-      <tr>
-        <td>파일명</td>
-        <td>설명</td>
-      </tr>
-    </thead>
-    <tr>
-      <td>c_cpp_properties.json</td>
-      <td>컴파일러 경로와 IntelliSense(자동완성)을 기술합니다.</td>
-    </tr>
-    <tr>
-      <td>launch.json</td>
-      <td>디버거 조건을 기술합니다.</td>
-    </tr>
-    <tr>
-      <td>tasks.json</td>
-      <td>컴파일 조건을 기술합니다.</td>
-    </tr>
-  </table>
-  <br><br>
-  <p>
-    다음은 각 설정 예시입니다.
-  </p>
-  <div class="blockquote-title">c_cpp_properties.json</div>
-  <pre>
-{
-  "configurations": [
-      {
-          "name": "Win32",
-          "includePath": [
-              "${workspaceFolder}/**"
-          ],
-          "defines": [
-              "_DEBUG",
-              "UNICODE",
-              "_UNICODE"
-          ],
-          "compilerPath": "C:\\Program Files\\mingw64\\bin\\gcc.exe",
-          "cStandard": "c17",
-          "cppStandard": "gnu++17",
-          "intelliSenseMode": "windows-gcc-x64"
-      }
-  ],
-  "version": 4
-}</pre>
-  </blockquote>
-  <div class="blockquote-title">tasks.json</div>
-  <pre>
-{
-  "tasks": [
-      {
-          "type": "cppbuild",
-          "label": "C/C++: gcc.exe build active file",
-          "command": "C:\\Program Files\\mingw64\\bin\\gcc.exe",
-          "args": [
-              "-fdiagnostics-color=always",
-              "-g",
-              "${file}",
-              <em>"-lstdc++",</em> <span class="comment">만약, C++ 표준 라이브러리를 추가하려면 이 옵션을 추가합니다.</span>
-              "-o",
-              "${fileDirname}\\${fileBasenameNoExtension}.exe"
-          ],
-          "options": {
-              "cwd": "C:\\Program Files\\mingw64\\bin"
-          },
-          "problemMatcher": [
-              "$gcc"
-          ],
-          "group": {
-              "kind": "build",
-              "isDefault": true
-          },
-          "detail": "Task generated by Debugger."
-      }
-  ],
-  "version": "2.0.0"
-}</pre>
-  <div class="simple-box">
-    <p>
-      C++표준라이브러리를 추가하지 않고 namespace를 사용하면, <var>Error "undefined reference to 'std::cout'"</var>에러가 발생합니다.
-    </p>
-  </div>
-
-  <h3>테스트</h3>
-  <p>다음 프로그램을 작성하고 <var>F5</var>를 눌러 실행해 볼 수 있습니다.</p>
-  <pre>
-int main() {
-  printf("Hello World");
-}</pre>
-
-  <h2>MSVS(옵션)</h2>
-  <p>
-    에디터를 VScode를 설치했다면, 설치하지 않아도 됩니다. 컴파일러를 내장하고 있지만(All-in-one), 용량이 크고 회원가입이 필요합니다.<br>
-    <a href="https://visualstudio.microsoft.com/ko/" target="_blank"
-      rel="noopener">https://visualstudio.microsoft.com/ko/</a>
-  </p>
-  <iframe
-    src="https://docs.google.com/presentation/d/e/2PACX-1vT5s1Ymk5s1uu5gByrMKirtJPPIinsROGZoxDclpENb4FyGc2rGl8zXmYSKj1hG5jPwz1nSRbPwQk9d/embed?start=false&amp;loop=false&amp;delayms=3000"
-    width="95%" height="450" frameborder="0" allowfullscreen="true"></iframe>
-
-  <iframe
-    src="https://docs.google.com/presentation/d/e/2PACX-1vSZOtt-N3h_3DtTPEdU5CjiIAHrGlKJTHKNUwp9dzHhbI3GecJoaa9sq-Ff-Dk0lFec2P5ih3BXY_pa/embed?start=false&amp;loop=false&amp;delayms=3000"
-    width="95%" height="450" frameborder="0" allowfullscreen="true"></iframe>
-  <ul>
-    <li><b>Visual Studio</b><br>
-      도구 -&gt; 설정 -&gt; 설정 가져오기 및 내보내기
-      마법사<br />&gt;&gt; 선택한 환경 설정 내보내기 &gt; 모든설정 &gt; 옵션 &gt; 환경 &gt; 키보드
-    </li>
-    <li>
-      <b>eclipse</b><br>
-      File -&gt; Export -&gt; General -&gt; Preferences<br />Export all 해제 -&gt; Keys Preferences -&gt; To preference
-      file
-    </li>
-    <li>
-      <b>Source Insight</b><br>
-      Option -&gt; Save Configuration -&gt; Keys
-    </li>
-  </ul>
-  <h3>UTF-8</h3>
-  <p>
-    Visual Studio와 command(windows) 기본적으로 EUC-KR을 사용합니다.
-    다만, EUC-KR은 다국어 지원에서 불리한 인코딩 방식이고, 따라서 공유와 배포를 위해 UTF-8을 사용하는 것이 좋습니다.
-    따라서 UTF-8로 세팅하는 방법을 안내합니다.
-  </p>
-  <h4>cmd</h4>
-  <p>
-    chcp는 코드 페이지(code page)를 확인/변경하는 명령어입니다.
-    default setting은 euc-kr(949)입니다. 변경을 위해서:
-  </p>
-  <div class="blockquote-title">1회 사용하는 방법</div>
-  <blockquote>
-    chcp 65001
-  </blockquote>
-  <div class="blockquote-title">영구 변경하는 방법</div>
-  <blockquote>
-    \HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Command Processor\AutoRun "chcp 65001"
-  </blockquote>
-  <p>
-    만약 autorun이 없다면, "우클릭" > 새로만들기 > 문자열 값(S) > "AutoRun" 생성 > "chcp 65001" 입력
-  </p>
-
-  <h4>Visual Studio Setting</h4>
-  <div class="blockquote-title">"메뉴" > "디버그" > "... 속성 페이지" > "C/C++" > "명령줄" > "추가 옵션(D)"에 다음을 추가</div>
-  <blockquote>
-    /source-charset:utf-8
-  </blockquote>
-
-  <h2>Git</h2>
-  <p>자세한 사용방법은 <a href="/coding/tools/git/init.html">여기</a>를 참조하십시오.</p>
-
-  <h1>예제코드</h1>
-  <p>
-    <a href="https://github.com/iseohyun/C-tutorial" target="_blank">
-      https://github.com/iseohyun/C-tutorial</a>
-  </p>
-</article>
+</html>

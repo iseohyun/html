@@ -938,6 +938,8 @@ article .slides-doc .cue-check::after {
 .slides-doc .sl-tts { right: 44px; }
 .slides-doc .sl-gear { right: 80px; }
 .slides-doc .sl-cc { right: 116px; }
+.slides-doc .sl-img { right: 80px; }
+.slides-doc .slide-frame:not(:has(.sl-tts)) .sl-img { right: 44px; }
 
 /* 스피커가 없는 브라우저에서는 전체 화면 단추만 남는다 */
 .slides-doc .sl-gear,
@@ -949,6 +951,9 @@ article .slides-doc .cue-check::after {
 .slides-doc.is-full .sl-cc {
   display: inline-flex;
 }
+
+.slides-doc.is-full .sl-img { right: 152px; }
+.slides-doc.is-full .slide-frame:not(:has(.sl-tts)) .sl-img { right: 44px; }
 
 .slides-doc .sl-btn[aria-pressed="true"],
 .slides-doc .sl-btn[aria-expanded="true"] {
@@ -1150,15 +1155,35 @@ article .slides-doc .cue-check::after {
   margin: 3.4em 4.5em 0;
   background: #fff;
   border-radius: var(--r-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
-.sl-viewer .sl-viewer-stage img {
+.sl-viewer .sl-viewer-stage > img,
+.sl-viewer .sl-viewer-stage > svg {
   display: block;
   width: 100%;
   height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   margin: 0;
   object-fit: contain;
   padding: 1em;
+}
+
+.sl-viewer .sl-viewer-stage > svg {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.sl-viewer .sl-viewer-stage > svg text {
+  cursor: text;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .sl-viewer .sl-viewer-foot {
@@ -1176,15 +1201,17 @@ article .slides-doc .cue-check::after {
   font-size: 0.9em;
 }
 
-/* 왼쪽 절반은 이전 그림, 오른쪽 절반은 다음 그림 */
+/* 이전·다음 이동은 좌우 가장자리 단추(또는 스와이프·방향키)로만 동작하여 그림 내부 텍스트 선택을 가리지 않는다 */
 .sl-viewer .sl-viewer-nav {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 50%;
-  padding: 0 0.9em;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  width: auto;
+  height: auto;
+  padding: 0.6em;
   border: 0;
-  border-radius: 0;
+  border-radius: var(--r-pill);
   background: none;
   color: var(--fg);
   font-size: inherit;
@@ -1198,8 +1225,8 @@ article .slides-doc .cue-check::after {
   background: none;
 }
 
-.sl-viewer .sl-viewer-nav.is-prev { left: 0; justify-content: flex-start; }
-.sl-viewer .sl-viewer-nav.is-next { right: 0; justify-content: flex-end; }
+.sl-viewer .sl-viewer-nav.is-prev { left: 0.35em; justify-content: flex-start; }
+.sl-viewer .sl-viewer-nav.is-next { right: 0.35em; justify-content: flex-end; }
 
 .sl-viewer .sl-viewer-chip {
   width: 2.6em;
@@ -1211,7 +1238,7 @@ article .slides-doc .cue-check::after {
   background: var(--surface);
   display: grid;
   place-items: center;
-  opacity: 0.35;
+  opacity: 0.72;
   transition: opacity var(--t-fast) ease, background-color var(--t-fast) ease, color var(--t-fast) ease;
 }
 
