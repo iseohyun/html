@@ -1,0 +1,80 @@
+/* WebApp Common GUI 토큰 · v0.5.4 (빌드 20261114v2)
+   컴포넌트는 색 값을 직접 쓰지 않고 아래 역할 이름만 쓴다. 뜻과 쓰이는 곳은 design/01-화면.md 의 「색과 테마」「토큰 목록」.
+   - 맨 위 :root            밝은 값이자 기본값
+   - prefers-color-scheme   기기 설정이 어두울 때 (테마를 「시스템」으로 두었을 때)
+   - [data-theme]           이 문서를 보여 주는 뷰어가 붙이는 값. 실제 프로젝트에서는 지워도 된다
+   - [data-skin]            사용자가 전체 설정에서 고른 테마: light 밝게 · dark 어둡게 · gray 스톤 · navy 네이비 */
+:root {
+  --bg: #f5f6f5;
+  --surface: #ffffff;
+  --sunken: #e9eceb;
+  --line: #d5dad7;
+  --fg: #1b1e1d;
+  --muted: #5c6461;
+  --active: #dce1de;
+  --scrim: rgba(20, 24, 22, 0.42);
+  --day-sun: #b3261e;
+  --day-sat: #2456a6;
+
+  --font-body: 'IBM Plex Sans KR', 'Malgun Gothic', '맑은 고딕', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'D2Coding', Consolas, monospace;
+
+  --rail-w: 60px;
+  --panel-w: 240px;
+  --header-h: 48px;
+  --content-max: 1640px;
+
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-pill: 999px;
+
+  --t-fast: 0.15s;
+  --t-base: 0.3s;
+  --t-slow: 0.5s;
+
+  --z-header: 60;
+  --z-backdrop: 90;
+  --z-drawer: 95;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141615; --surface: #1c1f1e; --sunken: #0f1110; --line: #303533;
+    --fg: #e8ebe9; --muted: #9aa39f; --active: #2c312f; --scrim: rgba(0, 0, 0, 0.6);
+    --day-sun: #f0958d; --day-sat: #8fb4ef;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141615; --surface: #1c1f1e; --sunken: #0f1110; --line: #303533;
+  --fg: #e8ebe9; --muted: #9aa39f; --active: #2c312f; --scrim: rgba(0, 0, 0, 0.6);
+  --day-sun: #f0958d; --day-sat: #8fb4ef;
+  color-scheme: dark;
+}
+/* 설정에서 고르는 기본 테마 네 가지. 보는 사람의 시스템 설정보다 우선한다. */
+:root[data-skin="light"] {
+  --bg: #f5f6f5; --surface: #ffffff; --sunken: #e9eceb; --line: #d5dad7;
+  --fg: #1b1e1d; --muted: #5c6461; --active: #dce1de; --scrim: rgba(20, 24, 22, 0.42);
+  --day-sun: #b3261e; --day-sat: #2456a6;
+  color-scheme: light;
+}
+:root[data-skin="dark"] {
+  --bg: #141615; --surface: #1c1f1e; --sunken: #0f1110; --line: #303533;
+  --fg: #e8ebe9; --muted: #9aa39f; --active: #2c312f; --scrim: rgba(0, 0, 0, 0.6);
+  --day-sun: #f0958d; --day-sat: #8fb4ef;
+  color-scheme: dark;
+}
+:root[data-skin="gray"] {
+  --bg: #e6e6e6; --surface: #f3f3f3; --sunken: #d6d6d6; --line: #bcbcbc;
+  --fg: #1f1f1f; --muted: #575757; --active: #c8c8c8; --scrim: rgba(0, 0, 0, 0.45);
+  --day-sun: #1f1f1f; --day-sat: #575757;
+  color-scheme: light;
+}
+:root[data-skin="navy"] {
+  --bg: #0f1b2d; --surface: #16263d; --sunken: #0a1322; --line: #2a3d5a;
+  --fg: #e6edf7; --muted: #9db0c9; --active: #233652; --scrim: rgba(0, 0, 0, 0.6);
+  --day-sun: #ff9d94; --day-sat: #9cc4ff;
+  color-scheme: dark;
+}
+:root { --alert: #d32f2f; }
+:root[data-skin="gray"] { --alert: #1f1f1f; }

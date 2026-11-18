@@ -1,7 +1,7 @@
 /**
  * @file tests/webapp-common-gui.spec.js
  * @description 「WebApp Common GUI」 묶음(column/ai/webapp-common-gui/*.html) 검증.
- *   - 여덟 문서가 사이트 뼈대 안에서 그려지고(기본 레일 항목 유지, 형제 탭 12개: 견본 8개 + md 표준 문서 2개), 콘솔 오류가 없다
+ *   - 여덟 문서가 사이트 뼈대 안에서 그려지고(기본 레일 항목 유지, 형제 탭 10개: 견본 8개 + md 표준 문서 2개), 콘솔 오류가 없다
  *   - 레일의 「미리보기 설정」이 더해지고, 뼈대에 적용한 값이 떠날 때 모두 되돌려진다
  *   - 견본 동작: 달력 설정, 리스트 표↔카드, 필터 적용 표시, 지도↔필터 연동, 단어 단축, 워커 계산
  *   - 이 묶음의 스타일이 다른 문서로 새지 않는다
@@ -63,8 +63,8 @@ test.describe('WebApp Common GUI: 문서가 사이트 뼈대 안에서 그려진
       for (const id of BUILT_IN_RAIL_IDS) await expect(page.locator(`#sidebar-nav #${id}`)).toBeVisible();
 
       const tabs = page.locator('#header-tabs .app-tab');
-      await expect(tabs).toHaveCount(PAGES.length + 4);   // 견본 문서 8개 + 보고서 · 그림 보기의 견본(html)과 규칙(md) 2쌍
-      await expect(tabs).toHaveText(PAGES.map(item => item.label).concat(['보고서', '보고서 규칙', '그림 보기', '그림 보기 규칙']));
+      await expect(tabs).toHaveCount(PAGES.length + 2);   // 견본 문서 8개 + 보고서 · 그림 보기 견본. 규칙(md)은 「WebApp Common GUI 규칙」 묶음에 따로 있다
+      await expect(tabs).toHaveText(PAGES.map(item => item.label).concat(['보고서', '그림 보기']));
       await expect(page.locator('#header-tabs .app-tab[aria-selected="true"]')).toHaveText(doc.label);
 
       const railItem = page.locator(RAIL_ITEM);
@@ -500,7 +500,9 @@ test.describe('WebApp Common GUI: 보고서 · 그림 보기 견본 (슬라이�
 
     // 규칙 요약의 링크가 md 규칙 문서를 연다
     await doc.locator('#report-rules a[href$="report.md"]').click();
-    await expect(page.locator('#header-tabs .app-tab[aria-selected="true"]')).toHaveText('보고서 규칙');
+    await expect(page.locator('#header-tabs .app-tab[aria-selected="true"]')).toHaveText('보고서');
+    await expect(page.locator('#header-tabs .app-tab')).toHaveCount(13);   // 규칙 묶음의 문서 13개
+    await expect(page.locator('article h1').first()).toBeVisible();
     await page.waitForTimeout(400);
     expect(errors).toEqual([]);
   });
@@ -534,6 +536,35 @@ test.describe('WebApp Common GUI: 보고서 · 그림 보기 견본 (슬라이�
     await page.keyboard.press('Escape');
     await expect(page.locator('.sl-viewer')).toHaveCount(0);
     await page.waitForTimeout(400);
+    expect(errors).toEqual([]);
+  });
+});
+
+test.describe('WebApp Common GUI 규칙: md 규칙 문서 묶음', () => {
+  const RULES = ['screen', 'calendar', 'list', 'map', 'filter', 'word-shortening', 'architecture', 'conveniences', 'settings', 'login', 'icons', 'report', 'image-viewer'];
+
+  test('규칙 문서 13개가 모두 사이트 뼈대 안에서 열리고, 문서 사이 링크가 끊기지 않는다', async ({ page, request }) => {
+    test.setTimeout(120000);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const errors = collectErrors(page);
+    await page.goto('/index.html' + BASE + 'rules/screen.md');
+    await expect(page.locator('#header-tabs .app-tab')).toHaveCount(RULES.length);
+
+    const targets = new Set();
+    for (const name of RULES) {
+      await goToHash(page, BASE + 'rules/' + name + '.md');
+      await expect(page.locator('#header-tabs .app-tab[aria-selected="true"]')).toBeVisible();
+      await expect(page.locator('article :is(h1, h2, table)').first()).toBeVisible();
+      // 옮기기 전의 자리(reference/, design/)를 가리키는 말이 남아 있지 않다
+      await expect(page.locator('article')).not.toContainText(/reference\/|design\/\d\d/);
+      const links = await page.locator('article a[href*="/column/ai/webapp-common-gui/"]').evaluateAll(list => list.map(a => a.getAttribute('href')));
+      links.forEach(href => targets.add(href.replace(/^#/, '')));
+    }
+    expect(targets.size).toBeGreaterThan(10);
+    for (const target of targets) {
+      const response = await request.get(target);
+      expect(response.status(), target).toBe(200);
+    }
     expect(errors).toEqual([]);
   });
 });
