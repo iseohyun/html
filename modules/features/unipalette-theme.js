@@ -7,11 +7,14 @@
  *       첫 색 = 테마색 → 바탕·표면·가라앉은 면·선·글자를 이 색조에서 채도를 낮춰 만든다
  *       가장 먼 색(반대색) = 하이라이트색 → 알림 점(--alert)
  *       나머지를 테마색에서 가까운 순서로 서브 1·2·3 → 서브 1이 선택·호버 면(--active)과 켜진 메뉴 글자
+ *   - 비활성 탭의 면(--tab-idle)은 서브 색이 아니라 테마색의 음영으로 만든다.
+ *   - 선택·호버 면과 켜진 메뉴 글자는 전체 설정의 「하이라이트」·「인터페이스」에서 다른 후보색으로 바꿀 수 있다(settings.js).
  *   - 고르는 동안 onChange로 사이트에 바로 적용하고, 취소하면 원래 테마로 되돌린다.
  *   - 계산한 토큰 값은 iseohyun_custom_skin_v1 에 저장한다. 화면을 열 때는 modules/script.js 와
  *     settings.js 가 이 값만 읽어 적용하므로, 평소에는 UniPalette를 불러오지 않는다.
  *   - 문서 본문(article)은 다른 테마와 같이 밝은 종이로 남는다.
- * @exports pick, readSaved, applySaved, clearTokens, TOKEN_NAMES, STORAGE_KEY
+ * @requires SiteModules.ColorMath
+ * @exports pick, assignRoles, readSaved, applySaved, clearTokens, TOKEN_NAMES, STORAGE_KEY
  */
 
 window.SiteModules = window.SiteModules || {};
@@ -22,24 +25,26 @@ window.SiteModules.UniPaletteTheme = (function () {
   const SCRIPTS = ["version.js", "calcColor.js", "unipalette.js"];
   const STYLE = "unipalette.css";
   const MIN_COLORS = 5;
-  const TOKEN_NAMES = ["--bg", "--surface", "--sunken", "--line", "--fg", "--muted", "--active", "--alert", "--sidebar-active-color"];
+  const TOKEN_NAMES = ["--bg", "--surface", "--sunken", "--line", "--fg", "--muted", "--active", "--alert", "--sidebar-active-color", "--tab-idle"];
   const ROLE_NAMES = { primary: "테마색", sub1: "서브 1 · 선택", sub2: "서브 2", sub3: "서브 3", highlight: "하이라이트" };
 
   let loading = null;
 
   /* ---------- 저장된 배색 ---------- */
 
-  function isHex(v) {
-    return typeof v === "string" && /^#[0-9A-F]{6}$/i.test(v);
-  }
+  const isHex = window.SiteModules.ColorMath.isHex;
 
   /** 저장된 배색. 모양이 어긋나면 null */
   function readSaved() {
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
       if (!saved || !Array.isArray(saved.palette) || !saved.tokens) return null;
+      const palette = saved.palette.filter(isHex);
+      const dark = saved.dark === true;
+      // 비활성 탭 면(--tab-idle)이 생기기 전에 저장한 배색은 테마색으로 채워 쓴다
+      if (!isHex(saved.tokens["--tab-idle"]) && palette.length) saved.tokens["--tab-idle"] = tabIdle(palette[0], dark);
       if (!TOKEN_NAMES.every(name => isHex(saved.tokens[name]))) return null;
-      return { palette: saved.palette.filter(isHex), dark: saved.dark === true, tokens: saved.tokens };
+      return { palette: palette, dark: dark, tokens: saved.tokens };
     } catch (err) {
       console.warn("[UniPaletteTheme] 저장된 배색을 읽지 못했습니다:", err);
       return null;
@@ -106,6 +111,17 @@ window.SiteModules.UniPaletteTheme = (function () {
 
   /* ---------- 팔레트 → 사이트 토큰 (calcColor.js 의 함수를 쓴다) ---------- */
 
+  const { hexToHsl, hslToHex, ensureContrast, tone } = window.SiteModules.ColorMath;
+
+  function clamp(v, lo, hi) {
+    return Math.max(lo, Math.min(hi, v));
+  }
+
+  /** 비활성 탭의 면: 테마색의 음영 (선택 면의 색과는 따로 간다) */
+  function tabIdle(primary, dark) {
+    return dark ? tone(primary, 0.45, 6, 40, 18) : tone(primary, 0.45, 6, 40, 86);
+  }
+
   function hueDistance(a, b) {
     const d = Math.abs(hexToHsl(a).h - hexToHsl(b).h) % 360;
     return d > 180 ? 360 - d : d;
@@ -126,33 +142,6 @@ window.SiteModules.UniPaletteTheme = (function () {
       byIndex[rest[k].i] = role;
     });
     return { roles, byIndex };
-  }
-
-  function contrast(a, b) {
-    const la = getRelativeLuminance(a);
-    const lb = getRelativeLuminance(b);
-    return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
-  }
-
-  function clamp(v, lo, hi) {
-    return Math.max(lo, Math.min(hi, v));
-  }
-
-  function tone(hex, satScale, satMin, satMax, lightness) {
-    const hsl = hexToHsl(hex);
-    return hslToHex(hsl.h, clamp(hsl.s * satScale, satMin, satMax), lightness);
-  }
-
-  /** 바탕과의 대비가 target이 될 때까지 글자 명도를 바탕 반대쪽으로 민다 */
-  function ensureContrast(fg, bg, target, dark) {
-    if (contrast(fg, bg) >= target) return fg;
-    const hsl = hexToHsl(fg);
-    const step = dark ? 1 : -1;
-    for (let l = hsl.l + step; l >= 0 && l <= 100; l += step) {
-      const hex = hslToHex(hsl.h, hsl.s, l);
-      if (contrast(hex, bg) >= target) return hex;
-    }
-    return dark ? "#FFFFFF" : "#000000";
   }
 
   function buildTokens(palette, dark) {
@@ -181,6 +170,7 @@ window.SiteModules.UniPaletteTheme = (function () {
     t["--fg"] = ensureContrast(t["--fg"], hardest, 4.5, dark);
     t["--muted"] = ensureContrast(t["--muted"], hardest, 4.5, dark);
     t["--sidebar-active-color"] = ensureContrast(roles.sub1, t["--active"], 4.5, dark);
+    t["--tab-idle"] = tabIdle(p, dark);
     const hl = hexToHsl(roles.highlight);
     t["--alert"] = hslToHex(hl.h, Math.max(hl.s, 60), clamp(hl.l, 40, 60));
     return t;
@@ -240,6 +230,7 @@ window.SiteModules.UniPaletteTheme = (function () {
     STORAGE_KEY: STORAGE_KEY,
     TOKEN_NAMES: TOKEN_NAMES,
     pick: pick,
+    assignRoles: assignRoles,
     readSaved: readSaved,
     applySaved: applySaved,
     clearTokens: clearTokens

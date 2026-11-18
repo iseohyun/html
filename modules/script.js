@@ -1,15 +1,17 @@
 /**
  * @file modules/script.js
- * @version 20261118v11
+ * @version 20261118v12
  * @description 통합 진입점(Bootstrapper). 캐시 버스팅 버전(window.SiteVersion)을 정의하고,
  *   서브페이지 직접 접속을 SPA 해시 경로로 리다이렉트한 뒤 코어/UI/기능 모듈을 순서대로 로드·초기화한다.
  */
 
-window.SiteVersion = "20261118v11";
+window.SiteVersion = "20261118v12";
 // 전체 설정의 저장 키. 끝의 판 번호는 저장 모양이 바뀌면 올린다. (modules/core/settings.js 가 같은 키를 쓴다)
 window.SiteSettingsStorageKey = "iseohyun_settings_v1";
 // 「UniPalette」 테마가 계산해 둔 토큰 값. (modules/features/unipalette-theme.js 가 같은 키를 쓴다)
 window.SiteCustomSkinKey = "iseohyun_custom_skin_v1";
+// 전체 설정의 「하이라이트」·「인터페이스」를 강제할 때 계산해 둔 토큰 값. (modules/core/settings.js 가 같은 키를 쓴다)
+window.SiteAccentTokensKey = "iseohyun_accent_tokens_v1";
 (function() {
   // 저장해 둔 테마와 글자 크기를 화면이 그려지기 전에 먼저 적용한다 (깜빡임 방지).
   // 값의 검증과 그 밖의 처리는 settings.js 가 로드된 뒤 다시 한다.
@@ -31,6 +33,13 @@ window.SiteCustomSkinKey = "iseohyun_custom_skin_v1";
       }
     }
     if (["dark", "gray", "navy"].includes(skin)) document.documentElement.setAttribute("data-skin", skin);
+    // 하이라이트·인터페이스: 테마 뒤에 덮어쓴다 (선택 면과 켜진 메뉴 글자만 허용)
+    const accent = JSON.parse(localStorage.getItem(window.SiteAccentTokensKey) || "null");
+    if (accent) {
+      ["--active", "--sidebar-active-color"].forEach(name => {
+        if (/^#[0-9A-F]{6}$/i.test(accent[name])) document.documentElement.style.setProperty(name, accent[name]);
+      });
+    }
     if (["0.9", "1", "1.1", "1.25"].includes(saved.fontScale)) document.documentElement.style.setProperty("--font-scale", saved.fontScale);
   } catch (err) {
     console.warn("[Bootstrapper] 저장된 설정을 읽지 못했습니다:", err);
@@ -60,6 +69,7 @@ window.SiteCustomSkinKey = "iseohyun_custom_skin_v1";
   const scripts = [
     '/modules/core/site-config.js',
     '/modules/core/auth.js',
+    '/modules/core/color-math.js',
     '/modules/features/unipalette-theme.js',
     '/modules/core/settings.js',
     '/modules/core/keybind-manager.js',

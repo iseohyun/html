@@ -199,4 +199,105 @@ test.describe('UniPalette 테마', () => {
     await expect(page.locator('html')).toHaveAttribute('data-skin', 'navy');
     expect(await page.evaluate(() => document.documentElement.style.getPropertyValue('--bg'))).toBe('');
   });
+
+  test('하이라이트·인터페이스 후보는 고른 팔레트의 색이고, 비활성 탭은 테마색의 음영이다', async ({ page }) => {
+    const palette = ['#E44D1B', '#8AE41B', '#1BE4A2', '#1B3EE4', '#E41BCF'];
+    await page.addInitScript(p => {
+      if (sessionStorage.getItem('seeded')) return;
+      sessionStorage.setItem('seeded', '1');
+      localStorage.setItem('iseohyun_settings_v1', JSON.stringify({ theme: 'custom', fontScale: '1' }));
+      // --tab-idle 이 없던 때 저장한 배색: 화면을 열 때 테마색으로 채운다
+      localStorage.setItem('iseohyun_custom_skin_v1', JSON.stringify({
+        palette: p, dark: false,
+        tokens: {
+          '--bg': '#F8F3F2', '--surface': '#FFFFFF', '--sunken': '#EDE3E0', '--line': '#DDCBC6',
+          '--fg': '#251410', '--muted': '#5D4C47', '--active': '#E3F2D3', '--alert': '#3B4FE8',
+          '--sidebar-active-color': '#3F6A12'
+        }
+      }));
+    }, palette);
+    await page.goto('/index.html#/settings.html');
+    await expect(page.locator('.set-card')).toBeVisible();
+
+    const swatches = page.locator('[data-accent-row="accent"] .color-swatch');
+    await expect(swatches).toHaveCount(5);
+    expect(await swatches.evaluateAll(els => els.map(e => e.dataset.value))).toEqual(palette);
+    await expect(page.locator('[data-accent-row="accent"] [data-value="auto"]')).toHaveAttribute('aria-pressed', 'true');
+
+    // 비활성 탭의 면은 선택 면(--active)이 아니라 테마색(첫 색)의 음영
+    const tabIdle = await page.evaluate(() => document.documentElement.style.getPropertyValue('--tab-idle'));
+    expect(tabIdle).toMatch(/^#[0-9A-F]{6}$/i);
+    expect(tabIdle.toUpperCase()).not.toBe('#E3F2D3');
+
+    // 서브 3(파랑 쪽)을 하이라이트로 고르면 선택 면이 바뀌고, 비활성 탭과 테마 토큰은 그대로
+    await swatches.nth(3).click();
+    await expect(page.locator('[data-accent-row="accent"] [data-value="#1B3EE4"]')).toHaveAttribute('aria-pressed', 'true');
+    const after = await page.evaluate(() => ({
+      active: document.documentElement.style.getPropertyValue('--active'),
+      tabIdle: document.documentElement.style.getPropertyValue('--tab-idle'),
+      bg: document.documentElement.style.getPropertyValue('--bg')
+    }));
+    expect(after.active.toUpperCase()).not.toBe('#E3F2D3');
+    expect(after.tabIdle).toBe(tabIdle);
+    expect(after.bg).toBe('#F8F3F2');
+  });
+});
+
+test.describe('하이라이트 · 인터페이스 색', () => {
+  test('다른 테마에서도 후보색으로 강제하고, 새로 열어도 남으며, 자동으로 되돌린다', async ({ page }) => {
+    await page.addInitScript(() => {
+      if (sessionStorage.getItem('seeded')) return;
+      sessionStorage.setItem('seeded', '1');
+      localStorage.setItem('iseohyun_settings_v1', JSON.stringify({ theme: 'light', fontScale: '1' }));
+    });
+    await page.goto('/index.html#/settings.html');
+    await expect(page.locator('.set-card')).toBeVisible();
+
+    const accentRow = page.locator('[data-accent-row="accent"]');
+    const uiRow = page.locator('[data-accent-row="ui"]');
+    await expect(accentRow.locator('.color-swatch')).toHaveCount(8);
+    await expect(uiRow.locator('.color-swatch')).toHaveCount(8);
+    const rootStyle = name => page.evaluate(n => document.documentElement.style.getPropertyValue(n), name);
+    expect(await rootStyle('--active')).toBe('');
+
+    // 하이라이트 = 파랑: 선택 면이 옅은 파랑으로. 비활성 탭은 그대로 테마의 음영
+    const idleTabBg = () => page.evaluate(() => {
+      const tab = document.querySelector('.app-tab:not([aria-selected="true"])');
+      return tab ? getComputedStyle(tab).backgroundColor : null;
+    });
+    const tabBefore = await idleTabBg();
+    await accentRow.locator('[data-value="#1E88E5"]').click();
+    await expect(accentRow.locator('[data-value="#1E88E5"]')).toHaveAttribute('aria-pressed', 'true');
+    const face = await rootStyle('--active');
+    expect(face).toMatch(/^#[0-9A-F]{6}$/);
+    if (tabBefore) {
+      expect(await idleTabBg()).toBe(tabBefore);
+    }
+
+    // 인터페이스 = 주황: 켜진 메뉴 글자가 선택 면 위에서 4.5:1 이상
+    await uiRow.locator('[data-value="#FB8C00"]').click();
+    const text = await rootStyle('--sidebar-active-color');
+    expect(text).toMatch(/^#[0-9A-F]{6}$/);
+    const ratio = await page.evaluate(([a, b]) => window.SiteModules.ColorMath.contrast(a, b), [text, face]);
+    expect(ratio).toBeGreaterThanOrEqual(4.5);
+
+    // 새로 열어도 남는다 (화면을 그리기 전에 먼저 적용)
+    await page.reload();
+    await expect(page.locator('.set-card')).toBeVisible();
+    expect(await rootStyle('--active')).toBe(face);
+    expect(await rootStyle('--sidebar-active-color')).toBe(text);
+
+    // 어둡게로 바꾸면 같은 후보가 어두운 면으로 다시 계산된다
+    await page.locator('[data-setting="theme"][data-value="dark"]').click();
+    const darkFace = await rootStyle('--active');
+    expect(darkFace).not.toBe(face);
+    await expect(page.locator('[data-accent-row="accent"] [data-value="#1E88E5"]')).toHaveAttribute('aria-pressed', 'true');
+
+    // 자동으로 되돌리면 테마의 값으로
+    await page.locator('[data-accent-row="accent"] [data-value="auto"]').click();
+    await page.locator('[data-accent-row="ui"] [data-value="auto"]').click();
+    expect(await rootStyle('--active')).toBe('');
+    expect(await rootStyle('--sidebar-active-color')).toBe('');
+    expect(await page.evaluate(() => localStorage.getItem('iseohyun_accent_tokens_v1'))).toBeNull();
+  });
 });

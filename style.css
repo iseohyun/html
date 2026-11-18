@@ -1097,7 +1097,8 @@ em {
   --line: #d5dad7;        /* 선: 영역 경계, 테두리 */
   --fg: #1b1e1d;          /* 글자, 켜진 버튼의 면 */
   --muted: #5c6461;       /* 흐린 글자: 보조 설명, 꺼진 항목 */
-  --active: #dce1de;      /* 선택·호버 면 */
+  --active: #dce1de;      /* 선택·호버 면 (전체 설정의 「하이라이트」로 바꿀 수 있다) */
+  --tab-idle: #dce1de;    /* 비활성 탭의 면: 테마색의 음영 (선택 면을 바꿔도 따라가지 않는다) */
   --scrim: rgba(20, 24, 22, 0.42); /* 서랍 뒤 덮개 */
   --day-sun: #b3261e;     /* 일요일·공휴일 */
   --day-sat: #2456a6;     /* 토요일 */
@@ -1128,19 +1129,19 @@ em {
 
 :root[data-skin="dark"] {
   --bg: #141615; --surface: #1c1f1e; --sunken: #0f1110; --line: #303533;
-  --fg: #e8ebe9; --muted: #9aa39f; --active: #2c312f; --scrim: rgba(0, 0, 0, 0.6);
+  --fg: #e8ebe9; --muted: #9aa39f; --active: #2c312f; --tab-idle: #2c312f; --scrim: rgba(0, 0, 0, 0.6);
   --day-sun: #f0958d; --day-sat: #8fb4ef;
 }
 
 :root[data-skin="gray"] {
   --bg: #e6e6e6; --surface: #f3f3f3; --sunken: #d6d6d6; --line: #bcbcbc;
-  --fg: #1f1f1f; --muted: #575757; --active: #c8c8c8; --scrim: rgba(0, 0, 0, 0.45);
+  --fg: #1f1f1f; --muted: #575757; --active: #c8c8c8; --tab-idle: #c8c8c8; --scrim: rgba(0, 0, 0, 0.45);
   --day-sun: #1f1f1f; --day-sat: #575757; --alert: #1f1f1f;
 }
 
 :root[data-skin="navy"] {
   --bg: #0f1b2d; --surface: #16263d; --sunken: #0a1322; --line: #2a3d5a;
-  --fg: #e6edf7; --muted: #9db0c9; --active: #233652; --scrim: rgba(0, 0, 0, 0.6);
+  --fg: #e6edf7; --muted: #9db0c9; --active: #233652; --tab-idle: #233652; --scrim: rgba(0, 0, 0, 0.6);
   --day-sun: #ff9d94; --day-sat: #9cc4ff;
 }
 
@@ -2475,7 +2476,7 @@ body {
   box-sizing: border-box;
   padding: 7px 20px 6px;
   clip-path: polygon(9px 0%, calc(100% - 9px) 0%, 100% 100%, 0% 100%);
-  background-color: var(--active);
+  background-color: var(--tab-idle);
   color: var(--muted);
   font-size: 12px;
   font-weight: 700;
@@ -2889,6 +2890,49 @@ textarea.contact-input {
   gap: 6px;
   flex-wrap: wrap;
   min-width: 0;
+}
+
+/* 전체 설정의 「하이라이트」·「인터페이스」 후보색 견본: 테마에 맞춰 다듬은 실제 색을 보여 준다 */
+.set-card .set-hint {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.color-swatch {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--swatch-face, var(--swatch));
+  cursor: pointer;
+  transition: transform var(--t-fast) ease, box-shadow var(--t-fast) ease;
+}
+
+/* 인터페이스 견본은 선택 면 위의 글자색을 점으로 보인다 */
+.color-swatch::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border-radius: var(--r-pill);
+  background: var(--swatch);
+}
+
+.color-swatch:hover {
+  transform: scale(1.08);
+}
+
+.color-swatch:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+}
+
+.color-swatch[aria-pressed="true"] {
+  box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--fg);
 }
 
 .set-note {
