@@ -33,6 +33,7 @@ category: "WebApp Common GUI"
 | 공유 복사 알림 | 공유 버튼을 누르면 주소를 복사하고 버튼 아래에 짧은 알림. | KoreaEvent 헤더 | 반영됨 |
 | 필터 적용 표시 | 필터가 걸려 있으면 아이콘에 점. | KoreaEvent, KoreaIssue 헤더 | 반영됨 |
 | 원래 이름 툴팁 | 말줄임되거나 줄인 이름에 마우스를 올리면 전체 이름. | KoreaEvent 달력 칩 | 반영됨 |
+| 홈 화면 설치 | 매니페스트와 아이콘을 넣어 브라우저의 「설치」로 앱처럼 열게 함. 규칙은 [「설치」 규칙](#/column/ai/webapp-common-gui/rules/install.md). | CharQuiz, NameQuiz | 명세만 |
 
 ## 선택 기능으로 남긴 것
 
