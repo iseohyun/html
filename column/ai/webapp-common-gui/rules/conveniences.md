@@ -3,7 +3,7 @@ title: "WebApp Common GUI · 편의 기능"
 status: "설계문서"
 category: "WebApp Common GUI"
 ---
-> 판: v0.5.6 · 동작하는 모습은 [「편의 기능」 견본](#/column/ai/webapp-common-gui/conveniences.html)에서 봅니다.
+> 판: v0.5.7 · 동작하는 모습은 [「편의 기능」 견본](#/column/ai/webapp-common-gui/conveniences.html)에서 봅니다.
 > 다루는 것: 기본에 넣는 기능과 선택 기능의 목록
 
 # 편의 기능
@@ -52,7 +52,7 @@ category: "WebApp Common GUI"
 | 자료 백업과 복원 | 브라우저에 쌓인 자료를 JSON 파일로 내려받고 다시 올림. | haepungdan의 backup.ts | 설정 |
 | 명령 창 | 명령을 이름으로 찾아 실행. | 비공개 프로젝트의 useKeybindings | 단축키 |
 | 맨 위로 가기 버튼 | 길게 스크롤하면 오른쪽 아래에 나타나는 버튼. 기존 프로젝트에는 없음. | 새 제안 | 본문 오른쪽 아래 |
-| 푸시 알림 | 알림 권한을 받아 예약한 때에 알림. | CharQuiz | 설정 |
+| 푸시 알림 | 알림 권한을 받아 예약한 때에 알림. 규칙은 [「푸시 알림」](#/column/ai/webapp-common-gui/rules/push.md). | CharQuiz | 설정 |
 
 ## 편집 화면이 있을 때만
 
