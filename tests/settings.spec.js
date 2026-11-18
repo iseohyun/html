@@ -171,3 +171,32 @@ test.describe('기본 테마', () => {
     await light.close();
   });
 });
+
+test.describe('UniPalette 테마', () => {
+  test('고른 배색은 UniPalette를 불러오지 않고 저장된 토큰으로 적용되고, 다른 테마를 고르면 지워진다', async ({ page }) => {
+    const tokens = {
+      '--bg': '#F8F3F2', '--surface': '#FFFFFF', '--sunken': '#EDE3E0', '--line': '#DDCBC6',
+      '--fg': '#251410', '--muted': '#5D4C47', '--active': '#E3F2D3', '--alert': '#3B4FE8',
+      '--sidebar-active-color': '#3F6A12'
+    };
+    await page.addInitScript(t => {
+      if (sessionStorage.getItem('seeded')) return;
+      sessionStorage.setItem('seeded', '1');
+      localStorage.setItem('iseohyun_settings_v1', JSON.stringify({ theme: 'custom', fontScale: '1' }));
+      localStorage.setItem('iseohyun_custom_skin_v1', JSON.stringify({
+        palette: ['#E44D1B', '#8AE41B', '#1BE4A2', '#1B3EE4', '#E41BCF'], dark: false, tokens: t
+      }));
+    }, tokens);
+    await page.goto('/index.html#/settings.html');
+    await expect(page.locator('.set-card')).toBeVisible();
+
+    const bg = await page.evaluate(() => document.documentElement.style.getPropertyValue('--bg'));
+    expect(bg).toBe('#F8F3F2');
+    await expect(page.locator('[data-setting="theme"][data-value="custom"]')).toHaveAttribute('aria-pressed', 'true');
+    expect(await page.evaluate(() => typeof window.UniPalette)).toBe('undefined');
+
+    await page.locator('[data-setting="theme"][data-value="navy"]').click();
+    await expect(page.locator('html')).toHaveAttribute('data-skin', 'navy');
+    expect(await page.evaluate(() => document.documentElement.style.getPropertyValue('--bg'))).toBe('');
+  });
+});
