@@ -6,10 +6,17 @@
  *
  *   슬라이드(.slide-frame)가 있는 문서에서 하는 일
  *   - 전체 화면 보기: 슬라이드마다 단추. 브라우저의 전체 화면을 쓰고, 막혀 있으면 창 안을 가득 채운다.
- *     넘기기 → ↓ PageDown 스페이스 / ← ↑ PageUp, 닫기 Esc. 그동안 사이트의 다른 단축키는 받지 않는다.
+ *     닫기 Esc. 그동안 사이트의 다른 단축키는 받지 않는다.
+ *   - 키 (본문과 전체 화면에서 같다. 입력 칸에 글자를 넣는 중에는 받지 않는다)
+ *       스페이스        재생 / 멈춤 (멈춘 자리에서 이어 읽는다)
+ *       PageDown/PageUp 다음 / 이전 슬라이드. 읽는 중이면 그 슬라이드의 처음부터 이어 읽는다
+ *       → / ←           읽는 중에는 다음 / 이전 문장(음성). 슬라이드의 끝에서는 다음 슬라이드로 이어진다.
+ *                       읽지 않는 전체 화면에서는 다음 / 이전 슬라이드 (↓ ↑ 도 같다)
+ *       C               자막 켜기 / 끄기
  *   - 읽어 주기(speechSynthesis): 스크립트를 문장으로 나눠 읽고, 읽는 곳을 문단·문장·단어로 표시한다.
  *     스크립트의 data-cue="이름:방식" 이 가리키는 슬라이드 요소(data-key="이름")를 밑줄·테두리·체크로 짚는다.
- *   - 자막(전체 화면에서만), 화면 맨 아래의 진행 막대(눌러서 옮기기), 헤더의 이어 재생 단추.
+ *   - 자막(전체 화면에서만. 읽기를 멈춘 동안에도 멈춘 문장을 계속 보여 준다), 화면 맨 아래의 진행 막대(눌러서 옮기기),
+ *     헤더의 이어 재생 단추.
  *   - 읽기 설정: 헤더의 화면 설정 패널(Header.setPanels)에 등록한다. 전체 화면에서는 같은 줄을 슬라이드 위 창으로 옮겨 쓴다.
  *   - 그림 크게 보기: a[data-view] 를 누르면 그 슬라이드 안에서 연다.
  *   항목 카드(.note.claude)가 있는 문서에서 하는 일
@@ -23,7 +30,8 @@
 
 window.SiteModules = window.SiteModules || {};
 
-// 읽던 자리: 문서 경로 → { resume: [슬라이드마다 다음에 읽을 문장 번호], autoAt: 이어 재생이 머문 슬라이드, ctx: 막대가 보여 주는 것 }
+// 읽던 자리: 문서 경로 → { resume: [슬라이드마다 다음에 읽을 문장 번호], autoAt: 이어 재생이 머문 슬라이드, ctx: 막대가 보여 주는 것,
+//   heard: [슬라이드마다 한 번이라도 읽었는지 (멈춘 동안 자막을 보여 줄지 정한다)] }
 window.SiteModules.SlidesMemory = window.SiteModules.SlidesMemory || {};
 
 window.SiteModules.Slides = (function () {
@@ -442,7 +450,7 @@ window.SiteModules.Slides = (function () {
   }
 
   // ---------------------------------------------------------------------------
-  // 자막: 전체 화면에서 읽는 동안, 지금 읽는 문장을 정해 둔 자리에 보여 준다
+  // 자막: 전체 화면에서 지금 읽는 문장을 정해 둔 자리에 보여 준다. 읽기를 멈춘 동안에도 멈춘 문장을 계속 보여 준다.
   // ---------------------------------------------------------------------------
   function removeCaption() {
     clearTimeout(capTimer);
@@ -513,8 +521,20 @@ window.SiteModules.Slides = (function () {
     showCapPart();
   }
 
+  // 자막에 띄울 문장: 읽는 중이면 그 문장, 멈춰 있으면 보고 있는 슬라이드에서 멈춘(다음에 읽을) 문장.
+  // 한 번도 읽지 않은 슬라이드에는 자막을 띄우지 않는다.
+  function captionSentence() {
+    if (reading) return reading.list[reading.at];
+    if (!fullOn || !fullFrame) return null;
+    const i = frames.indexOf(fullFrame);
+    const list = frameSents[i] || [];
+    if (!list.length || !memory.heard[i]) return null;
+    return list[Math.min(memory.resume[i] || 0, list.length - 1)];
+  }
+
   function paintCaption() {
-    if (!(fullOn && reading && state.caption)) {
+    const sent = captionSentence();
+    if (!(fullOn && sent && state.caption)) {
       removeCaption();
       return;
     }
@@ -531,7 +551,6 @@ window.SiteModules.Slides = (function () {
     if (captionEl.parentNode !== root) root.appendChild(captionEl);
     captionEl.dataset.v = state.capV;
     captionEl.dataset.h = state.capH;
-    const sent = reading.list[reading.at];
     if (capSent !== sent) {
       capSent = sent;
       capParts = captionParts(sent.textContent);
@@ -868,6 +887,7 @@ window.SiteModules.Slides = (function () {
       return;
     }
     memory.resume[r.index] = r.at;
+    memory.heard[r.index] = true;
     paintTts();
     paintProg();
     const sent = r.list[r.at];
@@ -1038,6 +1058,139 @@ window.SiteModules.Slides = (function () {
   }
 
   // ---------------------------------------------------------------------------
+  // 키로 하는 동작: 재생/멈춤, 슬라이드 넘기기, 문장 넘기기
+  // ---------------------------------------------------------------------------
+  // 본문에서 지금 보고 있는 슬라이드: 화면에 걸친 슬라이드 가운데 위쪽 끝이 화면 위쪽에 가장 가까운 것
+  function nearestFrameIndex() {
+    let best = 0, bestDistance = Infinity;
+    frames.forEach(function (frame, i) {
+      const box = frame.getBoundingClientRect();
+      if (box.bottom <= 0) return;
+      const distance = Math.abs(box.top);
+      if (distance < bestDistance) {
+        best = i;
+        bestDistance = distance;
+      }
+    });
+    return best;
+  }
+
+  // 지금 다루는 슬라이드: 읽는 슬라이드 → 이어 재생이 머문 슬라이드 → 전체 화면의 슬라이드 → 화면에 보이는 슬라이드
+  function currentIndex() {
+    if (reading) return reading.index;
+    if (autoplay) return autoplay.at;
+    if (fullOn && fullFrame) return frames.indexOf(fullFrame);
+    return nearestFrameIndex();
+  }
+
+  // i번째 슬라이드에서 이어 읽을 문장 (끝까지 읽었으면 처음부터)
+  function resumeAt(i) {
+    const at = memory.resume[i] || 0;
+    return at >= (frameSents[i] || []).length ? 0 : at;
+  }
+
+  // 스페이스: 읽는 중이면 멈추고, 멈춰 있으면 멈춘 자리에서 이어 읽는다.
+  //   이어 재생을 듣던 중이었거나 아직 아무것도 듣지 않았으면 이어 재생으로, 한 슬라이드만 듣던 중이었으면 그 슬라이드만 읽는다.
+  function toggleSpeech() {
+    if (!synth || !totalSents) return;
+    if (reading || autoplay) {
+      stopTts();
+      return;
+    }
+    const isSingle = typeof memory.ctx === "number";
+    if (fullOn) {
+      const i = frames.indexOf(fullFrame);
+      if (isSingle) startTts(i, null, false, null);
+      else beginAuto(offsets[i] + resumeAt(i));
+    } else if (isSingle) {
+      startTts(memory.ctx, null, false, null);
+    } else if (memory.ctx === "auto") {
+      beginAuto(null);
+    } else {
+      beginAuto(offsets[nearestFrameIndex()]);
+    }
+  }
+
+  // n번째 슬라이드로 옮긴다. 읽는 중이었으면 그 슬라이드의 startAt번째 문장부터 이어 읽는다.
+  function goToSlide(n, startAt) {
+    if (n < 0 || n >= frames.length) return;   // 첫 장과 끝 장에서는 더 가지 않는다
+    const wasAuto = !!autoplay, wasReading = !!reading;
+    if (wasAuto) {
+      // 이어 재생: playAt 이 화면(스크롤 또는 전체 화면의 슬라이드)을 옮기고 읽는다
+      clearTimeout(autoplay.timer);
+      stopTts(true);
+      playAt(n, startAt);
+      return;
+    }
+    stopTts();
+    if (fullOn) {
+      closeViewer();
+      closeSlideSettings();
+      fullFrame = frames[n];
+      paintFull();
+    } else {
+      frames[n].closest("section").scrollIntoView({ block: "start", behavior: "smooth" });
+    }
+    if (wasReading) startTts(n, null, false, startAt);
+  }
+
+  // PageDown / PageUp: 다음 / 이전 슬라이드
+  function stepSlide(direction) {
+    goToSlide(currentIndex() + direction, 0);
+  }
+
+  // → / ← (읽는 중): 다음 / 이전 문장. 슬라이드의 끝을 넘으면 다음 슬라이드의 첫 문장, 처음을 넘으면 앞 슬라이드의 끝 문장.
+  function stepSentence(direction) {
+    const r = reading;
+    if (!r) return;
+    const k = r.at + direction;
+    if (k >= 0 && k < r.list.length) {
+      jumpTo(k);
+      return;
+    }
+    const n = r.index + direction;
+    if (n < 0) {
+      jumpTo(0);   // 문서의 맨 처음: 첫 문장을 다시 읽는다
+      return;
+    }
+    if (n >= frames.length) return;   // 문서의 맨 끝: 읽던 문장을 그대로 읽는다
+    goToSlide(n, direction > 0 ? 0 : Math.max(0, (frameSents[n] || []).length - 1));
+  }
+
+  // 글자를 넣는 칸이거나, 스페이스가 제 일을 하는 요소(단추 · 링크 · 접는 줄)인지
+  function isTypingTarget(target) {
+    return !!(target && target.closest && target.closest('input, textarea, select, [contenteditable=""], [contenteditable="true"]'));
+  }
+
+  function isPressableTarget(target) {
+    return !!(target && target.closest && target.closest("button, a[href], summary, [role='button']"));
+  }
+
+  /**
+   * 본문과 전체 화면에서 함께 쓰는 키.
+   * @returns {boolean} 이 키를 처리했으면 true
+   */
+  function handlePlaybackKey(e) {
+    if (e.code === "KeyC" && synth) {
+      setOption("caption", !state.caption);
+      return true;
+    }
+    if (e.key === " ") {
+      toggleSpeech();
+      return true;
+    }
+    if (e.key === "PageDown" || e.key === "PageUp") {
+      stepSlide(e.key === "PageDown" ? 1 : -1);
+      return true;
+    }
+    if ((e.key === "ArrowRight" || e.key === "ArrowLeft") && reading) {
+      stepSentence(e.key === "ArrowRight" ? 1 : -1);
+      return true;
+    }
+    return false;
+  }
+
+  // ---------------------------------------------------------------------------
   // 슬라이드 전체 화면: 문서 상자를 통째로 띄우고 고른 슬라이드 하나만 남긴다
   // ---------------------------------------------------------------------------
   function slideImageInfo(frame) {
@@ -1107,6 +1260,7 @@ window.SiteModules.Slides = (function () {
     if (!fullFrame) return;
     fullFrame.closest("section").classList.add("has-active");
     fullFrame.querySelector(".sl-count").textContent = (frames.indexOf(fullFrame) + 1) + " / " + frames.length;
+    paintCaption();   // 슬라이드를 넘기면 자막도 그 슬라이드의 것으로 바꾼다 (읽은 적이 없으면 지운다)
   }
 
   function enterFull(frame) {
@@ -1163,14 +1317,9 @@ window.SiteModules.Slides = (function () {
     }
   }
 
+  // 전체 화면에서 다음 / 이전 슬라이드로 (읽는 중이면 그 슬라이드의 처음부터 이어 읽는다)
   function stepFull(direction) {
-    const next = frames[frames.indexOf(fullFrame) + direction];
-    if (!next) return;   // 첫 장과 끝 장에서는 더 가지 않는다
-    closeViewer();
-    stopTts();
-    closeSlideSettings();
-    fullFrame = next;
-    paintFull();
+    goToSlide(frames.indexOf(fullFrame) + direction, 0);
   }
 
   function onFullscreenChange() {
@@ -1380,18 +1529,31 @@ window.SiteModules.Slides = (function () {
       return;
     }
     if (fullOn) {
-      // 전체 화면에서는 슬라이드 넘기기와 닫기만 받는다. 설정 창 안에서 누른 키는 그 컨트롤이 쓴다.
+      // 전체 화면에서는 슬라이드의 키만 받는다 (사이트의 단축키는 받지 않는다). 설정 창 안에서 누른 키는 그 컨트롤이 쓴다.
       e.stopImmediatePropagation();
       if (e.key === "Escape" && slidePop) { closeSlideSettings(); return; }
       if (e.key !== "Escape" && e.target.closest && e.target.closest(".sl-settings-pop")) return;
       if (e.ctrlKey || e.altKey || e.metaKey) return;
-      if (e.key === "Escape") exitFull();
-      else if (e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === "PageDown" || e.key === " ") { e.preventDefault(); stepFull(1); }
-      else if (e.key === "ArrowLeft" || e.key === "ArrowUp" || e.key === "PageUp") { e.preventDefault(); stepFull(-1); }
+      if (e.key === "Escape") { exitFull(); return; }
+      // 슬라이드의 단추에 초점이 남아 있어도 스페이스가 그 단추를 누르지 않게 한다
+      if (handlePlaybackKey(e)) { e.preventDefault(); return; }
+      // 읽지 않는 동안의 방향키는 슬라이드를 넘긴다
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") { e.preventDefault(); stepFull(1); }
+      else if (e.key === "ArrowLeft" || e.key === "ArrowUp") { e.preventDefault(); stepFull(-1); }
       return;
     }
-    // 본문에서는 Esc 로 읽기만 멈춘다 (헤더 패널과 서랍을 닫는 것은 사이트가 한다)
-    if (e.key === "Escape" && synth) stopTts();
+    // 본문: Esc 로 읽기만 멈춘다 (헤더 패널과 서랍을 닫는 것은 사이트가 한다)
+    if (e.key === "Escape") {
+      if (synth) stopTts();
+      return;
+    }
+    if (e.ctrlKey || e.altKey || e.metaKey || isTypingTarget(e.target)) return;
+    // 단추 · 링크 · 접는 줄 위의 스페이스는 그 요소를 누르는 키로 남긴다
+    if (e.key === " " && isPressableTarget(e.target)) return;
+    if (handlePlaybackKey(e)) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -1451,7 +1613,8 @@ window.SiteModules.Slides = (function () {
 
     const pathKey = (window.SiteModules.state && window.SiteModules.state.currentPath) || window.location.hash;
     const store = window.SiteModules.SlidesMemory;
-    memory = store[pathKey] || (store[pathKey] = { resume: [], autoAt: 0, ctx: null });
+    memory = store[pathKey] || (store[pathKey] = { resume: [], autoAt: 0, ctx: null, heard: [] });
+    if (!memory.heard) memory.heard = [];
 
     if (hasSlides) {
       Object.keys(EXTRA_ICONS).forEach(function (name) { window.SiteModules.Icons.register(name, EXTRA_ICONS[name]); });

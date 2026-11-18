@@ -168,7 +168,7 @@ test.describe('전체 화면 보기 (창 안 덮개)', () => {
 
     await page.keyboard.press('ArrowRight');
     await expect(count).toHaveText('2 / 3');
-    await page.keyboard.press('Space');
+    await page.keyboard.press('PageDown');
     await expect(count).toHaveText('3 / 3');
     await page.keyboard.press('PageDown');   // 끝 장에서는 더 가지 않는다
     await expect(count).toHaveText('3 / 3');
@@ -239,9 +239,10 @@ test.describe('전체 화면 보기 (창 안 덮개)', () => {
     await expect(caption).toHaveCount(0);
     await expect(cc).toHaveAttribute('aria-pressed', 'false');
 
-    // 슬라이드를 넘기면 읽기를 멈춘다
-    await page.keyboard.press('ArrowRight');
+    // 읽는 중에 슬라이드를 넘기면(PageDown) 읽던 슬라이드는 멈추고 다음 슬라이드를 이어 읽는다
+    await page.keyboard.press('PageDown');
     await expect(page.locator('#s1-1 .sl-tts')).toHaveAttribute('aria-pressed', 'false');
+    await expect(page.locator('#s1-2 .sl-tts')).toHaveAttribute('aria-pressed', 'true');
     await page.keyboard.press('Escape');
 
     // 설정 줄은 헤더 패널로 돌아와 있고 바꾼 값이 남아 있다
@@ -660,5 +661,139 @@ test.describe('문서를 떠날 때', () => {
     await expect(page.locator('#header-action-slides-play')).toHaveCount(1);
     await page.locator('#s1-1 .sl-tts').click();
     expect((await spoken(page)).pop()).toBe(sentence);
+  });
+});
+
+test.describe('슬라이드 문서의 코드 보기', () => {
+  test('코드 한 줄의 높이가 글줄 높이와 같다 (본문 표의 칸 여백이 걸리지 않는다)', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/index.html');
+    // React 문서는 개발중이라 관리자에게만 보인다: 보이기 설정을 켜고 들어간다
+    await page.evaluate(() => window.SiteModules.Hierarchy.setShowDev(true));
+    await page.evaluate(() => { window.location.hash = '#/web-tech/React/start.html'; });
+    await expect(page.locator('article .slides-doc')).toBeVisible();
+    await page.evaluate(() => document.querySelectorAll('article details').forEach(el => { el.open = true; }));
+
+    const row = page.locator('article .slides-doc pre table.hljs-ln tr').first();
+    await expect(row).toBeVisible();
+    const metrics = await page.evaluate(() => {
+      const pre = document.querySelector('article .slides-doc pre:has(table.hljs-ln)');
+      const rows = pre.querySelectorAll('table.hljs-ln tr');
+      const cell = rows[0].querySelector('td.hljs-ln-code');
+      const style = getComputedStyle(cell);
+      return {
+        rowHeight: rows[0].getBoundingClientRect().height,
+        lineHeight: parseFloat(style.lineHeight),
+        paddingTop: parseFloat(style.paddingTop),
+        borderBottom: parseFloat(style.borderBottomWidth),
+        preHeight: pre.getBoundingClientRect().height,
+        rowCount: rows.length
+      };
+    });
+    expect(metrics.paddingTop).toBe(0);
+    expect(metrics.borderBottom).toBe(0);
+    // 한 줄은 글줄 높이 그대로다 (예전에는 위아래 9px 씩 붙어 두 배쯤 됐다)
+    expect(metrics.rowHeight).toBeLessThan(metrics.lineHeight + 2);
+    expect(metrics.preHeight).toBeLessThan(metrics.rowCount * (metrics.lineHeight + 2) + 40);
+  });
+});
+
+test.describe('슬라이드 보기의 키', () => {
+  const current = page => page.evaluate(() => (window.__tts.current ? window.__tts.current.text : null));
+
+  test('전체 화면: 스페이스로 재생/멈춤, 읽는 중 좌우 화살표로 문장, PageDown 으로 슬라이드, C 로 자막', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openChapter(page);
+    await page.locator('#s1-1 .sl-full').click();
+    const count = page.locator('.slides-doc section.has-active .sl-count');
+    const caption = page.locator('.slides-doc .sl-caption');
+    await expect(count).toHaveText('1 / 3');
+    await expect(caption).toHaveCount(0);   // 아직 읽지 않은 슬라이드에는 자막이 없다
+
+    // 스페이스: 읽기 시작. 자막이 나온다
+    await page.keyboard.press('Space');
+    await expect.poll(() => spoken(page).then(list => list.length)).toBe(1);
+    const first = (await spoken(page))[0];
+    await expect(caption).toBeVisible();
+
+    // 읽는 중의 좌우 화살표: 슬라이드가 아니라 문장을 넘긴다
+    await page.keyboard.press('ArrowRight');
+    await expect.poll(() => spoken(page).then(list => list.length)).toBe(2);
+    const second = (await spoken(page))[1];
+    expect(second).not.toBe(first);
+    await expect(count).toHaveText('1 / 3');
+    await page.keyboard.press('ArrowLeft');
+    await expect.poll(() => current(page)).toBe(first);
+
+    // 스페이스: 멈춤. 자막은 멈춘 문장을 계속 보여 준다
+    await page.keyboard.press('Space');
+    await expect.poll(() => current(page)).toBeNull();
+    await expect(caption).toBeVisible();
+    const pausedText = await caption.locator('.sl-caption-text').textContent();
+    expect(pausedText.trim().length).toBeGreaterThan(0);
+
+    // C: 자막 끄기 / 켜기 (멈춘 동안에도)
+    await page.keyboard.press('c');
+    await expect(caption).toHaveCount(0);
+    await expect(page.locator('#s1-1 .sl-cc')).toHaveAttribute('aria-pressed', 'false');
+    await page.keyboard.press('c');
+    await expect(caption).toBeVisible();
+    await expect(caption.locator('.sl-caption-text')).toHaveText(pausedText);
+
+    // 스페이스: 멈춘 문장부터 이어 읽는다
+    await page.keyboard.press('Space');
+    await expect.poll(() => current(page)).toBe(first);
+
+    // PageDown: 다음 슬라이드로 넘어가 그 슬라이드의 처음부터 이어 읽는다
+    await page.keyboard.press('PageDown');
+    await expect(count).toHaveText('2 / 3');
+    await expect.poll(() => current(page)).not.toBeNull();
+    const slideTwoFirst = await current(page);
+    expect([first, second]).not.toContain(slideTwoFirst);
+    await expect(caption).toBeVisible();
+
+    // 멈춘 뒤의 화살표는 슬라이드를 넘긴다. 읽은 적이 없는 슬라이드에는 자막이 없다
+    await page.keyboard.press('Space');
+    await expect.poll(() => current(page)).toBeNull();
+    await page.keyboard.press('ArrowRight');
+    await expect(count).toHaveText('3 / 3');
+    await expect(caption).toHaveCount(0);
+    await page.keyboard.press('PageUp');
+    await expect(count).toHaveText('2 / 3');
+    await expect(caption).toBeVisible();
+  });
+
+  test('본문: 스페이스로 이어 재생을 켜고 끄고, PageDown 으로 다음 슬라이드를 읽고, 글자를 넣는 칸에서는 받지 않는다', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openChapter(page);
+    const play = page.locator('#header-action-slides-play');
+
+    await page.keyboard.press('Space');
+    await expect(play).toHaveAttribute('aria-pressed', 'true');
+    await expect.poll(() => spoken(page).then(list => list.length)).toBe(1);
+    const first = (await spoken(page))[0];
+
+    // 읽는 중의 오른쪽 화살표: 다음 문장
+    await page.keyboard.press('ArrowRight');
+    await expect.poll(() => current(page)).not.toBe(first);
+
+    // PageDown: 다음 슬라이드의 처음부터
+    const before = (await spoken(page)).length;
+    await page.keyboard.press('PageDown');
+    await expect.poll(() => spoken(page).then(list => list.length), { timeout: 8000 }).toBeGreaterThan(before);
+    await expect(page.locator('#s1-2 .sl-tts')).toHaveAttribute('aria-pressed', 'true');
+
+    // 스페이스: 멈춤
+    await page.keyboard.press('Space');
+    await expect(play).toHaveAttribute('aria-pressed', 'false');
+    await expect.poll(() => current(page)).toBeNull();
+
+    // 검색 칸에 글자를 넣는 동안에는 스페이스와 C 가 글자로 들어간다
+    await page.locator('#nav-search').click();
+    const input = page.locator('#tab-search input[type="text"], #tab-search input[type="search"]').first();
+    await input.click();
+    await page.keyboard.type('c c');
+    await expect(input).toHaveValue('c c');
+    await expect(play).toHaveAttribute('aria-pressed', 'false');
   });
 });

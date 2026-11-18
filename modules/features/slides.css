@@ -235,6 +235,22 @@ article .slides-doc h1.sl-chapter {
   border-bottom: 0;
 }
 
+/* 코드 보기는 줄마다 한 행인 표(.hljs-ln)로 그려진다. 본문 표의 칸 여백과 밑줄이 걸리면 줄 높이가 두 배가 되므로
+   코드 보기의 표에는 원래 값(style.css 의 .hljs-ln td)을 되돌려 준다. */
+.slides-doc table.hljs-ln {
+  word-break: normal;
+}
+
+.slides-doc .hljs-ln td {
+  padding: 0 5px;
+  border: 0;
+  border-left: 1px solid #ddd;
+}
+
+.slides-doc .hljs-ln td.hljs-ln-numbers {
+  border-right: 1px solid #111;
+}
+
 .slides-doc td.nowrap {
   white-space: nowrap;
   font-weight: 600;

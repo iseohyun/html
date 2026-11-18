@@ -490,7 +490,7 @@ test.describe('WebApp Common GUI: 보고서 · 그림 보기 견본 (슬라이�
     await expect(doc.locator('.sl-full')).toHaveCount(3);
     await expect(doc.locator('.slide-no')).toHaveText(['1', '2', '3']);
     await expect(doc.locator('.slide h1, .slide h2')).toHaveCount(0);
-    await expect(doc.locator('#report-rules table tbody tr')).toHaveCount(11);
+    await expect(doc.locator('#report-rules table tbody tr')).toHaveCount(12);
 
     // 전체 화면을 열고 닫는다
     await doc.locator('#r-1 .sl-full').click();
