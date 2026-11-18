@@ -3,7 +3,7 @@ title: "WebApp Common GUI · 달력"
 status: "설계문서"
 category: "WebApp Common GUI"
 ---
-> 기준 판: v0.5.4 (빌드 20261114v2) · 동작하는 모습은 [「달력」 견본](#/column/ai/webapp-common-gui/calendar.html)에서 봅니다.
+> 판: v0.5.4 · 동작하는 모습은 [「달력」 견본](#/column/ai/webapp-common-gui/calendar.html)에서 봅니다.
 > 다루는 것: 달 카드와 날짜 칸, 여러 날 항목, 달력 설정(이어보기·빈 주 생략·정렬), 점 달력
 
 # 달력

@@ -3,7 +3,7 @@ title: "WebApp Common GUI · 편의 기능"
 status: "설계문서"
 category: "WebApp Common GUI"
 ---
-> 기준 판: v0.5.4 (빌드 20261114v2) · 동작하는 모습은 [「편의 기능」 견본](#/column/ai/webapp-common-gui/conveniences.html)에서 봅니다.
+> 판: v0.5.6 · 동작하는 모습은 [「편의 기능」 견본](#/column/ai/webapp-common-gui/conveniences.html)에서 봅니다.
 > 다루는 것: 기본에 넣는 기능과 선택 기능의 목록
 
 # 편의 기능

@@ -501,7 +501,7 @@ test.describe('WebApp Common GUI: 보고서 · 그림 보기 견본 (슬라이�
     // 규칙 요약의 링크가 md 규칙 문서를 연다
     await doc.locator('#report-rules a[href$="report.md"]').click();
     await expect(page.locator('#header-tabs .app-tab[aria-selected="true"]')).toHaveText('보고서');
-    await expect(page.locator('#header-tabs .app-tab')).toHaveCount(14);   // 규칙 묶음의 문서 14개
+    await expect(page.locator('#header-tabs .app-tab')).toHaveCount(15);   // 규칙 묶음의 문서 15개
     await expect(page.locator('article h1').first()).toBeVisible();
     await page.waitForTimeout(400);
     expect(errors).toEqual([]);
@@ -541,9 +541,9 @@ test.describe('WebApp Common GUI: 보고서 · 그림 보기 견본 (슬라이�
 });
 
 test.describe('WebApp Common GUI 규칙: md 규칙 문서 묶음', () => {
-  const RULES = ['screen', 'calendar', 'list', 'map', 'filter', 'word-shortening', 'architecture', 'conveniences', 'settings', 'login', 'install', 'icons', 'report', 'image-viewer'];
+  const RULES = ['screen', 'calendar', 'list', 'map', 'filter', 'word-shortening', 'architecture', 'conveniences', 'settings', 'login', 'install', 'icons', 'report', 'image-viewer', 'changes'];
 
-  test('규칙 문서 14개가 모두 사이트 뼈대 안에서 열리고, 문서 사이 링크가 끊기지 않는다', async ({ page, request }) => {
+  test('규칙 문서 15개가 모두 사이트 뼈대 안에서 열리고, 문서 사이 링크가 끊기지 않는다', async ({ page, request }) => {
     test.setTimeout(120000);
     await page.setViewportSize({ width: 1280, height: 800 });
     const errors = collectErrors(page);

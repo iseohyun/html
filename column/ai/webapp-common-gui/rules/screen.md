@@ -3,7 +3,7 @@ title: "WebApp Common GUI · 화면"
 status: "설계문서"
 category: "WebApp Common GUI"
 ---
-> 기준 판: v0.5.4 (빌드 20261114v2) · 동작하는 모습은 [「화면」 견본](#/column/ai/webapp-common-gui/screen.html)에서 봅니다.
+> 판: v0.5.6 · 동작하는 모습은 [「화면」 견본](#/column/ai/webapp-common-gui/screen.html)에서 봅니다.
 > 다루는 것: 화면 구성, 헤더와 탭, 설정의 층, 단축키, 문서 정보와 로그인, 스타일 규칙, 색과 테마, 토큰
 
 # 새 프로젝트를 시작할 때 쓰는 기본 화면

@@ -3,7 +3,7 @@ title: "WebApp Common GUI · 리스트"
 status: "설계문서"
 category: "WebApp Common GUI"
 ---
-> 기준 판: v0.5.4 (빌드 20261114v2) · 동작하는 모습은 [「리스트」 견본](#/column/ai/webapp-common-gui/list.html)에서 봅니다.
+> 판: v0.5.4 · 동작하는 모습은 [「리스트」 견본](#/column/ai/webapp-common-gui/list.html)에서 봅니다.
 > 다루는 것: 표와 카드, 정렬, 표시 열, 더 보기, 빈 상태
 
 # 리스트

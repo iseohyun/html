@@ -3,7 +3,7 @@ title: "WebApp Common GUI · 필터"
 status: "설계문서"
 category: "WebApp Common GUI"
 ---
-> 기준 판: v0.5.4 (빌드 20261114v2) · 동작하는 모습은 [「필터」 견본](#/column/ai/webapp-common-gui/filter.html)에서 봅니다.
+> 판: v0.5.4 · 동작하는 모습은 [「필터」 견본](#/column/ai/webapp-common-gui/filter.html)에서 봅니다.
 > 다루는 것: 헤더 아래 패널, 주제 줄, 날짜 주제, 주소에 담기
 
 # 필터

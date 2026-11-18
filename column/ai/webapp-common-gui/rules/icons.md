@@ -3,7 +3,7 @@ title: "WebApp Common GUI · 공통 아이콘"
 status: "설계문서"
 category: "WebApp Common GUI"
 ---
-> 기준 판: v0.5.4 (빌드 20261114v2) · 그림은 [icons.svg](/column/ai/webapp-common-gui/icons.svg)에 있고, 쓰는 규칙은 [「화면」 규칙](#/column/ai/webapp-common-gui/rules/screen.md)의 「스타일 규칙」에 있습니다.
+> 판: v0.5.4 · 그림은 [icons.svg](/column/ai/webapp-common-gui/icons.svg)에 있고, 쓰는 규칙은 [「화면」 규칙](#/column/ai/webapp-common-gui/rules/screen.md)의 「스타일 규칙」에 있습니다.
 
 # 공통 아이콘
 

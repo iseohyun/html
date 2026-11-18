@@ -3,7 +3,7 @@ title: "WebApp Common GUI · 지도"
 status: "설계문서"
 category: "WebApp Common GUI"
 ---
-> 기준 판: v0.5.4 (빌드 20261114v2) · 동작하는 모습은 [「지도」 견본](#/column/ai/webapp-common-gui/map.html)에서 봅니다.
+> 판: v0.5.4 · 동작하는 모습은 [「지도」 견본](#/column/ai/webapp-common-gui/map.html)에서 봅니다.
 > 다루는 것: 행정구역 보기, 지도 API 보기(Leaflet + OpenStreetMap), 색 단계, 묶기
 
 # 지도

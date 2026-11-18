@@ -3,7 +3,7 @@ title: "WebApp Common GUI · 단어 단축"
 status: "설계문서"
 category: "WebApp Common GUI"
 ---
-> 기준 판: v0.5.4 (빌드 20261114v2) · 동작하는 모습은 [「단어 단축」 견본](#/column/ai/webapp-common-gui/word-shortening.html)에서 봅니다.
+> 판: v0.5.4 · 동작하는 모습은 [「단어 단축」 견본](#/column/ai/webapp-common-gui/word-shortening.html)에서 봅니다.
 > 다루는 것: 적용 순서, 정규식 규칙과 단어 사전, 사용자가 고치는 범위
 
 # 단어 단축

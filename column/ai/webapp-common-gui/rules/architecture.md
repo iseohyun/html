@@ -3,7 +3,7 @@ title: "WebApp Common GUI · 구조"
 status: "설계문서"
 category: "WebApp Common GUI"
 ---
-> 기준 판: v0.5.4 (빌드 20261114v2) · 동작하는 모습은 [「구조」 견본](#/column/ai/webapp-common-gui/architecture.html)에서 봅니다.
+> 판: v0.5.6 · 동작하는 모습은 [「구조」 견본](#/column/ai/webapp-common-gui/architecture.html)에서 봅니다.
 > 다루는 것: 웹앱에서 워커·코어·로컬앱·명령줄로 가는 단계, 세 층, 지킬 규칙
 
 # 구조
