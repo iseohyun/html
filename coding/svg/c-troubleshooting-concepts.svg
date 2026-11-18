@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="560" viewBox="0 0 1240 560" font-family="'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif">
+  <title>트러블슈팅을 위한 3대 기초 개념 — 환경설정 · 어셈블리(빌드) · 형상관리</title>
+  <desc>C 개발 입문과 실무 트러블슈팅의 핵심인 ① 환경설정(PATH·UTF-8·JSON 연결), ② 어셈블리와 빌드 단계별 오류 구분(문법 오류·링커 오류·런타임 디버깅), ③ 형상관리(Git 스냅샷 복구와 AI 작업 검증)를 3열로 정리한 도식입니다.</desc>
+
+  <defs>
+    <filter id="ts-shadow" x="-2%" y="-2%" width="104%" height="106%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.06"/>
+    </filter>
+    <marker id="ts-arr-orange" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M1,1.5 L8.5,5 L1,8.5 Z" fill="#ea580c"/>
+    </marker>
+    <marker id="ts-arr-green" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M1,1.5 L8.5,5 L1,8.5 Z" fill="#059669"/>
+    </marker>
+    <clipPath id="ts-clip-c1"><rect x="24" y="20" width="380" height="520" rx="14"/></clipPath>
+    <clipPath id="ts-clip-c2"><rect x="430" y="20" width="380" height="520" rx="14"/></clipPath>
+    <clipPath id="ts-clip-c3"><rect x="836" y="20" width="380" height="520" rx="14"/></clipPath>
+  </defs>
+
+  <!-- 전체 종이 배경 -->
+  <rect width="1240" height="560" rx="16" fill="#fcfcfa" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- ====================================================================== -->
+  <!-- [1열] 환경설정의 개념 (PATH · UTF-8 · .vscode JSON)                    -->
+  <!-- ====================================================================== -->
+  <g clip-path="url(#ts-clip-c1)" filter="url(#ts-shadow)">
+    <rect x="24" y="20" width="380" height="520" rx="14" fill="#f8fafc"/>
+    <rect x="24" y="20" width="380" height="68" fill="#dbeafe"/>
+  </g>
+  <rect data-key="ts-env" x="24" y="20" width="380" height="520" rx="14" fill="none" stroke="#3b82f6" stroke-width="2"/>
+  <line x1="24" y1="88" x2="404" y2="88" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="42" y="50" font-size="16.5" font-weight="800" fill="#1e3a8a">① 환경설정의 개념</text>
+  <text x="42" y="73" font-size="11.5" font-weight="700" fill="#1d4ed8">"설치했는데 왜 명령어를 못 찾고 한글이 깨질까?"</text>
+
+  <!-- 1-1. PATH 환경변수 -->
+  <rect data-key="ts-path" x="40" y="106" width="348" height="126" rx="10" fill="#ffffff" stroke="#93c5fd" stroke-width="1.6"/>
+  <rect x="52" y="118" width="126" height="22" rx="11" fill="#2563eb"/>
+  <text x="115" y="133" text-anchor="middle" font-size="11" font-weight="800" fill="#ffffff">시스템 PATH 등록</text>
+  <text x="374" y="133" text-anchor="end" font-family="'D2Coding', Consolas, monospace" font-size="10.5" font-weight="700" fill="#1d4ed8">...\mingw64\bin</text>
+  <text x="52" y="160" font-size="11.5" fill="#334155">· 어느 폴더에서든 <tspan font-family="'D2Coding', monospace" font-weight="700">gcc</tspan>를 즉시 찾도록 OS에 주소 등록</text>
+  <text x="52" y="180" font-size="11.2" fill="#64748b">· 미등록 시: <tspan fill="#b91c1c" font-weight="700">'gcc'은(는) 내부 또는 외부 명령이 아닙니다</tspan></text>
+  <rect x="52" y="193" width="324" height="27" rx="5" fill="#0f172a"/>
+  <text x="62" y="211" font-family="'D2Coding', Consolas, monospace" font-size="10.5" fill="#86efac">C:\&gt; gcc --version  ➔  정상 응답 확인</text>
+
+  <!-- 1-2. 문자 인코딩 UTF-8 -->
+  <rect data-key="ts-utf8" x="40" y="246" width="348" height="126" rx="10" fill="#ffffff" stroke="#93c5fd" stroke-width="1.6"/>
+  <rect x="52" y="258" width="126" height="22" rx="11" fill="#eff6ff" stroke="#60a5fa"/>
+  <text x="115" y="273" text-anchor="middle" font-size="11" font-weight="800" fill="#1e40af">인코딩 통일 (UTF-8)</text>
+  <text x="374" y="273" text-anchor="end" font-family="'D2Coding', Consolas, monospace" font-size="10.5" font-weight="700" fill="#1d4ed8">chcp 65001</text>
+  <text x="52" y="300" font-size="11.5" fill="#334155">· 소스 저장 규격(UTF-8)과 콘솔 코드페이지(EUC-KR) 불일치 해결</text>
+  <text x="52" y="320" font-size="11.2" fill="#64748b">· 불일치 시: 콘솔 출력 한글이 <tspan fill="#b91c1c" font-weight="700">뺣뇬? 처럼 깨짐</tspan></text>
+  <rect x="52" y="333" width="324" height="27" rx="5" fill="#0f172a"/>
+  <text x="62" y="351" font-family="'D2Coding', Consolas, monospace" font-size="10.5" fill="#93c5fd">cmd: chcp 65001 │ MSVC: /source-charset:utf-8</text>
+
+  <!-- 1-3. 에디터 연결 JSON -->
+  <rect data-key="ts-json" x="40" y="386" width="348" height="136" rx="10" fill="#ffffff" stroke="#93c5fd" stroke-width="1.6"/>
+  <rect x="52" y="398" width="142" height="22" rx="11" fill="#eff6ff" stroke="#60a5fa"/>
+  <text x="123" y="413" text-anchor="middle" font-size="11" font-weight="800" fill="#1e40af">에디터-툴체인 연결</text>
+  <text x="374" y="413" text-anchor="end" font-family="'D2Coding', Consolas, monospace" font-size="10.5" font-weight="700" fill="#1d4ed8">.vscode/*.json</text>
+  <g font-size="11.2" fill="#334155">
+    <text x="52" y="440">· <tspan font-family="'D2Coding', monospace" font-weight="700" fill="#1e40af">c_cpp_properties.json</tspan>: 컴파일러 경로 · 자동완성 규격</text>
+    <text x="52" y="462">· <tspan font-family="'D2Coding', monospace" font-weight="700" fill="#1e40af">tasks.json</tspan>: 빌드 명령줄 인자 (<tspan font-family="'D2Coding', monospace">-g, -lstdc++, -o</tspan>)</text>
+    <text x="52" y="484">· <tspan font-family="'D2Coding', monospace" font-weight="700" fill="#1e40af">launch.json</tspan>: <tspan font-family="'D2Coding', monospace">F5</tspan> 실행 시 붙일 디버거(GDB) 조건</text>
+  </g>
+  <text x="52" y="508" font-size="10.3" font-weight="700" fill="#64748b">범용 에디터에게 외부 도구의 사용법을 알려 주는 지시서</text>
+
+  <!-- ====================================================================== -->
+  <!-- [2열] 어셈블리와 빌드 단계 개념 (.c -> .i -> .s -> .o -> .exe)         -->
+  <!-- ====================================================================== -->
+  <g clip-path="url(#ts-clip-c2)" filter="url(#ts-shadow)">
+    <rect x="430" y="20" width="380" height="520" rx="14" fill="#fffbeb"/>
+    <rect x="430" y="20" width="380" height="68" fill="#ffedd5"/>
+  </g>
+  <rect data-key="ts-asm" x="430" y="20" width="380" height="520" rx="14" fill="none" stroke="#ea580c" stroke-width="2"/>
+  <line x1="430" y1="88" x2="810" y2="88" stroke="#fdba74" stroke-width="1.5"/>
+  <text x="448" y="50" font-size="16.5" font-weight="800" fill="#9a3412">② 어셈블리 · 빌드 단계 개념</text>
+  <text x="448" y="73" font-size="11.5" font-weight="700" fill="#c2410c">"코드와 0101 사이, 어느 단계에서 멈췄는가?"</text>
+
+  <!-- 2-0. 4단계 파이프라인 요약 바 -->
+  <rect data-key="ts-pipe" x="446" y="106" width="348" height="92" rx="10" fill="#0f172a" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="620" y="127" text-anchor="middle" font-size="11" font-weight="700" fill="#fdba74">어셈블리(.s): 인간 언어와 기계어(0101)를 1:1 매칭한 중간 다리</text>
+  <g font-family="'D2Coding', Consolas, monospace" font-size="11" font-weight="700" text-anchor="middle">
+    <rect x="458" y="140" width="54" height="42" rx="6" fill="#1e3a8a"/>
+    <text x="485" y="158" fill="#93c5fd">.c</text>
+    <text x="485" y="174" font-size="9.5" fill="#dbeafe">소스</text>
+
+    <line x1="514" y1="161" x2="526" y2="161" stroke="#fb923c" stroke-width="1.6" marker-end="url(#ts-arr-orange)"/>
+
+    <rect x="528" y="140" width="54" height="42" rx="6" fill="#1e293b"/>
+    <text x="555" y="158" fill="#cbd5e1">.i</text>
+    <text x="555" y="174" font-size="9.5" fill="#94a3b8">전처리</text>
+
+    <line x1="584" y1="161" x2="596" y2="161" stroke="#fb923c" stroke-width="1.6" marker-end="url(#ts-arr-orange)"/>
+
+    <rect x="598" y="140" width="60" height="42" rx="6" fill="#9a3412" stroke="#fde047"/>
+    <text x="628" y="158" fill="#fef08a">.s</text>
+    <text x="628" y="174" font-size="9.5" fill="#ffedd5">어셈블리</text>
+
+    <line x1="660" y1="161" x2="672" y2="161" stroke="#fb923c" stroke-width="1.6" marker-end="url(#ts-arr-orange)"/>
+
+    <rect x="674" y="140" width="50" height="42" rx="6" fill="#1e293b"/>
+    <text x="699" y="158" fill="#67e8f9">.o</text>
+    <text x="699" y="174" font-size="9.5" fill="#94a3b8">기계어</text>
+
+    <line x1="726" y1="161" x2="736" y2="161" stroke="#fb923c" stroke-width="1.6" marker-end="url(#ts-arr-orange)"/>
+
+    <rect x="738" y="140" width="46" height="42" rx="6" fill="#065f46"/>
+    <text x="761" y="158" fill="#86efac">.exe</text>
+    <text x="761" y="174" font-size="9.5" fill="#d1fae5">실행</text>
+  </g>
+
+  <!-- 2-1. 문법 오류 (Syntax Error) -->
+  <rect data-key="ts-syn" x="446" y="212" width="348" height="96" rx="10" fill="#ffffff" stroke="#fca5a5" stroke-width="1.6"/>
+  <rect x="458" y="223" width="154" height="22" rx="11" fill="#fef2f2" stroke="#f87171"/>
+  <text x="535" y="238" text-anchor="middle" font-size="11" font-weight="800" fill="#b91c1c">컴파일 에러 (Syntax Error)</text>
+  <text x="780" y="238" text-anchor="end" font-size="10.5" font-weight="700" fill="#b91c1c">.c ➔ .s 단계 중단</text>
+  <text x="458" y="264" font-size="11.4" fill="#334155">· 세미콜론 누락 · 오타 · 괄호 불일치 등 문법 규칙 위반</text>
+  <text x="458" y="285" font-size="11" font-weight="700" fill="#991b1b">· 아예 실행 파일이 안 만들어지므로 '디버깅'이라 부르지 않음</text>
+
+  <!-- 2-2. 링커 오류 (Linker Error) -->
+  <rect data-key="ts-link" x="446" y="320" width="348" height="96" rx="10" fill="#ffffff" stroke="#fdba74" stroke-width="1.6"/>
+  <rect x="458" y="331" width="146" height="22" rx="11" fill="#fff7ed" stroke="#fb923c"/>
+  <text x="531" y="346" text-anchor="middle" font-size="11" font-weight="800" fill="#9a3412">링커 에러 (Link Error)</text>
+  <text x="780" y="346" text-anchor="end" font-size="10.5" font-weight="700" fill="#c2410c">.o + .a ➔ .exe 중단</text>
+  <text x="458" y="372" font-size="11.4" fill="#334155">· 문법은 맞으나 함수 본체나 라이브러리(<tspan font-family="'D2Coding', monospace">-lstdc++</tspan>) 연결 누락</text>
+  <text x="458" y="393" font-family="'D2Coding', Consolas, monospace" font-size="10.5" font-weight="700" fill="#9a3412">· 대표 메시지: undefined reference to `...'</text>
+
+  <!-- 2-3. 런타임 버그 = 디버깅 -->
+  <rect data-key="ts-debug" x="446" y="428" width="348" height="94" rx="10" fill="#ffffff" stroke="#6ee7b7" stroke-width="1.6"/>
+  <rect x="458" y="439" width="154" height="22" rx="11" fill="#ecfdf5" stroke="#34d399"/>
+  <text x="535" y="454" text-anchor="middle" font-size="11" font-weight="800" fill="#065f46">런타임 오류 = 디버깅(Debug)</text>
+  <text x="780" y="454" text-anchor="end" font-size="10.5" font-weight="700" fill="#047857">.exe 실행 중 발생</text>
+  <text x="458" y="480" font-size="11.4" fill="#334155">· 빌드는 됐지만 실행 중 엉뚱한 결과나 강제 종료 발생</text>
+  <text x="458" y="501" font-size="11" font-weight="700" fill="#065f46">· 중단점(Breakpoint)과 디버거(GDB)로 변수·메모리 추적</text>
+
+  <!-- ====================================================================== -->
+  <!-- [3열] 형상관리의 개념 (Version Control · Git)                          -->
+  <!-- ====================================================================== -->
+  <g clip-path="url(#ts-clip-c3)" filter="url(#ts-shadow)">
+    <rect x="836" y="20" width="380" height="520" rx="14" fill="#f0fdf4"/>
+    <rect x="836" y="20" width="380" height="68" fill="#dcfce7"/>
+  </g>
+  <rect data-key="ts-vcs" x="836" y="20" width="380" height="520" rx="14" fill="none" stroke="#10b981" stroke-width="2"/>
+  <line x1="836" y1="88" x2="1216" y2="88" stroke="#86efac" stroke-width="1.5"/>
+  <text x="854" y="50" font-size="16.5" font-weight="800" fill="#065f46">③ 형상관리의 개념 (Git)</text>
+  <text x="854" y="73" font-size="11.5" font-weight="700" fill="#047857">"고치다 망가진 코드, 어떻게 안전하게 되돌릴까?"</text>
+
+  <!-- 3-0. 타임머신 스냅샷 도식 -->
+  <rect data-key="ts-git-flow" x="852" y="106" width="348" height="118" rx="10" fill="#ffffff" stroke="#6ee7b7" stroke-width="1.6"/>
+  <text x="866" y="126" font-size="11.5" font-weight="800" fill="#065f46">커밋(Commit) 타임라인</text>
+
+  <line x1="896" y1="168" x2="1146" y2="168" stroke="#059669" stroke-width="2.4"/>
+  <circle cx="896" cy="168" r="11" fill="#10b981"/>
+  <text x="896" y="172" text-anchor="middle" font-size="10" font-weight="800" fill="#ffffff">C1</text>
+  <text x="896" y="193" text-anchor="middle" font-size="10" fill="#334155">초기 완성</text>
+
+  <circle cx="1016" cy="168" r="11" fill="#10b981"/>
+  <text x="1016" y="172" text-anchor="middle" font-size="10" font-weight="800" fill="#ffffff">C2</text>
+  <text x="1016" y="193" text-anchor="middle" font-size="10" font-weight="700" fill="#065f46">정상 동작</text>
+
+  <circle cx="1146" cy="168" r="11" fill="#ef4444"/>
+  <text x="1146" y="172" text-anchor="middle" font-size="10" font-weight="800" fill="#ffffff">!</text>
+  <text x="1146" y="193" text-anchor="middle" font-size="10" font-weight="700" fill="#b91c1c">수정 중 꼬임</text>
+
+  <path d="M1140,154 Q1080,134 1026,154" fill="none" stroke="#059669" stroke-width="1.8" stroke-dasharray="4 3" marker-end="url(#ts-arr-green)"/>
+  <text x="1084" y="139" text-anchor="middle" font-size="9.8" font-weight="800" fill="#047857">restore / reset 복구</text>
+  <text x="1026" y="213" text-anchor="middle" font-size="10.3" fill="#64748b">폴더 통째 복사('최종_진짜최종.zip')를 대체하는 표준 이력 관리</text>
+
+  <!-- 3-1. 변경점 비교 & 가지치기 -->
+  <rect data-key="ts-git-diff" x="852" y="238" width="348" height="132" rx="10" fill="#ffffff" stroke="#86efac" stroke-width="1.6"/>
+  <rect x="864" y="250" width="146" height="22" rx="11" fill="#dcfce7"/>
+  <text x="937" y="265" text-anchor="middle" font-size="11" font-weight="800" fill="#065f46">핵심 기능 3가지</text>
+  <g font-size="11.3" fill="#334155">
+    <text x="864" y="292">· <tspan font-weight="800" fill="#065f46">Diff(비교)</tspan>: 어제 코드와 오늘 코드의 바뀐 줄만 정밀 대조</text>
+    <text x="864" y="315">· <tspan font-weight="800" fill="#065f46">Branch(가지)</tspan>: 원본을 훼손하지 않고 새 기능을 실험</text>
+    <text x="864" y="338">· <tspan font-weight="800" fill="#065f46">Remote(GitHub)</tspan>: 원격 백업 및 전 세계 개발자와 협업</text>
+  </g>
+  <text x="864" y="358" font-size="10.3" fill="#64748b">버그가 언제, 어느 수정에서 유입되었는지 즉시 역추적 가능</text>
+
+  <!-- 3-2. AI Agent 시대의 Git 필수성 -->
+  <rect data-key="ts-git-ai" x="852" y="384" width="348" height="138" rx="10" fill="#f5f3ff" stroke="#a78bfa" stroke-width="1.8"/>
+  <rect x="864" y="396" width="196" height="22" rx="11" fill="#7c3aed"/>
+  <text x="962" y="411" text-anchor="middle" font-size="11" font-weight="800" fill="#ffffff">✦ AI Agent 시대의 필수 안전망</text>
+  <text x="864" y="440" font-size="11.4" fill="#334155">· AI가 한 번에 수십 개 파일을 고칠 때 <tspan font-weight="700" fill="#5b21b6">변경 내역 검증(Diff)</tspan></text>
+  <text x="864" y="462" font-size="11.4" fill="#334155">· 의도와 다르게 수정되면 <tspan font-weight="700" fill="#5b21b6">단 한 줄 명령으로 즉시 원상 복구</tspan></text>
+  <rect x="864" y="476" width="324" height="34" rx="6" fill="#ffffff" stroke="#ddd6fe"/>
+  <text x="1026" y="497" text-anchor="middle" font-size="10.8" font-weight="800" fill="#4c1d95">코드를 덜 짜더라도 Git을 알아야 AI를 안전하게 지휘한다!</text>
+</svg>

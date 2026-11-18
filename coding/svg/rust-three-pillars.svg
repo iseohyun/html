@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="440" viewBox="0 0 960 440" font-family="'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif">
+  <title>왜 C · Java · Python 다음이 Rust인가 — 3대 언어의 강점 융합과 한계 극복</title>
+  <desc>C의 네이티브 성능, Java의 정적 타입·인터페이스 안전망, Python의 현대적 패키지·이터레이터 생산성을 결합하면서 수동 메모리 버그와 GC 오버헤드를 동시에 제거한 Rust의 위치를 보여줍니다.</desc>
+
+  <defs>
+    <filter id="tpShadow" x="-3%" y="-4%" width="106%" height="110%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#0f172a" flood-opacity="0.06"/>
+    </filter>
+    <marker id="tpArrOrange" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+      <path d="M1,1.5 L9,5 L1,8.5 Z" fill="#ea580c"/>
+    </marker>
+  </defs>
+
+  <rect width="960" height="440" rx="14" fill="#fcfcfa" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- ==================== 좌측: 선수 학습 3대 언어 카드 ==================== -->
+  <!-- 1. C / C++ -->
+  <g filter="url(#tpShadow)">
+    <rect data-key="from-c" x="18" y="18" width="430" height="124" rx="11" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+    <rect x="32" y="30" width="96" height="24" rx="12" fill="#1d4ed8"/>
+    <text x="80" y="46" text-anchor="middle" font-size="11.5" font-weight="800" fill="#ffffff">① C / C++</text>
+    <text x="138" y="46" font-size="12.5" font-weight="800" fill="#1e3a8a">하드웨어 직결 성능 · 포인터와 스택/힙 제어</text>
+
+    <rect x="32" y="62" width="194" height="66" rx="7" fill="#eff6ff" stroke="#bfdbfe"/>
+    <text x="42" y="80" font-size="10.6" font-weight="800" fill="#1d4ed8">✓ Rust가 계승한 강점</text>
+    <text x="42" y="98" font-size="10.3" fill="#334155">· 기계어 직행 네이티브 최고 속도</text>
+    <text x="42" y="115" font-size="10.3" fill="#334155">· 예측 가능한 스택·힙 메모리 배치</text>
+
+    <rect x="238" y="62" width="196" height="66" rx="7" fill="#fef2f2" stroke="#fecaca"/>
+    <text x="248" y="80" font-size="10.6" font-weight="800" fill="#b91c1c">✕ Rust가 해결한 고질병</text>
+    <text x="248" y="98" font-size="10.3" fill="#7f1d1d">· free 누락 · 이중 해제 · 댕글링 포인터</text>
+    <text x="248" y="115" font-size="10.3" fill="#7f1d1d">· 헤더(.h) 분리와 수동 빌드 파편화</text>
+  </g>
+
+  <!-- 2. Java -->
+  <g filter="url(#tpShadow)">
+    <rect data-key="from-java" x="18" y="158" width="430" height="124" rx="11" fill="#ffffff" stroke="#d97706" stroke-width="2"/>
+    <rect x="32" y="170" width="96" height="24" rx="12" fill="#d97706"/>
+    <text x="80" y="186" text-anchor="middle" font-size="11.5" font-weight="800" fill="#ffffff">② Java</text>
+    <text x="138" y="186" font-size="12.5" font-weight="800" fill="#92400e">정적 타입 규율 · 인터페이스 기반 대규모 설계</text>
+
+    <rect x="32" y="202" width="194" height="66" rx="7" fill="#fffbeb" stroke="#fde68a"/>
+    <text x="42" y="220" font-size="10.6" font-weight="800" fill="#b45309">✓ Rust가 계승한 강점</text>
+    <text x="42" y="238" font-size="10.3" fill="#334155">· 엄격한 타입 검사와 제네릭 추상화</text>
+    <text x="42" y="255" font-size="10.3" fill="#334155">· interface ➔ Trait 행위 규약 진화</text>
+
+    <rect x="238" y="202" width="196" height="66" rx="7" fill="#fef2f2" stroke="#fecaca"/>
+    <text x="248" y="220" font-size="10.6" font-weight="800" fill="#b91c1c">✕ Rust가 해결한 고질병</text>
+    <text x="248" y="238" font-size="10.3" fill="#7f1d1d">· JVM 메모리 점유 및 GC 일시 정지</text>
+    <text x="248" y="255" font-size="10.3" fill="#7f1d1d">· 런타임 NullPointerException</text>
+  </g>
+
+  <!-- 3. Python -->
+  <g filter="url(#tpShadow)">
+    <rect data-key="from-python" x="18" y="298" width="430" height="124" rx="11" fill="#ffffff" stroke="#059669" stroke-width="2"/>
+    <rect x="32" y="310" width="96" height="24" rx="12" fill="#059669"/>
+    <text x="80" y="326" text-anchor="middle" font-size="11.5" font-weight="800" fill="#ffffff">③ Python</text>
+    <text x="138" y="326" font-size="12.5" font-weight="800" fill="#065f46">압도적 표현력 · 편리한 패키지 생태계</text>
+
+    <rect x="32" y="342" width="194" height="66" rx="7" fill="#ecfdf5" stroke="#a7f3d0"/>
+    <text x="42" y="360" font-size="10.6" font-weight="800" fill="#047857">✓ Rust가 계승한 강점</text>
+    <text x="42" y="378" font-size="10.3" fill="#334155">· 튜플·슬라이스·이터레이터 체이닝</text>
+    <text x="42" y="395" font-size="10.3" fill="#334155">· pip+venv를 넘어선 단일 도구 Cargo</text>
+
+    <rect x="238" y="342" width="196" height="66" rx="7" fill="#fef2f2" stroke="#fecaca"/>
+    <text x="248" y="360" font-size="10.6" font-weight="800" fill="#b91c1c">✕ Rust가 해결한 고질병</text>
+    <text x="248" y="378" font-size="10.3" fill="#7f1d1d">· 인터프리터 연산 속도 병목 &amp; GIL</text>
+    <text x="248" y="395" font-size="10.3" fill="#7f1d1d">· 실행 전까지 숨어 있는 타입 에러</text>
+  </g>
+
+  <!-- ==================== 중앙 수렴 화살표 ==================== -->
+  <path d="M448,80 L478,80 L478,220 L504,220" fill="none" stroke="#ea580c" stroke-width="2.2"/>
+  <path d="M448,220 L504,220" fill="none" stroke="#ea580c" stroke-width="2.4" marker-end="url(#tpArrOrange)"/>
+  <path d="M448,360 L478,360 L478,220" fill="none" stroke="#ea580c" stroke-width="2.2"/>
+
+  <!-- ==================== 우측: Rust 융합 카드 ==================== -->
+  <g filter="url(#tpShadow)">
+    <rect data-key="rust-core" x="512" y="18" width="430" height="404" rx="14" fill="#fff7ed" stroke="#ea580c" stroke-width="2.5"/>
+    <rect x="512" y="18" width="430" height="58" rx="14" fill="#c2410c"/>
+    <rect x="512" y="54" width="430" height="22" fill="#c2410c"/>
+    <text x="532" y="45" font-size="19" font-weight="900" fill="#ffffff">Rust — 무GC 네이티브 안전 언어</text>
+    <text x="532" y="65" font-size="11.2" font-weight="600" fill="#ffedd5">"C의 속도 + Java의 타입 안전성 + Python급 현대적 툴링"</text>
+
+    <!-- 핵심 기둥 1 -->
+    <rect x="528" y="90" width="398" height="78" rx="9" fill="#ffffff" stroke="#fdba74" stroke-width="1.5"/>
+    <rect x="540" y="100" width="154" height="21" rx="10.5" fill="#ea580c"/>
+    <text x="617" y="115" text-anchor="middle" font-size="10.8" font-weight="800" fill="#ffffff">소유권 · 대여 검사기</text>
+    <text x="704" y="115" font-family="'D2Coding', monospace" font-size="10.8" font-weight="700" fill="#9a3412">Ownership &amp; Borrow Checker</text>
+    <text x="540" y="138" font-size="11" fill="#334155">· 가비지 컬렉터(GC)도 수동 free()도 없이 스코프 종료 시 자동 해제</text>
+    <text x="540" y="156" font-size="11" fill="#334155">· 댕글링 포인터와 데이터 레이스(Data Race)를 컴파일 단계에서 원천 차단</text>
+
+    <!-- 핵심 기둥 2 -->
+    <rect x="528" y="180" width="398" height="78" rx="9" fill="#ffffff" stroke="#fdba74" stroke-width="1.5"/>
+    <rect x="540" y="190" width="154" height="21" rx="10.5" fill="#d97706"/>
+    <text x="617" y="205" text-anchor="middle" font-size="10.8" font-weight="800" fill="#ffffff">제로 코스트 추상화</text>
+    <text x="704" y="205" font-family="'D2Coding', monospace" font-size="10.8" font-weight="700" fill="#92400e">Zero-Cost Abstractions</text>
+    <text x="540" y="228" font-size="11" fill="#334155">· 고수준 제네릭·트레이트·이터레이터 체이닝을 써도 런타임 오버헤드 0</text>
+    <text x="540" y="246" font-size="11" fill="#334155">· LLVM 백엔드가 수동 최적화한 C for 루프와 동일한 기계어로 컴파일</text>
+
+    <!-- 핵심 기둥 3 -->
+    <rect x="528" y="270" width="398" height="78" rx="9" fill="#ffffff" stroke="#fdba74" stroke-width="1.5"/>
+    <rect x="540" y="280" width="154" height="21" rx="10.5" fill="#0f766e"/>
+    <text x="617" y="295" text-anchor="middle" font-size="10.8" font-weight="800" fill="#ffffff">Null · 숨은 예외 제거</text>
+    <text x="704" y="295" font-family="'D2Coding', monospace" font-size="10.8" font-weight="700" fill="#115e59">Option&lt;T&gt; &amp; Result&lt;T, E&gt;</text>
+    <text x="540" y="318" font-size="11" fill="#334155">· 값의 부재(Option)와 실패 가능성(Result)을 반환 타입 자체에 강제 각인</text>
+    <text x="540" y="336" font-size="11" fill="#334155">· match 전수 검사로 단 하나의 예외 케이스도 빠뜨릴 수 없는 견고함</text>
+
+    <!-- 하단 실무 채택 배지 -->
+    <rect x="528" y="360" width="398" height="48" rx="9" fill="#0f172a"/>
+    <text x="727" y="380" text-anchor="middle" font-size="10.6" font-weight="800" fill="#fdba74">현대 실무 핵심 채택 영역</text>
+    <text x="727" y="398" text-anchor="middle" font-size="10.4" fill="#e2e8f0">Linux·Windows 커널 │ 웹어셈블리(Wasm) │ Python 고속 엔진(Polars·Ruff·uv)</text>
+  </g>
+</svg>

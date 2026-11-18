@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="880" viewBox="0 0 1120 880" font-family="'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif">
+  <title>현대적 개발 도구(Code, Editor, Compiler, IDE, AI)의 관계와 C 언어 빌드·실행 파이프라인</title>
+  <desc>상단에는 개발자의 코드 작성부터 조립형 모던 에디터(VS Code/Cursor + AI/LSP + 외부 GCC/Clang)와 올인원 IDE(Visual Studio)의 구조적 차이를 보여주고, 하단에는 C 소스 코드(.c)가 전처리(.i), 컴파일(.s), 어셈블(.o), 링크(.exe)를 거쳐 OS에서 실행·디버깅되는 전 과정을 도식화한 다이어그램입니다.</desc>
+
+  <defs>
+    <!-- 화살표 마커 모음 -->
+    <marker id="arr-slate" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M1,1.5 L8.5,5 L1,8.5 Z" fill="#64748b"/>
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M1,1.5 L8.5,5 L1,8.5 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-orange" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M1,1.5 L8.5,5 L1,8.5 Z" fill="#ea580c"/>
+    </marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M1,1.5 L8.5,5 L1,8.5 Z" fill="#7c3aed"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M1,1.5 L8.5,5 L1,8.5 Z" fill="#059669"/>
+    </marker>
+
+    <!-- 미세 그림자 -->
+    <filter id="card-shadow" x="-2%" y="-2%" width="104%" height="106%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#0f172a" flood-opacity="0.05"/>
+    </filter>
+
+    <!-- 상단 헤더 클리핑용 -->
+    <clipPath id="clip-editor">
+      <rect x="268" y="172" width="254" height="214" rx="10"/>
+    </clipPath>
+    <clipPath id="clip-toolchain">
+      <rect x="588" y="172" width="140" height="214" rx="10"/>
+    </clipPath>
+    <clipPath id="clip-ide">
+      <rect x="766" y="136" width="312" height="262" rx="12"/>
+    </clipPath>
+    <clipPath id="clip-st1">
+      <rect x="42" y="526" width="172" height="210" rx="10"/>
+    </clipPath>
+    <clipPath id="clip-st2">
+      <rect x="258" y="526" width="172" height="210" rx="10"/>
+    </clipPath>
+    <clipPath id="clip-st3">
+      <rect x="474" y="526" width="172" height="210" rx="10"/>
+    </clipPath>
+    <clipPath id="clip-st4">
+      <rect x="690" y="526" width="172" height="210" rx="10"/>
+    </clipPath>
+    <clipPath id="clip-st5">
+      <rect x="906" y="526" width="172" height="210" rx="10"/>
+    </clipPath>
+  </defs>
+
+  <!-- 전체 종이 배경 -->
+  <rect width="1120" height="880" rx="16" fill="#fcfcfa" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- ==================== 최상단 타이틀 & 범례 ==================== -->
+  <text x="28" y="40" font-size="20" font-weight="800" fill="#0f172a">현대적 코딩 환경(Editor · IDE · AI · Compiler)과 C 빌드 파이프라인</text>
+  <text x="28" y="62" font-size="12.5" fill="#64748b">인간의 생각이 소스 코드(hello.c)로 작성되어, 컴파일러를 거쳐 실행 파일(hello.exe)로 동작하기까지의 전체 구조</text>
+
+  <!-- 우측 상단 범례 배지 -->
+  <g transform="translate(692, 22)" font-size="11" font-weight="700">
+    <rect x="0" y="0" width="92" height="24" rx="12" fill="#eff6ff" stroke="#93c5fd"/>
+    <circle cx="14" cy="12" r="4.5" fill="#2563eb"/>
+    <text x="24" y="16" fill="#1e40af">코드·편집</text>
+
+    <rect x="100" y="0" width="96" height="24" rx="12" fill="#f5f3ff" stroke="#c4b5fd"/>
+    <circle cx="114" cy="12" r="4.5" fill="#7c3aed"/>
+    <text x="124" y="16" fill="#5b21b6">AI·통합환경</text>
+
+    <rect x="204" y="0" width="96" height="24" rx="12" fill="#fff7ed" stroke="#fdba74"/>
+    <circle cx="218" cy="12" r="4.5" fill="#ea580c"/>
+    <text x="228" y="16" fill="#9a3412">번역·컴파일</text>
+
+    <rect x="308" y="0" width="94" height="24" rx="12" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <circle cx="322" cy="12" r="4.5" fill="#059669"/>
+    <text x="332" y="16" fill="#065f46">실행·디버그</text>
+  </g>
+
+  <!-- ====================================================================== -->
+  <!-- PART 1: 개발 도구의 생태계 (Code · Editor · AI · Compiler · IDE)       -->
+  <!-- ====================================================================== -->
+  <rect x="24" y="80" width="1072" height="334" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" filter="url(#card-shadow)"/>
+
+  <!-- PART 1 섹션 헤더 -->
+  <rect x="42" y="96" width="64" height="22" rx="6" fill="#1e293b"/>
+  <text x="74" y="111" text-anchor="middle" font-size="11" font-weight="800" fill="#ffffff">PART 1</text>
+  <text x="116" y="112" font-size="15.5" font-weight="800" fill="#0f172a">코드(Code)와 개발 도구의 역할 관계 — 조립형 모던 에디터 vs 올인원 IDE</text>
+
+  <!-- [1-A] 좌측: 개발자 & 소스 코드 -->
+  <!-- 개발자 박스 -->
+  <rect data-key="bdev" x="42" y="136" width="176" height="76" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <circle cx="64" cy="158" r="11" fill="#e2e8f0"/>
+  <path d="M64,151 a4,4 0 1,0 0.01,0 M57,165 c0,-4 14,-4 14,0" fill="none" stroke="#334155" stroke-width="1.6" stroke-linecap="round"/>
+  <text x="82" y="162" font-size="13" font-weight="800" fill="#1e293b">개발자 (생각·설계)</text>
+  <text x="54" y="183" font-size="11" fill="#475569">문제 정의 · 알고리즘 구상</text>
+  <text x="54" y="200" font-size="10.5" fill="#64748b">직접 코딩 또는 AI에게 의도 지시</text>
+
+  <!-- 개발자 -> 코드 화살표 -->
+  <line x1="130" y1="212" x2="130" y2="240" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+  <text x="138" y="230" font-size="10.5" font-weight="700" fill="#2563eb">작성</text>
+
+  <!-- 개발자 -> 에디터 점선 화살표 -->
+  <path d="M218,174 L262,174" fill="none" stroke="#64748b" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#arr-slate)"/>
+
+  <!-- 소스 코드 (Code) 카드 -->
+  <rect data-key="bcode" x="42" y="246" width="176" height="152" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+  <rect x="54" y="257" width="58" height="19" rx="4" fill="#2563eb"/>
+  <text x="83" y="270" text-anchor="middle" font-family="'D2Coding', 'Consolas', monospace" font-size="11" font-weight="700" fill="#ffffff">hello.c</text>
+  <rect x="118" y="257" width="48" height="19" rx="4" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="142" y="270" text-anchor="middle" font-size="10" font-weight="700" fill="#1d4ed8">UTF-8</text>
+
+  <text x="54" y="293" font-size="13.5" font-weight="800" fill="#1e3a8a">소스 코드 (Code)</text>
+  <text x="54" y="310" font-size="10.8" fill="#334155">인간이 읽고 쓰는 고수준 언어</text>
+
+  <!-- 미니 코드 스니펫 -->
+  <rect x="52" y="320" width="156" height="68" rx="6" fill="#0f172a"/>
+  <g font-family="'D2Coding', 'Consolas', monospace" font-size="10.2">
+    <text x="60" y="336" fill="#93c5fd">#include &lt;stdio.h&gt;</text>
+    <text x="60" y="351" fill="#e2e8f0"><tspan fill="#c084fc">int</tspan> main(<tspan fill="#c084fc">void</tspan>) {</text>
+    <text x="60" y="366" fill="#e2e8f0">  printf(<tspan fill="#86efac">"Hi!\n"</tspan>);</text>
+    <text x="60" y="381" fill="#e2e8f0">}</text>
+  </g>
+
+  <!-- 소스 코드 <-> 편집기 양방향 화살표 -->
+  <line x1="222" y1="312" x2="264" y2="312" stroke="#2563eb" stroke-width="1.8" marker-start="url(#arr-blue)" marker-end="url(#arr-blue)"/>
+  <text x="236" y="302" text-anchor="middle" font-size="10" font-weight="700" fill="#1d4ed8">편집</text>
+
+  <!-- [1-B] 중앙: 방식 ① 현대적 조립형 환경 -->
+  <rect data-key="bmodular" x="254" y="136" width="486" height="262" rx="12" fill="#f8fafc" stroke="#2563eb" stroke-width="1.8" stroke-dasharray="6 4"/>
+  <rect x="268" y="145" width="312" height="20" rx="5" fill="#dbeafe"/>
+  <text x="276" y="159" font-size="11.5" font-weight="800" fill="#1e40af">방식 ① 현대적 조립형 워크플로우 (대세 · 경량 · 확장)</text>
+  <text x="728" y="159" text-anchor="end" font-size="10.5" fill="#475569">필요한 도구만 레고처럼 연결</text>
+
+  <!-- 모던 에디터 박스 -->
+  <g clip-path="url(#clip-editor)">
+    <rect x="268" y="172" width="254" height="214" rx="10" fill="#ffffff"/>
+    <rect x="268" y="172" width="254" height="36" fill="#dbeafe"/>
+  </g>
+  <rect data-key="beditor" x="268" y="172" width="254" height="214" rx="10" fill="none" stroke="#3b82f6" stroke-width="1.8"/>
+  <text x="280" y="195" font-size="13.5" font-weight="800" fill="#1e3a8a">편집기 (Editor)</text>
+  <rect x="404" y="180" width="108" height="20" rx="10" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="458" y="194" text-anchor="middle" font-size="10.5" font-weight="700" fill="#1d4ed8">VS Code · Cursor</text>
+
+  <text x="280" y="224" font-size="10.8" fill="#475569">본체는 텍스트 편집기 <tspan font-weight="700" fill="#dc2626">(컴파일러 미포함)</tspan></text>
+
+  <!-- 플러그인 칩 1: AI 에이전트 -->
+  <rect data-key="bai" x="278" y="233" width="234" height="44" rx="7" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="1.2"/>
+  <text x="288" y="250" font-size="11.3" font-weight="800" fill="#5b21b6">✦ AI 에이전트 (Antigravity · Claude)</text>
+  <text x="288" y="267" font-size="10.3" fill="#6d28d9">코드 자동 완성 · 리팩토링 · 오류 원인 추적</text>
+
+  <!-- 플러그인 칩 2: 확장팩 / LSP -->
+  <rect data-key="blsp" x="278" y="283" width="234" height="44" rx="7" fill="#eef2ff" stroke="#6366f1" stroke-width="1.2"/>
+  <text x="288" y="300" font-size="11.3" font-weight="800" fill="#3730a3">⚙ C/C++ 확장팩 · LSP (IntelliSense)</text>
+  <text x="288" y="317" font-size="10.3" fill="#4338ca">c_cpp_properties.json · 실시간 문법 검사</text>
+
+  <!-- 플러그인 칩 3: Git -->
+  <rect data-key="bgit" x="278" y="333" width="234" height="43" rx="7" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+  <text x="288" y="350" font-size="11.3" font-weight="800" fill="#334155">⎇ 형상 관리 (Git · GitHub)</text>
+  <text x="288" y="366" font-size="10.3" fill="#475569">변경 이력(commit) 관리 · 백업 · 협업</text>
+
+  <!-- 에디터 <-> 외부 툴체인 JSON 브릿지 -->
+  <!-- tasks.json -->
+  <rect x="526" y="232" width="58" height="17" rx="4" fill="#fff7ed" stroke="#fdba74"/>
+  <text x="555" y="244" text-anchor="middle" font-family="'D2Coding', 'Consolas', monospace" font-size="9.5" font-weight="700" fill="#c2410c">tasks.json</text>
+  <line x1="522" y1="258" x2="584" y2="258" stroke="#ea580c" stroke-width="1.8" marker-end="url(#arr-orange)"/>
+  <text x="555" y="272" text-anchor="middle" font-size="10" fill="#9a3412">빌드 명령</text>
+
+  <!-- launch.json -->
+  <rect x="525" y="312" width="60" height="17" rx="4" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <text x="555" y="324" text-anchor="middle" font-family="'D2Coding', 'Consolas', monospace" font-size="9.2" font-weight="700" fill="#047857">launch.json</text>
+  <line x1="526" y1="338" x2="584" y2="338" stroke="#059669" stroke-width="1.8" marker-start="url(#arr-green)" marker-end="url(#arr-green)"/>
+  <text x="555" y="352" text-anchor="middle" font-size="10" fill="#065f46">F5 디버그</text>
+
+  <!-- 외부 독립 툴체인 박스 -->
+  <g clip-path="url(#clip-toolchain)">
+    <rect x="588" y="172" width="140" height="214" rx="10" fill="#fff7ed"/>
+    <rect x="588" y="172" width="140" height="36" fill="#ffedd5"/>
+  </g>
+  <rect data-key="btool" x="588" y="172" width="140" height="214" rx="10" fill="none" stroke="#f97316" stroke-width="1.8"/>
+  <text x="658" y="195" text-anchor="middle" font-size="13" font-weight="800" fill="#9a3412">외부 툴체인</text>
+  <text x="658" y="223" text-anchor="middle" font-size="10.3" font-weight="700" fill="#c2410c">별도 설치 · PATH 등록</text>
+
+  <rect x="598" y="233" width="120" height="68" rx="7" fill="#ffffff" stroke="#fdba74" stroke-width="1.3"/>
+  <text x="658" y="252" text-anchor="middle" font-size="12" font-weight="800" fill="#9a3412">컴파일러 (필수)</text>
+  <text x="658" y="270" text-anchor="middle" font-size="10.5" fill="#334155">GCC (MinGW)</text>
+  <text x="658" y="286" text-anchor="middle" font-size="10.5" fill="#334155">Clang (LLVM)</text>
+
+  <rect x="598" y="310" width="120" height="66" rx="7" fill="#ffffff" stroke="#fdba74" stroke-width="1.3"/>
+  <text x="658" y="329" text-anchor="middle" font-size="11.8" font-weight="800" fill="#065f46">디버거 · 빌드</text>
+  <text x="658" y="346" text-anchor="middle" font-size="10.5" fill="#334155">GDB · LLDB</text>
+  <text x="658" y="362" text-anchor="middle" font-size="10.5" fill="#334155">CMake · Make</text>
+
+  <!-- 중앙 OR 배지 -->
+  <circle cx="753" cy="267" r="11" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <text x="753" y="271" text-anchor="middle" font-size="9.5" font-weight="800" fill="#475569">OR</text>
+
+  <!-- [1-C] 우측: 방식 ② 올인원 IDE -->
+  <g clip-path="url(#clip-ide)">
+    <rect x="766" y="136" width="312" height="262" rx="12" fill="#faf5ff"/>
+    <rect x="766" y="136" width="312" height="40" fill="#ede9fe"/>
+  </g>
+  <rect data-key="bide" x="766" y="136" width="312" height="262" rx="12" fill="none" stroke="#7c3aed" stroke-width="2"/>
+  <text x="922" y="161" text-anchor="middle" font-size="13.5" font-weight="800" fill="#4c1d95">방식 ② 통합개발환경 (All-in-One IDE)</text>
+  <text x="922" y="194" text-anchor="middle" font-size="11" font-weight="700" fill="#5b21b6">Visual Studio (MSVS) · CLion · Xcode</text>
+
+  <!-- IDE 내부 2x2 그리드 -->
+  <rect x="780" y="205" width="136" height="64" rx="8" fill="#ffffff" stroke="#c4b5fd" stroke-width="1.3"/>
+  <text x="848" y="225" text-anchor="middle" font-size="11.8" font-weight="800" fill="#4c1d95">내장 편집기</text>
+  <text x="848" y="243" text-anchor="middle" font-size="10.3" fill="#475569">코드 작성 · 자동완성</text>
+  <text x="848" y="259" text-anchor="middle" font-size="10.3" fill="#64748b">솔루션 탐색기</text>
+
+  <rect x="928" y="205" width="136" height="64" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.3"/>
+  <text x="996" y="225" text-anchor="middle" font-size="11.8" font-weight="800" fill="#9a3412">내장 컴파일러</text>
+  <text x="996" y="243" text-anchor="middle" font-size="10.3" fill="#475569">MSVC (cl.exe) 포함</text>
+  <text x="996" y="259" text-anchor="middle" font-size="10" font-weight="700" fill="#c2410c">별도 PATH 설정 불필요</text>
+
+  <rect x="780" y="277" width="136" height="64" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.3"/>
+  <text x="848" y="297" text-anchor="middle" font-size="11.8" font-weight="800" fill="#065f46">비주얼 디버거</text>
+  <text x="848" y="315" text-anchor="middle" font-size="10.3" fill="#475569">중단점 · 메모리 뷰어</text>
+  <text x="848" y="331" text-anchor="middle" font-size="10.3" fill="#64748b">레지스터 실시간 감시</text>
+
+  <rect x="928" y="277" width="136" height="64" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.3"/>
+  <text x="996" y="297" text-anchor="middle" font-size="11.8" font-weight="800" fill="#1e293b">빌드 · 도구 통합</text>
+  <text x="996" y="315" text-anchor="middle" font-size="10.3" fill="#475569">프로젝트(.sln) 자동화</text>
+  <text x="996" y="331" text-anchor="middle" font-size="10.3" fill="#64748b">Git · AI 보조 내장</text>
+
+  <rect x="780" y="350" width="284" height="36" rx="7" fill="#ede9fe"/>
+  <text x="922" y="372" text-anchor="middle" font-size="10.8" font-weight="700" fill="#4c1d95">설치 즉시 동작(입문 편리) │ 수십 GB 용량·무거움</text>
+
+  <!-- ==================== PART 1 -> PART 2 브릿지 배너 ==================== -->
+  <path d="M130,398 L130,441 L310,441" fill="none" stroke="#2563eb" stroke-width="2"/>
+  <path d="M658,386 L658,426" fill="none" stroke="#ea580c" stroke-width="2" marker-end="url(#arr-orange)"/>
+  <path d="M996,398 L996,441 L810,441" fill="none" stroke="#7c3aed" stroke-width="2"/>
+  <line x1="560" y1="455" x2="560" y2="472" stroke="#ea580c" stroke-width="2.2" marker-end="url(#arr-orange)"/>
+
+  <rect x="306" y="426" width="508" height="30" rx="15" fill="#fff7ed" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="560" y="445" text-anchor="middle" font-size="12" font-weight="800" fill="#9a3412">▼ 빌드 실행 (gcc hello.c -o hello.exe 또는 F5) — 내부에서는 4단계 번역 수행!</text>
+
+  <!-- ====================================================================== -->
+  <!-- PART 2: C 코드가 코딩되어 실행 파일이 되는 4단계 빌드 & 실행 파이프라인  -->
+  <!-- ====================================================================== -->
+  <rect x="24" y="476" width="1072" height="384" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" filter="url(#card-shadow)"/>
+
+  <!-- PART 2 섹션 헤더 -->
+  <rect x="42" y="492" width="64" height="22" rx="6" fill="#c2410c"/>
+  <text x="74" y="507" text-anchor="middle" font-size="11" font-weight="800" fill="#ffffff">PART 2</text>
+  <text x="116" y="508" font-size="15.5" font-weight="800" fill="#0f172a">C 소스 코드가 기계어 실행 파일(.exe)이 되어 동작하는 과정</text>
+  <text x="1078" y="508" text-anchor="end" font-size="11.5" fill="#64748b">크로스 컴파일러(Cross Compiler): 타겟 칩셋(ARM·RISC-V 등) 기계어로 번역</text>
+
+  <!-- ===== STAGE 1: 전처리 (Preprocessing) ===== -->
+  <g clip-path="url(#clip-st1)">
+    <rect x="42" y="526" width="172" height="210" rx="10" fill="#ffffff"/>
+    <rect x="42" y="526" width="172" height="44" fill="#eff6ff"/>
+  </g>
+  <rect data-key="bst1" x="42" y="526" width="172" height="210" rx="10" fill="none" stroke="#3b82f6" stroke-width="1.8"/>
+  <text x="128" y="546" text-anchor="middle" font-size="13" font-weight="800" fill="#1e3a8a">① 전처리기 (cpp)</text>
+  <text x="128" y="563" text-anchor="middle" font-family="'D2Coding', 'Consolas', monospace" font-size="10.5" fill="#2563eb">gcc -E hello.c</text>
+
+  <rect x="52" y="578" width="152" height="24" rx="12" fill="#dbeafe"/>
+  <text x="128" y="594" text-anchor="middle" font-family="'D2Coding', 'Consolas', monospace" font-size="11" font-weight="700" fill="#1e40af">.c + .h  ➔  hello.i</text>
+
+  <g font-size="11.2" fill="#334155">
+    <text x="54" y="620">· 헤더(#include) 본문 삽입</text>
+    <text x="54" y="637">· 매크로(#define) 치환</text>
+    <text x="54" y="654">· 주석(//, /* */) 제거</text>
+  </g>
+
+  <rect x="52" y="666" width="152" height="58" rx="6" fill="#0f172a"/>
+  <g font-family="'D2Coding', 'Consolas', monospace" font-size="10" fill="#cbd5e1">
+    <text x="60" y="682" fill="#94a3b8">/* stdio.h 수천 줄 확장 */</text>
+    <text x="60" y="698">int main(void) {</text>
+    <text x="60" y="714">  printf("Hi!\n"); }</text>
+  </g>
+
+  <!-- 화살표 1 -> 2 -->
+  <line x1="214" y1="631" x2="254" y2="631" stroke="#ea580c" stroke-width="2" marker-end="url(#arr-orange)"/>
+  <text x="236" y="621" text-anchor="middle" font-size="10" font-weight="700" fill="#9a3412">번역</text>
+
+  <!-- ===== STAGE 2: 컴파일 (Compilation) ===== -->
+  <g clip-path="url(#clip-st2)">
+    <rect x="258" y="526" width="172" height="210" rx="10" fill="#ffffff"/>
+    <rect x="258" y="526" width="172" height="44" fill="#fff7ed"/>
+  </g>
+  <rect data-key="bst2" x="258" y="526" width="172" height="210" rx="10" fill="none" stroke="#f97316" stroke-width="1.8"/>
+  <text x="344" y="546" text-anchor="middle" font-size="13" font-weight="800" fill="#9a3412">② 컴파일러 (cc1)</text>
+  <text x="344" y="563" text-anchor="middle" font-family="'D2Coding', 'Consolas', monospace" font-size="10.5" fill="#c2410c">gcc -S hello.i</text>
+
+  <rect x="268" y="578" width="152" height="24" rx="12" fill="#ffedd5"/>
+  <text x="344" y="594" text-anchor="middle" font-family="'D2Coding', 'Consolas', monospace" font-size="11" font-weight="700" fill="#9a3412">hello.i  ➔  hello.s</text>
+
+  <g font-size="11.2" fill="#334155">
+    <text x="270" y="620" font-weight="700" fill="#b91c1c">· 문법(Syntax) 규칙 검사</text>
+    <text x="270" y="637">· 코드 최적화 수행</text>
+    <text x="270" y="654">· CPU용 어셈블리어 번역</text>
+  </g>
+
+  <rect x="268" y="666" width="152" height="58" rx="6" fill="#0f172a"/>
+  <g font-family="'D2Coding', 'Consolas', monospace" font-size="10" fill="#fde68a">
+    <text x="276" y="682">pushq  %rbp</text>
+    <text x="276" y="698">movq   %rax, %rcx</text>
+    <text x="276" y="714">call   puts</text>
+  </g>
+
+  <!-- 화살표 2 -> 3 -->
+  <line x1="430" y1="631" x2="470" y2="631" stroke="#ea580c" stroke-width="2" marker-end="url(#arr-orange)"/>
+  <text x="452" y="621" text-anchor="middle" font-size="10" font-weight="700" fill="#9a3412">0·1 변환</text>
+
+  <!-- ===== STAGE 3: 어셈블 (Assembly) ===== -->
+  <g clip-path="url(#clip-st3)">
+    <rect x="474" y="526" width="172" height="210" rx="10" fill="#ffffff"/>
+    <rect x="474" y="526" width="172" height="44" fill="#fefce8"/>
+  </g>
+  <rect data-key="bst3" x="474" y="526" width="172" height="210" rx="10" fill="none" stroke="#eab308" stroke-width="1.8"/>
+  <text x="560" y="546" text-anchor="middle" font-size="13" font-weight="800" fill="#854d0e">③ 어셈블러 (as)</text>
+  <text x="560" y="563" text-anchor="middle" font-family="'D2Coding', 'Consolas', monospace" font-size="10.5" fill="#a16207">gcc -c hello.s</text>
+
+  <rect x="484" y="578" width="152" height="24" rx="12" fill="#fef9c3"/>
+  <text x="560" y="594" text-anchor="middle" font-family="'D2Coding', 'Consolas', monospace" font-size="11" font-weight="700" fill="#854d0e">hello.s  ➔  hello.o</text>
+
+  <g font-size="11.2" fill="#334155">
+    <text x="486" y="620">· 어셈블리 1:1 기계어화</text>
+    <text x="486" y="637">· 순수 바이너리(0·1) 생성</text>
+    <text x="486" y="654">· 외부 함수 주소는 비워둠</text>
+  </g>
+
+  <rect x="484" y="666" width="152" height="58" rx="6" fill="#0f172a"/>
+  <g font-family="'D2Coding', 'Consolas', monospace" font-size="10" fill="#67e8f9">
+    <text x="492" y="682">01010101 01001000</text>
+    <text x="492" y="698">10001001 11100101</text>
+    <text x="492" y="714" fill="#fca5a5">call [puts = ???]</text>
+  </g>
+
+  <!-- 화살표 3 -> 4 -->
+  <line x1="646" y1="631" x2="686" y2="631" stroke="#ea580c" stroke-width="2" marker-end="url(#arr-orange)"/>
+  <text x="668" y="621" text-anchor="middle" font-size="10" font-weight="700" fill="#9a3412">결합</text>
+
+  <!-- ===== STAGE 4: 링크 (Linking) ===== -->
+  <g clip-path="url(#clip-st4)">
+    <rect x="690" y="526" width="172" height="210" rx="10" fill="#ffffff"/>
+    <rect x="690" y="526" width="172" height="44" fill="#fff1f2"/>
+  </g>
+  <rect data-key="bst4" x="690" y="526" width="172" height="210" rx="10" fill="none" stroke="#f43f5e" stroke-width="1.8"/>
+  <text x="776" y="546" text-anchor="middle" font-size="13" font-weight="800" fill="#9f1239">④ 링커 (ld)</text>
+  <text x="776" y="563" text-anchor="middle" font-size="10.5" fill="#be123c">오브젝트 + 라이브러리 결합</text>
+
+  <rect x="700" y="578" width="152" height="24" rx="12" fill="#ffe4e6"/>
+  <text x="776" y="594" text-anchor="middle" font-family="'D2Coding', 'Consolas', monospace" font-size="11" font-weight="700" fill="#9f1239">.o + .a  ➔  hello.exe</text>
+
+  <g font-size="11.2" fill="#334155">
+    <text x="702" y="620">· 여러 .o 조각 하나로 합침</text>
+    <text x="702" y="637">· 표준 라이브러리(.a) 연결</text>
+    <text x="702" y="654">· 미결 함수 주소 최종 확정</text>
+  </g>
+
+  <rect x="700" y="666" width="152" height="58" rx="6" fill="#0f172a"/>
+  <g font-family="'D2Coding', 'Consolas', monospace" font-size="10" fill="#cbd5e1">
+    <text x="708" y="682" fill="#f9a8d4">[PE / ELF 실행 파일]</text>
+    <text x="708" y="698">01001101 01011010</text>
+    <text x="708" y="714" fill="#86efac">call 0x7FF81A20 ✓</text>
+  </g>
+
+  <!-- 화살표 4 -> 5 -->
+  <line x1="862" y1="631" x2="902" y2="631" stroke="#059669" stroke-width="2" marker-end="url(#arr-green)"/>
+  <text x="884" y="621" text-anchor="middle" font-size="10" font-weight="700" fill="#065f46">실행</text>
+
+  <!-- ===== STAGE 5: OS 적재 및 실행 (Execution) ===== -->
+  <g clip-path="url(#clip-st5)">
+    <rect x="906" y="526" width="172" height="210" rx="10" fill="#ffffff"/>
+    <rect x="906" y="526" width="172" height="44" fill="#ecfdf5"/>
+  </g>
+  <rect data-key="bst5" x="906" y="526" width="172" height="210" rx="10" fill="none" stroke="#10b981" stroke-width="2"/>
+  <text x="992" y="546" text-anchor="middle" font-size="13" font-weight="800" fill="#065f46">⑤ OS 로더 · CPU</text>
+  <text x="992" y="563" text-anchor="middle" font-size="10.5" fill="#047857">메모리(RAM) 적재 · 구동</text>
+
+  <rect x="916" y="578" width="152" height="24" rx="12" fill="#d1fae5"/>
+  <text x="992" y="594" text-anchor="middle" font-size="11" font-weight="700" fill="#065f46">콘솔(CLI) · 창(GUI) 동작</text>
+
+  <g font-size="11.2" fill="#334155">
+    <text x="918" y="620">· VM 없이 하드웨어 직결</text>
+    <text x="918" y="637">· 네이티브 최고 속도 수행</text>
+    <text x="918" y="654" font-weight="700" fill="#047857">· 실행 중 오류 = 디버깅</text>
+  </g>
+
+  <rect x="916" y="666" width="152" height="58" rx="6" fill="#0f172a"/>
+  <g font-family="'D2Coding', 'Consolas', monospace" font-size="10" fill="#86efac">
+    <text x="924" y="682" fill="#94a3b8">C:\&gt; .\hello.exe</text>
+    <text x="924" y="698" font-weight="700">Hi!</text>
+    <text x="924" y="714" fill="#64748b">[Exit code: 0]</text>
+  </g>
+
+  <!-- ==================== 하단 보조 트랙: 문법 오류 / 라이브러리 / 런타임 디버깅 루프 ==================== -->
+
+  <!-- Stage 2 하단: 문법 오류 경고 박스 -->
+  <line x1="344" y1="736" x2="344" y2="750" stroke="#ef4444" stroke-width="1.5"/>
+  <rect data-key="bsynerr" x="234" y="750" width="220" height="48" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.3"/>
+  <text x="344" y="768" text-anchor="middle" font-size="11.2" font-weight="800" fill="#b91c1c">✕ 문법 오류 (Syntax Error)</text>
+  <text x="344" y="785" text-anchor="middle" font-size="10.2" fill="#7f1d1d">오타·세미콜론 누락 시 실행파일 생성 불가</text>
+
+  <!-- Stage 3~4 하단: 표준/아카이브 라이브러리 공급 박스 -->
+  <rect data-key="blib" x="474" y="750" width="246" height="48" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="597" y="768" text-anchor="middle" font-size="11.2" font-weight="800" fill="#1e293b">+ 표준·정적 라이브러리 (libc · .a · .dll)</text>
+  <text x="597" y="785" text-anchor="middle" font-size="10.2" fill="#475569">printf 등 미리 컴파일된 검증 부품 묶음</text>
+  <path d="M720,774 L776,774 L776,740" fill="none" stroke="#f43f5e" stroke-width="1.8" marker-end="url(#arr-orange)"/>
+
+  <!-- Stage 5 -> 좌측 에디터/코드 복귀: 런타임 디버깅(Debug) 피드백 루프 -->
+  <path d="M992,736 L992,826 L128,826 L128,742" fill="none" stroke="#059669" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#arr-green)"/>
+  <rect data-key="bdebug" x="242" y="809" width="636" height="32" rx="16" fill="#ecfdf5" stroke="#10b981" stroke-width="1.4"/>
+  <text x="560" y="829" text-anchor="middle" font-size="11.3" font-weight="800" fill="#065f46">↻ 디버깅 (Debug): 실행 중 예상치 못한 동작(Runtime Error·버그) 발생 시 디버거(GDB·중단점)로 추적 후 코드 수정</text>
+</svg>

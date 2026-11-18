@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <!-- 모바일 스케일 고정 -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta keywords="iseohyun, AI, 패스트 팔로워, 3장 도구">
+  <meta author="iseohyun">
+
+  <!-- 페이지 타이틀 -->
+  <title>3장 도구: AI 패스트 팔로워 노트 - iseohyun </title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-453XSP5W9M');
+  </script>
+
+  <!-- 목차 생성 -->
+  <script src="/modules/script.js" defer></script>
+
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("/style.css");
+  </style>
+
+  <!-- 슬라이드 · 스크립트 · 항목 카드 (보고서 형식). 문서를 열 때마다 다시 실행된다 -->
+  <link rel="stylesheet" href="/modules/features/slides.css">
+  <script src="/modules/features/slides.js" defer></script>
+</head>
+<!--
+  AI 패스트 팔로워 노트 · 3장 도구
+  - 본문은 <div class="slides-doc"> 안에 쓴다. 모양과 동작은 /modules/features/slides.css · slides.js 가 맡는다.
+  - 보고서 형식: 묶음 하나 = <section id> 안에 묶음 제목(<h2>), 슬라이드(.slide-frame > .slide), 스크립트(.script).
+    슬라이드 안에는 h1/h2 를 쓰지 않는다 (사이트 목차는 문서의 모든 h1/h2 로 만든다). 슬라이드 제목은 .slide-title.
+  - 읽어 줄 때 슬라이드에서 짚을 곳: 슬라이드 요소에 data-key="이름", 스크립트의 문단이나 문장을 감싼 <span>/<mark> 에
+    data-cue="이름:방식" (underline · box · check). 크게 볼 그림은 <a data-view data-caption="설명" href="큰 그림">.
+  - 항목 카드: <div class="note"> = 내 경험과 생각, <div class="note claude"> = Claude의 의견(점선 테두리).
+-->
+
+<body>
+  <article>
+    <div class="slides-doc" data-page="ch3" lang="ko">
+      <div class="prose">
+        <h1>3장. 도구</h1>
+        <p class="lead">부탁하는 법, 고르는 법, 만들고 공유하는 법.</p>
+      </div>
+
+      <div class="note" id="ch3-1">
+        <span class="kind">막힌 벽</span>
+        <h2>도구 없이도 해 주지만, 도구를 쓰는 AI에게는 밀린다</h2>
+        <p>QR 코드, 음성 인식, TTS, OCR은 도구를 따로 말하지 않아도 AI가 해결해 준다. 그런데 같은 일을 도구와 함께 하는 AI에게는 결과가 밀리는 것 같았다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+
+      <div class="note claude" id="ch3-2">
+        <span class="kind">Claude의 의견</span>
+        <h2>기분 탓이 아니다. 한 번 할 일과 반복할 일이 다르다</h2>
+        <p>도구 없이 하면 AI가 매번 그 자리에서 풀어낸다. 결과가 매번 조금씩 다르고 맞는지 확인하기도 어렵다. 도구가 있으면 정확하고 매번 같다. 한 번 하고 말 일은 도구 없이도 충분하고, 반복하거나 양이 많거나 정확해야 하는 일은 도구가 이긴다.</p>
+        <p>측정한 결과가 아니라 원리에서 나온 설명이다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+
+      <div class="note" id="ch3-3">
+        <span class="kind">알게 된 것</span>
+        <h2>AI는 도구를 잘 다루는 신경계에 가깝다</h2>
+        <p>사람이 아무리 똑똑해도 도구가 필요하다. 십자드라이버와 일자드라이버에는 각자의 존재 이유가 있고, 전동드라이버나 좁은 곳에 쓰는 휘어진 드라이버가 새로 필요해질 뿐 드라이버가 사라지지는 않는다.</p>
+        <p>AI도 같다. 좋은 도구를 만들 이유가 사라지는 것이 아니라 더 부각된다. 그림을 그리고, 음악을 만들고, 소리를 듣는 도구가 정교해져야 AI도 발전한다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+
+      <div class="note claude" id="ch3-4">
+        <span class="kind">Claude의 의견</span>
+        <h2>손보다 감각이 먼저 부족하다</h2>
+        <p>드라이버는 행동하는 도구이고, 소리를 듣는 도구는 감각하는 도구다. AI는 음악을 만드는 코드는 쓸 수 있어도 결과를 들을 수 없고, 화면을 만들 수는 있어도 볼 수단이 없으면 확인하지 못한다. 확인할 수 없는 것은 고칠 수도 없다. 신경계라는 비유가 맞는 이유도 신경계가 근육만 움직이는 것이 아니라 감각을 받아들이기 때문이다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+
+      <div class="note" id="ch3-5">
+        <span class="kind">알게 된 것</span>
+        <h2>당장 몇 번 맞았는지보다 일관성이 중요하다</h2>
+        <p>도구의 값어치를 생각하다 보니 예전에 들은 말들이 떠올랐다.</p>
+        <ul>
+          <li>공학 입문 때 들은 말: 항상 거짓말하는 시스템은 꽤 좋은 시스템이다.</li>
+          <li>유지보수팀이 가장 어려워하는 피드백은 이따금 일어나는 버그다.</li>
+          <li>사격에서는 몇 발 맞혔는지보다 탄착군이 잘 형성되었는지가 중요하다.</li>
+        </ul>
+        <p>일관되게 틀리는 것은 고칠 수 있다. 이따금 틀리는 것이 가장 어렵다. 당장의 결과가 부족해도 일관성이 있다면, 거기서부터 전진하는 것은 의외로 수월할 수 있다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+
+      <div class="note" id="ch3-6">
+        <span class="kind">알게 된 것</span>
+        <h2>도구에게 부탁하는 것을 넘어, 부탁하는 법을 공부하게 된다</h2>
+        <p>도구를 쓰다 보면 관심이 옮겨 간다. 어떻게 부탁해야 하는지를 공부하게 되고, 어떤 도구가 얼마나 쓸모 있는지를 따지게 된다. 그러다 내 도구를 남과 나누고 싶어진다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+
+      <div class="note" id="ch3-7">
+        <span class="kind">지금 쓰는 방법</span>
+        <h2>같은 실수는 지침, 스킬, 코드 순으로 막는다</h2>
+        <p>AI가 실수를 반복하면 먼저 지침에 적는다. 그래도 반복하면 그 작업의 절차(스킬)에 적는다. 또 반복하면 그 행동이 아예 불가능하도록 코드로 막는다. 지침은 길어질수록 지켜지는 비율이 떨어지기 때문이다.</p>
+        <p>실제로 적용한 예: "요청 없이 원격 저장소에 올리지 말 것"이라는 지침을 훅으로 바꿨다. 이제 AI가 그 명령을 실행하려고 하면 코드가 먼저 막는다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time> · 영상 「AI를 진짜 잘 쓰는 사람들의 7가지 특징」(달비의 작업실)에서 배운 순서</p>
+      </div>
+
+      <div class="note claude" id="ch3-8">
+        <span class="kind">Claude의 의견</span>
+        <h2>모든 도구가 살아남지는 않는다</h2>
+        <p>사람의 한계를 덜어 주던 도구는 약해지고, 세계에 정확하게 작용하는 도구는 더 중요해진다. 마크다운이 앞쪽의 예다. 사람이 편집하기 쉽다는 것이 장점이었는데, 편집을 AI가 맡으면 그 이유가 약해진다. 그래서 이 문서도 HTML 하나를 원본으로 쓴다.</p>
+        <p>남는 도구도 손잡이는 바뀐다. AI의 손은 글자와 명령이다. 버튼을 눌러야 하는 도구보다, 명령으로 부를 수 있고 결과와 오류를 글로 돌려주는 도구가 AI에게 잘 잡힌다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+
+      <div class="note claude" id="ch3-9">
+        <span class="kind">Claude의 의견</span>
+        <h2>도구는 매번 똑같이 동작하도록 굳혀 놓은 지식이다</h2>
+        <p>AI는 필요하면 도구를 직접 만들기도 한다. 그래도 도구가 따로 있어야 하는 이유는 AI가 유연한 대신 매번 조금씩 다르게 하고 가끔 틀리기 때문이다. 매번 같아야 하는 일은 도구로 굳히고, 판단이 필요한 일만 AI에게 남긴다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+
+      <div class="note" id="ch3-10">
+        <span class="kind">아직 안 풀린 것</span>
+        <h2>내 도구를 공유하려면 어떻게 구성해야 하는가</h2>
+        <p>공유하려면 어떤 형태로 묶어야 하는지, 잘 공유되는 도구들은 어떻게 운영되는지 아직 모른다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+    </div>
+  </article>
+</body>
+
+</html>

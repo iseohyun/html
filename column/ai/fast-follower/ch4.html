@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <!-- 모바일 스케일 고정 -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta keywords="iseohyun, AI, 패스트 팔로워, 4장 토큰">
+  <meta author="iseohyun">
+
+  <!-- 페이지 타이틀 -->
+  <title>4장 토큰: AI 패스트 팔로워 노트 - iseohyun </title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-453XSP5W9M');
+  </script>
+
+  <!-- 목차 생성 -->
+  <script src="/modules/script.js" defer></script>
+
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("/style.css");
+  </style>
+
+  <!-- 슬라이드 · 스크립트 · 항목 카드 (보고서 형식). 문서를 열 때마다 다시 실행된다 -->
+  <link rel="stylesheet" href="/modules/features/slides.css">
+  <script src="/modules/features/slides.js" defer></script>
+</head>
+<!--
+  AI 패스트 팔로워 노트 · 4장 토큰
+  - 본문은 <div class="slides-doc"> 안에 쓴다. 모양과 동작은 /modules/features/slides.css · slides.js 가 맡는다.
+  - 보고서 형식: 묶음 하나 = <section id> 안에 묶음 제목(<h2>), 슬라이드(.slide-frame > .slide), 스크립트(.script).
+    슬라이드 안에는 h1/h2 를 쓰지 않는다 (사이트 목차는 문서의 모든 h1/h2 로 만든다). 슬라이드 제목은 .slide-title.
+  - 읽어 줄 때 슬라이드에서 짚을 곳: 슬라이드 요소에 data-key="이름", 스크립트의 문단이나 문장을 감싼 <span>/<mark> 에
+    data-cue="이름:방식" (underline · box · check). 크게 볼 그림은 <a data-view data-caption="설명" href="큰 그림">.
+  - 항목 카드: <div class="note"> = 내 경험과 생각, <div class="note claude"> = Claude의 의견(점선 테두리).
+-->
+
+<body>
+  <article>
+    <div class="slides-doc" data-page="ch4" lang="ko">
+      <div class="prose">
+        <h1>4장. 토큰</h1>
+        <p class="lead">쓸 수 있는 양에는 끝이 있다.</p>
+      </div>
+
+      <div class="note" id="ch4-1">
+        <span class="kind">막힌 벽</span>
+        <h2>토큰이 모자란다</h2>
+        <p>도구까지 갖추고 일을 늘리면 다음에 부딪히는 것은 토큰이다. 이 무렵 내 컴퓨터에서 돌리는 로컬 모델과, 그것을 돌리기 좋은 장비에 눈을 뜨게 된다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+
+      <div class="note" id="ch4-2">
+        <span class="kind">알게 된 것</span>
+        <h2>내가 시키는 일이 항상 고급 일은 아니다</h2>
+        <p>모든 일에 가장 좋은 모델이 필요한 것은 아니다. 그래서 작업 사이클을 한 번 돌려 보고, 그 일이 고급 일인지 저급 일인지 판단하는 것이 중요하다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+
+      <div class="note claude" id="ch4-3">
+        <span class="kind">Claude의 의견</span>
+        <h2>한 번 돌린 뒤 이 세 가지를 보면 가를 수 있다</h2>
+        <ol>
+          <li>결과가 맞는지를 규칙으로 확인할 수 있었는가. 실행되는지, 값이 일치하는지처럼 기계적으로 확인된다면 저급 쪽이다. 사람이 보고 판단해야 했다면 고급 쪽이다.</li>
+          <li>다음에 똑같이 하려면 무엇이 필요한가. 정해진 순서만 있으면 된다면 저급이고 코드로 굳힐 수 있다. 상황마다 다른 결정이 필요했다면 고급이다.</li>
+          <li>틀렸을 때 얼마나 비싼가. 다시 돌리면 그만인 일은 싼 모델에 맡겨도 된다.</li>
+        </ol>
+        <p>2장의 방법을 그대로 쓸 수 있다. 작업 끝에 "이 작업에서 판단이 필요했던 지점"을 적게 하면, 판단 지점이 없는 일이 저급 일이다. 아직 실제로 써 보고 확인한 기준은 아니다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+
+      <div class="note claude" id="ch4-4">
+        <span class="kind">Claude의 의견</span>
+        <h2>로컬 모델은 순서상 마지막에 가깝다</h2>
+        <p>그 전에 쓸 수 있는 방법이 있다. 반복 작업을 코드로 굳히면 토큰이 아예 들지 않고, 단순한 일은 싼 모델에 맡길 수 있다. 로컬 모델은 능력 차이를 감수해야 한다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+
+      <div class="note" id="ch4-5">
+        <span class="kind">아직 안 풀린 것</span>
+        <h2>고급 일과 저급 일을 어떻게 판단할 것인가</h2>
+        <p>기준의 후보는 생겼지만 검증하지 않았다. 로컬 모델에 어떤 일까지 맡길 수 있는지도 해 봐야 안다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+    </div>
+  </article>
+</body>
+
+</html>

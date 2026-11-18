@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="440" viewBox="0 0 960 440" font-family="'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif">
+  <title>C · Java · Python 경험자를 위한 Rust 핵심 문법 차이(Delta) 4가지</title>
+  <desc>기본 불변(let vs let mut), 변수 섀도잉(Shadowing), 명시적 비트 폭과 암묵적 형변환 금지(as), 함수와 구별되는 매크로 호출(!) 네 가지 핵심 차이를 요약합니다.</desc>
+
+  <defs>
+    <filter id="sdShadow" x="-3%" y="-4%" width="106%" height="110%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#0f172a" flood-opacity="0.06"/>
+    </filter>
+  </defs>
+
+  <rect width="960" height="440" rx="14" fill="#fcfcfa" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- ① 기본 불변 (let vs let mut) -->
+  <g filter="url(#sdShadow)">
+    <rect data-key="delta-mut" x="18" y="18" width="452" height="194" rx="12" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+    <rect x="32" y="30" width="166" height="24" rx="12" fill="#2563eb"/>
+    <text x="115" y="46" text-anchor="middle" font-size="11.2" font-weight="800" fill="#ffffff">① 기본 불변 (Immutable)</text>
+    <text x="208" y="46" font-size="11" font-weight="700" fill="#1e3a8a">Java final · C const가 기본값!</text>
+
+    <rect x="32" y="64" width="424" height="86" rx="8" fill="#0f172a"/>
+    <g font-family="'D2Coding', monospace" font-size="10.8">
+      <text x="44" y="85" fill="#cbd5e1"><tspan fill="#c084fc">let</tspan> x = <tspan fill="#fde68a">10</tspan>;        <tspan fill="#94a3b8">// 타입 추론 i32, 재대입 시 컴파일 에러!</tspan></text>
+      <text x="44" y="106" fill="#cbd5e1"><tspan fill="#c084fc">let mut</tspan> cnt = <tspan fill="#fde68a">0</tspan>;   <tspan fill="#86efac">// 값이 바뀔 변수만 mut 명시</tspan></text>
+      <text x="44" y="127" fill="#cbd5e1"><tspan fill="#c084fc">const</tspan> MAX: <tspan fill="#93c5fd">u32</tspan> = <tspan fill="#fde68a">100_000</tspan>; <tspan fill="#94a3b8">// 상수는 타입 필수, 숫자 _ 구분자 허용</tspan></text>
+    </g>
+    <text x="34" y="172" font-size="10.6" fill="#334155">· 코드를 읽을 때 <tspan font-weight="800" fill="#1d4ed8">mut</tspan>가 없는 변수는 함수 끝까지 값이 안 바뀜을 100% 확신</text>
+    <text x="34" y="191" font-size="10.6" fill="#334155">· 멀티스레드 공유와 컴파일러 최적화의 출발점이 되는 규칙</text>
+  </g>
+
+  <!-- ② 섀도잉 (Shadowing) -->
+  <g filter="url(#sdShadow)">
+    <rect data-key="delta-shadow" x="490" y="18" width="452" height="194" rx="12" fill="#ffffff" stroke="#7c3aed" stroke-width="2"/>
+    <rect x="504" y="30" width="166" height="24" rx="12" fill="#7c3aed"/>
+    <text x="587" y="46" text-anchor="middle" font-size="11.2" font-weight="800" fill="#ffffff">② 섀도잉 (Shadowing)</text>
+    <text x="680" y="46" font-size="11" font-weight="700" fill="#4c1d95">같은 이름으로 새 변수 덮어 선언</text>
+
+    <rect x="504" y="64" width="424" height="86" rx="8" fill="#0f172a"/>
+    <g font-family="'D2Coding', monospace" font-size="10.8">
+      <text x="516" y="85" fill="#cbd5e1"><tspan fill="#c084fc">let</tspan> raw = <tspan fill="#86efac">"42"</tspan>;             <tspan fill="#94a3b8">// raw: &amp;str (문자열 슬라이스)</tspan></text>
+      <text x="516" y="106" fill="#cbd5e1"><tspan fill="#c084fc">let</tspan> raw: <tspan fill="#93c5fd">i32</tspan> = raw.parse().unwrap(); <tspan fill="#fde047">// 새 raw: i32 (타입 변경 가능!)</tspan></text>
+      <text x="516" y="127" fill="#94a3b8">// ※ let mut raw = "42"; raw = 42; 는 타입 불일치 에러!</text>
+    </g>
+    <text x="506" y="172" font-size="10.6" fill="#334155">· <tspan font-family="'D2Coding', monospace">raw_str</tspan>, <tspan font-family="'D2Coding', monospace">raw_num</tspan> 같은 임시 변수명 남발 없이 파싱 단계마다 깔끔히 재바인딩</text>
+    <text x="506" y="191" font-size="10.6" fill="#334155">· 변환이 끝난 뒤에도 변수는 여전히 <tspan font-weight="800" fill="#6d28d9">불변(Immutable)</tspan> 상태로 보호됨</text>
+  </g>
+
+  <!-- ③ 명시적 숫자 타입 & 암묵적 형변환 금지 -->
+  <g filter="url(#sdShadow)">
+    <rect data-key="delta-cast" x="18" y="228" width="452" height="194" rx="12" fill="#ffffff" stroke="#d97706" stroke-width="2"/>
+    <rect x="32" y="240" width="184" height="24" rx="12" fill="#d97706"/>
+    <text x="124" y="256" text-anchor="middle" font-size="11.2" font-weight="800" fill="#ffffff">③ 명시적 폭 · 자동 형변환 금지</text>
+    <text x="226" y="256" font-size="11" font-weight="700" fill="#92400e">C의 암묵적 승격·손실 버그 차단</text>
+
+    <rect x="32" y="274" width="424" height="86" rx="8" fill="#0f172a"/>
+    <g font-family="'D2Coding', monospace" font-size="10.8">
+      <text x="44" y="295" fill="#93c5fd">i8 i16 i32(기본) i64 i128 isize  │  u8(바이트) u32 u64 usize(인덱스)</text>
+      <text x="44" y="316" fill="#cbd5e1"><tspan fill="#c084fc">let</tspan> a: <tspan fill="#93c5fd">i32</tspan> = <tspan fill="#fde68a">10</tspan>;  <tspan fill="#c084fc">let</tspan> b: <tspan fill="#93c5fd">i64</tspan> = a <tspan fill="#f87171">as</tspan> <tspan fill="#93c5fd">i64</tspan>; <tspan fill="#94a3b8">// a를 그냥 대입하면 에러!</tspan></text>
+      <text x="44" y="337" fill="#cbd5e1"><tspan fill="#c084fc">let</tspan> idx: <tspan fill="#93c5fd">usize</tspan> = <tspan fill="#fde68a">0</tspan>; <tspan fill="#86efac">// 배열·벡터 인덱스는 반드시 부호 없는 usize!</tspan></text>
+    </g>
+    <text x="34" y="382" font-size="10.6" fill="#334155">· OS마다 크기가 흔들리던 C의 <tspan font-family="'D2Coding', monospace">long</tspan> 대신 비트 폭(<tspan font-family="'D2Coding', monospace">i32, u64</tspan>)을 이름에 못 박음</text>
+    <text x="34" y="401" font-size="10.6" fill="#334155">· 포인터·배열 크기 전용 <tspan font-weight="800" fill="#b45309">usize</tspan> (64비트 환경 = 8B)로 음수 인덱싱 원천 봉쇄</text>
+  </g>
+
+  <!-- ④ 함수(fn) vs 매크로(!) -->
+  <g filter="url(#sdShadow)">
+    <rect data-key="delta-macro" x="490" y="228" width="452" height="194" rx="12" fill="#ffffff" stroke="#059669" stroke-width="2"/>
+    <rect x="504" y="240" width="172" height="24" rx="12" fill="#059669"/>
+    <text x="590" y="256" text-anchor="middle" font-size="11.2" font-weight="800" fill="#ffffff">④ 매크로 호출 기호 (!)</text>
+    <text x="686" y="256" font-size="11" font-weight="700" fill="#065f46">C #define과 차원이 다른 위생 매크로</text>
+
+    <rect x="504" y="274" width="424" height="86" rx="8" fill="#0f172a"/>
+    <g font-family="'D2Coding', monospace" font-size="10.8">
+      <text x="516" y="295" fill="#cbd5e1"><tspan fill="#93c5fd">println!</tspan>(<tspan fill="#86efac">"x = {x}, arr = {:?}"</tspan>, arr); <tspan fill="#94a3b8">// ! = 컴파일 타임 코드 확장</tspan></text>
+      <text x="516" y="316" fill="#cbd5e1"><tspan fill="#c084fc">let</tspan> v = <tspan fill="#93c5fd">vec!</tspan>[<tspan fill="#fde68a">1</tspan>, <tspan fill="#fde68a">2</tspan>, <tspan fill="#fde68a">3</tspan>];                <tspan fill="#94a3b8">// 가변 개수 인자 안전 처리</tspan></text>
+      <text x="516" y="337" fill="#cbd5e1"><tspan fill="#c084fc">fn</tspan> <tspan fill="#93c5fd">add</tspan>(a: <tspan fill="#93c5fd">i32</tspan>, b: <tspan fill="#93c5fd">i32</tspan>) -&gt; <tspan fill="#93c5fd">i32</tspan> { a + b } <tspan fill="#86efac">// 일반 함수는 인자 개수 고정</tspan></text>
+    </g>
+    <text x="506" y="382" font-size="10.6" fill="#334155">· Rust 함수는 가변 인자(<tspan font-family="'D2Coding', monospace">...</tspan>)를 지양하는 대신, <tspan font-weight="800" fill="#047857">매크로(!)</tspan>가 포맷 문자열과</text>
+    <text x="506" y="401" font-size="10.6" fill="#334155">  인자 타입·개수를 컴파일 타임에 대조(C <tspan font-family="'D2Coding', monospace">printf("%s", 10)</tspan> 참사 불가능!)</text>
+  </g>
+</svg>

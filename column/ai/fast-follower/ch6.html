@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <!-- 모바일 스케일 고정 -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta keywords="iseohyun, AI, 패스트 팔로워, 6장 공부">
+  <meta author="iseohyun">
+
+  <!-- 페이지 타이틀 -->
+  <title>6장 공부: AI 패스트 팔로워 노트 - iseohyun </title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-453XSP5W9M');
+  </script>
+
+  <!-- 목차 생성 -->
+  <script src="/modules/script.js" defer></script>
+
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("/style.css");
+  </style>
+
+  <!-- 슬라이드 · 스크립트 · 항목 카드 (보고서 형식). 문서를 열 때마다 다시 실행된다 -->
+  <link rel="stylesheet" href="/modules/features/slides.css">
+  <script src="/modules/features/slides.js" defer></script>
+</head>
+<!--
+  AI 패스트 팔로워 노트 · 6장 공부
+  - 본문은 <div class="slides-doc"> 안에 쓴다. 모양과 동작은 /modules/features/slides.css · slides.js 가 맡는다.
+  - 보고서 형식: 묶음 하나 = <section id> 안에 묶음 제목(<h2>), 슬라이드(.slide-frame > .slide), 스크립트(.script).
+    슬라이드 안에는 h1/h2 를 쓰지 않는다 (사이트 목차는 문서의 모든 h1/h2 로 만든다). 슬라이드 제목은 .slide-title.
+  - 읽어 줄 때 슬라이드에서 짚을 곳: 슬라이드 요소에 data-key="이름", 스크립트의 문단이나 문장을 감싼 <span>/<mark> 에
+    data-cue="이름:방식" (underline · box · check). 크게 볼 그림은 <a data-view data-caption="설명" href="큰 그림">.
+  - 항목 카드: <div class="note"> = 내 경험과 생각, <div class="note claude"> = Claude의 의견(점선 테두리).
+-->
+
+<body>
+  <article>
+    <div class="slides-doc" data-page="ch6" lang="ko">
+      <div class="prose">
+        <h1>6장. 공부</h1>
+        <p class="lead">따라가야 할 것이 내가 배우는 속도보다 빨리 늘어난다.</p>
+      </div>
+
+      <div class="note" id="ch6-1">
+        <span class="kind">막힌 벽</span>
+        <h2>새 버전이 나오는 속도를 따라가지 못한다</h2>
+        <p>AI가 쉬면 그냥 퇴근하는 게 맞다는 이야기가 돌았다. 이제는 퇴근하려고 해도 새 버전의 AI가 나오는 속도를 내가 못 따라가고 있다는 느낌이다. 새로운 서비스와 새로운 인터페이스가 계속 생긴다. 대화창에서 슬래시(/)를 누르면 나오는 것들이 무엇인지부터 공부할 것이 많다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+
+      <div class="note" id="ch6-2">
+        <span class="kind">그때의 착각</span>
+        <h2>처음부터 끝까지 한 번 훑으면 된다고 생각했다</h2>
+        <p>예전에는 무언가를 공부하겠다 싶으면 각 잡고 앉아 처음부터 끝까지 한 번 정독했다. 프로그램도 그랬다. 엑셀이든 드림위버든 왼쪽 첫 메뉴부터 오른쪽 끝 메뉴까지 하나씩 다 눌러 보며 모든 기능을 한 번씩 써 봤다. 그러면 전체 윤곽과 범위가 나왔다.</p>
+        <p>AI 에이전트도 같은 방식으로 익히려고 했던 것 같다. 그런데 이쪽은 다 훑기 전에 메뉴가 바뀐다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+
+      <div class="note" id="ch6-3">
+        <span class="kind">지금 쓰는 방법</span>
+        <h2>필요와 개선을 반복하면서 다음 장으로 넘어간다</h2>
+        <p>목표를 가장 먼저 가는 사람이 아니라 빠르게 따라가는 사람으로 잡는다. 지금 막힌 벽에서 필요한 것을 배우고, 개선하고, 다음 벽으로 간다. 이 문서의 장 구성이 그 방법이다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+
+      <div class="note claude" id="ch6-4">
+        <span class="kind">Claude의 의견</span>
+        <h2>전체 윤곽은 지도 한 장으로 대신한다</h2>
+        <p>메뉴를 다 눌러 보던 방식이 주던 것은 전체 윤곽이었다. 그것은 여전히 필요하다. 다만 모든 기능을 써 보는 대신, 어떤 부품이 어떤 역할인지만 적은 지도 한 장으로 얻는다. 부록의 부품 지도가 그 용도다. 깊이는 지금 막힌 벽이 요구하는 곳에서만 판다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+
+      <div class="note" id="ch6-5">
+        <span class="kind">아직 안 풀린 것</span>
+        <h2>무엇을 건너뛰어도 되는지 어떻게 아는가</h2>
+        <p>전부 배울 수 없다면 고르는 기준이 있어야 한다. 새로 나온 것 중 지금 볼 것과 미뤄도 될 것을 어떻게 가를지 아직 모른다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+    </div>
+  </article>
+</body>
+
+</html>

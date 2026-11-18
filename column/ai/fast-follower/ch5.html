@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <!-- 모바일 스케일 고정 -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta keywords="iseohyun, AI, 패스트 팔로워, 5장 컨텍스트 스위칭">
+  <meta author="iseohyun">
+
+  <!-- 페이지 타이틀 -->
+  <title>5장 컨텍스트 스위칭: AI 패스트 팔로워 노트 - iseohyun </title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-453XSP5W9M');
+  </script>
+
+  <!-- 목차 생성 -->
+  <script src="/modules/script.js" defer></script>
+
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("/style.css");
+  </style>
+
+  <!-- 슬라이드 · 스크립트 · 항목 카드 (보고서 형식). 문서를 열 때마다 다시 실행된다 -->
+  <link rel="stylesheet" href="/modules/features/slides.css">
+  <script src="/modules/features/slides.js" defer></script>
+</head>
+<!--
+  AI 패스트 팔로워 노트 · 5장 컨텍스트 스위칭
+  - 본문은 <div class="slides-doc"> 안에 쓴다. 모양과 동작은 /modules/features/slides.css · slides.js 가 맡는다.
+  - 보고서 형식: 묶음 하나 = <section id> 안에 묶음 제목(<h2>), 슬라이드(.slide-frame > .slide), 스크립트(.script).
+    슬라이드 안에는 h1/h2 를 쓰지 않는다 (사이트 목차는 문서의 모든 h1/h2 로 만든다). 슬라이드 제목은 .slide-title.
+  - 읽어 줄 때 슬라이드에서 짚을 곳: 슬라이드 요소에 data-key="이름", 스크립트의 문단이나 문장을 감싼 <span>/<mark> 에
+    data-cue="이름:방식" (underline · box · check). 크게 볼 그림은 <a data-view data-caption="설명" href="큰 그림">.
+  - 항목 카드: <div class="note"> = 내 경험과 생각, <div class="note claude"> = Claude의 의견(점선 테두리).
+-->
+
+<body>
+  <article>
+    <div class="slides-doc" data-page="ch5" lang="ko">
+      <div class="prose">
+        <h1>5장. 컨텍스트 스위칭</h1>
+        <p class="lead">여러 일을 오가는 비용은 나에게도, AI에게도 있다.</p>
+      </div>
+
+      <div class="note" id="ch5-1">
+        <span class="kind">막힌 벽</span>
+        <h2>기다리는 시간을 메우려고 여러 개를 돌리다가 한계가 온다</h2>
+        <p>일을 정교하게 맡길수록 시간이 걸린다. 당연한 일이고 물리적으로 줄이기도 어렵다. 높은 요금제는 토큰 양을 늘려 주지만 속도를 보장하지는 않는다. 그래서 여러 서비스를 한꺼번에 돌리며 쉬지 않고 일하게 되는데, 슬슬 한계가 온다. 잘 풀리지 않는 문제나 완성도를 높이는 시도에 쓸 여력이 남지 않는다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+
+      <div class="note" id="ch5-2">
+        <span class="kind">알게 된 것</span>
+        <h2>대화가 길어지면 AI가 중간에 몇 개씩 빼먹는다</h2>
+        <p>경험상 대화가 길어지면 AI가 시킨 것 중 일부를 빠뜨리는 일이 생겼다. 내 느낌만이 아니었다. 같은 주제를 다룬 연구가 있다고 한다. 컨텍스트 스위칭은 내가 여러 일을 오가는 문제이면서, 대화방 하나가 길어지는 문제이기도 하다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time> · 연구는 위 영상에서 인용된 것을 들었고, 원문은 확인하지 않았다</p>
+      </div>
+
+      <div class="note" id="ch5-3">
+        <span class="kind">지금 쓰는 방법</span>
+        <h2>주된 흐름은 한 대화방에서, 곁가지는 다른 대화방에서 끝내고 돌아온다</h2>
+        <p>주요 흐름은 한 대화방에서 잡는다. 도중에 갑자기 떠오른 주제는 다른 대화방에서 다루어 끝낸 뒤, 그 결론만 원래 대화방으로 가져와 마무리한다. 주된 대화방이 곁가지로 길어지지 않는다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+
+      <div class="note" id="ch5-4">
+        <span class="kind">지금 쓰는 방법</span>
+        <h2>다른 대화방에 내용을 넘길 때는 참고인지 실행인지를 먼저 적는다</h2>
+        <p>한 대화방에서 얻은 결론을 다른 프로젝트의 대화방에 전달할 수 있다. 이때 첫머리에 "참고만 할 것"인지 "실행할 것"인지를 밝힌다. 그러지 않으면 받은 쪽이 바로 작업을 시작할 수 있다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+
+      <div class="note claude" id="ch5-5">
+        <span class="kind">Claude의 의견</span>
+        <h2>줄여야 하는 것은 대화방 수가 아니라 들여다보는 횟수다</h2>
+        <p>여러 개를 돌릴 때 병목은 AI가 아니라 사람의 주의력이다. 대화방을 늘리면 검토할 것도 같이 늘어난다. 처음에 지시를 한 번에 다 주는 것, 그리고 3장의 훅처럼 안 봐도 안전한 장치를 두는 것이 들여다보는 횟수를 줄인다. 3장의 도구가 5장의 답이 된다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+
+      <div class="note" id="ch5-6">
+        <span class="kind">아직 안 풀린 것</span>
+        <h2>잘 풀리지 않는 문제에 쓸 시간을 어떻게 남길 것인가</h2>
+        <p>동시에 몇 개까지 돌리는 것이 적정한지, 깊이 파야 하는 일은 어떻게 따로 떼어 둘지 아직 정하지 못했다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+    </div>
+  </article>
+</body>
+
+</html>

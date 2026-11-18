@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <!-- 모바일 스케일 고정 -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta keywords="iseohyun, AI, 패스트 팔로워, 2장 설명하는 실력">
+  <meta author="iseohyun">
+
+  <!-- 페이지 타이틀 -->
+  <title>2장 설명하는 실력: AI 패스트 팔로워 노트 - iseohyun </title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-453XSP5W9M');
+  </script>
+
+  <!-- 목차 생성 -->
+  <script src="/modules/script.js" defer></script>
+
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("/style.css");
+  </style>
+
+  <!-- 슬라이드 · 스크립트 · 항목 카드 (보고서 형식). 문서를 열 때마다 다시 실행된다 -->
+  <link rel="stylesheet" href="/modules/features/slides.css">
+  <script src="/modules/features/slides.js" defer></script>
+</head>
+<!--
+  AI 패스트 팔로워 노트 · 2장 설명하는 실력
+  - 본문은 <div class="slides-doc"> 안에 쓴다. 모양과 동작은 /modules/features/slides.css · slides.js 가 맡는다.
+  - 보고서 형식: 묶음 하나 = <section id> 안에 묶음 제목(<h2>), 슬라이드(.slide-frame > .slide), 스크립트(.script).
+    슬라이드 안에는 h1/h2 를 쓰지 않는다 (사이트 목차는 문서의 모든 h1/h2 로 만든다). 슬라이드 제목은 .slide-title.
+  - 읽어 줄 때 슬라이드에서 짚을 곳: 슬라이드 요소에 data-key="이름", 스크립트의 문단이나 문장을 감싼 <span>/<mark> 에
+    data-cue="이름:방식" (underline · box · check). 크게 볼 그림은 <a data-view data-caption="설명" href="큰 그림">.
+  - 항목 카드: <div class="note"> = 내 경험과 생각, <div class="note claude"> = Claude의 의견(점선 테두리).
+-->
+
+<body>
+  <article>
+    <div class="slides-doc" data-page="ch2" lang="ko">
+      <div class="prose">
+        <h1>2장. 설명하는 실력</h1>
+        <p class="lead">결과의 품질은 내가 얼마나 설명할 수 있느냐에 달려 있었다.</p>
+      </div>
+
+      <div class="note" id="ch2-1">
+        <span class="kind">막힌 벽</span>
+        <h2>개발은 훌륭한데 문서는 그럭저럭, 그림은 젬병이었다</h2>
+        <p>개발은 AI가 훌륭하게 처리한다고 느꼈다. 문서는 그럭저럭 쓸 만했고, 그림은 쓸 수 없는 수준이라고 생각했던 시기가 있었다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+
+      <div class="note" id="ch2-2">
+        <span class="kind">그때의 착각</span>
+        <h2>AI가 그림을 못한다고 생각했는데, 내 실력의 문제였다</h2>
+        <p>AI에게 얼마나 상세하게 설명하느냐에 따라 결과물의 품질이 달라진다. 나는 개발에는 기본 지식이 있지만 글, 특히 그림에는 그렇지 못했다. 구도나 인물 묘사를 말로 풀어낼 수 없으니 좋은 결과를 얻을 수 없었던 것이다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+
+      <div class="note" id="ch2-3">
+        <span class="kind">알게 된 것</span>
+        <h2>전문 용어는 작업을 하면서 배울 수 있다</h2>
+        <p>처음에는 용어를 모르니 길게 풀어서 부탁할 수밖에 없다.</p>
+        <blockquote>동그라미가 돌아가면서, 뒤에서 뭔가 처리되고 있다는 것을 사용자에게 애니메이션으로 알려 주는 효과를 넣어 줘.</blockquote>
+        <p>이 부탁은 용어를 알면 한 마디가 된다.</p>
+        <blockquote>프로그레스 링을 넣어 줘.</blockquote>
+        <p>용어를 알수록 지시가 짧아지고 오해가 줄어든다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+
+      <div class="note" id="ch2-4">
+        <span class="kind">지금 쓰는 방법</span>
+        <h2>작업 끝에 "전문 용어로는 이렇게 지시한다"를 붙이게 한다</h2>
+        <p>AI가 작업을 마칠 때, 내가 풀어서 말한 지시를 전문 용어로 바꾸면 어떻게 되는지 함께 적게 한다. 일을 시키는 동안 그 분야의 말을 배우게 된다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time> · 소개받은 방법</p>
+      </div>
+
+      <div class="note claude" id="ch2-5">
+        <span class="kind">Claude의 의견</span>
+        <h2>부족한 것은 어휘와 눈, 두 가지다</h2>
+        <p>설명할 어휘와, 결과를 보고 좋고 나쁨을 가리는 눈은 서로 다르다. 어휘는 AI에게 빌릴 수 있다. 구도 세 가지를 이름과 함께 제안해 달라고 하면 된다. 눈은 빌리기 어렵다. AI가 빠르게 만들어 내는 만큼 보자마자 판정할 수 있어야 속도가 나므로, 더 큰 제약은 눈 쪽이다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+
+      <div class="note" id="ch2-6">
+        <span class="kind">아직 안 풀린 것</span>
+        <h2>눈은 어떻게 기르는가</h2>
+        <p>어휘는 작업하면서 늘릴 방법을 찾았다. 낯선 분야에서 결과를 판정하는 눈을 어떻게 기를지는 아직 답이 없다.</p>
+        <p class="meta"><time datetime="2026-11-15">2026-11-15</time></p>
+      </div>
+    </div>
+  </article>
+</body>
+
+</html>
