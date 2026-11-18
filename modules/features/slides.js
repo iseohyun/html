@@ -15,7 +15,8 @@
  *       C               자막 켜기 / 끄기
  *   - 읽어 주기(speechSynthesis): 스크립트를 문장으로 나눠 읽고, 읽는 곳을 문단·문장·단어로 표시한다.
  *     스크립트의 data-cue="이름:방식" 이 가리키는 슬라이드 요소(data-key="이름")를 밑줄·테두리·체크로 짚는다.
- *   - 자막(전체 화면에서만. 읽기를 멈춘 동안에도 멈춘 문장을 계속 보여 준다), 화면 맨 아래의 진행 막대(눌러서 옮기기),
+ *   - 자막(전체 화면에서만. 읽기를 멈춘 동안에도 멈춘 문장을 계속 보여 준다. 스크립트의 <wbr data-cap> 자리에서 줄을 바꾸고,
+ *     없으면 넘쳐서 여러 줄이 되는 자막을 고르게 나눈다), 화면 맨 아래의 진행 막대(눌러서 옮기기),
  *     헤더의 이어 재생 단추.
  *   - 읽기 설정: 헤더의 화면 설정 패널(Header.setPanels)에 등록한다. 전체 화면에서는 같은 줄을 슬라이드 위 창으로 옮겨 쓴다.
  *   - 그림 크게 보기: a[data-view] 를 누르면 그 슬라이드 안에서 연다.
@@ -71,6 +72,8 @@ window.SiteModules.Slides = (function () {
   const CAP_SPLIT_MIN_PART = 14;                           // 끊은 조각 하나의 최소 길이. 모자라면 옆 조각에 붙인다
   const CAP_LIST_ITEM_MAX = 8;                             // 쉼표 사이가 이보다 짧으면 나열(예시)로 보고 끊지 않는다
   const CAP_COMMA = /[,，、]\s+/g;
+  const CAP_BREAK_SELECTOR = "wbr[data-cap]";             // 스크립트에서 자막의 줄을 직접 바꾸는 자리
+  const CAP_BALANCE_MAX_LINES = 4;                        // 저절로 줄이 넘치는 자막을 고르게 나눌 때 시도하는 최대 줄 수
   const FIRST_PACE_CHARS_PER_SEC = 8;                      // 재 본 적이 없는 목소리: 100% 속도에서 1초에 8글자
   const PACE_MIN_SAMPLE_MS = 200;
   const AUTO_SETTLE_POLL_MS = 150;                         // 이어 재생: 스크롤이 멈췄는지 보는 간격
@@ -111,6 +114,7 @@ window.SiteModules.Slides = (function () {
   let playbar = null;
   let captionEl = null, capText = null, capHl = null, capLast = null, capTimer = null;
   let capSent = null, capParts = null, capPart = 0;   // 자막에 띄운 문장, 그 조각들([시작, 끝]), 지금 조각
+  let capMarks = [], capFit = "";                     // 문장 안의 <wbr data-cap> 자리, 줄을 나눌 때의 화면 크기·글자 크기
   let viewer = null, viewList = [], viewAt = 0, viewFrom = null;
   let rateDrag = false;
   let author = "all";
@@ -460,6 +464,8 @@ window.SiteModules.Slides = (function () {
     capSent = null;
     capParts = null;
     capPart = 0;
+    capMarks = [];
+    capFit = "";
   }
 
   /**
@@ -498,13 +504,118 @@ window.SiteModules.Slides = (function () {
     return parts;
   }
 
+  // 문장 안의 <wbr data-cap> 자리(문장 글자 위치)를 모은다. 자막은 그 자리에서 줄을 바꾼다.
+  function captionMarks(sent) {
+    const marks = [];
+    let pos = 0;
+    (function walk(node) {
+      for (let c = node.firstChild; c; c = c.nextSibling) {
+        if (c.nodeType === Node.TEXT_NODE) pos += c.nodeValue.length;
+        else if (c.nodeType === Node.ELEMENT_NODE) {
+          if (c.matches(CAP_BREAK_SELECTOR)) marks.push(pos);
+          else walk(c);
+        }
+      }
+    })(sent);
+    return marks;
+  }
+
+  // 자막 줄 나누기를 다시 해야 하는지 가리는 값: 창 크기 · 글자 크기 · 가로 자리
+  function captionFitKey() {
+    return window.innerWidth + "x" + window.innerHeight + "|" + state.capSize + "|" + state.capH;
+  }
+
+  // 자막 글자를 breaks 자리에서 <br>로 나눠 넣는다. 글자는 하나도 빼지 않으므로 글자 위치(단어 상자)는 그대로다.
+  function fillCaption(text, breaks) {
+    capText.replaceChildren();
+    let from = 0;
+    breaks.concat([text.length]).forEach(function (at, i) {
+      if (i) capText.appendChild(document.createElement("br"));
+      capText.appendChild(document.createTextNode(text.slice(from, at)));
+      from = at;
+    });
+  }
+
+  // 자막이 지금 몇 줄로 보이는지 센다
+  function captionLines() {
+    const range = document.createRange();
+    range.selectNodeContents(capText);
+    const tops = new Set();
+    Array.prototype.forEach.call(range.getClientRects(), function (r) {
+      if (r.width > 1) tops.add(Math.round(r.top));
+    });
+    return tops.size;
+  }
+
+  /**
+   * 넘쳐서 여러 줄이 되는 자막을 고르게 나눌 자리를 고른다. 한 줄로 늘어놓은 폭을 재서,
+   * 띄어쓰기 자리 가운데 n 등분 지점에 가장 가까운 곳에서 끊는다 (2줄이면 대략 가운데).
+   * @param {string} text 자막 조각 (capText 에 한 줄로 들어 있어야 한다)
+   * @param {number} n 나눌 줄 수
+   * @returns {number[]} 줄을 바꿀 글자 위치들
+   */
+  function balancedBreaks(text, n) {
+    const node = capText.firstChild;
+    const range = document.createRange();
+    const widthTo = function (at) {
+      range.setStart(node, 0);
+      range.setEnd(node, at);
+      return range.getBoundingClientRect().width;
+    };
+    capText.style.whiteSpace = "nowrap";
+    const total = widthTo(text.length);
+    const spots = [];   // [다음 줄이 시작하는 자리, 그 앞까지의 폭]
+    text.replace(/\s+/g, function (m, i) {
+      if (i > 0 && i + m.length < text.length) spots.push([i + m.length, widthTo(i)]);
+      return m;
+    });
+    capText.style.whiteSpace = "";
+    const picked = [];
+    let from = 0;
+    for (let k = 1; k < n; k++) {
+      const goal = total * k / n;
+      let best = null;
+      spots.forEach(function (s, i) {
+        if (i < from) return;
+        if (!best || Math.abs(s[1] - goal) < Math.abs(best[1][1] - goal)) best = [i, s];
+      });
+      if (!best) break;
+      picked.push(best[1][0]);
+      from = best[0] + 1;
+    }
+    return picked;
+  }
+
+  // 자막 조각을 넣는다. <wbr data-cap> 이 있으면 그 자리에서, 없는데 넘쳐서 여러 줄이 되면 고르게 나눠 줄을 바꾼다.
+  function layCaption(text, marks) {
+    capFit = captionFitKey();
+    if (marks.length) {
+      fillCaption(text, marks);
+      return;
+    }
+    fillCaption(text, []);
+    const lines = captionLines();
+    if (lines < 2 || !capText.firstChild) return;
+    // 고르게 나눈 줄이 다시 넘치면 한 줄씩 늘려 다시 나눈다
+    for (let n = lines; n <= CAP_BALANCE_MAX_LINES; n++) {
+      fillCaption(text, []);
+      const breaks = balancedBreaks(text, n);
+      if (!breaks.length) return;
+      fillCaption(text, breaks);
+      if (captionLines() <= breaks.length + 1) return;
+    }
+  }
+
   // 자막에 지금 조각을 띄운다. 조각이 바뀌면 단어 상자를 감추고, 다음 단어 신호에서 새 자리에 나타난다.
   function showCapPart() {
     const part = capParts[capPart];
     const text = capSent.textContent.slice(part[0], part[1]).replace(/\s+$/, "");
-    if (capText.textContent !== text || state.unit !== "word") {
+    if (capText.textContent !== text || state.unit !== "word" || capFit !== captionFitKey()) {
       clearTimeout(capTimer);
-      capText.textContent = text;
+      const marks = capMarks
+        .filter(function (m) { return m > part[0] && m < part[0] + text.length; })
+        .map(function (m) { return m - part[0]; });
+      layCaption(text, marks);
       capHl.classList.remove("is-slide");
       capHl.style.opacity = 0;
       capLast = null;
@@ -554,6 +665,7 @@ window.SiteModules.Slides = (function () {
     if (capSent !== sent) {
       capSent = sent;
       capParts = captionParts(sent.textContent);
+      capMarks = captionMarks(sent);
       capPart = 0;
     }
     showCapPart();
@@ -567,12 +679,26 @@ window.SiteModules.Slides = (function () {
   }
 
   // 자막의 단어 상자를 옮긴다. 같은 줄이면 미끄러지고, 줄이 바뀌면 사라졌다가 새 자리에서 나타난다.
+  // 자막 글자 위치 -> 그 글자가 든 글자 마디와 마디 안의 자리. 자막은 줄마다 마디가 나뉘어 있다(<br> 사이).
+  // 줄 경계의 자리는 시작이면 다음 줄 처음, 끝이면 앞 줄 끝으로 본다.
+  function capPoint(offset, isEnd) {
+    let last = null;
+    for (let c = capText.firstChild; c; c = c.nextSibling) {
+      if (c.nodeType !== Node.TEXT_NODE) continue;
+      last = c;
+      if (offset < c.length || (isEnd && offset === c.length)) return [c, offset];
+      offset -= c.length;
+    }
+    return last ? [last, last.length] : null;
+  }
+
   function moveCapHl(start, len) {
-    const node = captionEl && capText.firstChild;
-    if (!node || !len) return;
+    if (!captionEl || !len) return;
+    const a = capPoint(start, false), b = capPoint(start + len, true);
+    if (!a || !b) return;
     const range = document.createRange();
-    range.setStart(node, Math.min(start, node.length));
-    range.setEnd(node, Math.min(start + len, node.length));
+    range.setStart(a[0], a[1]);
+    range.setEnd(b[0], b[1]);
     const rect = range.getClientRects()[0];
     if (!rect) return;
     const base = captionEl.getBoundingClientRect();
@@ -1654,6 +1780,8 @@ window.SiteModules.Slides = (function () {
       });
       listen(window, "keydown", onKeyDown, true);
       listen(document, "fullscreenchange", onFullscreenChange);
+      // 창 크기가 바뀌면 자막 글자 크기(vw)와 줄 수도 바뀌므로 줄을 다시 나눈다
+      listen(window, "resize", function () { if (captionEl) paintCaption(); });
     }
 
     const filterEl = root.querySelector(".note.claude") ? buildFilterPanel() : null;
@@ -1735,7 +1863,8 @@ window.SiteModules.Slides = (function () {
     init: init,
     destroy: destroy,
     isActive: isActive,
-    captionParts: captionParts   // 자막을 끊는 규칙. 시험에서 문장을 직접 넣어 확인한다
+    captionParts: captionParts,  // 자막을 끊는 규칙. 시험에서 문장을 직접 넣어 확인한다
+    captionMarks: captionMarks   // 자막의 줄을 직접 바꾸는 자리(<wbr data-cap>)
   };
 })();
 

@@ -303,6 +303,86 @@ test.describe('전체 화면 보기 (창 안 덮개)', () => {
     await page.keyboard.press('Escape');
   });
 
+  test('captionMarks 는 <wbr data-cap> 자리를 문장의 글자 위치로 돌려준다', async ({ page }) => {
+    await openChapter(page);
+    const marks = await page.evaluate(() => {
+      const sent = document.createElement('span');
+      sent.innerHTML = '첫째 줄 <wbr data-cap>둘째 줄 <code>x<wbr data-cap>y</code> 끝<wbr>';
+      return window.SiteModules.Slides.captionMarks(sent);
+    });
+    // 「첫째 줄 」 = 5글자, 「둘째 줄 x」 = 6글자 더. data-cap 이 없는 <wbr> 은 세지 않는다
+    expect(marks).toEqual([5, 11]);
+  });
+
+  // 지금 슬라이드의 첫 문장을 시험 문장으로 바꾼다 (읽을 말 data-say 도 지운다)
+  async function setFirstSentence(page, html) {
+    await page.evaluate(h => {
+      const sent = document.querySelector('#s1-1 .script .sent');
+      sent.removeAttribute('data-say');
+      sent.innerHTML = h;
+    }, html);
+  }
+
+  // 자막의 줄마다 [글자, 폭, 위쪽 자리] (줄은 <br> 사이의 글자 마디)
+  const captionRows = page => page.locator('.slides-doc > .sl-caption .sl-caption-text').evaluate(el => {
+    const rows = [];
+    el.childNodes.forEach(n => {
+      if (n.nodeType !== Node.TEXT_NODE || !n.nodeValue.trim()) return;
+      const range = document.createRange();
+      range.selectNodeContents(n);
+      const rects = Array.from(range.getClientRects()).filter(r => r.width > 1);
+      rows.push({ text: n.nodeValue, width: rects.reduce((s, r) => s + r.width, 0), top: rects[0].top, lines: new Set(rects.map(r => Math.round(r.top))).size });
+    });
+    return { rows, brs: el.querySelectorAll('br').length, text: el.textContent };
+  });
+
+  test('자막은 <wbr data-cap> 자리에서 줄을 바꾸고, 글자는 그대로 둔다', async ({ page }) => {
+    await openChapter(page);
+    await setFirstSentence(page, '짧은 앞줄입니다 <wbr data-cap>그리고 뒷줄입니다.');
+    await page.locator('#s1-1 .sl-full').click();
+    await page.locator('#s1-1 .sl-tts').click();
+    await fire(page, 'start');
+
+    const got = await captionRows(page);
+    expect(got.text).toBe('짧은 앞줄입니다 그리고 뒷줄입니다.');
+    expect(got.brs).toBe(1);
+    expect(got.rows.map(r => r.text.trim())).toEqual(['짧은 앞줄입니다', '그리고 뒷줄입니다.']);
+    expect(got.rows[1].top).toBeGreaterThan(got.rows[0].top);
+  });
+
+  test('넘쳐서 두 줄이 되는 자막은 대략 가운데에서 나누고, 단어 상자는 둘째 줄을 따라간다', async ({ page }) => {
+    await openChapter(page);
+    // 쉼표가 없어 조각으로 끊기지 않고, 1280px 화면의 자막 폭(84vw, 한 줄에 40글자 안팎)을 조금 넘는 문장
+    const sentence = '이 문장은 자막이 화면 폭을 조금 넘어서 두 줄로 보일 때 대략 가운데에서 고르게 나뉘는지 확인하는 시험 문장입니다.';
+    await setFirstSentence(page, sentence);
+    await page.locator('#s1-1 .sl-full').click();
+    await page.locator('#s1-1 .sl-tts').click();
+    await fire(page, 'start');
+    expect((await spoken(page))[0]).toBe(sentence);
+
+    const got = await captionRows(page);
+    expect(got.text).toBe(sentence);
+    expect(got.brs).toBe(1);
+    expect(got.rows).toHaveLength(2);
+    got.rows.forEach(r => expect(r.lines).toBe(1));   // 나눈 줄이 다시 넘치지 않는다
+    const [a, b] = got.rows.map(r => r.width);
+    expect(Math.abs(a - b) / Math.max(a, b)).toBeLessThan(0.2);   // 두 줄의 폭이 비슷하다
+
+    // 둘째 줄의 첫 단어를 읽으면 단어 상자가 둘째 줄에 놓인다
+    const at = got.rows[0].text.length;
+    const word = sentence.slice(at).match(/^\S+/)[0];
+    await fire(page, 'boundary', { charIndex: at, charLength: word.length });
+    const hl = page.locator('.sl-caption-hl');
+    await expect(hl).toHaveCSS('opacity', '1');
+    const place = await page.evaluate(() => {
+      const cap = document.querySelector('.slides-doc > .sl-caption');
+      const box = document.querySelector('.sl-caption-hl');
+      return { top: cap.getBoundingClientRect().top + parseFloat(box.style.top) };
+    });
+    expect(Math.abs(place.top - got.rows[1].top)).toBeLessThan(3);
+    await page.keyboard.press('Escape');
+  });
+
   test('자막 글자 크기를 설정에서 바꾼다', async ({ page }) => {
     await openChapter(page);
     await page.locator('#s1-1 .sl-full').click();
