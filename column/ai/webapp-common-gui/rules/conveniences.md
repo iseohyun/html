@@ -21,6 +21,7 @@ category: "WebApp Common GUI"
 | 설정 기억 | 설정, 보기 방식, 사이드바 접힘 상태를 브라우저에 저장해 다음에 열 때 그대로. 키 끝에 판 번호를 붙이고, 읽기에 실패하면 기본값으로. | KoreaEvent 축약 설정, Geoje Swimmers 보기 방식·사이드바, haepungdan 테마 | 반영됨 |
 | 오류 경계 | 화면 일부가 오류를 내도 전체가 하얗게 비지 않고 안내와 다시 시도 버튼을 보여 줌. | KoreaEvent, KoreaIssue의 AppErrorBoundary | 명세만 |
 | 버전 표시와 캐시 갱신 | 패널 하단 블록에 버전과 빌드 날짜 표시. 배포하면 새로 고침 없이 새 파일을 받게 파일 이름에 빌드 표시를 붙임. | KoreaEvent·KoreaIssue의 version.ts, Geoje Swimmers의 `?v=날짜` | 표시만 |
+| 새 판 알림 | 서버에 새 판이 올라오면 화면 아래에 「새 버전이 있습니다 · 새로 고침」을 띄움. 설치한 앱이 새 판을 받는 길. 규칙은 [「화면」 규칙](#/column/ai/webapp-common-gui/rules/screen.md)의 「오류 경계와 버전」. | CharQuiz의 update-checker | 명세만 |
 | 단축키와 안내 배지 | 숫자 키로 사이드바 탭 전환. Alt를 누르는 동안 버튼 옆에 단축키 배지를 보여 줌. 글자를 입력하는 중에는 동작하지 않음. | html의 keybind-manager | 반영됨 |
 | 스크롤 위치 되살리기 | 페이지나 탭을 옮겼다 돌아오면 보던 자리로. | Geoje Swimmers의 shortcut.js | 반영됨 |
 | 테마 전환 | 밝게, 어둡게, 스톤, 네이비 네 가지를 기본으로 제공하고 고른 것을 기억. | haepungdan의 테마 기억 | 반영됨 |
