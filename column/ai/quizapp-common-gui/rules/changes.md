@@ -25,6 +25,10 @@ QuizApp Common GUI가 바뀔 때마다 바뀐 항목을 한 줄씩 적고 항목
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | `season-stage` | v0.2.0 | 2026-11-19 | 추가 | 요약 카드 뒤의 계절·날씨 무대. 날씨는 IP 위치로 짐작(위치 권한 없음, 1시간 저장), 설정 「날씨 반영」으로 끔 | 무대를 넣고 설정에 스위치를 단다 | [「처음 화면」](#/column/ai/quizapp-common-gui/rules/home.md) 「계절·날씨 무대」 |
 | `guest-ranking` | v0.2.0 | 2026-11-19 | 바꿈 | 게스트는 학습·기록은 하되 순위에 올리지 않음. 결과 창 아래 안내 줄, 결과 창이 없으면 「순위 안내」 창(학습 모드는 앱을 열 때마다 한 번). 규칙도 본인 `uid`만 순위를 만듦. CharQuiz·NameQuiz 공통 | 순위 등록 앞에 로그인 확인, 안내 줄이나 안내 창, `QuizQuiz` 규칙 고치기 | [「처음 화면」](#/column/ai/quizapp-common-gui/rules/home.md) 「게스트와 순위」 |
+| `accent-color` | v0.2.0 | 2026-11-19 | 추가 | 설정 「시스템」의 테마색(강조색) 5가지. `--accent` 토큰과 `html[data-accent]`, 밝기 테마와 별개, 시스템 바는 흰색 그대로 | 컴포넌트 CSS의 강조색을 토큰으로 바꾸고, 설정에 견본을 달고, `index.html` 머리에서 기기 값을 먼저 적용한다 | [「설정·순위·학습현황」](#/column/ai/quizapp-common-gui/rules/screens.md) 「테마색」 |
+| `combo-record` | v0.2.0 | 2026-11-19 | 바꿈 | 학습현황 맨 위 그래프를 「최대 콤보」(주·월·년, 역대 최대)로. 일주일 학습량 그래프를 대신함 | 판을 넘어 이어지는 콤보를 세고 날마다 최대와 역대 최대를 저장, 학습현황 그래프를 바꾼다 | [「설정·순위·학습현황」](#/column/ai/quizapp-common-gui/rules/screens.md) 「콤보 기록」 |
+| `review-always` | v0.2.0 | 2026-11-19 | 바꿈 | 꺼 둔 같은 묶음 범위의 복습 항목도 학습에 함께 냄(새 항목은 켠 범위에서만), 넘치면 복습 먼저. 복습 배지도 묶음 전체 | 풀 만들기와 복습 배지 세기를 고친다 | [「문제 화면」](#/column/ai/quizapp-common-gui/rules/quiz.md) 「복습은 항상 포함」 |
+| `notify-throttle` | v0.2.0 | 2026-11-19 | 추가 | 같은 기기(토큰)에는 1분에 복습 알림 하나 | `QuizQuiz`의 발송 함수만 고친다. 앱은 할 일 없음 | [「Firebase 준비」](#/column/ai/quizapp-common-gui/rules/firebase.md) |
 | `combo` | v0.2.0 | 2026-11-19 | 추가 | 학습 모드 연속 정답 「N COMBO!」(2연속부터, 5·10·20·30…은 크게) | `combo-fx.js`와 CSS를 넣고 학습 답 처리에서 정답일 때 부른다 | [「문제 화면」](#/column/ai/quizapp-common-gui/rules/quiz.md) 「Combo」 |
 | `install-sister` | v0.2.0 | 2026-11-19 | 추가 | 알림함 맨 위의 「홈 화면에 앱 설치」 줄과 「QuizQuiz 자매품」 링크, 설정 도구 줄의 설치 단추 | `install-prompt.js`, `sister-apps.js`를 넣고 모든 퀴즈 앱의 자매품 목록에 새 앱을 더한다 | [「알림함」](#/column/ai/quizapp-common-gui/rules/inbox.md) |
 | `help-version` | v0.2.0 | 2026-11-19 | 추가 | 도움말을 전체 화면으로, 맨 아래에 앱 판·빌드·QuizApp Common GUI 판 표시 | `index.html`에 `window.QUIZAPP_GUI_VERSION`을 두고 도움말에 세 줄을 단다 | [「설정·순위·학습현황」](#/column/ai/quizapp-common-gui/rules/screens.md) 「도움말」 |

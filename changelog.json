@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-11-19",
+    "type": "Added",
+    "env": "WebApp",
+    "projectName": "CountryQuiz",
+    "projectPath": "https://iseohyun.github.io/CountryQuiz/",
+    "summary": "나라 퀴즈",
+    "detail": "세계지도에서 대륙별로 나라의 수도·국기·위치·면적·정치체계·지도자·언어를 맞히는 퀴즈 웹앱 공개. 대륙 챕터, 면적 기준 진도율. CharQuiz·NameQuiz와 퀴즈 앱 공용 백엔드(QuizQuiz)를 함께 씀"
+  },
+  {
     "date": "2026-11-17",
     "type": "Added",
     "env": "WebApp",

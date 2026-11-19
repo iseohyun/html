@@ -28,6 +28,7 @@ category: "QuizApp Common GUI"
 | VAPID 키 | 함께 | 웹 푸시 인증서는 프로젝트에 하나 |
 | 함수 | 함께 | 카카오·네이버 로그인, 복습 알림 예약·발송. `us-central1` |
 | Cloud Tasks 큐 | 함께 | `asia-northeast3`의 `notification-queue` |
+| `notify_state/{토큰의 sha256}` | 함께(서버만) | 발송 함수가 기기마다 마지막으로 보낸 때(`lastSentAt`)를 적습니다. 규칙에 `match`를 두지 않아 앱은 읽고 쓸 수 없고, 관리자 권한인 함수만 씁니다. |
 
 - 사용자 문서 안의 앱 설정은 필드 이름에 앱 이름을 붙입니다(NameQuiz는 `namequizConfig`, `namequizConfigUpdatedAt`). 접두어 없이 `config`를 쓰면 다른 앱의 설정을 덮어씁니다. CharQuiz는 처음 앱이라 `config`를 쓰고 있으므로, 새 앱은 반드시 접두어를 붙입니다.
 
@@ -66,6 +67,7 @@ gcloud projects add-iam-policy-binding quizquiz-quiz --member=serviceAccount:475
 
 - **이름 붙은 데이터베이스를 만들지 않습니다.** 무료 사용량은 `(default)` 데이터베이스에만 있고, 이름 붙은 데이터베이스는 첫 읽기부터 요금이 붙습니다. `npx.cmd firebase-tools firestore:databases:list --project quizquiz-quiz`로 `(default)` 한 줄만 있는지 확인합니다.
 - 카카오·네이버는 Authentication의 제공자로 켜지 않습니다. 함수가 카카오·네이버 계정을 확인한 뒤 **커스텀 토큰**을 만들어 주고, 앱이 그 토큰으로 로그인합니다. 7단계의 역할이 그래서 필요합니다. Google 로그인은 이 역할 없이도 되므로 빠진 것을 놓치기 쉽습니다.
+- **같은 기기에는 1분에 알림 하나**: `sendInstantNotification`이 보내기 전에 `notify_state/{sha256(토큰)}`을 트랜잭션으로 읽어, 마지막으로 보낸 지 1분(`NOTIFY_MIN_INTERVAL_MS`)이 안 됐으면 건너뛰고, 아니면 `lastSentAt`을 지금으로 적은 뒤 보냅니다. 여러 판을 잇따라 마치거나 여러 퀴즈 앱이 같은 때에 예약해도 알림이 겹쳐 울리지 않습니다. 토큰은 그대로 적지 않고 해시로만 문서 ID를 만듭니다.
 - 큐는 서울에 있지만 함수는 지역을 정하지 않아 `us-central1`에 배포됩니다. 발송 주소는 **함수의 지역**으로 만듭니다. 큐의 지역으로 만들면 404가 나고 작업이 큐에 쌓입니다.
 - 함수의 기본 서비스 계정에 「편집자」 역할이 없는 프로젝트라면 「Cloud Tasks 큐에 추가자」(`roles/cloudtasks.enqueuer`)도 줍니다.
 

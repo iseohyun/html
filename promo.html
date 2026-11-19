@@ -5,8 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>홍보</title>
-  <link rel="stylesheet" href="/style.css?v=20261119v2">
-  <script src="/modules/script.js?v=20261119v2" defer></script>
+  <link rel="stylesheet" href="/style.css?v=20261119v5">
+  <script src="/modules/script.js?v=20261119v5" defer></script>
 </head>
 
 <body>
@@ -955,6 +955,13 @@
           lightboxImg.src = '';
         }
 
+        // 웹앱 열기 단추의 이름. 앱 여럿을 묶은 항목(QuizQuiz 등)은 단추마다 앱 이름(label)으로 구분한다
+        function webLinkName(item, link) {
+          const webLinks = (Array.isArray(item.links) ? item.links : []).filter(function (l) { return !isGithubUrl(l.url); });
+          if (webLinks.length > 1 && link.label) return link.label;
+          return item.title || link.label || '웹앱';
+        }
+
         function openDetailModal(item) {
           if (!detailModal || !detailTitleGroup || !detailBody) return;
 
@@ -995,7 +1002,7 @@
             const gh = isGithubUrl(link.url);
             const tooltip = gh
               ? (link.label && link.label.toLowerCase() !== 'github' ? 'GitHub (' + link.label + ')' : 'GitHub 저장소 열기')
-              : ((item.title || link.label || '웹앱') + ' 열기');
+              : (webLinkName(item, link) + ' 열기');
             const anchor = document.createElement('a');
             anchor.className = 'promo-detail-link-btn' + (gh ? ' github-btn' : '');
             anchor.href = link.url;
@@ -1253,7 +1260,7 @@
                   a.rel = 'noopener noreferrer';
                   a.title = gh
                     ? (link.label && link.label.toLowerCase() !== 'github' ? 'GitHub (' + link.label + ')' : 'GitHub 저장소 열기')
-                    : ((item.title || link.label || '웹앱') + ' 열기');
+                    : (webLinkName(item, link) + ' 열기');
 
                   if (gh) {
                     a.innerHTML = getGithubSvgHtml(18);
