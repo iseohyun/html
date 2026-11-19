@@ -3,6 +3,15 @@
     "date": "2026-11-19",
     "type": "Added",
     "env": "WebApp",
+    "projectName": "VocaQuiz",
+    "projectPath": "https://iseohyun.github.io/VocaQuiz/",
+    "summary": "단어 퀴즈",
+    "detail": "영어(초등·중학·고등·수능토익)와 일본어(JLPT N5~N1) 단어를 글자로 보거나 읽어 주는 소리를 듣고 맞히는 단어 암기 웹앱 공개. 외→한·한→외 출제, 글자와 소리를 함께 내는 방식, 일본어 후리가나. 다른 퀴즈 앱과 공용 백엔드(QuizQuiz)를 함께 씀"
+  },
+  {
+    "date": "2026-11-19",
+    "type": "Added",
+    "env": "WebApp",
     "projectName": "CountryQuiz",
     "projectPath": "https://iseohyun.github.io/CountryQuiz/",
     "summary": "나라 퀴즈",

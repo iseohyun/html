@@ -22,6 +22,10 @@
               "url": "https://iseohyun.github.io/CountryQuiz/"
             },
             {
+              "label": "VocaQuiz",
+              "url": "https://iseohyun.github.io/VocaQuiz/"
+            },
+            {
               "label": "CharQuiz",
               "url": "https://github.com/iseohyun/CharQuiz"
             },
@@ -32,15 +36,20 @@
             {
               "label": "CountryQuiz",
               "url": "https://github.com/iseohyun/CountryQuiz"
+            },
+            {
+              "label": "VocaQuiz",
+              "url": "https://github.com/iseohyun/VocaQuiz"
             }
           ],
           "showUrl": false,
-          "description": "간격 반복으로 익히는 4지선다 퀴즈 앱 묶음 — 글자(CharQuiz), 캐릭터 이름(NameQuiz), 나라(CountryQuiz). 한 계정으로 모든 앱에 로그인",
+          "description": "간격 반복으로 익히는 4지선다 퀴즈 앱 묶음 — 글자(CharQuiz), 캐릭터 이름(NameQuiz), 나라(CountryQuiz), 단어(VocaQuiz). 한 계정으로 모든 앱에 로그인",
           "overview": [
             "같은 화면 구성(학습·기록·관전 모드, 리더보드, 학습현황, 힌트, 복습 알림)과 공용 Firebase 백엔드를 함께 쓰는 퀴즈 앱 모음입니다.",
             "• CharQuiz — 원어민 음성을 듣고 영어·한국어·일본어 글자를 맞히는 반복 학습, 20문제·30초 타임어택",
             "• NameQuiz — 산리오 40종, 티니핑 179종(1기~7기) 캐릭터의 그림과 이름을 맞히는 양방향 퀴즈",
             "• CountryQuiz — 세계지도에서 대륙별로 나라의 수도·국기·위치·면적 등을 맞히는 나라 퀴즈, 면적 기준 진도율",
+            "• VocaQuiz — 영어(초등~수능·토익)·일본어(JLPT N5~N1) 단어를 글자와 소리로 익히는 단어 퀴즈, 외→한·한→외 출제",
             "• 공통: 에빙하우스 망각곡선 복습 알림(FCM), 연속 정답 콤보, 사용자 힌트와 따봉, 홈 화면 설치"
           ],
           "techStack": [
@@ -51,6 +60,10 @@
             "GitHub Pages"
           ],
           "changelog": [
+            {
+              "date": "2026.11.19",
+              "content": "VocaQuiz 공개 — 영어·일본어 단어 퀴즈, 글자·소리 함께 출제, 외→한·한→외, 일본어 후리가나"
+            },
             {
               "date": "2026.11.19",
               "content": "CountryQuiz 공개 — 대륙 지도·수도·국기 등 나라 퀴즈, 대륙 챕터, 면적 진도율"
