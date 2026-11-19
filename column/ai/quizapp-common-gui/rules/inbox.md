@@ -45,15 +45,16 @@ category: "QuizApp Common GUI"
 
 ## 홈 화면에 앱 설치
 
-알림함 맨 위에 한 줄(「홈 화면에 앱 설치 · 앱처럼 바로 열고 복습 알림도 받아요」)을 둡니다(`components/install-prompt.js`). 설정 머리의 도구 줄에도 같은 동작의 단추가 있습니다. 설치 화면과 매니페스트 규칙은 WebApp Common GUI [「설치」](#/column/ai/webapp-common-gui/rules/install.md)를 따릅니다.
+알림함 맨 위에 한 줄(「홈 화면에 앱 설치 · 앱처럼 바로 열고 복습 알림도 받아요」)을 둡니다(`components/install-prompt.js`). 설정 머리의 **앱 이름 왼쪽**에도 같은 동작의 단추(모니터에 아래 화살표 모양, `install_desktop`)가 있고, 설치 전에는 빨간 점이 붙으며 헤더 설정 톱니에도 점이 뜹니다. 설치 화면과 매니페스트 규칙은 WebApp Common GUI [「설치」](#/column/ai/webapp-common-gui/rules/install.md)를 따릅니다.
 
-| 경우 | 동작 |
+단추는 **설치한 앱으로 연 것이 아니면 늘 보입니다.** Chrome의 설치 신호(`beforeinstallprompt`)는 이미 설치했거나 Chrome의 설치 안내를 닫은 뒤 한동안 오지 않아서, 신호가 있을 때만 보이게 하면 앱마다 단추가 보였다 안 보였다 합니다.
+
+| 경우 | 누르면 |
 | :--- | :--- |
-| Chrome이 설치할 수 있다고 알림(`beforeinstallprompt`) | 줄을 보이고, 누르면 그 이벤트로 설치창을 띄웁니다. 한 번 쓴 이벤트는 버립니다. |
-| 아이폰·아이패드 Safari | 설치창이 없으므로 「공유 단추(□↑) → 홈 화면에 추가」 안내를 띄웁니다. |
-| 이미 설치한 앱으로 열었음(`display-mode: standalone`) | 숨깁니다. |
-| 설치를 마침(`appinstalled`) | 숨깁니다. |
-| 그 밖 | 숨깁니다. |
+| Chrome의 설치 신호(`beforeinstallprompt`)를 받아 둠 | 그 이벤트로 설치창을 띄웁니다. 한 번 쓴 이벤트는 버립니다. |
+| 아이폰·아이패드 Safari | 「공유 단추(□↑) → 홈 화면에 추가」 안내를 띄웁니다. |
+| 신호가 없음(그 밖) | 「Chrome 메뉴(⋮) → 앱 설치 또는 홈 화면에 추가」, 이미 설치했다면 홈 화면 아이콘으로 열라는 안내를 띄웁니다. |
+| 이미 설치한 앱으로 열었음(`display-mode: standalone`), 설치를 마침(`appinstalled`) | 단추와 점을 숨깁니다. |
 
 - 단추는 `class="install-app-btn"`이면 어디에 있든 같은 처리기가 받고, 나중에 그린 단추도 상태에 맞춰 `hidden`을 고칩니다.
 - Chrome이 스스로 띄우는 설치 안내(미니 바)는 막지 않습니다. 사용자가 그 안내를 닫았어도 이 줄로 다시 설치할 수 있습니다.
