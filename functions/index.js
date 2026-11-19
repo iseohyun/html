@@ -15,6 +15,8 @@ admin.initializeApp();
 setGlobalOptions({ region: "asia-northeast3", maxInstances: 2 });
 
 const SITE_URL = "https://iseohyun.com/";
+// 알림을 누르면 이 주소로 열려 그 대화가 열린다(사이트 contact.js 가 ?chat= 을 읽는다)
+const chatUrl = (thread) => `${SITE_URL}?chat=${encodeURIComponent(thread)}`;
 const DEAD_TOKEN_CODES = new Set([
   "messaging/registration-token-not-registered",
   "messaging/invalid-registration-token",
@@ -39,23 +41,28 @@ exports.notifyContact = onDocumentCreated("contact_messages/{messageId}", async 
     return;
   }
 
-  let who = "로그인한 방문자";
-  try {
-    const user = await admin.auth().getUser(data.uid);
-    who = user.displayName || user.email || who;
-  } catch (err) {
-    logger.warn("보낸 사람을 찾지 못함", { uid: data.uid, err: err.message });
+  let who = data.fromName || "";
+  if (!who) {
+    try {
+      const user = await admin.auth().getUser(data.uid);
+      who = user.displayName || user.email || "";
+    } catch (err) {
+      logger.warn("보낸 사람을 찾지 못함", { uid: data.uid, err: err.message });
+    }
   }
+  who = who || "로그인한 방문자";
 
-  const page = oneLine(data.page, 40);
-  const body = (page ? `[${page}] ` : "") + oneLine(data.message, 140);
+  // 알림 첫 줄(제목)은 보낸 사람, 둘째 줄(본문)은 메시지 내용 그대로
+  const thread = data.thread || data.uid;
+  const body = oneLine(data.message, 180);
   const messages = tokenDocs.map((d) => ({
     token: d.get("token"),
     data: {
-      title: oneLine(`${data.kind === "mail" ? "새 메일 문의" : "새 문의"} · ${who}`, 60),
+      title: oneLine(data.kind === "mail" ? `${who} (메일 문의)` : who, 60),
       body,
-      url: SITE_URL,
-      tag: `contact-${event.params.messageId}`,
+      url: chatUrl(thread),
+      thread,
+      tag: `chat-${thread}`,
     },
     webpush: { headers: { Urgency: "high", TTL: "86400" } },
   }));

@@ -37,11 +37,13 @@ self.addEventListener('push', (event) => {
     body: data.body || '',
     icon: '/source/app-icon-192.png',
     tag: data.tag || 'contact',
-    data: { url: data.url || '/' },
+    renotify: true,
+    data: { url: data.url || '/', thread: data.thread || '' },
   }));
 });
 
-// 알림을 누르면 열린 사이트 창을 앞으로 가져오고, 없으면 새로 연다. 이 사이트 밖의 주소는 열지 않는다.
+// 알림을 누르면 열린 사이트 창을 앞으로 가져와 그 대화를 열게 하고(open-chat 메시지), 없으면 새로 연다.
+// 이 사이트 밖의 주소는 열지 않는다.
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   let url = new URL('/', self.location.origin).href;
@@ -53,6 +55,9 @@ self.addEventListener('notificationclick', (event) => {
   }
   event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
     const open = list.find((client) => new URL(client.url).origin === self.location.origin && 'focus' in client);
-    return open ? open.focus() : self.clients.openWindow(url);
+    if (!open) return self.clients.openWindow(url);
+    const thread = event.notification.data && event.notification.data.thread;
+    if (thread) open.postMessage({ type: 'open-chat', thread: thread });
+    return open.focus();
   }));
 });

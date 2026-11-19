@@ -3,8 +3,9 @@
  * @module SiteModules.ContactPush
  * @description 문의를 받는 사람의 기기에 푸시로 알리는 화면 쪽 부분.
  *   - sendMessage: 로그인한 사람의 문의를 Firestore contact_messages 에 적는다(받는 사람 to, 종류 kind).
- *     관리자가 아니면 받는 사람은 관리자만 되고, 같은 일괄 쓰기에서 contact_rate/{uid}.lastAt 을 고쳐야
- *     규칙이 받아 준다(같은 사람 1분에 한 번). 문서가 생기면 Cloud Functions notifyContact 가
+ *     대화는 thread(관리자가 아닌 쪽의 uid)로 묶는다. 관리자가 아니면 받는 사람은 관리자만 되고,
+ *     같은 일괄 쓰기에서 contact_rate/{uid}.lastAt 을 고쳐야 규칙이 받아 준다(같은 사람 10초에 한 번).
+ *     문서가 생기면 Cloud Functions notifyContact 가
  *     받는 사람의 기기들(push_tokens 의 uid 가 같은 것)에 푸시를 보낸다(functions/index.js).
  *   - enable/disable: 로그인한 사람이 이 기기에서 알림을 켜고 끈다. 토큰은 push_tokens/{sha256(token)} 에 둔다.
  *     푸시는 사이트의 서비스 워커(/sw.js)가 받아 알림을 띄운다.
@@ -12,7 +13,9 @@
  *     「받는 사람」 목록(지금 로그인해 있는 사람)을 만든다.
  *   Firestore·Messaging SDK 는 필요할 때만 불러온다.
  * @requires SiteModules.Config, SiteModules.Auth
- * @exports sendMessage, listRecipients, isSupported, isOn, enable, disable, startPresence
+ *   - watchThread / watchThreads / watchUnread / markRead / deleteMessage / deleteThread: 대화 보기와 관리.
+ * @exports sendMessage, listRecipients, watchThread, watchThreads, watchUnread, markRead, deleteMessage,
+ *   deleteThread, isSupported, isOn, enable, disable, startPresence
  */
 
 window.SiteModules = window.SiteModules || {};
@@ -102,7 +105,8 @@ window.SiteModules.ContactPush = (function () {
 
   /**
    * 문의를 적는다. to 가 없으면 관리자에게 보낸다.
-   * @param {{to?: string, kind: "direct"|"mail", message: string, page?: string, url?: string}} entry
+   * 관리자가 보낼 때는 threadName(상대 이름)을 함께 주면 대화 목록에 그 이름이 보인다.
+   * @param {{to?: string, threadName?: string, kind: "direct"|"mail", message: string, page?: string, url?: string}} entry
    */
   async function sendMessage(entry) {
     const { fb, user } = await currentUser(false);
@@ -113,6 +117,7 @@ window.SiteModules.ContactPush = (function () {
       if (!admins.length) throw new Error("받을 관리자가 없습니다");
       to = admins[0];
     }
+    const myName = displayName(user);
     const db = fb.firestore();
     const now = fb.firestore.FieldValue.serverTimestamp();
     const batch = db.batch();
@@ -120,18 +125,106 @@ window.SiteModules.ContactPush = (function () {
     if (!isAdmin) batch.set(db.collection("contact_rate").doc(user.uid), { lastAt: now });
     batch.set(db.collection("contact_messages").doc(), {
       uid: user.uid,
+      fromName: myName,
       to: to,
+      // 대화 묶음: 관리자가 아닌 쪽의 uid
+      thread: isAdmin ? to : user.uid,
+      threadName: String((isAdmin ? entry.threadName : myName) || "").slice(0, 80),
       kind: entry.kind === "mail" ? "mail" : "direct",
       message: String(entry.message || "").slice(0, 5000),
       page: String(entry.page || "").slice(0, 300),
       url: String(entry.url || "").slice(0, 1000),
+      read: false,
       createdAt: now
     });
     try {
       await batch.commit();
     } catch (err) {
-      if (err && err.code === "permission-denied" && !isAdmin) throw new Error("1분에 한 번만 보낼 수 있어요. 잠시 뒤에 다시 보내 주세요");
+      if (err && err.code === "permission-denied" && !isAdmin) throw new Error("너무 빨리 보냈어요. 10초 뒤에 다시 보내 주세요");
       throw err;
+    }
+  }
+
+  function toItem(doc) {
+    const data = doc.data({ serverTimestamps: "estimate" });
+    return Object.assign({ id: doc.id }, data, { createdAt: data.createdAt ? data.createdAt.toDate() : new Date() });
+  }
+
+  function messages(fb) {
+    return fb.firestore().collection("contact_messages");
+  }
+
+  /**
+   * 한 대화의 글을 오래된 순으로 지켜본다. 돌려받은 함수를 부르면 그만 본다.
+   * @param {string} thread 관리자가 아닌 쪽의 uid
+   * @param {(items: object[]) => void} onChange
+   * @param {(err: Error) => void} onError
+   */
+  async function watchThread(thread, onChange, onError) {
+    const { fb } = await currentUser(false);
+    return messages(fb).where("thread", "==", thread).orderBy("createdAt").limitToLast(200)
+      .onSnapshot(snap => onChange(snap.docs.map(toItem)), onError);
+  }
+
+  /**
+   * (관리자) 최근 글로 대화 목록을 만들어 지켜본다. 새 글이 위.
+   * @param {(threads: Array<{thread: string, name: string, last: object, unread: number}>) => void} onChange
+   */
+  async function watchThreads(onChange, onError) {
+    const { fb, user } = await currentUser(false);
+    return messages(fb).orderBy("createdAt", "desc").limit(300).onSnapshot(snap => {
+      const map = new Map();
+      snap.docs.map(toItem).forEach(item => {
+        const thread = item.thread || item.uid;
+        if (!map.has(thread)) map.set(thread, { thread: thread, name: "", last: item, unread: 0 });
+        const entry = map.get(thread);
+        if (!entry.name && item.threadName) entry.name = item.threadName;
+        if (!entry.name && item.uid === thread && item.fromName) entry.name = item.fromName;
+        if (item.to === user.uid && item.read === false) entry.unread += 1;
+      });
+      map.forEach(entry => {
+        if (entry.thread === user.uid) entry.name = "나";
+        if (!entry.name) entry.name = "이름 없음";
+      });
+      onChange(Array.from(map.values()));
+    }, onError);
+  }
+
+  /**
+   * 나에게 온 읽지 않은 글의 수를 지켜본다.
+   * @param {(count: number) => void} onChange
+   */
+  async function watchUnread(onChange, onError) {
+    const { fb, user } = await currentUser(false);
+    let query = messages(fb).where("to", "==", user.uid).where("read", "==", false);
+    // 관리자가 아니면 규칙상 자기 대화(thread)로 좁혀야 읽을 수 있다
+    if (!window.SiteModules.Auth.isAdmin()) query = query.where("thread", "==", user.uid);
+    return query.onSnapshot(snap => onChange(snap.size), onError);
+  }
+
+  /** 나에게 온 글들을 읽음으로 바꾼다 */
+  async function markRead(ids) {
+    if (!ids.length) return;
+    const { fb } = await currentUser(false);
+    const batch = fb.firestore().batch();
+    ids.slice(0, 400).forEach(id => batch.update(messages(fb).doc(id), { read: true }));
+    await batch.commit();
+  }
+
+  /** (관리자) 글 하나를 지운다 */
+  async function deleteMessage(id) {
+    const { fb } = await currentUser(false);
+    await messages(fb).doc(id).delete();
+  }
+
+  /** (관리자) 대화 하나의 글을 모두 지운다 */
+  async function deleteThread(thread) {
+    const { fb } = await currentUser(false);
+    const snap = await messages(fb).where("thread", "==", thread).get();
+    for (let i = 0; i < snap.docs.length; i += 400) {
+      const batch = fb.firestore().batch();
+      snap.docs.slice(i, i + 400).forEach(doc => batch.delete(doc.ref));
+      await batch.commit();
     }
   }
 
@@ -216,5 +309,8 @@ window.SiteModules.ContactPush = (function () {
     document.addEventListener("visibilitychange", touchPresence);
   }
 
-  return { sendMessage, listRecipients, isSupported, isOn, enable, disable, startPresence };
+  return {
+    sendMessage, listRecipients, watchThread, watchThreads, watchUnread, markRead, deleteMessage, deleteThread,
+    isSupported, isOn, enable, disable, startPresence
+  };
 })();

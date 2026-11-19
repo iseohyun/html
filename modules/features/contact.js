@@ -6,9 +6,10 @@
  *   맨 아래에는 로그인 항목이 있다(구글). 관리자로 로그인하면 개발 중인 문서가 사이트맵에 보인다.
  *   메일은 서버 없이 화면에서 바로 Web3Forms 로 보낸다(접근 키와 주소는 SiteModules.Config.feedback).
  *   로그인한 사람의 메일 문의는 Firestore 에도 적어 관리자 기기에 푸시가 가게 한다(SiteModules.ContactPush).
- *   「문의하기」는 메일 없이 받는 사람의 기기에 푸시로 바로 보낸다. 받는 사람은 관리자(관리자 본인에게는 「나」)이고,
- *   관리자는 지금 로그인해 있는 사람도 고를 수 있다.
- * @requires SiteModules.Config, SiteModules.Icons, SiteModules.Auth, SiteModules.ContactPush
+ *   「문의하기」는 대화 화면(SiteModules.ContactChat)을 연다. 글은 받는 사람의 기기에 푸시로 가고,
+ *   읽지 않은 글이 있으면 레일의 문의 아이콘에 점, 「문의하기」에 수가 붙는다.
+ *   알림을 누르면 ?chat={thread} 로 열리거나(창이 없을 때) 서비스 워커 메시지로 그 대화를 연다.
+ * @requires SiteModules.Config, SiteModules.Icons, SiteModules.Auth, SiteModules.ContactPush, SiteModules.ContactChat
  * @exports init
  */
 
@@ -46,19 +47,10 @@ window.SiteModules.Contact = (function () {
           <button class="contact-action" type="button" id="contact-login-btn"></button>
           <button class="contact-icon-action" type="button" id="contact-push-btn" hidden aria-pressed="false">${icon("bell")}</button>
         </div>
-        <button class="contact-action" type="button" id="contact-dm-toggle" aria-expanded="false" aria-controls="contact-dm-form">${icon("chat")}<span>문의하기</span></button>
+        <button class="contact-action" type="button" id="contact-dm-toggle" aria-expanded="false" aria-controls="contact-chat">${icon("chat")}<span>문의하기</span><span class="chat-badge" id="contact-unread" hidden></span></button>
         <span class="contact-auth-status" id="contact-auth-status" role="status"></span>
       </div>
-      <form class="contact-form" id="contact-dm-form" novalidate hidden>
-        <label class="contact-label" for="contact-dm-to">받는 사람</label>
-        <select class="contact-input" id="contact-dm-to" name="to"></select>
-        <label class="contact-label" for="contact-dm-text">내용</label>
-        <textarea class="contact-input" id="contact-dm-text" name="message" rows="4" placeholder="받는 사람의 기기에 알림으로 바로 갑니다."></textarea>
-        <div class="contact-form-foot">
-          <span class="contact-result" id="contact-dm-result" role="status"></span>
-          <button class="contact-submit" type="submit" id="contact-dm-submit">보내기</button>
-        </div>
-      </form>
+      <div class="contact-chat" id="contact-chat" hidden></div>
       <form class="contact-form" id="contact-mail-form" novalidate hidden>
         <label class="contact-label" for="contact-message">내용</label>
         <textarea class="contact-input" id="contact-message" name="message" rows="5" placeholder="질문이나 건의를 적어 주세요."></textarea>
@@ -99,6 +91,7 @@ window.SiteModules.Contact = (function () {
     if (isOpen) refreshPageInfo();
     popover.hidden = !isOpen;
     if (railButton) railButton.classList.toggle("active", isOpen);
+    if (!isOpen && window.SiteModules.ContactChat && window.SiteModules.ContactChat.isOpen()) setChatOpen(false);
   }
 
   // 로그인 항목의 글자와 아래 한 줄 안내를 지금 로그인 상태에 맞춘다
@@ -175,75 +168,48 @@ window.SiteModules.Contact = (function () {
     }
   }
 
-  // 문의하기 창: 받는 사람 목록을 채운다
-  async function fillRecipients() {
-    const select = popover.querySelector("#contact-dm-to");
-    const result = popover.querySelector("#contact-dm-result");
-    select.innerHTML = "";
-    select.disabled = true;
-    if (!window.SiteModules.Auth.isSignedIn()) {
-      result.textContent = "로그인하면 보낼 수 있어요.";
-      result.classList.remove("is-error");
-      return;
-    }
-    result.textContent = "";
-    try {
-      const list = await window.SiteModules.ContactPush.listRecipients();
-      list.forEach(item => select.add(new Option(item.label, item.uid)));
-      select.disabled = list.length < 2;
-      if (!list.length) throw new Error("받을 사람이 없습니다");
-    } catch (err) {
-      console.error("[Contact] 받는 사람 목록 실패:", err);
-      result.textContent = `받는 사람을 불러오지 못했습니다: ${err.message}`;
-      result.classList.add("is-error");
-    }
-  }
-
-  function setDmFormOpen(isOpen) {
-    const form = popover.querySelector("#contact-dm-form");
+  // 「문의하기」: 대화 화면을 열고 닫는다. 열면 창을 넓힌다.
+  function setChatOpen(isOpen, thread) {
+    const Chat = window.SiteModules.ContactChat;
     const toggle = popover.querySelector("#contact-dm-toggle");
-    form.hidden = !isOpen;
     toggle.setAttribute("aria-expanded", String(isOpen));
+    popover.classList.toggle("is-chat", isOpen);
     if (isOpen) {
       setMailFormOpen(false);
-      fillRecipients();
-      popover.querySelector("#contact-dm-text").focus();
+      Chat.open(thread);
+    } else {
+      Chat.close();
     }
   }
 
-  async function submitDm(event) {
-    event.preventDefault();
-    const form = event.currentTarget;
-    const result = popover.querySelector("#contact-dm-result");
-    const submitBtn = popover.querySelector("#contact-dm-submit");
-    const message = form.elements.message.value.trim();
-    const show = (text, isError) => {
-      result.textContent = text;
-      result.classList.toggle("is-error", !!isError);
-    };
-    if (!window.SiteModules.Auth.isSignedIn()) return show("먼저 로그인해 주세요.", true);
-    if (message.length < MIN_MESSAGE_LENGTH) return show(`내용을 ${MIN_MESSAGE_LENGTH}글자 이상 적어 주세요.`, true);
-    const to = form.elements.to.value;
-    if (!to) return show("받는 사람을 골라 주세요.", true);
-
-    submitBtn.disabled = true;
-    show("보내는 중입니다...", false);
-    try {
-      await window.SiteModules.ContactPush.sendMessage({
-        kind: "direct",
-        to: to,
-        message: message,
-        page: getCurrentPageName(),
-        url: window.location.href
-      });
-      form.elements.message.value = "";
-      show("보냈습니다.", false);
-    } catch (err) {
-      console.error("[Contact] 문의 보내기 실패:", err);
-      show(`보내지 못했습니다: ${err.message}`, true);
-    } finally {
-      submitBtn.disabled = false;
+  // 읽지 않은 글: 레일 아이콘의 점과 「문의하기」의 수
+  let stopUnread = null;
+  function watchUnread() {
+    if (stopUnread) {
+      try { stopUnread(); } catch (err) { /* 무시 */ }
+      stopUnread = null;
     }
+    const show = count => {
+      const badge = popover.querySelector("#contact-unread");
+      badge.hidden = !count;
+      badge.textContent = count > 99 ? "99+" : String(count);
+      if (railButton) railButton.classList.toggle("has-unread", count > 0);
+    };
+    show(0);
+    if (!window.SiteModules.Auth.isSignedIn() || !window.SiteModules.ContactPush) return;
+    window.SiteModules.ContactPush.watchUnread(show, err => console.warn("[Contact] 읽지 않은 글 수 실패:", err))
+      .then(stop => { stopUnread = stop; })
+      .catch(err => console.warn("[Contact] 읽지 않은 글 수 실패:", err));
+  }
+
+  // 알림을 눌러 들어온 대화(?chat=thread). 로그인 상태가 되살아나면 연다.
+  let pendingChat = "";
+  function openPendingChat() {
+    if (!pendingChat || !window.SiteModules.Auth.isSignedIn()) return;
+    const thread = pendingChat;
+    pendingChat = "";
+    setOpen(true);
+    setChatOpen(true, thread);
   }
 
   function setMailFormOpen(isOpen) {
@@ -252,7 +218,7 @@ window.SiteModules.Contact = (function () {
     form.hidden = !isOpen;
     toggle.setAttribute("aria-expanded", String(isOpen));
     if (isOpen) {
-      setDmFormOpen(false);
+      setChatOpen(false);
       popover.querySelector("#contact-message").focus();
     }
   }
@@ -358,15 +324,39 @@ window.SiteModules.Contact = (function () {
     popover.querySelector("#contact-page-check").addEventListener("change", refreshPageInfo);
     popover.querySelector("#contact-login-btn").addEventListener("click", onLoginClick);
     popover.querySelector("#contact-push-btn").addEventListener("click", onPushClick);
+    window.SiteModules.ContactChat.mount(popover.querySelector("#contact-chat"));
     popover.querySelector("#contact-dm-toggle").addEventListener("click", () => {
-      setDmFormOpen(popover.querySelector("#contact-dm-form").hidden);
+      setChatOpen(!window.SiteModules.ContactChat.isOpen());
     });
-    popover.querySelector("#contact-dm-form").addEventListener("submit", submitDm);
     window.SiteModules.Auth.onChange(() => {
       refreshLoginAction();
-      if (!popover.querySelector("#contact-dm-form").hidden) fillRecipients();
+      window.SiteModules.ContactChat.refresh();
       if (window.SiteModules.ContactPush) window.SiteModules.ContactPush.startPresence();
+      watchUnread();
+      openPendingChat();
     });
+
+    // 알림을 눌러 새 창으로 들어왔으면(?chat=thread) 주소에서 지우고, 로그인이 되살아나면 그 대화를 연다
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has("chat")) {
+        pendingChat = params.get("chat") || "";
+        params.delete("chat");
+        const rest = params.toString();
+        window.history.replaceState(null, "", window.location.pathname + (rest ? "?" + rest : "") + window.location.hash);
+        openPendingChat();
+      }
+    } catch (err) {
+      console.warn("[Contact] 알림 주소를 읽지 못했습니다:", err);
+    }
+    // 창이 열려 있을 때 알림을 누르면 서비스 워커가 알려 준다
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.addEventListener("message", (e) => {
+        if (!e.data || e.data.type !== "open-chat") return;
+        pendingChat = e.data.thread || "";
+        openPendingChat();
+      });
+    }
     refreshLoginAction();
     // 문의 창을 연 채로 다른 문서로 옮겨도 페이지 이름이 따라오게 한다
     window.addEventListener("hashchange", () => {
@@ -374,7 +364,8 @@ window.SiteModules.Contact = (function () {
     });
 
     document.addEventListener("click", (e) => {
-      if (popover.hidden || popover.contains(e.target) || railButton.contains(e.target)) return;
+      // 대화 화면은 누른 단추를 바로 다시 그리므로, 이미 문서에서 빠진 요소를 누른 것은 바깥 클릭이 아니다
+      if (popover.hidden || !e.target.isConnected || popover.contains(e.target) || railButton.contains(e.target)) return;
       setOpen(false);
     });
     window.addEventListener("keydown", (e) => {
