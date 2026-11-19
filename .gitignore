@@ -1,9 +1,7 @@
 .gemini
 .obsidian
 .vscode
-functions/.env
-functions/.env.*
-functions/*.local
+functions
 commit.log
 **/PixelRun/**
 **/KakaoTalk/example/**

@@ -70,40 +70,5 @@ service cloud.firestore {
     match /visits/{userId} {
       allow get, write: if isOwner(userId);
     }
-
-    // 7. 문의 기록 (관리자 푸시 알림용). 문의 창이 메일을 보낸 뒤 로그인한 사람의 문의만 적는다.
-    //    같은 사람은 1분에 한 번만 적을 수 있다: contact_rate/{uid}.lastAt 을 같은 일괄 쓰기에서 지금 시각으로 고쳐야 한다.
-    function contactRatePath() {
-      return /databases/$(database)/documents/contact_rate/$(request.auth.uid);
-    }
-
-    match /contact_rate/{uid} {
-      allow get: if request.auth != null && request.auth.uid == uid;
-      allow create, update: if request.auth != null && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['lastAt'])
-        && request.resource.data.lastAt == request.time
-        && (resource == null || request.time > resource.data.lastAt + duration.value(1, 'm'));
-    }
-
-    match /contact_messages/{messageId} {
-      allow create: if request.auth != null
-        && request.resource.data.keys().hasOnly(['uid', 'message', 'page', 'url', 'createdAt'])
-        && request.resource.data.uid == request.auth.uid
-        && request.resource.data.message is string
-        && request.resource.data.message.size() >= 5
-        && request.resource.data.message.size() <= 5000
-        && request.resource.data.page is string
-        && request.resource.data.page.size() <= 300
-        && request.resource.data.url is string
-        && request.resource.data.url.size() <= 1000
-        && request.resource.data.createdAt == request.time
-        && getAfter(contactRatePath()).data.lastAt == request.time;
-      allow read, delete: if isAdmin();
-    }
-
-    // 8. 관리자 기기의 푸시 토큰 (문서 ID = 토큰의 SHA-256). 관리자만 읽고 쓴다. Cloud Functions 는 규칙을 거치지 않는다.
-    match /admin_push_tokens/{tokenId} {
-      allow read, write: if isAdmin();
-    }
   }
 }
