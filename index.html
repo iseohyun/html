@@ -31,7 +31,18 @@
     src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.8.0/highlightjs-line-numbers.min.js"></script>
 
   <link rel="shortcut icon" type="image/svg+xml" href="/source/icon_seohyun_reverse.svg">
-  <link rel="stylesheet" href="/style.css?v=20261119v9">
+  <!-- 홈 화면 설치 (매니페스트 + 서비스 워커) -->
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/source/app-icon-512.png">
+  <meta name="theme-color" content="#f5f6f5">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch((e) => console.warn('서비스 워커 등록 실패:', e));
+      });
+    }
+  </script>
+  <link rel="stylesheet" href="/style.css?v=20261119v10">
 
   <style type="text/css">
     /* 홈 화면: 본문 바탕과 켜진 탭의 색이 테마의 바탕색을 따른다 */
@@ -1111,7 +1122,7 @@
       }
     }
   </style>
-  <script src="/modules/script.js?v=20261119v9" defer></script>
+  <script src="/modules/script.js?v=20261119v10" defer></script>
 </head>
 
 <body>
