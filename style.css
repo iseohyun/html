@@ -2593,6 +2593,48 @@ body {
   color: var(--fg);
 }
 
+/* 한 줄에 큰 항목과 오른쪽 아이콘 단추(채널 추가, 알림 켜기) */
+.contact-row {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.contact-row > .contact-action {
+  flex: 1;
+  min-width: 0;
+}
+
+.contact-icon-action {
+  flex: 0 0 auto;
+  width: 40px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background-color: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  transition: background-color var(--t-fast) ease, border-color var(--t-fast) ease, color var(--t-fast) ease;
+}
+
+.contact-icon-action:hover,
+.contact-icon-action:focus {
+  background-color: var(--active);
+  border-color: var(--muted);
+  color: var(--fg);
+}
+
+/* 이 기기에서 문의 알림을 받는 중 */
+.contact-icon-action.is-on {
+  background-color: var(--ok-mark-soft);
+  border-color: var(--ok-mark);
+  color: var(--ok-mark);
+}
+
 .contact-action[aria-expanded="true"] {
   background-color: var(--fg);
   border-color: var(--fg);
@@ -3469,6 +3511,42 @@ article .auto-overview-pages a:hover {
 
 :root {
   --dev-mark: #d32f2f;   /* 개발 중 표시의 빨강 (테마와 상관없이 같은 색) */
+  --ok-mark: #2e7d32;    /* 켜짐 표시의 녹색 (문의 알림 아이콘) */
+  --ok-mark-soft: rgba(46, 125, 50, 0.12);
+}
+
+/* ==========================================================================
+   새 판 알림 띠 (modules/features/update-check.js)
+   ========================================================================== */
+.update-band {
+  position: fixed;
+  left: 50%;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 300;
+  max-width: calc(100vw - 32px);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 8px 8px 16px;
+  border-radius: 999px;
+  background-color: var(--fg);
+  color: var(--bg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  font-family: var(--font-main);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.update-band-btn {
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 999px;
+  background-color: var(--bg);
+  color: var(--fg);
+  font: inherit;
+  cursor: pointer;
 }
 
 #sitemap-tree .tree-dev-count {

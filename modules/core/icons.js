@@ -36,6 +36,7 @@ window.SiteModules.Icons = (function () {
 
     // 그 밖
     "user-plus": '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/>', // 친구 추가 (user-plus)
+    "bell": '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>', // 알림 (bell)
     "mail": '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>', // 메일 (mail)
     "chat": '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',                             // 채팅 (message-circle)
     "play": '<path d="M6 3l14 9-14 9V3z"/>',                                          // 재생 (play)

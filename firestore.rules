@@ -70,5 +70,68 @@ service cloud.firestore {
     match /visits/{userId} {
       allow get, write: if isOwner(userId);
     }
+
+    // 7. 문의 (받는 사람 기기에 푸시). 로그인한 사람만 적는다.
+    //    kind: 'mail'(메일 문의를 함께 적음) 또는 'direct'(문의하기 창에서 푸시로만 보냄)
+    //    관리자가 아니면 받는 사람(to)은 관리자만 되고, 같은 사람은 1분에 한 번만 적을 수 있다:
+    //    contact_rate/{uid}.lastAt 을 같은 일괄 쓰기에서 지금 시각으로 고쳐야 한다. 관리자는 제한이 없다.
+    function contactRatePath() {
+      return /databases/$(database)/documents/contact_rate/$(request.auth.uid);
+    }
+
+    match /contact_rate/{uid} {
+      allow get: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['lastAt'])
+        && request.resource.data.lastAt == request.time
+        && (resource == null || request.time > resource.data.lastAt + duration.value(1, 'm'));
+    }
+
+    match /contact_messages/{messageId} {
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['uid', 'to', 'kind', 'message', 'page', 'url', 'createdAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.to is string
+        && (isAdmin() || exists(/databases/$(database)/documents/admins/$(request.resource.data.to)))
+        && request.resource.data.kind in ['mail', 'direct']
+        && request.resource.data.message is string
+        && request.resource.data.message.size() >= 5
+        && request.resource.data.message.size() <= 5000
+        && request.resource.data.page is string
+        && request.resource.data.page.size() <= 300
+        && request.resource.data.url is string
+        && request.resource.data.url.size() <= 1000
+        && request.resource.data.createdAt == request.time
+        && (isAdmin() || getAfter(contactRatePath()).data.lastAt == request.time);
+      allow read: if isAdmin() || (request.auth != null && resource.data.to == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
+    // 8. 기기의 푸시 토큰 (문서 ID = 토큰의 SHA-256). 로그인한 사람이 자기 기기의 것만 적고 지운다.
+    //    관리자는 목록을 읽어 「알림 꺼짐」 표시를 만든다. Cloud Functions 는 규칙을 거치지 않는다.
+    match /push_tokens/{tokenId} {
+      allow get: if request.auth != null && (resource.data.uid == request.auth.uid || isAdmin());
+      allow list: if isAdmin();
+      allow create, update: if request.auth != null
+        && request.resource.data.keys().hasOnly(['token', 'uid', 'device', 'updatedAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.token is string
+        && request.resource.data.token.size() <= 4096
+        && request.resource.data.device is string
+        && request.resource.data.device.size() <= 200
+        && request.resource.data.updatedAt == request.time
+        && (resource == null || resource.data.uid == request.auth.uid);
+      allow delete: if request.auth != null && (resource.data.uid == request.auth.uid || isAdmin());
+    }
+
+    // 9. 접속 표시. 로그인해 있는 동안 자기 이름과 마지막으로 본 때를 적고, 관리자만 읽는다(받는 사람 목록).
+    match /presence/{uid} {
+      allow read: if isAdmin();
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['name', 'lastSeen'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() <= 80
+        && request.resource.data.lastSeen == request.time;
+    }
   }
 }

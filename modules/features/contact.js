@@ -2,10 +2,13 @@
  * @file modules/features/contact.js
  * @module SiteModules.Contact
  * @description 레일의 문의 아이콘(#nav-kakao-channel)을 누르면 뜨는 문의 창.
- *   세 가지 길을 보여 준다: 카카오톡 채널 추가, 카카오톡 1:1 채팅, 메일로 문의.
+ *   카카오톡 1:1 채팅(오른쪽 아이콘은 채널 추가), 메일로 문의, 로그인(오른쪽 아이콘은 알림 켜기), 문의하기를 보여 준다.
  *   맨 아래에는 로그인 항목이 있다(구글). 관리자로 로그인하면 개발 중인 문서가 사이트맵에 보인다.
  *   메일은 서버 없이 화면에서 바로 Web3Forms 로 보낸다(접근 키와 주소는 SiteModules.Config.feedback).
- * @requires SiteModules.Config, SiteModules.Icons, SiteModules.Auth
+ *   로그인한 사람의 메일 문의는 Firestore 에도 적어 관리자 기기에 푸시가 가게 한다(SiteModules.ContactPush).
+ *   「문의하기」는 메일 없이 받는 사람의 기기에 푸시로 바로 보낸다. 받는 사람은 관리자(관리자 본인에게는 「나」)이고,
+ *   관리자는 지금 로그인해 있는 사람도 고를 수 있다.
+ * @requires SiteModules.Config, SiteModules.Icons, SiteModules.Auth, SiteModules.ContactPush
  * @exports init
  */
 
@@ -34,12 +37,28 @@ window.SiteModules.Contact = (function () {
         <button class="icon-btn is-bare" type="button" id="contact-close-btn" aria-label="닫기" title="닫기">${icon("x")}</button>
       </div>
       <div class="contact-actions">
-        <a class="contact-action" href="${KAKAO_CHANNEL_URL}" target="_blank" rel="noopener noreferrer">${icon("user-plus")}<span>카카오톡 채널 추가</span></a>
-        <a class="contact-action" href="${KAKAO_CHAT_URL}" target="_blank" rel="noopener noreferrer">${icon("chat")}<span>카카오톡 1:1 채팅</span></a>
+        <div class="contact-row">
+          <a class="contact-action" href="${KAKAO_CHAT_URL}" target="_blank" rel="noopener noreferrer">${icon("chat")}<span>카카오톡 1:1 채팅</span></a>
+          <a class="contact-icon-action" href="${KAKAO_CHANNEL_URL}" target="_blank" rel="noopener noreferrer" aria-label="카카오톡 채널 추가" title="카카오톡 채널 추가">${icon("user-plus")}</a>
+        </div>
         <button class="contact-action" type="button" id="contact-mail-toggle" aria-expanded="false" aria-controls="contact-mail-form">${icon("mail")}<span>메일로 문의</span></button>
-        <button class="contact-action" type="button" id="contact-login-btn"></button>
+        <div class="contact-row">
+          <button class="contact-action" type="button" id="contact-login-btn"></button>
+          <button class="contact-icon-action" type="button" id="contact-push-btn" hidden aria-pressed="false">${icon("bell")}</button>
+        </div>
+        <button class="contact-action" type="button" id="contact-dm-toggle" aria-expanded="false" aria-controls="contact-dm-form">${icon("chat")}<span>문의하기</span></button>
         <span class="contact-auth-status" id="contact-auth-status" role="status"></span>
       </div>
+      <form class="contact-form" id="contact-dm-form" novalidate hidden>
+        <label class="contact-label" for="contact-dm-to">받는 사람</label>
+        <select class="contact-input" id="contact-dm-to" name="to"></select>
+        <label class="contact-label" for="contact-dm-text">내용</label>
+        <textarea class="contact-input" id="contact-dm-text" name="message" rows="4" placeholder="받는 사람의 기기에 알림으로 바로 갑니다."></textarea>
+        <div class="contact-form-foot">
+          <span class="contact-result" id="contact-dm-result" role="status"></span>
+          <button class="contact-submit" type="submit" id="contact-dm-submit">보내기</button>
+        </div>
+      </form>
       <form class="contact-form" id="contact-mail-form" novalidate hidden>
         <label class="contact-label" for="contact-message">내용</label>
         <textarea class="contact-input" id="contact-message" name="message" rows="5" placeholder="질문이나 건의를 적어 주세요."></textarea>
@@ -97,6 +116,45 @@ window.SiteModules.Contact = (function () {
     }
     status.textContent = text;
     status.classList.toggle("is-error", !!isError);
+    refreshPushAction();
+  }
+
+  // 로그인 오른쪽의 알림 아이콘을 이 기기의 상태에 맞춘다. 알림을 받고 있으면 녹색.
+  function refreshPushAction() {
+    const button = popover.querySelector("#contact-push-btn");
+    const Push = window.SiteModules.ContactPush;
+    if (!Push || !window.SiteModules.Auth.isSignedIn()) {
+      button.hidden = true;
+      return;
+    }
+    const isOn = Push.isOn();
+    const label = isOn ? "이 기기에서 문의 알림을 받는 중 (누르면 끔)" : "이 기기에서 문의 알림 받기";
+    button.hidden = false;
+    button.classList.toggle("is-on", isOn);
+    button.setAttribute("aria-pressed", String(isOn));
+    button.setAttribute("aria-label", label);
+    button.title = label;
+  }
+
+  async function onPushClick() {
+    const Push = window.SiteModules.ContactPush;
+    const button = popover.querySelector("#contact-push-btn");
+    const status = popover.querySelector("#contact-auth-status");
+    const turningOn = !Push.isOn();
+    button.disabled = true;
+    try {
+      if (turningOn) await Push.enable();
+      else await Push.disable();
+      refreshPushAction();
+      status.textContent = turningOn ? "이 기기에서 문의 알림을 받습니다." : "이 기기의 문의 알림을 껐습니다.";
+      status.classList.remove("is-error");
+    } catch (err) {
+      console.error("[Contact] 알림 설정 실패:", err);
+      status.textContent = `알림을 ${turningOn ? "켜지" : "끄지"} 못했습니다: ${err.message}`;
+      status.classList.add("is-error");
+    } finally {
+      button.disabled = false;
+    }
   }
 
   async function onLoginClick() {
@@ -117,12 +175,86 @@ window.SiteModules.Contact = (function () {
     }
   }
 
+  // 문의하기 창: 받는 사람 목록을 채운다
+  async function fillRecipients() {
+    const select = popover.querySelector("#contact-dm-to");
+    const result = popover.querySelector("#contact-dm-result");
+    select.innerHTML = "";
+    select.disabled = true;
+    if (!window.SiteModules.Auth.isSignedIn()) {
+      result.textContent = "로그인하면 보낼 수 있어요.";
+      result.classList.remove("is-error");
+      return;
+    }
+    result.textContent = "";
+    try {
+      const list = await window.SiteModules.ContactPush.listRecipients();
+      list.forEach(item => select.add(new Option(item.label, item.uid)));
+      select.disabled = list.length < 2;
+      if (!list.length) throw new Error("받을 사람이 없습니다");
+    } catch (err) {
+      console.error("[Contact] 받는 사람 목록 실패:", err);
+      result.textContent = `받는 사람을 불러오지 못했습니다: ${err.message}`;
+      result.classList.add("is-error");
+    }
+  }
+
+  function setDmFormOpen(isOpen) {
+    const form = popover.querySelector("#contact-dm-form");
+    const toggle = popover.querySelector("#contact-dm-toggle");
+    form.hidden = !isOpen;
+    toggle.setAttribute("aria-expanded", String(isOpen));
+    if (isOpen) {
+      setMailFormOpen(false);
+      fillRecipients();
+      popover.querySelector("#contact-dm-text").focus();
+    }
+  }
+
+  async function submitDm(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const result = popover.querySelector("#contact-dm-result");
+    const submitBtn = popover.querySelector("#contact-dm-submit");
+    const message = form.elements.message.value.trim();
+    const show = (text, isError) => {
+      result.textContent = text;
+      result.classList.toggle("is-error", !!isError);
+    };
+    if (!window.SiteModules.Auth.isSignedIn()) return show("먼저 로그인해 주세요.", true);
+    if (message.length < MIN_MESSAGE_LENGTH) return show(`내용을 ${MIN_MESSAGE_LENGTH}글자 이상 적어 주세요.`, true);
+    const to = form.elements.to.value;
+    if (!to) return show("받는 사람을 골라 주세요.", true);
+
+    submitBtn.disabled = true;
+    show("보내는 중입니다...", false);
+    try {
+      await window.SiteModules.ContactPush.sendMessage({
+        kind: "direct",
+        to: to,
+        message: message,
+        page: getCurrentPageName(),
+        url: window.location.href
+      });
+      form.elements.message.value = "";
+      show("보냈습니다.", false);
+    } catch (err) {
+      console.error("[Contact] 문의 보내기 실패:", err);
+      show(`보내지 못했습니다: ${err.message}`, true);
+    } finally {
+      submitBtn.disabled = false;
+    }
+  }
+
   function setMailFormOpen(isOpen) {
     const form = popover.querySelector("#contact-mail-form");
     const toggle = popover.querySelector("#contact-mail-toggle");
     form.hidden = !isOpen;
     toggle.setAttribute("aria-expanded", String(isOpen));
-    if (isOpen) popover.querySelector("#contact-message").focus();
+    if (isOpen) {
+      setDmFormOpen(false);
+      popover.querySelector("#contact-message").focus();
+    }
   }
 
   function showResult(message, isError) {
@@ -182,6 +314,7 @@ window.SiteModules.Contact = (function () {
       form.reset();
       refreshPageInfo();
       showResult("보냈습니다. 고맙습니다.", false);
+      recordForPush(message, pageName);
     } catch (err) {
       console.error("[Contact] 메일 전송 실패:", err);
       // 내용은 남겨 두고 이유와 다시 시도 안내를 보여 준다
@@ -189,6 +322,15 @@ window.SiteModules.Contact = (function () {
     } finally {
       submitBtn.disabled = false;
     }
+  }
+
+  // 메일을 보낸 뒤, 로그인한 사람의 문의를 Firestore 에 적어 관리자에게 푸시가 가게 한다.
+  // 메일은 이미 갔으므로 실패해도(1분 안에 또 보냄 등) 화면에는 알리지 않는다.
+  function recordForPush(message, pageName) {
+    const Push = window.SiteModules.ContactPush;
+    if (!Push || !window.SiteModules.Auth.isSignedIn()) return;
+    Push.sendMessage({ kind: "mail", message: message, page: pageName || getCurrentPageName(), url: window.location.href })
+      .catch(err => console.warn("[Contact] 문의 알림 기록 실패:", err));
   }
 
   /**
@@ -215,7 +357,16 @@ window.SiteModules.Contact = (function () {
     popover.querySelector("#contact-mail-form").addEventListener("submit", submitMail);
     popover.querySelector("#contact-page-check").addEventListener("change", refreshPageInfo);
     popover.querySelector("#contact-login-btn").addEventListener("click", onLoginClick);
-    window.SiteModules.Auth.onChange(() => refreshLoginAction());
+    popover.querySelector("#contact-push-btn").addEventListener("click", onPushClick);
+    popover.querySelector("#contact-dm-toggle").addEventListener("click", () => {
+      setDmFormOpen(popover.querySelector("#contact-dm-form").hidden);
+    });
+    popover.querySelector("#contact-dm-form").addEventListener("submit", submitDm);
+    window.SiteModules.Auth.onChange(() => {
+      refreshLoginAction();
+      if (!popover.querySelector("#contact-dm-form").hidden) fillRecipients();
+      if (window.SiteModules.ContactPush) window.SiteModules.ContactPush.startPresence();
+    });
     refreshLoginAction();
     // 문의 창을 연 채로 다른 문서로 옮겨도 페이지 이름이 따라오게 한다
     window.addEventListener("hashchange", () => {
