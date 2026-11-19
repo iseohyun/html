@@ -3,7 +3,7 @@ title: "QuizApp Common GUI · 개요"
 status: "설계문서"
 category: "QuizApp Common GUI"
 ---
-> 판: v0.1.0 · 홈페이지에는 이 문서의 견본이 없습니다.
+> 판: v0.2.0 · 홈페이지에는 이 문서의 견본이 없습니다.
 > 다루는 것: 퀴즈 앱 계열이 같이 쓰는 화면과 동작의 지도, 앱마다 바꾸는 곳, 새 앱을 낼 때의 순서
 
 # QuizApp Common GUI
@@ -19,9 +19,9 @@ category: "QuizApp Common GUI"
 | 문서 | 다루는 것 |
 | :--- | :--- |
 | [「처음 화면」](#/column/ai/quizapp-common-gui/rules/home.md) | 헤더, 모드 카드(학습 / 기록 20문제·30초 / 관전), 학습범위 요약 카드 |
-| [「문제 화면」](#/column/ai/quizapp-common-gui/rules/quiz.md) | 간격 반복 엔진, 출제, 같은 발음·같은 이름 보기 막기, 채점, 단축키 |
+| [「문제 화면」](#/column/ai/quizapp-common-gui/rules/quiz.md) | 간격 반복 엔진, 출제, 같은 발음·같은 이름 보기 막기, 채점, 연속 정답 Combo, 단축키 |
 | [「학습 결과」](#/column/ai/quizapp-common-gui/rules/result.md) | 학습 결과표(맞힘, 응답속도 이전→이번, 상태 5가지) |
-| [「설정·순위·학습현황」](#/column/ai/quizapp-common-gui/rules/screens.md) | 전체 화면 설정, 리더보드, 학습현황 |
+| [「설정·순위·학습현황」](#/column/ai/quizapp-common-gui/rules/screens.md) | 전체 화면 설정, 리더보드, 학습현황, 도움말(앱이 따르는 판 표시) |
 | [「힌트」](#/column/ai/quizapp-common-gui/rules/hints.md) | 기본 힌트, 사용자 힌트 1개, 따봉, 힌트 따봉 순위, 여는 곳 |
 | [「알림함」](#/column/ai/quizapp-common-gui/rules/inbox.md) | 알림함, 읽지 않은 수 배지, 설정 톱니의 new 점 |
 | [「Firebase 준비」](#/column/ai/quizapp-common-gui/rules/firebase.md) | 공용 프로젝트의 구조, 콘솔 준비, 배포, 새 앱을 더하는 순서 |
@@ -55,6 +55,17 @@ CharQuiz가 기능이 더 많고, NameQuiz는 그림 문제와 질문 퀴즈가 
 | `index.html` | 제목, `APP_VERSION`, `CACHE_BUST`, 헤더의 범위 단추 글자, 매니페스트 |
 | 문구 | 모드 카드 설명, 복습 알림 제목·본문, 공유 문구, 도움말(`view/help.html`), 힌트 입력칸 예시 |
 | `components/hint-seeds.js` | 새 데이터의 기본 힌트 |
+
+## 시스템 바 색
+
+휴대폰의 위쪽 상태 바, 설치한 앱의 아래 시스템 버튼 줄, 앱을 열 때의 시작 화면은 모두 **흰색 `#ffffff`**로 맞춥니다.
+
+| 자리 | 값 |
+| :--- | :--- |
+| `manifest.webmanifest` | `"theme_color": "#ffffff"`, `"background_color": "#ffffff"` |
+| `index.html` | `<meta name="theme-color" content="#ffffff">` |
+
+- 이미 설치한 앱(안드로이드 WebAPK)의 아래 버튼 줄 색은 Chrome이 WebAPK를 다시 만들어야 바뀝니다. 매니페스트를 바꾼 뒤 하루 이상 걸릴 수 있고, 앱을 지웠다가 다시 설치하면 바로 바뀝니다.
 
 ## 새 앱을 낼 때
 

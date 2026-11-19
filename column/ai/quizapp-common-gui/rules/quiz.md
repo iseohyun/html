@@ -3,7 +3,7 @@ title: "QuizApp Common GUI · 문제 화면"
 status: "설계문서"
 category: "QuizApp Common GUI"
 ---
-> 판: v0.1.0 · 홈페이지에는 이 문서의 견본이 없습니다.
+> 판: v0.2.0 · 홈페이지에는 이 문서의 견본이 없습니다.
 > 다루는 것: 간격 반복 엔진(단계, 복습 때, 출제 풀, 채점), 같은 발음·같은 이름 보기 막기, 문제 화면의 요소와 단축키
 
 # 문제 화면
@@ -63,6 +63,23 @@ category: "QuizApp Common GUI"
 - 기록 모드(20문제·30초)도 같은 채점을 쓰되 해금된 항목만 고칩니다.
 - 저장 필드: `domain, charId, stage, recentLatencies, latenciesIdx, outCnt, resetOutCnt, totalSolved, lastSessionTime, sessionStreak, updatedAt`. 승급 자격 같은 판 안의 표시는 저장하지 않습니다.
 - 저장 위치: 기기의 localStorage(`{앱}_PROGRESS_CACHE_{uid}`)에 먼저 쓰고, Firestore `users/{uid}/progress/{범위}/chars/{문제ID}`에 한 번에 씁니다. 로그인하면 서버와 기기 중 `lastSessionTime`이 늦은 쪽을 남깁니다.
+
+## Combo
+
+학습 모드에서 정답을 **2번 이상 이어서** 맞히면 화면 가운데에 「N COMBO!」가 튀어 올랐다가 사라집니다(`components/combo-fx.js`).
+
+| 항목 | 규칙 |
+| :--- | :--- |
+| 세는 법 | 이번 판의 답 기록(`sessionHistory`)을 끝에서부터 거슬러 이어진 정답 수(`getTrailingStreak`). 틀리면 0으로 끊깁니다. |
+| 띄우는 때 | 학습 모드의 답 처리(`handleUserAnswer`)에서 정답일 때 `showCombo(이어진 수)`. 2 미만이면 띄우지 않습니다. |
+| 모양 | 숫자(3rem)와 「COMBO!」. 분홍 글씨에 흰 그림자. 화면 가운데(위에서 42%), 누르기를 막지 않음(`pointer-events: none`) |
+| 큰 Combo | 5, 10, 그리고 20 이상의 10의 배수(20, 30, 40…). 금색, 숫자 4.2rem, 끝에 ✨ |
+| 움직임 | `@keyframes comboPop` 0.9초: 작게 나타나 튀어 오른 뒤 위로 떠오르며 사라짐. 새 Combo가 오면 앞의 것을 지웁니다. |
+| 동작 줄이기 | `prefers-reduced-motion`이면 움직이지 않고 나타났다 흐려지기만 합니다(`comboFade`). |
+| 모드 | **학습 모드에서만.** 기록 모드(20문제·30초)와 관전 모드에는 없습니다. |
+
+- 효과는 장식이라 `aria-hidden="true"`입니다. 화면 읽기 프로그램에 읽히지 않습니다.
+- CSS는 `.combo-fx`, `.combo-big`, `.combo-count`, `.combo-word`, `.combo-spark`와 두 키프레임입니다. 두 앱에 같은 파일과 같은 CSS가 있습니다.
 
 ## 화면 요소
 
