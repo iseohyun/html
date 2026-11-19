@@ -25,6 +25,7 @@ category: "QuizApp Common GUI"
 | `users/{uid}` | 함께 | 앱끼리 공유합니다. 진도는 범위(도메인) 이름으로 나뉘므로 **범위 이름이 앱끼리 겹치지 않게** 정합니다. |
 | 순위 | 앱마다 | 앱 이름 접두어 컬렉션: `charquiz_speedrun_rankings`, `charquiz_study_rankings`, `charquiz_timeattack_rankings`, `namequiz_speedrun_rankings`, `namequiz_study_rankings`. 누구나 읽고, 만들기는 로그인한 본인 `uid`만(`isOwnRanking()`, 두 앱 공통), 학습 순위는 본인 문서(`{uid}_…`)만 고치기, 나머지 고치기·지우기는 관리자. 새 앱의 순위 규칙도 같게 둡니다. |
 | 힌트 | 앱마다 | `char_hints`·`char_hint_likes`(CharQuiz), `name_hints`·`name_hint_likes`(NameQuiz). 새 앱은 `{앱}_hints`, `{앱}_hint_likes` |
+| `quiz_apps/{id}` | 함께 | QuizQuiz 자매품 목록. 누구나 읽고 쓰기는 관리자만. 각 앱이 도움말 맨 위에 자기를 뺀 나머지를 보여 줍니다([「도움말」](#/column/ai/quizapp-common-gui/rules/screens.md)). |
 | VAPID 키 | 함께 | 웹 푸시 인증서는 프로젝트에 하나 |
 | 함수 | 함께 | 카카오·네이버 로그인, 복습 알림 예약·발송. `us-central1` |
 | Cloud Tasks 큐 | 함께 | `asia-northeast3`의 `notification-queue` |

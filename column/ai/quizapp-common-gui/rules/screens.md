@@ -142,6 +142,33 @@ category: "QuizApp Common GUI"
 | :--- | :--- |
 | 여는 곳 | 설정 머리의 i 단추, 단축키 9 |
 | 모양 | 전체 화면 창 |
+| 맨 위 | 「QuizQuiz 자매품」 링크(아래 「QuizQuiz 자매품」) |
 | 맨 아래 판 표시 | 세 줄: 「프로그램 버전」(`window.APP_VERSION`, 예 `CharQuiz v1.0.5`), 「빌드」(`window.CACHE_BUST`), 「QuizApp Common GUI」(`window.QUIZAPP_GUI_VERSION`, 예 `v0.2.0`) |
 
 - 앱이 따르는 QuizApp Common GUI 판은 `index.html`의 `window.QUIZAPP_GUI_VERSION` 한 곳에 적고, 도움말이 그 값을 보여 줍니다. 판을 받아 갈 때 이 값과 앱 쪽 기록([「판 이력」](#/column/ai/quizapp-common-gui/rules/changes.md))의 「확인한 판」을 같이 올립니다.
+
+### QuizQuiz 자매품
+
+도움말 맨 위에 다른 퀴즈 앱으로 가는 링크를 둡니다(`components/sister-apps.js`). 예전에는 알림함 맨 위에 있었는데, 알림을 볼 때마다 홍보가 끼어들지 않도록 도움말로 옮겼습니다.
+
+| 항목 | 규칙 |
+| :--- | :--- |
+| 제목 | 「QuizQuiz 자매품」 |
+| 목록 | Firestore `quiz_apps` 컬렉션의 앱 가운데 **이 앱을 뺀** 나머지, `active`가 켜진 것만, `order` 순. 한 줄에 앱 아이콘, 이름, 한 줄 소개, 새 창 표시 |
+| 누르면 | 새 탭으로 그 앱을 엽니다. |
+| 그리는 순서 | 기기에 저장해 둔 마지막 목록으로 먼저 그리고, `quiz_apps`에서 새로 받아 다시 그립니다. 한 번도 받지 못했고 DB도 열리지 않으면 앱에 넣어 둔 기본 목록을 씁니다. |
+| 이 앱 | `sister-apps.js`의 `CURRENT_APP`에 이 앱의 `id`를 적습니다. |
+
+`quiz_apps/{id}` 문서 하나가 앱 하나입니다.
+
+| 필드 | 뜻 |
+| :--- | :--- |
+| `id` | 앱 이름(문서 ID와 같음). 예 `CharQuiz` |
+| `name` | 보여 줄 이름. 예 「글자 퀴즈」 |
+| `desc` | 한 줄 소개 |
+| `url` | 앱 주소. `https://`로 시작해야 보입니다. |
+| `icon` | 아이콘 주소. 비우면 `{url}icon-192.png` |
+| `order` | 보이는 순서(작은 수가 위) |
+| `active` | `false`면 숨김 |
+
+- 새 퀴즈 앱을 내면 **앱 코드는 고치지 않고** `quiz_apps`에 문서 하나만 더합니다. 규칙은 누구나 읽기, 쓰기는 관리자만이라 콘솔에서 더합니다.
