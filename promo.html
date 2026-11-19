@@ -5,8 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>홍보</title>
-  <link rel="stylesheet" href="/style.css?v=20261119v8">
-  <script src="/modules/script.js?v=20261119v8" defer></script>
+  <link rel="stylesheet" href="/style.css?v=20261119v9">
+  <script src="/modules/script.js?v=20261119v9" defer></script>
 </head>
 
 <body>
@@ -147,6 +147,83 @@
       }
 
       .promo-icon-item:hover .promo-icon-label {
+        color: #2563eb;
+      }
+
+      /* 묶음 칸: 격자 두 칸 너비, 앱 수만큼 줄(2개 2x1, 4개 2x2) */
+      .promo-icon-grid {
+        grid-auto-flow: row dense;
+      }
+
+      .promo-icon-group {
+        grid-column: span 2;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 8px 10px 12px;
+        border-radius: 14px;
+        background: #f1f5f9;
+        border: 1px dashed #cbd5e1;
+        user-select: none;
+        transition: box-shadow 0.18s ease, border-color 0.18s ease;
+      }
+
+      .promo-icon-group.is-clickable {
+        cursor: pointer;
+      }
+
+      .promo-icon-group.is-clickable:hover {
+        border-color: #93c5fd;
+        box-shadow: 0 8px 18px rgba(37, 99, 235, 0.11);
+      }
+
+      .promo-icon-group-cell.is-project {
+        cursor: pointer;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+      }
+
+      .promo-icon-group-cell.is-project:hover {
+        transform: translateY(-2px);
+        border-color: #93c5fd;
+        box-shadow: 0 6px 14px rgba(37, 99, 235, 0.11);
+      }
+
+      .promo-icon-group-cell.is-project:hover .promo-icon-label {
+        color: #2563eb;
+      }
+
+      .promo-icon-group-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #475569;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .promo-icon-group-grid {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-auto-rows: 1fr;
+        gap: 8px;
+      }
+
+      .promo-icon-group-cell {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        padding: 10px 6px;
+        border-radius: 12px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        text-align: center;
+      }
+
+      .promo-icon-group.is-clickable:hover .promo-icon-group-cell .promo-icon-label {
         color: #2563eb;
       }
 
@@ -1149,7 +1226,8 @@
               }
             });
 
-            sectionEl.appendChild(headerBar);
+            // 이름 없는 분류는 머리 없이 바로 격자만 보인다
+            if (section.title) sectionEl.appendChild(headerBar);
 
             // 애니메이션 래퍼
             const bodyWrap = document.createElement('div');
@@ -1161,7 +1239,13 @@
             const grid = document.createElement('div');
             grid.className = isIconMode ? 'promo-icon-grid' : 'promo-grid';
 
-            const items = sortByLatestUpdate(Array.isArray(section.items) ? section.items : []).filter(matchesSearch);
+            let items = sortByLatestUpdate(Array.isArray(section.items) ? section.items : []).filter(matchesSearch);
+            // 카드 보기에서는 프로젝트 묶음을 풀어 프로젝트마다 카드 한 장
+            if (!isIconMode) {
+              items = items.reduce(function (acc, it) {
+                return acc.concat(Array.isArray(it.items) ? sortByLatestUpdate(it.items).filter(matchesSearch) : [it]);
+              }, []);
+            }
             // 검색 결과가 없는 분류는 통째로 숨긴다
             if (items.length === 0) return;
             visibleItemCount += items.length;
@@ -1169,7 +1253,70 @@
               const links = normalizeLinks(item);
               const iconSrc = normalizeAssetPath(item.icon || item.아이콘);
               const imgSrc = normalizeAssetPath(item.image || item.대표이미지);
-              const isToolSection = section.id === 'tools' || section.id === 'desktop';
+              // 분류를 없앤 뒤로는 항목의 platform 으로 데스크톱 앱을 가린다
+              const isToolSection = section.id === 'tools' || section.id === 'desktop' || item.platform === 'desktop';
+
+              // 묶음 칸 하나에 들어갈 칸들.
+              // members: 한 프로젝트 안의 앱 여럿(퀴즈 앱 모음 등) — 어느 칸을 눌러도 그 프로젝트의 상세 창
+              // items: 서로 다른 프로젝트를 모은 묶음(모듈, 편의 기능 등) — 칸마다 그 프로젝트의 상세 창
+              const isProjectGroup = Array.isArray(item.items);
+              const groupCells = isProjectGroup
+                ? sortByLatestUpdate(item.items).filter(matchesSearch).map(function (child) {
+                    return { label: child.label || child.title, icon: child.icon || child.아이콘, detail: child };
+                  })
+                : (Array.isArray(item.members) ? item.members.map(function (m) {
+                    return { label: m.label, icon: m.icon, detail: item };
+                  }) : []);
+
+              if (isIconMode && (isProjectGroup || groupCells.length > 1)) {
+                // 묶음 보기: 앱 여럿을 한 칸으로 줄이지 않고 2열 격자(2개면 2x1, 4개면 2x2)로 각 앱 아이콘을 보여 준다
+                const groupTile = document.createElement('div');
+                groupTile.className = 'promo-icon-group';
+                groupTile.style.gridRow = 'span ' + Math.ceil(groupCells.length / 2);
+                if (!isProjectGroup) groupTile.title = (item.title || '') + ' 상세 정보 보기';
+
+                const groupLabel = document.createElement('div');
+                groupLabel.className = 'promo-icon-group-label';
+                groupLabel.textContent = item.title || '';
+                groupTile.appendChild(groupLabel);
+
+                const memberGrid = document.createElement('div');
+                memberGrid.className = 'promo-icon-group-grid';
+                groupCells.forEach(function (member) {
+                  const cell = document.createElement('div');
+                  cell.className = 'promo-icon-group-cell';
+                  const box = document.createElement('div');
+                  box.className = 'promo-icon-box';
+                  const img = document.createElement('img');
+                  img.src = normalizeAssetPath(member.icon);
+                  img.alt = (member.label || '') + ' 아이콘';
+                  if (isProjectGroup) attachIconFallback(img, member.detail);
+                  box.appendChild(img);
+                  const name = document.createElement('div');
+                  name.className = 'promo-icon-label';
+                  name.textContent = member.label || '';
+                  cell.appendChild(box);
+                  cell.appendChild(name);
+                  if (isProjectGroup) {
+                    cell.classList.add('is-project');
+                    cell.title = (member.detail.title || '') + ' 상세 정보 보기';
+                    cell.addEventListener('click', function () {
+                      openDetailModal(member.detail);
+                    });
+                  }
+                  memberGrid.appendChild(cell);
+                });
+                groupTile.appendChild(memberGrid);
+
+                if (!isProjectGroup) {
+                  groupTile.classList.add('is-clickable');
+                  groupTile.addEventListener('click', function () {
+                    openDetailModal(item);
+                  });
+                }
+                grid.appendChild(groupTile);
+                return;
+              }
 
               if (isIconMode) {
                 // 아이콘 보기: 아이콘 + 제목만 표시, 클릭 시 상세 정보 팝업
@@ -1438,6 +1585,10 @@
 
         // 변경 이력에서 가장 최근 날짜를 찾는다 ("2026.11.13" / "2026-11-13" 형식). 날짜가 없으면 0.
         function getLatestUpdateTime(item) {
+          // 프로젝트 묶음은 안의 프로젝트 중 가장 최근 것
+          if (Array.isArray(item.items)) {
+            return item.items.reduce(function (best, child) { return Math.max(best, getLatestUpdateTime(child)); }, 0);
+          }
           const changelog = item.changelog || item.변경이력 || [];
           const entries = Array.isArray(changelog) ? changelog : [changelog];
           let latest = 0;
@@ -1461,9 +1612,13 @@
 
         function matchesSearch(item) {
           if (!searchQuery) return true;
+          if (Array.isArray(item.items)) {
+            return String(item.title || '').toLowerCase().includes(searchQuery) || item.items.some(matchesSearch);
+          }
           const haystack = [
             item.title, item.projectId, item.description, item.overview, item.상세설명,
-            [].concat(item.techStack || item.기술 || []).join(' ')
+            [].concat(item.techStack || item.기술 || []).join(' '),
+            (item.members || []).map(function (m) { return m.label; }).join(' ')
           ].map(function (part) { return Array.isArray(part) ? part.join(' ') : String(part || ''); })
             .join(' ').toLowerCase();
           return haystack.includes(searchQuery);

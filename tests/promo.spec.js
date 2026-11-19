@@ -40,6 +40,7 @@ test.describe('프로젝트 탭 (promo)', () => {
     const mismatches = await page.evaluate(async () => {
       const data = await (await fetch('/promo.json')).json();
       const latest = item => {
+        if (Array.isArray(item.items)) return Math.max(0, ...item.items.map(latest));
         const log = [].concat(item.changelog || item.변경이력 || []);
         let best = 0;
         log.forEach(entry => {
@@ -54,12 +55,46 @@ test.describe('프로젝트 탭 (promo)', () => {
       data.sections.filter(sec => (sec.items || []).length).forEach((sec, i) => {
         const expected = sec.items.map((item, index) => ({ title: item.title, time: latest(item), index }))
           .sort((a, b) => (b.time - a.time) || (a.index - b.index)).map(x => x.title);
-        const shown = [...sectionEls[i].querySelectorAll('.promo-icon-item')].map(el => el.textContent.trim());
+        const shown = [...sectionEls[i].querySelectorAll('.promo-icon-item, .promo-icon-group')].map(el => el.textContent.trim());
         expected.forEach((title, k) => { if (!shown[k] || !shown[k].includes(title)) problems.push(`${sec.title}: ${k}번째 기대 "${title}" / 실제 "${shown[k]}"`); });
       });
       return problems;
     });
     expect(mismatches).toEqual([]);
+  });
+
+  test('묶음 항목은 앱 아이콘을 2열 격자로 보인다 (4개 2x2, 2개 2x1)', async ({ page }) => {
+    const groups = await page.evaluate(() => [...document.querySelectorAll('.promo-icon-group')].map(g => {
+      const cells = [...g.querySelectorAll('.promo-icon-group-cell')].map(c => c.getBoundingClientRect());
+      return {
+        label: g.querySelector('.promo-icon-group-label').textContent,
+        cols: new Set(cells.map(r => Math.round(r.left))).size,
+        rows: new Set(cells.map(r => Math.round(r.top))).size,
+        names: [...g.querySelectorAll('.promo-icon-label')].map(n => n.textContent)
+      };
+    }));
+    const byLabel = Object.fromEntries(groups.map(g => [g.label, g]));
+    expect(Object.keys(byLabel).sort()).toEqual(['대한민국 모든', '모듈', '취미', '퀴즈퀴즈', '편의 기능', '홍보'].sort());
+    expect(byLabel['퀴즈퀴즈']).toMatchObject({ cols: 2, rows: 2, names: ['문자 암기', '캐릭터 퀴즈', '지도 퀴즈', '단어 암기'] });
+    expect(byLabel['대한민국 모든']).toMatchObject({ cols: 2, rows: 1, names: ['행사', '이슈'] });
+    expect(byLabel['모듈']).toMatchObject({ cols: 2, rows: 2 });
+    expect(byLabel['편의 기능']).toMatchObject({ cols: 2, rows: 2 });
+    expect(byLabel['홍보'].names).toContain('거제몽꾸');
+    expect(byLabel['취미'].names.length).toBe(3);
+  });
+
+  test('분류 이름(Web App 등)은 없고, 프로젝트 묶음의 칸을 누르면 그 프로젝트의 상세 창이 열린다', async ({ page }) => {
+    await expect(page.locator('.promo-section-heading', { hasText: /Web App|Desktop App|Android App/ })).toHaveCount(0);
+    const cell = page.locator('.promo-icon-group', { hasText: '모듈' }).locator('.promo-icon-group-cell', { hasText: 'Webpointer' });
+    await cell.click();
+    await expect(page.locator('#promo-detail-title-group')).toContainText('Webpointer');
+  });
+
+  test('카드 보기에서는 프로젝트 묶음을 풀어 프로젝트마다 카드 한 장', async ({ page }) => {
+    await page.locator('#header-settings-btn').click();
+    await page.locator('.pill-btn[data-view="card"]').click();
+    await expect(page.locator('.promo-card', { hasText: 'Webpointer' })).toHaveCount(1);
+    await expect(page.locator('.promo-card', { hasText: '거시배 몽꾸와 야르' })).toHaveCount(1);
   });
 
   test('분류 머리의 화살표는 오른쪽 끝에 붙는다', async ({ page }) => {
@@ -72,7 +107,7 @@ test.describe('프로젝트 탭 (promo)', () => {
   });
 
   test('상세 창: 링크는 프로젝트 배지 바로 뒤에 있고, 창이 열린 동안 뒤의 페이지는 스크롤되지 않는다', async ({ page }) => {
-    await page.locator('.promo-icon-item', { hasText: '동영상 재생 및 편집기' }).first().click();
+    await page.locator('.promo-icon-group-cell', { hasText: '영상음악 재생기' }).first().click();
     const modal = page.locator('#promo-detail-modal');
     await expect(modal).toHaveClass(/active/);
 
