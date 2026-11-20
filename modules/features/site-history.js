@@ -10,7 +10,11 @@ window.SiteModules = window.SiteModules || {};
 
 window.SiteModules.UpdateLog = (function () {
   const DEFAULT_YEARS = [2026, 2025, 2024];
-  const DEFAULT_ENVS = ['iseohyun.com', 'WebApp', 'Android', 'Desktop', 'Video'];
+  // Event(개인 일정)는 로그인했을 때만 보인다 (isEventVisible)
+  const DEFAULT_ENVS = ['iseohyun.com', 'App', 'Video', 'Event'];
+  const EVENT_ENV = 'Event';
+  // 예전 환경 이름 → 지금 이름 (changelog.json에 옛 값이 남아 있어도 App으로 묶는다)
+  const LEGACY_ENV_MAP = { 'WebApp': 'App', 'Android': 'App', 'Desktop': 'App' };
   const DEFAULT_TYPES = ['Add', 'Changed', 'Fixed', 'Deleted'];
   const DEFAULT_SEARCH_TARGETS = ['title', 'content', 'category'];
 
@@ -58,11 +62,23 @@ window.SiteModules.UpdateLog = (function () {
 
   const ENV_CLASS_MAP = {
     'iseohyun.com': 'env-iseohyun',
-    'WebApp': 'env-webapp',
-    'Android': 'env-android',
-    'Desktop': 'env-desktop',
-    'Video': 'env-video'
+    'App': 'env-app',
+    'Video': 'env-video',
+    'Event': 'env-event'
   };
+
+  const PREVIEW_LABEL = '미리보기';
+
+  // Event 환경은 로그인한 사람에게만 보인다
+  function isEventVisible() {
+    const Auth = window.SiteModules.Auth;
+    return !!(Auth && typeof Auth.isSignedIn === 'function' && Auth.isSignedIn());
+  }
+
+  // 미리보기(예정·진행 중) 항목인지
+  function isPreviewItem(item) {
+    return !!(item && typeof item === 'object' && item.preview === true);
+  }
 
   const TYPE_CLASS_MAP = {
     'Add': 'type-add',
@@ -193,18 +209,21 @@ window.SiteModules.UpdateLog = (function () {
     return 'Changed';
   }
 
-  // 환경(env) 정규화 -> 배열 반환 (예: ['WebApp'] 또는 ['Desktop', 'Android'])
+  // 환경(env) 정규화 -> 배열 반환 (예: ['App'] 또는 ['App', 'Video']). 옛 이름은 LEGACY_ENV_MAP으로 바꾼다.
   function normalizeEnvList(item) {
     if (!item || typeof item === 'string') return ['iseohyun.com'];
+    let raw = [];
     if (Array.isArray(item.env) && item.env.length > 0) {
-      return item.env;
+      raw = item.env;
+    } else if (typeof item.env === 'string' && item.env.trim() !== '') {
+      raw = [item.env.trim()];
     }
-    if (typeof item.env === 'string' && item.env.trim() !== '') {
-      return [item.env.trim()];
+    if (raw.length > 0) {
+      return [...new Set(raw.map(e => LEGACY_ENV_MAP[e] || e))];
     }
     const pPath = item.projectPath || '';
     if (pPath.includes('youtube.com')) return ['Video'];
-    if (pPath.startsWith('/small-project/') || pPath.startsWith('http')) return ['WebApp'];
+    if (pPath.startsWith('/small-project/') || pPath.startsWith('http')) return ['App'];
     return ['iseohyun.com'];
   }
 
@@ -248,8 +267,9 @@ window.SiteModules.UpdateLog = (function () {
       return false;
     }
 
-    // 2. 환경 필터 (복수 선택)
-    const hasEnvMatch = ev.envs.some(e => filterState.envs.includes(e));
+    // 2. 환경 필터 (복수 선택). 로그아웃 상태에서는 Event 환경을 고른 것으로 치지 않는다.
+    const showEvent = isEventVisible();
+    const hasEnvMatch = ev.envs.some(e => filterState.envs.includes(e) && (e !== EVENT_ENV || showEvent));
     if (!hasEnvMatch) {
       return false;
     }
@@ -348,8 +368,9 @@ window.SiteModules.UpdateLog = (function () {
     }).join('');
 
     const badgeHtml = `<span class="changelog-badge ${badgeClass}">${iconMap[typeKey]} ${labelMap[typeKey]}</span>`;
+    const previewHtml = ev.isPreview ? `<span class="cal-preview-badge">${PREVIEW_LABEL}</span>` : '';
     const dateHtml = `<span class="cal-modal-date">${escapeHtml(formatDateWithDay(dateStr))}</span>`;
-    metaEl.innerHTML = `${badgeHtml}${envBadgesHtml}${dateHtml}`;
+    metaEl.innerHTML = `${badgeHtml}${previewHtml}${envBadgesHtml}${dateHtml}`;
 
     const projectName = item.projectName || '업데이트';
     const verHtml = item.version ? `<span class="cal-modal-version">v${escapeHtml(item.version)}</span>` : '';
@@ -446,21 +467,17 @@ window.SiteModules.UpdateLog = (function () {
                     <input type="checkbox" name="cal-env" value="iseohyun.com" checked>
                     <span>iseohyun.com</span>
                   </label>
-                  <label class="cal-filter-chip env-chip env-webapp">
-                    <input type="checkbox" name="cal-env" value="WebApp" checked>
-                    <span>WebApp</span>
-                  </label>
-                  <label class="cal-filter-chip env-chip env-android">
-                    <input type="checkbox" name="cal-env" value="Android" checked>
-                    <span>Android</span>
-                  </label>
-                  <label class="cal-filter-chip env-chip env-desktop">
-                    <input type="checkbox" name="cal-env" value="Desktop" checked>
-                    <span>Desktop</span>
+                  <label class="cal-filter-chip env-chip env-app">
+                    <input type="checkbox" name="cal-env" value="App" checked>
+                    <span>App</span>
                   </label>
                   <label class="cal-filter-chip env-chip env-video">
                     <input type="checkbox" name="cal-env" value="Video" checked>
                     <span>Video</span>
+                  </label>
+                  <label class="cal-filter-chip env-chip env-event" data-env-chip="Event"${isEventVisible() ? '' : ' hidden'}>
+                    <input type="checkbox" name="cal-env" value="Event" checked>
+                    <span>Event</span>
                   </label>
                 </div>
               </td>
@@ -648,6 +665,7 @@ window.SiteModules.UpdateLog = (function () {
           year: d.getFullYear(),
           typeKey: typeKey,
           envs: envs,
+          isPreview: isPreviewItem(item),
           raw: item
         };
 
@@ -773,6 +791,13 @@ window.SiteModules.UpdateLog = (function () {
     return tag;
   }
 
+  function createPreviewTag() {
+    const tag = document.createElement('span');
+    tag.className = 'cal-preview-badge';
+    tag.textContent = PREVIEW_LABEL;
+    return tag;
+  }
+
   // 리스트 보기: 변경 이력을 표 또는 카드로 나열한다. 달력과 같은 필터를 따른다.
   function renderList(targetId = 'site-history') {
     const container = document.getElementById(targetId);
@@ -815,13 +840,14 @@ window.SiteModules.UpdateLog = (function () {
         const info = describeEvent(ev);
         const card = document.createElement('button');
         card.type = 'button';
-        card.className = 'list-card';
+        card.className = ev.isPreview ? 'list-card is-preview' : 'list-card';
 
         const body = document.createElement('div');
         body.className = 'list-card-body';
         const meta = document.createElement('div');
         meta.className = 'list-card-meta';
         meta.append(createTypeTag(info.badgeInfo), createEnvTags(ev));
+        if (ev.isPreview) meta.appendChild(createPreviewTag());
         const title = document.createElement('strong');
         title.className = 'list-card-title';
         title.textContent = info.projectName;
@@ -863,6 +889,7 @@ window.SiteModules.UpdateLog = (function () {
         const info = describeEvent(ev);
         const tr = document.createElement('tr');
         tr.tabIndex = 0;
+        if (ev.isPreview) tr.classList.add('is-preview');
 
         const dateTd = document.createElement('td');
         dateTd.className = 'list-date-cell';
@@ -875,6 +902,7 @@ window.SiteModules.UpdateLog = (function () {
         const titleTd = document.createElement('td');
         titleTd.className = 'list-title-cell';
         titleTd.textContent = info.projectName;
+        if (ev.isPreview) titleTd.append(' ', createPreviewTag());
         const summaryTd = document.createElement('td');
         summaryTd.textContent = info.summaryText;
 
@@ -1011,11 +1039,11 @@ window.SiteModules.UpdateLog = (function () {
       inner.className = 'cal-day-detail-inner';
 
       const card = document.createElement('div');
-      card.className = `cal-day-detail-card ${info.envClass}`;
+      card.className = `cal-day-detail-card ${info.envClass}${info.ev.isPreview ? ' is-preview' : ''}`;
 
       const meta = document.createElement('div');
       meta.className = 'cal-day-detail-meta';
-      meta.textContent = `${info.badgeInfo.emoji} ${info.badgeInfo.label} · ${formatDateWithDay(info.dateKey)}`;
+      meta.textContent = `${info.badgeInfo.emoji} ${info.badgeInfo.label}${info.ev.isPreview ? ` · ${PREVIEW_LABEL}` : ''} · ${formatDateWithDay(info.dateKey)}`;
 
       const title = document.createElement('strong');
       title.className = 'cal-day-detail-title';
@@ -1168,7 +1196,8 @@ window.SiteModules.UpdateLog = (function () {
             const badgeInfo = TYPE_BADGE_MAP[ev.typeKey] || TYPE_BADGE_MAP.Changed;
 
             const card = document.createElement('div');
-            card.className = `cal-event-card ${envClass}`;
+            card.className = `cal-event-card ${envClass}${ev.isPreview ? ' is-preview' : ''}`;
+            if (ev.isPreview) card.title = PREVIEW_LABEL;
 
             const projectName = typeof item === 'string' ? item : (item.projectName || '업데이트');
             const summaryText = typeof item === 'string' ? '' : (item.summary || '');
@@ -1186,8 +1215,8 @@ window.SiteModules.UpdateLog = (function () {
 
             const dot = document.createElement('button');
             dot.type = 'button';
-            dot.className = `cal-dot ${envClass.replace('env-', 'dot-')}`;
-            dot.setAttribute('aria-label', `${projectName}${summaryText ? ': ' + summaryText : ''}`);
+            dot.className = `cal-dot ${envClass.replace('env-', 'dot-')}${ev.isPreview ? ' is-preview' : ''}`;
+            dot.setAttribute('aria-label', `${ev.isPreview ? PREVIEW_LABEL + ' ' : ''}${projectName}${summaryText ? ': ' + summaryText : ''}`);
             dot.setAttribute('aria-expanded', 'false');
             dot.addEventListener('click', (e) => {
               e.stopPropagation();
@@ -1287,6 +1316,7 @@ window.SiteModules.UpdateLog = (function () {
     if (!updateList) return;
 
     currentView = view === 'list' ? 'list' : 'calendar';
+    bindAuthListener();
 
     if (targetId === 'site-history') {
       filterState = {
@@ -1326,6 +1356,21 @@ window.SiteModules.UpdateLog = (function () {
       errorNotice.textContent = '변경 이력을 불러오지 못했습니다. 잠시 후 새로고침해 주세요.';
       updateList.appendChild(errorNotice);
     }
+  }
+
+  // 로그인 상태가 바뀌면 Event 필터 칩을 보이거나 숨기고, 홈 달력/리스트를 다시 그린다
+  let authListenerBound = false;
+  function bindAuthListener() {
+    const Auth = window.SiteModules.Auth;
+    if (authListenerBound || !Auth || typeof Auth.onChange !== 'function') return;
+    authListenerBound = true;
+    Auth.onChange(() => {
+      const showEvent = isEventVisible();
+      document.querySelectorAll('[data-env-chip="Event"]').forEach(chip => { chip.hidden = !showEvent; });
+      if (cachedUpdates && document.getElementById('site-history')) {
+        renderCurrentView('site-history');
+      }
+    });
   }
 
   function clearUpdateList() {

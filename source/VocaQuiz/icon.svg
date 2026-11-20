@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- VocaQuiz: 겹친 단어 카드 두 장(A·あ)과 소리 물결 -->
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="#ffffff"/>
+  <rect x="10" y="15" width="30" height="38" rx="6" fill="#f59e0b" transform="rotate(-10 25 34)"/>
+  <rect x="22" y="11" width="32" height="40" rx="6" fill="#ec4899"/>
+  <text x="38" y="40" text-anchor="middle" font-family="Outfit, Arial, sans-serif" font-size="24" font-weight="800" fill="#ffffff">A</text>
+  <text x="17" y="44" text-anchor="middle" font-family="'Noto Sans JP', 'Yu Gothic', sans-serif" font-size="13" font-weight="800" fill="#ffffff" transform="rotate(-10 17 40)">あ</text>
+  <path d="M46 55 q4 -3 0 -6 M50 57 q7 -6 0 -12" fill="none" stroke="#6366f1" stroke-width="2.6" stroke-linecap="round"/>
+</svg>

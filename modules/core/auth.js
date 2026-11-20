@@ -8,7 +8,7 @@
  *   - 관리자 판정은 화면에서만 한다: 구글이 확인해 준 메일 주소의 SHA-256 값을 설정의 값과 견준다.
  *     이것은 "가리기"일 뿐 보호가 아니다. 개발 중인 문서의 파일은 공개 저장소에 그대로 있다.
  * @requires SiteModules.Config
- * @exports init, login, logout, isSignedIn, isAdmin, onChange
+ * @exports init, login, logout, ready, loadScript, isSignedIn, isAdmin, onChange
  */
 
 window.SiteModules = window.SiteModules || {};
@@ -122,6 +122,9 @@ window.SiteModules.Auth = (function () {
     init: init,
     login: login,
     logout: logout,
+    /** Firebase 앱과 로그인 SDK 를 불러와 auth 를 돌려준다(다른 Firebase SDK 를 더 불러올 때 먼저 부른다) */
+    ready: loadSdk,
+    loadScript: loadScript,
     isSignedIn: () => !!currentUser,
     isAdmin: () => isAdminUser,
     /** 로그인 상태나 관리자 여부가 바뀔 때마다 부른다 */

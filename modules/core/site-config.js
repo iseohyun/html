@@ -3,7 +3,7 @@
  * @module SiteModules.Config
  * @description 사이트 전역 설정의 단일 출처. 문의 메일(Web3Forms) 주소와 접근 키, 로그인(Firebase) 설정,
  *   관리자 판정 값, 레이아웃 기준 너비를 보관한다. 여기의 값은 모두 브라우저에 공개되는 값이며 비밀이 아니다.
- * @exports feedback, firebase, firebaseSdkVersion, admin, layout
+ * @exports feedback, firebase, push, firebaseSdkVersion, admin, layout
  */
 
 window.SiteModules = window.SiteModules || {};
@@ -20,7 +20,12 @@ window.SiteModules.Config = window.SiteModules.Config || Object.freeze({
     apiKey: "AIzaSyBu8rZQ_E_LKiGXu9jeIWn5FCPU7cWu734",
     authDomain: "iseohyun.firebaseapp.com",
     projectId: "iseohyun",
+    messagingSenderId: "480884385518",
     appId: "1:480884385518:web:e624e46512c8c3834675ff"
+  }),
+  // 관리자 기기에 새 문의를 푸시로 알릴 때 쓰는 웹 푸시 공개 키(VAPID). 공개 키라 화면 코드에 둔다.
+  push: Object.freeze({
+    vapidKey: "BNlporOtHfs_Yv9hk3zEPcstxqjIBLFXJU9XnIMLUukvzZU-6VutRb_zGD55soGm5EtBKNiQQMVdZ560kpEneSM"
   }),
   // gstatic compat SDK 버전 (modules/core/auth.js 가 로그인할 때만 불러온다)
   firebaseSdkVersion: "10.0.0",

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  
+  <g transform="translate(256 256) scale(1.2) translate(-256 -256)">
+    <defs>
+      <radialGradient id="sea" cx="38%" cy="32%" r="75%">
+        <stop offset="0" stop-color="#7dd3fc"/><stop offset="0.6" stop-color="#2563eb"/><stop offset="1" stop-color="#1e3a8a"/>
+      </radialGradient>
+      <clipPath id="c"><circle cx="256" cy="256" r="200"/></clipPath>
+    </defs>
+    <circle cx="256" cy="256" r="200" fill="url(#sea)"/>
+    <g clip-path="url(#c)" fill="#4ade80" stroke="#15803d" stroke-width="6" stroke-linejoin="round">
+      <path d="M118 150 C150 112 214 104 238 128 C252 144 236 166 214 172 C200 176 204 200 222 212 C238 224 230 252 204 256 C180 260 168 286 150 300 C128 316 104 300 98 270 C92 236 96 182 118 150 Z"/>
+      <path d="M286 118 C320 100 382 112 404 146 C420 170 398 186 374 182 C352 178 344 196 360 214 C380 236 372 268 344 270 C320 272 312 298 296 316 C280 334 258 322 258 296 C258 270 270 250 262 228 C254 204 262 180 276 168 C288 156 270 130 286 118 Z"/>
+      <path d="M216 324 C240 316 270 326 276 350 C282 376 262 404 236 410 C214 414 200 392 204 368 C206 350 200 330 216 324 Z"/>
+    </g>
+    <g clip-path="url(#c)" fill="none" stroke="#ffffff" stroke-opacity="0.45" stroke-width="5">
+      <ellipse cx="256" cy="256" rx="80" ry="200"/>
+      <ellipse cx="256" cy="256" rx="150" ry="200"/>
+      <line x1="56" y1="256" x2="456" y2="256"/>
+      <path d="M76 176 Q256 216 436 176"/>
+      <path d="M76 336 Q256 296 436 336"/>
+    </g>
+    <circle cx="256" cy="256" r="200" fill="none" stroke="#1e3a8a" stroke-width="10"/>
+    <ellipse cx="190" cy="170" rx="48" ry="26" fill="#ffffff" fill-opacity="0.25" transform="rotate(-30 190 170)"/>
+  </g>
+</svg>

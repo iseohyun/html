@@ -31,7 +31,18 @@
     src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.8.0/highlightjs-line-numbers.min.js"></script>
 
   <link rel="shortcut icon" type="image/svg+xml" href="/source/icon_seohyun_reverse.svg">
-  <link rel="stylesheet" href="/style.css?v=20261119v1">
+  <!-- 홈 화면 설치 (매니페스트 + 서비스 워커) -->
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/source/app-icon-512.png">
+  <meta name="theme-color" content="#f5f6f5">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch((e) => console.warn('서비스 워커 등록 실패:', e));
+      });
+    }
+  </script>
+  <link rel="stylesheet" href="/style.css?v=20261119v11">
 
   <style type="text/css">
     /* 홈 화면: 본문 바탕과 켜진 탭의 색이 테마의 바탕색을 따른다 */
@@ -191,7 +202,7 @@
 
     /* ==========================================
        환경(배경색) & 분류(우상단 이모지 배지) 컬러 팔레트
-       - Web(주황색), Android(초록색), Desktop(파란색), Video(빨간색), iseohyun(흰색)
+       - App(주황색), Video(빨간색), Event(보라색, 로그인 시만), iseohyun(흰색). 미리보기는 점선 테두리
        - --cal-env-bg-alpha 변수(기본 0.25 = 25%)로 배경 농도(%) 실시간 제어
        ========================================== */
     :root {
@@ -207,19 +218,39 @@
       border-color: var(--line) !important;
     }
 
-    .env-webapp {
+    .env-app {
       background-color: rgba(255, 146, 43, var(--cal-env-bg-alpha, 0.25)) !important;
       border-color: rgba(247, 103, 7, calc(min(1, var(--cal-env-bg-alpha, 0.25) + 0.28))) !important;
     }
 
-    .env-android {
-      background-color: rgba(64, 192, 87, var(--cal-env-bg-alpha, 0.25)) !important;
-      border-color: rgba(43, 138, 62, calc(min(1, var(--cal-env-bg-alpha, 0.25) + 0.28))) !important;
+    .env-event {
+      background-color: rgba(132, 94, 247, var(--cal-env-bg-alpha, 0.25)) !important;
+      border-color: rgba(103, 65, 217, calc(min(1, var(--cal-env-bg-alpha, 0.25) + 0.28))) !important;
     }
 
-    .env-desktop {
-      background-color: rgba(51, 154, 240, var(--cal-env-bg-alpha, 0.25)) !important;
-      border-color: rgba(25, 113, 194, calc(min(1, var(--cal-env-bg-alpha, 0.25) + 0.28))) !important;
+    /* 미리보기(예정·진행 중) 항목: 테두리를 점선으로 구분 */
+    .cal-event-card.is-preview,
+    .cal-day-detail-card.is-preview,
+    .list-card.is-preview {
+      border-style: dashed !important;
+      border-width: 1.5px !important;
+    }
+
+    table.list-data-table tbody tr.is-preview td {
+      border-top: 1px dashed var(--muted);
+      border-bottom: 1px dashed var(--muted);
+    }
+
+    .cal-preview-badge {
+      display: inline-block;
+      padding: 1px 7px;
+      border: 1px dashed var(--muted);
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      white-space: nowrap;
+      vertical-align: middle;
     }
 
     .env-video {
@@ -791,10 +822,15 @@
       }
 
       .cal-dot.dot-iseohyun { --cal-dot-color: var(--surface); --cal-dot-border: var(--muted); }
-      .cal-dot.dot-webapp { --cal-dot-color: #ff922b; --cal-dot-border: #f76707; }
-      .cal-dot.dot-android { --cal-dot-color: #40c057; --cal-dot-border: #2b8a3e; }
-      .cal-dot.dot-desktop { --cal-dot-color: #339af0; --cal-dot-border: #1971c2; }
+      .cal-dot.dot-app { --cal-dot-color: #ff922b; --cal-dot-border: #f76707; }
       .cal-dot.dot-video { --cal-dot-color: #ff6b6b; --cal-dot-border: #e03131; }
+      .cal-dot.dot-event { --cal-dot-color: #845ef7; --cal-dot-border: #6741d9; }
+      /* 미리보기 점: 속을 비우고 테두리를 점선으로 */
+      .cal-dot.is-preview::before {
+        background: transparent;
+        border-style: dashed;
+        border-width: 2px;
+      }
 
       tr.cal-day-detail-row {
         display: table-row;
@@ -1111,7 +1147,7 @@
       }
     }
   </style>
-  <script src="/modules/script.js?v=20261119v1" defer></script>
+  <script src="/modules/script.js?v=20261120v1" defer></script>
 </head>
 
 <body>

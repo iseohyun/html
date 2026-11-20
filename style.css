@@ -2593,6 +2593,279 @@ body {
   color: var(--fg);
 }
 
+/* 한 줄에 큰 항목과 오른쪽 아이콘 단추(채널 추가, 알림 켜기) */
+.contact-row {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.contact-row > .contact-action {
+  flex: 1;
+  min-width: 0;
+}
+
+.contact-icon-action {
+  flex: 0 0 auto;
+  width: 40px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background-color: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  transition: background-color var(--t-fast) ease, border-color var(--t-fast) ease, color var(--t-fast) ease;
+}
+
+.contact-icon-action:hover,
+.contact-icon-action:focus {
+  background-color: var(--active);
+  border-color: var(--muted);
+  color: var(--fg);
+}
+
+/* 대화를 연 문의 창은 넓고 높게 */
+.contact-popover.is-chat {
+  width: min(420px, calc(100vw - 24px));
+}
+
+.contact-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chat-note {
+  margin: 0;
+  padding: 8px 2px;
+  color: var(--muted);
+  font-size: 12px;
+  list-style: none;
+}
+
+.chat-note.is-error {
+  color: var(--dev-mark);
+}
+
+.chat-badge {
+  margin-left: auto;
+  min-width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  padding: 0 5px;
+  border-radius: 999px;
+  background-color: var(--dev-mark);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+
+/* 레일의 문의 아이콘: 읽지 않은 글이 있으면 빨간 점 */
+#nav-kakao-channel.has-unread {
+  position: relative;
+}
+
+#nav-kakao-channel.has-unread::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--dev-mark);
+}
+
+.chat-new-row {
+  display: flex;
+  gap: 6px;
+}
+
+.chat-new-select {
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-thread-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.chat-thread {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background-color: var(--surface);
+  color: var(--fg);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.chat-thread:hover,
+.chat-thread:focus {
+  background-color: var(--active);
+}
+
+.chat-thread-top,
+.chat-thread-bottom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chat-thread-last {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.chat-time {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.chat-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chat-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.chat-wipe {
+  border: 0;
+  background: none;
+  color: var(--dev-mark);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.chat-messages {
+  min-height: 120px;
+  max-height: min(50vh, 420px);
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background-color: var(--bg);
+}
+
+.chat-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.chat-row.is-mine {
+  flex-direction: row-reverse;
+}
+
+.chat-bubble {
+  max-width: 80%;
+  padding: 6px 10px;
+  border-radius: 14px 14px 14px 4px;
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.chat-row.is-mine .chat-bubble {
+  border-radius: 14px 14px 4px 14px;
+  background-color: var(--fg);
+  border-color: var(--fg);
+  color: var(--bg);
+}
+
+.chat-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.chat-meta {
+  margin-top: 2px;
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.chat-del {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  opacity: 0.5;
+}
+
+.chat-del:hover,
+.chat-del:focus {
+  opacity: 1;
+  color: var(--dev-mark);
+}
+
+.chat-del .ico {
+  width: 14px;
+  height: 14px;
+}
+
+.chat-compose {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.chat-input {
+  flex: 1;
+  min-width: 0;
+  resize: vertical;
+}
+
+/* 이 기기에서 문의 알림을 받는 중 */
+.contact-icon-action.is-on {
+  background-color: var(--ok-mark-soft);
+  border-color: var(--ok-mark);
+  color: var(--ok-mark);
+}
+
 .contact-action[aria-expanded="true"] {
   background-color: var(--fg);
   border-color: var(--fg);
@@ -3469,6 +3742,42 @@ article .auto-overview-pages a:hover {
 
 :root {
   --dev-mark: #d32f2f;   /* 개발 중 표시의 빨강 (테마와 상관없이 같은 색) */
+  --ok-mark: #2e7d32;    /* 켜짐 표시의 녹색 (문의 알림 아이콘) */
+  --ok-mark-soft: rgba(46, 125, 50, 0.12);
+}
+
+/* ==========================================================================
+   새 판 알림 띠 (modules/features/update-check.js)
+   ========================================================================== */
+.update-band {
+  position: fixed;
+  left: 50%;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 300;
+  max-width: calc(100vw - 32px);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 8px 8px 16px;
+  border-radius: 999px;
+  background-color: var(--fg);
+  color: var(--bg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  font-family: var(--font-main);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.update-band-btn {
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 999px;
+  background-color: var(--bg);
+  color: var(--fg);
+  font: inherit;
+  cursor: pointer;
 }
 
 #sitemap-tree .tree-dev-count {
