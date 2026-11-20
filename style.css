@@ -2628,6 +2628,85 @@ body {
   color: var(--fg);
 }
 
+/* 로그인 단추 오른쪽에 붙는 계정 목록 창. 위치(top·left)는 contact.js 가 로그인 줄에 맞춘다 */
+.contact-login-providers {
+  position: fixed;
+  z-index: 151;
+  width: 188px;
+  box-sizing: border-box;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.16);
+}
+
+.contact-login-providers[hidden] {
+  display: none;
+}
+
+.contact-provider {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background-color: var(--surface);
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--t-fast) ease, border-color var(--t-fast) ease;
+}
+
+.contact-provider:not(:disabled):hover,
+.contact-provider:not(:disabled):focus {
+  background-color: var(--active);
+  border-color: var(--muted);
+}
+
+.contact-provider:disabled {
+  cursor: default;
+  color: var(--muted);
+}
+
+.contact-provider:disabled .contact-provider-mark {
+  opacity: 0.55;
+}
+
+.contact-provider-mark {
+  flex: 0 0 18px;
+  display: inline-flex;
+}
+
+.contact-provider-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.contact-provider-soon {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* 좁은 화면에서는 문의 창이 화면 폭을 다 쓰므로 로그인 줄 아래에 펼친다 */
+@media screen and (max-width: 960px) {
+  .contact-login-providers {
+    position: static;
+    width: auto;
+    box-shadow: none;
+  }
+}
+
 /* 대화를 연 문의 창은 넓고 높게 */
 .contact-popover.is-chat {
   width: min(420px, calc(100vw - 24px));

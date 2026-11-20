@@ -3,7 +3,7 @@
  * @module SiteModules.Config
  * @description 사이트 전역 설정의 단일 출처. 문의 메일(Web3Forms) 주소와 접근 키, 로그인(Firebase) 설정,
  *   관리자 판정 값, 레이아웃 기준 너비를 보관한다. 여기의 값은 모두 브라우저에 공개되는 값이며 비밀이 아니다.
- * @exports feedback, firebase, push, firebaseSdkVersion, admin, layout
+ * @exports feedback, firebase, push, firebaseSdkVersion, kakao, naver, admin, layout
  */
 
 window.SiteModules = window.SiteModules || {};
@@ -29,6 +29,29 @@ window.SiteModules.Config = window.SiteModules.Config || Object.freeze({
   }),
   // gstatic compat SDK 버전 (modules/core/auth.js 가 로그인할 때만 불러온다)
   firebaseSdkVersion: "10.0.0",
+
+  // 카카오 · 네이버 로그인(modules/core/auth.js 의 loginWithOAuth).
+  // clientId 는 로그인 화면 주소에 드러나는 공개 값이다(Client Secret 은 Cloud Function 비밀값에만 둔다).
+  // 로그인 창은 이 사이트의 callbackPath 로 돌아오고, 그 코드를 loginEndpoint 가 Firebase 토큰으로 바꾼다.
+  // clientId 가 비어 있으면 그 로그인은 「준비 중」으로 보인다.
+  kakao: Object.freeze({
+    name: "카카오",
+    clientId: "e10f5dba1343212a115708b84584dad0", // REST API 키
+    authorizeUrl: "https://kauth.kakao.com/oauth/authorize",
+    callbackPath: "/auth/kakao-callback.html",
+    // 카카오 콘솔과 functions/index.js 에 Redirect URI 로 등록한 곳만
+    allowedOrigins: Object.freeze(["https://iseohyun.com", "http://localhost:8137"]),
+    loginEndpoint: "https://asia-northeast3-iseohyun.cloudfunctions.net/kakaoLogin"
+  }),
+  naver: Object.freeze({
+    name: "네이버",
+    clientId: "f1zKks6XzuAlapalQCEi", // functions/index.js 의 NAVER_CLIENT_ID 와 같아야 한다
+    authorizeUrl: "https://nid.naver.com/oauth2.0/authorize",
+    callbackPath: "/auth/naver-callback.html",
+    // 네이버 앱 설정과 functions/index.js 에 Callback URL 로 등록한 곳만
+    allowedOrigins: Object.freeze(["https://iseohyun.com", "http://localhost:8137"]),
+    loginEndpoint: "https://asia-northeast3-iseohyun.cloudfunctions.net/naverLogin"
+  }),
 
   // 관리자: 메일 주소를 그대로 적지 않고 소문자 주소의 SHA-256 값으로 적는다.
   admin: Object.freeze({

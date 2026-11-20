@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<!--
+  @file auth/naver-callback.html
+  @description 네이버 로그인 Callback URL. 네이버가 돌려준 인가 코드(code)와 state 를
+    로그인 창을 연 사이트 창(opener)에 넘기고 스스로 닫는다. 코드를 토큰으로 바꾸는 일은
+    사이트 창(modules/core/auth.js)이 Cloud Function naverLogin 에 맡긴다.
+    네이버 개발자 센터의 Callback URL 과 functions/index.js 의 NAVER_REDIRECT_URIS 에 이 주소가 있어야 한다.
+-->
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>네이버 로그인</title>
+  <style>
+    body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+           font-family: system-ui, sans-serif; font-size: 14px; color: #333; background: #fff; }
+  </style>
+</head>
+<body>
+  <p id="message">로그인하는 중입니다…</p>
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var result = {
+        type: "oauth-callback",
+        code: params.get("code") || "",
+        state: params.get("state") || "",
+        error: params.get("error") || ""
+      };
+      var message = document.getElementById("message");
+      if (window.opener && !window.opener.closed) {
+        window.opener.postMessage(result, window.location.origin);
+        window.close();
+        message.textContent = "로그인을 마쳤습니다. 이 창을 닫아 주세요.";
+      } else {
+        message.innerHTML = '로그인 창을 연 페이지를 찾지 못했습니다. <a href="/">사이트로 돌아가</a> 다시 시도해 주세요.';
+      }
+    })();
+  </script>
+</body>
+</html>

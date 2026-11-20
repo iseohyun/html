@@ -3,7 +3,8 @@
  * @module SiteModules.Contact
  * @description 레일의 문의 아이콘(#nav-kakao-channel)을 누르면 뜨는 문의 창.
  *   카카오톡 1:1 채팅(오른쪽 아이콘은 채널 추가), 메일로 문의, 로그인(오른쪽 아이콘은 알림 켜기), 문의하기를 보여 준다.
- *   맨 아래에는 로그인 항목이 있다(구글). 관리자로 로그인하면 개발 중인 문서가 사이트맵에 보인다.
+ *   로그인을 누르면 오른쪽에 계정 목록 창(Google · 네이버 · 카카오)이 뜬다. 설정에 clientId 가 없는 로그인은 「준비 중」.
+ *   관리자로 로그인하면 개발 중인 문서가 사이트맵에 보인다.
  *   메일은 서버 없이 화면에서 바로 Web3Forms 로 보낸다(접근 키와 주소는 SiteModules.Config.feedback).
  *   로그인한 사람의 메일 문의는 Firestore 에도 적어 관리자 기기에 푸시가 가게 한다(SiteModules.ContactPush).
  *   「문의하기」는 대화 화면(SiteModules.ContactChat)을 연다. 글은 받는 사람의 기기에 푸시로 가고,
@@ -20,6 +21,22 @@ window.SiteModules.Contact = (function () {
   const KAKAO_CHAT_URL = "http://pf.kakao.com/_ETRrX/chat";
   const MIN_MESSAGE_LENGTH = 5;
   const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // 로그인 단추 오른쪽 작은 창의 계정 목록. 쓸 수 없는 로그인(설정에 clientId 가 없음)은 「준비 중」으로 둔다.
+  // (다음 계정은 카카오 계정으로 통합되어 카카오로 로그인한다)
+  const LOGIN_PROVIDERS = [
+    {
+      id: "google", name: "Google",
+      mark: '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M22.6 12.2c0-.8-.1-1.5-.2-2.2H12v4.2h5.9a5 5 0 0 1-2.2 3.3v2.7h3.6c2.1-1.9 3.3-4.8 3.3-8z"/><path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.6-2.7c-1 .7-2.2 1.1-3.7 1.1-2.9 0-5.3-1.9-6.2-4.5H2.1v2.8A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.8 14.2a6.6 6.6 0 0 1 0-4.3V7.1H2.1a11 11 0 0 0 0 9.9z"/><path fill="#EA4335" d="M12 5.4c1.6 0 3.1.6 4.2 1.6l3.2-3.2A11 11 0 0 0 2.1 7.1l3.7 2.8C6.7 7.3 9.1 5.4 12 5.4z"/></svg>'
+    },
+    {
+      id: "naver", name: "네이버",
+      mark: '<svg viewBox="0 0 24 24" width="18" height="18"><rect width="24" height="24" rx="5" fill="#03C75A"/><path fill="#fff" d="M14.3 12.5 9.5 5.6H6v12.8h3.7v-6.9l4.8 6.9H18V5.6h-3.7z"/></svg>'
+    },
+    {
+      id: "kakao", name: "카카오",
+      mark: '<svg viewBox="0 0 24 24" width="18" height="18"><rect width="24" height="24" rx="5" fill="#FEE500"/><path fill="#191919" d="M12 5.5c-4 0-7.2 2.5-7.2 5.6 0 2 1.3 3.7 3.3 4.7l-.8 3c-.1.3.2.5.4.3l3.5-2.3h.8c4 0 7.2-2.5 7.2-5.7S16 5.5 12 5.5z"/></svg>'
+    }
+  ];
 
   let popover = null;
   let railButton = null;
@@ -44,8 +61,16 @@ window.SiteModules.Contact = (function () {
         </div>
         <button class="contact-action" type="button" id="contact-mail-toggle" aria-expanded="false" aria-controls="contact-mail-form">${icon("mail")}<span>메일로 문의</span></button>
         <div class="contact-row">
-          <button class="contact-action" type="button" id="contact-login-btn"></button>
+          <button class="contact-action" type="button" id="contact-login-btn" aria-expanded="false" aria-controls="contact-login-providers"></button>
           <button class="contact-icon-action" type="button" id="contact-push-btn" hidden aria-pressed="false">${icon("bell")}</button>
+        </div>
+        <div class="contact-login-providers" id="contact-login-providers" role="group" aria-label="로그인할 계정" hidden>
+          ${LOGIN_PROVIDERS.map(p => ({ ...p, ready: window.SiteModules.Auth.isProviderReady(p.id) })).map(p => `
+          <button class="contact-provider is-${p.id}" type="button" data-provider="${p.id}"${p.ready ? "" : " disabled"}>
+            <span class="contact-provider-mark" aria-hidden="true">${p.mark}</span>
+            <span class="contact-provider-name">${p.name}</span>
+            ${p.ready ? "" : '<span class="contact-provider-soon">준비 중</span>'}
+          </button>`).join("")}
         </div>
         <button class="contact-action" type="button" id="contact-dm-toggle" aria-expanded="false" aria-controls="contact-chat">${icon("chat")}<span>문의하기</span><span class="chat-badge" id="contact-unread" hidden></span></button>
         <span class="contact-auth-status" id="contact-auth-status" role="status"></span>
@@ -90,6 +115,7 @@ window.SiteModules.Contact = (function () {
     if (!popover) return;
     if (isOpen) refreshPageInfo();
     popover.hidden = !isOpen;
+    if (!isOpen) setProvidersOpen(false);
     if (railButton) railButton.classList.toggle("active", isOpen);
     if (!isOpen && window.SiteModules.ContactChat && window.SiteModules.ContactChat.isOpen()) setChatOpen(false);
   }
@@ -102,7 +128,8 @@ window.SiteModules.Contact = (function () {
     const status = popover.querySelector("#contact-auth-status");
     const isSignedIn = Auth.isSignedIn();
 
-    button.innerHTML = `${icon(isSignedIn ? "log-out" : "log-in")}<span>${isSignedIn ? "로그아웃" : "로그인 (Google)"}</span>`;
+    button.innerHTML = `${icon(isSignedIn ? "log-out" : "log-in")}<span>${isSignedIn ? "로그아웃" : "로그인"}</span>`;
+    if (isSignedIn) setProvidersOpen(false);
     let text = message || "";
     if (!text && isSignedIn) {
       text = Auth.isAdmin() ? "관리자로 로그인했습니다. 개발 중인 문서가 보입니다." : "로그인했습니다. 관리자 계정은 아닙니다.";
@@ -150,13 +177,61 @@ window.SiteModules.Contact = (function () {
     }
   }
 
+  // 로그인 단추 오른쪽의 계정 목록 창. 넓은 화면에서는 문의 창 오른쪽에 붙이고, 좁은 화면에서는 로그인 줄 아래에 펼친다.
+  function isProvidersOpen() {
+    return !!popover && !popover.querySelector("#contact-login-providers").hidden;
+  }
+
+  function placeProviders() {
+    const panel = popover.querySelector("#contact-login-providers");
+    if (panel.hidden || window.matchMedia("(max-width: 960px)").matches) {
+      panel.style.top = panel.style.left = "";
+      return;
+    }
+    const row = popover.querySelector("#contact-login-btn").getBoundingClientRect();
+    const box = popover.getBoundingClientRect();
+    const top = Math.min(row.top, window.innerHeight - panel.offsetHeight - 12);
+    panel.style.top = `${Math.max(12, top)}px`;
+    panel.style.left = `${box.right + 8}px`;
+  }
+
+  function setProvidersOpen(isOpen) {
+    if (!popover) return;
+    const panel = popover.querySelector("#contact-login-providers");
+    panel.hidden = !isOpen;
+    popover.querySelector("#contact-login-btn").setAttribute("aria-expanded", String(isOpen));
+    placeProviders();
+  }
+
   async function onLoginClick() {
     const Auth = window.SiteModules.Auth;
     const button = popover.querySelector("#contact-login-btn");
+    // 로그인 전에는 계정 목록 창을 여닫는다. 로그인한 뒤에는 바로 로그아웃한다.
+    if (!Auth.isSignedIn()) {
+      setProvidersOpen(!isProvidersOpen());
+      return;
+    }
     button.disabled = true;
     try {
-      if (Auth.isSignedIn()) await Auth.logout();
-      else await Auth.login();
+      await Auth.logout();
+      refreshLoginAction();
+    } catch (err) {
+      console.error("[Contact] 로그아웃 실패:", err);
+      refreshLoginAction(`로그아웃하지 못했습니다: ${err.message}`, true);
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  async function onProviderClick(e) {
+    const choice = e.target.closest(".contact-provider");
+    if (!choice || choice.disabled) return;
+    const Auth = window.SiteModules.Auth;
+    const button = popover.querySelector("#contact-login-btn");
+    setProvidersOpen(false);
+    button.disabled = true;
+    try {
+      await Auth.login(choice.dataset.provider);
       refreshLoginAction();
     } catch (err) {
       // 창을 그냥 닫은 것은 오류로 알리지 않는다
@@ -323,6 +398,9 @@ window.SiteModules.Contact = (function () {
     popover.querySelector("#contact-mail-form").addEventListener("submit", submitMail);
     popover.querySelector("#contact-page-check").addEventListener("change", refreshPageInfo);
     popover.querySelector("#contact-login-btn").addEventListener("click", onLoginClick);
+    popover.querySelector("#contact-login-providers").addEventListener("click", onProviderClick);
+    window.addEventListener("resize", () => { if (isProvidersOpen()) placeProviders(); });
+    popover.addEventListener("scroll", () => { if (isProvidersOpen()) placeProviders(); });
     popover.querySelector("#contact-push-btn").addEventListener("click", onPushClick);
     window.SiteModules.ContactChat.mount(popover.querySelector("#contact-chat"));
     popover.querySelector("#contact-dm-toggle").addEventListener("click", () => {
@@ -369,7 +447,14 @@ window.SiteModules.Contact = (function () {
       setOpen(false);
     });
     window.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && !popover.hidden) setOpen(false);
+      if (e.key !== "Escape" || popover.hidden) return;
+      // 계정 목록 창이 열려 있으면 그것만 먼저 닫는다
+      if (isProvidersOpen()) {
+        setProvidersOpen(false);
+        popover.querySelector("#contact-login-btn").focus();
+      } else {
+        setOpen(false);
+      }
     });
   }
 

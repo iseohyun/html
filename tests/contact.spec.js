@@ -21,9 +21,9 @@ test.describe('문의 창 (레일의 문의 아이콘)', () => {
 
     await page.locator('#nav-kakao-channel').click();
     await expect(popover).toBeVisible();
-    await expect(popover.locator('.contact-action')).toHaveText(['카카오톡 채널 추가', '카카오톡 1:1 채팅', '메일로 문의', '로그인 (Google)']);
-    await expect(popover.locator('a.contact-action').nth(0)).toHaveAttribute('href', 'http://pf.kakao.com/_ETRrX');
-    await expect(popover.locator('a.contact-action').nth(1)).toHaveAttribute('href', 'http://pf.kakao.com/_ETRrX/chat');
+    await expect(popover.locator('.contact-action')).toHaveText(['카카오톡 1:1 채팅', '메일로 문의', '로그인', '문의하기']);
+    await expect(popover.locator('a.contact-action').nth(0)).toHaveAttribute('href', 'http://pf.kakao.com/_ETRrX/chat');
+    await expect(popover.locator('a.contact-icon-action')).toHaveAttribute('href', 'http://pf.kakao.com/_ETRrX');
 
     // 메일 폼은 눌러야 펼쳐진다
     await expect(page.locator('#contact-mail-form')).toBeHidden();
@@ -33,6 +33,115 @@ test.describe('문의 창 (레일의 문의 아이콘)', () => {
     await page.keyboard.press('Escape');
     await expect(popover).toBeHidden();
   });
+
+  test('로그인을 누르면 문의 창 오른쪽에 Google · 네이버 · 카카오 목록이 뜬다', async ({ page }) => {
+    const popover = page.locator('#contact-popover');
+    const panel = page.locator('#contact-login-providers');
+    const login = page.locator('#contact-login-btn');
+
+    await page.locator('#nav-kakao-channel').click();
+    await expect(panel).toBeHidden();
+    await login.click();
+    await expect(panel).toBeVisible();
+    await expect(login).toHaveAttribute('aria-expanded', 'true');
+    await expect(panel.locator('.contact-provider-name')).toHaveText(['Google', '네이버', '카카오']);
+    await expect(panel.locator('[data-provider="google"]')).toBeEnabled();
+    await expect(panel.locator('[data-provider="naver"]')).toBeEnabled();
+    await expect(panel.locator('[data-provider="kakao"]')).toBeEnabled();
+    await expect(panel.locator('.contact-provider-soon')).toHaveCount(0);
+
+    // 문의 창 바로 오른쪽, 로그인 줄 높이에 붙는다
+    const box = await popover.boundingBox();
+    const panelBox = await panel.boundingBox();
+    const loginBox = await login.boundingBox();
+    expect(panelBox.x).toBeGreaterThanOrEqual(box.x + box.width);
+    expect(panelBox.x - (box.x + box.width)).toBeLessThan(20);
+    // 로그인 줄 높이에 맞추되, 화면 아래로 넘치면 위로 올린다: 어느 쪽이든 로그인 줄과 겹치고 화면 안에 있다
+    expect(panelBox.y).toBeLessThanOrEqual(loginBox.y + 1);
+    expect(panelBox.y + panelBox.height).toBeGreaterThan(loginBox.y);
+    expect(panelBox.y + panelBox.height).toBeLessThanOrEqual(800);
+
+    // Esc 는 목록만 먼저 닫고, 한 번 더 누르면 문의 창을 닫는다
+    await page.keyboard.press('Escape');
+    await expect(panel).toBeHidden();
+    await expect(popover).toBeVisible();
+    await login.click();
+    await expect(panel).toBeVisible();
+    await login.click();
+    await expect(panel).toBeHidden();
+    await page.keyboard.press('Escape');
+    await expect(popover).toBeHidden();
+  });
+
+  test('좁은 화면에서는 계정 목록이 로그인 줄 아래에 펼쳐진다', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await page.locator('#header-menu-btn').click();
+    await page.locator('#nav-kakao-channel').click();
+    await page.locator('#contact-login-btn').click();
+    const panel = page.locator('#contact-login-providers');
+    await expect(panel).toBeVisible();
+    const panelBox = await panel.boundingBox();
+    const loginBox = await page.locator('#contact-login-btn').boundingBox();
+    expect(panelBox.y).toBeGreaterThan(loginBox.y + loginBox.height - 1);
+    expect(panelBox.x + panelBox.width).toBeLessThanOrEqual(390);
+  });
+
+  test('카카오: 등록하지 않은 주소에서는 로그인 창을 열지 않고 이유를 보여 준다', async ({ page }) => {
+    await page.locator('#nav-kakao-channel').click();
+    await page.locator('#contact-login-btn').click();
+    await page.locator('[data-provider="kakao"]').click();
+    await expect(page.locator('#contact-auth-status')).toContainText('카카오 로그인을 쓸 수 없습니다');
+    await expect(page.locator('#contact-auth-status')).toHaveClass(/is-error/);
+  });
+
+  // 카카오 · 네이버: 로그인 화면 → 콜백 페이지 → 로그인 함수까지 같은 흐름
+  const OAUTH_CASES = [
+    { id: 'kakao', name: '카카오', authorize: 'https://kauth.kakao.com/oauth/authorize', clientId: 'e10f5dba1343212a115708b84584dad0' },
+    { id: 'naver', name: '네이버', authorize: 'https://nid.naver.com/oauth2.0/authorize', clientId: 'f1zKks6XzuAlapalQCEi' }
+  ];
+  for (const c of OAUTH_CASES) {
+    test(`${c.name}: 로그인 창이 돌려준 인가 코드와 state 를 로그인 함수에 보낸다`, async ({ page, baseURL }) => {
+      const origin = new URL(baseURL).origin;
+      const endpoint = `https://login.test/${c.id}Login`;
+      // 이 테스트 서버 주소를 허용하고, 이 로그인의 함수 주소를 가짜로 바꾼다
+      await page.route('**/modules/core/site-config.js*', async route => {
+        const res = await route.fetch();
+        const text = (await res.text())
+          .replace(/"http:\/\/localhost:8137"\]\)/g, `"http://localhost:8137", "${origin}"])`)
+          .replace(new RegExp(`loginEndpoint: "[^"]+/${c.id}Login"`), `loginEndpoint: "${endpoint}"`);
+        await route.fulfill({ response: res, body: text });
+      });
+      // 로그인 화면은 바로 콜백 페이지로 돌려보낸다
+      let authorizeUrl = null;
+      await page.context().route(`${c.authorize}**`, route => {
+        authorizeUrl = new URL(route.request().url());
+        const back = `${authorizeUrl.searchParams.get('redirect_uri')}?code=test-code&state=${authorizeUrl.searchParams.get('state')}`;
+        route.fulfill({ status: 302, headers: { location: back } });
+      });
+      let sent = null;
+      await page.route(endpoint, route => {
+        sent = route.request().postDataJSON();
+        route.fulfill({ status: 500, json: { error: '테스트 서버' } });
+      });
+
+      await page.goto('/index.html');
+      await page.locator('#nav-kakao-channel').click();
+      await page.locator('#contact-login-btn').click();
+      const popupPromise = page.waitForEvent('popup');
+      await page.locator(`[data-provider="${c.id}"]`).click();
+      const popup = await popupPromise;
+      await popup.waitForEvent('close');
+
+      await expect(page.locator('#contact-auth-status')).toContainText('테스트 서버');
+      expect(authorizeUrl.searchParams.get('client_id')).toBe(c.clientId);
+      expect(authorizeUrl.searchParams.get('response_type')).toBe('code');
+      expect(sent).toEqual({
+        code: 'test-code',
+        state: authorizeUrl.searchParams.get('state'),
+        redirectUri: `${origin}/auth/${c.id}-callback.html`
+      });
+    });
+  }
 
   test('메일: 내용이 짧거나 주소 모양이 틀리면 보내지 않는다', async ({ page }) => {
     let requestCount = 0;

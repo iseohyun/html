@@ -69,8 +69,10 @@ async function openSitemap(page) {
 
 async function login(page) {
   await page.locator('#nav-kakao-channel').click();
-  await expect(page.locator('#contact-login-btn')).toHaveText('로그인 (Google)');
+  await expect(page.locator('#contact-login-btn')).toHaveText('로그인');
+  // 로그인 → 오른쪽 계정 목록에서 Google
   await page.locator('#contact-login-btn').click();
+  await page.locator('[data-provider="google"]').click();
   await expect(page.locator('#contact-login-btn')).toHaveText('로그아웃');
 }
 
@@ -130,7 +132,7 @@ test.describe('로그인과 개발 중인 문서', () => {
     // 로그아웃: 보고 있던 개발중 문서가 가려지고 트리에서도 사라진다
     await page.locator('#nav-kakao-channel').click();
     await page.locator('#contact-login-btn').click();
-    await expect(page.locator('#contact-login-btn')).toHaveText('로그인 (Google)');
+    await expect(page.locator('#contact-login-btn')).toHaveText('로그인');
     await expect(page.locator('.error-state-title')).toHaveText('개발 중인 문서입니다');
     await expect(page.locator(`#sitemap-tree a[href="${DEV_PAGE_URL}"]`)).toHaveCount(0);
     await expect(page.locator('#sitemap-tree .tree-dev-count')).toHaveCount(0);
