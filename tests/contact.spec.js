@@ -25,11 +25,15 @@ test.describe('문의 창 (레일의 문의 아이콘)', () => {
     await expect(popover.locator('a.contact-action').nth(0)).toHaveAttribute('href', 'http://pf.kakao.com/_ETRrX/chat');
     await expect(popover.locator('a.contact-icon-action')).toHaveAttribute('href', 'http://pf.kakao.com/_ETRrX');
 
-    // 메일 폼은 눌러야 펼쳐진다
+    // 메일 폼은 눌러야 옆의 대화창에 열린다
     await expect(page.locator('#contact-mail-form')).toBeHidden();
     await page.locator('#contact-mail-toggle').click();
     await expect(page.locator('#contact-mail-form')).toBeVisible();
 
+    // Esc 는 대화창을 먼저 닫고, 한 번 더 누르면 문의 창을 닫는다
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#contact-mail-window')).toBeHidden();
+    await expect(popover).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(popover).toBeHidden();
   });
@@ -84,6 +88,137 @@ test.describe('문의 창 (레일의 문의 아이콘)', () => {
     const loginBox = await page.locator('#contact-login-btn').boundingBox();
     expect(panelBox.y).toBeGreaterThan(loginBox.y + loginBox.height - 1);
     expect(panelBox.x + panelBox.width).toBeLessThanOrEqual(390);
+  });
+
+  test('메일: 앞서 난 오류는 다음에 보낼 때 진단으로 몰래 붙고, 보낸 뒤에는 비운다', async ({ page }) => {
+    let fail = true;
+    const sent = [];
+    await page.route(WEB3FORMS_URL, route => {
+      sent.push(route.request().postDataJSON());
+      if (fail) route.fulfill({ status: 400, json: { success: false, message: 'Invalid access key' } });
+      else route.fulfill({ json: { success: true, message: 'ok' } });
+    });
+
+    await page.locator('#nav-kakao-channel').click();
+    await page.locator('#contact-mail-toggle').click();
+    await page.locator('#contact-message').fill('첫 번째 문의 내용');
+    await page.locator('#contact-submit-btn').click();
+    await expect(page.locator('#contact-result')).toContainText('보내지 못했습니다');
+
+    fail = false;
+    await page.locator('#contact-submit-btn').click();
+    await expect(page.locator('#contact-result')).toContainText('보냈습니다');
+    expect(sent[1].diagnostics).toContain('Invalid access key');
+    expect(sent[1].diagnostics).toContain('빌드:');
+    // 화면에는 진단이 보이지 않는다
+    await expect(page.locator('#contact-mail-window')).not.toContainText('Invalid access key');
+
+    await page.locator('#contact-message').fill('두 번째 문의 내용');
+    await page.locator('#contact-submit-btn').click();
+    await expect(page.locator('#contact-result')).toContainText('보냈습니다');
+    expect(sent[2].diagnostics).toBeUndefined();
+  });
+
+  test('대화창: 메일 · 문의하기는 문의 창 오른쪽에 아래를 맞춰 하나씩 뜬다', async ({ page }) => {
+    const popover = page.locator('#contact-popover');
+    const mail = page.locator('#contact-mail-window');
+    const chat = page.locator('#contact-chat-window');
+    await page.locator('#nav-kakao-channel').click();
+
+    await page.locator('#contact-mail-toggle').click();
+    await expect(mail).toBeVisible();
+    await expect(page.locator('#contact-mail-toggle')).toHaveAttribute('aria-expanded', 'true');
+    const box = await popover.boundingBox();
+    const mailBox = await mail.boundingBox();
+    expect(mailBox.x).toBeGreaterThanOrEqual(box.x + box.width);
+    expect(mailBox.x - (box.x + box.width)).toBeLessThan(20);
+    expect(Math.abs((mailBox.y + mailBox.height) - (box.y + box.height))).toBeLessThan(2);
+
+    // 문의하기를 열면 메일 창은 닫힌다
+    await page.locator('#contact-dm-toggle').click();
+    await expect(chat).toBeVisible();
+    await expect(mail).toBeHidden();
+    await expect(chat).toContainText('로그인하면 관리자와 대화할 수 있어요');
+
+    // 로그인 목록을 열면 대화창은 닫힌다
+    await page.locator('#contact-login-btn').click();
+    await expect(page.locator('#contact-login-providers')).toBeVisible();
+    await expect(chat).toBeHidden();
+
+    // 대화창 안을 눌러도 문의 창은 닫히지 않고, 바깥을 누르면 모두 닫힌다
+    await page.locator('#contact-dm-toggle').click();
+    await chat.locator('.contact-window-title').click();
+    await expect(popover).toBeVisible();
+    await page.mouse.click(1200, 100);
+    await expect(popover).toBeHidden();
+    await expect(chat).toBeHidden();
+  });
+
+  test('대화창: 크게 보기 단추와 오른쪽 위 모서리 끌기로 크기를 바꾸고, 크기를 기억한다', async ({ page }) => {
+    const mail = page.locator('#contact-mail-window');
+    await page.locator('#nav-kakao-channel').click();
+    await page.locator('#contact-mail-toggle').click();
+    const before = await mail.boundingBox();
+
+    const max = mail.locator('.contact-window-max');
+    await max.click();
+    await expect(max).toHaveAttribute('aria-pressed', 'true');
+    const big = await mail.boundingBox();
+    expect(big.width).toBeGreaterThan(before.width + 100);
+    expect(big.height).toBeGreaterThan(before.height);
+    await max.click();
+    await expect(max).toHaveAttribute('aria-pressed', 'false');
+    const back = await mail.boundingBox();
+    expect(Math.abs(back.width - before.width)).toBeLessThan(2);
+
+    // 오른쪽 위 모서리를 오른쪽 · 위로 끌면 커지고, 아래 끝은 그대로다
+    const grip = await mail.locator('.contact-window-grip').boundingBox();
+    await page.mouse.move(grip.x + 8, grip.y + 8);
+    await page.mouse.down();
+    await page.mouse.move(grip.x + 108, grip.y - 52, { steps: 5 });
+    await page.mouse.up();
+    const dragged = await mail.boundingBox();
+    expect(dragged.width).toBeGreaterThan(before.width + 80);
+    expect(dragged.height).toBeGreaterThan(before.height + 30);
+    expect(Math.abs((dragged.y + dragged.height) - (before.y + before.height))).toBeLessThan(2);
+
+    // 다시 열어도 그 크기
+    await page.reload();
+    await page.locator('#nav-kakao-channel').click();
+    await page.locator('#contact-mail-toggle').click();
+    const again = await mail.boundingBox();
+    expect(Math.abs(again.width - dragged.width)).toBeLessThan(2);
+  });
+
+  test('대화창: 좁은 화면에서는 화면 가장자리에 맞춰 뜬다', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await page.locator('#header-menu-btn').click();
+    await page.locator('#nav-kakao-channel').click();
+    await page.locator('#contact-mail-toggle').click();
+    const mail = page.locator('#contact-mail-window');
+    await expect(mail).toBeVisible();
+    const box = await mail.boundingBox();
+    expect(box.x).toBeGreaterThanOrEqual(11);
+    expect(box.x + box.width).toBeLessThanOrEqual(379);
+    expect(box.height).toBeGreaterThan(700);
+    await expect(mail.locator('.contact-window-grip')).toBeHidden();
+    await expect(mail.locator('.contact-window-max')).toBeHidden();
+  });
+
+  test('레일의 문의 아이콘은 노란색이 아니라 다른 레일 아이콘과 같은 강조색을 쓴다', async ({ page }) => {
+    const contact = page.locator('#nav-kakao-channel');
+    await contact.click();
+    await expect(contact).toHaveClass(/active/);
+    const colors = await page.evaluate(() => {
+      const contactEl = document.getElementById('nav-kakao-channel');
+      const other = Array.from(document.querySelectorAll('#sidebar-nav .nav-item')).find(n => n !== contactEl);
+      other.classList.add('active');
+      const result = { contact: getComputedStyle(contactEl).backgroundColor, other: getComputedStyle(other).backgroundColor };
+      other.classList.remove('active');
+      return result;
+    });
+    expect(colors.contact).not.toBe('rgb(254, 229, 0)');
+    expect(colors.contact).toBe(colors.other);
   });
 
   test('카카오: 등록하지 않은 주소에서는 로그인 창을 열지 않고 이유를 보여 준다', async ({ page }) => {
@@ -185,7 +320,7 @@ test.describe('문의 창 (레일의 문의 아이콘)', () => {
     expect(sent.email).toBe('reader@example.com');
   });
 
-  test('메일: 실패하면 내용을 남기고 이유를 보여 준다', async ({ page }) => {
+  test('메일: 실패하면 내용을 남기고 짧은 안내만 보여 준다(자세한 이유는 콘솔에만)', async ({ page }) => {
     await page.route(WEB3FORMS_URL, route => route.fulfill({ status: 400, json: { success: false, message: 'Invalid access key' } }));
 
     await page.locator('#nav-kakao-channel').click();
@@ -194,7 +329,7 @@ test.describe('문의 창 (레일의 문의 아이콘)', () => {
     await page.locator('#contact-submit-btn').click();
 
     await expect(page.locator('#contact-result')).toContainText('보내지 못했습니다');
-    await expect(page.locator('#contact-result')).toContainText('Invalid access key');
+    await expect(page.locator('#contact-result')).not.toContainText('Invalid access key');
     await expect(page.locator('#contact-message')).toHaveValue('실패해도 남아야 하는 내용');
     await expect(page.locator('#contact-submit-btn')).toBeEnabled();
   });

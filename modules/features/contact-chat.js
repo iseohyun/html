@@ -7,7 +7,9 @@
  *     대화를 고르면 그 대화를 연다. 글 하나 지우기(×)와 대화 전체 지우기를 할 수 있다.
  *   - 대화를 열어 둔 동안 나에게 온 글은 읽음으로 바꾼다. 글은 실시간으로 바뀐다.
  *   데이터는 SiteModules.ContactPush 가 맡는다(Firestore contact_messages, thread = 관리자가 아닌 쪽 uid).
- * @requires SiteModules.Auth, SiteModules.ContactPush, SiteModules.Icons
+ *   - 오류는 콘솔에만 찍고 화면에는 짧은 안내만 보인다. 보낼 때 최근 오류(SiteModules.Diag)를 글에 몰래 붙이고,
+ *     관리자는 그 글의 「진단」을 펼쳐 본다.
+ * @requires SiteModules.Auth, SiteModules.ContactPush, SiteModules.Icons, SiteModules.Diag
  * @exports mount, open, close, refresh, isOpen
  */
 
@@ -23,6 +25,13 @@ window.SiteModules.ContactChat = (function () {
   let myUid = "";
 
   function Push() { return window.SiteModules.ContactPush; }
+  function Diag() { return window.SiteModules.Diag; }
+
+  /** 오류를 콘솔과 진단 기록에 남긴다(화면에는 보이지 않는다) */
+  function report(context, err) {
+    if (Diag()) Diag().record(`ContactChat ${context}`, err);
+    else console.error(`[ContactChat] ${context}:`, err);
+  }
   function Auth() { return window.SiteModules.Auth; }
   function icon(name) { return window.SiteModules.Icons.html(name); }
 
@@ -96,9 +105,13 @@ window.SiteModules.ContactChat = (function () {
           item.appendChild(button);
           list.appendChild(item);
         });
-      }, err => showNote(`대화 목록을 불러오지 못했습니다: ${err.message}`, true));
+      }, err => {
+        report("대화 목록 불러오기", err);
+        showNote("대화 목록을 불러오지 못했어요. 잠시 후 다시 열어 주세요.", true);
+      });
     } catch (err) {
-      showNote(`대화 목록을 불러오지 못했습니다: ${err.message}`, true);
+      report("대화 목록 불러오기", err);
+      showNote("대화 목록을 불러오지 못했어요. 잠시 후 다시 열어 주세요.", true);
     }
   }
 
@@ -130,7 +143,8 @@ window.SiteModules.ContactChat = (function () {
           await Push().deleteThread(thread);
           renderThreadList();
         } catch (err) {
-          window.alert(`지우지 못했습니다: ${err.message}`);
+          report("대화 지우기", err);
+          window.alert("지우지 못했습니다. 콘솔을 확인해 주세요.");
         }
       });
       head.appendChild(wipe);
@@ -165,8 +179,11 @@ window.SiteModules.ContactChat = (function () {
       send.disabled = true;
       result.textContent = "";
       result.classList.remove("is-error");
+      // 최근 오류가 있으면 글에 몰래 붙인다(관리자만 본다)
+      const diag = Diag() && Diag().hasErrors() ? Diag().snapshot() : "";
       try {
         await Push().sendMessage({
+          diag: diag,
           kind: "direct",
           to: isAdmin ? thread : undefined,
           threadName: isAdmin ? name : undefined,
@@ -175,9 +192,10 @@ window.SiteModules.ContactChat = (function () {
           url: window.location.href
         });
         input.value = "";
+        if (diag) Diag().clear();
       } catch (err) {
-        console.error("[ContactChat] 보내기 실패:", err);
-        result.textContent = `보내지 못했습니다: ${err.message}`;
+        report("보내기", err);
+        result.textContent = err && err.userFacing ? err.message : "보내지 못했어요. 잠시 후 다시 보내 주세요.";
         result.classList.add("is-error");
       } finally {
         send.disabled = false;
@@ -201,11 +219,13 @@ window.SiteModules.ContactChat = (function () {
           Push().markRead(unreadIds).catch(err => console.warn("[ContactChat] 읽음 표시 실패:", err));
         }
       }, err => {
-        result.textContent = `대화를 불러오지 못했습니다: ${err.message}`;
+        report("대화 불러오기", err);
+        result.textContent = "대화를 불러오지 못했어요. 잠시 후 다시 열어 주세요.";
         result.classList.add("is-error");
       });
     } catch (err) {
-      result.textContent = `대화를 불러오지 못했습니다: ${err.message}`;
+      report("대화 불러오기", err);
+      result.textContent = "대화를 불러오지 못했어요. 잠시 후 다시 열어 주세요.";
       result.classList.add("is-error");
     }
   }
@@ -226,6 +246,13 @@ window.SiteModules.ContactChat = (function () {
       if (mine && item.read) parts.push("읽음");
       meta.textContent = parts.join(" · ");
       bubble.appendChild(meta);
+      // 관리자만: 보낸 사람 화면의 최근 오류와 환경
+      if (isAdmin && item.diag) {
+        const details = el("details", "chat-diag");
+        details.appendChild(el("summary", "", "진단"));
+        details.appendChild(el("pre", "", item.diag));
+        bubble.appendChild(details);
+      }
       row.appendChild(bubble);
       if (isAdmin) {
         const del = el("button", "chat-del");
@@ -238,7 +265,8 @@ window.SiteModules.ContactChat = (function () {
           try {
             await Push().deleteMessage(item.id);
           } catch (err) {
-            window.alert(`지우지 못했습니다: ${err.message}`);
+            report("메시지 지우기", err);
+            window.alert("지우지 못했습니다. 콘솔을 확인해 주세요.");
           }
         });
         row.appendChild(del);

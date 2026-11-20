@@ -76,6 +76,7 @@ service cloud.firestore {
     //    thread: 대화 묶음 = 관리자가 아닌 쪽의 uid. 관리자가 아니면 받는 사람(to)은 관리자만 되고,
     //    같은 사람은 10초에 한 번만 적을 수 있다: contact_rate/{uid}.lastAt 을 같은 일괄 쓰기에서 지금 시각으로 고쳐야 한다.
     //    관리자는 제한이 없다. 받은 사람은 read 만 true 로 바꿀 수 있다.
+    //    diag(선택): 보낸 사람 화면의 최근 오류와 환경. 관리자 대화 화면의 「진단」에만 보인다.
     function contactRatePath() {
       return /databases/$(database)/documents/contact_rate/$(request.auth.uid);
     }
@@ -90,7 +91,7 @@ service cloud.firestore {
 
     match /contact_messages/{messageId} {
       allow create: if request.auth != null
-        && request.resource.data.keys().hasOnly(['uid', 'fromName', 'to', 'thread', 'threadName', 'kind', 'message', 'page', 'url', 'read', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['uid', 'fromName', 'to', 'thread', 'threadName', 'kind', 'message', 'page', 'url', 'diag', 'read', 'createdAt'])
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.fromName is string
         && request.resource.data.fromName.size() <= 80
@@ -107,6 +108,7 @@ service cloud.firestore {
         && request.resource.data.page.size() <= 300
         && request.resource.data.url is string
         && request.resource.data.url.size() <= 1000
+        && (!('diag' in request.resource.data) || (request.resource.data.diag is string && request.resource.data.diag.size() <= 4000))
         && request.resource.data.read == false
         && request.resource.data.createdAt == request.time
         && (isAdmin() || getAfter(contactRatePath()).data.lastAt == request.time);

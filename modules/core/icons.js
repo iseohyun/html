@@ -26,6 +26,8 @@ window.SiteModules.Icons = (function () {
     "log-in": '<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>', // 로그인 (log-in)
     "log-out": '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>', // 로그아웃 (log-out)
     "x": '<path d="M18 6 6 18M6 6l12 12"/>',                                         // 닫기 (x)
+    "maximize": '<path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>',                // 크게 보기 (maximize-2)
+    "minimize": '<path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/>',                // 원래 크기로 (minimize-2)
 
     // 레일
     "sitemap": '<path d="M21 12h-8M21 6H8M21 18h-8M3 6v4c0 1.1.9 2 2 2h3M3 10v6c0 1.1.9 2 2 2h3"/>', // 사이트맵 (list-tree)

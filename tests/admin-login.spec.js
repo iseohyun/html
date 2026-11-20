@@ -69,11 +69,11 @@ async function openSitemap(page) {
 
 async function login(page) {
   await page.locator('#nav-kakao-channel').click();
-  await expect(page.locator('#contact-login-btn')).toHaveText('로그인');
+  await expect(page.locator('#contact-login-btn .contact-login-label')).toHaveText('로그인');
   // 로그인 → 오른쪽 계정 목록에서 Google
   await page.locator('#contact-login-btn').click();
   await page.locator('[data-provider="google"]').click();
-  await expect(page.locator('#contact-login-btn')).toHaveText('로그아웃');
+  await expect(page.locator('#contact-login-btn .contact-login-label')).toHaveText('로그아웃');
 }
 
 test.describe('로그인과 개발 중인 문서', () => {
@@ -100,6 +100,19 @@ test.describe('로그인과 개발 중인 문서', () => {
     await expect(page.locator('.error-state-title')).toHaveText('개발 중인 문서입니다');
     await expect(page.locator('article h1')).toHaveCount(0);
     expect(firebaseRequests).toEqual([]);
+  });
+
+  test('로그인하면 로그아웃 줄 오른쪽에 이름(없으면 메일 주소)과 로그인한 곳의 아이콘이 보인다', async ({ page }) => {
+    await mockSite(page, { user: { email: TEST_ADMIN_EMAIL, emailVerified: true } });
+    await page.goto('/index.html');
+    await login(page);
+    const who = page.locator('#contact-login-btn .contact-login-who');
+    await expect(who.locator('.contact-login-name')).toHaveText(TEST_ADMIN_EMAIL);
+    await expect(who.locator('.contact-provider-mark')).toHaveAttribute('aria-label', 'Google로 로그인함');
+    // 오른쪽 정렬: 이름 묶음의 오른쪽 끝이 단추 오른쪽 끝에 붙는다
+    const button = await page.locator('#contact-login-btn').boundingBox();
+    const whoBox = await who.boundingBox();
+    expect(button.x + button.width - (whoBox.x + whoBox.width)).toBeLessThan(16);
   });
 
   test('관리자로 로그인하면 개발중 문서가 보이고, 묶음마다 빨간 +n 이 붙는다. 로그아웃하면 다시 사라진다', async ({ page }) => {
@@ -132,7 +145,8 @@ test.describe('로그인과 개발 중인 문서', () => {
     // 로그아웃: 보고 있던 개발중 문서가 가려지고 트리에서도 사라진다
     await page.locator('#nav-kakao-channel').click();
     await page.locator('#contact-login-btn').click();
-    await expect(page.locator('#contact-login-btn')).toHaveText('로그인');
+    await expect(page.locator('#contact-login-btn .contact-login-label')).toHaveText('로그인');
+    await expect(page.locator('#contact-login-btn .contact-login-who')).toHaveCount(0);
     await expect(page.locator('.error-state-title')).toHaveText('개발 중인 문서입니다');
     await expect(page.locator(`#sitemap-tree a[href="${DEV_PAGE_URL}"]`)).toHaveCount(0);
     await expect(page.locator('#sitemap-tree .tree-dev-count')).toHaveCount(0);

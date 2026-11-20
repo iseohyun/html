@@ -106,7 +106,8 @@ window.SiteModules.ContactPush = (function () {
   /**
    * 문의를 적는다. to 가 없으면 관리자에게 보낸다.
    * 관리자가 보낼 때는 threadName(상대 이름)을 함께 주면 대화 목록에 그 이름이 보인다.
-   * @param {{to?: string, threadName?: string, kind: "direct"|"mail", message: string, page?: string, url?: string}} entry
+   * diag 는 보낸 사람 화면의 최근 오류와 환경(SiteModules.Diag.snapshot). 있을 때만 적고 관리자만 본다.
+   * @param {{to?: string, threadName?: string, kind: "direct"|"mail", message: string, page?: string, url?: string, diag?: string}} entry
    */
   async function sendMessage(entry) {
     const { fb, user } = await currentUser(false);
@@ -123,7 +124,7 @@ window.SiteModules.ContactPush = (function () {
     const batch = db.batch();
     // 관리자는 횟수 제한이 없다(규칙도 같다)
     if (!isAdmin) batch.set(db.collection("contact_rate").doc(user.uid), { lastAt: now });
-    batch.set(db.collection("contact_messages").doc(), {
+    const doc = {
       uid: user.uid,
       fromName: myName,
       to: to,
@@ -136,11 +137,17 @@ window.SiteModules.ContactPush = (function () {
       url: String(entry.url || "").slice(0, 1000),
       read: false,
       createdAt: now
-    });
+    };
+    if (entry.diag) doc.diag = String(entry.diag).slice(0, 4000);
+    batch.set(db.collection("contact_messages").doc(), doc);
     try {
       await batch.commit();
     } catch (err) {
-      if (err && err.code === "permission-denied" && !isAdmin) throw new Error("너무 빨리 보냈어요. 10초 뒤에 다시 보내 주세요");
+      if (err && err.code === "permission-denied" && !isAdmin) {
+        const tooFast = new Error("너무 빨리 보냈어요. 10초 뒤에 다시 보내 주세요");
+        tooFast.userFacing = true;
+        throw tooFast;
+      }
       throw err;
     }
   }

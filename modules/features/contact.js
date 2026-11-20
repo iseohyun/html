@@ -7,10 +7,14 @@
  *   관리자로 로그인하면 개발 중인 문서가 사이트맵에 보인다.
  *   메일은 서버 없이 화면에서 바로 Web3Forms 로 보낸다(접근 키와 주소는 SiteModules.Config.feedback).
  *   로그인한 사람의 메일 문의는 Firestore 에도 적어 관리자 기기에 푸시가 가게 한다(SiteModules.ContactPush).
+ *   「메일로 문의」와 「문의하기」는 문의 창 오른쪽에 따로 뜨는 대화창(SiteModules.ContactWindow)에 열린다.
+ *   오류는 콘솔에만 찍고 화면에는 짧은 안내만 보인다. 최근 오류는 문의를 보낼 때 몰래 붙여(SiteModules.Diag) 관리자만 본다.
+ *   로그인한 동안 로그인 항목 오른쪽에 이름(별명 → 메일 주소)과 로그인한 곳의 아이콘이 보인다.
  *   「문의하기」는 대화 화면(SiteModules.ContactChat)을 연다. 글은 받는 사람의 기기에 푸시로 가고,
  *   읽지 않은 글이 있으면 레일의 문의 아이콘에 점, 「문의하기」에 수가 붙는다.
  *   알림을 누르면 ?chat={thread} 로 열리거나(창이 없을 때) 서비스 워커 메시지로 그 대화를 연다.
- * @requires SiteModules.Config, SiteModules.Icons, SiteModules.Auth, SiteModules.ContactPush, SiteModules.ContactChat
+ * @requires SiteModules.Config, SiteModules.Icons, SiteModules.Auth, SiteModules.Diag, SiteModules.ContactWindow,
+ *   SiteModules.ContactPush, SiteModules.ContactChat
  * @exports init
  */
 
@@ -40,6 +44,25 @@ window.SiteModules.Contact = (function () {
 
   let popover = null;
   let railButton = null;
+  let mailWindow = null;
+  let chatWindow = null;
+
+  function $(id) { return document.getElementById(id); }
+
+  // 화면에 보일 오류 안내: 사람에게 보여도 되는 오류(userFacing)만 그 글을, 나머지는 짧은 안내를 쓴다.
+  // 자세한 내용은 콘솔과 진단 기록에만 남는다.
+  function friendly(err, fallback) {
+    return err && err.userFacing && err.message ? err.message : fallback;
+  }
+
+  function diagnostics() {
+    const Diag = window.SiteModules.Diag;
+    return Diag && Diag.hasErrors() ? Diag.snapshot() : "";
+  }
+
+  function clearDiagnostics() {
+    if (window.SiteModules.Diag) window.SiteModules.Diag.clear();
+  }
 
   function buildPopover() {
     const icon = window.SiteModules.Icons.html;
@@ -59,7 +82,7 @@ window.SiteModules.Contact = (function () {
           <a class="contact-action" href="${KAKAO_CHAT_URL}" target="_blank" rel="noopener noreferrer">${icon("chat")}<span>카카오톡 1:1 채팅</span></a>
           <a class="contact-icon-action" href="${KAKAO_CHANNEL_URL}" target="_blank" rel="noopener noreferrer" aria-label="카카오톡 채널 추가" title="카카오톡 채널 추가">${icon("user-plus")}</a>
         </div>
-        <button class="contact-action" type="button" id="contact-mail-toggle" aria-expanded="false" aria-controls="contact-mail-form">${icon("mail")}<span>메일로 문의</span></button>
+        <button class="contact-action" type="button" id="contact-mail-toggle" aria-expanded="false" aria-controls="contact-mail-window">${icon("mail")}<span>메일로 문의</span></button>
         <div class="contact-row">
           <button class="contact-action" type="button" id="contact-login-btn" aria-expanded="false" aria-controls="contact-login-providers"></button>
           <button class="contact-icon-action" type="button" id="contact-push-btn" hidden aria-pressed="false">${icon("bell")}</button>
@@ -72,11 +95,20 @@ window.SiteModules.Contact = (function () {
             ${p.ready ? "" : '<span class="contact-provider-soon">준비 중</span>'}
           </button>`).join("")}
         </div>
-        <button class="contact-action" type="button" id="contact-dm-toggle" aria-expanded="false" aria-controls="contact-chat">${icon("chat")}<span>문의하기</span><span class="chat-badge" id="contact-unread" hidden></span></button>
+        <button class="contact-action" type="button" id="contact-dm-toggle" aria-expanded="false" aria-controls="contact-chat-window">${icon("chat")}<span>문의하기</span><span class="chat-badge" id="contact-unread" hidden></span></button>
         <span class="contact-auth-status" id="contact-auth-status" role="status"></span>
       </div>
-      <div class="contact-chat" id="contact-chat" hidden></div>
-      <form class="contact-form" id="contact-mail-form" novalidate hidden>
+    `;
+    document.body.appendChild(node);
+    return node;
+  }
+
+  // 문의 창 옆에 따로 뜨는 대화창 둘: 메일로 문의, 문의하기(대화)
+  function buildWindows() {
+    const Window = window.SiteModules.ContactWindow;
+    mailWindow = Window.create({ key: "mail", id: "contact-mail-window", title: "메일로 문의", anchor: () => popover, onClose: () => setWindow(null) });
+    mailWindow.body.innerHTML = `
+      <form class="contact-form" id="contact-mail-form" novalidate>
         <label class="contact-label" for="contact-message">내용</label>
         <textarea class="contact-input" id="contact-message" name="message" rows="5" placeholder="질문이나 건의를 적어 주세요."></textarea>
         <label class="contact-label" for="contact-email">답장 받을 주소 <span class="contact-optional">(선택)</span></label>
@@ -93,8 +125,8 @@ window.SiteModules.Contact = (function () {
         </div>
       </form>
     `;
-    document.body.appendChild(node);
-    return node;
+    chatWindow = Window.create({ key: "chat", id: "contact-chat-window", title: "문의하기", anchor: () => popover, onClose: () => setWindow(null) });
+    chatWindow.body.innerHTML = '<div class="contact-chat" id="contact-chat"></div>';
   }
 
   // 지금 보고 있는 페이지의 이름 (예: "사이트 소개"). 홈은 "홈".
@@ -105,8 +137,8 @@ window.SiteModules.Contact = (function () {
 
   // 읽기 전용 칸에 현재 페이지 이름을 채우고, 체크를 끄면 칸을 흐리게 한다
   function refreshPageInfo() {
-    const nameInput = popover.querySelector("#contact-page-name");
-    const check = popover.querySelector("#contact-page-check");
+    const nameInput = $("contact-page-name");
+    const check = $("contact-page-check");
     nameInput.value = getCurrentPageName();
     nameInput.classList.toggle("is-off", !check.checked);
   }
@@ -115,9 +147,11 @@ window.SiteModules.Contact = (function () {
     if (!popover) return;
     if (isOpen) refreshPageInfo();
     popover.hidden = !isOpen;
-    if (!isOpen) setProvidersOpen(false);
+    if (!isOpen) {
+      setProvidersOpen(false);
+      setWindow(null);
+    }
     if (railButton) railButton.classList.toggle("active", isOpen);
-    if (!isOpen && window.SiteModules.ContactChat && window.SiteModules.ContactChat.isOpen()) setChatOpen(false);
   }
 
   // 로그인 항목의 글자와 아래 한 줄 안내를 지금 로그인 상태에 맞춘다
@@ -128,7 +162,31 @@ window.SiteModules.Contact = (function () {
     const status = popover.querySelector("#contact-auth-status");
     const isSignedIn = Auth.isSignedIn();
 
-    button.innerHTML = `${icon(isSignedIn ? "log-out" : "log-in")}<span>${isSignedIn ? "로그아웃" : "로그인"}</span>`;
+    button.innerHTML = `${icon(isSignedIn ? "log-out" : "log-in")}<span class="contact-login-label">${isSignedIn ? "로그아웃" : "로그인"}</span>`;
+    const profile = isSignedIn && Auth.currentProfile ? Auth.currentProfile() : null;
+    if (profile) {
+      // 이름(별명 → 메일 주소)과 로그인한 곳의 아이콘을 오른쪽에
+      const who = document.createElement("span");
+      who.className = "contact-login-who";
+      const name = document.createElement("span");
+      name.className = "contact-login-name";
+      name.textContent = profile.name;
+      who.appendChild(name);
+      const provider = LOGIN_PROVIDERS.find(p => p.id === profile.provider);
+      if (provider) {
+        const mark = document.createElement("span");
+        mark.className = "contact-provider-mark";
+        mark.innerHTML = provider.mark;
+        mark.title = `${provider.name}로 로그인함`;
+        mark.setAttribute("aria-label", `${provider.name}로 로그인함`);
+        mark.setAttribute("role", "img");
+        who.appendChild(mark);
+      }
+      button.appendChild(who);
+      button.title = `${profile.name} 로그아웃`;
+    } else {
+      button.removeAttribute("title");
+    }
     if (isSignedIn) setProvidersOpen(false);
     let text = message || "";
     if (!text && isSignedIn) {
@@ -170,7 +228,7 @@ window.SiteModules.Contact = (function () {
       status.classList.remove("is-error");
     } catch (err) {
       console.error("[Contact] 알림 설정 실패:", err);
-      status.textContent = `알림을 ${turningOn ? "켜지" : "끄지"} 못했습니다: ${err.message}`;
+      status.textContent = friendly(err, `알림을 ${turningOn ? "켜지" : "끄지"} 못했습니다. 브라우저의 알림 권한을 확인해 주세요.`);
       status.classList.add("is-error");
     } finally {
       button.disabled = false;
@@ -200,6 +258,7 @@ window.SiteModules.Contact = (function () {
     const panel = popover.querySelector("#contact-login-providers");
     panel.hidden = !isOpen;
     popover.querySelector("#contact-login-btn").setAttribute("aria-expanded", String(isOpen));
+    if (isOpen) setWindow(null);
     placeProviders();
   }
 
@@ -217,7 +276,7 @@ window.SiteModules.Contact = (function () {
       refreshLoginAction();
     } catch (err) {
       console.error("[Contact] 로그아웃 실패:", err);
-      refreshLoginAction(`로그아웃하지 못했습니다: ${err.message}`, true);
+      refreshLoginAction(friendly(err, "로그아웃하지 못했습니다. 잠시 후 다시 시도해 주세요."), true);
     } finally {
       button.disabled = false;
     }
@@ -237,24 +296,45 @@ window.SiteModules.Contact = (function () {
       // 창을 그냥 닫은 것은 오류로 알리지 않는다
       const isCancelled = err && (err.code === "auth/popup-closed-by-user" || err.code === "auth/cancelled-popup-request");
       if (!isCancelled) console.error("[Contact] 로그인 실패:", err);
-      refreshLoginAction(isCancelled ? "" : `로그인하지 못했습니다: ${err.message}`, !isCancelled);
+      refreshLoginAction(isCancelled ? "" : friendly(err, "로그인하지 못했습니다. 잠시 후 다시 시도해 주세요."), !isCancelled);
     } finally {
       button.disabled = false;
     }
   }
 
-  // 「문의하기」: 대화 화면을 열고 닫는다. 열면 창을 넓힌다.
-  function setChatOpen(isOpen, thread) {
+  /**
+   * 대화창을 하나만 연다(「메일로 문의」 또는 「문의하기」). null 이면 둘 다 닫는다.
+   * @param {"mail"|"chat"|null} name
+   * @param {string} [thread] 문의하기: 알림을 눌러 들어온 대화
+   */
+  function setWindow(name, thread) {
+    if (!mailWindow || !chatWindow) return;
     const Chat = window.SiteModules.ContactChat;
-    const toggle = popover.querySelector("#contact-dm-toggle");
-    toggle.setAttribute("aria-expanded", String(isOpen));
-    popover.classList.toggle("is-chat", isOpen);
-    if (isOpen) {
-      setMailFormOpen(false);
+    if (name) setProvidersOpen(false);
+
+    $("contact-mail-toggle").setAttribute("aria-expanded", String(name === "mail"));
+    if (name === "mail") {
+      mailWindow.open();
+      refreshPageInfo();
+      $("contact-message").focus();
+    } else {
+      mailWindow.close();
+    }
+
+    $("contact-dm-toggle").setAttribute("aria-expanded", String(name === "chat"));
+    if (name === "chat") {
+      chatWindow.open();
       Chat.open(thread);
     } else {
-      Chat.close();
+      chatWindow.close();
+      if (Chat.isOpen()) Chat.close();
     }
+  }
+
+  function openWindowName() {
+    if (mailWindow && mailWindow.isOpen()) return "mail";
+    if (chatWindow && chatWindow.isOpen()) return "chat";
+    return null;
   }
 
   // 읽지 않은 글: 레일 아이콘의 점과 「문의하기」의 수
@@ -284,22 +364,11 @@ window.SiteModules.Contact = (function () {
     const thread = pendingChat;
     pendingChat = "";
     setOpen(true);
-    setChatOpen(true, thread);
-  }
-
-  function setMailFormOpen(isOpen) {
-    const form = popover.querySelector("#contact-mail-form");
-    const toggle = popover.querySelector("#contact-mail-toggle");
-    form.hidden = !isOpen;
-    toggle.setAttribute("aria-expanded", String(isOpen));
-    if (isOpen) {
-      setChatOpen(false);
-      popover.querySelector("#contact-message").focus();
-    }
+    setWindow("chat", thread);
   }
 
   function showResult(message, isError) {
-    const result = popover.querySelector("#contact-result");
+    const result = $("contact-result");
     result.textContent = message;
     result.classList.toggle("is-error", !!isError);
   }
@@ -316,7 +385,7 @@ window.SiteModules.Contact = (function () {
     const config = window.SiteModules.Config.feedback;
     const message = form.elements.message.value.trim();
     const email = form.elements.email.value.trim();
-    const submitBtn = popover.querySelector("#contact-submit-btn");
+    const submitBtn = $("contact-submit-btn");
 
     // 사람 눈에 보이지 않는 칸이 채워져 있으면 자동 입력으로 보고 보내지 않는다
     if (form.elements.botcheck.checked) return;
@@ -339,6 +408,9 @@ window.SiteModules.Contact = (function () {
       message: composeMessage(message, includePage)
     };
     if (email) payload.email = email;
+    // 최근 오류가 있으면 메일에만 붙인다(보내는 사람 화면에는 보이지 않는다)
+    const diag = diagnostics();
+    if (diag) payload.diagnostics = diag;
 
     submitBtn.disabled = true;
     showResult("보내는 중입니다...", false);
@@ -355,11 +427,12 @@ window.SiteModules.Contact = (function () {
       form.reset();
       refreshPageInfo();
       showResult("보냈습니다. 고맙습니다.", false);
-      recordForPush(message, pageName);
+      recordForPush(message, pageName, diag);
+      clearDiagnostics();
     } catch (err) {
       console.error("[Contact] 메일 전송 실패:", err);
       // 내용은 남겨 두고 이유와 다시 시도 안내를 보여 준다
-      showResult(`보내지 못했습니다: ${err.message}. 잠시 후 다시 시도해 주세요.`, true);
+      showResult("보내지 못했습니다. 잠시 후 다시 시도해 주세요.", true);
     } finally {
       submitBtn.disabled = false;
     }
@@ -367,10 +440,10 @@ window.SiteModules.Contact = (function () {
 
   // 메일을 보낸 뒤, 로그인한 사람의 문의를 Firestore 에 적어 관리자에게 푸시가 가게 한다.
   // 메일은 이미 갔으므로 실패해도(1분 안에 또 보냄 등) 화면에는 알리지 않는다.
-  function recordForPush(message, pageName) {
+  function recordForPush(message, pageName, diag) {
     const Push = window.SiteModules.ContactPush;
     if (!Push || !window.SiteModules.Auth.isSignedIn()) return;
-    Push.sendMessage({ kind: "mail", message: message, page: pageName || getCurrentPageName(), url: window.location.href })
+    Push.sendMessage({ kind: "mail", message: message, page: pageName || getCurrentPageName(), url: window.location.href, diag: diag })
       .catch(err => console.warn("[Contact] 문의 알림 기록 실패:", err));
   }
 
@@ -383,6 +456,7 @@ window.SiteModules.Contact = (function () {
     railButton = document.getElementById("nav-kakao-channel");
     if (!railButton) return;
     popover = buildPopover();
+    buildWindows();
 
     railButton.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -393,18 +467,26 @@ window.SiteModules.Contact = (function () {
 
     popover.querySelector("#contact-close-btn").addEventListener("click", () => setOpen(false));
     popover.querySelector("#contact-mail-toggle").addEventListener("click", () => {
-      setMailFormOpen(popover.querySelector("#contact-mail-form").hidden);
+      setWindow(openWindowName() === "mail" ? null : "mail");
     });
-    popover.querySelector("#contact-mail-form").addEventListener("submit", submitMail);
-    popover.querySelector("#contact-page-check").addEventListener("change", refreshPageInfo);
+    $("contact-mail-form").addEventListener("submit", submitMail);
+    $("contact-page-check").addEventListener("change", refreshPageInfo);
     popover.querySelector("#contact-login-btn").addEventListener("click", onLoginClick);
     popover.querySelector("#contact-login-providers").addEventListener("click", onProviderClick);
     window.addEventListener("resize", () => { if (isProvidersOpen()) placeProviders(); });
     popover.addEventListener("scroll", () => { if (isProvidersOpen()) placeProviders(); });
+    // 로그인 안내 줄처럼 문의 창 높이가 바뀌면 옆의 대화창도 다시 맞춘다
+    if (window.ResizeObserver) {
+      new ResizeObserver(() => {
+        if (mailWindow.isOpen()) mailWindow.place();
+        if (chatWindow.isOpen()) chatWindow.place();
+        if (isProvidersOpen()) placeProviders();
+      }).observe(popover);
+    }
     popover.querySelector("#contact-push-btn").addEventListener("click", onPushClick);
-    window.SiteModules.ContactChat.mount(popover.querySelector("#contact-chat"));
+    window.SiteModules.ContactChat.mount($("contact-chat"));
     popover.querySelector("#contact-dm-toggle").addEventListener("click", () => {
-      setChatOpen(!window.SiteModules.ContactChat.isOpen());
+      setWindow(openWindowName() === "chat" ? null : "chat");
     });
     window.SiteModules.Auth.onChange(() => {
       refreshLoginAction();
@@ -443,15 +525,20 @@ window.SiteModules.Contact = (function () {
 
     document.addEventListener("click", (e) => {
       // 대화 화면은 누른 단추를 바로 다시 그리므로, 이미 문서에서 빠진 요소를 누른 것은 바깥 클릭이 아니다
-      if (popover.hidden || !e.target.isConnected || popover.contains(e.target) || railButton.contains(e.target)) return;
+      if (popover.hidden || !e.target.isConnected || popover.contains(e.target) || railButton.contains(e.target)
+        || mailWindow.el.contains(e.target) || chatWindow.el.contains(e.target)) return;
       setOpen(false);
     });
     window.addEventListener("keydown", (e) => {
       if (e.key !== "Escape" || popover.hidden) return;
-      // 계정 목록 창이 열려 있으면 그것만 먼저 닫는다
+      // 계정 목록 창이나 대화창이 열려 있으면 그것만 먼저 닫는다
       if (isProvidersOpen()) {
         setProvidersOpen(false);
         popover.querySelector("#contact-login-btn").focus();
+      } else if (openWindowName()) {
+        const which = openWindowName();
+        setWindow(null);
+        $(which === "mail" ? "contact-mail-toggle" : "contact-dm-toggle").focus();
       } else {
         setOpen(false);
       }

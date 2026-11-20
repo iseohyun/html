@@ -10,7 +10,7 @@
  *   - 관리자 판정은 화면에서만 한다: 구글이 확인해 준 메일 주소의 SHA-256 값을 설정의 값과 견준다.
  *     이것은 "가리기"일 뿐 보호가 아니다. 개발 중인 문서의 파일은 공개 저장소에 그대로 있다.
  * @requires SiteModules.Config
- * @exports init, login, logout, ready, loadScript, isSignedIn, isProviderReady, isAdmin, onChange
+ * @exports init, login, logout, ready, loadScript, isSignedIn, currentProfile, isProviderReady, isAdmin, onChange
  */
 
 window.SiteModules = window.SiteModules || {};
@@ -93,8 +93,15 @@ window.SiteModules.Auth = (function () {
     });
   }
 
-  function cancelledError(message) {
+  /** 사람에게 그대로 보여 줘도 되는 오류(이유와 할 일을 적은 글). 문의 창은 이것만 화면에 보이고 나머지는 콘솔에만 찍는다. */
+  function userError(message) {
     const err = new Error(message);
+    err.userFacing = true;
+    return err;
+  }
+
+  function cancelledError(message) {
+    const err = userError(message);
     err.code = "auth/popup-closed-by-user";
     return err;
   }
@@ -113,11 +120,11 @@ window.SiteModules.Auth = (function () {
       const onMessage = (e) => {
         const data = e.data;
         if (e.origin !== window.location.origin || !data || data.type !== "oauth-callback") return;
-        if (data.state !== state) return finish(reject, new Error("로그인 요청이 맞지 않습니다. 다시 시도해 주세요."));
+        if (data.state !== state) return finish(reject, userError("로그인 요청이 맞지 않습니다. 다시 시도해 주세요."));
         if (data.error) {
-          return finish(reject, data.error === "access_denied" ? cancelledError(`${name} 로그인을 취소했습니다`) : new Error(`${name} 로그인이 거절되었습니다 (${data.error})`));
+          return finish(reject, data.error === "access_denied" ? cancelledError(`${name} 로그인을 취소했습니다`) : (console.warn(`[Auth] ${name} 로그인 거절:`, data.error), userError(`${name} 로그인이 거절되었습니다`)));
         }
-        if (!data.code) return finish(reject, new Error(`${name} 로그인 창이 인가 코드를 주지 않았습니다`));
+        if (!data.code) return finish(reject, userError(`${name} 로그인 창이 인가 코드를 주지 않았습니다`));
         finish(resolve, data.code);
       };
       // 코드를 받기 전에 창을 닫았으면 취소(창이 닫히며 보낸 메시지가 먼저 닿도록 조금 기다린다)
@@ -141,15 +148,15 @@ window.SiteModules.Auth = (function () {
    */
   async function loginWithOAuth(provider) {
     const conf = window.SiteModules.Config[provider];
-    if (!isProviderReady(provider)) throw new Error(`${conf ? conf.name : provider} 로그인은 아직 준비 중입니다`);
+    if (!isProviderReady(provider)) throw userError(`${conf ? conf.name : provider} 로그인은 아직 준비 중입니다`);
     if (!conf.allowedOrigins.includes(window.location.origin)) {
-      throw new Error(`이 주소(${window.location.origin})에서는 ${conf.name} 로그인을 쓸 수 없습니다. https://iseohyun.com 에서 해 주세요.`);
+      throw userError(`이 주소(${window.location.origin})에서는 ${conf.name} 로그인을 쓸 수 없습니다. https://iseohyun.com 에서 해 주세요.`);
     }
     const redirectUri = window.location.origin + conf.callbackPath;
     const state = Array.from(window.crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, "0")).join("");
     const url = `${conf.authorizeUrl}?${new URLSearchParams({ response_type: "code", client_id: conf.clientId, redirect_uri: redirectUri, state })}`;
     const popup = window.open(url, `${provider}-login`, "width=480,height=720");
-    if (!popup) throw new Error(`팝업이 막혀 ${conf.name} 로그인 창을 열지 못했습니다. 이 사이트의 팝업을 허용해 주세요.`);
+    if (!popup) throw userError(`팝업이 막혀 ${conf.name} 로그인 창을 열지 못했습니다. 이 사이트의 팝업을 허용해 주세요.`);
 
     const code = await waitForCode(popup, state, conf.name);
     let res;
@@ -160,10 +167,14 @@ window.SiteModules.Auth = (function () {
         body: JSON.stringify({ code, state, redirectUri })
       });
     } catch (err) {
-      throw new Error(`${conf.name} 로그인 서버에 연결하지 못했습니다`);
+      console.warn(`[Auth] ${conf.name} 로그인 서버 연결 실패:`, err);
+      throw userError(`${conf.name} 로그인 서버에 연결하지 못했습니다`);
     }
     const body = await res.json().catch(() => ({}));
-    if (!res.ok || !body.token) throw new Error(body.error || `${conf.name} 로그인 서버 오류 (${res.status})`);
+    if (!res.ok || !body.token) {
+      console.warn(`[Auth] ${conf.name} 로그인 서버 응답 ${res.status}:`, body.error || "");
+      throw userError(body.error || `${conf.name} 로그인을 처리하지 못했습니다`);
+    }
     const auth = await loadSdk();
     await auth.signInWithCustomToken(body.token);
   }
@@ -175,7 +186,7 @@ window.SiteModules.Auth = (function () {
   async function login(provider = "google") {
     if (provider !== "google") return loginWithOAuth(provider);
     if (IN_APP_BROWSER_PATTERN.test(navigator.userAgent)) {
-      throw new Error("앱 안의 브라우저에서는 구글 로그인이 막혀 있습니다. 기본 브라우저로 열어 주세요.");
+      throw userError("앱 안의 브라우저에서는 구글 로그인이 막혀 있습니다. 기본 브라우저로 열어 주세요.");
     }
     const auth = await loadSdk();
     const googleProvider = new window.firebase.auth.GoogleAuthProvider();
@@ -207,6 +218,19 @@ window.SiteModules.Auth = (function () {
     ready: loadSdk,
     loadScript: loadScript,
     isSignedIn: () => !!currentUser,
+    /**
+     * 로그인한 사람의 이름과 로그인한 곳. 이름은 별명(닉네임) → 메일 주소 순.
+     * @returns {{name: string, provider: "google"|"kakao"|"naver"|""}|null}
+     */
+    currentProfile: () => {
+      if (!currentUser) return null;
+      const uid = currentUser.uid || "";
+      let provider = "";
+      if (uid.startsWith("kakao:")) provider = "kakao";
+      else if (uid.startsWith("naver:")) provider = "naver";
+      else if ((currentUser.providerData || []).some(p => p && p.providerId === "google.com") || currentUser.email) provider = "google";
+      return { name: currentUser.displayName || currentUser.email || "", provider };
+    },
     isProviderReady: isProviderReady,
     isAdmin: () => isAdminUser,
     /** 로그인 상태나 관리자 여부가 바뀔 때마다 부른다 */
