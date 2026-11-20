@@ -877,3 +877,94 @@ test.describe('슬라이드 보기의 키', () => {
     await expect(play).toHaveAttribute('aria-pressed', 'false');
   });
 });
+
+test.describe('읽는 속도 키와 바꿔 읽는 낱말', () => {
+  const rateNow = page => page.evaluate(() => window.__tts.current && window.__tts.current.rate);
+
+  test('+ / - 로 읽는 속도를 25%p씩 바꾸고, 읽는 중이면 지금 문장을 새 속도로 다시 읽는다', async ({ page }) => {
+    await openChapter(page);
+    const toast = page.locator('.slides-doc > .sl-rate-toast');
+
+    // 읽지 않는 동안: 값만 바꾸고 잠깐 띄운다 (기본 150%)
+    await page.keyboard.press('+');
+    await expect(toast).toBeVisible();
+    await expect(toast).toHaveText('읽는 속도 175%');
+    await page.keyboard.press('-');
+    await page.keyboard.press('-');
+    await expect(toast).toHaveText('읽는 속도 125%');
+    expect(await page.evaluate(k => JSON.parse(localStorage.getItem(k)).rate, SETTINGS_KEY)).toBe(1.25);
+
+    // 읽는 중: 지금 문장을 새 속도로 처음부터 다시 읽는다 (Shift 없는 = 도 + 로 받는다)
+    await page.keyboard.press('Space');
+    await expect.poll(() => rateNow(page)).toBe(1.25);
+    const sentence = (await spoken(page))[0];
+    await page.keyboard.press('=');
+    await expect.poll(() => rateNow(page)).toBe(1.5);
+    expect((await spoken(page)).slice(-1)[0]).toBe(sentence);
+
+    // 끝에 닿으면 더 가지 않고 「최소」를 띄운다
+    for (let i = 0; i < 6; i++) await page.keyboard.press('-');
+    await expect(toast).toHaveText('읽는 속도 50% (최소)');
+    await expect.poll(() => rateNow(page)).toBe(0.5);
+  });
+
+  // 장 문서의 첫 문장을 바꿔 넣고 사전을 받은 뒤 읽힌 말을 돌려준다
+  async function speakFirst(page, html, domain) {
+    await openChapter(page);
+    await page.evaluate(d => {
+      const root = document.querySelector('article .slides-doc');
+      if (d === null) root.removeAttribute('data-say-domain'); else root.setAttribute('data-say-domain', d);
+      return window.SiteModules.SayWords.ready;
+    }, domain);
+    const sent = page.locator('#s1-1 .script .sent').first();
+    await sent.evaluate((el, h) => { el.innerHTML = h; }, html);
+    await page.keyboard.press('Space');
+    await expect.poll(() => spoken(page).then(list => list.length)).toBeGreaterThan(0);
+    return { said: (await spoken(page))[0], sent };
+  }
+
+  test('dev 도메인: 사전의 낱말을 한글 발음으로 읽고, 화면의 글자는 그대로 둔다', async ({ page }) => {
+    const html = 'Javascript와 <code>javascript</code>, <code>App</code>의 card와 props, 8bit와 F12, caps  lock을 읽고 apple은 그대로 읽습니다.';
+    const { said, sent } = await speakFirst(page, html, 'dev');
+    expect(said).toBe('자바스크립트와 자바스크립트, 앱의 카드와 프라퍼티스, 8빗와 펑션십이, 캡스락을 읽고 apple은 그대로 읽습니다.');
+    // 화면 글자는 그대로 (toHaveText 는 공백을 하나로 보고 비교한다)
+    await expect(sent).toHaveText('Javascript와 javascript, App의 card와 props, 8bit와 F12, caps lock을 읽고 apple은 그대로 읽습니다.');
+  });
+
+  test('기호는 <code> 안에서만 바꿔 읽는다', async ({ page }) => {
+    const { said } = await speakFirst(page, '본문의 a && b는 그대로, <code>a &amp;&amp; b</code>와 <code>\\n</code>은 바꿉니다.', 'dev');
+    expect(said).toBe('본문의 a && b는 그대로, a 앤드 b와 백슬래시n은 바꿉니다.');
+  });
+
+  test('경로 규칙: /web-tech/ 문서는 따로 적지 않아도 dev 사전을 쓴다', async ({ page }) => {
+    await page.goto('/index.html');
+    // React 문서는 개발중이라 관리자에게만 보인다: 보이기 설정을 켜고 들어간다
+    await page.evaluate(() => window.SiteModules.Hierarchy.setShowDev(true));
+    await page.evaluate(() => { window.location.hash = '#/web-tech/React/start.html'; });
+    await expect(page.locator('article .slides-doc .sl-tts').first()).toBeVisible();
+    await page.evaluate(() => window.SiteModules.SayWords.ready);
+    const sent = page.locator('#rs-s1 .script .sent').first();
+    await sent.evaluate(el => { el.textContent = 'Javascript로 시작합니다.'; });
+    await page.locator('#rs-s1 .sl-tts').click();
+    await expect.poll(() => spoken(page).then(list => list[0])).toBe('자바스크립트로 시작합니다.');
+  });
+
+  test('사전을 받기 전에 재생해도 첫 문장부터 사전대로 읽는다', async ({ page }) => {
+    let release;
+    const gate = new Promise(resolve => { release = resolve; });
+    await page.route('**/modules/features/say-words.json*', async route => { await gate; await route.continue(); });
+    await openChapter(page);
+    await page.evaluate(() => document.querySelector('article .slides-doc').setAttribute('data-say-domain', 'dev'));
+    await page.locator('#s1-1 .script .sent').first().evaluate(el => { el.textContent = 'ajax로 img를 받고 onDelete를 부릅니다.'; });
+    await page.keyboard.press('Space');
+    await page.waitForTimeout(300);
+    expect(await spoken(page)).toEqual([]);   // 사전이 올 때까지 기다린다
+    release();
+    await expect.poll(() => spoken(page).then(list => list[0])).toBe('아약스로 이미지를 받고 온딜릿를 부릅니다.');
+  });
+
+  test('도메인이 없는 문서(칼럼)에서는 개발 낱말을 바꾸지 않는다', async ({ page }) => {
+    const { said } = await speakFirst(page, 'Javascript와 props를 그대로 읽습니다.', null);
+    expect(said).toBe('Javascript와 props를 그대로 읽습니다.');
+  });
+});

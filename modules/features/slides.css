@@ -1028,6 +1028,30 @@ article .slides-doc .cue-check::after {
   display: none;
 }
 
+/* + / - 키로 바꾼 읽는 속도: 화면 위쪽 가운데에 잠깐 띄운다 (전체 화면에서도 보이게 문서 상자 안에 둔다) */
+.slides-doc > .sl-rate-toast {
+  position: fixed;
+  top: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10060;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.86);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.slides-doc.is-full > .sl-rate-toast {
+  display: block;
+}
+
+.slides-doc > .sl-rate-toast[hidden] {
+  display: none;
+}
+
 .slides-doc.is-full > section.has-active {
   display: contents;
 }

@@ -21,17 +21,17 @@
   </script>
 
   <!-- 목차 및 공통 모듈 -->
-  <script src="/modules/script.js?v=20261118v12" defer></script>
+  <script src="/modules/script.js?v=20261119v1" defer></script>
 
   <!-- 공통스킨 -->
   <style type="text/css">
-    @import url("/style.css?v=20261118v12");
+    @import url("/style.css?v=20261119v1");
   </style>
 
   <!-- 슬라이드 · 스크립트 (보고서 형식) -->
-  <link rel="stylesheet" href="/modules/features/slides.css?v=20261118v12">
-  <link rel="stylesheet" href="/web-tech/slides-web.css?v=20261118v12">
-  <script src="/modules/features/slides.js?v=20261118v12" defer></script>
+  <link rel="stylesheet" href="/modules/features/slides.css?v=20261119v1">
+  <link rel="stylesheet" href="/web-tech/slides-web.css?v=20261119v1">
+  <script src="/modules/features/slides.js?v=20261119v1" defer></script>
 </head>
 
 <body>
@@ -58,7 +58,7 @@
               <div class="w-split">
                 <div class="w-code">
                   <div class="w-code-top">src/App.jsx</div>
-                  <div class="w-code-lines"><span class="w-ln" data-key="rc1-c1"><span class="k">const</span> name = <span class="s">'서현'</span></span><span class="w-ln"> </span><span class="w-ln"><span class="k">function</span> App() {</span><span class="w-ln">  <span class="k">return</span> (</span><span class="w-ln" data-key="rc1-c2">    <span class="f">&lt;section</span> className=<span class="s">&quot;card&quot;</span><span class="f">&gt;</span></span><span class="w-ln" data-key="rc1-c3">      <span class="f">&lt;h1</span><span class="f">&gt;</span>안녕, {name}<span class="f">&lt;/h1</span><span class="f">&gt;</span></span><span class="w-ln" data-key="rc1-c4">      <span class="f">&lt;p</span><span class="f">&gt;</span>{2 + 3}개의 새 글<span class="f">&lt;/p</span><span class="f">&gt;</span></span><span class="w-ln" data-key="rc1-c5">      <span class="f">&lt;img</span> src=<span class="s">&quot;/logo.svg&quot;</span> alt=<span class="s">&quot;로고&quot;</span> <span class="f">/&gt;</span></span><span class="w-ln">    <span class="f">&lt;/section</span><span class="f">&gt;</span></span><span class="w-ln">  )</span><span class="w-ln">}</span></div>
+                  <div class="w-code-lines"><span class="w-ln" data-key="rc1-c1"><span class="k">const</span> name = <span class="s">'서현'</span></span><span class="w-ln"> </span><span class="w-ln"><span class="k">function</span> App() {</span><span class="w-ln">  <span class="k">return</span> (</span><span class="w-ln" data-key="rc1-c2">    <span class="f">&lt;section</span> className=<span class="s">&quot;card&quot;</span><span class="f">&gt;</span></span><span class="w-ln" data-key="rc1-c3">      <span class="f">&lt;h1</span> className=<span class="s">&quot;title&quot;</span><span class="f">&gt;</span>안녕, {name}<span class="f">&lt;/h1</span><span class="f">&gt;</span></span><span class="w-ln" data-key="rc1-c4">      <span class="f">&lt;p</span><span class="f">&gt;</span>{2 + 3}개의 새 글<span class="f">&lt;/p</span><span class="f">&gt;</span></span><span class="w-ln" data-key="rc1-c5">      <span class="f">&lt;img</span> src=<span class="s">&quot;/logo.svg&quot;</span> alt=<span class="s">&quot;로고&quot;</span> <span class="f">/&gt;</span></span><span class="w-ln">    <span class="f">&lt;/section</span><span class="f">&gt;</span></span><span class="w-ln">  )</span><span class="w-ln">}</span></div>
                 </div>
                 <div class="w-stage">
 <svg class="w-svg" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 350" role="img">
@@ -79,7 +79,7 @@
           </div>
         </div>
         <div class="script">
-          <p data-cue="rc1-c2:box rc1-c3:box">첫 번째 슬라이드는 JSX입니다. 왼쪽 코드에서 <code>return</code> 뒤의 내용은 HTML처럼 보이지만 Javascript 파일 안에 있습니다. 이렇게 Javascript 안에 태그를 적는 문법을 JSX라고 합니다.</p>
+          <p data-cue="rc1-c3:box">첫 번째 슬라이드는 JSX입니다. 왼쪽 코드에서 <code>return</code> 뒤의 내용은 HTML처럼 보이지만 Javascript 파일 안에 있습니다. 이렇게 Javascript 안에 태그를 적는 문법을 JSX라고 합니다.</p>
           <p data-cue="rc1-js:check rc1-jsx:box rc1-call:box">브라우저는 JSX를 읽지 못합니다. 그래서 빌드 도구가 오른쪽 그림의 두 번째 상자처럼 함수 호출로 바꿉니다. 태그 이름은 첫 번째 인자가 되고, 속성과 자식은 두 번째 인자의 객체가 됩니다.</p>
           <p data-cue="rc1-obj:box rc1-dom:box"><mark>이 함수를 실행한 결과는 DOM 요소가 아니라, 화면이 어떤 모습이어야 하는지를 적은 가벼운 객체입니다.</mark> React는 이 객체를 앞의 것과 비교해 달라진 곳만 실제 DOM에 반영합니다. JSX가 결국 Javascript 값이기 때문에 변수에 담거나 함수가 돌려줄 수 있습니다.</p>
           <p data-cue="rc1-brace:check rc1-c1:box rc1-c4:box rc1-c5:box">규칙은 두 가지를 먼저 기억합니다. 첫째, 중괄호 안에는 변수나 계산식 같은 Javascript 식을 적습니다. 둘째, 속성은 객체의 키가 되므로 Javascript 규칙을 따릅니다. <code>class</code>는 예약어이므로 <code>className</code>으로 쓰고, <code>img</code>처럼 내용이 없는 태그도 반드시 <code>/&gt;</code>로 닫습니다.</p>

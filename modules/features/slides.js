@@ -13,7 +13,10 @@
  *       → / ←           읽는 중에는 다음 / 이전 문장(음성). 슬라이드의 끝에서는 다음 슬라이드로 이어진다.
  *                       읽지 않는 전체 화면에서는 다음 / 이전 슬라이드 (↓ ↑ 도 같다)
  *       C               자막 켜기 / 끄기
+ *       + / -           읽는 속도 25%p 올리기 / 내리기 (= 도 + 로 받는다). 읽는 중이면 지금 문장부터 새 속도로
  *   - 읽어 주기(speechSynthesis): 스크립트를 문장으로 나눠 읽고, 읽는 곳을 문단·문장·단어로 표시한다.
+ *     발음 사전(say-words.json)의 낱말은 문서의 도메인(경로 규칙 또는 data-say-domain)에 맞춰 한글 발음으로 읽는다.
+ *     화면 글자와 자막은 그대로 둔다. 기호는 <code> 안에서만 바꾼다.
  *     스크립트의 data-cue="이름:방식" 이 가리키는 슬라이드 요소(data-key="이름")를 밑줄·테두리·체크로 짚는다.
  *   - 자막(전체 화면에서만. 읽기를 멈춘 동안에도 멈춘 문장을 계속 보여 준다. 스크립트의 <wbr data-cap> 자리에서 줄을 바꾸고,
  *     없으면 넘쳐서 여러 줄이 되는 자막을 고르게 나눈다), 화면 맨 아래의 진행 막대(눌러서 옮기기),
@@ -57,6 +60,12 @@ window.SiteModules.Slides = (function () {
   const RATE_STEP = 5;
   const RATE_SNAPS = [75, 100, 125, 150, 175, 200, 250];   // 자석이 붙는 지점
   const RATE_SNAP_RANGE = 5;                               // 지점의 ±5% 안에서 붙는다
+  const RATE_KEY_STEP = 25;                                // + / - 키로 바꾸는 폭(%p)
+  const RATE_TOAST_MS = 1200;                              // 바꾼 속도를 보여 주는 시간
+  // 읽을 때만 바꿔 읽는 낱말의 도메인별 사전 (화면의 글자와 자막은 그대로). 형식은 파일 머리의 _about.
+  // 문장마다 다르게 읽어야 하면 스크립트에 data-say 를 쓴다.
+  const SAY_WORDS_URL = "/modules/features/say-words.json";
+  const SAY_DOMAIN_ATTR = "data-say-domain";               // .slides-doc 에 적으면 경로 규칙 대신 이 도메인을 쓴다
   const UNITS = ["paragraph", "sentence", "word"];
   const CUE_HOW = ["underline", "box", "check"];
   const CUE_PRESETS = [["#d32f2f", "빨강"], ["#e65100", "주황"], ["#2e7d32", "초록"], ["#1565c0", "파랑"]];
@@ -117,6 +126,7 @@ window.SiteModules.Slides = (function () {
   let capMarks = [], capFit = "";                     // 문장 안의 <wbr data-cap> 자리, 줄을 나눌 때의 화면 크기·글자 크기
   let viewer = null, viewList = [], viewAt = 0, viewFrom = null;
   let rateDrag = false;
+  let rateToast = null, rateToastTimer = null;   // + / - 키로 바꾼 속도를 잠깐 보여 주는 표시
   let author = "all";
 
   function all(selector, scope) {
@@ -797,12 +807,117 @@ window.SiteModules.Slides = (function () {
     return null;
   }
 
+  // ----- 바꿔 읽는 낱말 사전 -----
+  // 사전 파일은 페이지에서 한 번만 받는다 (이 파일은 문서마다 다시 실행되므로 SiteModules 에 둔다)
+  function loadSayWords() {
+    const cache = window.SiteModules.SayWords || (window.SiteModules.SayWords = { data: null, ready: null });
+    if (!cache.ready) {
+      cache.ready = fetch(SAY_WORDS_URL + "?v=" + (window.SiteVersion || ""))
+        .then(function (res) {
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          return res.json();
+        })
+        .then(function (data) { cache.data = data; return data; })
+        .catch(function (err) {
+          console.warn("[Slides] 발음 사전을 읽지 못해 낱말을 바꾸지 않고 읽습니다:", err);
+          cache.data = { paths: {}, domains: {} };
+          return cache.data;
+        });
+    }
+    return cache.ready;
+  }
+
+  // 이 문서가 쓰는 도메인: common + (data-say-domain 이 있으면 그것, 없으면 경로 규칙)
+  function sayDomains(data) {
+    const list = ["common"];
+    const attr = root ? root.getAttribute(SAY_DOMAIN_ATTR) : null;
+    if (attr !== null) {
+      attr.split(/\s+/).forEach(function (d) { if (d && list.indexOf(d) < 0) list.push(d); });
+      return list;
+    }
+    const path = ((window.SiteModules.state && window.SiteModules.state.currentPath) || window.location.hash.replace(/^#/, ""))
+      .replace(/^\/?/, "/");
+    Object.keys(data.paths || {}).forEach(function (prefix) {
+      if (path.indexOf(prefix) !== 0) return;
+      data.paths[prefix].forEach(function (d) { if (list.indexOf(d) < 0) list.push(d); });
+    });
+    return list;
+  }
+
+  // 낱말 묶음 하나를 정규식 하나로 만든다. 긴 것이 먼저 맞도록 길이순으로 늘어놓는다.
+  function compileSayMap(map, asWords) {
+    const keys = Object.keys(map);
+    if (!keys.length) return null;
+    const norm = function (s) { return s.toLowerCase().replace(/\s+/g, " "); };
+    const lookup = {};
+    keys.forEach(function (k) { lookup[norm(k)] = map[k]; });
+    keys.sort(function (a, b) { return b.length - a.length; });
+    const alt = keys.map(function (k) {
+      return k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/ +/g, "\\s+");
+    }).join("|");
+    // 낱말은 앞뒤에 영문자가 없을 때만 (숫자는 붙어도 된다: 8bit → 8빗). 기호는 어디서든.
+    const re = asWords ? new RegExp("(?<![A-Za-z])(?:" + alt + ")(?![A-Za-z])", "gi") : new RegExp(alt, "g");
+    return { re: re, say: function (m) { return lookup[norm(m)]; } };
+  }
+
+  // 이 문서의 사전 { words, code }. 사전을 아직 받지 못했으면 null. 도메인이 같으면 만든 것을 다시 쓴다.
+  let sayRule = null, sayRuleKey = "";
+  function currentSayRule() {
+    const cache = window.SiteModules.SayWords;
+    if (!cache || !cache.data || !root) return null;
+    const domains = sayDomains(cache.data);
+    const key = domains.join(" ");
+    if (key === sayRuleKey) return sayRule;
+    const words = {}, code = {};
+    domains.forEach(function (d) {
+      const dict = (cache.data.domains || {})[d];
+      if (!dict) return;
+      Object.assign(words, dict.words || {});
+      Object.assign(code, dict.code || {});
+    });
+    sayRuleKey = key;
+    sayRule = { words: compileSayMap(words, true), code: compileSayMap(code, false) };
+    return sayRule;
+  }
+
+  function hasSayWord(text) {
+    const rule = currentSayRule();
+    if (!rule) return false;
+    return [rule.words, rule.code].some(function (r) { if (!r) return false; r.re.lastIndex = 0; return r.re.test(text); });
+  }
+
+  // 글자를 [화면 글자, 읽을 말 또는 null(그대로 읽음)] 조각들로 나눈다. 기호는 <code> 안의 글자에서만 바꾼다.
+  function sayWordPieces(text, inCode) {
+    const rule = currentSayRule();
+    const hits = [];
+    if (rule) {
+      [rule.words, inCode ? rule.code : null].forEach(function (r) {
+        if (!r) return;
+        r.re.lastIndex = 0;
+        let m;
+        while ((m = r.re.exec(text))) hits.push([m.index, m.index + m[0].length, r.say(m[0])]);
+      });
+    }
+    // 같은 자리에서 시작하면 긴 것이 먼저
+    hits.sort(function (a, b) { return a[0] - b[0] || b[1] - a[1]; });
+    const pieces = [];
+    let pos = 0;
+    hits.forEach(function (h) {
+      if (h[0] < pos) return;   // 겹치는 것은 앞의 것만 쓴다
+      if (h[0] > pos) pieces.push([text.slice(pos, h[0]), null]);
+      pieces.push([text.slice(h[0], h[1]), h[2]]);
+      pos = h[1];
+    });
+    if (pos < text.length || !pieces.length) pieces.push([text.slice(pos), null]);
+    return pieces;
+  }
+
   // 문장(.sent)에서 실제로 읽을 문자열(text)과, 읽는 글자 위치 -> 화면 글자 위치 변환기(toDom)를 만든다.
   // .sent 자체의 data-say 또는 문장 안쪽 요소의 data-say="읽을 말"을 모두 지원한다.
   function speechPlan(sent) {
     const domText = sent.textContent;
     const direct = sent.getAttribute("data-say");
-    if (direct === null && !sent.querySelector("[data-say]")) {
+    if (direct === null && !sent.querySelector("[data-say]") && !hasSayWord(domText)) {
       return {
         text: domText,
         toDom: function (start, len) { return [start, start + len]; }
@@ -825,10 +940,14 @@ window.SiteModules.Slides = (function () {
     let sayText = "", domPos = 0;
     function walk(node) {
       if (node.nodeType === Node.TEXT_NODE) {
-        const t = node.nodeValue;
-        segs.push([sayText.length, sayText.length + t.length, domPos, domPos + t.length, true]);
-        sayText += t;
-        domPos += t.length;
+        // 바꿔 읽는 낱말은 data-say 처럼 따로 떼고, 나머지 글자는 그대로 잇는다
+        const inCode = !!(node.parentElement && node.parentElement.closest("code"));
+        sayWordPieces(node.nodeValue, inCode).forEach(function (p) {
+          const say = p[1] === null ? p[0] : p[1];
+          segs.push([sayText.length, sayText.length + say.length, domPos, domPos + p[0].length, p[1] === null]);
+          sayText += say;
+          domPos += p[0].length;
+        });
       } else if (node.nodeType === Node.ELEMENT_NODE) {
         const say = node.getAttribute("data-say");
         if (say !== null) {
@@ -1010,6 +1129,12 @@ window.SiteModules.Slides = (function () {
       reading = null;
       paintTts();
       if (r.onDone) r.onDone();
+      return;
+    }
+    // 발음 사전을 아직 받는 중이면 받은 뒤에 읽는다 (문서를 열자마자 재생하면 첫 문장을 사전 없이 읽게 된다)
+    const sayCache = window.SiteModules.SayWords;
+    if (sayCache && sayCache.ready && !sayCache.data) {
+      sayCache.ready.then(function () { if (reading === r) speakNext(); });
       return;
     }
     memory.resume[r.index] = r.at;
@@ -1313,7 +1438,43 @@ window.SiteModules.Slides = (function () {
       stepSentence(e.key === "ArrowRight" ? 1 : -1);
       return true;
     }
+    // + 는 Shift 없이 누르는 = 자리도 받는다 (숫자판의 + - 는 e.key 가 같다)
+    if (e.key === "+" || e.key === "=" || e.key === "-" || e.key === "_") {
+      stepRate(e.key === "+" || e.key === "=" ? 1 : -1);
+      return true;
+    }
     return false;
+  }
+
+  /**
+   * 읽는 속도를 RATE_KEY_STEP 만큼 올리거나 내린다. 읽는 중이면 지금 문장을 새 속도로 처음부터 다시 읽는다.
+   * @param {number} direction 1 이면 빠르게, -1 이면 느리게
+   */
+  function stepRate(direction) {
+    const now = Math.round(state.rate * 100);
+    const next = Math.min(RATE_MAX, Math.max(RATE_MIN, now + direction * RATE_KEY_STEP));
+    if (next !== now) {
+      state.rate = next / 100;
+      paintSettings();
+      saveSettings();
+      if (reading) jumpTo(reading.at);
+    }
+    showRateToast(next === now ? "읽는 속도 " + now + "% (" + (direction > 0 ? "최대" : "최소") + ")" : "읽는 속도 " + next + "%");
+  }
+
+  function showRateToast(message) {
+    if (!root) return;
+    if (!rateToast) {
+      rateToast = document.createElement("div");
+      rateToast.className = "sl-rate-toast";
+      rateToast.setAttribute("role", "status");
+    }
+    // 전체 화면에서는 문서 상자 밖이 보이지 않으므로 문서 상자 안에 둔다
+    if (rateToast.parentNode !== root) root.appendChild(rateToast);
+    rateToast.textContent = message;
+    rateToast.hidden = false;
+    clearTimeout(rateToastTimer);
+    rateToastTimer = setTimeout(function () { if (rateToast) rateToast.hidden = true; }, RATE_TOAST_MS);
   }
 
   // ---------------------------------------------------------------------------
@@ -1744,6 +1905,7 @@ window.SiteModules.Slides = (function () {
 
     if (hasSlides) {
       Object.keys(EXTRA_ICONS).forEach(function (name) { window.SiteModules.Icons.register(name, EXTRA_ICONS[name]); });
+      if (synth) loadSayWords();   // 재생 단추를 누르기 전에 받아 둔다
       all(".script > p:not(.meta)", root).forEach(splitSentences);
       frameSents = frames.map(function (frame) {
         const section = frame.closest("section");
@@ -1830,6 +1992,11 @@ window.SiteModules.Slides = (function () {
       console.error("[Slides] 화면 정리 중 오류:", err);
     }
     if (playbar) playbar.remove();
+    clearTimeout(rateToastTimer);
+    if (rateToast) rateToast.remove();
+    rateToast = null;
+    sayRule = null;
+    sayRuleKey = "";
     // 본문에 붙인 단추와 필터 상태를 되돌린다 (본문이 그대로 남은 채 다시 붙는 경우에 겹치지 않게)
     all(".sl-btn, .sl-count", root).forEach(function (el) { el.remove(); });
     all(".note[hidden]", root).forEach(function (note) { note.hidden = false; });
