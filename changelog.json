@@ -31,6 +31,15 @@
     "summary": "강의 자료 작성 (검수 중)"
   },
   {
+    "date": "2026-11-21",
+    "type": "Added",
+    "env": "iseohyun.com",
+    "projectName": "서비스 개설까지",
+    "projectPath": "/column/ai/service-launch/intro.md",
+    "summary": "칼럼 AI에 「서비스 개설까지」 추가 (개론 + 7장)",
+    "detail": "정적 웹 앱을 서비스로 열기까지의 AI 체크리스트. 개시(코드 관리·라이선스·도메인), 검색노출, 로그인, 데이터, 소통, 앱(설치·공유·업데이트), 운영을 개통 순서대로 정리하고, 직접 해야 하는 일은 배지로 표시해 개론에 모음."
+  },
+  {
     "date": "2026-11-20",
     "type": "Changed",
     "env": "App",

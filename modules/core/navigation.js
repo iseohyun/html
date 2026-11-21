@@ -1326,7 +1326,8 @@ window.SiteModules.Navigation = (function () {
         const id = decodeURIComponent(subHash.substring(1));
         const targetElement = document.getElementById(id);
         if (targetElement) {
-          targetElement.scrollIntoView({ behavior: "smooth" });
+          // 다른 문서에서 넘어온 직후라 부드럽게 굴리면 앞 문서의 스크롤 위치와 겹쳐 목표를 지나친다: 바로 옮긴다
+          targetElement.scrollIntoView({ behavior: "instant" });
         }
       }
     } else {

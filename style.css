@@ -3683,6 +3683,39 @@ article img.md-img {
   height: auto;
 }
 
+/* 칼럼 「서비스 개설까지」의 `직접` 배지: 본문의 [`직접`](intro.md) 링크(개론으로 가는 링크 안의 코드)를
+   빨강 ↔ 파랑으로 천천히 바뀌는 배지로 보인다. 마크다운은 HTML 을 쓸 수 없어 링크 주소로 가린다. */
+article a[href$="/service-launch/intro.md"] > code:only-child {
+  display: inline-block;
+  margin-left: 3px;
+  padding: 0 3px;
+  border: 0;
+  border-radius: 3px;
+  font-family: var(--font-sans-serif);
+  font-size: 0.68em;
+  font-weight: 700;
+  line-height: 1.45;
+  vertical-align: 0.12em;
+  color: #fff;
+  background: #d93025;
+  animation: md-badge-direct 3s ease-in-out infinite alternate;
+}
+
+article a[href$="/service-launch/intro.md"]:has(> code:only-child) {
+  text-decoration: none;
+}
+
+@keyframes md-badge-direct {
+  from { background: #d93025; }
+  to { background: #1a6fd6; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  article a[href$="/service-launch/intro.md"] > code:only-child {
+    animation: none;
+  }
+}
+
 /* ==========================================================================
    사이트맵 트리: 선으로 이은 가지, 묶음 안의 글 수
    - 가지 선은 항목마다 그린다: 세로선(::after)은 위에서 아래로, 가로선(::before)은 이름 쪽으로.
