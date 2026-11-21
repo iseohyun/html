@@ -30,7 +30,7 @@
 
 ## Cloudflare Web Analytics 설정
 
-- [Cloudflare 대시보드 ↗](https://dash.cloudflare.com/) 가입 → **Analytics & Logs → Web Analytics** 클릭 [`직접`](intro.md)
+- [Cloudflare 대시보드](https://dash.cloudflare.com/) 가입 → **Analytics & Logs → Web Analytics** 클릭 [`직접`](intro.md)
 - **Add a site** 클릭 → `xxxx.iseohyun.com` 작성
 - 안내된 스크립트를 `<head>`나 `</body>` 앞에 추가
 
@@ -45,7 +45,7 @@
 
 ## GA4 설정
 
-- [Google 애널리틱스 ↗](https://analytics.google.com/) → **관리 → 만들기 → 속성** → 이름·시간대(대한민국)·통화 선택 [`직접`](intro.md)
+- [Google 애널리틱스](https://analytics.google.com/) → **관리 → 만들기 → 속성** → 이름·시간대(대한민국)·통화 선택 [`직접`](intro.md)
 - **데이터 스트림 → 웹** → 주소 작성 → 측정 ID(`G-XXXXXXX`) 발급
 - 안내된 `gtag.js` 코드를 모든 페이지의 `<head>`에 추가
 - SPA는 화면이 바뀔 때 직접 페이지뷰 전송: 주소가 바뀌어도 페이지를 새로 불러오지 않기 때문
@@ -106,7 +106,7 @@ window.addEventListener("unhandledrejection", (e) => record("promise", e.reason 
 ## Sentry
 
 - 사용자 화면의 오류를 자동으로 모아 주는 서비스
-- [sentry.io ↗](https://sentry.io/) 가입 → **Create Project** → 플랫폼 **Browser JavaScript** 선택 [`직접`](intro.md)
+- [sentry.io](https://sentry.io/) 가입 → **Create Project** → 플랫폼 **Browser JavaScript** 선택 [`직접`](intro.md)
 - 발급된 DSN(오류를 보낼 주소)을 코드에 추가: 공개 값이라 화면 코드에 넣어도 됨
 
 ```html
@@ -157,7 +157,7 @@ window.addEventListener("unhandledrejection", (e) => record("promise", e.reason 
 - Firebase의 Cloud Functions, 백업, 일부 기능은 Blaze(종량제) 요금제 필요 (3장, 4장)
 - Blaze로 올리는 날 바로 예산 알림 설정
 - 설정 순서
-  - [Google Cloud 콘솔 ↗](https://console.cloud.google.com/billing) → **결제** → 결제 계정 선택 [`직접`](intro.md)
+  - [Google Cloud 콘솔](https://console.cloud.google.com/billing) → **결제** → 결제 계정 선택 [`직접`](intro.md)
   - **예산 및 알림** → **예산 만들기** 클릭
   - 범위: 프로젝트 `xxxx` 선택
   - 금액: 월 1만 원처럼 "넘으면 이상하다" 싶은 금액

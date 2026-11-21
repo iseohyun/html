@@ -532,7 +532,7 @@ self.FIREBASE_APPCHECK_DEBUG_TOKEN = true; // 개발 환경에서만
 - 무료 사용량 (Spark·Blaze 공통, 하루 기준)
   - 읽기 50,000건, 쓰기 20,000건, 삭제 20,000건
   - 저장 1GiB
-  - 정확한 값은 [Firebase 요금표 ↗](https://firebase.google.com/pricing)에서 확인
+  - 정확한 값은 [Firebase 요금표](https://firebase.google.com/pricing)에서 확인
 - Spark(무료) 요금제: 한도를 넘으면 그날은 멈춤
 - Blaze(종량제) 요금제: 한도를 넘으면 과금, 예산 알림 필수 (7장)
 - 비용을 정하는 것은 코드보다 설계: 화면 하나를 그릴 때 문서를 몇 건 읽는지가 곧 요금

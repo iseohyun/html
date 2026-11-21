@@ -1,11 +1,11 @@
 /**
  * @file modules/script.js
- * @version 20261121v5
+ * @version 20261121v6
  * @description 통합 진입점(Bootstrapper). 캐시 버스팅 버전(window.SiteVersion)을 정의하고,
  *   서브페이지 직접 접속을 SPA 해시 경로로 리다이렉트한 뒤 코어/UI/기능 모듈을 순서대로 로드·초기화한다.
  */
 
-window.SiteVersion = "20261121v5";
+window.SiteVersion = "20261121v6";
 // 전체 설정의 저장 키. 끝의 판 번호는 저장 모양이 바뀌면 올린다. (modules/core/settings.js 가 같은 키를 쓴다)
 window.SiteSettingsStorageKey = "iseohyun_settings_v1";
 // 「UniPalette」 테마가 계산해 둔 토큰 값. (modules/features/unipalette-theme.js 가 같은 키를 쓴다)

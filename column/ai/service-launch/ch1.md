@@ -8,7 +8,7 @@
 
 ## GitHub 가입
 
-- [github.com/signup ↗](https://github.com/signup)에서 회원가입 [`직접`](intro.md)
+- [github.com/signup](https://github.com/signup)에서 회원가입 [`직접`](intro.md)
 - 사용자 이름(username)은 신중히 결정
   - 저장소 주소 `github.com/iseohyun/...`에 사용
   - 기본 배포 주소 `iseohyun.github.io`에 사용
@@ -94,7 +94,7 @@ git push -u origin main
   - 주요 기능
   - 실행 방법 (`npm install`, `npm run dev`)
   - 사용 기술, 라이선스
-- CHANGELOG.md: 버전별 변경 기록, [Keep a Changelog ↗](https://keepachangelog.com/ko/1.1.0/) 형식
+- CHANGELOG.md: 버전별 변경 기록, [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/) 형식
 
 | 분류 | 뜻 | 예 |
 | --- | --- | --- |
@@ -114,7 +114,7 @@ git push -u origin main
 - 최신 버전을 위에 작성
 - 날짜는 `YYYY-MM-DD`
 - 커밋 메시지 복사 금지, 사용자가 알아야 할 변화만 작성
-- 버전 규칙: `MAJOR.MINOR.PATCH`, [유의적 버전(SemVer) ↗](https://semver.org/lang/ko/)
+- 버전 규칙: `MAJOR.MINOR.PATCH`, [유의적 버전(SemVer)](https://semver.org/lang/ko/)
 
 | 자리 | 올리는 때 | 예 |
 | --- | --- | --- |
@@ -241,7 +241,7 @@ git push -u origin main
 
 - 정하는 법: GitHub 저장소 → **Add file → Create new file** → 파일 이름 `LICENSE` 작성 → **Choose a license template** 클릭
 - 이미 GPL 코드를 함께 배포 중이면 내 라이선스 선택이 그 영향을 받음 (아래)
-- 참고: [choosealicense.com ↗](https://choosealicense.com/)
+- 참고: [choosealicense.com](https://choosealicense.com/)
 
 ## 가져오는 방식별 차이
 
@@ -298,11 +298,11 @@ git push -u origin main
 
 | 업체 | 장점 | 단점 |
 | --- | --- | --- |
-| [가비아 ↗](https://www.gabia.com/) | 한국어 화면·고객센터, `.kr`·`.co.kr` 등록 쉬움 | 갱신가가 첫해보다 높은 경우 많음 |
-| [후이즈 ↗](https://whois.co.kr/) | 국내 업체, `.kr` 도메인 | 가비아와 비슷 |
-| [GoDaddy ↗](https://www.godaddy.com/) | 세계 최대, 도메인 종류 많음 | 첫해 할인 뒤 갱신가 높음, 부가 상품 권유 많음 |
-| [Cloudflare Registrar ↗](https://www.cloudflare.com/products/registrar/) | 원가 수준 가격, 빠른 DNS, 무료 CDN·통계 | 영어 화면, 다른 업체 도메인은 이전 필요한 경우 있음 |
-| [Namecheap ↗](https://www.namecheap.com/) | 갱신가 비교적 안정, 개인정보 보호 무료 | 영어 화면 |
+| [가비아](https://www.gabia.com/) | 한국어 화면·고객센터, `.kr`·`.co.kr` 등록 쉬움 | 갱신가가 첫해보다 높은 경우 많음 |
+| [후이즈](https://whois.co.kr/) | 국내 업체, `.kr` 도메인 | 가비아와 비슷 |
+| [GoDaddy](https://www.godaddy.com/) | 세계 최대, 도메인 종류 많음 | 첫해 할인 뒤 갱신가 높음, 부가 상품 권유 많음 |
+| [Cloudflare Registrar](https://www.cloudflare.com/products/registrar/) | 원가 수준 가격, 빠른 DNS, 무료 CDN·통계 | 영어 화면, 다른 업체 도메인은 이전 필요한 경우 있음 |
+| [Namecheap](https://www.namecheap.com/) | 갱신가 비교적 안정, 개인정보 보호 무료 | 영어 화면 |
 
 ## 서브도메인, 경로, 해시 경로
 
@@ -409,4 +409,4 @@ jobs:
 | A | `@` | `185.199.111.153` |
 | CNAME | `www` | `iseohyun.github.io.` |
 
-- IP 주소는 바뀔 수 있음: [GitHub 공식 문서 ↗](https://docs.github.com/ko/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site)에서 최신 값 확인
+- IP 주소는 바뀔 수 있음: [GitHub 공식 문서](https://docs.github.com/ko/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site)에서 최신 값 확인

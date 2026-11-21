@@ -93,8 +93,8 @@
 - `twitter:card`: X(트위터)용, 없으면 OG 태그를 대신 사용
 - 해시 경로(`#/...`)의 화면마다 미리보기를 다르게 줄 수 없는 문제와 대안: 6장 "공유"
 - 미리보기 캐시 초기화: 태그를 고쳐도 예전 카드가 계속 보일 때
-  - 카카오톡: [카카오 공유 디버거 ↗](https://developers.kakao.com/tool/debugger/sharing)에 주소 작성 → 캐시 초기화 클릭
-  - 페이스북: [Sharing Debugger ↗](https://developers.facebook.com/tools/debug/)에서 다시 가져오기 클릭
+  - 카카오톡: [카카오 공유 디버거](https://developers.kakao.com/tool/debugger/sharing)에 주소 작성 → 캐시 초기화 클릭
+  - 페이스북: [Sharing Debugger](https://developers.facebook.com/tools/debug/)에서 다시 가져오기 클릭
 
 ## 파비콘
 
@@ -184,7 +184,7 @@ Sitemap: https://xxxx.iseohyun.com/sitemap.xml
 ```
 
 - 종류: 웹 앱은 `WebApplication`, 사이트 대표 페이지는 `WebSite`, 글은 `Article`
-- 확인: [리치 결과 테스트 ↗](https://search.google.com/test/rich-results)에 주소 작성 → 오류 확인
+- 확인: [리치 결과 테스트](https://search.google.com/test/rich-results)에 주소 작성 → 오류 확인
 - 필수는 아님, 기본기를 마친 뒤 추가
 
 ## 페이지 품질
@@ -197,7 +197,7 @@ Sitemap: https://xxxx.iseohyun.com/sitemap.xml
 | INP | 클릭·입력에 반응하기까지 걸린 시간 | 200ms 이하 |
 | CLS | 로딩 중 화면이 밀리는 정도 | 0.1 이하 |
 
-- 측정: [PageSpeed Insights ↗](https://pagespeed.web.dev/)에 주소 작성 → 모바일·데스크톱 점수 확인
+- 측정: [PageSpeed Insights](https://pagespeed.web.dev/)에 주소 작성 → 모바일·데스크톱 점수 확인
 - 자주 하는 개선
   - 이미지는 WebP·AVIF로 압축, `width`·`height` 작성 (화면 밀림 방지)
   - 화면 아래쪽 이미지는 `loading="lazy"`
@@ -228,7 +228,7 @@ Sitemap: https://xxxx.iseohyun.com/sitemap.xml
 ## Google Search Console
 
 - Google은 등록하지 않아도 링크를 따라 자동 수집, 등록하면 빨라지고 상태를 볼 수 있음
-- [Search Console ↗](https://search.google.com/search-console) 접속 → Google 계정 로그인 [`직접`](intro.md)
+- [Search Console](https://search.google.com/search-console) 접속 → Google 계정 로그인 [`직접`](intro.md)
 - 속성 추가: 두 가지 유형
 
 | 유형 | 입력 | 범위 | 소유 확인 |
@@ -272,7 +272,7 @@ Sitemap: https://xxxx.iseohyun.com/sitemap.xml
 ## Bing Webmaster Tools
 
 - Bing 색인은 Bing 외에도 DuckDuckGo, Yahoo, ChatGPT 검색 등에서 사용
-- [Bing Webmaster Tools ↗](https://www.bing.com/webmasters) 접속 → Microsoft·Google 계정 로그인 [`직접`](intro.md)
+- [Bing Webmaster Tools](https://www.bing.com/webmasters) 접속 → Microsoft·Google 계정 로그인 [`직접`](intro.md)
 - 가장 쉬운 방법: **Google Search Console에서 가져오기** 클릭
   - 소유 확인과 sitemap이 함께 넘어옴
 - 직접 추가: 사이트 주소 작성 → DNS·HTML 파일·메타 태그 중 하나로 소유 확인 → **Sitemaps** 메뉴에서 sitemap 제출
@@ -286,7 +286,7 @@ Sitemap: https://xxxx.iseohyun.com/sitemap.xml
 
 - 국내 검색 점유율이 높아 국내 사용자 대상이면 필수
 - 네이버는 등록하지 않으면 수집이 매우 느림
-- [네이버 서치어드바이저 ↗](https://searchadvisor.naver.com/) 접속 → 네이버 로그인 [`직접`](intro.md)
+- [네이버 서치어드바이저](https://searchadvisor.naver.com/) 접속 → 네이버 로그인 [`직접`](intro.md)
 - 사이트 등록
   - **웹마스터 도구** 클릭 → 사이트 주소 `https://xxxx.iseohyun.com` 작성 → 추가 클릭
   - 서브도메인은 사이트마다 따로 등록
@@ -306,7 +306,7 @@ Sitemap: https://xxxx.iseohyun.com/sitemap.xml
 
 ## 다음 웹마스터도구
 
-- [다음 웹마스터도구 ↗](https://webmaster.daum.net/) 접속 → 카카오 계정 로그인 [`직접`](intro.md)
+- [다음 웹마스터도구](https://webmaster.daum.net/) 접속 → 카카오 계정 로그인 [`직접`](intro.md)
 - 사이트 등록
   - 사이트 주소 `https://xxxx.iseohyun.com` 작성
   - 웹마스터도구용 PIN 코드 발급

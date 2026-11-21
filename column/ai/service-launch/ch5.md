@@ -27,7 +27,7 @@
 
 - Web3Forms: 사이트의 폼 내용을 내 메일로 전달해 주는 서비스
 - 서버도, 메일 계정 비밀번호도 필요 없음
-- [web3forms.com ↗](https://web3forms.com/) 접속 → 받을 메일 주소 작성 → **Create Access Key** 클릭 [`직접`](intro.md)
+- [web3forms.com](https://web3forms.com/) 접속 → 받을 메일 주소 작성 → **Create Access Key** 클릭 [`직접`](intro.md)
 - 메일로 온 **Access Key** 복사
   - 이 키는 받는 주소에 묶인 공개용 값: 화면 코드에 넣어도 됨
   - 키를 아는 사람은 내게 메일을 보낼 수만 있고, 내 메일함을 볼 수는 없음
@@ -69,7 +69,7 @@ if (!data.success) throw new Error(data.message);
 - 보내기 버튼을 누른 뒤 응답이 올 때까지 비활성화: 두 번 전송 방지
 - 짧은 시간에 반복 전송하면 화면에서 막기
 - 스팸이 많아지면 Web3Forms의 hCaptcha 연동 검토
-- 무료 한도(월 전송 수)는 [요금표 ↗](https://web3forms.com/pricing)에서 확인
+- 무료 한도(월 전송 수)는 [요금표](https://web3forms.com/pricing)에서 확인
 
 ## 답장 주소와 개인정보
 
@@ -94,7 +94,7 @@ if (!data.success) throw new Error(data.message);
 
 ## 설정
 
-- [resend.com ↗](https://resend.com/) 가입 [`직접`](intro.md)
+- [resend.com](https://resend.com/) 가입 [`직접`](intro.md)
 - **Domains → Add Domain** 클릭 → 보내는 도메인 작성
   - 메인 도메인 대신 `mail.iseohyun.com` 같은 서브도메인 권장: 문제가 생겨도 메인 도메인 평판에 영향이 적음
 - 안내된 DNS 레코드를 도메인 업체 DNS 관리 화면에 추가 (SPF, DKIM 등) [`직접`](intro.md)
@@ -130,7 +130,7 @@ exports.sendWelcome = onDocumentCreated({ document: "users/{uid}", secrets: [RES
 });
 ```
 
-- 무료 한도(하루·월 전송 수)는 [요금표 ↗](https://resend.com/pricing)에서 확인
+- 무료 한도(하루·월 전송 수)는 [요금표](https://resend.com/pricing)에서 확인
 
 ## 메일 도메인 인증
 
@@ -153,7 +153,7 @@ exports.sendWelcome = onDocumentCreated({ document: "users/{uid}", secrets: [RES
 ## 채널 개설
 
 - 카카오톡 채널: 사용자가 카카오톡으로 1:1 대화를 거는 공식 창구
-- [카카오톡 채널 관리자센터 ↗](https://center-pf.kakao.com/) 접속 → 카카오 계정 로그인 [`직접`](intro.md)
+- [카카오톡 채널 관리자센터](https://center-pf.kakao.com/) 접속 → 카카오 계정 로그인 [`직접`](intro.md)
 - **새 채널 만들기** 클릭
   - 채널 이름, 검색용 아이디, 프로필 사진, 소개 작성
 - 채널 설정

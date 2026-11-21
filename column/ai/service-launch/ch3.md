@@ -89,7 +89,7 @@
 
 ## Firebase 프로젝트 생성
 
-- [Firebase 콘솔 ↗](https://console.firebase.google.com/) 접속 → Google 계정 로그인 [`직접`](intro.md)
+- [Firebase 콘솔](https://console.firebase.google.com/) 접속 → Google 계정 로그인 [`직접`](intro.md)
 - **프로젝트 만들기** 클릭 → 프로젝트 이름 `xxxx` 작성
   - 프로젝트 ID는 나중에 바꿀 수 없음, 주소(`xxxx.firebaseapp.com`)에 사용
 - Google 애널리틱스: 지금은 꺼도 됨 (7장에서 다룸)
@@ -150,7 +150,7 @@ firebase.auth().onAuthStateChanged(user => {
 ## 자주 겪는 문제
 
 - 로그인 창에 "xxxx.firebaseapp.com(으)로 이동" 표시
-  - Google OAuth 동의 화면의 앱 이름·로고 설정: [Google Cloud 콘솔 ↗](https://console.cloud.google.com/) → API 및 서비스 → OAuth 동의 화면
+  - Google OAuth 동의 화면의 앱 이름·로고 설정: [Google Cloud 콘솔](https://console.cloud.google.com/) → API 및 서비스 → OAuth 동의 화면
   - 내 도메인으로 바꾸려면 `authDomain`을 내 도메인으로 바꾸는 별도 설정 필요 (Firebase Hosting 사용 시 쉬움)
 - 카카오톡·인스타그램 안에서 열면 Google 로그인 실패 (`403 disallowed_useragent`)
   - Google이 앱 안 브라우저(인앱 브라우저)의 로그인을 막음
@@ -256,7 +256,7 @@ exports.kakaoLogin = onRequest(
 ```
 
 - **IAM 설정**: 커스텀 토큰을 만들려면 함수의 서비스 계정에 권한 필요 [`직접`](intro.md)
-  - [Google Cloud 콘솔 ↗](https://console.cloud.google.com/iam-admin/iam) → IAM 및 관리자 → IAM
+  - [Google Cloud 콘솔](https://console.cloud.google.com/iam-admin/iam) → IAM 및 관리자 → IAM
   - 함수가 쓰는 서비스 계정(기본: `프로젝트번호-compute@developer.gserviceaccount.com`) 옆 연필 아이콘 클릭
   - **역할 추가** → **서비스 계정 토큰 생성자** 선택 → 저장
   - 빠뜨리면 `createCustomToken`에서 권한 오류 (`iam.serviceAccounts.signBlob`)
@@ -273,7 +273,7 @@ firebase.cmd deploy --only functions:kakaoLogin,functions:naverLogin
 
 ## 카카오 설정
 
-- [Kakao Developers ↗](https://developers.kakao.com/) 접속 → 카카오 계정 로그인 [`직접`](intro.md)
+- [Kakao Developers](https://developers.kakao.com/) 접속 → 카카오 계정 로그인 [`직접`](intro.md)
 - **내 애플리케이션 → 애플리케이션 추가하기** 클릭
   - 앱 이름(로그인 화면에 표시), 회사명(개인은 본인 이름), 앱 아이콘 작성
 - **앱 키**: **REST API 키** 복사 → 사이트 코드와 서버 함수의 Client ID로 사용
@@ -309,7 +309,7 @@ https://kauth.kakao.com/oauth/authorize?response_type=code
 
 ## 네이버 설정
 
-- [NAVER Developers ↗](https://developers.naver.com/) 접속 → 네이버 로그인 [`직접`](intro.md)
+- [NAVER Developers](https://developers.naver.com/) 접속 → 네이버 로그인 [`직접`](intro.md)
 - **Application → 애플리케이션 등록** 클릭
   - 애플리케이션 이름: 로그인 화면에 표시
   - 사용 API: **네이버 로그인** 선택
@@ -371,7 +371,7 @@ window.close();
 ## Apple
 
 - iPhone 사용자가 많은 서비스, iOS 앱으로 확장할 계획이면 고려
-- [Apple Developer ↗](https://developer.apple.com/) 멤버십 필요 (연간 유료) [`직접`](intro.md)
+- [Apple Developer](https://developer.apple.com/) 멤버십 필요 (연간 유료) [`직접`](intro.md)
 - Apple 쪽: Services ID 생성 → Sign in with Apple 켜기 → 도메인과 Return URL(`https://xxxx.firebaseapp.com/__/auth/handler`) 등록 → 키(.p8) 생성
 - Firebase 쪽: Sign-in method → Apple → Services ID, 팀 ID, 키 ID, 키 파일 작성
 - 사용자가 "이메일 가리기"를 고르면 `...@privaterelay.appleid.com` 주소가 옴
@@ -388,7 +388,7 @@ window.close();
 ## Microsoft
 
 - 회사·학교 계정 사용자 대상 서비스에 적합
-- [Azure 포털 ↗](https://portal.azure.com/) → **앱 등록** → 새 등록 [`직접`](intro.md)
+- [Azure 포털](https://portal.azure.com/) → **앱 등록** → 새 등록 [`직접`](intro.md)
   - 리디렉션 URI: Firebase가 안내하는 `__/auth/handler` 주소
 - 애플리케이션(클라이언트) ID와 클라이언트 암호를 Firebase Sign-in method → Microsoft에 작성
 
@@ -422,7 +422,7 @@ window.close();
 - 국외 이전 사실: Firebase 서버 위치, 이전 항목
 - 이용자의 권리: 열람, 정정, 삭제, 탈퇴 방법
 - 책임자 연락처
-- 작성 도구: [개인정보 포털의 처리방침 만들기 ↗](https://www.privacy.go.kr/) 활용 가능
+- 작성 도구: [개인정보 포털의 처리방침 만들기](https://www.privacy.go.kr/) 활용 가능
 
 ## 이용약관에 쓸 내용
 
