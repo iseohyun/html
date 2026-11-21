@@ -756,6 +756,61 @@
       background: #1c7ed6;
     }
 
+    /* 상세 보기: 업데이트 소식(블로그) 단추와 화면 그림 */
+    .cal-modal-actions {
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .cal-modal-link-btn.is-secondary {
+      background: transparent;
+      color: #228be6 !important;
+      border: 1px solid #228be6;
+    }
+
+    .cal-modal-link-btn.is-secondary:hover {
+      background: rgba(34, 139, 230, 0.1);
+    }
+
+    .cal-modal-shots {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .cal-modal-shot {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      text-decoration: none !important;
+      color: var(--muted) !important;
+    }
+
+    .cal-modal-shot img {
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      transition: transform 0.15s ease;
+    }
+
+    .cal-modal-shot:hover img {
+      transform: scale(1.02);
+    }
+
+    .cal-modal-shot-cap {
+      font-size: 0.78rem;
+      line-height: 1.4;
+    }
+
+    @media screen and (max-width: 480px) {
+      .cal-modal-shots {
+        grid-template-columns: 1fr;
+      }
+    }
+
 
     /* ==========================================
        좁은 화면(640px 이하) 점 달력

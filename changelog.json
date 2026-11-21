@@ -31,6 +31,30 @@
     "summary": "강의 자료 작성 (검수 중)"
   },
   {
+    "date": "2026-11-20",
+    "type": "Changed",
+    "env": "App",
+    "projectName": "웹 장기",
+    "projectPath": "https://iseohyun.github.io/janggi/",
+    "version": "2.1.0",
+    "summary": "AI 엔진(Fairy-Stockfish) 탑재, 두어보기·변화도, 온라인 대국",
+    "detail": "- AI 엔진(Fairy-Stockfish) 탑재\n- 두어보기, 변화도, 추천수, 형세 그래프 제공\n- 위협 알림, 대국 룰 선택 가능\n- 온라인 대국: Google 로그인, 간편 이메일 인증(브라우저 인증)\n- 화면 재구성: 많아진 서비스를 담기 위한 레일/서랍 구조 채택, 앱 설치 지원",
+    "blog": {
+      "url": "https://iseohyun.tistory.com/124",
+      "label": "업데이트 소식 (블로그)"
+    },
+    "images": [
+      {
+        "src": "/source/janggi/v2.1.0-1.jpg",
+        "alt": "위협 알림 말풍선과 AI 엔진·대국 규칙 설정, 온라인 대국 서랍"
+      },
+      {
+        "src": "/source/janggi/v2.1.0-2.jpg",
+        "alt": "두어보기·변화도와 추천수·형세"
+      }
+    ]
+  },
+  {
     "date": "2026-11-19",
     "type": "Added",
     "env": "App",

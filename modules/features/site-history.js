@@ -350,6 +350,21 @@ window.SiteModules.UpdateLog = (function () {
     return modal;
   }
 
+  /** changelog.json의 blog: "https://…" 또는 { url, label }. http(s) 주소만 받는다 */
+  function normalizeBlog(blog) {
+    const raw = typeof blog === 'string' ? { url: blog } : (blog && typeof blog === 'object' ? blog : null);
+    if (!raw || typeof raw.url !== 'string' || !/^https?:\/\//i.test(raw.url)) return null;
+    return { url: raw.url, label: typeof raw.label === 'string' && raw.label ? raw.label : '업데이트 소식 (블로그)' };
+  }
+
+  /** changelog.json의 images: ["/source/…"] 또는 [{ src, alt }]. 사이트 안 경로나 https 주소만 받는다 */
+  function normalizeImages(images) {
+    if (!Array.isArray(images)) return [];
+    return images.map(img => (typeof img === 'string' ? { src: img, alt: '' } : img))
+      .filter(img => img && typeof img.src === 'string' && (/^\/(?!\/)/.test(img.src) || /^https:\/\//i.test(img.src)))
+      .map(img => ({ src: img.src, alt: typeof img.alt === 'string' ? img.alt : '' }));
+  }
+
   function openEventDetailPopup(dateStr, ev, hierarchy) {
     const modal = ensureDetailModal();
     const metaEl = modal.querySelector('#cal-modal-meta');
@@ -378,12 +393,31 @@ window.SiteModules.UpdateLog = (function () {
     const detailText = item.detail || item.summary || '';
 
     const resolvedPath = item.projectPath || findPath(hierarchy, projectName);
-    let actionHtml = '';
+    // 상세 보기 전용: 업데이트 소식 글(blog)과 화면 그림(images, 최대 2장). 달력·목록에는 summary만 보인다
+    const blog = normalizeBlog(item.blog);
+    const images = normalizeImages(item.images).slice(0, 2);
+    const blogBtnHtml = blog ? `
+            <a class="cal-modal-link-btn is-secondary" href="${escapeHtml(blog.url)}" target="_blank" rel="noopener noreferrer">
+              <span>${escapeHtml(blog.label)}</span>
+              <span class="material-symbols-outlined" style="font-size:17px;">article</span>
+            </a>` : '';
+    const imagesHtml = images.length ? `
+        <div class="cal-modal-detail-section">
+          <div class="cal-modal-detail-label">화면</div>
+          <div class="cal-modal-shots">
+            ${images.map(img => `
+              <a class="cal-modal-shot" href="${escapeHtml(img.src)}" target="_blank" rel="noopener" title="크게 보기">
+                <img src="${escapeHtml(img.src)}" alt="${escapeHtml(img.alt)}" loading="lazy">
+                ${img.alt ? `<span class="cal-modal-shot-cap">${escapeHtml(img.alt)}</span>` : ''}
+              </a>`).join('')}
+          </div>
+        </div>` : '';
+    let actionHtml = blogBtnHtml ? `<div class="cal-modal-actions">${blogBtnHtml}</div>` : '';
     if (resolvedPath) {
       const isExternal = resolvedPath.startsWith('http://') || resolvedPath.startsWith('https://');
       if (isExternal) {
         actionHtml = `
-          <div class="cal-modal-actions">
+          <div class="cal-modal-actions">${blogBtnHtml}
             <a class="cal-modal-link-btn" href="${escapeHtml(resolvedPath)}" target="_blank" rel="noopener noreferrer">
               <span>사이트 / 저장소 바로가기</span>
               <span class="material-symbols-outlined" style="font-size:17px;">open_in_new</span>
@@ -392,7 +426,7 @@ window.SiteModules.UpdateLog = (function () {
         `;
       } else {
         actionHtml = `
-          <div class="cal-modal-actions">
+          <div class="cal-modal-actions">${blogBtnHtml}
             <a class="cal-modal-link-btn" href="${escapeHtml(resolvedPath)}" id="cal-modal-internal-link">
               <span>해당 페이지로 이동</span>
               <span class="material-symbols-outlined" style="font-size:17px;">arrow_forward</span>
@@ -417,6 +451,7 @@ window.SiteModules.UpdateLog = (function () {
           <div class="cal-modal-detail-box">${formattedDetail}</div>
         </div>
       ` : ''}
+      ${imagesHtml}
       ${actionHtml}
     `;
 
