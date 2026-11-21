@@ -2,7 +2,7 @@ const { test, expect } = require('@playwright/test');
 
 const DOC_HASH = '#/column/swimming/freestyle.html';
 const OTHER_DOC_HASH = '#/column/swimming/swimming.html';
-const BUILT_IN_RAIL_IDS = ['nav-home', 'nav-sitemap', 'nav-toc', 'nav-search', 'nav-kakao-channel', 'nav-info'];
+const BUILT_IN_RAIL_IDS = ['nav-home', 'nav-sitemap', 'nav-search', 'nav-kakao-channel', 'nav-info'];
 
 async function openDoc(page, hash = DOC_HASH) {
   await page.goto('/index.html' + hash);
@@ -94,14 +94,14 @@ test.describe('레일 항목 더하기 (Navigation.addRailItem)', () => {
 
     await page.locator('#nav-page-demo').click();
     await expect(page.locator('#demo-panel-note')).toBeVisible();
-    await page.keyboard.press('2');
-    await expect(page.locator('#tab-toc')).toHaveClass(/active/);
+    await page.keyboard.press('1');
+    await expect(page.locator('#tab-sitemap')).toHaveClass(/active/);
     await expect(page.locator('#demo-panel-note')).toBeHidden();
 
     await page.evaluate(() => window.__removeDemoRailItem());
     await expect(page.locator('#nav-page-demo')).toHaveCount(0);
     await expect(page.locator('#tab-page-demo')).toHaveCount(0);
-    await expect(page.locator('#tab-toc')).toHaveClass(/active/);
+    await expect(page.locator('#tab-sitemap')).toHaveClass(/active/);
     // 두 번 불러도 탈이 없다
     await page.evaluate(() => window.__removeDemoRailItem());
     for (const id of BUILT_IN_RAIL_IDS) await expect(page.locator(`#sidebar-nav #${id}`)).toBeVisible();
@@ -165,7 +165,7 @@ test.describe('헤더 동작 단추 (Header.setActions / updateAction)', () => {
     // 오른쪽 묶음의 순서: 동작 단추들 → 필터 → 공유 → 설정
     const order = await page.locator('.app-header-right').evaluate(group =>
       Array.from(group.querySelectorAll('button')).map(button => button.id));
-    expect(order).toEqual(['header-action-play', 'header-action-info', 'header-filter-btn', 'header-share-btn', 'header-settings-btn']);
+    expect(order).toEqual(['header-action-play', 'header-action-info', 'header-filter-btn', 'header-share-btn', 'header-settings-btn', 'header-toc-btn']);
     await expect(page.locator('#header-share-btn')).toBeVisible();
     await expect(page.locator('#header-settings-btn')).toBeVisible();
 
@@ -180,7 +180,7 @@ test.describe('헤더 동작 단추 (Header.setActions / updateAction)', () => {
     expect(await page.evaluate(() => window.SiteModules.Header.updateAction('없는-단추', { label: 'x' }))).toBe(false);
 
     // 같은 문서 안에서 앵커만 옮길 때는 남아 있다
-    await page.locator('#nav-toc').click();
+    await page.locator('#header-toc-btn').click();
     await page.locator('#toc-tree a').last().click();
     await expect(page).toHaveURL(/freestyle\.html#/);
     await expect(playBtn).toBeVisible();
@@ -228,7 +228,7 @@ test.describe('화면을 떠날 때 (Navigation.onLeave · site:page-leave)', ()
       document.addEventListener('site:page-leave', event => { window.__leave.events.push(event.detail.path); }, { once: true });
     });
 
-    await page.locator('#nav-toc').click();
+    await page.locator('#header-toc-btn').click();
     await page.locator('#toc-tree a').last().click();
     await expect(page).toHaveURL(/freestyle\.html#/);
     expect(await page.evaluate(() => window.__leave)).toEqual({ hook: 0, cleanup: 0, events: [] });

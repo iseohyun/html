@@ -20,7 +20,7 @@ const PAGES = [
   { file: 'conveniences.html', label: '편의 기능', page: 'extras' }
 ];
 const OTHER_DOC_HASH = '#/column/prefix/prefix.html';
-const BUILT_IN_RAIL_IDS = ['nav-home', 'nav-sitemap', 'nav-toc', 'nav-search', 'nav-kakao-channel', 'nav-info'];
+const BUILT_IN_RAIL_IDS = ['nav-home', 'nav-sitemap', 'nav-search', 'nav-kakao-channel', 'nav-info'];
 const RAIL_ITEM = '#nav-page-cg-preview';
 
 // 페이지 오류와 콘솔 오류를 모은다. 바깥 서비스(분석 · 글꼴)를 받지 못한 것은 이 묶음과 무관하므로 뺀다

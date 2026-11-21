@@ -36,16 +36,18 @@ test.describe('공통 뼈대: 헤더 · 레일 · 패널', () => {
     await expect(panel).toHaveClass(/collapsed/);
   });
 
-  test('좁은 화면: 메뉴 아이콘이 서랍을 열고 목차 탭으로 전환된다', async ({ page }) => {
+  test('좁은 화면: 메뉴 아이콘이 서랍을 열고 검색 탭으로 전환된다', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto('/index.html');
 
     await page.locator('#header-menu-btn').click();
     await expect(page.locator('#sidebar-container')).toHaveClass(/active/);
 
-    await page.locator('#nav-toc').click();
-    await expect(page.locator('#tab-toc')).toHaveClass(/active/);
-    await expect(page.locator('#panel-title')).toHaveText('목차');
+    // 목차는 레일이 아니라 헤더의 목차 단추(오른쪽 사이드바)에 있다
+    await expect(page.locator('#nav-toc')).toHaveCount(0);
+    await page.locator('#nav-search').click();
+    await expect(page.locator('#tab-search')).toHaveClass(/active/);
+    await expect(page.locator('#panel-title')).toHaveText('문서 검색');
 
     // 덮개를 누르면 서랍이 닫힌다
     await page.locator('#sidebar-overlay').click({ position: { x: 360, y: 400 } });

@@ -38,7 +38,8 @@ window.SiteModules.KeybindManager = (function () {
   // badge: Alt 를 누르는 동안 배지를 붙일 요소
   const ACTIONS = [
     { id: "rail1", label: "사이트맵", defaultKey: "1", badge: "#nav-sitemap", run: () => clickIfVisible("#nav-sitemap") },
-    { id: "rail2", label: "목차", defaultKey: "2", badge: "#nav-toc", run: () => clickIfVisible("#nav-toc") },
+    // 목차는 레일 탭에서 헤더의 목차 단추(오른쪽 사이드바)로 옮겼다. 사용자가 바꿔 둔 키를 지키려고 id 는 그대로 둔다.
+    { id: "rail2", label: "목차 여닫기", defaultKey: "2", badge: "#header-toc-btn", run: () => clickIfVisible("#header-toc-btn") },
     { id: "rail3", label: "검색 패널", defaultKey: "3", badge: "#nav-search", run: () => clickIfVisible("#nav-search") },
     { id: "menu", label: "사이드바 여닫기", defaultKey: "m", badge: "#header-menu-btn", run: () => clickIfVisible("#header-menu-btn") },
     { id: "filter", label: "필터 여닫기", defaultKey: "f", badge: "#header-filter-btn", run: () => clickIfVisible("#header-filter-btn") },

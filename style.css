@@ -1171,7 +1171,9 @@ em {
 
 body {
   padding-left: var(--sidebar-width, 60px);
-  transition: padding-left 0.3s ease;
+  /* 오른쪽 목차 사이드바를 고정하면 그 폭만큼 본문을 밀어낸다 (아래 「오른쪽 목차 사이드바」) */
+  padding-right: var(--toc-dock-w, 0px);
+  transition: padding-left 0.3s ease, padding-right var(--t-base) ease;
 }
 
 header {
@@ -1892,6 +1894,148 @@ footer {
   display: none !important;
 }
 
+/* ==========================================================================
+   오른쪽 목차 사이드바 (#toc-drawer, modules/core/toc.js)
+   - 헤더의 목차 단추(#header-toc-btn)로 켜고 끈다. 헤더 아래에서 오른쪽 끝부터 밀려 나온다.
+   - 고정(.docked, html.toc-docked): 본문을 사이드바 폭만큼 밀어내고 옆에 붙는다.
+   - 고정하지 않으면 본문 위에 겹쳐 뜨고 그림자를 단다. 좁은 화면(960px 이하)에서는 늘 겹쳐 뜨고 덮개를 깐다.
+   ========================================================================== */
+:root {
+  --toc-w: 260px;
+  --toc-dock-w: 0px;
+}
+
+html.toc-docked {
+  --toc-dock-w: var(--toc-w);
+}
+
+#toc-drawer {
+  position: fixed;
+  top: var(--header-h);
+  right: 0;
+  bottom: 0;
+  width: var(--toc-w);
+  max-width: 85vw;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--sunken);
+  border-left: 1px solid var(--line);
+  color: var(--fg);
+  font-family: var(--font-main);
+  font-size: 13px;
+  line-height: 1.4;
+  z-index: calc(var(--z-header) - 1);
+  transform: translateX(100%);
+  visibility: hidden;
+  /* 닫힐 때는 밀려 나간 뒤에 감춘다 (초점이 닫힌 사이드바로 가지 않게) */
+  transition: transform var(--t-base) cubic-bezier(0.4, 0, 0.2, 1), box-shadow var(--t-base) ease, visibility 0s linear var(--t-base);
+}
+
+#toc-drawer.open {
+  transform: translateX(0);
+  visibility: visible;
+  transition: transform var(--t-base) cubic-bezier(0.4, 0, 0.2, 1), box-shadow var(--t-base) ease, visibility 0s;
+}
+
+#toc-drawer.open:not(.docked) {
+  box-shadow: -6px 0 24px rgba(0, 0, 0, 0.18);
+}
+
+#toc-drawer[hidden] {
+  display: none;
+}
+
+.toc-drawer-head {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 10px 10px 15px;
+  border-bottom: 1px solid var(--line);
+  font-weight: bold;
+  font-size: 14px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.toc-drawer-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.toc-drawer-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 15px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+#toc-tree {
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+}
+
+#toc-tree li {
+  line-height: 1.8em;
+  margin-bottom: 2px;
+  padding: 2px;
+}
+
+#toc-tree a {
+  display: block;
+  padding: 0 4px;
+  color: var(--muted);
+  text-decoration: none;
+  border-radius: var(--r-sm);
+}
+
+#toc-tree a:hover {
+  background-color: var(--sidebar-hover-bg);
+  color: var(--fg);
+}
+
+#toc-overlay {
+  display: none;
+}
+
+@media screen and (max-width: 960px) {
+  /* 좁은 화면에서는 고정하지 않는다: 본문을 밀지 않고, 고정 단추도 감춘다 */
+  html.toc-docked {
+    --toc-dock-w: 0px;
+  }
+
+  #toc-pin-btn {
+    display: none;
+  }
+
+  #toc-drawer {
+    z-index: 9997;
+  }
+
+  #toc-overlay {
+    display: block;
+    position: fixed;
+    top: var(--header-h);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--scrim);
+    z-index: 9996;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--t-base) ease;
+  }
+
+  #toc-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
 /* TOC active element styles */
 #toc-tree a.active-toc {
   text-decoration: underline !important;
@@ -2013,6 +2157,35 @@ footer {
 /* Migrated from index.html internal styles */
 article a:hover {
   color: red;
+}
+
+/* 바깥 사이트로 나가는 링크: 살짝 연한 파랑 + 오른쪽에 「바깥으로」 아이콘(둥근 사각형, 오른쪽 위가 트이고 화살표가 우상단).
+   - 아이콘은 inline-block 이라 밑줄이 아이콘 아래로 이어지지 않는다. 색은 글자색(currentColor)을 따라 호버 때 함께 바뀐다.
+   - 그림 링크와 단추·카드 모양 링크에는 붙이지 않는다. 자기 사이트 주소(iseohyun.com)는 바깥으로 치지 않는다. */
+:root {
+  --link-external: #3a6fd8;
+  --ico-external: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6'/%3E%3Cpath d='M15 3h6v6M21 3l-9 9'/%3E%3C/svg%3E");
+}
+
+article a.external-link,
+article a.external-link:visited {
+  color: var(--link-external);
+}
+
+article a.external-link:hover {
+  color: red;
+}
+
+article a.external-link::after {
+  content: "";
+  display: inline-block;
+  width: 0.8em;
+  height: 0.8em;
+  margin-left: 0.2em;
+  vertical-align: -0.05em;
+  background-color: currentColor;
+  -webkit-mask: var(--ico-external) center / contain no-repeat;
+  mask: var(--ico-external) center / contain no-repeat;
 }
 
 @media screen and (min-width: 1150px) {

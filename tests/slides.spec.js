@@ -8,7 +8,7 @@ const { test, expect } = require('@playwright/test');
 
 const CH1 = '#/column/ai/fast-follower/ch1.html';
 const CH2 = '#/column/ai/fast-follower/ch2.html';
-const BUILT_IN_RAIL_IDS = ['nav-home', 'nav-sitemap', 'nav-toc', 'nav-search', 'nav-kakao-channel', 'nav-info'];
+const BUILT_IN_RAIL_IDS = ['nav-home', 'nav-sitemap', 'nav-search', 'nav-kakao-channel', 'nav-info'];
 const CHAPTER_TABS = ['1장 개요', '2장 설명하는 실력', '3장 도구', '4장 토큰', '5장 컨텍스트 스위칭', '6장 공부', '부록 부품 지도'];
 const SETTINGS_KEY = 'iseohyun_slides_settings_v1';
 

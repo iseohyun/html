@@ -60,8 +60,7 @@ window.SiteModules.Config = window.SiteModules.Config || Object.freeze({
 
   layout: Object.freeze({
     // 사이드바가 드로어(삼선 메뉴)로 전환되는 너비. style.css의 @media (max-width: 960px)와 동일해야 한다.
-    mobileBreakpoint: 960,
-    // 목차 항목 클릭 시 사이드바를 자동으로 닫는 너비
-    tocAutoCloseBreakpoint: 768
+    // 이 너비 이하에서는 오른쪽 목차 사이드바도 고정하지 않고 겹쳐 뜨는 서랍이 된다(목차 항목을 누르면 닫힌다).
+    mobileBreakpoint: 960
   })
 });
