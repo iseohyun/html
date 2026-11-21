@@ -110,7 +110,7 @@ window.SiteModules.Navigation = (function () {
   }
 
   // ---------------------------------------------------------------------------
-  // 레일 확장: 문서가 더하는 항목 (기본 항목 홈/사이트맵/목차/검색/문의/소개는 그대로 둔다)
+  // 레일 확장: 문서가 더하는 항목 (기본 항목 홈/사이트맵/검색/문의/소개는 그대로 둔다)
   // ---------------------------------------------------------------------------
 
   // 패널을 여는 레일 항목 전부 (기본 탭 + 문서가 더한 탭)
@@ -450,9 +450,6 @@ window.SiteModules.Navigation = (function () {
           <div class="nav-item" id="nav-sitemap" data-tab="tab-sitemap" data-tooltip="사이트맵" data-panel-title="사이트맵">
             ${icon("sitemap")}
           </div>
-          <div class="nav-item" id="nav-toc" data-tab="tab-toc" data-tooltip="목차" data-panel-title="목차">
-            ${icon("list")}
-          </div>
           <div class="nav-item" id="nav-search" data-tab="tab-search" data-tooltip="검색" data-panel-title="문서 검색">
             ${icon("search")}
           </div>
@@ -492,13 +489,9 @@ window.SiteModules.Navigation = (function () {
             </div>
             <ul class="sitemap-panel-list" id="sitemap-tree"></ul>
           </div>
-          
-          <!-- 2. TOC Pane -->
-          <div class="tab-pane" id="tab-toc">
-            <div class="toc-breadcrumb" id="toc-breadcrumb-info" style="font-size:0.75em; color:#5f6368; margin-bottom:4px; font-weight: 500;"></div>
-            <ul class="toc-panel-list" id="toc-tree"></ul>
-          </div>
-          <!-- 3. Search Pane -->
+
+          <!-- 목차는 오른쪽 목차 사이드바(#toc-drawer, toc.js)에 있다 -->
+          <!-- 2. Search Pane -->
           <div class="tab-pane" id="tab-search">
             <div class="search-type-wrapper">
               <label class="search-type-option active">
@@ -1280,8 +1273,8 @@ window.SiteModules.Navigation = (function () {
       }
     }
 
-    // D. 목차 탭 문서 세부사항 및 버튼 갱신
-    updateTOCPanelInfo(isHome, docTitle);
+    // D. 목차 사이드바의 이전글/다음글 단추 갱신 (목차도 단추도 없으면 사이드바와 헤더 단추를 숨긴다)
+    updateTOCPanelInfo(isHome);
 
     // E. 참조 및 copyright 재계산 생략 (피드백 이관 이후 맨 아래 배치 위해 연기)
 
@@ -1364,32 +1357,22 @@ window.SiteModules.Navigation = (function () {
     }
   }
 
-  function updateTOCPanelInfo(isHome, pageTitle) {
-    const panelTitle = document.getElementById("panel-title");
-    const tabTOC = document.getElementById("tab-toc");
-    if (!tabTOC) return;
-
-    const existingDetails = tabTOC.querySelector(".toc-doc-details");
-    if (existingDetails) existingDetails.remove();
-
-    if (isHome) {
-      if (panelTitle && document.getElementById("nav-toc").classList.contains("active")) {
-        panelTitle.textContent = "목차 보기";
-      }
-      const tocTree = document.getElementById("toc-tree");
-      if (tocTree) {
-        tocTree.innerHTML = "<li style='padding: 10px; color: #747775; font-size: 0.85em;'>목차를 표시할 수 없는 페이지입니다.</li>";
-      }
-      return;
-    }
+  // 목차 사이드바 위쪽의 이전글/다음글 단추. 이전글도 다음글도 없는 화면(홈, 설정 등)에는 두지 않는다.
+  function updateTOCPanelInfo(isHome) {
+    const detailsDiv = document.getElementById("toc-doc-details");
+    if (!detailsDiv) return;
+    detailsDiv.replaceChildren();
 
     const state = window.SiteModules.state;
+    const hasNeighbor = !!((state.prv_doc && state.prv_doc.file) || (state.next_doc && state.next_doc.file));
+    if (!isHome && hasNeighbor) appendNeighborButtons(detailsDiv, state);
 
-    // 문서 세부 정보 패널 구성
-    const detailsDiv = document.createElement("div");
-    detailsDiv.className = "toc-doc-details";
+    if (window.SiteModules.TOC && typeof window.SiteModules.TOC.refreshAvailability === "function") {
+      window.SiteModules.TOC.refreshAvailability();
+    }
+  }
 
-    // 5-2. 하단 이전글/다음글 단추 배치
+  function appendNeighborButtons(detailsDiv, state) {
     const navBtnDiv = document.createElement("div");
     navBtnDiv.className = "toc-doc-nav-buttons";
 
@@ -1418,12 +1401,6 @@ window.SiteModules.Navigation = (function () {
     navBtnDiv.appendChild(nextBtn);
 
     detailsDiv.appendChild(navBtnDiv);
-    tabTOC.insertBefore(detailsDiv, tabTOC.firstChild);
-
-    // 액티브 패널 타이틀 지정
-    if (panelTitle && document.getElementById("nav-toc").classList.contains("active")) {
-      panelTitle.textContent = pageTitle || state.cur_doc.title || "목차";
-    }
   }
 
   // 사이트맵 트리를 그린다.

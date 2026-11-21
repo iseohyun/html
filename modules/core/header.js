@@ -2,7 +2,8 @@
  * @file modules/core/header.js
  * @module SiteModules.Header
  * @description 화면 위에 고정되는 헤더. 한 줄에 세 묶음을 둔다:
- *   [메뉴 아이콘][페이지 제목] ── 탭 ── [화면별 동작 단추...][필터][페이지 공유][설정]
+ *   [메뉴 아이콘][페이지 제목] ── 탭 ── [화면별 동작 단추...][필터][페이지 공유][설정][목차]
+ *   목차 단추는 오른쪽 목차 사이드바를 켜고 끄는 토글이다. 동작은 toc.js 가 붙이고, 목차가 없는 화면에서는 숨는다.
  *   탭 줄이 제목과 아이콘에 밀려 다 보이지 않으면 가려진 쪽에 스크롤 버튼이 생기고, 탭 줄을 끌어서도 밀 수 있다.
  *   필터와 화면별 설정은 헤더 바로 아래로 펼쳐지는 같은 자리의 패널이며 한 번에 하나만 열린다.
  *   패널의 내용은 각 화면이 setPanels() 로 등록한다. 필터 아이콘은 등록한 화면에서만 보이고,
@@ -65,6 +66,7 @@ window.SiteModules.Header = (function () {
             <span class="app-toast" id="header-toast" role="status" hidden></span>
           </span>
           <button class="icon-btn" type="button" id="header-settings-btn" aria-label="화면 설정" title="화면 설정" aria-expanded="false" aria-controls="header-drop" hidden>${icon("gear")}</button>
+          <button class="icon-btn" type="button" id="header-toc-btn" aria-label="목차" title="목차" aria-pressed="false" aria-controls="toc-drawer" hidden>${icon("list")}</button>
         </div>
       </div>
       <div class="app-drop" id="header-drop">

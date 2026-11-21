@@ -28,6 +28,7 @@ window.SiteModules.Icons = (function () {
     "x": '<path d="M18 6 6 18M6 6l12 12"/>',                                         // 닫기 (x)
     "maximize": '<path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>',                // 크게 보기 (maximize-2)
     "minimize": '<path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/>',                // 원래 크기로 (minimize-2)
+    "pin": '<path d="M12 17v5M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/>', // 목차 사이드바 고정 (pin)
 
     // 레일
     "sitemap": '<path d="M21 12h-8M21 6H8M21 18h-8M3 6v4c0 1.1.9 2 2 2h3M3 10v6c0 1.1.9 2 2 2h3"/>', // 사이트맵 (list-tree)

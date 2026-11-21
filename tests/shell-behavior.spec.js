@@ -144,7 +144,7 @@ test.describe('본문 영역만 스크롤', () => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/index.html#/column/swimming/freestyle.html');
     await expect(page.locator('article h1').first()).toBeVisible();
-    await page.locator('#nav-toc').click();
+    await page.locator('#header-toc-btn').click();
     await expect(page.locator('#toc-tree li').first()).toBeVisible();
 
     // 목차의 마지막 항목이 가리키는 제목으로 스크롤하면 그 항목이 강조된다

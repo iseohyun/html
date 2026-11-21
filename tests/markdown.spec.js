@@ -152,7 +152,7 @@ test.describe('마크다운 문서 보기', () => {
     await expect(tabs).toHaveText(['샘플', '둘째']);
     await expect(tabs.nth(0)).toHaveAttribute('aria-selected', 'true');
 
-    await page.locator('#nav-toc').click();
+    await page.locator('#header-toc-btn').click();
     await expect(page.locator('#toc-tree a')).toHaveCount(4);
     await expect(page.locator('#toc-tree a').first()).toHaveText('1. 첫째 장');
     await expect(page.locator('#toc-tree a').nth(1)).toContainText('1-1. 첫째 절');
@@ -267,7 +267,7 @@ test.describe('칼럼 > AI 의 마크다운 문서', () => {
     await expect(page.locator('#title-container')).toContainText('공학 > 개발 도구');
     await expect(page.locator('.error-state')).toHaveCount(0);
 
-    await page.locator('#nav-toc').click();
+    await page.locator('#header-toc-btn').click();
     await expect(page.locator('#toc-tree a')).toHaveCount(6);
     // 사이트맵에서 지금 문서가 표시된다
     await expect(page.locator('#sitemap-tree li.this-doc a')).toHaveText('Full Code Review Checklist');
