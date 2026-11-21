@@ -2159,6 +2159,35 @@ article a:hover {
   color: red;
 }
 
+/* 바깥 사이트로 나가는 링크: 살짝 연한 파랑 + 오른쪽에 「바깥으로」 아이콘(둥근 사각형, 오른쪽 위가 트이고 화살표가 우상단).
+   - 아이콘은 inline-block 이라 밑줄이 아이콘 아래로 이어지지 않는다. 색은 글자색(currentColor)을 따라 호버 때 함께 바뀐다.
+   - 그림 링크와 단추·카드 모양 링크에는 붙이지 않는다. 자기 사이트 주소(iseohyun.com)는 바깥으로 치지 않는다. */
+:root {
+  --link-external: #3a6fd8;
+  --ico-external: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6'/%3E%3Cpath d='M15 3h6v6M21 3l-9 9'/%3E%3C/svg%3E");
+}
+
+article a.external-link,
+article a.external-link:visited {
+  color: var(--link-external);
+}
+
+article a.external-link:hover {
+  color: red;
+}
+
+article a.external-link::after {
+  content: "";
+  display: inline-block;
+  width: 0.8em;
+  height: 0.8em;
+  margin-left: 0.2em;
+  vertical-align: -0.05em;
+  background-color: currentColor;
+  -webkit-mask: var(--ico-external) center / contain no-repeat;
+  mask: var(--ico-external) center / contain no-repeat;
+}
+
 @media screen and (min-width: 1150px) {
   article {
     padding: 0;

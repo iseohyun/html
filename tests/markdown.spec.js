@@ -110,6 +110,20 @@ test.describe('마크다운 문서 보기', () => {
     await expect(firstParagraph.locator('a')).toHaveCount(2);
     await expect(firstParagraph.locator('a').nth(0)).toHaveAttribute('href', `${MD_DIR}second.md`);
     await expect(firstParagraph.locator('a').nth(1)).toHaveAttribute('href', 'https://example.com/a_b');
+
+    // 바깥 링크만 살짝 연한 파랑에 오른쪽 아이콘이 붙고, 아이콘은 inline-block 이라 밑줄이 이어지지 않는다
+    const inner = firstParagraph.locator('a').nth(0);
+    const outer = firstParagraph.locator('a').nth(1);
+    await expect(inner).not.toHaveClass(/external-link/);
+    await expect(outer).toHaveClass(/external-link/);
+    const look = await outer.evaluate(el => {
+      const after = getComputedStyle(el, '::after');
+      return { color: getComputedStyle(el).color, display: after.display, mask: after.maskImage || after.webkitMaskImage };
+    });
+    expect(look.color).toBe('rgb(58, 111, 216)');
+    expect(look.display).toBe('inline-block');
+    expect(look.mask).toContain('svg');
+    expect(await inner.evaluate(el => getComputedStyle(el, '::after').content)).toBe('none');
     await expect(firstParagraph.locator('a').nth(1)).toHaveAttribute('target', '_blank');
     await expect(article.locator('img.md-img')).toHaveAttribute('src', `${MD_DIR}img/pic.png`);
 
@@ -271,5 +285,30 @@ test.describe('칼럼 > AI 의 마크다운 문서', () => {
     await expect(page.locator('#toc-tree a')).toHaveCount(6);
     // 사이트맵에서 지금 문서가 표시된다
     await expect(page.locator('#sitemap-tree li.this-doc a')).toHaveText('Full Code Review Checklist');
+  });
+});
+
+test.describe('바깥 링크 표시', () => {
+  test('다른 사이트로 가는 글자 링크에만 붙고, 자기 사이트 · 그림 · 단추 링크에는 붙지 않는다', async ({ page }) => {
+    await page.goto('/index.html#/column/swimming/freestyle.html');
+    await expect(page.locator('article h1').first()).toBeVisible();
+
+    const marked = await page.evaluate(() => {
+      const box = document.createElement('div');
+      box.innerHTML = [
+        '<a id="x-out" href="https://example.org/page">바깥</a>',
+        '<a id="x-own" href="https://iseohyun.com/info.html">자기 사이트</a>',
+        '<a id="x-local" href="#/info.html">안쪽</a>',
+        '<a id="x-mail" href="mailto:a@example.org">메일</a>',
+        '<a id="x-img" href="https://example.org/i"><img alt=""></a>',
+        '<a id="x-btn" class="pill-btn" href="https://example.org/b">단추</a>'
+      ].join(' ');
+      document.querySelector('article').appendChild(box);
+      const count = window.SiteModules.Navigation.markExternalLinks(document.querySelector('article'));
+      const ids = [...box.querySelectorAll('a.external-link')].map(a => a.id);
+      box.remove();
+      return { count, ids };
+    });
+    expect(marked.ids).toEqual(['x-out']);
   });
 });

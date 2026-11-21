@@ -1288,6 +1288,9 @@ window.SiteModules.Navigation = (function () {
       window.SiteModules.Clipboard.init();
     }
 
+    // H. 바깥 사이트로 나가는 링크에 표시 (style.css 의 a.external-link)
+    markExternalLinks(document.querySelector("article"));
+
     // I. 튜토리얼 기능 연동
     updatePageFeatures();
 
@@ -1355,6 +1358,36 @@ window.SiteModules.Navigation = (function () {
         parent = parent.parentElement;
       }
     }
+  }
+
+  // 자기 사이트로 치는 호스트 (이 주소로 가는 절대 링크는 바깥 링크가 아니다)
+  const OWN_HOSTS = ["iseohyun.com", "www.iseohyun.com"];
+  // 바깥 링크 아이콘을 붙이지 않는 링크: 그림을 감싼 링크, 단추·카드 모양 링크
+  const EXTERNAL_ICON_EXCLUDE = "a:has(img, svg, video, canvas), a.pill-btn, a.auto-overview-card, a.nav-btn";
+
+  /**
+   * 문서 안에서 다른 사이트로 나가는 http(s) 링크에 external-link 클래스를 붙인다.
+   * @param {HTMLElement|null} root 문서(article)
+   * @returns {number} 표시한 링크 수
+   */
+  function markExternalLinks(root) {
+    if (!root) return 0;
+    let count = 0;
+    root.querySelectorAll("a[href]").forEach(anchor => {
+      let url;
+      try {
+        url = new URL(anchor.getAttribute("href"), window.location.href);
+      } catch (err) {
+        return;
+      }
+      const isExternal = /^https?:$/.test(url.protocol)
+        && url.host !== window.location.host
+        && !OWN_HOSTS.includes(url.hostname)
+        && !anchor.matches(EXTERNAL_ICON_EXCLUDE);
+      anchor.classList.toggle("external-link", isExternal);
+      if (isExternal) count++;
+    });
+    return count;
   }
 
   // 목차 사이드바 위쪽의 이전글/다음글 단추. 이전글도 다음글도 없는 화면(홈, 설정 등)에는 두지 않는다.
@@ -1858,6 +1891,8 @@ window.SiteModules.Navigation = (function () {
     registerPageCleanup: registerPageCleanup,
     onLeave: registerPageCleanup,
     addRailItem: addRailItem,
-    getScroller: getScroller
+    getScroller: getScroller,
+    // 문서가 나중에 그린 내용에 바깥 링크 표시를 다시 붙일 때 (문서를 열 때는 라우터가 알아서 부른다)
+    markExternalLinks: markExternalLinks
   };
 })();
