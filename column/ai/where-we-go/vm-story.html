@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta keywords="iseohyun, AI, 개발 과정과 방향, 협력, VirtualMouse, HID, MCP, 접근 계층">
+  <meta author="iseohyun">
+
+  <!-- 페이지 타이틀 -->
+  <title>협력: 개발 과정과 방향 - iseohyun </title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-453XSP5W9M');
+  </script>
+
+  <!-- 목차 생성 -->
+  <script src="/modules/script.js" defer></script>
+
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("/style.css");
+  </style>
+
+  <!-- 슬라이드 · 스크립트 · 항목 카드 (보고서 형식) -->
+  <link rel="stylesheet" href="/modules/features/slides.css">
+  <script src="/modules/features/slides.js" defer></script>
+
+  <!-- 슬라이드 색: 5×3 팔레트, 읽기 설정의 「슬라이드 색」에서 UniPalette 로 고른다 -->
+  <link rel="stylesheet" href="/modules/features/slides-palette.css">
+  <script src="/modules/features/slides-palette.js" defer></script>
+</head>
+<!--
+  개발 과정과 방향 · 협력 (VirtualMouse 이야기)
+  - 본문은 <div class="slides-doc"> 안에 쓴다. 모양과 동작은 /modules/features/slides.css · slides.js 가 맡는다.
+  - 보고서 형식: 묶음 하나 = <section id> 안에 묶음 제목(<h2>), 슬라이드(.slide-frame > .slide), 스크립트(.script).
+  - 그림의 색은 사이트 역할 토큰(--c-fg · --c-muted · --c-line · --bg · --active · --alert)만 쓴다. 양/음은 색이 아니라 면·굵기와 --alert 로 가른다.
+-->
+
+<body>
+  <tags>AI, 개발, VirtualMouse, HID, MCP, 협력, 접근 계층, 칼럼</tags>
+  <article>
+    <style>
+      /* 이 문서 전용 그림·카드 스타일 (.slides-doc 안에 가둠). 색은 역할 토큰만 쓴다 */
+      .slides-doc .dg-box { position: relative; flex: 1; min-height: 0; }
+      .slides-doc .dg-box .dg { position: absolute; inset: 0; width: 100%; height: 100%; }
+      .slides-doc .dg text { fill: var(--c-fg); font-family: inherit; font-size: 14px; font-weight: 700; }
+      .slides-doc .dg text.sub { fill: var(--c-muted); font-size: 11px; font-weight: 500; font-family: var(--font-monospace); }
+      .slides-doc .dg text.neg { fill: var(--alert); }
+      .slides-doc .dg .bx { fill: var(--bg); stroke: var(--c-line); stroke-width: 1; }
+      .slides-doc .dg .bx-emph { fill: var(--active); stroke: var(--c-fg); stroke-width: 1; }
+      .slides-doc .dg .ln { stroke: var(--c-muted); fill: none; }
+      .slides-doc .dg .life { stroke: var(--c-fg); stroke-width: 1; fill: none; }
+      .slides-doc .dg .neg { stroke: var(--alert); }
+      .slides-doc .dg .dash { fill: none; stroke: var(--c-muted); stroke-dasharray: 4 4; }
+      .slides-doc .dg .fade { transition: opacity var(--t-base) ease; }
+      /* 읽어 줄 때 그림 안을 짚는 표시: SVG 요소에는 외곽선 대신 선 색으로 (function.html 과 같은 방식) */
+      .slides-doc .dg [data-key].cue-box { outline: none; stroke: var(--sl-cue, #d32f2f) !important; stroke-width: 3px !important; }
+
+      /* VM 프로젝트 그림: 쓰지 않는 채널은 흐리게, 읽는 동안 연속 전송 애니메이션, 가짜 이름 표시 */
+      .slides-doc .dg .ghost { stroke: var(--c-fg); stroke-dasharray: 3 4; opacity: 0.45; }
+      .slides-doc .dg .ghost-neg { stroke: var(--alert); stroke-dasharray: 2 5; opacity: 0.45; }
+      .slides-doc .dg .ghost.cue-box,
+      .slides-doc .dg .ghost-neg.cue-box { opacity: 1; }
+      .slides-doc .dg .vm-fake { opacity: 0; transition: opacity var(--t-base) ease; }
+      .slides-doc .dg .vm-fake rect { fill: var(--bg); stroke: var(--alert); stroke-width: 1.5; }
+      .slides-doc .dg .vm-fake text { fill: var(--alert); stroke: none; font-size: 13px; }
+      .slides-doc .dg .vm-fake.cue-box { opacity: 1; }
+      @keyframes vm-flow {
+        0%, 45%, 100% { stroke: var(--c-muted); stroke-width: 1; }
+        12%, 30% { stroke: var(--sl-cue, #d32f2f); stroke-width: 3; }
+      }
+      .slides-doc .dg .vm-flow.cue-box .ln { animation: vm-flow 2.4s ease infinite; }
+      .slides-doc .dg .vm-flow.cue-box .ln:nth-child(2) { animation-delay: 0.6s; }
+      .slides-doc .dg .vm-flow.cue-box .ln:nth-child(3) { animation-delay: 1.2s; }
+      .slides-doc .dg .vm-flow.cue-box .ln:nth-child(4) { animation-delay: 1.8s; }
+      @media (prefers-reduced-motion: reduce) {
+        .slides-doc .dg .vm-flow.cue-box .ln { animation: none; stroke: var(--sl-cue, #d32f2f); stroke-width: 3; }
+      }
+
+      /* 두 칸 비교 카드 (슬라이드 안) */
+      .slides-doc .dg-cols { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 2cqw; }
+      .slides-doc .dg-panel { border: 1px solid var(--c-line); border-radius: var(--r-md); background: var(--bg);
+        padding: 1em 1.2em; display: flex; flex-direction: column; gap: 0.5em; min-height: 0; }
+      .slides-doc .dg-panel.is-neg { border-style: dashed; border-color: var(--c-muted); }
+      .slides-doc .dg-panel h4 { margin: 0; font-size: 1.15em; font-weight: 700; }
+      .slides-doc .dg-row { display: flex; gap: 0.5em; align-items: baseline; font-size: 0.95em; line-height: 1.45; }
+      .slides-doc .dg-row .m { font-weight: 700; flex: 0 0 auto; }
+      .slides-doc .dg-panel.is-neg .dg-row .m { color: var(--alert); }
+      .slides-doc .dg-v { margin-top: auto; padding-top: 0.5em; font-size: 0.82em; color: var(--c-muted);
+        font-family: var(--font-monospace); line-height: 1.45; }
+
+      /* 1-2 흩뿌리는 신호: 읽는 동안만 차례로 나타난다 */
+      .slides-doc .dg .vm-scatter .ln { opacity: 0; }
+      .slides-doc .dg .vm-scatter.cue-box .ln { stroke: var(--sl-cue, #d32f2f); animation: vm-scatter 2.8s ease infinite; }
+      .slides-doc .dg .vm-scatter .sc-neg { stroke-dasharray: 2 3; }
+      .slides-doc .dg .vm-scatter.cue-box .ln:nth-child(2) { animation-delay: 0.35s; }
+      .slides-doc .dg .vm-scatter.cue-box .ln:nth-child(3) { animation-delay: 0.7s; }
+      .slides-doc .dg .vm-scatter.cue-box .ln:nth-child(4) { animation-delay: 1.05s; }
+      @keyframes vm-scatter { 0% { opacity: 0; } 8%, 70% { opacity: 1; } 85%, 100% { opacity: 0; } }
+      @media (prefers-reduced-motion: reduce) { .slides-doc .dg .vm-scatter.cue-box .ln { animation: none; opacity: 1; } }
+
+      /* 1-3 개인비서 시스템: 1단계(직접 조회·체크리스트)와 2단계(바꾼 방식) */
+      .slides-doc .sysx .phaseA,
+      .slides-doc .sysx .phaseB { transition: opacity var(--t-base) ease; }
+      .slides-doc .sysx .phaseA { opacity: 0; }
+      .slides-doc .sysx .phaseA.cue-check,
+      .slides-doc .sysx .phaseA:has(.cue-check) { opacity: 1; }
+      .slides-doc .sysx:has([data-key="req2"].cue-check) .phaseA { opacity: 0; }
+      .slides-doc .slide-frame:has(> .sl-tts[aria-pressed="true"]) .sysx .phaseB:not(.cue-check) { opacity: 0; }
+      .slides-doc .sysx g[data-key].cue-box .ln { stroke: var(--sl-cue, #d32f2f); stroke-width: 3; }
+      .slides-doc .sysx g[data-key] text { stroke: none !important; }
+      .slides-doc .ck { box-sizing: border-box; height: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px;
+        padding: 8px 12px; font-size: 11px; line-height: 1.4; color: var(--c-fg); background: var(--bg);
+        border: 1px dashed var(--alert); border-radius: 8px; }
+      .slides-doc .ck b { display: block; margin-bottom: 3px; font-size: 11px; color: var(--alert); }
+      .slides-doc .ck ol { margin: 0; padding-left: 1.3em; }
+      .slides-doc .ck li { margin: 0 0 1px; }
+
+      /* 1-6 네 가지 이야기: Eeyagi 방식 선 스케치(균일 선 · 둥근 끝 · 단색 잉크). 읽어 줄 때 자기 차례에 그려진다 */
+      .slides-doc .quad { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 1.4cqw; }
+      .slides-doc .qd { min-height: 0; min-width: 0; display: flex; flex-direction: column; gap: 0.2em; padding: 0.5em 0.7em 0.3em;
+        border: 1px solid var(--c-line); border-radius: var(--r-md); background: var(--bg); }
+      .slides-doc .qd-cap { font-size: 0.8em; font-weight: 700; color: var(--c-muted); }
+      .slides-doc .qd svg { flex: 1; min-height: 0; width: 100%; display: block; }
+      .slides-doc .qd .sk { fill: none; stroke: var(--c-fg); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+        stroke-dasharray: 102; stroke-dashoffset: 0; }
+      .slides-doc .qd .skt { fill: var(--c-fg); font-family: inherit; font-size: 11px; font-weight: 700; }
+      article .slides-doc .qd.cue-check::after { content: none; }
+      @keyframes sk-draw { 0% { stroke-dashoffset: 102; opacity: 0; } 6% { opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 1; } }
+      @keyframes sk-fade { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes sk-flick { 0%, 100% { opacity: 1; } 50% { opacity: 0.15; } }
+      .slides-doc .slide-frame:has(> .sl-tts[aria-pressed="true"]) .qd:not(.cue-check) .sk,
+      .slides-doc .slide-frame:has(> .sl-tts[aria-pressed="true"]) .qd:not(.cue-check) .skt { opacity: 0; }
+      .slides-doc .qd.cue-check .sk { animation: sk-draw var(--u, 0.42s) cubic-bezier(0.35, 0, 0.25, 1) var(--d, 0s) both; }
+      .slides-doc .qd.cue-check .skt { animation: sk-fade 0.4s ease var(--d, 0s) both; }
+      .slides-doc .qd.cue-check .flick { animation: sk-flick 0.5s steps(2, end) 2s infinite; }
+      @media (prefers-reduced-motion: reduce) {
+        .slides-doc .qd.cue-check .sk,
+        .slides-doc .qd.cue-check .skt,
+        .slides-doc .qd.cue-check .flick { animation: none; opacity: 1; stroke-dashoffset: 0; }
+      }
+      @container sl-slide (max-width: 560px) { .slides-doc .quad { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; } }
+
+      /* 1-6 갈림길: 시간 그래프 (왼쪽 과거 · 오른쪽 미래, 길목의 체크리스트) */
+      .slides-doc .tg .tw-fut text { fill: var(--c-fg); font-size: 15px; font-weight: 700; }
+      .slides-doc .tg .tw-past text { fill: var(--c-muted); font-size: 15px; font-weight: 500; }
+      .slides-doc .tg .fut { stroke: var(--c-fg); stroke-width: 2.5; }
+      .slides-doc .tg .neg { stroke-width: 2; }
+      .slides-doc .tg .now-dot { fill: var(--c-fg); }
+      .slides-doc .tg g[data-key].cue-box text { fill: var(--sl-cue, #d32f2f); stroke: none !important; }
+      .slides-doc .tg g[data-key="now"].cue-box .now-dot { fill: var(--sl-cue, #d32f2f); stroke: none !important; }
+      .slides-doc .tg-list { box-sizing: border-box; height: 100%; padding: 8px 12px; font-size: 13px; line-height: 1.5; color: var(--c-fg);
+        background: var(--bg); border: 1px solid var(--c-line); border-radius: 8px; }
+      .slides-doc .tg-list.is-past { border-style: dashed; border-color: var(--alert); }
+      .slides-doc .tg-list b { display: block; margin-bottom: 6px; font-size: 15px; font-weight: 800; color: var(--c-fg); }
+      .slides-doc .tg-list.is-past b { color: var(--alert); }
+      .slides-doc .tg-list ol { margin: 0; padding-left: 1.4em; }
+      .slides-doc .tg-list li::marker { color: var(--c-muted); }
+      .slides-doc .tg-list li { margin: 0 0 2px; }
+      .slides-doc .tg-list li svg { width: 1.05em; height: 1.05em; margin-right: 0.35em; vertical-align: -0.18em; fill: none;
+        stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+      .slides-doc .dg .tg-list.cue-box { border: 2px solid var(--sl-cue, #d32f2f) !important; }
+
+      /* 1-7 결론: 위쪽의 '신뢰의 진화' 링크, 읽을 때 맥박처럼 커진다 */
+      .slides-doc .thesis-top { display: flex; align-items: center; gap: 1.2em; flex-wrap: wrap; padding-right: 9cqw; }
+      .slides-doc .trust-link { display: inline-flex; align-items: center; gap: 0.45em; padding: 0.35em 1.1em;
+        border: 1px solid var(--c-line); border-radius: var(--r-pill); background: var(--bg);
+        font-size: 1.2em; font-weight: 800; color: var(--c-fg); text-decoration: none; }
+      .slides-doc .trust-link:hover { border-color: var(--c-fg); }
+      @keyframes trust-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+      .slides-doc .trust-link.cue-box { border-color: var(--sl-cue, #d32f2f); color: var(--sl-cue, #d32f2f); animation: trust-pulse 1.1s ease-in-out infinite; }
+      @media (prefers-reduced-motion: reduce) { .slides-doc .trust-link.cue-box { animation: none; } }
+
+      /* 슬라이드 색 (slides-palette.css 의 역할 변수). 1 강조 · 2 정식·미래 · 4 흐름 · 5 하지 않는 것 */
+      .slides-doc .dg .bx-emph { fill: var(--sp1-fill, var(--active)); stroke: var(--sp1-ink, var(--c-fg)); }
+      .slides-doc .dg .ln { stroke: var(--sp4-mid, var(--c-muted)); }
+      .slides-doc .dg rect[data-key="official"] { fill: var(--sp2-fill, var(--bg)); stroke: var(--sp2-ink, var(--c-line)); }
+      .slides-doc .dg .ghost-neg { stroke: var(--sp5-mid, var(--alert)); }
+      .slides-doc .ck { border-color: var(--sp5-mid, var(--alert)); }
+      .slides-doc .ck b { color: var(--sp5-ink, var(--alert)); }
+      .slides-doc .qd[data-key="q1"] { --qc-ink: var(--sp1-ink); --qc-mid: var(--sp1-mid); }
+      .slides-doc .qd[data-key="q2"] { --qc-ink: var(--sp2-ink); --qc-mid: var(--sp2-mid); }
+      .slides-doc .qd[data-key="q3"] { --qc-ink: var(--sp3-ink); --qc-mid: var(--sp3-mid); }
+      .slides-doc .qd[data-key="q4"] { --qc-ink: var(--sp4-ink); --qc-mid: var(--sp4-mid); }
+      .slides-doc .qd { border-color: var(--qc-mid, var(--c-line)); }
+      .slides-doc .qd-cap { color: var(--qc-ink, var(--c-muted)); }
+      .slides-doc .qd .sk { stroke: var(--qc-ink, var(--c-fg)); }
+      .slides-doc .qd .skt { fill: var(--qc-ink, var(--c-fg)); }
+      .slides-doc .tg .tw-fut text { fill: var(--sp2-ink, var(--c-fg)); }
+      .slides-doc .tg .now-dot { fill: var(--sp1-mid, var(--c-fg)); }
+      .slides-doc .tg-list[data-key="futlist"] { border-color: var(--sp2-mid, var(--c-line)); }
+      .slides-doc .tg-list[data-key="futlist"] b { color: var(--sp2-ink, var(--c-muted)); }
+      .slides-doc .thesis-points li[data-key="g1"] b { color: var(--sp1-ink, var(--c-fg)); }
+      .slides-doc .thesis-points li[data-key="g2"] b { color: var(--sp2-ink, var(--c-fg)); }
+      .slides-doc .thesis-points li[data-key="g3"] b { color: var(--sp3-ink, var(--c-fg)); }
+      .slides-doc .trust-link { border-color: var(--sp4-mid, var(--c-line)); color: var(--sp4-ink, var(--c-fg)); }
+
+      /* 형광펜: 읽을 때 왼쪽에서 오른쪽으로 그어지고, 읽기가 끝날 때까지 남는다 */
+      .slides-doc .hl-pen { background-image: linear-gradient(var(--c-mark, #ffe58a), var(--c-mark, #ffe58a));
+        background-repeat: no-repeat; background-position: 0 88%; background-size: 0% 38%;
+        -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+      @keyframes hl-sweep { from { background-size: 0% 38%; } to { background-size: 100% 38%; } }
+      .slides-doc .hl-pen.cue-check { animation: hl-sweep var(--hl-dur, 0.9s) cubic-bezier(0.3, 0, 0.2, 1) forwards; }
+      .slides-doc .hl-pen[data-key="hook"] { --hl-dur: 1.8s; }
+      article .slides-doc .hl-pen.cue-check::after { content: none; }
+      @media (prefers-reduced-motion: reduce) { .slides-doc .hl-pen.cue-check { animation: none; background-size: 100% 38%; } }
+
+      /* 1-3 첫 대사: VM · Mobile 을 지우고 내 정보 네 칸(My Log · My Data · My Context · My Account) */
+      .slides-doc .sysx .phase0,
+      .slides-doc .sysx .vmdev { transition: opacity var(--t-base) ease; }
+      .slides-doc .sysx .phase0 { opacity: 0; }
+      .slides-doc .slide-frame:has(> .sl-tts[aria-pressed="true"]) .sysx .phase0 { opacity: 1; }
+      .slides-doc .slide-frame:has(> .sl-tts[aria-pressed="true"]) .sysx:has([data-key="c1"].cue-check) .phase0 { opacity: 0; }
+      .slides-doc .slide-frame:has(> .sl-tts[aria-pressed="true"]) .sysx:not(:has([data-key="req2"].cue-check)) .vmdev { opacity: 0; }
+    </style>
+
+    <div class="slides-doc" data-page="vm-story" lang="ko">
+      <!-- 장 제목: 화면에서는 감추고 목차·번호 매김에만 쓴다 -->
+      <h1 class="sl-chapter">협력</h1>
+
+      <!-- 1 · 훅 -->
+      <section id="s1" data-title="1-1 이건 만들지 않겠습니다">
+        <h2>이건 만들지 않겠습니다</h2>
+        <div class="slide-frame">
+          <div class="slide">
+            <div class="slide-body is-thesis">
+              <div>
+                <span class="slide-eyebrow"><b class="slide-no">1-1</b>개발 과정과 방향 · 협력</span>
+              </div>
+              <div class="thesis">
+                <span class="thesis-kicker">— Claude</span>
+                <p class="thesis-line"><span class="hl-pen" data-key="hook">“이건 만들지 않겠습니다.”</span></p>
+                <span class="slide-note">개발을 맡겼더니 자꾸 멈춰 섰다. 그 멈춤을 따라가 보니, 우리가 어디로 가야 하는지가 보였다.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="script">
+          <p>평소처럼 개발 중이었어요. 개발 요청 사항을 상의하던 중이었는데요. <mark data-cue="hook:check">“이건 개발을 하진 않을 것이지만”</mark>이라는 단서를 계속 붙이더라고요. 그래서 공격받을 것을 대비해서 준비할 수도 있는 것 아니냐고 질문했는데, 갑자기 <span data-say="오퍼스 오쩜오에서 사쩜팔을">Opus 5.5에서 4.8을</span> 사용하도록 권유하고, 알림에는 “위협을 감지해서 변경하였습니다”라는 문구가 뜨더라고요. 여러분은 이런 경험이 있으신가요?</p>
+        </div>
+      </section>
+
+      <!-- 2 · VM 프로젝트 (지금 방식 + 이 소프트웨어가 하지 않는 것) -->
+      <section id="s2" data-title="1-2 VM 프로젝트">
+        <h2>VM 프로젝트</h2>
+        <div class="slide-frame">
+          <div class="slide">
+            <div class="slide-body">
+              <div>
+                <span class="slide-eyebrow"><b class="slide-no">1-2</b>무얼 만들고 있었나</span>
+                <div class="slide-title" role="heading" aria-level="3">VM 프로젝트</div>
+              </div>
+              <div class="dg-box">
+                <svg class="dg" viewBox="0 0 640 300" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="d2T d2D">
+                  <title id="d2T">VM 프로젝트의 전송 흐름</title>
+                  <desc id="d2D">외부 요청이 로컬 서버에 요청하고, 로컬 서버가 펌웨어에 명령을 보내면 펌웨어가 운영체제에 실제 마우스 입력으로 보내 대상 앱에 입력된다. 노이즈 채널과 여러 채널은 흐리게 그렸고 이 소프트웨어는 쓰지 않는다</desc>
+                  <defs><marker id="m2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+                  <rect class="bx" data-key="ext" x="14" y="12" width="80" height="34" rx="7"/><text x="54" y="34" text-anchor="middle">외부요청</text>
+                  <rect class="bx-emph" data-key="local" x="150" y="12" width="150" height="34" rx="7"/><text x="225" y="34" text-anchor="middle">로컬 서버</text>
+                  <rect class="bx" data-key="fw" x="340" y="12" width="90" height="34" rx="7"/><text x="385" y="34" text-anchor="middle">펌웨어</text>
+                  <rect class="bx" x="460" y="12" width="90" height="34" rx="7"/><text x="505" y="34" text-anchor="middle">운영체제</text>
+                  <rect class="bx" x="568" y="12" width="64" height="34" rx="7"/><text x="600" y="34" text-anchor="middle">대상앱</text>
+                  <line class="life" x1="54" y1="46" x2="54" y2="288"/>
+                  <line class="life ghost-neg" data-key="noise" x1="118" y1="46" x2="118" y2="288"/>
+                  <line class="life ghost" data-key="chan" x1="195" y1="46" x2="195" y2="288"/>
+                  <line class="life" x1="225" y1="46" x2="225" y2="288"/>
+                  <line class="life ghost" data-key="chan" x1="255" y1="46" x2="255" y2="288"/>
+                  <line class="life" x1="385" y1="46" x2="385" y2="288"/>
+                  <line class="life" x1="505" y1="46" x2="505" y2="288"/>
+                  <line class="life" x1="600" y1="46" x2="600" y2="288"/>
+                  <line class="ln" data-key="req" x1="54" y1="66" x2="225" y2="66" marker-end="url(#m2)"/><text class="sub" x="150" y="59" text-anchor="middle">요청</text>
+                  <g class="vm-flow" data-key="flow">
+                    <line class="ln" x1="225" y1="106" x2="385" y2="106" marker-end="url(#m2)"/>
+                    <line class="ln" x1="385" y1="119" x2="505" y2="119" marker-end="url(#m2)"/>
+                    <line class="ln" x1="225" y1="162" x2="385" y2="162" marker-end="url(#m2)"/>
+                    <line class="ln" x1="385" y1="175" x2="505" y2="175" marker-end="url(#m2)"/>
+                  </g>
+                  <line class="ln" data-key="input" x1="505" y1="222" x2="600" y2="222" marker-end="url(#m2)"/><text class="sub" x="552" y="215" text-anchor="middle">입력</text>
+                  <g class="vm-scatter" data-key="scatter">
+                    <line class="ln" x1="54" y1="248" x2="195" y2="248" marker-end="url(#m2)"/>
+                    <line class="ln" x1="54" y1="257" x2="255" y2="257" marker-end="url(#m2)"/>
+                    <line class="ln sc-neg" x1="54" y1="266" x2="118" y2="266" marker-end="url(#m2)"/>
+                    <line class="ln" x1="54" y1="275" x2="225" y2="275" marker-end="url(#m2)"/>
+                  </g>
+                  <g class="vm-fake" data-key="fake"><rect x="330" y="10" width="110" height="38" rx="8"/><text x="385" y="34" text-anchor="middle">이름: 나가짜</text></g>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="script">
+          <p>개발 중이던 시스템은 이랬습니다. <span data-cue="ext:box">외부에서 마우스와 키보드를 조작하고 싶을 때가 있습니다.</span> <span data-cue="ext:box req:box">그러면 로컬 서버에 내용을 요청합니다.</span> <span data-cue="local:box">로컬 서버는 요청을 분석해서 펌웨어에게 명령을 내립니다.</span></p>
+          <p data-cue="fw:box flow:box">펌웨어는 아두이노 기기입니다. 가볍고, 싸고, 쉽죠. 실제 하드웨어입니다. USB로 컴퓨터와 연결되어 있습니다. COM 포트로 명령을 보내면, 운영체제에게는 실제 마우스 입력으로 보냅니다.</p>
+          <p data-cue="input:box">이 신호는 가상 신호와는 다릅니다. 가짜 클릭을 보낼 필요도 없고, 크롬을 개발자 모드로 바꿀 필요도 없습니다. <mark>진짜 마우스 신호입니다.</mark></p>
+          <p>하지만 여전히 무적은 아닙니다. <span data-cue="noise:box scatter:box">이 소프트웨어는 노이즈를 만들지도 않습니다.</span> <span data-cue="chan:box scatter:box">채널을 숨기지도 않습니다.</span> <span data-cue="fake:box">그렇다고 가짜 디바이스인 것을 숨기지도 않습니다.</span></p>
+          <p><span data-cue="noise:box chan:box">제가 Claude에게 요청했던 부분은 이런 부분이었습니다.</span> 시스템을 무너뜨리기 위한 목적으로 봤던 것이죠.</p>
+        </div>
+      </section>
+
+      <!-- 3 · 전체 시스템 구상 (개인비서): 직접 조회의 체크리스트 → 바꾼 방식의 화살표 -->
+      <section id="s3" data-title="1-3 개인비서 시스템">
+        <h2>개인비서 시스템</h2>
+        <div class="slide-frame">
+          <div class="slide">
+            <div class="slide-body">
+              <div>
+                <span class="slide-eyebrow"><b class="slide-no">1-3</b>전체 시스템 구상</span>
+                <div class="slide-title" role="heading" aria-level="3">개인비서 시스템</div>
+              </div>
+              <div class="dg-box">
+                <svg class="dg sysx" viewBox="0 0 640 340" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="d3T d3D">
+                  <title id="d3T">개인비서 시스템의 전체 구상</title>
+                  <desc id="d3D">개인비서가 가운데, VM 가상입력기가 왼쪽 위, Mobile 휴대폰이 왼쪽 아래, My Account 내 계좌가 오른쪽에 있다. 개인비서가 VM에 열람을 요청하면 VM이 계좌에 열람을 요청하고, 계좌는 때때로 휴대폰으로 2채널 인증을 하며 VM이 휴대폰을 제어하고, 마지막으로 계좌가 개인비서에게 응답한다</desc>
+                  <defs><marker id="m3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+                  <g class="vmdev"><rect class="bx" x="35" y="36" width="140" height="52" rx="10"/><text x="105" y="58" text-anchor="middle">VM</text><text class="sub" x="105" y="76" text-anchor="middle">가상입력기</text></g>
+                  <g class="vmdev"><rect class="bx" x="35" y="276" width="140" height="52" rx="10"/><text x="105" y="298" text-anchor="middle">Mobile</text><text class="sub" x="105" y="316" text-anchor="middle">휴대폰</text></g>
+                  <rect class="bx-emph" data-key="pa" x="230" y="154" width="180" height="56" rx="10"/><text x="320" y="177" text-anchor="middle">Personal Assistant</text><text class="sub" x="320" y="196" text-anchor="middle">개인비서 시스템</text>
+                  <rect class="bx" data-key="acct" x="460" y="154" width="150" height="56" rx="10"/><text x="535" y="177" text-anchor="middle">My Account</text><text class="sub" x="535" y="196" text-anchor="middle">내 계좌</text>
+                  <g class="phase0">
+                    <rect class="bx" x="255" y="62" width="130" height="46" rx="10"/><text x="320" y="82" text-anchor="middle">My Log</text><text class="sub" x="320" y="99" text-anchor="middle">내 기록</text>
+                    <line class="ln" x1="320" y1="108" x2="320" y2="150" marker-end="url(#m3)"/>
+                    <rect class="bx" x="255" y="256" width="130" height="46" rx="10"/><text x="320" y="276" text-anchor="middle">My Schedule</text><text class="sub" x="320" y="293" text-anchor="middle">내 시간</text>
+                    <line class="ln" x1="320" y1="256" x2="320" y2="214" marker-end="url(#m3)"/>
+                    <rect class="bx" x="40" y="159" width="140" height="46" rx="10"/><text x="110" y="179" text-anchor="middle">My Context</text><text class="sub" x="110" y="196" text-anchor="middle">내 연락처</text>
+                    <line class="ln" x1="180" y1="182" x2="226" y2="182" marker-end="url(#m3)"/>
+                    <line class="ln" x1="460" y1="182" x2="414" y2="182" marker-end="url(#m3)"/>
+                  </g>
+                  <g class="phaseA" data-key="ask"><line class="ln" x1="410" y1="170" x2="456" y2="170" marker-end="url(#m3)"/><text class="sub" x="433" y="162" text-anchor="middle">조회</text></g>
+                  <g class="phaseB" data-key="req2"><line class="ln" x1="296" y1="154" x2="184" y2="90" marker-end="url(#m3)"/><text class="sub" x="252" y="112" text-anchor="start">열람 요청</text></g>
+                  <g class="phaseB" data-key="vmbank"><path class="ln" d="M175 62 H511 A24 24 0 0 1 535 86 V150" marker-end="url(#m3)"/><text class="sub" x="350" y="54" text-anchor="middle">열람</text></g>
+                  <g class="phaseB" data-key="auth2"><path class="ln" d="M535 210 V278 A24 24 0 0 1 511 302 H179" marker-end="url(#m3)"/><text class="sub" x="380" y="294" text-anchor="middle">2채널 인증</text></g>
+                  <g class="phaseB" data-key="ctrl"><line class="ln" x1="105" y1="88" x2="105" y2="272" marker-end="url(#m3)"/><text class="sub" x="116" y="184" text-anchor="start">제어</text></g>
+                  <g class="phaseB" data-key="resp"><line class="ln" x1="460" y1="196" x2="414" y2="196" marker-end="url(#m3)"/><text class="sub" x="437" y="222" text-anchor="middle">응답</text></g>
+                  <foreignObject class="phaseA" x="330" y="6" width="300" height="138">
+                    <div xmlns="http://www.w3.org/1999/xhtml" class="ck">
+                      <div><b>로그인까지</b><ol><li data-key="c1">프로그램 설치</li><li data-key="c2">암호 설정</li><li data-key="c3">인증서 제시</li><li data-key="c4">기본 페이지 열기</li></ol></div>
+                      <div><b>조회까지</b><ol><li data-key="c5">메뉴 찾기</li><li data-key="c6">조회 설정</li><li data-key="c7">파일 접근</li><li data-key="c8">파일 인증</li></ol></div>
+                    </div>
+                  </foreignObject>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="script">
+          <p>만들려는 전체 시스템은 이렇습니다. <span data-cue="pa:box">개인 비서는 개인의 정보를 수집합니다.</span> 그리고 사용자가 최선의 의사결정을 하도록 돕습니다. 그 의사결정에는 사용자의 시간 관리, 인맥 관리, 금전 관리가 모두 포함됩니다.</p>
+          <p><span data-cue="acct:box">그중 금융 정보의 수집에는 상당히 문제가 있었습니다.</span> <span data-cue="ask:check ask:box">내 정보를 물어보겠다는데, 조회 과정이 상당히 쉽지 않았습니다.</span></p>
+          <p><span data-cue="c1:check">어디에 들어가서 뭘 깔고.</span> <span data-cue="c2:check">뭘 기억하고.</span> <span data-cue="c3:check">뭘 하면.</span> <span data-cue="c4:check">드디어 기본 페이지가 열립니다.</span></p>
+          <p>그중에 조회 페이지가 결과로 가는 과정 또한 복잡했습니다. <span data-cue="c5:check">어느 메뉴에서 어느 기능을 선택하고.</span> <span data-cue="c6:check">무엇을 또 선택해서, 어디에 어떻게 저장하겠다고 하면.</span> <span data-cue="c7:check">그것을 또 중앙 시스템에서 다시 접근해야 하고.</span> <span data-cue="c8:check">그것을 열어 보려면 무엇을 또 기억해야 했습니다.</span> 그걸 매일, 모든 금융 객체마다 해야 합니다. <mark>할 수 있겠습니까?</mark></p>
+          <p>그래서 누군가를 공격하기 위해서가 아니라, 내 정보를 열람하기 위해 이렇게 바꿨습니다. <span data-cue="req2:check req2:box">내 비서는 가상 장치에 입력을 요청합니다.</span> <span data-cue="vmbank:check vmbank:box">그러면 VM은 은행에 요청을 합니다.</span> <span data-cue="auth2:check auth2:box">그러면 은행은 때때로 휴대폰을 활용합니다.</span> <span data-cue="ctrl:check ctrl:box">VM은 휴대폰을 제어합니다.</span> <span data-cue="resp:check resp:box">마지막으로 은행은 비서에게 정보를 응답합니다.</span></p>
+          <p>비단 은행만의 문제도 아닙니다. 채팅, 통화, 사진처럼 내가 정당하게 인증을 받아 올 수단은 기술적으로 있습니다. 그런데 그것이 소프트웨어일 때만은, 최종 소비자가 본인인데도 인증을 받았는지가 무의미해집니다.</p>
+        </div>
+      </section>
+
+      <!-- 6 · 기술의 발전을 막지는 못합니다: 네 가지 이야기 (Eeyagi 방식 선 스케치가 이야기 차례에 그려진다) -->
+      <section id="s6" data-title="1-4 이제는 막느냐 못 막느냐의 문제가 아닙니다">
+        <h2>이제는 막느냐 못 막느냐의 문제가 아닙니다</h2>
+        <div class="slide-frame">
+          <div class="slide">
+            <div class="slide-body">
+              <div>
+                <span class="slide-eyebrow"><b class="slide-no">1-4</b>네 가지 이야기</span>
+                <div class="slide-title" role="heading" aria-level="3">이제는 막느냐 못 막느냐의 문제가 아닙니다</div>
+              </div>
+              <div class="quad">
+                <div class="qd" data-key="q2">
+                  <span class="qd-cap">요이땅</span>
+                  <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="출발선에 손을 짚고 웅크린 두 선수와, 멀리서 하늘을 향해 총을 든 심판">
+                    <path class="sk" pathLength="100" style="--d:0s" d="M14 118 H386"/>
+                    <path class="sk" pathLength="100" style="--d:.08s" d="M14 156 H386"/>
+                    <path class="sk" pathLength="100" style="--d:.16s" d="M14 194 H386"/>
+                    <path class="sk" pathLength="100" style="--d:.3s" d="M150 116 V196"/>
+                    <path class="sk" pathLength="100" style="--d:.5s" d="M323 50 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0"/>
+                    <path class="sk" pathLength="100" style="--d:.58s" d="M330 57 V90"/>
+                    <path class="sk" pathLength="100" style="--d:.64s" d="M330 90 L322 110 M330 90 L338 110"/>
+                    <path class="sk" pathLength="100" style="--d:.7s" d="M330 66 L320 80"/>
+                    <path class="sk" pathLength="100" style="--d:.76s" d="M330 64 L343 44"/>
+                    <path class="sk" pathLength="100" style="--d:.82s" d="M341 47 L347 33 L352 35 L348 44"/>
+                    <path class="sk" pathLength="100" style="--d:1s" d="M125 128 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0"/>
+                    <path class="sk" pathLength="100" style="--d:1.06s" d="M126 133 C114 130 100 134 92 144"/>
+                    <path class="sk" pathLength="100" style="--d:1.12s" d="M128 135 L148 152"/>
+                    <path class="sk" pathLength="100" style="--d:1.18s" d="M96 144 L112 150 L106 156"/>
+                    <path class="sk" pathLength="100" style="--d:1.24s" d="M92 144 L78 150 L70 156"/>
+                    <path class="sk" pathLength="100" style="--d:1.3s" d="M125 166 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0"/>
+                    <path class="sk" pathLength="100" style="--d:1.36s" d="M126 171 C114 168 100 172 92 182"/>
+                    <path class="sk" pathLength="100" style="--d:1.42s" d="M128 173 L148 190"/>
+                    <path class="sk" pathLength="100" style="--d:1.48s" d="M96 182 L112 188 L106 194"/>
+                    <path class="sk" pathLength="100" style="--d:1.54s" d="M92 182 L78 188 L70 194"/>
+                  </svg>
+                </div>
+                <div class="qd" data-key="q4">
+                  <span class="qd-cap">세무냥이 · 리트냥이</span>
+                  <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="책상 앞에 앉아 의욕적으로 문제를 푸는 학생을 정면 위에서 본 모습">
+                    <path class="sk" pathLength="100" style="--d:0s;--u:.5s" d="M96 150 L304 150 L326 186 L74 186 Z"/>
+                    <path class="sk" pathLength="100" style="--d:.3s" d="M168 156 L232 156 L238 172 L162 172 Z"/>
+                    <path class="sk" pathLength="100" style="--d:.36s" d="M176 162 h40 M174 167 h30"/>
+                    <path class="sk" pathLength="100" style="--d:.5s" d="M184 98 a16 16 0 1 0 32 0 a16 16 0 1 0 -32 0"/>
+                    <path class="sk" pathLength="100" style="--d:.56s" d="M185 92 C188 76 212 76 215 92"/>
+                    <path class="sk" pathLength="100" style="--d:.62s" d="M193 103 h5 M202 103 h5"/>
+                    <path class="sk" pathLength="100" style="--d:.68s" d="M166 150 C166 128 180 118 200 118 C220 118 234 128 234 150"/>
+                    <path class="sk" pathLength="100" style="--d:.74s" d="M176 138 L188 162"/>
+                    <path class="sk" pathLength="100" style="--d:.8s" d="M224 138 L214 160 L226 146"/>
+                    <path class="sk" pathLength="100" style="--d:.9s" d="M240 86 l9 -5 M243 98 l10 0 M240 110 l9 5"/>
+                  </svg>
+                </div>
+                <div class="qd" data-key="q1">
+                  <span class="qd-cap">통신사 · 아이폰 · IPTV</span>
+                  <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="옥상에 송신탑이 선 통신 3사 간판 건물과, 와이파이 신호 아래의 사과 로고">
+                    <path class="sk" pathLength="100" style="--d:0s" d="M14 184 H386"/>
+                    <path class="sk" pathLength="100" style="--d:.1s;--u:.6s" d="M40 184 V62 H200 V184"/>
+                    <path class="sk" pathLength="100" style="--d:.4s" d="M60 118 h26 v20 h-26 Z M154 118 h26 v20 h-26 Z"/>
+                    <path class="sk" pathLength="100" style="--d:.45s" d="M104 184 V150 h32 V184"/>
+                    <path class="sk" pathLength="100" style="--d:.5s" d="M56 70 h42 v22 h-42 Z"/>
+                    <path class="sk" pathLength="100" style="--d:.6s" d="M99 70 h42 v22 h-42 Z"/>
+                    <path class="sk" pathLength="100" style="--d:.7s" d="M142 70 h42 v22 h-42 Z"/>
+                    <text class="skt" style="--d:.85s" x="77" y="85" text-anchor="middle">SKT</text>
+                    <text class="skt" style="--d:.9s" x="120" y="85" text-anchor="middle">KT</text>
+                    <text class="skt" style="--d:.95s" x="163" y="85" text-anchor="middle">LG U+</text>
+                    <path class="sk" pathLength="100" style="--d:.55s" d="M104 62 L117 20 M136 62 L123 20"/>
+                    <path class="sk" pathLength="100" style="--d:.62s" d="M109 47 H131 M113 33 H127 M109 47 L127 33 M131 47 L113 33"/>
+                    <path class="sk" pathLength="100" style="--d:.7s" d="M117 20 H123 M120 20 V8"/>
+                    <path class="sk" pathLength="100" style="--d:.78s" d="M128 12 Q134 17 128 22 M133 7 Q143 15 133 27"/>
+                    <path class="sk" pathLength="100" style="--d:1.1s" d="M276 50 Q300 26 324 50"/>
+                    <path class="sk" pathLength="100" style="--d:1.2s" d="M286 57 Q300 43 314 57"/>
+                    <path class="sk" pathLength="100" style="--d:1.3s" d="M298 64 a2 2 0 1 0 4 0 a2 2 0 1 0 -4 0"/>
+                    <g transform="translate(0 38)">
+                      <path class="sk" pathLength="100" style="--d:1.45s;--u:.7s" d="M300 66 C288 54 260 58 258 88 C256 116 278 140 300 132 C318 140 336 122 340 102 C330 101 324 93 326 84 C328 75 334 72 340 74 C334 61 316 56 300 66 Z"/>
+                      <path class="sk" pathLength="100" style="--d:1.85s" d="M302 60 C304 48 314 42 322 42 C320 52 312 58 302 60 Z"/>
+                    </g>
+                  </svg>
+                </div>
+                <div class="qd" data-key="q3">
+                  <span class="qd-cap">할머니가 만든 아이폰</span>
+                  <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="컨베이어 벨트 옆에서 지나가는 휴대폰에 용접을 하는 할머니">
+                    <path class="sk" pathLength="100" style="--d:0s" d="M14 188 H386"/>
+                    <path class="sk" pathLength="100" style="--d:.1s;--u:.5s" d="M156 134 H384 M156 152 H384"/>
+                    <path class="sk" pathLength="100" style="--d:.2s" d="M156 134 A9 9 0 0 0 156 152"/>
+                    <path class="sk" pathLength="100" style="--d:.26s" d="M176 152 V188 M364 152 V188"/>
+                    <path class="sk" pathLength="100" style="--d:.32s" d="M211 143 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0 M271 143 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0 M331 143 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0"/>
+                    <path class="sk" pathLength="100" style="--d:.5s" d="M200 134 V106 Q200 102 204 102 H218 Q222 102 222 106 V134 M207 107 h8"/>
+                    <path class="sk" pathLength="100" style="--d:.58s" d="M262 134 V106 Q262 102 266 102 H280 Q284 102 284 106 V134 M269 107 h8"/>
+                    <path class="sk" pathLength="100" style="--d:.66s" d="M324 134 V106 Q324 102 328 102 H342 Q346 102 346 106 V134 M331 107 h8"/>
+                    <path class="sk" pathLength="100" style="--d:.8s" d="M86 56 a6 6 0 1 0 12 0 a6 6 0 1 0 -12 0"/>
+                    <path class="sk" pathLength="100" style="--d:.86s" d="M89 70 a11 11 0 1 0 22 0 a11 11 0 1 0 -22 0"/>
+                    <path class="sk" pathLength="100" style="--d:.92s" d="M94 71 h5 M102 71 h5"/>
+                    <path class="sk" pathLength="100" style="--d:.98s" d="M104 81 C118 94 120 120 112 150"/>
+                    <path class="sk" pathLength="100" style="--d:1.04s" d="M96 82 C86 100 86 130 92 150"/>
+                    <path class="sk" pathLength="100" style="--d:1.1s" d="M92 150 L82 184 H122 L112 150"/>
+                    <path class="sk" pathLength="100" style="--d:1.16s" d="M110 100 C132 106 152 110 178 116"/>
+                    <path class="sk" pathLength="100" style="--d:1.22s" d="M178 116 L196 120 M178 111 V121"/>
+                    <g class="flick"><path class="sk" pathLength="100" style="--d:1.32s" d="M200 114 l6 -7 M202 120 l9 0 M200 125 l6 6 M197 111 l-1 -8"/></g>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="script">
+          <p data-cue="q2:box q2:check">수영장 수강 신청, 해 보셨나요? 정해진 시간에 다 같이 ‘요이땅’ 하고 출발합니다. 출발선이 같으니 공정해 보이죠. 그런데 결과는 달랐습니다. 수영장에 가면 멤버가 그리 많이 바뀌지 않습니다. 결국 사람을 부릴 수 있는 사람, 그리고 저처럼 기술을 쓸 수 있는 사람, 늘 성공하는 사람이 이기더라고요. 차라리 상시로 신청을 받고, 오래 기다린 사람과 보증금을 낸 사람부터 받으면 모두에게 기회가 고르게 가고, 서버에도 운영비에도 도움이 됩니다. 모두가 특정 시간에 매여서 수강 신청을 못 할까 봐 전전긍긍하며 고생하는 게 무슨 의미가 있습니까? <mark>낭비라고 생각합니다.</mark></p>
+          <p data-cue="q4:box q4:check">2026년 11월 세무냥이, 리트냥이 이야기가 화제였죠. 특히 세무냥이 사건은 기초 세법 용어조차 헷갈리던 수험생이 수정테이프에 숨긴 초소형 카메라와 생성형 AI를 이용해, 평균 30점대인 세법학개론에서 100점을 받고 수석 합격까지 한 일이었습니다. 명백한 범죄이자 잘못된 방법이었습니다만, 이제는 인간이 기계와 맞붙어 이겨 보겠다는 생각 자체가 얼마나 의미가 있는지 모르겠습니다. <mark>인간에게 ‘부지런해라, 인내해라’라고 말하는 시대가 저물고 있다는 느낌이 듭니다.</mark></p>
+          <p data-cue="q1:box q1:check">09년 당시에 통신 관련 세미나에 참석한 적이 있었습니다. 한창 <span data-say="쓰리쥐">3G</span>와 <span data-say="포쥐">4G</span>에 대한 기술 공유가 이슈였는데, 발표 중인 교수님께서 이런 말씀을 하셨어요. 통신 3사가 인터넷망을 구성했으니 망 설치에 대한 수입을 내려면 많이 사용해 줘야 하는데, <span data-say="아이폰">iPhone</span>을 사용하면 <span data-say="와이파이">WiFi</span>망으로 접속하니 돈이 되겠냐는 거였죠. 결국 도입하면 스스로 깎아 먹는 죄수의 딜레마가 될 거라고 했죠. 하지만 죄수의 딜레마라는 말이 나온 순간, 결국 도입될 수밖에 없겠다는 생각이 들더라고요.</p>
+          <p data-cue="q1:box q1:check">같은 날 IPTV에 대한 세미나도 있었는데, 정부가 70개 채널 이상을 운영하지 못하는 사업자는 진입하지 못하도록 할 거라는 이야기를 하더라고요. 편의성을 고려하지 않은, 너무 관료적인 사고 아닙니까? 치지직, 아프리카, 유튜브를 기억하는 사람은 있어도, IPTV는 어떻게 됐나요? 기억나는 채널이 있나요? <mark>편리하고 재밌으면 쓰게 됩니다.</mark></p>
+          <p data-cue="q3:box q3:check">아이폰이나 갤럭시를 살 때, 누가 만들었는지 따져 보신 적 있나요? <span data-say="구십 대">90대</span> 할머니가 컨베이어 벨트 옆에서 용접을 하셨든, 로봇이 했든 상관없죠. 우리가 보는 건 결과의 가치입니다. 그런데 유독 내 정보를 열람할 때만은, 사람이 눌렀는지 소프트웨어가 눌렀는지를 따집니다. 본인이 맞는데도요. <mark>누가 했느냐가 아니라, 정당한 사람이 정당한 일을 하느냐가 기준이어야 하지 않을까요?</mark></p>
+          <p>정리하면, <span data-cue="q2:box">의미 없이 고생할 필요도 없습니다.</span> <span data-cue="q4:box">그렇다고 기계를 이길 수도 없습니다.</span> <span data-cue="q1:box">결국 우리는 편리한 방향으로 갈 것입니다.</span> <span data-cue="q3:box">절차에 문제가 없다면, 그렇게 될 것으로 보입니다.</span></p>
+        </div>
+      </section>
+
+      <!-- 9 · 접근 계층 -->
+      <section id="s9" data-title="1-5 회피 대신, 접근 계층">
+        <h2>회피 대신, 접근 계층</h2>
+        <div class="slide-frame">
+          <div class="slide">
+            <div class="slide-body">
+              <div>
+                <span class="slide-eyebrow"><b class="slide-no">1-5</b>가야 할 길</span>
+                <div class="slide-title" role="heading" aria-level="3">소비자 코드는 포트 하나만 본다</div>
+              </div>
+              <div class="dg-box">
+                <svg class="dg" viewBox="0 0 640 410" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="d9T d9D">
+                  <title id="d9T">데이터 접근 계층</title>
+                  <desc id="d9D">소비자 코드가 고정된 포트에 의존하고, 리졸버가 선호순위로 어댑터를 고른다. 정식 경로가 열리면 임시 브리지에서 자동 승격된다</desc>
+                  <defs><marker id="m9" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+                  <rect class="bx" x="200" y="12" width="240" height="42" rx="8"/><text x="320" y="29" text-anchor="middle">소비자 코드</text><text class="sub" x="320" y="46" text-anchor="middle">앱 · CLI · 내 MCP 서버</text>
+                  <line class="ln" x1="320" y1="54" x2="320" y2="76" marker-end="url(#m9)"/>
+                  <rect class="bx-emph" data-key="port" x="175" y="80" width="290" height="46" rx="8"/><text x="320" y="99" text-anchor="middle">AccountDataSource (포트)</text><text class="sub" x="320" y="116" text-anchor="middle">고정된 조회 인터페이스</text>
+                  <line class="ln" x1="320" y1="126" x2="320" y2="148" marker-end="url(#m9)"/>
+                  <rect class="bx" x="210" y="152" width="220" height="42" rx="8"/><text x="320" y="169" text-anchor="middle">어댑터 리졸버</text><text class="sub" x="320" y="186" text-anchor="middle">선호순위로 경로 선택</text>
+                  <line class="ln" x1="320" y1="194" x2="92" y2="232" marker-end="url(#m9)"/>
+                  <line class="ln" x1="320" y1="194" x2="245" y2="232" marker-end="url(#m9)"/>
+                  <line class="ln" x1="320" y1="194" x2="395" y2="232" marker-end="url(#m9)"/>
+                  <line class="ln" x1="320" y1="194" x2="548" y2="232" marker-end="url(#m9)"/>
+                  <rect class="bx" data-key="official" x="30" y="236" width="124" height="48" rx="8"/><text x="92" y="256" text-anchor="middle">마이데이터</text><text class="sub" x="92" y="273" text-anchor="middle">표준 동의</text>
+                  <rect class="bx" data-key="official" x="183" y="236" width="124" height="48" rx="8"/><text x="245" y="256" text-anchor="middle">오픈 API</text><text class="sub" x="245" y="273" text-anchor="middle">정식 토큰</text>
+                  <rect class="bx" data-key="official" x="336" y="236" width="124" height="48" rx="8"/><text x="398" y="256" text-anchor="middle">MCP</text><text class="sub" x="398" y="273" text-anchor="middle">승격 대상</text>
+                  <rect class="bx" data-key="bridge" x="489" y="236" width="124" height="48" rx="8"/><text x="551" y="256" text-anchor="middle">로컬 브리지</text><text class="sub" x="551" y="273" text-anchor="middle">VM</text>
+                  <line class="ln" x1="92" y1="284" x2="92" y2="312" marker-end="url(#m9)"/>
+                  <line class="ln" x1="245" y1="284" x2="245" y2="312" marker-end="url(#m9)"/>
+                  <line class="ln" x1="398" y1="284" x2="398" y2="312" marker-end="url(#m9)"/>
+                  <line class="ln" x1="551" y1="284" x2="551" y2="312" marker-end="url(#m9)"/>
+                  <rect class="dash" x="30" y="316" width="583" height="40" rx="8"/><text x="321" y="340" text-anchor="middle">실제 제공자 — 은행 · 마이데이터 · 내 계정</text>
+                  <rect class="bx" x="30" y="368" width="583" height="30" rx="7"/><text class="sub" x="321" y="387" text-anchor="middle">공통: 동의·자격증명 · 사람 속도 제한 · 감사 로그 · 캐시</text>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="script">
+          <p><span data-cue="bridge:box">VM 프로젝트를 저는 남을 피하는 도구가 아니라, 내 데이터로 가는 통로로 봅니다.</span> <span data-cue="port:box">소비자 코드는 고정된 포트 하나만 봅니다.</span> 연결 방식은 갈아 끼우는 부품입니다. <span data-cue="official:box bridge:box">정식 경로<span data-say=", 예를 들면 마이데이터, 오픈 에이피아이, 엠씨피가">(마이데이터·오픈 API·MCP)가</span> 열리면 폐기될 프로젝트입니다.</span></p>
+          <p>프로젝트의 방향은 명확하지만, 진행 상황이 순탄할지는 모르겠습니다.</p>
+        </div>
+      </section>
+
+      <!-- 7 · 갈림길: 기술은 준비됐다, 남은 건 의지다 (시간 그래프: 왼쪽 과거 · 오른쪽 미래) -->
+      <section id="s7" data-title="1-6 기술은 준비됐다, 남은 건 의지다">
+        <h2>기술은 준비됐다, 남은 건 의지다</h2>
+        <div class="slide-frame">
+          <div class="slide">
+            <div class="slide-body">
+              <div>
+                <span class="slide-eyebrow"><b class="slide-no">1-6</b>갈림길</span>
+                <div class="slide-title" role="heading" aria-level="3">기술은 준비됐다, 남은 건 의지다</div>
+              </div>
+              <div class="dg-box">
+                <svg class="dg tg" viewBox="0 0 640 290" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="d7T d7D">
+                  <title id="d7T">과거와 미래 사이의 갈림길</title>
+                  <desc id="d7D">가운데의 지금에서 오른쪽 미래로 가는 길은 편리함·빠름·쉬움·쌈이고, 그 길목에 기술 구현·인증 체계·방법과 프로토콜이 이미 갖춰져 있다. 왼쪽 과거로 가는 길은 불편함·느림·어려움·비쌈이고, 그 길목에 통제와 회피가 있다</desc>
+                  <defs><marker id="m7" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+                  <g class="tw-past" data-key="pastwords">
+                    <text x="110" y="30" text-anchor="middle">불편함</text>
+                    <text x="110" y="52" text-anchor="middle">느림</text>
+                    <text x="110" y="74" text-anchor="middle">어려움</text>
+                    <text x="110" y="96" text-anchor="middle">비쌈</text>
+                  </g>
+                  <g class="tw-fut" data-key="futwords">
+                    <text x="530" y="30" text-anchor="middle">편리함</text>
+                    <text x="530" y="52" text-anchor="middle">빠름</text>
+                    <text x="530" y="74" text-anchor="middle">쉬움</text>
+                    <text x="530" y="96" text-anchor="middle">쌈</text>
+                  </g>
+                  <line class="fut" data-key="timeline" x1="44" y1="120" x2="596" y2="120" marker-end="url(#m7)"/>
+                  <text class="sub" x="38" y="112" text-anchor="start">과거</text>
+                  <text class="sub" x="602" y="112" text-anchor="end">미래</text>
+                  <g data-key="now"><circle class="now-dot" cx="320" cy="120" r="6"/><text x="320" y="104" text-anchor="middle">지금</text></g>
+                  <foreignObject x="40" y="140" width="240" height="120">
+                    <div xmlns="http://www.w3.org/1999/xhtml" class="tg-list" data-key="pastlist">
+                      <b>과거로 가는 길</b>
+                      <ol>
+                        <li data-key="p1">정치 문제로 확산</li>
+                        <li data-key="p2">통제와 회피</li>
+                      </ol>
+                    </div>
+                  </foreignObject>
+                  <foreignObject x="360" y="140" width="240" height="120">
+                    <div xmlns="http://www.w3.org/1999/xhtml" class="tg-list is-fut" data-key="futlist">
+                      <b>미래로 가는 길</b>
+                      <ol>
+                        <li data-key="f1">기술 구현</li>
+                        <li data-key="f2">인증 체계</li>
+                        <li data-key="f3">방법 · 프로토콜</li>
+                      </ol>
+                    </div>
+                  </foreignObject>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="script">
+          <p><span data-cue="futlist:box f1:check">기술 자체는 이미 다 구현이 되어 있습니다.</span> <span data-cue="f2:check">인증 체계도 잡혀 있습니다.</span> <span data-cue="f3:check">방법과 프로토콜도 이미 연구가 되어 있습니다.</span> <span data-cue="futwords:box">현재 기술력으로 구현 난이도가 높다고 하기도 어렵습니다.</span></p>
+          <p>반면 희망적인 방향만 있는 것은 아닙니다. <span data-cue="pastlist:box p1:check">가장 큰 문제는 정치와 의지의 문제입니다.</span> 최악의 경우 애국심이라는 이유로 외국에는 도입이 되고 국내에는 도입이 안 될 수도 있습니다. 이럴 경우 해당 프로토콜을 단속하는 방향으로 갈지도 모릅니다. <span data-cue="pastlist:box p2:check">결국 통제에는 회피로 반응할 수밖에 없지 않나 싶습니다.</span></p>
+          <p><span data-cue="pastlist:box">이게 파국이라는 것은 저도 압니다.</span> 회피에 드는 노력과 비용보다 통제에 드는 비용이 늘 높았습니다. 이런 사례는 너무나도 많죠. <span data-cue="pastwords:box">그리고 통제 난이도가 높아질수록, 모든 사람들은 더 어려운 길을 가야 할 것입니다.</span></p>
+          <p><span data-cue="now:box">그냥 멈춰 있으면 되지 않느냐고 말할지도 모릅니다.</span> 고령화 사회의 가장 두려운 점입니다. <mark>관성에 대한 도취입니다.</mark></p>
+        </div>
+      </section>
+
+      <!-- 10 · 결론: 기술은 협력으로 간다 -->
+      <section id="s10" data-title="1-7 기술은 협력으로 간다">
+        <h2>기술은 협력으로 간다</h2>
+        <div class="slide-frame">
+          <div class="slide">
+            <div class="slide-body is-thesis">
+              <div class="thesis-top">
+                <span class="slide-eyebrow"><b class="slide-no">1-7</b>결론</span>
+                <a class="trust-link" data-key="trust" href="https://osori.github.io/trust-ko/" target="_blank" rel="noopener">▶ 신뢰의 진화 · osori.github.io/trust-ko</a>
+              </div>
+              <div class="thesis">
+                <span class="thesis-kicker">철학적 토론의 결론</span>
+                <p class="thesis-line"><span class="hl-pen" data-key="thesis">기술은 협력으로 간다.</span></p>
+                <ul class="thesis-points" data-key="tpoints">
+                  <li data-key="g1"><b>시스템에 협조</b>내 권한에 한정한 수행</li>
+                  <li data-key="g2"><b>방향을 공유</b>설계도 오픈</li>
+                  <li data-key="g3"><b>협조를 호소</b>공개 API 적극 활용과 홍보</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="script">
+          <p data-cue="trust:box">재미있게 한 게임 중에 ‘신뢰의 진화’라는 게임이 있습니다. 링크를 걸어 두겠습니다.</p>
+          <p data-cue="trust:box">배신하여 얻는 순간의 달콤함이 결국 수학적으로 이득이 될 수 없다는 걸 증명한다는 것이 흥미로운 게임입니다.</p>
+          <p>우회 프로그램을 작성하면서 사실 별 자각은 없었습니다. 그런데 <span data-say="클로이드">Claude</span>가 작성을 방해하면서, 잠시 철학적 토론을 하게 되었습니다. 결론은 그것이었습니다. <mark data-cue="thesis:check">기술은 협력으로 간다.</mark></p>
+          <p>그리고 <span data-say="세 가지">3가지</span> 목표를 세웠습니다. <span data-cue="tpoints:box g1:check">시스템을 훼손하는 방향이 아니라, 어디까지나 편의성을 제공하는 방향으로 진화한다.</span> <span data-cue="tpoints:box g2:check">그 방향을 항상 공유한다.</span> <span data-cue="tpoints:box g3:check">위협을 목적으로 하지 않는다.</span></p>
+          <p>추가 토론 내용은 아래 첨부하였습니다. 한 개인의 성토일지 몰라도, 모두가 협력하는 방향으로 가기를 기원해 봅니다. <mark>감사합니다.</mark></p>
+          <p class="meta">참고 · <a href="https://osori.github.io/trust-ko/" target="_blank" rel="noopener">신뢰의 진화</a> · 다음 이야기 — 기억의 외주화와 가치: 머릿속에 정보를 넣는 게 아직 의미가 있나?</p>
+        </div>
+      </section>
+
+      <!-- 이 장을 쓰며 나눈 대화: 카드의 h2 도 사이트 번호를 세므로 슬라이드 뒤에 모은다 -->
+      <div class="prose">
+        <p class="lead">이 장을 쓰며 Claude와 나눈 대화. 실선은 내 생각, 점선은 Claude의 의견이다.</p>
+      </div>
+
+      <div class="note" id="talk-1">
+        <span class="kind">출발점</span>
+        <h2>처음엔 회피도 이 프로그램의 목적이라고 생각했다</h2>
+        <p>감시를 피하는 설계도 이 프로그램이 할 일이라고 여겼다. 그래서 구체적으로 다루지 않겠다는 답이 이상했다. 기술은 공격과 방어의 반복인데, 공격 연구를 일부러 느슨하게 한다고 방어가 강해지는 건 아니지 않나.</p>
+        <p class="meta"><time datetime="2026-11-25">2026-11-25</time></p>
+      </div>
+
+      <div class="note claude" id="talk-2">
+        <span class="kind">Claude의 의견</span>
+        <h2>기준은 공격이냐 방어냐가 아니라, 결과물의 모양이다</h2>
+        <p>공격 연구 자체를 막지는 않는다. 실험 환경에서 탐지기와 함께 무엇이 잡히고 무엇이 새는지 재는 일은 방어를 키운다. 하지만 이미 공개 배포된 도구에 남의 감시를 피하는 기능을 붙이면, 그건 연구가 아니라 바로 쓰이는 완성품이 된다.</p>
+        <p>그래서 판단 기준은 하나다. 그 기능에 회피 말고 다른 쓸모가 있는가.</p>
+        <p class="meta"><time datetime="2026-11-25">2026-11-25</time></p>
+      </div>
+
+      <div class="note" id="talk-3">
+        <span class="kind">되물음</span>
+        <h2>그럼 HID를 만든 것부터가 우회 아니었나</h2>
+        <p>처음부터 같은 맥락이었다. HID든 다중 채널이든 암호화든 노이즈든, 금융이 따라오지 못하는 속도를 기술로 잠시 메우려는 부품이었다. 부끄럽고 철학적으로 완벽하지도 않지만, 오래 쓸 기술이 아니라 잠깐 쓰이다 말 기술이라고 생각했다.</p>
+        <p class="meta"><time datetime="2026-11-25">2026-11-25</time></p>
+      </div>
+
+      <div class="note claude" id="talk-4">
+        <span class="kind">Claude의 의견</span>
+        <h2>맞다. 종류가 아니라 정도의 차이다</h2>
+        <p>소프트웨어 주입 대신 물리 HID를 고른 순간, 이미 ‘주입됨’ 표시가 붙지 않는 쪽으로 몇 걸음 간 셈이다. 깔끔한 선은 없다.</p>
+        <p>다만 HID 장치는 보조기기, UI 테스트 자동화, 내 PC의 반복 작업처럼 쓰임이 넓다. 장치 위장, 포트 바꿔 다니기, 노이즈 채널은 감시를 깨는 것 말고는 쓸모가 떠오르지 않는다. 내가 그은 선은 자연법칙이 아니라 판단선이고, 어디가 공정한지는 토론할 여지가 있다.</p>
+        <p class="meta"><time datetime="2026-11-25">2026-11-25</time></p>
+      </div>
+
+      <div class="note" id="talk-5">
+        <span class="kind">생각이 바뀐 지점</span>
+        <h2>먼저 비협력할 필요가 없었다</h2>
+        <p>방어측이 흐름을 읽지 못하고 비협력으로 돌아서면, 그때 가서 고민해도 됐다. 왜 그 고민까지 미리 했을까 싶다.</p>
+        <p>게다가 우회는 어차피 공격측이 더 쉽다. 그렇다면 굳이 회피에 방향을 잡을 이유가 없었다. 같은 기술을 남을 피하는 데가 아니라, 내 데이터로 가는 통로에 쓰면 된다.</p>
+        <p class="meta"><time datetime="2026-11-25">2026-11-25</time></p>
+      </div>
+
+      <div class="note claude" id="talk-6">
+        <span class="kind">Claude의 의견</span>
+        <h2>감시자는 마우스 메시지 하나가 아니라 단서를 묶어서 본다</h2>
+        <p>마우스 메시지만 모으기는 쉽다. 저수준 훅으로 모든 입력을 보고, Raw Input으로 어느 장치에서 왔는지까지 안다. 하지만 움직임만으로 사람과 자동을 가르기는 어렵다. 통계의 문제라 오탐도 생긴다.</p>
+        <p>실제로는 장치 정보, 그 장치와 통신하는 프로세스, 통신 타이밍과 입력 타이밍의 상관을 함께 본다. 채널을 숨기거나 내용을 암호화해도 통신이 있다는 사실과 타이밍은 남는다. 숨기는 기술로 감시를 이기기는 어렵다.</p>
+        <p class="meta"><time datetime="2026-11-25">2026-11-25</time></p>
+      </div>
+
+      <div class="note" id="talk-7">
+        <span class="kind">불만</span>
+        <h2>내 정보를 정당하게 쓰겠다는데, 그 길을 여는 결정이 너무 느리다</h2>
+        <p>정상 토큰으로 내 정보를 열람하겠다는데, 그 정당한 절차를 만드는 움직임에 기존 결정권자들이 호의적이지 않다고 느꼈다. 공급을 조절해 이득을 보는 드비어스처럼, 통제로 부를 쌓는 쪽도 적지 않다.</p>
+        <p>금융의 개선은 느릴 것이라는 생각과, 죄수의 딜레마처럼 결국 MCP를 빠르게 내놓을 것이라는 생각이 함께 있다.</p>
+        <p class="meta"><time datetime="2026-11-25">2026-11-25</time></p>
+      </div>
+
+      <div class="note claude" id="talk-8">
+        <span class="kind">Claude의 의견</span>
+        <h2>엔지니어링은 쉽고, 제도와 책임이 어렵다</h2>
+        <p>인증된 API가 있다면 그 위에 MCP를 얹는 일은 며칠이면 된다. 느린 이유는 그 앞 단계다. 공개 API가 애초에 있는지, 누구에게 어디까지 어떤 책임으로 열지, 사고가 나면 누가 지는지를 정하는 일이다.</p>
+        <p>그래서 개인이 할 수 있는 가장 빠른 압력은, 정당한 경로가 이미 열린 곳에 먼저 붙어 ‘이렇게 쉽고 안전하다’를 실물로 보여 주는 것이다.</p>
+        <p class="meta"><time datetime="2026-11-25">2026-11-25</time></p>
+      </div>
+
+    </div>
+  </article>
+</body>

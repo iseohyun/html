@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-11-25",
+    "type": "Added",
+    "env": "iseohyun.com",
+    "projectName": "개발 과정과 방향",
+    "projectPath": "/column/ai/where-we-go/vm-story.html",
+    "summary": "칼럼 AI에 「개발 과정과 방향」 1장 협력 추가",
+    "detail": "VM 프로젝트를 만들다 멈춘 이유에서 출발해, 막느냐 못 막느냐가 아니라 정식 접근 계층으로 협력하는 쪽으로 기술이 간다는 이야기를 슬라이드와 읽어 주기로 정리. 슬라이드 색을 읽기 설정에서 고를 수 있음."
+  },
+  {
     "date": "2026-12-19",
     "type": "Added",
     "env": "Event",
