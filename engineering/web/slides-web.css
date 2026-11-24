@@ -1,5 +1,5 @@
 /**
- * @file basicStudy/engineering/web/slides-web.css
+ * @file engineering/web/slides-web.css
  * @description 웹 묶음(React, Vite)의 슬라이드 문서가 함께 쓰는 스타일.
  *   문서 형식은 (슬라이드 + 대사 + 첨부) 의 반복이며, 뼈대와 읽어 주기는 /modules/features/slides.css · slides.js 가 맡는다.
  *   여기에는 그 위에 얹는 것만 둔다: 제목 줄, 코드 패널, SVG 도식 자리, 슬라이드 아래의 첨부(<details>).

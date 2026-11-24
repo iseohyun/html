@@ -752,7 +752,7 @@ test.describe('슬라이드 문서의 코드 보기', () => {
     await page.goto('/index.html');
     // React 문서는 개발중이라 관리자에게만 보인다: 보이기 설정을 켜고 들어간다
     await page.evaluate(() => window.SiteModules.Hierarchy.setShowDev(true));
-    await page.evaluate(() => { window.location.hash = '#/basicStudy/engineering/web/React/start.html'; });
+    await page.evaluate(() => { window.location.hash = '#/engineering/web/React/start.html'; });
     await expect(page.locator('article .slides-doc')).toBeVisible();
     await page.evaluate(() => document.querySelectorAll('article details').forEach(el => { el.open = true; }));
 
@@ -938,11 +938,11 @@ test.describe('읽는 속도 키와 바꿔 읽는 낱말', () => {
     expect(said).toBe('본문의 a && b는 그대로, a 앤드 b와 백슬래시n은 바꿉니다.');
   });
 
-  test('경로 규칙: /basicStudy/engineering/web/ 문서는 따로 적지 않아도 dev 사전을 쓴다', async ({ page }) => {
+  test('경로 규칙: /engineering/web/ 문서는 따로 적지 않아도 dev 사전을 쓴다', async ({ page }) => {
     await page.goto('/index.html');
     // React 문서는 개발중이라 관리자에게만 보인다: 보이기 설정을 켜고 들어간다
     await page.evaluate(() => window.SiteModules.Hierarchy.setShowDev(true));
-    await page.evaluate(() => { window.location.hash = '#/basicStudy/engineering/web/React/start.html'; });
+    await page.evaluate(() => { window.location.hash = '#/engineering/web/React/start.html'; });
     await expect(page.locator('article .slides-doc .sl-tts').first()).toBeVisible();
     await page.evaluate(() => window.SiteModules.SayWords.ready);
     const sent = page.locator('#rs-s1 .script .sent').first();

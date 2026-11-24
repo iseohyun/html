@@ -16,12 +16,12 @@
 ├── CHANGELOG.md             # 표준 버전 변경 이력 (Keep a Changelog)
 ├── LICENSE                  # 오픈소스 라이선스
 │
-├── basicStudy/              # 기초학문 (사이트맵과 같은 구조)
-│   ├── math/                # 수학 (elementary/, high/ …)
-│   ├── science/             # 과학
-│   └── engineering/         # 공학: representation/(표현 원리), notation/(표기법), language/(C · Java · Python),
-│                            #   web/(HTML · CSS · JS · SVG · Canvas · React · Vite), tools/(VScode · git), certificate/(자격증)
-├── column/                  # 기술 칼럼 및 지식 아카이브
+├── math/                    # 수학 (elementary/, high/ …) — 폴더는 사이트맵과 같은 구조
+├── science/                 # 과학
+├── engineering/             # 공학: language/(프로그래밍 언어), web/(웹), representation/(표현 기법: 진법 · 글자 · 베지어 · 정규식 · LaTeX),
+│                            #   tools/(개발 도구), certificate/(자격증)
+├── column/                  # 칼럼 (AI · 홀덤 · 수영 …)
+├── sh-standard/             # SH Standard: Common GUI, QuizQuiz, Web Service Open
 ├── small-project/           # 웹 시뮬레이터 및 소형 독립 웹 애플리케이션
 │   ├── bezier-simulator/    # 인터랙티브 베지어 곡선 시뮬레이터
 │   ├── son-preference/      # 남아선호사상 성비 시뮬레이터
@@ -39,9 +39,9 @@
 
 ## 🚀 주요 분야
 
-1. **기초학문 (`/basicStudy/`)**: 초등/중등/고등 수학, 과학, 사회 등 기초 학문 학습 렌더러.
-2. **프로그래밍 언어 (`/basicStudy/engineering/language/`)**: C/C++, Java, Python 및 소프트웨어 엔지니어링 개념.
-3. **웹 (`/basicStudy/engineering/web/`)**: 웹 표준 및 비주얼 기술 (HTML, CSS, JavaScript, Canvas, SVG), React, Vite. LaTeX 수식은 `notation/`에 있습니다.
+1. **수학 · 과학 (`/math/`, `/science/`)**: 초등/중등/고등 수학, 과학 등 기초 학문.
+2. **프로그래밍 언어 (`/engineering/language/`)**: C/C++, Java, Python 및 소프트웨어 엔지니어링 개념.
+3. **웹 (`/engineering/web/`)**: 웹 표준 및 비주얼 기술 (HTML, CSS, JavaScript, Canvas, SVG), React, Vite. LaTeX 수식은 `representation/`에 있습니다.
 4. **작은 프로젝트 (`/small-project/`)**: 독립 실행형 인터랙티브 도구 및 그래픽 시뮬레이터.
 
 ---

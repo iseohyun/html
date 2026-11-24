@@ -59,14 +59,14 @@ window.SiteModules.Hierarchy = (function () {
 
   /**
    * 부모까지의 폴더 경로에 항목의 "디렉토리"를 더한다. "/"로 시작하는 디렉토리는 루트 기준이라 부모를 버린다.
-   * @returns {string} 앞 슬래시 없는 폴더 경로 (예: "basicStudy/engineering/language/C/")
+   * @returns {string} 앞 슬래시 없는 폴더 경로 (예: "engineering/language/C/")
    */
   function resolveDirs(parentDirs, dir) {
     const own = dir || "";
     return own.startsWith("/") ? own.slice(1) : (parentDirs || "") + own;
   }
 
-  /** 문서 항목의 주소 (예: "/basicStudy/engineering/language/C/start.html") */
+  /** 문서 항목의 주소 (예: "/engineering/language/C/start.html") */
   function getItemUrl(parentDirs, item) {
     return `/${resolveDirs(parentDirs, item.디렉토리)}${getFileName(item)}`;
   }
@@ -176,7 +176,7 @@ window.SiteModules.Hierarchy = (function () {
   /**
    * URL 경로로 문서를 찾는다.
    * @param {Array} list
-   * @param {string} urlPath 예: "/basicStudy/engineering/language/C/start.html" (앞 슬래시는 생략 가능)
+   * @param {string} urlPath 예: "/engineering/language/C/start.html" (앞 슬래시는 생략 가능)
    * @returns {Object|null} forEachPage의 page 객체
    */
   function findPage(list, urlPath) {

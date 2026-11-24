@@ -16,12 +16,12 @@ An open-source interactive web application platform featuring educational conten
 ├── CHANGELOG.md             # Standardized version history
 ├── LICENSE                  # Open source license
 │
-├── basicStudy/              # Study subjects, laid out like the sitemap
-│   ├── math/                # Math (elementary/, high/, ...)
-│   ├── science/             # Science
-│   └── engineering/         # Engineering: representation/, notation/, language/ (C, Java, Python),
-│                            #   web/ (HTML, CSS, JS, SVG, Canvas, React, Vite), tools/ (VScode, git), certificate/
-├── column/                  # Technical essays and columns
+├── math/                    # Math (elementary/, high/, ...) — folders follow the sitemap
+├── science/                 # Science
+├── engineering/             # Engineering: language/ (C, Java, Python), web/ (HTML, CSS, JS, SVG, Canvas, React, Vite),
+│                            #   representation/ (number systems, fonts, Bezier, regex, LaTeX), tools/ (VScode, git), certificate/
+├── column/                  # Technical essays and columns (AI, Hold'em, Swimming, ...)
+├── sh-standard/             # SH Standard: Common GUI, QuizQuiz, Web Service Open
 ├── small-project/           # Interactive web simulators & standalone applications
 │   ├── bezier-simulator/    # Interactive Bezier curve visualizer
 │   ├── son-preference/      # Son preference demographic simulator
@@ -39,9 +39,9 @@ An open-source interactive web application platform featuring educational conten
 
 ## 🚀 Features & Main Categories
 
-1. **Basic Study (`/basicStudy/`)**: Mathematics, science, and fundamental school subjects.
-2. **Programming languages (`/basicStudy/engineering/language/`)**: C/C++, Java, Python, and software concepts.
-3. **Web (`/basicStudy/engineering/web/`)**: Core web platform standards (HTML, CSS, JavaScript, Canvas 2D, SVG) plus React and Vite. LaTeX lives in `notation/`.
+1. **Math · Science (`/math/`, `/science/`)**: Mathematics, science, and fundamental school subjects.
+2. **Programming languages (`/engineering/language/`)**: C/C++, Java, Python, and software concepts.
+3. **Web (`/engineering/web/`)**: Core web platform standards (HTML, CSS, JavaScript, Canvas 2D, SVG) plus React and Vite. LaTeX lives in `representation/`.
 4. **Small Projects (`/small-project/`)**: Standalone simulators, utilities, and browser tools.
 
 ---

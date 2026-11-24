@@ -5,7 +5,7 @@ const crypto = require('crypto');
 const TEST_ADMIN_EMAIL = 'admin@example.com';
 const TEST_ADMIN_HASH = crypto.createHash('sha256').update(TEST_ADMIN_EMAIL).digest('hex');
 const DEV_PAGE_TITLE = '진법';
-const DEV_PAGE_URL = '/basicStudy/engineering/representation/binary/binary.html';
+const DEV_PAGE_URL = '/engineering/representation/binary/binary.html';
 
 // 구글 로그인 창 대신 쓰는 가짜 Firebase: window.__fakeGoogleUser 를 로그인한 사용자로 돌려준다
 const FAKE_FIREBASE_APP = `

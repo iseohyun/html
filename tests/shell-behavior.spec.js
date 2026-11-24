@@ -120,7 +120,7 @@ test.describe('본문 영역만 스크롤', () => {
   });
 
   test('문서 맨 위에는 제목과 분류 경로가 나온다', async ({ page }) => {
-    await page.goto('/index.html#/basicStudy/science/middle/first/force.html');
+    await page.goto('/index.html#/science/middle/first/force.html');
     await expect(page.locator('#title-container')).toBeVisible();
     await expect(page.locator('#title-container')).toContainText('과학 > 중학 > 1학년');
     await expect(page.locator('#last-modified')).toBeAttached();

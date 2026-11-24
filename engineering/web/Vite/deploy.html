@@ -30,14 +30,14 @@
 
   <!-- 슬라이드 · 스크립트 (보고서 형식) -->
   <link rel="stylesheet" href="/modules/features/slides.css?v=20261119v11">
-  <link rel="stylesheet" href="/basicStudy/engineering/web/slides-web.css?v=20261119v11">
+  <link rel="stylesheet" href="/engineering/web/slides-web.css?v=20261119v11">
   <script src="/modules/features/slides.js?v=20261119v11" defer></script>
 </head>
 
 <body>
   <tags>Vite, 비트, 배포, Deploy, GitHub Pages, Netlify, Firebase Hosting, base, SPA, 404, 캐시, 문제 해결, 팁</tags>
   <article>
-    <!-- 형식: (슬라이드 + 대사 + 첨부) 의 반복. 공통 스타일은 /basicStudy/engineering/web/slides-web.css -->
+    <!-- 형식: (슬라이드 + 대사 + 첨부) 의 반복. 공통 스타일은 /engineering/web/slides-web.css -->
     <div class="slides-doc" data-page="vite-deploy" lang="ko">
       <h1 class="sl-chapter">배포와 팁</h1>
 
@@ -84,7 +84,7 @@
         </div>
         <div class="script">
           <p data-cue="vd1-build:box vd1-dist:box">첫 번째 슬라이드는 배포입니다. 앞 문서에서 <code>npm run build</code>가 <code>dist</code> 폴더를 만든다는 것까지 보았습니다. 배포는 그 폴더의 내용을 인터넷에서 접근할 수 있는 서버에 올리는 일입니다.</p>
-          <p data-cue="vd1-static:check vd1-user:box"><mark><code>dist</code>에는 서버에서 실행해야 할 프로그램이 없습니다. 파일을 요청받으면 그대로 내주기만 하면 됩니다.</mark> 이런 것을 정적 호스팅이라고 합니다. <a href="/basicStudy/engineering/web/html/domain.html">HTML 시작하기</a>에서 HTML 파일을 서버 폴더에 넣어 열었던 것과 같은 방식입니다.</p>
+          <p data-cue="vd1-static:check vd1-user:box"><mark><code>dist</code>에는 서버에서 실행해야 할 프로그램이 없습니다. 파일을 요청받으면 그대로 내주기만 하면 됩니다.</mark> 이런 것을 정적 호스팅이라고 합니다. <a href="/engineering/web/html/domain.html">HTML 시작하기</a>에서 HTML 파일을 서버 폴더에 넣어 열었던 것과 같은 방식입니다.</p>
           <p data-cue="vd1-gh:box vd1-nf:box">올릴 곳은 여러 가지입니다. GitHub Pages는 저장소만 있으면 무료로 쓸 수 있습니다. Netlify, Vercel, Cloudflare Pages는 저장소를 연결해 두면 푸시할 때마다 빌드와 배포를 대신 해 줍니다.</p>
           <p data-cue="vd1-fb:box vd1-own:box">Firebase Hosting은 명령 한 줄로 올리고, 직접 운영하는 서버가 있다면 웹 서버가 내주는 폴더에 복사하면 됩니다. 어느 쪽이든 하는 일은 같습니다.</p>
           <p data-cue="vd1-base:check">한 가지만 주의합니다. GitHub Pages의 기본 주소처럼 사이트가 도메인 바로 아래가 아니라 하위 경로에 놓이면, 설정의 <code>base</code>를 그 경로로 바꿔야 합니다. 바꾸지 않으면 자원을 엉뚱한 주소에서 찾아 빈 화면이 나옵니다.</p>
@@ -139,7 +139,7 @@ jobs:
         with:
           path: dist
       - uses: actions/deploy-pages@v4</pre></blockquote>
-<p><code>main</code> 브랜치에 푸시할 때마다 GitHub의 서버가 빌드해서 올립니다. <code>dist</code>는 저장소에 올리지 않습니다. Git 사용법은 <a href="/basicStudy/engineering/tools/git/init.html">Git 기초 사용법</a>을 참고합니다.</p>
+<p><code>main</code> 브랜치에 푸시할 때마다 GitHub의 서버가 빌드해서 올립니다. <code>dist</code>는 저장소에 올리지 않습니다. Git 사용법은 <a href="/engineering/tools/git/init.html">Git 기초 사용법</a>을 참고합니다.</p>
             </div>
           </details>
           <details>
@@ -152,7 +152,7 @@ firebase init hosting        # public 디렉터리를 묻는 질문에 dist 라�
 npm run build
 firebase deploy</pre></blockquote>
 <div class="blockquote-title">직접 운영하는 서버 (Nginx · IIS)</div>
-<p><code>dist</code> 안의 <b>내용</b>을 웹 서버의 문서 폴더(Nginx는 <code>/usr/share/nginx/html</code>, IIS는 <code>C:\inetpub\wwwroot</code>)에 복사합니다. <code>dist</code> 폴더 자체가 아니라 그 안의 <code>index.html</code>과 <code>assets</code>가 문서 폴더 바로 아래에 오게 합니다. IIS 설치는 <a href="/basicStudy/engineering/web/html/domain.html">HTML 시작하기</a>의 「IIS서버 설치」를 참고합니다.</p>
+<p><code>dist</code> 안의 <b>내용</b>을 웹 서버의 문서 폴더(Nginx는 <code>/usr/share/nginx/html</code>, IIS는 <code>C:\inetpub\wwwroot</code>)에 복사합니다. <code>dist</code> 폴더 자체가 아니라 그 안의 <code>index.html</code>과 <code>assets</code>가 문서 폴더 바로 아래에 오게 합니다. IIS 설치는 <a href="/engineering/web/html/domain.html">HTML 시작하기</a>의 「IIS서버 설치」를 참고합니다.</p>
             </div>
           </details>
         </div>

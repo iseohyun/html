@@ -1,10 +1,10 @@
 {
   "_about": "읽어 주기(slides.js)가 소리로 읽을 때만 바꿔 읽는 낱말. 화면의 글자와 자막은 그대로 둔다. common 은 모든 문서에, 나머지 도메인은 paths 의 경로로 시작하는 문서나 .slides-doc 의 data-say-domain=\"도메인 …\" 이 고른 문서에 쓴다. words 는 영어 낱말 경계(앞뒤에 영문자가 없을 때)에서 대소문자를 가리지 않고 바꾸고, 띄어 쓴 낱말은 사이의 공백 수를 가리지 않는다. code 는 <code> 안의 글자에서만 바꾼다(기호). 겹치면 긴 것이 먼저다.",
   "paths": {
-    "/basicStudy/engineering/web/": ["dev"],
-    "/basicStudy/engineering/language/": ["dev"],
-    "/basicStudy/engineering/tools/": ["dev"],
-    "/basicStudy/engineering/representation/LaTex/": ["dev"]
+    "/engineering/web/": ["dev"],
+    "/engineering/language/": ["dev"],
+    "/engineering/tools/": ["dev"],
+    "/engineering/representation/LaTex/": ["dev"]
   },
   "domains": {
     "common": {

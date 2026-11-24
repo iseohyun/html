@@ -30,14 +30,14 @@
 
   <!-- 슬라이드 · 스크립트 (보고서 형식) -->
   <link rel="stylesheet" href="/modules/features/slides.css?v=20261119v11">
-  <link rel="stylesheet" href="/basicStudy/engineering/web/slides-web.css?v=20261119v11">
+  <link rel="stylesheet" href="/engineering/web/slides-web.css?v=20261119v11">
   <script src="/modules/features/slides.js?v=20261119v11" defer></script>
 </head>
 
 <body>
   <tags>Vite, 비트, 빌드 도구, 번들러, 개발 서버, HMR, ES 모듈, npm, Node.js, 시작하기</tags>
   <article>
-    <!-- 형식: (슬라이드 + 대사 + 첨부) 의 반복. 공통 스타일은 /basicStudy/engineering/web/slides-web.css -->
+    <!-- 형식: (슬라이드 + 대사 + 첨부) 의 반복. 공통 스타일은 /engineering/web/slides-web.css -->
     <div class="slides-doc" data-page="vite-start" lang="ko">
       <h1 class="sl-chapter">Vite 시작하기</h1>
 
@@ -83,7 +83,7 @@
           </div>
         </div>
         <div class="script">
-          <p data-cue="vs1-right:box">첫 번째 슬라이드는 Vite가 왜 필요한지입니다. <a href="/basicStudy/engineering/web/html/syntax.html">HTML</a>, <a href="/basicStudy/engineering/web/CSS/basic.html">CSS</a>, <a href="/basicStudy/engineering/web/Javascript/basic.html">Javascript</a> 문서에서는 파일을 저장하고 브라우저로 열면 바로 동작했습니다. 브라우저가 이 세 가지를 직접 읽기 때문입니다.</p>
+          <p data-cue="vs1-right:box">첫 번째 슬라이드는 Vite가 왜 필요한지입니다. <a href="/engineering/web/html/syntax.html">HTML</a>, <a href="/engineering/web/CSS/basic.html">CSS</a>, <a href="/engineering/web/Javascript/basic.html">Javascript</a> 문서에서는 파일을 저장하고 브라우저로 열면 바로 동작했습니다. 브라우저가 이 세 가지를 직접 읽기 때문입니다.</p>
           <p data-cue="vs1-gap:check vs1-left:box">하지만 요즘 웹 개발에서 쓰는 코드는 브라우저가 그대로 읽지 못합니다. React의 JSX, 타입을 적는 TypeScript, 중첩해서 쓰는 Sass가 그렇습니다. <code>import</code> 뒤에 경로 대신 <code>react</code>처럼 패키지 이름만 적는 것도 브라우저는 이해하지 못합니다. 그 패키지가 어느 폴더에 있는지 모르기 때문입니다.</p>
           <p data-cue="vs1-vite:box"><mark>Vite는 이 간격을 메우는 빌드 도구입니다. 우리가 쓴 코드를 브라우저가 읽는 코드로 바꿔 줍니다.</mark> 이름은 프랑스어로 "빠르다"는 뜻이고 "비트"라고 읽습니다.</p>
           <p data-cue="vs1-two:check vs1-dev:box vs1-build:box">Vite가 하는 일은 두 가지입니다. 개발하는 동안에는 서버로 떠서, 브라우저가 요청한 파일을 그 자리에서 변환해 돌려줍니다. 배포할 때는 모든 파일을 모아 묶고 크기를 줄여 <code>dist</code> 폴더에 내놓습니다. 이 문서는 개발 서버를, 다음 문서는 설정과 빌드를 다룹니다.</p>
@@ -182,7 +182,7 @@
           <details>
             <summary>첨부 · 환경 준비 — Node.js 버전</summary>
             <div class="w-att-body">
-<p>Vite는 Node.js 위에서 실행됩니다. 설치는 <a href="/basicStudy/engineering/web/Javascript/basic.html">Javascript 기초문법</a>의 「환경2 : Node.js」를 참고합니다. Vite 7 이상은 Node.js 20.19 이상 또는 22.12 이상을 요구하므로, 오래전에 설치했다면 버전을 확인합니다.</p>
+<p>Vite는 Node.js 위에서 실행됩니다. 설치는 <a href="/engineering/web/Javascript/basic.html">Javascript 기초문법</a>의 「환경2 : Node.js」를 참고합니다. Vite 7 이상은 Node.js 20.19 이상 또는 22.12 이상을 요구하므로, 오래전에 설치했다면 버전을 확인합니다.</p>
 <blockquote><pre>node --version
 npm --version</pre></blockquote>
 <p><b>Windows PowerShell에서 실행 정책 오류가 날 때</b>: <code>npm</code> 대신 <code>npm.cmd</code>, <code>npx</code> 대신 <code>npx.cmd</code>로 실행합니다.</p>

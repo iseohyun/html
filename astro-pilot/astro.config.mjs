@@ -1,7 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 
-// 시범 전환: 기존 사이트의 주소(/basicStudy/engineering/language/C/function.html)를 그대로 쓰도록 .html 파일로 내보낸다.
+// 시범 전환: 기존 사이트의 주소(/engineering/language/C/function.html)를 그대로 쓰도록 .html 파일로 내보낸다.
 export default defineConfig({
   site: 'https://iseohyun.com',
   trailingSlash: 'ignore',

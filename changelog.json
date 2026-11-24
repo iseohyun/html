@@ -626,7 +626,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "구조",
-    "projectPath": "/basicStudy/engineering/tools/git/structure.html",
+    "projectPath": "/engineering/tools/git/structure.html",
     "summary": "object관리 비결, 조회 방법등 소개",
     "detail": "object관리 비결, 조회 방법등 소개"
   },
@@ -635,7 +635,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "협업",
-    "projectPath": "/basicStudy/engineering/tools/git/branch.html",
+    "projectPath": "/engineering/tools/git/branch.html",
     "summary": "branch전략, merge시나리오 소개",
     "detail": "branch전략, merge시나리오 소개"
   },
@@ -644,7 +644,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "문제 해결",
-    "projectPath": "/basicStudy/engineering/tools/git/trouble.html",
+    "projectPath": "/engineering/tools/git/trouble.html",
     "summary": "사용 중 갈등상황 제시와 해결방법 소개",
     "detail": "사용 중 갈등상황 제시와 해결방법 소개"
   },
@@ -813,7 +813,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "기초 사용법",
-    "projectPath": "/basicStudy/engineering/tools/git/init.html",
+    "projectPath": "/engineering/tools/git/init.html",
     "summary": "Git의 컨셉, 간단한 사용방법 소개",
     "detail": "Git의 컨셉, 간단한 사용방법 소개"
   },
@@ -822,7 +822,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "서버와 클라이언트",
-    "projectPath": "/basicStudy/engineering/tools/git/clone.html",
+    "projectPath": "/engineering/tools/git/clone.html",
     "summary": "Git 업로드/다운로드, Github 사용 방법",
     "detail": "Git 업로드/다운로드, Github 사용 방법"
   },
@@ -867,7 +867,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "환경설정하기",
-    "projectPath": "/basicStudy/engineering/language/java/setting.html",
+    "projectPath": "/engineering/language/java/setting.html",
     "summary": "환경설정하기",
     "detail": "환경설정하기 (신규 문서/기능 추가)"
   },
@@ -876,7 +876,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "시작하기",
-    "projectPath": "/basicStudy/engineering/web/html/domain.html",
+    "projectPath": "/engineering/web/html/domain.html",
     "summary": "시작하기",
     "detail": "시작하기 (신규 문서/기능 추가)"
   },
@@ -885,7 +885,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "로직구성",
-    "projectPath": "/basicStudy/engineering/language/Python/logic.html",
+    "projectPath": "/engineering/language/Python/logic.html",
     "summary": "로직구성",
     "detail": "로직구성 (신규 문서/기능 추가)"
   },
@@ -894,7 +894,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "예외",
-    "projectPath": "/basicStudy/engineering/language/Python/exception.html",
+    "projectPath": "/engineering/language/Python/exception.html",
     "summary": "예외",
     "detail": "예외 (신규 문서/기능 추가)"
   },
@@ -903,7 +903,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "객체",
-    "projectPath": "/basicStudy/engineering/language/Python/object.html",
+    "projectPath": "/engineering/language/Python/object.html",
     "summary": "총 5강[완]",
     "detail": "총 5강[완]"
   },
@@ -920,7 +920,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "에밋",
-    "projectPath": "/basicStudy/engineering/tools/vscode/emmet.html",
+    "projectPath": "/engineering/tools/vscode/emmet.html",
     "summary": "에밋",
     "detail": "에밋 (신규 문서/기능 추가)"
   },
@@ -945,7 +945,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "VScode시작하기",
-    "projectPath": "/basicStudy/engineering/tools/vscode/start.html",
+    "projectPath": "/engineering/tools/vscode/start.html",
     "summary": "VScode시작하기",
     "detail": "VScode시작하기 (신규 문서/기능 추가)"
   },
@@ -970,7 +970,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "GUI 프로그래밍",
-    "projectPath": "/basicStudy/engineering/language/java/window.html",
+    "projectPath": "/engineering/language/java/window.html",
     "summary": "Java 기초 6강 [완]",
     "detail": "Java 기초 6강 [완]"
   },
@@ -979,7 +979,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "라이브러리",
-    "projectPath": "/basicStudy/engineering/language/java/library.html",
+    "projectPath": "/engineering/language/java/library.html",
     "summary": "표준 라이브러리 메서드 예제 및 설명",
     "detail": "표준 라이브러리 메서드 예제 및 설명"
   },
@@ -1004,7 +1004,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "클래스, 템플릿",
-    "projectPath": "/basicStudy/engineering/language/C/class.html",
+    "projectPath": "/engineering/language/C/class.html",
     "summary": "클래스, 템플릿",
     "detail": "클래스, 템플릿 (신규 문서/기능 추가)"
   },
@@ -1013,7 +1013,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "예외처리, 네임스페이스 외",
-    "projectPath": "/basicStudy/engineering/language/C/exception.html",
+    "projectPath": "/engineering/language/C/exception.html",
     "summary": "예외처리, 네임스페이스 외",
     "detail": "예외처리, 네임스페이스 외 (신규 문서/기능 추가)"
   },
@@ -1022,7 +1022,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "윈도우 프로그래밍",
-    "projectPath": "/basicStudy/engineering/language/C/windows.html",
+    "projectPath": "/engineering/language/C/windows.html",
     "summary": "윈도우 프로그래밍",
     "detail": "윈도우 프로그래밍 (신규 문서/기능 추가)"
   },
@@ -1031,7 +1031,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "C예약어",
-    "projectPath": "/basicStudy/engineering/language/C/reserved.html",
+    "projectPath": "/engineering/language/C/reserved.html",
     "summary": "C예약어",
     "detail": "C예약어 (신규 문서/기능 추가)"
   },
@@ -1040,7 +1040,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "포인터, 구조체",
-    "projectPath": "/basicStudy/engineering/language/C/pointer.html",
+    "projectPath": "/engineering/language/C/pointer.html",
     "summary": "포인터, 구조체",
     "detail": "포인터, 구조체 (신규 문서/기능 추가)"
   },
@@ -1049,7 +1049,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "함수",
-    "projectPath": "/basicStudy/engineering/language/C/function.html",
+    "projectPath": "/engineering/language/C/function.html",
     "summary": "함수",
     "detail": "함수 (신규 문서/기능 추가)"
   },
@@ -1067,7 +1067,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "제어문",
-    "projectPath": "/basicStudy/engineering/language/C/control.html",
+    "projectPath": "/engineering/language/C/control.html",
     "summary": "제어문",
     "detail": "제어문 (신규 문서/기능 추가)"
   },
@@ -1120,7 +1120,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "폰트",
-    "projectPath": "/basicStudy/engineering/representation/font/font.html",
+    "projectPath": "/engineering/representation/font/font.html",
     "summary": "폰트",
     "detail": "폰트 (신규 문서/기능 추가)"
   },
@@ -1138,7 +1138,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "sin법칙",
-    "projectPath": "/basicStudy/math/high/sin/law_sin.html",
+    "projectPath": "/math/high/sin/law_sin.html",
     "summary": "sin법칙",
     "detail": "sin법칙 (신규 문서/기능 추가)"
   },
@@ -1147,7 +1147,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "cos법칙",
-    "projectPath": "/basicStudy/math/high/sin/law_cos.html",
+    "projectPath": "/math/high/sin/law_cos.html",
     "summary": "cos법칙",
     "detail": "cos법칙 (신규 문서/기능 추가)"
   },
@@ -1156,7 +1156,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "sin 반각 배각 법칙",
-    "projectPath": "/basicStudy/math/high/sin/sin addition.html",
+    "projectPath": "/math/high/sin/sin addition.html",
     "summary": "sin 반각 배각 법칙",
     "detail": "sin 반각 배각 법칙 (신규 문서/기능 추가)"
   },
@@ -1165,7 +1165,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "베지어 곡선",
-    "projectPath": "/basicStudy/engineering/representation/bezier/bezier.html",
+    "projectPath": "/engineering/representation/bezier/bezier.html",
     "summary": "베지어 곡선",
     "detail": "베지어 곡선 (신규 문서/기능 추가)"
   },
@@ -1174,7 +1174,7 @@
     "type": "Changed",
     "env": "iseohyun.com",
     "projectName": "팁",
-    "projectPath": "/basicStudy/engineering/web/html/tips.html",
+    "projectPath": "/engineering/web/html/tips.html",
     "summary": "clac, flex-grow",
     "detail": "clac, flex-grow"
   },
@@ -1183,7 +1183,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "수식입력기",
-    "projectPath": "/basicStudy/engineering/representation/LaTex/",
+    "projectPath": "/engineering/representation/LaTex/",
     "summary": "latex 사용방법",
     "detail": "latex 사용방법"
   },
@@ -1192,7 +1192,7 @@
     "type": "Changed",
     "env": "iseohyun.com",
     "projectName": "팁",
-    "projectPath": "/basicStudy/engineering/web/html/tips.html",
+    "projectPath": "/engineering/web/html/tips.html",
     "summary": "Casvas 스틸컷 다운로드 방법 추가",
     "detail": "Casvas 스틸컷 다운로드 방법 추가"
   },
@@ -1225,7 +1225,7 @@
     "type": "Changed",
     "env": "iseohyun.com",
     "projectName": "팁",
-    "projectPath": "/basicStudy/engineering/web/html/tips.html",
+    "projectPath": "/engineering/web/html/tips.html",
     "summary": "jQuery 사용법, css수정 및 참고 방법",
     "detail": "jQuery 사용법, css수정 및 참고 방법"
   },
@@ -1266,7 +1266,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "애니메이션",
-    "projectPath": "/basicStudy/engineering/web/CSS/animation.html",
+    "projectPath": "/engineering/web/CSS/animation.html",
     "summary": "애니메이션",
     "detail": "애니메이션 (신규 문서/기능 추가)"
   },
@@ -1299,7 +1299,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "객체 접근",
-    "projectPath": "/basicStudy/engineering/web/Javascript/elements.html",
+    "projectPath": "/engineering/web/Javascript/elements.html",
     "summary": "객체 접근",
     "detail": "객체 접근 (신규 문서/기능 추가)"
   },
@@ -1308,7 +1308,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "기초문법",
-    "projectPath": "/basicStudy/engineering/web/html/syntax.html",
+    "projectPath": "/engineering/web/html/syntax.html",
     "summary": "기초문법",
     "detail": "기초문법 (신규 문서/기능 추가)"
   },
@@ -1317,7 +1317,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "다양한 효과",
-    "projectPath": "/basicStudy/engineering/web/CSS/gallery.html",
+    "projectPath": "/engineering/web/CSS/gallery.html",
     "summary": "다양한 효과",
     "detail": "다양한 효과 (신규 문서/기능 추가)"
   },
@@ -1326,7 +1326,7 @@
     "type": "Added",
     "env": "iseohyun.com",
     "projectName": "애니메이션",
-    "projectPath": "/basicStudy/engineering/web/CSS/animation.html",
+    "projectPath": "/engineering/web/CSS/animation.html",
     "summary": "애니메이션",
     "detail": "애니메이션 (신규 문서/기능 추가)"
   }

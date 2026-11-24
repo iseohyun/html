@@ -727,7 +727,7 @@ window.SiteModules.Navigation = (function () {
         postLoadPageActions(false, path, document.title);
       }
     } else {
-      // hash 예: "#/basicStudy/math/1-1.html#title" 또는 "#basicStudy/math/1-1.html" 또는 "#연산operator"
+      // hash 예: "#/math/1-1.html#title" 또는 "#math/1-1.html" 또는 "#연산operator"
       let cleanHash = hash;
       if (cleanHash.startsWith('#')) {
         cleanHash = cleanHash.substring(1);

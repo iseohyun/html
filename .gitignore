@@ -1,18 +1,10 @@
-.gemini
-.obsidian
 .vscode
 functions/.env
 functions/.env.*
 functions/*.local
-commit.log
-**/PixelRun/**
-**/KakaoTalk/example/**
 node_modules/
-당장 구현할 사항.md
 test-results/
 tests/fixtures/
-open-test-server.bat
-open-test-server.cmd
 scratch/
 
 # Claude Code 로컬 설정 · 워크트리

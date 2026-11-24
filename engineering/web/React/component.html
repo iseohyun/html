@@ -30,14 +30,14 @@
 
   <!-- 슬라이드 · 스크립트 (보고서 형식) -->
   <link rel="stylesheet" href="/modules/features/slides.css?v=20261119v11">
-  <link rel="stylesheet" href="/basicStudy/engineering/web/slides-web.css?v=20261119v11">
+  <link rel="stylesheet" href="/engineering/web/slides-web.css?v=20261119v11">
   <script src="/modules/features/slides.js?v=20261119v11" defer></script>
 </head>
 
 <body>
   <tags>React, 리액트, JSX, 컴포넌트, Component, props, children, 단방향 데이터 흐름</tags>
   <article>
-    <!-- 형식: (슬라이드 + 대사 + 첨부) 의 반복. 공통 스타일은 /basicStudy/engineering/web/slides-web.css -->
+    <!-- 형식: (슬라이드 + 대사 + 첨부) 의 반복. 공통 스타일은 /engineering/web/slides-web.css -->
     <div class="slides-doc" data-page="react-component" lang="ko">
       <h1 class="sl-chapter">JSX와 컴포넌트</h1>
 
@@ -97,7 +97,7 @@
           <details>
             <summary>첨부 · 조건에 따라 그리기</summary>
             <div class="w-att-body">
-<p>JSX 안에는 <code>if</code> 문을 쓸 수 없습니다. 중괄호 안에는 값이 되는 식만 들어가기 때문입니다. <a href="/basicStudy/engineering/web/Javascript/basic.html">Javascript 기초문법</a>의 연산자를 그대로 씁니다.</p>
+<p>JSX 안에는 <code>if</code> 문을 쓸 수 없습니다. 중괄호 안에는 값이 되는 식만 들어가기 때문입니다. <a href="/engineering/web/Javascript/basic.html">Javascript 기초문법</a>의 연산자를 그대로 씁니다.</p>
 <div class="blockquote-title">삼항 연산자: 둘 중 하나</div>
 <blockquote><pre>{isLogin ? &lt;p&gt;환영합니다&lt;/p&gt; : &lt;p&gt;로그인해 주세요&lt;/p&gt;}</pre></blockquote>
 <div class="blockquote-title">&& 연산자: 있거나 없거나</div>
@@ -151,7 +151,7 @@ return &lt;div&gt;{message}&lt;/div&gt;;</pre></blockquote>
           </div>
         </div>
         <div class="script">
-          <p data-cue="rc2-comp:check rc2-c1:box">두 번째 슬라이드는 컴포넌트와 props입니다. 컴포넌트는 JSX를 돌려주는 함수입니다. <a href="/basicStudy/engineering/web/Javascript/basic.html">Javascript 기초문법</a>에서 배운 함수와 같고, 이름을 대문자로 시작한다는 점만 다릅니다. 소문자로 시작하면 React가 <code>div</code> 같은 HTML 태그로 여깁니다.</p>
+          <p data-cue="rc2-comp:check rc2-c1:box">두 번째 슬라이드는 컴포넌트와 props입니다. 컴포넌트는 JSX를 돌려주는 함수입니다. <a href="/engineering/web/Javascript/basic.html">Javascript 기초문법</a>에서 배운 함수와 같고, 이름을 대문자로 시작한다는 점만 다릅니다. 소문자로 시작하면 React가 <code>div</code> 같은 HTML 태그로 여깁니다.</p>
           <p data-cue="rc2-c4:box rc2-use:box">만든 컴포넌트는 태그처럼 씁니다. 아래쪽 <code>App</code>에서 <code>Card</code>를 태그로 적고, HTML 태그에 속성을 주듯이 <code>title</code>을 적었습니다.</p>
           <p data-cue="rc2-props:check rc2-obj:box rc2-fn:box"><mark>태그에 적은 속성은 객체 하나로 묶여 함수의 첫 번째 인자로 들어옵니다. 이 객체를 props라고 부릅니다.</mark> 함수 선언의 중괄호는 그 객체에서 필요한 값을 꺼내는 구조 분해 문법입니다.</p>
           <p data-cue="rc2-c3:box rc2-c5:box">여는 태그와 닫는 태그 사이에 적은 내용은 <code>children</code>이라는 이름으로 전달됩니다. <code>Card</code>는 그 내용이 무엇인지 몰라도 정해진 자리에 그려 주기만 하면 됩니다. 테두리나 배치처럼 겉모습만 맡는 컴포넌트를 만들 때 씁니다.</p>
@@ -182,7 +182,7 @@ return &lt;div&gt;{message}&lt;/div&gt;;</pre></blockquote>
           <details>
             <summary>첨부 · 파일 나누기 — export와 import</summary>
             <div class="w-att-body">
-<p>컴포넌트가 늘어나면 파일 하나에 컴포넌트 하나를 둡니다. <a href="/basicStudy/engineering/web/html/syntax.html">HTML</a>에서 <code>&lt;script src&gt;</code>로 파일을 불러왔다면, 여기서는 ES 모듈의 <code>export</code>와 <code>import</code>를 씁니다.</p>
+<p>컴포넌트가 늘어나면 파일 하나에 컴포넌트 하나를 둡니다. <a href="/engineering/web/html/syntax.html">HTML</a>에서 <code>&lt;script src&gt;</code>로 파일을 불러왔다면, 여기서는 ES 모듈의 <code>export</code>와 <code>import</code>를 씁니다.</p>
 <div class="blockquote-title">src/Card.jsx</div>
 <blockquote><pre>export default function Card({ title, children }) {
   return &lt;article className=&quot;card&quot;&gt;&lt;h2&gt;{title}&lt;/h2&gt;{children}&lt;/article&gt;;
@@ -255,10 +255,10 @@ function Cup() {
           </div>
         </div>
         <div class="script">
-          <p data-cue="rc3-app:box rc3-header:box rc3-list:box">세 번째 슬라이드는 컴포넌트가 모였을 때의 모습입니다. <a href="/basicStudy/engineering/web/html/syntax.html">HTML</a>의 태그가 부모와 자식으로 겹쳐 트리를 이루듯, 컴포넌트도 트리를 이룹니다. 맨 위의 <code>App</code>이 <code>Header</code>와 <code>TodoList</code>를 품고, <code>TodoList</code>가 다시 <code>TodoItem</code>을 품습니다.</p>
+          <p data-cue="rc3-app:box rc3-header:box rc3-list:box">세 번째 슬라이드는 컴포넌트가 모였을 때의 모습입니다. <a href="/engineering/web/html/syntax.html">HTML</a>의 태그가 부모와 자식으로 겹쳐 트리를 이루듯, 컴포넌트도 트리를 이룹니다. 맨 위의 <code>App</code>이 <code>Header</code>와 <code>TodoList</code>를 품고, <code>TodoList</code>가 다시 <code>TodoItem</code>을 품습니다.</p>
           <p data-cue="rc3-down:check">이 트리에서 데이터는 한 방향으로만 흐릅니다. 파란 화살표처럼 부모가 props로 자식에게 내려 주고, 자식은 받은 값을 읽기만 합니다. 형제끼리 직접 주고받는 길은 없습니다. 그래서 어떤 값이 이상할 때는 위쪽으로 거슬러 올라가며 찾으면 됩니다.</p>
           <p data-cue="rc3-up:check rc3-item1:box"><mark>자식에서 일어난 일을 부모가 알아야 할 때는, 부모가 함수를 props로 내려 주고 자식이 그 함수를 호출합니다.</mark> 그림에서 <code>TodoItem</code>의 삭제 단추를 누르면 주황색 점선처럼 <code>onDelete</code>가 호출되고, 실제로 목록을 고치는 일은 데이터를 가진 <code>App</code>이 합니다.</p>
-          <p><a href="/basicStudy/engineering/web/Javascript/event.html">Javascript 이벤트</a> 문서의 이벤트 전달과 비교하면, DOM에서는 이벤트가 부모로 저절로 올라갔지만 React의 컴포넌트 사이에서는 함수를 명시적으로 내려 주어야 합니다. 번거로워 보이지만 누가 데이터를 고치는지가 코드에 그대로 드러납니다.</p>
+          <p><a href="/engineering/web/Javascript/event.html">Javascript 이벤트</a> 문서의 이벤트 전달과 비교하면, DOM에서는 이벤트가 부모로 저절로 올라갔지만 React의 컴포넌트 사이에서는 함수를 명시적으로 내려 주어야 합니다. 번거로워 보이지만 누가 데이터를 고치는지가 코드에 그대로 드러납니다.</p>
           <p class="meta"><time datetime="2026-11-18">2026-11-18</time> · 데이터를 어디에 둘지는 다음 문서 「state와 이벤트」에서 정합니다</p>
         </div>
 

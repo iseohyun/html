@@ -30,14 +30,14 @@
 
   <!-- 슬라이드 · 스크립트 (보고서 형식) -->
   <link rel="stylesheet" href="/modules/features/slides.css?v=20261119v11">
-  <link rel="stylesheet" href="/basicStudy/engineering/web/slides-web.css?v=20261119v11">
+  <link rel="stylesheet" href="/engineering/web/slides-web.css?v=20261119v11">
   <script src="/modules/features/slides.js?v=20261119v11" defer></script>
 </head>
 
 <body>
   <tags>React, 리액트, effect, useEffect, 생명주기, Lifecycle, 마운트, 언마운트, cleanup, useRef, 의존성 배열</tags>
   <article>
-    <!-- 형식: (슬라이드 + 대사 + 첨부) 의 반복. 공통 스타일은 /basicStudy/engineering/web/slides-web.css -->
+    <!-- 형식: (슬라이드 + 대사 + 첨부) 의 반복. 공통 스타일은 /engineering/web/slides-web.css -->
     <div class="slides-doc" data-page="react-effect" lang="ko">
       <h1 class="sl-chapter">effect와 생명주기</h1>
 
@@ -160,7 +160,7 @@
           </div>
         </div>
         <div class="script">
-          <p data-cue="re2-c1:box">두 번째 슬라이드는 <code>useEffect</code>의 사용법입니다. 왼쪽은 현재 시각을 1초마다 갱신하는 시계입니다. 시각은 state에 담고, 1초마다 그 state를 바꿔 줄 타이머가 필요합니다. <a href="/basicStudy/engineering/web/Javascript/event.html">Javascript 이벤트</a> 문서의 <code>setInterval</code>을 그대로 씁니다.</p>
+          <p data-cue="re2-c1:box">두 번째 슬라이드는 <code>useEffect</code>의 사용법입니다. 왼쪽은 현재 시각을 1초마다 갱신하는 시계입니다. 시각은 state에 담고, 1초마다 그 state를 바꿔 줄 타이머가 필요합니다. <a href="/engineering/web/Javascript/event.html">Javascript 이벤트</a> 문서의 <code>setInterval</code>을 그대로 씁니다.</p>
           <p data-cue="re2-shape:check re2-c2:box re2-c3:box re2-c3b:box re2-c3c:box re2-setup:box"><code>useEffect</code>의 첫 번째 인자는 할 일을 담은 함수입니다. 컴포넌트가 화면에 반영된 뒤에 실행됩니다. 여기서는 타이머를 켜고, 타이머는 1초마다 <code>setNow</code>를 불러 화면을 다시 그리게 합니다.</p>
           <p data-cue="re2-c4:box re2-clean:box">할 일 함수가 돌려주는 함수는 뒷정리입니다. 컴포넌트가 화면에서 사라질 때 React가 불러 줍니다. <mark>타이머를 켰으면 끄고, 이벤트를 등록했으면 해제하고, 연결을 열었으면 닫습니다. 시작과 뒷정리는 항상 짝입니다.</mark> 뒷정리를 빠뜨리면 사라진 컴포넌트의 타이머가 계속 돌아갑니다.</p>
           <p data-cue="re2-deps:check re2-c5:box re2-dep:box re2-d1:box">두 번째 인자는 의존성 배열입니다. effect를 언제 다시 실행할지 정합니다. 시계의 타이머는 한 번만 켜면 되므로 빈 배열을 넘겼고, 마운트할 때 한 번만 실행됩니다.</p>
@@ -303,7 +303,7 @@ const total = items.length;        // state 가 아니라 그냥 변수</pre></b
             <div class="w-att-body">
 <p><code>useRef</code>는 <code>{ current: 값 }</code> 모양의 상자를 돌려줍니다. state처럼 렌더링 사이에 값이 보존되지만, 바꿔도 <b>다시 그리지 않습니다</b>. 화면에 보이지 않는 값(타이머 번호, 직전 값)을 담아 둘 때 씁니다.</p>
 <table><thead><tr><th></th><th>state</th><th>ref</th></tr></thead><tbody><tr><td class="nowrap">바꾸는 방법</td><td><code>setValue(새값)</code></td><td><code>ref.current = 새값</code></td></tr><tr><td class="nowrap">바꾸면</td><td>다시 그린다</td><td>아무 일도 없다</td></tr><tr><td class="nowrap">쓰는 곳</td><td>화면에 보이는 값</td><td>화면에 보이지 않는 값, DOM 요소</td></tr></tbody></table>
-<p>두 번째 쓰임새는 DOM 요소에 직접 접근하는 것입니다. <a href="/basicStudy/engineering/web/Javascript/elements.html">Javascript 객체 접근</a>의 <code>getElementById</code>를 대신합니다. 초점 이동, 스크롤, 크기 측정처럼 React가 대신해 주지 않는 일에만 씁니다.</p>
+<p>두 번째 쓰임새는 DOM 요소에 직접 접근하는 것입니다. <a href="/engineering/web/Javascript/elements.html">Javascript 객체 접근</a>의 <code>getElementById</code>를 대신합니다. 초점 이동, 스크롤, 크기 측정처럼 React가 대신해 주지 않는 일에만 씁니다.</p>
 <blockquote><pre>import { useRef } from 'react';
 
 function SearchBox() {

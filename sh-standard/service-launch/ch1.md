@@ -190,7 +190,7 @@ git push -u origin main
 
 - 기능을 계속 붙이다 보면 쌓이는 것: 비대한 파일, 죽은 코드, 하드코딩된 값, 빠진 오류 처리, 열린 보안 규칙
 - 전수 검사: 정해진 기준표로 저장소 전체를 빠짐없이 점검하는 일
-- 기준표의 예 ([Full Code Review Checklist](#/basicStudy/engineering/tools/full-code-review-checklist.md))
+- 기준표의 예 ([Full Code Review Checklist](#/engineering/tools/full-code-review-checklist.md))
 
 | 묶음 | 점검 항목 |
 | --- | --- |
