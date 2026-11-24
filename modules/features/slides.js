@@ -85,9 +85,8 @@ window.SiteModules.Slides = (function () {
   const CAP_BALANCE_MAX_LINES = 4;                        // 저절로 줄이 넘치는 자막을 고르게 나눌 때 시도하는 최대 줄 수
   const FIRST_PACE_CHARS_PER_SEC = 8;                      // 재 본 적이 없는 목소리: 100% 속도에서 1초에 8글자
   const PACE_MIN_SAMPLE_MS = 200;
-  const AUTO_SETTLE_POLL_MS = 150;                         // 이어 재생: 스크롤이 멈췄는지 보는 간격
-  const AUTO_SETTLE_MIN_MS = 600;
-  const AUTO_SETTLE_MAX_MS = 2500;
+  const AUTO_SETTLE_MIN_MS = 600;                          // 이어 재생: 다음 슬라이드를 읽기 전에 두는 최소 쉼
+  const SCROLL_IDLE_MS = 100;                              // 스크롤 끝 신호가 없는 브라우저: 이만큼 스크롤 이벤트가 없으면 끝난 것으로 본다
   const CAPTION_LINE_FADE_MS = 140;                        // 자막 단어 상자가 줄을 바꿀 때 사라졌다 나타나는 시간
   const NARROW_SLIDE_PX = 560;                             // 이 폭 아래에서는 16:9를 풀고, 그림은 창 전체에서 연다
   const SENTENCE_END = /[.!?]["”’)\]]*\s*$/;
@@ -261,7 +260,7 @@ window.SiteModules.Slides = (function () {
     const select = settingsEl.querySelector("#sl-voice") || (slidePop && slidePop.querySelector("#sl-voice"));
     if (!select) return;
     const langRe = docLangPattern();
-    const voices = synth.getVoices().slice().sort(function (a, b) {
+    const voices = synth.getVoices().toSorted(function (a, b) {
       return (langRe.test(b.lang) - langRe.test(a.lang)) || a.name.localeCompare(b.name);
     });
     while (select.options.length > 1) select.remove(1);
@@ -439,28 +438,53 @@ window.SiteModules.Slides = (function () {
     setText("#sl-cap-size-value", state.capSize + "%");
   }
 
-  // 전체 화면 안의 설정 창. 헤더의 읽기 설정 줄(data-sl-setting)을 옮겨 와 쓰고, 닫을 때 제자리로 돌려놓는다.
-  function closeSlideSettings() {
-    if (!slidePop) return;
-    all("[data-sl-setting]", slidePop).forEach(function (row) { settingsEl.appendChild(row); });
-    slidePop.remove();
-    slidePop = null;
-    all(".sl-gear", root).forEach(function (g) { g.setAttribute("aria-expanded", "false"); });
+  // 전체 화면 안의 설정 창. 브라우저의 popover(<dialog popover="auto">)로 띄운다.
+  // 창 밖을 누르거나 Esc 를 누르면 브라우저가 닫고, 톱니 단추가 여닫는 단추(popovertarget)라 다시 누르면 닫힌다.
+  // 내용은 헤더 설정의 읽기 줄(data-sl-setting)을 열 때 옮겨 와 쓰고, 닫힐 때 제자리로 돌려놓는다.
+  let popEl = null;
+
+  function buildSlidePop() {
+    if (popEl || !settingsEl) return popEl;
+    popEl = document.createElement("dialog");
+    popEl.className = "sl-settings sl-settings-pop";
+    popEl.setAttribute("popover", "auto");
+    popEl.setAttribute("aria-label", "읽기 설정");
+    popEl.addEventListener("beforetoggle", function (e) {
+      if (e.newState !== "open") return;
+      // 위층(top layer)에 뜨므로 자리는 톱니 단추에 맞춰 직접 정한다
+      const gear = fullFrame && fullFrame.querySelector(".sl-gear");
+      if (gear) {
+        const r = gear.getBoundingClientRect();
+        popEl.style.setProperty("--pop-top", Math.round(r.bottom + 6) + "px");
+        popEl.style.setProperty("--pop-right", Math.max(8, Math.round(window.innerWidth - r.right)) + "px");
+      }
+      all("[data-sl-setting]", settingsEl).forEach(function (row) { popEl.appendChild(row); });
+      slidePop = popEl;
+      all(".sl-gear", root).forEach(function (g) { g.setAttribute("aria-expanded", "true"); });
+    });
+    popEl.addEventListener("toggle", function (e) {
+      if (e.newState === "closed") restoreSlideSettingRows();
+    });
+    return popEl;
   }
 
-  function toggleSlideSettings() {
-    if (slidePop) {
-      closeSlideSettings();
-      return;
-    }
-    if (!fullOn || !settingsEl) return;
-    slidePop = document.createElement("div");
-    slidePop.className = "sl-settings sl-settings-pop";
-    slidePop.setAttribute("role", "dialog");
-    slidePop.setAttribute("aria-label", "읽기 설정");
-    all("[data-sl-setting]", settingsEl).forEach(function (row) { slidePop.appendChild(row); });
-    fullFrame.appendChild(slidePop);   // 단추 줄 바로 아래에 붙도록 슬라이드 자리에 넣는다
-    all(".sl-gear", root).forEach(function (g) { g.setAttribute("aria-expanded", "true"); });
+  // 설정 줄을 헤더의 설정 패널로 돌려놓는다. 닫힘 신호(toggle)는 늦게 오므로 닫는 쪽에서도 바로 부른다.
+  function restoreSlideSettingRows() {
+    if (popEl && settingsEl) all("[data-sl-setting]", popEl).forEach(function (row) { settingsEl.appendChild(row); });
+    slidePop = null;
+    if (root) all(".sl-gear", root).forEach(function (g) { g.setAttribute("aria-expanded", "false"); });
+  }
+
+  function closeSlideSettings() {
+    if (!popEl) return;
+    if (popEl.matches(":popover-open")) popEl.hidePopover();
+    restoreSlideSettingRows();
+  }
+
+  // 톱니 단추를 누를 때: 닫혀 있으면 창을 그 슬라이드 자리로 옮겨 둔다. 여닫는 일은 popovertarget 이 한다.
+  function prepareSlideSettings(frame) {
+    if (!fullOn || !buildSlidePop()) return;
+    if (!popEl.matches(":popover-open") && popEl.parentNode !== frame) frame.appendChild(popEl);
   }
 
   // ---------------------------------------------------------------------------
@@ -1247,33 +1271,50 @@ window.SiteModules.Slides = (function () {
       closeSlideSettings();
       fullFrame = frame;
       paintFull();
-    } else {
-      frame.closest("section").scrollIntoView({ block: "start", behavior: "smooth" });
     }
+    const scrolled = fullOn ? null : scrollIntoViewDone(frame.closest("section"), { block: "start", behavior: "smooth" });
+    const startedAt = Date.now();
     paintProg();
     const begin = function () {
       startTts(i, function () { if (autoplay === a) playAt(i + 1, 0); }, true, hasStart ? startAt : null);
     };
-    // 스크롤이 멈춘 다음(길어도 2.5초) 읽기 시작한다. 처음 시작할 때와 전체 화면에서는 바로 읽는다.
+    // 스크롤이 끝난 다음(적어도 0.6초 쉬고) 읽기 시작한다. 처음 시작할 때와 전체 화면에서는 바로 읽는다.
     if (!a.started || fullOn) {
       a.started = true;
       begin();
       return;
     }
-    let lastTop = null, waited = 0;
-    (function settle() {
+    scrolled.then(function () {
+      if (autoplay !== a) return;   // 그사이 멈췄거나 다른 슬라이드로 옮겨 갔다
       a.timer = setTimeout(function () {
-        if (autoplay !== a) return;
-        const top = frame.getBoundingClientRect().top;
-        waited += AUTO_SETTLE_POLL_MS;
-        if (waited >= AUTO_SETTLE_MIN_MS && (top === lastTop || waited >= AUTO_SETTLE_MAX_MS)) {
-          begin();
-          return;
-        }
-        lastTop = top;
-        settle();
-      }, AUTO_SETTLE_POLL_MS);
-    })();
+        if (autoplay === a) begin();
+      }, Math.max(0, AUTO_SETTLE_MIN_MS - (Date.now() - startedAt)));
+    });
+  }
+
+  // scrollIntoView 가 끝나면 풀리는 Promise. 브라우저가 Promise 를 돌려주면 그것을 쓰고,
+  // 아니면 스크롤 영역의 scrollend 를 기다리되, 스크롤이 없거나 scrollend 가 없는 브라우저를 위해 잠잠해지면 끝난 것으로 본다.
+  function scrollIntoViewDone(el, options) {
+    const result = el.scrollIntoView(options);
+    if (result && typeof result.then === "function") return result;
+    const nav = window.SiteModules && window.SiteModules.Navigation;
+    const scroller = (nav && typeof nav.getScroller === "function" && nav.getScroller()) || window;
+    return new Promise(function (resolve) {
+      let idle = null;
+      const finish = function () {
+        clearTimeout(idle);
+        scroller.removeEventListener("scrollend", finish);
+        scroller.removeEventListener("scroll", onScroll);
+        resolve();
+      };
+      const onScroll = function () {
+        clearTimeout(idle);
+        idle = setTimeout(finish, SCROLL_IDLE_MS);
+      };
+      scroller.addEventListener("scrollend", finish, { once: true });
+      scroller.addEventListener("scroll", onScroll, { passive: true });
+      idle = setTimeout(finish, SCROLL_IDLE_MS);   // 이미 그 자리라 스크롤이 일어나지 않을 때
+    });
   }
 
   // 이어 재생을 시작한다. k가 있으면 문서 전체에서 k번째 문장부터, 없으면 기억해 둔 자리부터.
@@ -1515,7 +1556,7 @@ window.SiteModules.Slides = (function () {
         gear.setAttribute("aria-label", "읽기 설정");
         gear.setAttribute("aria-expanded", "false");
         gear.title = "읽기 설정";
-        gear.addEventListener("click", toggleSlideSettings);
+        gear.addEventListener("click", function () { prepareSlideSettings(frame); });
         make("sl-cc", "captions").addEventListener("click", function () { setOption("caption", !state.caption); });
       }
       make("sl-full", "fullscreen").addEventListener("click", function () {
@@ -1635,7 +1676,7 @@ window.SiteModules.Slides = (function () {
   }
 
   function renderViewerStage(stage, src, alt, inlineFrame) {
-    stage.innerHTML = "";
+    stage.replaceChildren();
     stage.dataset.src = src;
     const isSvg = /\.svg(?:[?#]|$)/i.test(src);
     if (!isSvg) {
@@ -1652,8 +1693,7 @@ window.SiteModules.Slides = (function () {
       svgEl.removeAttribute("class");
       svgEl.setAttribute("preserveAspectRatio", "xMidYMid meet");
       if (alt) svgEl.setAttribute("aria-label", alt);
-      stage.innerHTML = "";
-      stage.appendChild(document.importNode(svgEl, true));
+      stage.replaceChildren(document.importNode(svgEl, true));
       return true;
     };
     // 슬라이드 안에 이미 인라인 SVG 가 들어 있으면 네트워크 요청 없이 즉시 복제해 그린다
@@ -1705,11 +1745,15 @@ window.SiteModules.Slides = (function () {
 
   function closeViewer() {
     if (!viewer) return;
+    const v = viewer;
+    viewer = null;
     viewToken++;
     all(".slide-frame.is-viewing", root).forEach(function (f) { f.classList.remove("is-viewing"); });
-    viewer.remove();
-    viewer = null;
-    if (viewFrom && viewFrom.isConnected) viewFrom.focus({ preventScroll: true });   // 눌렀던 썸네일로 초점을 돌려준다
+    if (v.open) v.close();   // 창 전체(모달)로 연 것은 브라우저가 눌렀던 썸네일로 초점을 돌려준다
+    v.remove();
+    // 슬라이드 안(모달이 아님)에서 연 것은 초점이 갈 곳을 잃을 수 있어, 그때만 썸네일로 돌려준다
+    const lost = !document.activeElement || document.activeElement === document.body;
+    if (lost && viewFrom && viewFrom.isConnected) viewFrom.focus({ preventScroll: true });
   }
 
   function attachViewerSwipe(el) {
@@ -1749,17 +1793,21 @@ window.SiteModules.Slides = (function () {
     }, { passive: false });
   }
 
+  // 그림 보기는 <dialog> 다. 슬라이드 안에서는 그 슬라이드만 덮도록 모달이 아닌 창(show)으로,
+  // 창 전체에서는 모달(showModal)로 연다. 모달은 뒤쪽 화면을 막고, 위층(top layer)에 뜨며, 닫으면 초점을 돌려준다.
   function mountViewer(host, inSlide) {
-    viewer = document.createElement("div");
-    viewer.className = "sl-viewer" + (inSlide ? "" : " is-window");
-    viewer.setAttribute("role", "dialog");
-    viewer.setAttribute("aria-label", "그림 크게 보기");
+    const v = document.createElement("dialog");
+    viewer = v;
+    v.className = "sl-viewer" + (inSlide ? "" : " is-window");
+    v.setAttribute("aria-label", "그림 크게 보기");
+    // 모바일의 뒤로 가기 몸짓처럼 브라우저가 닫은 경우에도 정리한다
+    v.addEventListener("close", function () { if (viewer === v) closeViewer(); });
     viewer.innerHTML =
       '<div class="sl-viewer-stage"></div>' +
       '<div class="sl-viewer-foot"><span class="sl-viewer-cap"></span><span class="sl-viewer-count"></span></div>' +
       '<button class="sl-viewer-nav is-prev" type="button" aria-label="이전 그림" title="이전 그림"><span class="sl-viewer-chip">' + icon("chevron-left") + "</span></button>" +
       '<button class="sl-viewer-nav is-next" type="button" aria-label="다음 그림" title="다음 그림"><span class="sl-viewer-chip">' + icon("chevron-right") + "</span></button>" +
-      '<button class="icon-btn sl-viewer-close" type="button" aria-label="닫기" title="닫기 (Esc)">' + icon("x") + "</button>";
+      '<button class="icon-btn sl-viewer-close" type="button" aria-label="닫기" title="닫기 (Esc)" autofocus>' + icon("x") + "</button>";
     viewer.querySelector(".is-prev").addEventListener("click", function () { stepViewer(-1); });
     viewer.querySelector(".is-next").addEventListener("click", function () { stepViewer(1); });
     viewer.querySelector(".sl-viewer-close").addEventListener("click", closeViewer);
@@ -1769,7 +1817,8 @@ window.SiteModules.Slides = (function () {
     host.appendChild(viewer);
     if (inSlide) host.closest(".slide-frame").classList.add("is-viewing");
     paintViewer();
-    viewer.querySelector(".sl-viewer-close").focus({ preventScroll: true });
+    if (inSlide) viewer.show();
+    else viewer.showModal();
   }
 
   function openSlideImage(frame, trigger) {
@@ -1810,7 +1859,7 @@ window.SiteModules.Slides = (function () {
     if (viewer) {
       // 그림을 크게 보는 동안에는 그림 넘기기와 닫기만 받는다
       e.stopImmediatePropagation();
-      if (e.key === "Escape") closeViewer();
+      if (e.key === "Escape") { e.preventDefault(); closeViewer(); }
       else if (e.key === "ArrowRight") { e.preventDefault(); stepViewer(1); }
       else if (e.key === "ArrowLeft") { e.preventDefault(); stepViewer(-1); }
       return;
@@ -1818,7 +1867,7 @@ window.SiteModules.Slides = (function () {
     if (fullOn) {
       // 전체 화면에서는 슬라이드의 키만 받는다 (사이트의 단축키는 받지 않는다). 설정 창 안에서 누른 키는 그 컨트롤이 쓴다.
       e.stopImmediatePropagation();
-      if (e.key === "Escape" && slidePop) { closeSlideSettings(); return; }
+      if (e.key === "Escape" && slidePop) { e.preventDefault(); closeSlideSettings(); return; }
       if (e.key !== "Escape" && e.target.closest && e.target.closest(".sl-settings-pop")) return;
       if (e.ctrlKey || e.altKey || e.metaKey) return;
       if (e.key === "Escape") { exitFull(); return; }
@@ -1931,6 +1980,8 @@ window.SiteModules.Slides = (function () {
         playbar.innerHTML = "<i></i>";
         playbar.addEventListener("click", onPlaybarClick);
         settingsEl = buildSettingsPanel();
+        // 톱니 단추가 설정 창을 여닫는 단추가 되게 잇는다 (창은 설정 줄이 생긴 뒤에 만든다)
+        if (buildSlidePop()) all(".sl-gear", root).forEach(function (g) { g.popoverTargetElement = popEl; });
         fillVoices();
         if (typeof synth.addEventListener === "function") listen(synth, "voiceschanged", fillVoices);
         listen(window, "pointerup", function () { rateDrag = false; });
@@ -2019,6 +2070,8 @@ window.SiteModules.Slides = (function () {
     fullOn = false;
     fullFrame = null;
     settingsEl = null;
+    if (popEl) popEl.remove();
+    popEl = null;
     slidePop = null;
     playbar = null;
     viewer = null;

@@ -103,7 +103,7 @@ window.SiteModules = window.SiteModules || {};
   const DEFAULTS = { cal: "auto", map: "area", legend: true, cont: false, skipEmpty: false, rev: false, chipR: true, chipC: true, view: "table", cols: { r: true, c: true, s: true, st: true }, span: "chip", abbr: true };
   // 읽을 때 항목마다 허용된 값인지 확인하고, 어긋난 항목만 기본값으로 둔다
   function loadSettings() {
-    const loaded = JSON.parse(JSON.stringify(DEFAULTS));
+    const loaded = structuredClone(DEFAULTS);
     try {
       const raw = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "null");
       if (raw && typeof raw === "object") {
@@ -641,7 +641,7 @@ window.SiteModules = window.SiteModules || {};
       '<button class="pill-btn" type="button" data-jump="' + m + '" aria-pressed="' + (m === nowMonth) + '">' + m + "월</button>"
     ).join("") + '</div><button class="text-btn" type="button" data-jump="' + nowMonth + '" aria-pressed="true">오늘</button>';
     const weekdayRow = '<div class="weekday-row">' + WEEKDAYS.map((name, i) => '<div class="weekday-cell' + (i === 0 ? " is-sun" : i === 6 ? " is-sat" : "") + '">' + name + "</div>").join("") + "</div>";
-    const ordered = (weeks) => (settings.rev ? weeks.slice().reverse() : weeks);
+    const ordered = (weeks) => (settings.rev ? weeks.toReversed() : weeks);
     if (settings.cont) {
       // 이어보기: 달로 끊지 않고 한 해의 주를 한 장에 잇는다. 매달 1일 칸에 달 표시
       const inYear = list.filter(ev => ev.s.slice(0, 4) <= String(YEAR) && ev.e.slice(0, 4) >= String(YEAR));
@@ -728,7 +728,7 @@ window.SiteModules = window.SiteModules || {};
     return '<td><span class="status ' + STATUS_CLASS[ev.st] + '">' + ev.st + "</span></td>";
   }
   function renderList() {
-    const list = filtered().slice().sort((a, b) => {
+    const list = filtered().toSorted((a, b) => {
       const x = sortKey === "st" ? STATUS_ORDER[a.st] : a[sortKey];
       const y = sortKey === "st" ? STATUS_ORDER[b.st] : b[sortKey];
       return (x < y ? -1 : x > y ? 1 : 0) * sortDir;
@@ -831,8 +831,7 @@ window.SiteModules = window.SiteModules || {};
     let pins = "";
     if (isPin) {
       // 묶기(흉내): 같은 지역의 표시가 CLUSTER_MIN 개 이상이면 수를 적은 원 하나로 묶고, 누르면 그 묶음만 풀어 보여 준다
-      const groups = {};
-      list.forEach(ev => { (groups[ev.r] = groups[ev.r] || []).push(ev); });
+      const groups = Object.groupBy(list, ev => ev.r);
       pins = Object.keys(groups).map(region => {
         const geo = GEO.filter(item => item.n === region)[0];
         const events = groups[region];

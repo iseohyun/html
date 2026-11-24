@@ -228,8 +228,9 @@ test.describe('전체 화면 보기 (창 안 덮개)', () => {
     await page.keyboard.press('ArrowRight');
     await expect(page.locator('.slides-doc section.has-active .sl-count')).toHaveText('1 / 3');
     await expect(pop.locator('#sl-rate-value')).toHaveText('155%');
-    await page.keyboard.press('Escape');     // 창만 닫는다
-    await expect(pop).toHaveCount(0);
+    await page.keyboard.press('Escape');     // 창만 닫는다 (창은 popover 라 지우지 않고 숨긴다)
+    await expect(pop).toBeHidden();
+    await expect(pop.locator('[data-sl-setting]')).toHaveCount(0);   // 설정 줄은 헤더 패널로 돌아간다
     await expect(page.locator('.slides-doc')).toHaveClass(/is-full/);
 
     // 자막 단추
@@ -653,7 +654,8 @@ test.describe('그림 크게 보기', () => {
 
     const viewer = page.locator('#s1-2 .slide > .sl-viewer');
     await expect(viewer).toBeVisible();
-    await expect(viewer).toHaveAttribute('role', 'dialog');
+    await expect(viewer).toHaveJSProperty('tagName', 'DIALOG');   // 네이티브 대화상자(role 속성 없이 대화상자로 읽힘)
+    await expect(viewer).toHaveJSProperty('open', true);
     await expect(page).toHaveURL(/ch1\.html$/);   // 주소는 바꾸지 않는다
     // 슬라이드를 가득 덮고, 그동안 슬라이드의 단추는 숨는다
     const slideBox = await page.locator('#s1-2 .slide').boundingBox();

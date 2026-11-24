@@ -3,7 +3,7 @@ title: "WebApp Common GUI · 판 이력"
 status: "설계문서"
 category: "WebApp Common GUI"
 ---
-> 판: v0.5.8 · 홈페이지에는 이 문서의 견본이 없습니다.
+> 판: v0.5.9 · 홈페이지에는 이 문서의 견본이 없습니다.
 > 다루는 것: 판마다 바뀐 항목, 앱이 새 판을 받아 가는 방법, 앱 쪽 기록의 형식, 판을 올리는 규칙
 
 # 판 이력
@@ -17,8 +17,8 @@ Common GUI가 바뀔 때마다 바뀐 항목을 한 줄씩 적고 항목 ID를 �
 
 | 항목 | 값 |
 | :--- | :--- |
-| 판 | v0.5.8 |
-| 날짜 | 2026-11-19 |
+| 판 | v0.5.9 |
+| 날짜 | 2026-11-25 |
 
 ## 바뀐 항목
 
@@ -26,6 +26,10 @@ Common GUI가 바뀔 때마다 바뀐 항목을 한 줄씩 적고 항목 ID를 �
 
 | 항목 ID | 판 | 날짜 | 종류 | 무엇이 | 앱에 할 일 | 규칙 |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| `native-overlays` | 다음 판(미정) | 2026-11-22 | 바꿈 | 그림 크게 보기를 브라우저의 `<dialog>`로(슬라이드 안은 `show()`, 창 전체는 `showModal()`), 전체 화면의 읽기 설정 창을 popover(`<dialog popover="auto">`)로. 겹침 순서와 Esc · 초점 처리를 브라우저에 맡김 | 슬라이드나 그림 보기가 있는 앱만. 덮개를 `div` + `role="dialog"`로 만들었다면 `<dialog>`로 바꾸고, 열고 닫기를 `show` · `showModal` · `close`와 `popovertarget`으로 바꾸고, 덮개의 z-index를 지운다. 닫힌 창에 `display`를 주는 규칙이 있으면 열린 때로 좁힌다 | [「그림 보기」](#/column/ai/webapp-common-gui/rules/image-viewer.md) 「여는 자리」, [「보고서」](#/column/ai/webapp-common-gui/rules/report.md) 「전체 화면 보기」 |
+| `autoplay-scroll-end` | 다음 판(미정) | 2026-11-22 | 바꿈 | 이어 재생이 다음 슬라이드로 스크롤한 뒤 읽기를 시작하는 때를 위치를 재서 짐작하지 않고, 스크롤이 끝난 신호(`scrollIntoView()`의 Promise, 없으면 `scrollend`)로 앎. 최소 쉼 0.6초는 그대로 | 이어 재생이 있는 앱만. 스크롤 멈춤을 타이머로 재던 코드를 스크롤 끝 신호로 바꾼다 | [「보고서」](#/column/ai/webapp-common-gui/rules/report.md) 「이어 재생」 |
+| `slides-palette` | v0.5.9 | 2026-11-25 | 추가 | 슬라이드 색. UniPalette 5×3 팔레트를 역할 변수(`--spN-fill` · `--spN-ink` · `--spN-mid`)로 쓰고, 읽기 설정의 「슬라이드 색」 줄에서 고르기 · 기본값 | 슬라이드가 있는 앱만. `slides-palette.css` · `slides-palette.js`를 `slides.js` 다음에 넣고, 도식의 색을 역할 변수로 바꾼다(모듈이 없을 때의 대체값을 둔다) | [「보고서」](#/column/ai/webapp-common-gui/rules/report.md) 「슬라이드 색」 |
+| `item-cards` | v0.5.9 | 2026-11-25 | 추가 | 항목 카드. 실선 `.note`는 내 경험과 생각, 점선 `.note.claude`는 Claude의 의견, 글쓴이 필터 | 슬라이드가 있는 앱만. 카드는 슬라이드 뒤에 두어 h2 번호가 밀리지 않게 한다 | [「보고서」](#/column/ai/webapp-common-gui/rules/report.md) 「항목 카드」 |
 | `slide-rate-keys` | v0.5.8 | 2026-11-19 | 추가 | 슬라이드 보기의 + · - 키로 읽는 속도를 25%p씩 바꿈. 읽는 중이면 지금 문장부터 새 속도로, 바뀐 값을 잠깐 띄움 | 슬라이드가 있는 앱만. 키 처리에 + · = · - 를 더하고, 속도 표시를 문서 상자 안에 띄운다 | [「보고서」](#/column/ai/webapp-common-gui/rules/report.md) 「슬라이드 보기의 키」 |
 | `speech-words` | v0.5.8 | 2026-11-19 | 추가 | 읽어 주기의 도메인별 발음 사전. 문서의 도메인(경로 규칙 또는 `data-say-domain`)에 맞춰 Javascript·json 같은 낱말을 정해 둔 한글 발음으로 읽고, 기호는 `<code>` 안에서만 바꿈. 화면 글자·자막·단어 짚기는 그대로 | 슬라이드가 있는 앱만. 발음 사전 파일(`common`과 도메인 묶음, 경로 규칙)을 두고, 읽을 말을 만들 때 사전으로 바꾸고, 읽는 위치를 화면 글자 위치로 되돌리는 표에 넣는다 | [「보고서」](#/column/ai/webapp-common-gui/rules/report.md) 「읽어 주기」 |
 | `caption-lines` | v0.5.7 | 2026-11-18 | 추가 | 자막의 줄 나누기. 스크립트의 `<wbr data-cap>` 자리에서 줄을 바꾸고, 표시가 없으면 넘친 자막을 고르게 나눔(두 줄이면 대략 가운데) | 슬라이드가 있는 앱만. 자막에 글자를 넣을 때 표시 자리나 고르게 나눈 띄어쓰기 자리에 줄바꿈을 넣고, 단어 상자가 줄마다 나뉜 글자를 따라가게 하고, 창 크기·글자 크기가 바뀌면 다시 나눈다 | [「보고서」](#/column/ai/webapp-common-gui/rules/report.md) 「자막의 줄 나누기」 |

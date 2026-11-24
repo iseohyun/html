@@ -1074,12 +1074,19 @@ article .slides-doc .cue-check::after {
   display: block;
 }
 
-/* 전체 화면 안의 설정 창: 헤더의 읽기 설정 줄을 그대로 옮겨 와 보여 준다 */
+/* 전체 화면 안의 설정 창: 헤더의 읽기 설정 줄을 그대로 옮겨 와 보여 준다.
+   브라우저의 popover 라 위층(top layer)에 뜨고, 자리는 스크립트가 톱니 단추 아래로 정한다 */
+.slides-doc .slide-frame > .sl-settings-pop:not(:popover-open) {
+  display: none;   /* .sl-settings 의 display 가 닫힌 popover 를 보이게 하지 않도록 */
+}
+
 .slides-doc .slide-frame > .sl-settings-pop {
-  position: absolute;
-  top: 48px;
-  right: 8px;
-  z-index: 3;
+  position: fixed;
+  inset: auto;
+  top: var(--pop-top, 56px);
+  right: var(--pop-right, 8px);
+  margin: 0;
+  color: var(--fg);
   width: min(660px, calc(100vw - 16px));
   max-height: calc(100vh - 64px);
   overflow-y: auto;
@@ -1171,22 +1178,44 @@ article .slides-doc .cue-check::after {
 }
 
 /* ---------- 그림 크게 보기: 그림이 놓인 슬라이드 안에서 연다 ---------- */
-.sl-viewer {
+/* <dialog> 의 기본 모양(테두리 · 안쪽 여백 · 내용 크기)을 지우고 슬라이드를 덮게 한다.
+   display 는 열려 있을 때만 준다(닫힌 dialog 를 보이게 하지 않도록) */
+dialog.sl-viewer {
   position: absolute;
   inset: 0;
   z-index: 2;
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: var(--fg);
   background: var(--surface);
-  display: flex;
   flex-direction: column;
   font-size: max(12px, 1.4cqw);
   line-height: 1.5;
   animation: sl-fade var(--t-fast) ease both;
 }
 
-.sl-viewer.is-window {
+dialog.sl-viewer[open] {
+  display: flex;
+}
+
+/* 창 전체(모달): 위층에 뜨므로 겹침 순서가 필요 없다. 뒤쪽 화면이 함께 스크롤되지 않게 막는다 */
+dialog.sl-viewer.is-window {
   position: fixed;
-  z-index: 10060;
+  width: 100%;
+  height: 100%;
   font-size: 13px;
+  overscroll-behavior: contain;
+}
+
+dialog.sl-viewer.is-window::backdrop {
+  background: transparent;
+  overflow: hidden;
+  overscroll-behavior: contain;
 }
 
 .sl-viewer .sl-viewer-stage {
