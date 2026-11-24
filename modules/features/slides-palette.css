@@ -1,0 +1,69 @@
+/**
+ * @file modules/features/slides-palette.css
+ * @module SiteModules.SlidesPalette (스타일)
+ * @description 보고서 형식 슬라이드에 입히는 5×3 색: 색조 5개 × 명암 3단계(어둡게 · 가운데 · 밝게).
+ *   - 값(--spN-d · --spN-m · --spN-l)은 slides-palette.js 가 :root 에 적는다. 아래 :root 는 기본값(UniPalette 기본 5×3).
+ *   - 쓰는 쪽은 역할 이름만 쓴다: --spN-fill(면) · --spN-ink(선 · 글자) · --spN-mid(가운데 톤)
+ *     밝은 테마는 밝은 톤을 면, 어두운 톤을 선 · 글자로 쓰고, 어두운 테마(data-skin dark · navy)는 그 반대로 쓴다.
+ *   - 설정 줄(.sl-pal-*)은 슬라이드 읽기 설정(.sl-settings) 안에 붙는다.
+ */
+
+:root {
+  --sp1-d: #5B1F0B; --sp1-m: #E44D1B; --sp1-l: #F4B8A4;
+  --sp2-d: #375B0B; --sp2-m: #8AE41B; --sp2-l: #D0F4A4;
+  --sp3-d: #0B5B3F; --sp3-m: #1BE49E; --sp3-l: #A4F4D8;
+  --sp4-d: #0B175B; --sp4-m: #1B39E4; --sp4-l: #A4B0F4;
+  --sp5-d: #5B0B57; --sp5-m: #E41BDA; --sp5-l: #F4A4F0;
+}
+
+/* ---------- 역할: 밝은 테마 ---------- */
+.slides-doc,
+.sl-viewer {
+  --sp1-fill: var(--sp1-l); --sp1-ink: var(--sp1-d); --sp1-mid: var(--sp1-m);
+  --sp2-fill: var(--sp2-l); --sp2-ink: var(--sp2-d); --sp2-mid: var(--sp2-m);
+  --sp3-fill: var(--sp3-l); --sp3-ink: var(--sp3-d); --sp3-mid: var(--sp3-m);
+  --sp4-fill: var(--sp4-l); --sp4-ink: var(--sp4-d); --sp4-mid: var(--sp4-m);
+  --sp5-fill: var(--sp5-l); --sp5-ink: var(--sp5-d); --sp5-mid: var(--sp5-m);
+}
+
+/* ---------- 역할: 어두운 테마 (면과 글자를 바꾼다) ---------- */
+:root[data-skin="dark"] .slides-doc,
+:root[data-skin="navy"] .slides-doc,
+:root[data-skin="dark"] .sl-viewer,
+:root[data-skin="navy"] .sl-viewer {
+  --sp1-fill: var(--sp1-d); --sp1-ink: var(--sp1-l);
+  --sp2-fill: var(--sp2-d); --sp2-ink: var(--sp2-l);
+  --sp3-fill: var(--sp3-d); --sp3-ink: var(--sp3-l);
+  --sp4-fill: var(--sp4-d); --sp4-ink: var(--sp4-l);
+  --sp5-fill: var(--sp5-d); --sp5-ink: var(--sp5-l);
+}
+
+/* ---------- 슬라이드 공통 부분에 입히는 색 ---------- */
+.slides-doc .slide-no {
+  background: var(--sp1-ink);
+  color: var(--sp1-fill);
+}
+
+.slides-doc .points li::marker {
+  color: var(--sp1-mid);
+}
+
+/* ---------- 읽기 설정의 「슬라이드 색」 줄 ---------- */
+.sl-settings .sl-pal-chips {
+  display: inline-flex;
+  gap: 3px;
+  margin-right: 4px;
+}
+
+.sl-settings .sl-pal-chip {
+  display: inline-grid;
+  grid-template-rows: repeat(3, 7px);
+  width: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+
+.sl-settings .sl-pal-chip i {
+  display: block;
+}
