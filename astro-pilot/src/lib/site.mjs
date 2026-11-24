@@ -9,7 +9,7 @@ import vm from 'node:vm';
 export const REPO_ROOT = resolve(process.cwd(), '..');
 
 // 시범 전환으로 옮겨 온 문서의 범위. 여기에 든 주소만 이 프로젝트가 페이지로 만든다.
-export const MIGRATED_PREFIXES = ['/coding/C/'];
+export const MIGRATED_PREFIXES = ['/basicStudy/engineering/language/C/'];
 
 // 아직 옮기지 않은 문서는 기존 사이트(해시 주소)로 보낸다. 로컬에서는 LEGACY_BASE=http://localhost:5174/html/# 처럼 바꾼다.
 export const LEGACY_BASE = process.env.LEGACY_BASE || 'https://iseohyun.com/#';

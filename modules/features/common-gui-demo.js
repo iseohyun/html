@@ -1,7 +1,7 @@
 /**
  * @file modules/features/common-gui-demo.js
  * @module SiteModules.CommonGuiDemo
- * @description 「WebApp Common GUI」 묶음(column/ai/webapp-common-gui/*.html)의 견본 동작.
+ * @description 「WebApp Common GUI」 묶음(sh-standard/webapp-common-gui/*.html)의 견본 동작.
  *   한 장짜리 견본(webapp-common-gui.html)의 스크립트를 사이트 뼈대 안에서 돌도록 옮긴 것이다.
  *   - 문서마다 다시 실행된다. 어느 문서인지는 본문의 .cg-doc[data-cg-page] 로 안다
  *     (base 화면 / calendar 달력 / list 리스트 / map 지도 / filter 필터 / abbr 단어 단축 / arch 구조 / extras 편의 기능).

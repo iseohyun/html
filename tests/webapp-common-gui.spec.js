@@ -1,6 +1,6 @@
 /**
  * @file tests/webapp-common-gui.spec.js
- * @description 「WebApp Common GUI」 묶음(column/ai/webapp-common-gui/*.html) 검증.
+ * @description 「WebApp Common GUI」 묶음(sh-standard/webapp-common-gui/*.html) 검증.
  *   - 여덟 문서가 사이트 뼈대 안에서 그려지고(기본 레일 항목 유지, 형제 탭 10개: 견본 8개 + md 표준 문서 2개), 콘솔 오류가 없다
  *   - 레일의 「미리보기 설정」이 더해지고, 뼈대에 적용한 값이 떠날 때 모두 되돌려진다
  *   - 견본 동작: 달력 설정, 리스트 표↔카드, 필터 적용 표시, 지도↔필터 연동, 단어 단축, 워커 계산
@@ -8,7 +8,7 @@
  */
 const { test, expect } = require('@playwright/test');
 
-const BASE = '#/column/ai/webapp-common-gui/';
+const BASE = '#/sh-standard/webapp-common-gui/';
 const PAGES = [
   { file: 'screen.html', label: '화면', page: 'base' },
   { file: 'calendar.html', label: '달력', page: 'calendar' },
@@ -557,7 +557,7 @@ test.describe('WebApp Common GUI 규칙: md 규칙 문서 묶음', () => {
       await expect(page.locator('article :is(h1, h2, table)').first()).toBeVisible();
       // 옮기기 전의 자리(reference/, design/)를 가리키는 말이 남아 있지 않다
       await expect(page.locator('article')).not.toContainText(/reference\/|design\/\d\d/);
-      const links = await page.locator('article a[href*="/column/ai/webapp-common-gui/"]').evaluateAll(list => list.map(a => a.getAttribute('href')));
+      const links = await page.locator('article a[href*="/sh-standard/webapp-common-gui/"]').evaluateAll(list => list.map(a => a.getAttribute('href')));
       links.forEach(href => targets.add(href.replace(/^#/, '')));
     }
     expect(targets.size).toBeGreaterThan(10);

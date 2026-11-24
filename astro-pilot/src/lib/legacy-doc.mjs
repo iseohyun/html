@@ -53,7 +53,7 @@ function makeDescription(article) {
 }
 
 /**
- * @param {string} docUrl 사이트 주소 (예: /coding/C/function.html)
+ * @param {string} docUrl 사이트 주소 (예: /basicStudy/engineering/language/C/function.html)
  */
 export function readLegacyDoc(docUrl) {
   const file = resolve(REPO_ROOT, '.' + docUrl);

@@ -10,7 +10,7 @@
  *   "상태": "개발중" 인 항목(문서 또는 묶음 전체)은 관리자에게만 보인다. setShowDev(true) 전에는
  *   순회 · 찾기 · 글 수에서 모두 빠진다. 가리는 것일 뿐, 파일은 공개되어 있다.
  *   개론 문서가 없는 묶음은 "자동 개론"(하위 목록을 보여 주는 화면)을 가질 수 있다. 그 주소는 파일이 아니라
- *   제목 경로로 적는다: "/sitemap/공학/표현 원리".
+ *   제목 경로로 적는다: "/sitemap/공학/표현 기법".
  * @exports isPageItem, getFileName, resolveDirs, getItemUrl, countPages, forEachPage, findPage, findPathByTitle,
  *   AUTO_OVERVIEW_PREFIX, getAutoOverviewUrl, findFolderByUrl,
  *   isDevItem, setShowDev, isShowingDev, visibleItems, countDevPages, isDevPath
@@ -59,14 +59,14 @@ window.SiteModules.Hierarchy = (function () {
 
   /**
    * 부모까지의 폴더 경로에 항목의 "디렉토리"를 더한다. "/"로 시작하는 디렉토리는 루트 기준이라 부모를 버린다.
-   * @returns {string} 앞 슬래시 없는 폴더 경로 (예: "coding/C/")
+   * @returns {string} 앞 슬래시 없는 폴더 경로 (예: "basicStudy/engineering/language/C/")
    */
   function resolveDirs(parentDirs, dir) {
     const own = dir || "";
     return own.startsWith("/") ? own.slice(1) : (parentDirs || "") + own;
   }
 
-  /** 문서 항목의 주소 (예: "/coding/C/start.html") */
+  /** 문서 항목의 주소 (예: "/basicStudy/engineering/language/C/start.html") */
   function getItemUrl(parentDirs, item) {
     return `/${resolveDirs(parentDirs, item.디렉토리)}${getFileName(item)}`;
   }
@@ -176,7 +176,7 @@ window.SiteModules.Hierarchy = (function () {
   /**
    * URL 경로로 문서를 찾는다.
    * @param {Array} list
-   * @param {string} urlPath 예: "/coding/C/start.html" (앞 슬래시는 생략 가능)
+   * @param {string} urlPath 예: "/basicStudy/engineering/language/C/start.html" (앞 슬래시는 생략 가능)
    * @returns {Object|null} forEachPage의 page 객체
    */
   function findPage(list, urlPath) {

@@ -15,11 +15,11 @@ function folder(page, name) {
 }
 
 test.describe('사이트맵 트리', () => {
-  test('최상위는 수학 · 과학 · 공학 · 칼럼이고, 묶음마다 안에 든 글 수가 나온다', async ({ page }) => {
+  test('최상위는 수학 · 과학 · 공학 · 칼럼 · SH Standard이고, 묶음마다 안에 든 글 수가 나온다', async ({ page }) => {
     await page.goto('/index.html');
     const tree = await openSitemap(page);
 
-    await expect(tree.locator(':scope > li > .tree-row > .tree-label')).toHaveText(['수학', '과학', '공학', '칼럼']);
+    await expect(tree.locator(':scope > li > .tree-row > .tree-label')).toHaveText(['수학', '과학', '공학', '칼럼', 'SH Standard']);
 
     // 글 수는 hierarchy.json 에서 센 값과 같다
     const expected = await page.evaluate(() => {
@@ -118,34 +118,34 @@ test.describe('사이트맵 트리', () => {
     await expect(engineering).toHaveClass(/this-doc/);
     await expect(engineering).not.toHaveClass(/collapsed/);
     const cards = page.locator('article .auto-overview-card');
-    await expect(cards.locator('.auto-overview-name')).toContainText(['표현 원리', '표기법', '프로그래밍 언어', '웹', '개발 도구', '자격증']);
+    await expect(cards.locator('.auto-overview-name')).toContainText(['프로그래밍 언어', '웹', '표현 기법', '개발 도구', '자격증']);
     expect(await page.evaluate(() => window.SiteModules.state.currentPath)).toBe('/sitemap/공학');
 
     // 글 수는 트리와 같다
-    const treeCount = await folder(page, '표현 원리').locator(':scope > .tree-row > .tree-count').textContent();
-    await expect(cards.filter({ hasText: '표현 원리' }).locator('.auto-overview-count')).toHaveText(treeCount);
+    const treeCount = await folder(page, '표현 기법').locator(':scope > .tree-row > .tree-count').textContent();
+    await expect(cards.filter({ hasText: '표현 기법' }).locator('.auto-overview-count')).toHaveText(treeCount);
 
     // 카드를 누르면 그 묶음의 자동 개론으로 가고, 트리도 따라 펼쳐진다
-    await cards.filter({ hasText: '표현 원리' }).click();
-    await expect(page.locator('#header-title')).toHaveText('표현 원리');
+    await cards.filter({ hasText: '표현 기법' }).click();
+    await expect(page.locator('#header-title')).toHaveText('표현 기법');
     await expect(page.locator('#title-container')).toContainText('공학');
-    await expect(folder(page, '표현 원리')).toHaveClass(/this-doc/);
-    await expect(folder(page, '표현 원리')).not.toHaveClass(/collapsed/);
+    await expect(folder(page, '표현 기법')).toHaveClass(/this-doc/);
+    await expect(folder(page, '표현 기법')).not.toHaveClass(/collapsed/);
     // 묶음은 카드, 낱개 문서는 목록
     await expect(page.locator('article .auto-overview-card .auto-overview-name')).toContainText(['글자', '베지어 곡선']);
-    await expect(page.locator('article .auto-overview-pages a')).toHaveText(['진법']);
+    await expect(page.locator('article .auto-overview-pages a')).toHaveText(['진법', '정규표현식', 'LaTeX']);
 
     // 목록의 문서를 누르면 그 문서가 열린다
-    await page.locator('article .auto-overview-pages a').click();
-    await expect(page).toHaveURL(/#\/basicStudy\/engineering\/binary\/binary\.html$/);
+    await page.locator('article .auto-overview-pages a').first().click();
+    await expect(page).toHaveURL(/#\/basicStudy\/engineering\/representation\/binary\/binary\.html$/);
     await expect(page.locator('.error-state')).toHaveCount(0);
 
     // 이름을 다시 누르면: 다른 문서를 보는 중이므로 접지 않고 자동 개론으로 돌아간다. 한 번 더 누르면 접힌다
-    await folder(page, '표현 원리').locator(':scope > .tree-row > .tree-label').click();
-    await expect(page.locator('#header-title')).toHaveText('표현 원리');
-    await expect(folder(page, '표현 원리')).not.toHaveClass(/collapsed/);
-    await folder(page, '표현 원리').locator(':scope > .tree-row > .tree-label').click();
-    await expect(folder(page, '표현 원리')).toHaveClass(/collapsed/);
+    await folder(page, '표현 기법').locator(':scope > .tree-row > .tree-label').click();
+    await expect(page.locator('#header-title')).toHaveText('표현 기법');
+    await expect(folder(page, '표현 기법')).not.toHaveClass(/collapsed/);
+    await folder(page, '표현 기법').locator(':scope > .tree-row > .tree-label').click();
+    await expect(folder(page, '표현 기법')).toHaveClass(/collapsed/);
   });
 
   test('자동 개론: 글이 없는 묶음은 안내가 나오고, 주소로 바로 들어와도 열리며, 없는 묶음은 오류 안내가 나온다', async ({ page }) => {
@@ -212,11 +212,11 @@ test.describe('사이트맵 트리', () => {
   });
 
   test('분류만 옮기고 폴더는 그대로인 문서도 제 주소로 열리고, 지금 문서까지의 가지가 펼쳐진다', async ({ page }) => {
-    // 공학 > 프로그래밍 언어 > C 는 /coding/C/ 폴더 그대로다
-    await page.goto('/index.html#/coding/C/start.html');
+    // 공학 > 프로그래밍 언어 > C 는 /basicStudy/engineering/language/C/ 폴더 그대로다
+    await page.goto('/index.html#/basicStudy/engineering/language/C/start.html');
     await openSitemap(page);
 
-    await expect(page.locator('#sitemap-tree li.this-doc > a')).toHaveAttribute('href', '/coding/C/start.html');
+    await expect(page.locator('#sitemap-tree li.this-doc > a')).toHaveAttribute('href', '/basicStudy/engineering/language/C/start.html');
     for (const name of ['공학', '프로그래밍 언어', 'C']) {
       await expect(folder(page, name)).not.toHaveClass(/collapsed/);
     }
@@ -228,22 +228,18 @@ test.describe('사이트맵 트리', () => {
     await page.goto('/index.html');
     await openSitemap(page);
     await folder(page, '공학').locator(':scope > .tree-row').click();
-    const group = folder(page, '표현 원리');
+    const group = folder(page, '표현 기법');
     await group.locator(':scope > .tree-row').click();
 
-    // 표현 원리: 묶음(글자, 베지어 곡선)이 먼저, 낱개 문서(진법)가 뒤
+    // 표현 기법: 묶음(글자, 베지어 곡선)이 먼저, 낱개 문서(진법, 정규표현식, LaTeX)가 뒤
     await expect(group.locator(':scope > ul > li > .tree-row > .tree-label, :scope > ul > li > a.tree-label'))
-      .toHaveText(['글자', '베지어 곡선', '진법']);
+      .toHaveText(['글자', '베지어 곡선', '진법', '정규표현식', 'LaTeX']);
 
     // 베지어 곡선 묶음: 이론과 시뮬레이터
     const bezier = folder(page, '베지어 곡선');
     await bezier.locator(':scope > .tree-row').click();
     await expect(bezier.locator(':scope > ul > li > a')).toHaveText(['이론', '시뮬레이터']);
     await expect(bezier.locator(':scope > ul > li.is-app > a')).toHaveAttribute('href', '/small-project/Bezier/index.html');
-
-    // 표기법: LaTeX 는 묶음이 아니라 낱개 문서다
-    await folder(page, '표기법').locator(':scope > .tree-row').click();
-    await expect(folder(page, '표기법').locator(':scope > ul > li > a')).toHaveText(['정규표현식', 'LaTeX']);
   });
 
   test('시뮬레이터는 주제 옆에 놓이고 표시가 붙는다', async ({ page }) => {

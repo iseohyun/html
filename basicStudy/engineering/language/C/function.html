@@ -1,0 +1,2388 @@
+<!DOCTYPE html>
+
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta keywords="iseohyun, 튜토리얼, C, 문법, 함수, 콜스택, 재귀">
+  <meta author="iseohyun">
+
+  <!-- 페이지 타이틀 -->
+  <title>함수: C - iseohyun </title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-453XSP5W9M');
+  </script>
+
+  <!-- 목차 및 공통 모듈 -->
+  <script src="/modules/script.js?v=20261118v1" defer></script>
+
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("/style.css?v=20261118v1");
+
+    .all-center td {
+      text-align: center !important;
+    }
+
+    span.comment {
+      color: green;
+    }
+  </style>
+
+  <!-- 슬라이드 · 스크립트 (보고서 형식) -->
+  <link rel="stylesheet" href="/modules/features/slides.css?v=20261118v1">
+  <script src="/modules/features/slides.js?v=20261118v1" defer></script>
+</head>
+
+<body>
+  <tags>C, Coding, 코딩, C언어, 함수, Function, 콜스택, 재귀</tags>
+  <article>
+    <style>
+      /* 함수 단원 슬라이드 & 1p·2p 시뮬레이터 전용 스타일 (.slides-doc 내부 격리) */
+      .slides-doc .c-svg-stage {
+        flex: 1;
+        min-height: 0;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .slides-doc .c-rich-svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
+      }
+
+      .slides-doc .c-rich-svg [data-key].cue-box {
+        outline: none;
+        stroke: var(--sl-cue, #d32f2f) !important;
+        stroke-width: 4.5px !important;
+        stroke-dasharray: none !important;
+      }
+
+      .slides-doc .c-slide-head-row {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 1.5cqw;
+        padding-right: 9cqw;
+      }
+
+      .slides-doc .c-zoom-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35em;
+        padding: 0.25em 0.7em;
+        border-radius: var(--r-pill);
+        border: 1px solid var(--c-line);
+        background: var(--bg);
+        color: var(--c-fg);
+        font-size: 0.78em;
+        font-weight: 600;
+        text-decoration: none;
+        white-space: nowrap;
+        cursor: zoom-in;
+      }
+
+      .slides-doc .c-zoom-pill:hover {
+        border-color: var(--c-fg);
+      }
+
+      /* ---------- 공통 시뮬레이터 레이아웃 & 코드 뷰어 ---------- */
+      .slides-doc .fn-sim {
+        flex: 1;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: minmax(0, 1.32fr) minmax(0, 1fr);
+        gap: 1.5cqw;
+        align-items: stretch;
+      }
+
+      .slides-doc .fn-sim.is-stack-sim {
+        grid-template-columns: minmax(0, 1.08fr) minmax(0, 1.12fr);
+      }
+
+      .slides-doc .fn-code-panel {
+        position: relative;
+        background: #0f172a;
+        border: 1.5px solid #334155;
+        border-radius: 10px;
+        padding: 0.75cqw 0.95cqw;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        overflow: hidden;
+        min-height: 0;
+      }
+
+      .slides-doc .fn-code-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-bottom: 0.4cqw;
+        border-bottom: 1px solid #1e293b;
+        font-size: 0.74em;
+        color: #94a3b8;
+        font-family: var(--font-monospace);
+      }
+
+      .slides-doc .fn-code-lines {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        padding: 0.25cqw 0;
+      }
+
+      .slides-doc .fn-pc-bar {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 8%;
+        border-radius: 5px;
+        background: rgba(37, 99, 235, 0.34);
+        border-left: 3px solid #60a5fa;
+        pointer-events: none;
+        transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.24s ease, border-color 0.24s ease;
+      }
+
+      .slides-doc .fn-pc-bar[data-tone="call"] {
+        background: rgba(37, 99, 235, 0.42);
+        border-left-color: #38bdf8;
+      }
+
+      .slides-doc .fn-pc-bar[data-tone="callee"] {
+        background: rgba(124, 58, 237, 0.4);
+        border-left-color: #c084fc;
+      }
+
+      .slides-doc .fn-pc-bar[data-tone="ret"] {
+        background: rgba(5, 150, 105, 0.42);
+        border-left-color: #34d399;
+      }
+
+      .slides-doc .fn-pc-bar[data-tone="warn"] {
+        background: rgba(217, 119, 6, 0.42);
+        border-left-color: #fbbf24;
+      }
+
+      .slides-doc .fn-pc-bar[data-tone="crash"] {
+        background: rgba(220, 38, 38, 0.48);
+        border-left-color: #f87171;
+      }
+
+      .slides-doc .fn-line {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: 1.4em 1.75em minmax(0, 1fr);
+        align-items: center;
+        font-family: 'D2Coding', 'Consolas', monospace;
+        font-size: 0.78em;
+        line-height: 1.22;
+        color: #cbd5e1;
+        padding: 0.06em 0.35em;
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+      }
+
+      .slides-doc .fn-line > span:last-child {
+        white-space: pre;
+      }
+
+      .slides-doc .fn-line.is-compact {
+        font-size: 0.7em;
+        line-height: 1.16;
+      }
+
+      .slides-doc .fn-line:hover {
+        color: #ffffff;
+      }
+
+      .slides-doc .fn-line .ptr {
+        color: transparent;
+        font-weight: 800;
+        font-size: 0.9em;
+        transition: color 0.2s ease;
+      }
+
+      .slides-doc .fn-line.is-active .ptr {
+        color: #fde047;
+      }
+
+      .slides-doc .fn-line.is-active {
+        color: #ffffff;
+        font-weight: 700;
+      }
+
+      .slides-doc .fn-line.is-active .fn-cmt {
+        color: #fde047;
+      }
+
+      .slides-doc .fn-line .ln {
+        color: #64748b;
+        font-size: 0.86em;
+      }
+
+      .slides-doc .fn-kw { color: #c084fc; }
+      .slides-doc .fn-fn { color: #93c5fd; font-weight: 700; }
+      .slides-doc .fn-num { color: #fde68a; }
+      .slides-doc .fn-str { color: #86efac; }
+      .slides-doc .fn-cmt { color: #64748b; font-size: 0.88em; }
+
+      .slides-doc .fn-jump-svg {
+        position: absolute;
+        top: 1.9cqw;
+        bottom: 0.5cqw;
+        right: 0.4cqw;
+        width: 9.5cqw;
+        height: calc(100% - 2.4cqw);
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      .slides-doc .fn-arc {
+        opacity: 0.14;
+        transition: opacity 0.28s ease;
+      }
+
+      .slides-doc .fn-arc.is-on {
+        opacity: 1;
+      }
+
+      .slides-doc .fn-side-panel {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 0.65cqw;
+        min-height: 0;
+        min-width: 0;
+      }
+
+      .slides-doc .fn-ctrl-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.4cqw;
+        flex-wrap: nowrap;
+      }
+
+      .slides-doc .fn-btns {
+        display: flex;
+        align-items: center;
+        gap: 0.32cqw;
+      }
+
+      .slides-doc .fn-btn {
+        border: 1px solid var(--c-line);
+        background: var(--bg);
+        color: var(--c-fg);
+        border-radius: 6px;
+        padding: 0.25em 0.58em;
+        font-family: inherit;
+        font-size: 0.76em;
+        font-weight: 700;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      .slides-doc .fn-btn:hover {
+        border-color: var(--c-fg);
+      }
+
+      .slides-doc .fn-btn.is-play {
+        background: #2563eb;
+        border-color: #2563eb;
+        color: #ffffff;
+      }
+
+      .slides-doc .fn-dots {
+        display: flex;
+        align-items: center;
+        gap: 0.2cqw;
+      }
+
+      .slides-doc .fn-dot {
+        width: 1.42em;
+        height: 1.42em;
+        border-radius: 50%;
+        border: 1px solid var(--c-line);
+        background: var(--bg);
+        color: var(--c-muted);
+        font-family: var(--font-monospace);
+        font-size: 0.68em;
+        font-weight: 700;
+        padding: 0;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+      }
+
+      .slides-doc .fn-dot.is-on {
+        background: var(--c-fg);
+        border-color: var(--c-fg);
+        color: var(--c-bg);
+      }
+
+      /* 2p 전용 14단계 세로 막대 인디케이터 (||||||||||||||) */
+      .slides-doc .cs-bars {
+        display: flex;
+        align-items: center;
+        gap: 0.28cqw;
+        padding: 0 0.15cqw;
+      }
+
+      .slides-doc .cs-bar {
+        position: relative;
+        width: 0.24cqw;
+        min-width: 2.5px;
+        height: 1.05em;
+        border: none;
+        border-radius: 99px;
+        background: #cbd5e1;
+        padding: 0;
+        cursor: pointer;
+        transition: background-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+      }
+
+      .slides-doc .cs-bar::before {
+        content: '';
+        position: absolute;
+        inset: -4px -2px;
+      }
+
+      .slides-doc .cs-bar:hover {
+        background: #64748b;
+      }
+
+      .slides-doc .cs-bar.is-on {
+        background: #2563eb;
+        transform: scaleY(1.34);
+        box-shadow: 0 0 0 1.5px rgba(37, 99, 235, 0.3);
+      }
+
+      .slides-doc .fn-status-card {
+        border: 1.5px solid #93c5fd;
+        background: #eff6ff;
+        color: #1e293b;
+        border-radius: 8px;
+        padding: 0.55cqw 0.85cqw;
+        display: flex;
+        flex-direction: column;
+        gap: 0.2cqw;
+      }
+
+      .slides-doc .fn-status-card[data-tone="callee"] {
+        background: #f5f3ff;
+        border-color: #c4b5fd;
+      }
+
+      .slides-doc .fn-status-card[data-tone="ret"] {
+        background: #ecfdf5;
+        border-color: #6ee7b7;
+      }
+
+      .slides-doc .fn-status-card[data-tone="warn"] {
+        background: #fffbeb;
+        border-color: #fcd34d;
+      }
+
+      .slides-doc .fn-status-card[data-tone="crash"] {
+        background: #fef2f2;
+        border-color: #f87171;
+      }
+
+      .slides-doc .fn-status-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5em;
+        font-size: 0.82em;
+        font-weight: 800;
+      }
+
+      .slides-doc .fn-pc-badge {
+        font-family: var(--font-monospace);
+        font-size: 0.84em;
+        padding: 0.08em 0.48em;
+        border-radius: 99px;
+        background: #1e293b;
+        color: #fde047;
+        white-space: nowrap;
+      }
+
+      .slides-doc .fn-status-desc {
+        font-size: 0.76em;
+        line-height: 1.38;
+        color: #334155;
+      }
+
+      .slides-doc .fn-frames {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.7cqw;
+      }
+
+      .slides-doc .fn-frame-box {
+        border: 1.5px solid var(--c-line);
+        border-radius: 8px;
+        background: var(--bg);
+        padding: 0.55cqw 0.75cqw;
+        display: flex;
+        flex-direction: column;
+        gap: 0.3cqw;
+        transition: opacity 0.25s ease, border-color 0.25s ease;
+      }
+
+      .slides-doc .fn-frame-box.is-inactive {
+        opacity: 0.48;
+        border-style: dashed;
+      }
+
+      .slides-doc .fn-frame-box.is-live {
+        border-color: #7c3aed;
+      }
+
+      .slides-doc .fn-frame-title {
+        font-size: 0.78em;
+        font-weight: 800;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .slides-doc .fn-vars {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.3cqw;
+        font-family: 'D2Coding', 'Consolas', monospace;
+        font-size: 0.76em;
+      }
+
+      .slides-doc .fn-var {
+        padding: 0.14em 0.45em;
+        border-radius: 4px;
+        background: var(--c-sunken);
+        border: 1px solid var(--c-line);
+      }
+
+      .slides-doc .fn-var.is-changed {
+        background: #fef9c3;
+        border-color: #facc15;
+        color: #854d0e;
+        font-weight: 800;
+      }
+
+      .slides-doc .fn-term-bar {
+        background: #0f172a;
+        color: #86efac;
+        border-radius: 7px;
+        padding: 0.45cqw 0.8cqw;
+        font-family: 'D2Coding', 'Consolas', monospace;
+        font-size: 0.78em;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      /* ---------- 2p 8바이트 HEX 메모리 덤프 시뮬레이터 전용 ---------- */
+      .slides-doc .cs-left-col {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 0.45cqw;
+        min-height: 0;
+        min-width: 0;
+      }
+
+      .slides-doc .fn-btn.is-help {
+        background: var(--c-sunken);
+      }
+
+      .slides-doc .fn-btn.is-help[aria-expanded="true"] {
+        background: #0f172a;
+        border-color: #0f172a;
+        color: #fde047;
+      }
+
+      /* 플로팅 단계 설명 팝업 (기본 숨김 — 지면 차지 0) */
+      .slides-doc .cs-help-pop {
+        position: absolute;
+        left: 0.5cqw;
+        right: 0.5cqw;
+        bottom: 0.5cqw;
+        z-index: 12;
+        border-radius: 9px;
+        border: 1.5px solid #60a5fa;
+        background: rgba(15, 23, 42, 0.96);
+        color: #f8fafc;
+        padding: 0.65cqw 0.85cqw;
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+        display: flex;
+        flex-direction: column;
+        gap: 0.25cqw;
+      }
+
+      .slides-doc .cs-help-pop[hidden] {
+        display: none !important;
+      }
+
+      .slides-doc .cs-help-pop[data-tone="crash"] {
+        border-color: #f87171;
+      }
+
+      .slides-doc .cs-help-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5em;
+        font-size: 0.78em;
+        font-weight: 800;
+        color: #fde047;
+      }
+
+      .slides-doc .cs-help-close {
+        border: none;
+        background: transparent;
+        color: #94a3b8;
+        font-size: 1.05em;
+        line-height: 1;
+        cursor: pointer;
+        padding: 0 0.2em;
+      }
+
+      .slides-doc .cs-help-close:hover {
+        color: #ffffff;
+      }
+
+      .slides-doc .cs-help-desc {
+        font-size: 0.74em;
+        line-height: 1.42;
+        color: #e2e8f0;
+      }
+
+      .slides-doc .cs-hex-panel {
+        border: 1.5px solid var(--c-line);
+        border-radius: 10px;
+        background: var(--bg);
+        padding: 0.55cqw 0.75cqw;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 0.35cqw;
+        min-height: 0;
+        min-width: 0;
+      }
+
+      .slides-doc .cs-hex-panel.is-corrupted {
+        border-color: #ef4444;
+      }
+
+      .slides-doc .cs-hex-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.4cqw;
+        font-size: 0.72em;
+        font-weight: 700;
+        flex-wrap: nowrap;
+      }
+
+      .slides-doc .cs-sp-readout {
+        font-family: 'D2Coding', 'Consolas', monospace;
+        font-weight: 800;
+        color: #1e3a8a;
+        background: #dbeafe;
+        border: 1px solid #93c5fd;
+        border-radius: 5px;
+        padding: 0.1em 0.48em;
+        white-space: nowrap;
+      }
+
+      .slides-doc .cs-sp-readout.is-corrupted {
+        color: #991b1b;
+        background: #fee2e2;
+        border-color: #fca5a5;
+      }
+
+      .slides-doc .cs-legend {
+        display: flex;
+        align-items: center;
+        gap: 0.45cqw;
+        font-size: 0.92em;
+        color: var(--c-muted);
+        white-space: nowrap;
+      }
+
+      .slides-doc .cs-lg {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.24em;
+      }
+
+      .slides-doc .cs-lg i {
+        display: inline-block;
+        width: 0.72em;
+        height: 0.72em;
+        border-radius: 2px;
+      }
+
+      .slides-doc .cs-hex-grid {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 0.2cqw;
+      }
+
+      /* 10열 구조: 1열(주소헤더) | 2,3,4,5열(+0~+3) | 6열(구분여백) | 7,8,9,10열(+4~+7) */
+      .slides-doc .cs-hex-row {
+        display: grid;
+        grid-template-columns: 6.4em repeat(4, minmax(0, 1fr)) 0.45em repeat(4, minmax(0, 1fr));
+        gap: 0.22cqw;
+        align-items: center;
+        font-family: 'D2Coding', 'Consolas', monospace;
+        font-size: 0.74em;
+        line-height: 1.15;
+      }
+
+      .slides-doc .cs-hex-row.is-head {
+        font-size: 0.68em;
+        font-weight: 800;
+        color: #64748b;
+        padding-bottom: 0.12cqw;
+        border-bottom: 1px solid var(--c-line);
+      }
+
+      .slides-doc .cs-hex-row.is-head > span {
+        text-align: center;
+      }
+
+      .slides-doc .cs-hex-row.is-head > span:first-child {
+        text-align: left;
+        padding-left: 0.25em;
+      }
+
+      .slides-doc .cs-addr-cell {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.2em;
+        padding: 0.22em 0.38em;
+        border-radius: 4px;
+        background: #f1f5f9;
+        color: #475569;
+        font-weight: 700;
+        font-size: 0.92em;
+        border-left: 3px solid #94a3b8;
+        white-space: nowrap;
+      }
+
+      .slides-doc .cs-addr-cell.is-adj-addr {
+        background: #ecfdf5;
+        color: #065f46;
+        border-left-color: #10b981;
+      }
+
+      .slides-doc .cs-addr-cell.is-sp-addr {
+        background: #0f172a;
+        color: #ffffff;
+        border-left-color: #fde047;
+      }
+
+      .slides-doc .cs-addr-cell.is-corrupt-addr {
+        background: #7f1d1d;
+        color: #fecaca;
+        border-left-color: #ef4444;
+      }
+
+      .slides-doc .cs-sp-pill {
+        font-size: 0.8em;
+        font-weight: 900;
+        color: #fde047;
+        letter-spacing: -0.02em;
+      }
+
+      .slides-doc .cs-gap-col {
+        display: block;
+        width: 100%;
+        height: 65%;
+        border-left: 1px dashed #cbd5e1;
+        margin: 0 auto;
+      }
+
+      .slides-doc .cs-byte {
+        text-align: center;
+        padding: 0.24em 0.1em;
+        border-radius: 4px;
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+        color: #94a3b8;
+        font-weight: 600;
+        transition: background-color 0.22s ease, color 0.22s ease, border-color 0.22s ease, transform 0.2s ease;
+        user-select: none;
+      }
+
+      /* 인접한 타 메모리 영역 (스택 바깥 기존 데이터) */
+      .slides-doc .cs-byte.is-adj {
+        background: #ecfdf5;
+        border-color: #6ee7b7;
+        color: #065f46;
+        font-weight: 700;
+      }
+
+      /* 활성 스택 프레임 내 미초기화 바이트 (랜덤값 유지) */
+      .slides-doc .cs-byte.is-frame-raw {
+        background: #f1f5f9;
+        border: 1px dashed #94a3b8;
+        color: #64748b;
+      }
+
+      /* 활성 스택 프레임 내 기록된 바이트 */
+      .slides-doc .cs-byte.is-active-mem {
+        background: #eff6ff;
+        border-color: #93c5fd;
+        color: #1e3a8a;
+        font-weight: 700;
+      }
+
+      /* 함수 복귀(return) 후 지워지지 않고 남아있는 잔류 바이트 */
+      .slides-doc .cs-byte.is-residual {
+        background: #fffbeb;
+        border: 1px dashed #f59e0b;
+        color: #b45309;
+        font-weight: 700;
+      }
+
+      /* 현재 단계에서 메모리에 방금 써진 바이트 하이라이트! */
+      .slides-doc .cs-byte.is-written {
+        background: #fef08a;
+        border-color: #eab308;
+        color: #713f12;
+        font-weight: 900;
+        box-shadow: 0 0 0 1.5px rgba(234, 179, 8, 0.42);
+      }
+
+      /* 3단계(func1 호출) 전용 메모리 내 return · 전달인자 라벨 및 바이트 구분 */
+      .slides-doc .cs-hex-row.cs-call-tags {
+        margin-bottom: -0.1cqw;
+      }
+
+      .slides-doc .cs-hex-row.cs-call-tags[hidden] {
+        display: none !important;
+      }
+
+      .slides-doc .cs-call-tag {
+        text-align: center;
+        font-size: 0.84em;
+        font-weight: 800;
+        padding: 0.08em 0.3em;
+        border-radius: 4px;
+        line-height: 1.15;
+        white-space: nowrap;
+      }
+
+      .slides-doc .cs-call-tag.is-ret {
+        grid-column: 2 / 6;
+        background: #ede9fe;
+        color: #5b21b6;
+        border: 1px solid #a78bfa;
+      }
+
+      .slides-doc .cs-call-tag.is-arg {
+        grid-column: 7 / 11;
+        background: #dbeafe;
+        color: #1e40af;
+        border: 1px solid #60a5fa;
+      }
+
+      .slides-doc .cs-byte.is-step3-ret {
+        background: #f3e8ff;
+        border-color: #7c3aed;
+        color: #4c1d95;
+        font-weight: 900;
+        box-shadow: 0 0 0 1.5px rgba(124, 58, 237, 0.35);
+      }
+
+      .slides-doc .cs-byte.is-step3-arg {
+        background: #fef08a;
+        border-color: #2563eb;
+        color: #1e3a8a;
+        font-weight: 900;
+        box-shadow: 0 0 0 1.5px rgba(37, 99, 235, 0.35);
+      }
+
+      /* 스택 한계 침범으로 타 영역 메모리를 오염시킨 바이트 하이라이트! */
+      .slides-doc .cs-byte.is-corrupt {
+        background: #fee2e2;
+        border-color: #dc2626;
+        color: #991b1b;
+        font-weight: 900;
+        box-shadow: 0 0 0 1.5px rgba(220, 38, 38, 0.42);
+      }
+
+      .slides-doc .cs-limit-line {
+        display: flex;
+        align-items: center;
+        gap: 0.45em;
+        font-size: 0.65em;
+        font-weight: 800;
+        color: #dc2626;
+        padding: 0.04cqw 0;
+        white-space: nowrap;
+      }
+
+      .slides-doc .cs-limit-line::before,
+      .slides-doc .cs-limit-line::after {
+        content: '';
+        flex: 1;
+        border-top: 1.6px dashed #ef4444;
+      }
+
+      .slides-doc .fn-cue-hooks {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      /* ---------- 슬라이드별 하단 첨부 (슬라이드 - 설명 - 첨부 <details> 형식) ---------- */
+      .slides-doc .c-slide-att {
+        max-width: var(--sl-prose-w);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 4px;
+      }
+
+      .slides-doc .c-slide-att > details {
+        border: 1px solid var(--c-line);
+        border-radius: 8px;
+        background: #fafaf9;
+        overflow: hidden;
+      }
+
+      .slides-doc .c-slide-att > details[open] {
+        background: #ffffff;
+      }
+
+      .slides-doc .c-slide-att > details > summary {
+        padding: 9px 14px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--c-fg);
+        cursor: pointer;
+        user-select: none;
+        background: #f8fafc;
+      }
+
+      .slides-doc .c-slide-att > details[open] > summary {
+        border-bottom: 1px solid var(--c-line);
+      }
+
+      .slides-doc .c-att-body {
+        padding: 14px 18px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        font-size: 0.96rem;
+        line-height: 1.68;
+        color: var(--c-fg);
+      }
+
+      .slides-doc .c-att-body h3 {
+        margin: 6px 0 0;
+        font-size: 1.04rem;
+        font-weight: 800;
+        color: var(--c-fg);
+      }
+
+      .slides-doc .c-att-body .blockquote-title {
+        margin: 4px 0 -4px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #334155;
+      }
+
+      .slides-doc .c-att-body blockquote {
+        padding: 10px 14px;
+        border-left: 3px solid #94a3b8;
+        background: #f8fafc;
+        border-radius: 0 6px 6px 0;
+        overflow-x: auto;
+      }
+
+      .slides-doc .c-att-body pre {
+        margin: 0;
+        font-family: 'D2Coding', 'Consolas', monospace;
+        font-size: 0.9em;
+        line-height: 1.5;
+        overflow-x: auto;
+      }
+
+      .slides-doc .c-att-body ul {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .slides-doc .c-att-body li > blockquote {
+        margin-top: 6px;
+      }
+
+      .slides-doc .c-att-body .simple-box {
+        padding: 12px 14px;
+        border: 1px solid var(--c-line);
+        border-radius: 8px;
+        background: #f8fafc;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .slides-doc .c-att-body .simple-box hr {
+        width: 100%;
+        border: 0;
+        border-top: 1px solid var(--c-line);
+        margin: 2px 0;
+      }
+
+      .slides-doc .c-att-body #function-term {
+        border: 1px solid var(--c-line);
+      }
+
+      .slides-doc .c-att-body #function-term caption {
+        font-weight: 700;
+        font-size: 0.92em;
+        color: var(--c-muted);
+        padding-bottom: 6px;
+        text-align: left;
+      }
+
+      .slides-doc .c-att-body #function-term th,
+      .slides-doc .c-att-body #function-term td {
+        border: 1px solid var(--c-line);
+        vertical-align: middle;
+      }
+
+      .slides-doc .c-att-body #function-term th:nth-child(1),
+      .slides-doc .c-att-body #function-term th:nth-child(2),
+      .slides-doc .c-att-body #function-term td:nth-child(1),
+      .slides-doc .c-att-body #function-term td:nth-child(2) {
+        white-space: nowrap;
+        text-align: center;
+      }
+
+      @container sl-slide (max-width: 560px) {
+        .slides-doc .c-slide-head-row {
+          padding-right: 0;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 6px;
+        }
+        .slides-doc .fn-sim,
+        .slides-doc .fn-sim.is-stack-sim {
+          grid-template-columns: minmax(0, 1fr);
+          gap: 12px;
+        }
+        .slides-doc .fn-code-panel,
+        .slides-doc .cs-hex-panel {
+          padding: 9px;
+        }
+        .slides-doc .fn-pc-bar,
+        .slides-doc .fn-jump-svg,
+        .slides-doc .cs-legend {
+          display: none;
+        }
+        .slides-doc .fn-line.is-active {
+          background: rgba(37, 99, 235, 0.35);
+          border-radius: 4px;
+        }
+        .slides-doc .fn-side-panel,
+        .slides-doc .cs-left-col,
+        .slides-doc .cs-hex-grid {
+          gap: 6px;
+        }
+        .slides-doc .cs-hex-row {
+          grid-template-columns: 5.4em repeat(4, minmax(0, 1fr)) 0.25em repeat(4, minmax(0, 1fr));
+          font-size: 0.68em;
+          gap: 2px;
+        }
+        .slides-doc .fn-status-card,
+        .slides-doc .fn-frame-box,
+        .slides-doc .fn-term-bar {
+          padding: 7px 9px;
+        }
+        .slides-doc .c-rich-svg {
+          height: auto;
+        }
+      }
+    </style>
+
+    <!-- ==================== 함수 단원 슬라이드 (1p ~ 3p) ==================== -->
+    <div class="slides-doc" data-page="c-function" lang="ko">
+      <h1 class="sl-chapter">함수의 구조와 메모리 동작 원리</h1>
+
+      <!-- 1p. 함수의 구조와 실행 라인 이동 시뮬레이터 -->
+      <section id="fn-s1" data-title="1 함수의 구조와 호출 흐름 시뮬레이터">
+        <h2>함수의 구조와 호출 흐름 시뮬레이터</h2>
+        <div class="slide-frame">
+          <div class="slide">
+            <div class="slide-body">
+              <div>
+                <span class="slide-eyebrow"><b class="slide-no">1</b>C 언어 · 함수 · 호출 라인 시뮬레이터</span>
+                <div class="slide-title" role="heading" aria-level="3">함수의 구조와 호출 라인 이동 시뮬레이터</div>
+              </div>
+              <ul class="points">
+                <li data-key="p1proto"><b>선언과 정의</b>: 위에서 아래로 읽는 C 컴파일러를 위해 프로토타입(<code>;</code> 시제품 선언)으로 개형을 먼저 등록</li>
+                <li data-key="p1flow"><b>호출과 복귀</b>: 호출 줄에서 인자(Argument)를 넘겨 함수로 점프하고, <code>return</code>을 만나면 원래 줄로 값을 들고 복귀</li>
+              </ul>
+
+              <div class="fn-cue-hooks" aria-hidden="true">
+                <i data-key="sim-s0"></i>
+                <i data-key="sim-s2"></i>
+                <i data-key="sim-s3"></i>
+                <i data-key="sim-s5"></i>
+                <i data-key="sim-s6"></i>
+                <i data-key="sim-s7"></i>
+              </div>
+
+              <div class="fn-sim" id="fn-sim-root">
+                <div class="fn-code-panel" data-key="sim-code">
+                  <div class="fn-code-top">
+                    <span>main.c · 줄을 클릭하거나 우측 버튼으로 실행해보세요</span>
+                    <span id="fn-sim-step-label">STEP 1 / 8</span>
+                  </div>
+                  <div class="fn-code-lines">
+                    <div class="fn-pc-bar" id="fn-pc-bar" data-tone="prep"></div>
+
+                    <div class="fn-line is-active" data-row="0" data-step-jump="0"><span class="ptr">▶</span><span class="ln">1</span><span><span class="fn-kw">int</span> <span class="fn-fn">Max</span>(<span class="fn-kw">int</span> a, <span class="fn-kw">int</span> b); <span class="fn-cmt">// 프로토타입 선언</span></span></div>
+                    <div class="fn-line" data-row="1" data-step-jump="1"><span class="ptr">▶</span><span class="ln">2</span><span><span class="fn-kw">int</span> <span class="fn-fn">main</span>(<span class="fn-kw">void</span>) {</span></div>
+                    <div class="fn-line" data-row="2" data-step-jump="2"><span class="ptr">▶</span><span class="ln">3</span><span>  <span class="fn-kw">int</span> x = <span class="fn-num">3</span>, y = <span class="fn-num">7</span>;</span></div>
+                    <div class="fn-line" data-row="3" data-step-jump="3"><span class="ptr">▶</span><span class="ln">4</span><span>  <span class="fn-kw">int</span> res = <span class="fn-fn">Max</span>(x, y); <span class="fn-cmt">// 호출 ➔ 복귀</span></span></div>
+                    <div class="fn-line" data-row="4" data-step-jump="7"><span class="ptr">▶</span><span class="ln">5</span><span>  printf(<span class="fn-str">"max=%d\n"</span>, res);</span></div>
+                    <div class="fn-line" data-row="5" data-step-jump="7"><span class="ptr">▶</span><span class="ln">6</span><span>  <span class="fn-kw">return</span> <span class="fn-num">0</span>;</span></div>
+                    <div class="fn-line" data-row="6"><span class="ptr"></span><span class="ln">7</span><span>}</span></div>
+                    <div class="fn-line" data-row="7" data-step-jump="4"><span class="ptr">▶</span><span class="ln">8</span><span><span class="fn-kw">int</span> <span class="fn-fn">Max</span>(<span class="fn-kw">int</span> a, <span class="fn-kw">int</span> b) { <span class="fn-cmt">// 함수 정의</span></span></div>
+                    <div class="fn-line" data-row="8" data-step-jump="5"><span class="ptr">▶</span><span class="ln">9</span><span>  <span class="fn-kw">int</span> m = (a &gt; b) ? a : b;</span></div>
+                    <div class="fn-line" data-row="9" data-step-jump="6"><span class="ptr">▶</span><span class="ln">10</span><span>  <span class="fn-kw">return</span> m; <span class="fn-cmt">// 값 반환 후 복귀</span></span></div>
+                    <div class="fn-line" data-row="10"><span class="ptr"></span><span class="ln">11</span><span>}</span></div>
+                  </div>
+
+                  <svg class="fn-jump-svg" viewBox="0 0 110 220" preserveAspectRatio="none">
+                    <defs>
+                      <marker id="fnJumpBlue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                        <path d="M1,1.5 L8.5,5 L1,8.5 Z" fill="#38bdf8"/>
+                      </marker>
+                      <marker id="fnJumpGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                        <path d="M1,1.5 L8.5,5 L1,8.5 Z" fill="#34d399"/>
+                      </marker>
+                    </defs>
+                    <g class="fn-arc" id="fn-arc-call">
+                      <path d="M18,68 C68,68 68,148 20,148" fill="none" stroke="#38bdf8" stroke-width="2.4" marker-end="url(#fnJumpBlue)"/>
+                      <rect x="30" y="96" width="76" height="20" rx="10" fill="#0284c7"/>
+                      <text x="68" y="110" text-anchor="middle" font-size="10" font-weight="800" fill="#ffffff">호출 (3, 7)</text>
+                    </g>
+                    <g class="fn-arc" id="fn-arc-ret">
+                      <path d="M22,188 C98,188 98,74 24,74" fill="none" stroke="#34d399" stroke-width="2.4" stroke-dasharray="4 2" marker-end="url(#fnJumpGreen)"/>
+                      <rect x="32" y="132" width="74" height="20" rx="10" fill="#059669"/>
+                      <text x="69" y="146" text-anchor="middle" font-size="10" font-weight="800" fill="#ffffff">return 7</text>
+                    </g>
+                  </svg>
+                </div>
+
+                <div class="fn-side-panel">
+                  <div class="fn-ctrl-bar">
+                    <div class="fn-btns">
+                      <button type="button" class="fn-btn" id="fn-prev" title="이전 단계">◀ 이전</button>
+                      <button type="button" class="fn-btn is-play" id="fn-play" title="끝까지 1회 실행">▶ 실행</button>
+                      <button type="button" class="fn-btn" id="fn-next" title="다음 단계">다음 ▶</button>
+                      <button type="button" class="fn-btn" id="fn-reset" title="처음으로">↺</button>
+                    </div>
+                    <div class="fn-dots" id="fn-dots">
+                      <button type="button" class="fn-dot is-on" data-step="0">1</button>
+                      <button type="button" class="fn-dot" data-step="1">2</button>
+                      <button type="button" class="fn-dot" data-step="2">3</button>
+                      <button type="button" class="fn-dot" data-step="3">4</button>
+                      <button type="button" class="fn-dot" data-step="4">5</button>
+                      <button type="button" class="fn-dot" data-step="5">6</button>
+                      <button type="button" class="fn-dot" data-step="6">7</button>
+                      <button type="button" class="fn-dot" data-step="7">8</button>
+                    </div>
+                  </div>
+
+                  <div class="fn-status-card" id="fn-status-card" data-tone="prep">
+                    <div class="fn-status-head">
+                      <span id="fn-status-title">① 프로토타입 선언 확인</span>
+                      <span class="fn-pc-badge" id="fn-pc-badge">1행 · 선언</span>
+                    </div>
+                    <div class="fn-status-desc" id="fn-status-desc">컴파일러에게 "아래쪽에 int 두 개를 받아 int를 돌려주는 Max 함수가 있다"고 미리 등록합니다(실행 동작 없음).</div>
+                  </div>
+
+                  <div class="fn-frames">
+                    <div class="fn-frame-box" id="fn-box-main">
+                      <div class="fn-frame-title"><span>main() 프레임</span><span id="fn-main-state">준비</span></div>
+                      <div class="fn-vars" id="fn-main-vars">
+                        <span class="fn-var">x: -</span>
+                        <span class="fn-var">y: -</span>
+                        <span class="fn-var">res: -</span>
+                      </div>
+                    </div>
+                    <div class="fn-frame-box is-inactive" id="fn-box-max">
+                      <div class="fn-frame-title"><span>Max(a, b) 프레임</span><span id="fn-max-state">미생성</span></div>
+                      <div class="fn-vars" id="fn-max-vars">
+                        <span class="fn-var">호출 전 대기</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="fn-term-bar">
+                    <span id="fn-term-out">&gt; 콘솔 출력 대기 중...</span>
+                    <span style="color:#64748b">stdout</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="script">
+          <p data-cue="p1proto:check sim-s0:box">첫 번째 슬라이드는 함수가 호출될 때 프로그램의 실행 줄이 어떻게 이동하고 복귀하는지 직접 눈으로 확인할 수 있는 시뮬레이터입니다. 맨 위 1행의 프로토타입 선언은 위에서 아래로 코드를 읽는 C 컴파일러에게 뒤에 등장할 <code>Max</code> 함수의 반환형과 인자 개형을 미리 등록해 주는 시제품 선언이며, 보통 헤더(<code>.h</code>) 파일에 모아 둡니다.</p>
+          <p data-cue="sim-s2:box">실제 프로그램 실행은 언제나 2행 <code>main</code> 함수부터 출발합니다. 3행에서 지역변수 <code>x</code>에 3, <code>y</code>에 7을 준비한 뒤 4행에서 <code>Max(x, y)</code>를 만나는 순간 함수 호출이 일어납니다.</p>
+          <p data-cue="p1flow:check sim-s3:box">4행에서 호출이 일어나면 CPU는 나중에 돌아올 위치(4행)를 기억해 둔 채, 전달인자(Argument) 3과 7을 복사해 들고 8행의 <code>Max</code> 함수 정의 위치로 실행 줄을 곧장 점프시킵니다. 이때 <code>Max</code> 입장에서 전달받는 변수 <code>a</code>와 <code>b</code>를 매개변수(Parameter)라고 부릅니다.</p>
+          <p data-cue="sim-s5:box">이어서 9행 함수 본체(Body)에서 두 값을 비교해 더 큰 값 7을 지역변수 <code>m</code>에 저장합니다. 참고로 C++에서는 함수 이름이 같더라도 매개변수의 개수나 타입이 다르면 서로 다른 함수로 구분해 호출해 주는 오버로딩을 지원하지만, 반환형만 다른 것은 구분 기준이 되지 않습니다.</p>
+          <p data-cue="sim-s6:box">10행에서 <code>return m</code>을 수행하는 즉시 <code>Max</code> 함수의 실행은 종료되고, <code>Max</code> 안에서 쓰던 지역변수 메모리는 회수되며 결과값 7만 들고 아까 호출했던 4행 대입식 자리로 정확히 복귀합니다.</p>
+          <p data-cue="sim-s7:box"><mark>복귀한 뒤에는 <code>res</code>에 7을 대입하고 그 다음 줄인 5행 <code>printf</code>로 자연스럽게 내려가 출력을 마칩니다.</mark> 오른쪽 위의 실행 단추나 각 코드 줄을 직접 눌러 실행 흐름이 점프했다가 돌아오는 모습을 확인해 보세요.</p>
+          <p class="meta"><time datetime="2026-11-17">2026-11-17</time> · 「▶ 실행」을 누르면 마지막 8단계까지 진행한 뒤 멈춥니다</p>
+        </div>
+
+        <div class="c-slide-att">
+          <details>
+            <summary>첨부 · 용어 (Term)</summary>
+            <div class="c-att-body">
+              <table id="function-term">
+                <caption>함수와 관련된 용어</caption>
+                <thead>
+                  <tr>
+                    <th>용어</th>
+                    <th>한국어</th>
+                    <th>의미</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>function</td>
+                    <td rowspan="2">함수</td>
+                    <td>입력과 출력을 갖는 논리 구조</td>
+                  </tr>
+                  <tr>
+                    <td>method</td>
+                    <td>메서드method: 객체가 가진 함수</td>
+                  </tr>
+                  <tr>
+                    <td>argument</td>
+                    <td rowspan="2">(전달)인자</td>
+                    <td>
+                      아규먼트argument: 함수에게 전달하는 정보<br>
+                      args(argument string) = 문자열<br>
+                      argc(argument count) = 정보의 갯수
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>parameter</td>
+                    <td>param(파라메터): argument를 전달받는 함수 입장에서 부를 때</td>
+                  </tr>
+                  <tr>
+                    <td>return</td>
+                    <td>반환</td>
+                    <td>리턴return: 함수의 출력</td>
+                  </tr>
+                  <tr>
+                    <td>body</td>
+                    <td>내용</td>
+                    <td>함수내용, 코드블록</td>
+                  </tr>
+                  <tr>
+                    <td>declaration</td>
+                    <td>선언</td>
+                    <td>
+                      등록하는 과정, 선언 문구<br>
+                      prototype(시제품): body가 빠진 선언
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>definition</td>
+                    <td>정의</td>
+                    <td>
+                      코드블록이 포함된 문구<br>
+                      ※ go to definition: 함수로 이동
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>call</td>
+                    <td>호출</td>
+                    <td>함수 수행</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p>
+                * 함수가 호출되기 위해서는 반드시 '정의'가 되어있어야 합니다. '선언'되었다는 표현은 일반적으로 맞을 수 있지만, 엄밀하게 말하면 등록하는 과정을 의미하므로, 수동으로 등록하는 과정을 거친다면(옵션), 두 과정(정의와 선언)을 혼돈해서는 안 될 것입니다.
+              </p>
+            </div>
+          </details>
+
+          <details>
+            <summary>첨부 · 문법 (Syntax)</summary>
+            <div class="c-att-body">
+              <div class="blockquote-title">함수를 정의 할 때</div>
+              <blockquote>
+                <pre>[리턴형] 함수이름([전달인자]) {
+  내용;
+  return [리턴 변수];
+}</pre>
+              </blockquote>
+              <div class="blockquote-title">함수를 호출 할 때</div>
+              <blockquote>
+                [리턴 받을 변수] = 함수이름([전달인자]);
+              </blockquote>
+              <div class="blockquote-title">예시</div>
+              <blockquote>
+                <pre>int Max(int a, int b){
+  int max = (a &gt; b)?a:b;
+  return max;
+}</pre>
+              </blockquote>
+              <p>
+                함수는 기능을 하나로 묶어서 호출이 되었을 때, 기술된 내용을 수행합니다.
+              </p>
+              <ul>
+                <li>전달인자(Argument)는 여러개이거나 생략될 수 있습니다.</li>
+                <li>전달인자는 넘겨주는 타입과 순서가 중요합니다.</li>
+                <li>리턴(return)은 한개 또는 생략만 가능합니다.</li>
+                <li>리턴을 생략할 땐, void를 명시해야 합니다.
+                  <blockquote>
+                    <em>void</em> setName(char[] name) { ... }
+                  </blockquote>
+                </li>
+                <li>리턴이 수행되면, 그 행에서 함수가 종료되고, 호출한 함수로 돌아갑니다.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details>
+            <summary>첨부 · 참조 — 프로토타입과 헤더 (Prototype &amp; Header)</summary>
+            <div class="c-att-body">
+              <h3>프로토타입 (Prototype)</h3>
+              <p>
+                근래의 언어는 컴파일러가 명시된 모든 엘리먼트를 1차적으로 리스트업합니다.
+                반면, C언어는 코드를 위에서부터 순차적으로 파싱(parsing; 해석)하기 때문에, 뒤에 어떠한 내용이 등장 할 것이라고 미리 알려주는 작업을 수행하여야 합니다.
+                프로토타입(prototype; 시제품)은 함수의 개형 정보를 컴파일러에게 전달하는 역할을 합니다.<br>
+                함수의 바디(body; 내용)을 작성하지 않고 세미콜론(;)으로 마무리하면 됩니다. 함수의 정의가 존재해야 합니다.
+              </p>
+              <div class="blockquote-title">프로토타입 문법</div>
+              <blockquote>
+                [반환형] [함수명]([전달인자]...)<em>;</em>
+              </blockquote>
+              <div class="blockquote-title">예시</div>
+              <blockquote>
+                int max(int a, int b);
+              </blockquote>
+
+              <h3>헤더 (Header)</h3>
+              <p>
+                함수의 프로토타입을 선언하면, 실제 함수의 정의가 반드시 존재해야 합니다.
+                하지만 반드시 같은 파일이나 내가 작성한 파일에 존재해야 하는 것은 아닙니다.
+                프로토타입의 정보는 코딩에 대한 본질적인 내용이 아니고, 컴파일에 필요한 메타 정보 입니다.
+                이를 header라고 하고, .h라는 확장자를 사용합니다. 그리고 이 헤더를 불러올 때는 #include 예약어를 사용합니다.
+              </p>
+              <div class="blockquote-title">헤더파일 예시</div>
+              <blockquote>
+                #include &lt;stdio.h&gt;
+              </blockquote>
+              <p>
+                stdio(StanDard Input / Output)는 입출력과 관련된 함수를 가지고 있습니다.
+                따라서 stdio.h에는 다음과 같은 내용을 확인 할 수 있습니다(minGW64기준입니다).
+              </p>
+              <div class="blockquote-title">stdio.h 발췌</div>
+              <blockquote>
+                int printf (const char *__format, ...)
+              </blockquote>
+              <div class="simple-box">
+                <p><b>문제 해결 (undefined reference to ~)</b></p>
+                <hr>
+                <p>
+                  여러 파일로 나뉜 코드를 단일 파일 방식으로 빌드하려고 할 때 링크 오류가 발생할 수 있습니다. 파일 하나를 컴파일 할 때 명령어는:
+                </p>
+                <blockquote>
+                  gcc -o execute_file foo.cpp
+                </blockquote>
+                <p>
+                  이 명령어를 수행하면 execute_file.exe파일이 생성됩니다.<br>
+                  만약 추가로 컴파일이 필요한 파일을 함께 묶으려면:
+                </p>
+                <blockquote>
+                  gcc -o execute_file foo.cpp bar.cpp
+                </blockquote>
+                <p>
+                  해당 폴더에 포함된 모든 cpp파일을 추가하려고 하면 다음과 같이 작성할 수 있습니다.
+                </p>
+                <blockquote>
+                  gcc -o execute_file *.cpp
+                </blockquote>
+              </div>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- 2p. 콜 스택 HEX 메모리 덮어쓰기 & 오버플로우 시뮬레이터 -->
+      <section id="fn-s2" data-title="2 콜 스택 HEX 메모리와 오버플로우 시뮬레이터">
+        <h2>콜 스택 HEX 메모리와 오버플로우 시뮬레이터</h2>
+        <div class="slide-frame">
+          <div class="slide">
+            <div class="slide-body">
+              <div class="c-slide-head-row">
+                <div>
+                  <span class="slide-eyebrow"><b class="slide-no">2</b>C 언어 · 함수 · 8-Byte HEX 메모리 덤프 시뮬레이터</span>
+                  <div class="slide-title" role="heading" aria-level="3">콜 스택(Call Stack) HEX 기록·덮어쓰기·오버플로우</div>
+                </div>
+                <a class="c-zoom-pill" data-view data-caption="콜 스택(Call Stack)의 LIFO 동작 원리와 재귀 호출 스택 오버플로우 요약 도식" href="/basicStudy/engineering/language/svg/c-call-stack.svg">🔍 요약 도식</a>
+              </div>
+
+              <div class="fn-cue-hooks" aria-hidden="true">
+                <i data-key="cs-s0"></i>
+                <i data-key="cs-s1"></i>
+                <i data-key="cs-s2"></i>
+                <i data-key="cs-s3"></i>
+                <i data-key="cs-s4"></i>
+                <i data-key="cs-s5"></i>
+                <i data-key="cs-s6"></i>
+                <i data-key="cs-s7"></i>
+                <i data-key="cs-s8"></i>
+                <i data-key="cs-s9"></i>
+                <i data-key="cs-s10"></i>
+                <i data-key="cs-s11"></i>
+                <i data-key="cs-s12"></i>
+                <i data-key="cs-s13"></i>
+              </div>
+
+              <div class="fn-sim is-stack-sim" id="cs-sim-root">
+                <!-- 좌측: 컨트롤러 + 코드 창 (+ 토글형 플로팅 설명 팝업) -->
+                <div class="cs-left-col">
+                  <div class="fn-ctrl-bar">
+                    <div class="fn-btns">
+                      <button type="button" class="fn-btn" id="cs-prev" title="이전 단계">◀</button>
+                      <button type="button" class="fn-btn is-play" id="cs-play" title="끝까지 1회 실행">▶ 실행</button>
+                      <button type="button" class="fn-btn" id="cs-next" title="다음 단계">▶</button>
+                      <button type="button" class="fn-btn" id="cs-reset" title="처음으로">↺</button>
+                      <button type="button" class="fn-btn is-help" id="cs-help-btn" aria-expanded="false" title="단계별 설명 팝업 열기/닫기">? 설명</button>
+                    </div>
+                    <div class="cs-bars" id="cs-dots" role="group" aria-label="시뮬레이터 단계 선택">
+                      <button type="button" class="cs-bar is-on" data-step="0" title="1단계" aria-label="1단계"></button>
+                      <button type="button" class="cs-bar" data-step="1" title="2단계" aria-label="2단계"></button>
+                      <button type="button" class="cs-bar" data-step="2" title="3단계" aria-label="3단계"></button>
+                      <button type="button" class="cs-bar" data-step="3" title="4단계" aria-label="4단계"></button>
+                      <button type="button" class="cs-bar" data-step="4" title="5단계" aria-label="5단계"></button>
+                      <button type="button" class="cs-bar" data-step="5" title="6단계" aria-label="6단계"></button>
+                      <button type="button" class="cs-bar" data-step="6" title="7단계" aria-label="7단계"></button>
+                      <button type="button" class="cs-bar" data-step="7" title="8단계" aria-label="8단계"></button>
+                      <button type="button" class="cs-bar" data-step="8" title="9단계" aria-label="9단계"></button>
+                      <button type="button" class="cs-bar" data-step="9" title="10단계" aria-label="10단계"></button>
+                      <button type="button" class="cs-bar" data-step="10" title="11단계" aria-label="11단계"></button>
+                      <button type="button" class="cs-bar" data-step="11" title="12단계" aria-label="12단계"></button>
+                      <button type="button" class="cs-bar" data-step="12" title="13단계" aria-label="13단계"></button>
+                      <button type="button" class="cs-bar" data-step="13" title="14단계" aria-label="14단계"></button>
+                    </div>
+                  </div>
+
+                  <div class="fn-code-panel" style="flex:1">
+                    <div class="fn-code-top">
+                      <span>stack_hex.c</span>
+                      <span id="cs-step-label">STEP 1 / 14</span>
+                    </div>
+                    <div class="fn-code-lines">
+                      <div class="fn-pc-bar" id="cs-pc-bar" data-tone="prep"></div>
+
+                      <div class="fn-line is-compact" data-row="0" data-step-jump="2"><span class="ptr">▶</span><span class="ln">1</span><span><span class="fn-kw">int</span> <span class="fn-fn">func1</span>(<span class="fn-kw">int</span> a) {</span></div>
+                      <div class="fn-line is-compact" data-row="1" data-step-jump="3"><span class="ptr">▶</span><span class="ln">2</span><span>  <span class="fn-kw">int</span> key = <span class="fn-num">0xABCD8765</span>;</span></div>
+                      <div class="fn-line is-compact" data-row="2" data-step-jump="4"><span class="ptr">▶</span><span class="ln">3</span><span>  <span class="fn-kw">int</span> tmp = a + <span class="fn-num">5</span>; <span class="fn-cmt">// 0000 000F = 0000 000A + 0000 0005</span></span></div>
+                      <div class="fn-line is-compact" data-row="3" data-step-jump="5"><span class="ptr">▶</span><span class="ln">4</span><span>  <span class="fn-kw">return</span> tmp;</span></div>
+                      <div class="fn-line is-compact" data-row="4" data-step-jump="6"><span class="ptr">▶</span><span class="ln">5</span><span>}</span></div>
+                      <div class="fn-line is-compact" data-row="5" data-step-jump="9"><span class="ptr">▶</span><span class="ln">6</span><span><span class="fn-kw">void</span> <span class="fn-fn">func2</span>(<span class="fn-kw">int</span> n) {</span></div>
+                      <div class="fn-line is-compact" data-row="6" data-step-jump="9"><span class="ptr">▶</span><span class="ln">7</span><span>  <span class="fn-kw">int</span> tag = <span class="fn-num">0xCAFE0000</span> + n;</span></div>
+                      <div class="fn-line is-compact" data-row="7" data-step-jump="10"><span class="ptr">▶</span><span class="ln">8</span><span>  <span class="fn-kw">int</span> cnt = n;</span></div>
+                      <div class="fn-line is-compact" data-row="8" data-step-jump="11"><span class="ptr">▶</span><span class="ln">9</span><span>  <span class="fn-fn">func2</span>(n + <span class="fn-num">1</span>); <span class="fn-cmt">// 재귀 호출</span></span></div>
+                      <div class="fn-line is-compact" data-row="9"><span class="ptr"></span><span class="ln">10</span><span>}</span></div>
+                      <div class="fn-line is-compact is-active" data-row="10" data-step-jump="0"><span class="ptr">▶</span><span class="ln">11</span><span><span class="fn-kw">int</span> <span class="fn-fn">main</span>(<span class="fn-kw">void</span>) {</span></div>
+                      <div class="fn-line is-compact" data-row="11" data-step-jump="1"><span class="ptr">▶</span><span class="ln">12</span><span>  <span class="fn-kw">int</span> x = <span class="fn-num">10</span>; <span class="fn-cmt">// 0x0000000A</span></span></div>
+                      <div class="fn-line is-compact" data-row="12" data-step-jump="7"><span class="ptr">▶</span><span class="ln">13</span><span>  x = <span class="fn-fn">func1</span>(x);</span></div>
+                      <div class="fn-line is-compact" data-row="13" data-step-jump="8"><span class="ptr">▶</span><span class="ln">14</span><span>  <span class="fn-fn">func2</span>(<span class="fn-num">1</span>);</span></div>
+                      <div class="fn-line is-compact" data-row="14"><span class="ptr"></span><span class="ln">15</span><span>}</span></div>
+                    </div>
+                  </div>
+
+                  <!-- 토글형 단계 설명 팝업 (기본 hidden) -->
+                  <div class="cs-help-pop" id="cs-help-pop" hidden>
+                    <div class="cs-help-head">
+                      <span id="cs-help-title">① main() 시작 (SP = 0x1040)</span>
+                      <button type="button" class="cs-help-close" id="cs-help-close" aria-label="닫기">×</button>
+                    </div>
+                    <div class="cs-help-desc" id="cs-help-desc">비어 있는 스택(0x1010~0x103F)과 초기화 전 변수 자리에는 이전의 랜덤 HEX 값들이 들어 있습니다.</div>
+                  </div>
+                </div>
+
+                <!-- 우측: 10열 HEX 메모리 뷰 (1열 주소헤더 | 2~5열 4B | 6열 구분 | 7~10열 4B) -->
+                <div class="cs-hex-panel" id="cs-hex-panel" data-key="cs-tower">
+                  <div class="cs-hex-top">
+                    <span class="cs-sp-readout" id="cs-sp-readout">SP = 0x1040 (main)</span>
+                    <div class="cs-legend">
+                      <span class="cs-lg"><i style="background:#fef08a;border:1px solid #eab308"></i>쓰기</span>
+                      <span class="cs-lg"><i style="background:#eff6ff;border:1px solid #93c5fd"></i>활성</span>
+                      <span class="cs-lg"><i style="background:#fffbeb;border:1px dashed #f59e0b"></i>잔류</span>
+                      <span class="cs-lg"><i style="background:#ecfdf5;border:1px solid #6ee7b7"></i>타 영역</span>
+                    </div>
+                  </div>
+
+                  <div class="cs-hex-grid" id="cs-hex-grid">
+                    <div class="cs-hex-row is-head">
+                      <span>ADDR</span>
+                      <span>+00</span><span>+01</span><span>+02</span><span>+03</span>
+                      <span></span>
+                      <span>+04</span><span>+05</span><span>+06</span><span>+07</span>
+                    </div>
+                    <!-- JS가 0x1000 ~ 0x1040 9개 행 및 0x1010 스택 한계선을 렌더링 -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="script">
+          <p data-cue="cs-s0:box cs-tower:box"><span class="sent" data-say="두 번째 슬라이드는 콜 스택 메모리를 실제 16진수로 들여다보는 시뮬레이터입니다.">두 번째 슬라이드는 콜 스택 메모리를 실제 16진수(HEX) 바이트 단위로 들여다보는 시뮬레이터입니다.</span> <span class="sent" data-say="오른쪽 표의 일열은 메모리 주소 헤더이고, 이 부터 오열과 칠부터 십열은 각각 사바이트씩 총 팔바이트를 나타냅니다.">오른쪽 표의 1열은 메모리 주소 헤더이고, 2~5열과 7~10열은 각각 4바이트(<code>int</code> 1개 크기)씩 총 8바이트를 나타냅니다.</span> <span class="sent" data-say="아직 쓰이지 않은 빈 스텍 공간에는 영이 아니라 알 수 없는 랜덤 헥스값들이 가득 차 있습니다.">아직 쓰이지 않은 빈 스택 공간에는 0이 아니라 알 수 없는 랜덤 HEX 값들이 가득 차 있습니다.</span></p>
+          <p data-cue="cs-s1:box"><span class="sent" data-say="12행에서 인티저 엑스, 십,을 실행하면 영엑스일공사사부터 사바이트 칸에 십의 십육진수값인 영영영영 영영영에이가 기록되며 노란색으로 하이라이트 됩니다.">12행에서 <code>int x = 10;</code>을 실행하면 <code>0x1044</code>부터 4바이트 칸에 10의 16진수 값인 <code>00 00 00 0A</code>가 기록되며 노란색으로 하이라이트됩니다.</span></p>
+          <p><span class="sent" data-cue="cs-s2:box" data-say="이어서 펑션원이 호출되면 스텍 포인터가 아래에서 위로 올라가며,">이어서 <code>func1(x)</code>가 호출되면 스택 포인터(<code>SP</code>)가 아래(높은 주소)에서 위(낮은 주소 <code>0x1030</code>)로 올라가며,</span> <span class="sent" data-cue="cs-s4:box" data-say="복귀 주소 매개변수 에이, 영에이, 그리고 지역변수 키, 영엑스 에이비씨디팔칠육오와 영영영영영영영에프가 실제 메모리에 그대로 기록됩니다">복귀 주소와 매개변수 <code>a=0A</code>, 그리고 지역변수 <code>key = 0xABCD8765</code>(<code>AB CD 87 65</code>)와 <code>tmp = 15</code>(<code>00 00 00 0F</code>)가 실제 메모리에 그대로 기록됩니다.</span></p>
+          <p data-cue="cs-s7:box"><span class="sent" data-say="핵심은 펑션원이 반환된 직후입니다. 스텍포인터만 다시 영엑스일공사공으로 내려올 뿐">핵심은 <code>func1</code>이 반환된 직후입니다. <code>SP</code>만 다시 <code>0x1040</code>으로 내려올 뿐,</span> <span class="sent" data-say="방금 쓰던 영엑스일공삼공 부터 영엑스 일공삼에프 메모리의 에이비씨디팔칠육오 데이터는 지워지지 않고 그대로 남아 있습니다.">방금 쓰던 <code>0x1030</code>~<code>0x103F</code> 메모리의 <code>AB CD 87 65</code> 데이터는 지워지지 않고 그대로 남아 있습니다.</span></p>
+          <p><span class="sent" data-cue="cs-s8:box" data-say="그 다음 십사행에서 펑션투를 호출하면">그다음 14행에서 <code>func2(1)</code>을 호출하면</span> <span class="sent" data-cue="cs-s9:box" data-say="아까 펑션원이 쓰던 바로 그 영엑스일공삼공 번지에 새 프레임이 들어오면서">아까 <code>func1</code>이 쓰던 바로 그 <code>0x1030</code> 번지에 새 프레임이 들어오면서,</span> <span class="sent" data-cue="cs-s9:box" data-say="남아 있던 에이비씨디팔칠육오 위에 씨에이에프이 공공공일을 그대로 덮어씁니다.">남아 있던 <code>AB CD 87 65</code> 위에 <code>CA FE 00 01</code>을 그대로 덮어씁니다.</span></p>
+          <p><span class="sent" data-cue="cs-s12:box" data-say="이후 탈출 조건 없는 재귀 호출로 펑션투가 계속 위로 차오르다가">이후 탈출 조건 없는 재귀 호출로 <code>func2(2)</code>, <code>func2(3)</code>이 위로 차오르다가,</span> <mark><span class="sent" data-cue="cs-s13:box" data-say="펑션투 네번째에서 스텍 한계선을 넘어가 버립니다"><code>func2(4)</code>에서 스택 한계선(<code>0x1010</code>)을 넘어가 버립니다.</span> <span class="sent" data-cue="cs-s13:box" data-say="이 때 운영체제가 메모리 보호로 개입하지 않는 환경이라면 프로그램이 곧바로 강제종료되지 않은채">이때 운영체제(OS)가 메모리 보호로 개입하지 않는 환경이라면 프로그램이 곧바로 강제 종료되지도 않은 채,</span> <span class="sent" data-cue="cs-s13:box" data-say="위쪽 인접 영역의 기존 데이터를 스택값으로 덮어써 조용히 오염시킵니다">위쪽 인접 영역의 기존 데이터(<code>11 22 33 44</code>, <code>DE AD BE EF</code>)를 스택 값으로 덮어써 조용히 오염시킵니다.</span></mark></p>
+          <p class="meta"><time datetime="2026-11-18">2026-11-18</time> · 각 바이트 칸에 마우스를 올리면 저장된 변수 정보를 볼 수 있으며, 「? 설명」 단추로 단계별 해설 팝업을 여닫을 수 있습니다</p>
+        </div>
+
+        <div class="c-slide-att">
+          <details>
+            <summary>첨부 · 오버로딩 (Overloading)</summary>
+            <div class="c-att-body">
+              <p>
+                함수 오버로딩(overloading)의 목적은 비슷한 기능을 하는 여러개의 함수를 하나의 함수명으로 관리함으로써 개발자의 개발 부담을 줄여주는 효과가 있습니다.
+              </p>
+              <p>
+                함수를 구분하는 기준은 "함수명+전달인자 갯수/타입"입니다
+                (<u>리턴인자는 함수를 구분하는데 영향을 주지 않습니다</u>).
+                함수를 구분한다는 의미는, 컴파일러가 함수가 호출되었을 때, 어떤 함수를 호출할지 결정하는데 참고하겠다는 의미입니다. 예를들어:
+              </p>
+              <blockquote>
+                <pre>void setVariable(int height);            // function 1
+
+void setVariable(float height);          // function 2 (타입 다름: 가능)
+
+void setVariable(int width);             // function 3 (인자명만 다름: 오류)
+
+int setVariable(int height);             // function 4 (리턴형만 다름: 오류)
+
+void setVariable(int height, int width); // function 5 (개수 다름: 가능)</pre>
+              </blockquote>
+              <ul>
+                <li>function 1 vs 2 : 전달인자의 타입이 다르므로 둘은 서로 다른 함수로 인식</li>
+                <li>function 1 vs 3 : 전달인자의 인자명은 함수를 구분하는 기준이 아니므로 둘은 서로 같은 함수(컴파일러 오류)</li>
+                <li>function 1 vs 4 : 리턴인자의 타입은 함수를 구분하는 기준이 아니므로 둘은 서로 같은 함수(컴파일러 오류)</li>
+                <li>function 1 vs 5 : 전달인자의 갯수가 각각 1, 2개로 서로 다르므로 서로 다른 함수로 인식</li>
+              </ul>
+            </div>
+          </details>
+
+          <details>
+            <summary>첨부 · 콜 스택 (Call Stack)</summary>
+            <div class="c-att-body">
+              <p>
+                함수를 호출(call)했을 때, CPU는 할당받은 메모리 영역에 현재의 수행위치와 전달인자를 저장해두고, 함수의 수행위치를 호출된 함수로 변경하게 됩니다.<br>
+                스택(stack)은 선입후출의 저장 알고리즘입니다.
+                저장공간이 무한하지 않기 때문에, 함수가 반환되지 않고 계속해서 호출된다면 스택 오버플로우(overflow; 넘침)가 발생하게 됩니다.
+                스택 오버플로우는 syntax error(문법 에러)가 아니고 run time error(수행 중 에러)이기 때문에 예상과 감지가 어려운 편입니다.
+              </p>
+            </div>
+          </details>
+
+          <details>
+            <summary>첨부 · 재귀 (Recursive)</summary>
+            <div class="c-att-body">
+              <p>
+                재귀함수는 자기자신을 호출하는 함수를 말합니다.
+                스택 오버플로우 가능성을 필연적으로 갖는 함수이다보니 선호되는 호출 방식은 아닙니다.
+                유명한 몇 가지 재귀호출 함수를 소개합니다.
+              </p>
+              <div class="blockquote-title">팩토리얼 수열</div>
+              <blockquote>
+                <pre>static int factorial(int n) {
+  if (n == 1)
+      return 1;
+  else
+      return n * factorial(n - 1);
+}</pre>
+              </blockquote>
+              <div class="blockquote-title">최대공약수</div>
+              <blockquote>
+                <pre>static int gcd(int p, int q) {
+  if (q == 0)
+      return p;
+  else
+      return gcd(q, p % q);
+}</pre>
+              </blockquote>
+              <div class="blockquote-title">피보나치 수열</div>
+              <blockquote>
+                <pre>static int fibonacci(int n) {
+  if (n &lt; 2)
+      return n;
+  else
+      return fibonacci(n - 1) + fibonacci(n - 2);
+}</pre>
+              </blockquote>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- 3p. 변수의 생명주기와 인자 전달 방식 -->
+      <section id="fn-s3" data-title="3 변수의 생명주기와 인자 전달 방식">
+        <h2>변수의 생명주기와 인자 전달 방식</h2>
+        <div class="slide-frame">
+          <div class="slide">
+            <div class="slide-body">
+              <div class="c-slide-head-row">
+                <div>
+                  <span class="slide-eyebrow"><b class="slide-no">3</b>C 언어 · 함수 · 스코프와 호출 규약</span>
+                  <div class="slide-title" role="heading" aria-level="3">변수의 생명주기(static)와 인자 전달 방식</div>
+                </div>
+                <a class="c-zoom-pill" data-view data-caption="변수의 생명주기(전역·static·지역)와 함수 인자 전달 방식" href="/basicStudy/engineering/language/svg/c-func-scope-pass.svg">🔍 메모리·전달 도식 크게 보기</a>
+              </div>
+              <ul class="points">
+                <li data-key="p3scope"><b>생명주기</b>: 지역변수는 선언된 블록(<code>}</code>)이 닫히면 소멸하지만, 전역변수와 <code>static</code> 변수는 프로그램 종료까지 유지</li>
+                <li data-key="p3pass"><b>인자 전달</b>: 값만 베껴 원본이 안전한 <code>Call by Value</code> vs 주소(<code>*</code>)·참조(<code>&amp;</code>)로 원본을 고치는 전달 방식</li>
+              </ul>
+              <div class="c-svg-stage">
+                <svg class="c-rich-svg" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" width="960" height="440" viewBox="0 0 960 440" font-family="'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', 'Nanum Gothic', sans-serif">
+  <title>변수의 생명주기(전역·static·지역)와 함수 인자 전달 방식(Value vs Pointer/Reference)</title>
+  <desc>좌측에는 Data 영역(전역·static 변수)과 Stack 영역(중괄호 블록 지역변수)의 메모리 수명 차이를, 우측에는 값 복사(Call by Value)와 주소·참조 전달(Call by Pointer / Reference)의 원본 변경 여부를 비교한 도식입니다.</desc>
+
+  <defs>
+    <filter id="spShadow" x="-3%" y="-4%" width="106%" height="110%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#0f172a" flood-opacity="0.06"/>
+    </filter>
+    <marker id="spArrBlue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M1,1.5 L9,5 L1,8.5 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="spArrOrange" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M1,1.5 L9,5 L1,8.5 Z" fill="#ea580c"/>
+    </marker>
+    <clipPath id="clipSpLeft"><rect x="14" y="14" width="454" height="412" rx="12"/></clipPath>
+    <clipPath id="clipSpRight"><rect x="484" y="14" width="462" height="412" rx="12"/></clipPath>
+  </defs>
+
+  <rect width="960" height="440" rx="14" fill="#fcfcfa" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- ==================== [LEFT] 변수의 생명주기 (Scope & static) ==================== -->
+  <g clip-path="url(#clipSpLeft)" filter="url(#spShadow)">
+    <rect x="14" y="14" width="454" height="412" fill="#ffffff"/>
+    <rect x="14" y="14" width="454" height="38" fill="#ede9fe"/>
+  </g>
+  <rect data-key="sp-life" x="14" y="14" width="454" height="412" rx="12" fill="none" stroke="#7c3aed" stroke-width="1.8"/>
+  <text x="30" y="38" font-size="14" font-weight="800" fill="#4c1d95">변수의 생명주기 (Life Cycle)와 메모리 영역</text>
+
+  <!-- 1. Data 영역 (전역 + static) -->
+  <rect data-key="sp-static" x="28" y="64" width="426" height="148" rx="9" fill="#faf5ff" stroke="#a78bfa" stroke-width="1.6"/>
+  <rect x="40" y="74" width="168" height="22" rx="11" fill="#7c3aed"/>
+  <text x="124" y="89" text-anchor="middle" font-size="10.8" font-weight="800" fill="#ffffff">데이터(Data) 영역 · 영구 상주</text>
+  <text x="440" y="89" text-anchor="end" font-size="10.3" font-weight="700" fill="#5b21b6">프로그램 시작 ~ 종료까지 유지</text>
+
+  <rect x="40" y="106" width="194" height="94" rx="7" fill="#ffffff" stroke="#c4b5fd"/>
+  <text x="52" y="126" font-size="11.5" font-weight="800" fill="#4c1d95">전역변수 (Global)</text>
+  <text x="52" y="145" font-size="10.4" fill="#334155">· 함수 바깥에 선언</text>
+  <text x="52" y="163" font-size="10.4" fill="#334155">· 모든 함수에서 접근 가능</text>
+  <text x="52" y="181" font-size="10.2" fill="#b91c1c">· 남용 시 메모리 점유·결합도↑</text>
+
+  <rect x="246" y="106" width="196" height="94" rx="7" fill="#ffffff" stroke="#c4b5fd"/>
+  <text x="258" y="126" font-size="11.5" font-weight="800" fill="#065f46">static 지역변수</text>
+  <text x="258" y="145" font-family="'D2Coding', monospace" font-size="10.2" font-weight="700" fill="#047857">static int cnt = 0;</text>
+  <text x="258" y="164" font-size="10.4" fill="#334155">· 접근은 해당 함수 내부로만 제한</text>
+  <text x="258" y="182" font-size="10.4" font-weight="700" fill="#065f46">· 함수가 끝나도 값이 유지됨!</text>
+
+  <!-- 2. Stack 영역 (지역변수 & 중괄호 스코프) -->
+  <rect data-key="sp-local" x="28" y="224" width="426" height="188" rx="9" fill="#eff6ff" stroke="#60a5fa" stroke-width="1.6"/>
+  <rect x="40" y="234" width="168" height="22" rx="11" fill="#2563eb"/>
+  <text x="124" y="249" text-anchor="middle" font-size="10.8" font-weight="800" fill="#ffffff">스택(Stack) 영역 · 임시 생성</text>
+  <text x="440" y="249" text-anchor="end" font-size="10.3" font-weight="700" fill="#1d4ed8">선언 시 생성 ➔ '}' 만나면 소멸</text>
+
+  <!-- 중첩 블록 스코프 시각화 -->
+  <rect x="40" y="266" width="402" height="134" rx="7" fill="#0f172a"/>
+  <g font-family="'D2Coding', Consolas, monospace" font-size="10.6">
+    <text x="52" y="286" fill="#93c5fd">int main() { <tspan fill="#fde68a">int i = 8;</tspan>         <tspan fill="#94a3b8">// 바깥 지역변수 i</tspan></text>
+    <rect x="64" y="295" width="366" height="58" rx="5" fill="#1e293b" stroke="#475569" stroke-dasharray="3 2"/>
+    <text x="74" y="314" fill="#67e8f9">  { <tspan fill="#86efac">int i = 7;</tspan>                  <tspan fill="#cbd5e1">// 안쪽 블록: 가까운 7 우선 참조</tspan></text>
+    <text x="74" y="334" fill="#67e8f9">  } <tspan fill="#fca5a5">◀ 여기서 안쪽 i(7) 즉시 소멸!</tspan></text>
+    <text x="52" y="372" fill="#93c5fd">  printf("%d", i);              <tspan fill="#fde68a">// 다시 살아있는 바깥 i(8) 참조</tspan></text>
+    <text x="52" y="391" fill="#93c5fd">} <tspan fill="#fca5a5">◀ main 종료 시 바깥 i(8)도 소멸</tspan></text>
+  </g>
+
+
+  <!-- ==================== [RIGHT] 인자 전달 방식 (Value vs Pointer/Reference) ==================== -->
+  <g clip-path="url(#clipSpRight)" filter="url(#spShadow)">
+    <rect x="484" y="14" width="462" height="412" fill="#ffffff"/>
+    <rect x="484" y="14" width="462" height="38" fill="#ffedd5"/>
+  </g>
+  <rect data-key="sp-pass" x="484" y="14" width="462" height="412" rx="12" fill="none" stroke="#f97316" stroke-width="1.8"/>
+  <text x="500" y="38" font-size="14" font-weight="800" fill="#9a3412">함수 인자 전달 방식 — 원본 변수가 바뀌는가?</text>
+
+  <!-- 1. Call by Value -->
+  <rect data-key="sp-val" x="498" y="64" width="434" height="162" rx="9" fill="#f8fafc" stroke="#93c5fd" stroke-width="1.6"/>
+  <rect x="510" y="74" width="146" height="22" rx="11" fill="#2563eb"/>
+  <text x="583" y="89" text-anchor="middle" font-size="10.8" font-weight="800" fill="#ffffff">① Call by Value (값 복사)</text>
+  <text x="918" y="89" text-anchor="end" font-family="'D2Coding', monospace" font-size="10.5" font-weight="700" fill="#1d4ed8">void func(int a); ➔ func(x);</text>
+
+  <!-- 메모리 상자 비교 -->
+  <rect x="514" y="108" width="164" height="68" rx="7" fill="#ffffff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="596" y="128" text-anchor="middle" font-size="10.8" font-weight="800" fill="#1e3a8a">원본 input (0x100)</text>
+  <text x="596" y="156" text-anchor="middle" font-family="'D2Coding', monospace" font-size="18" font-weight="800" fill="#0f172a">10 <tspan font-size="11" fill="#059669">(불변!)</tspan></text>
+
+  <line x1="680" y1="142" x2="746" y2="142" stroke="#2563eb" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#spArrBlue)"/>
+  <text x="713" y="132" text-anchor="middle" font-size="9.8" font-weight="700" fill="#2563eb">값만 복사</text>
+
+  <rect x="752" y="108" width="164" height="68" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="834" y="128" text-anchor="middle" font-size="10.8" font-weight="800" fill="#475569">복사본 a (0x200)</text>
+  <text x="834" y="156" text-anchor="middle" font-family="'D2Coding', monospace" font-size="15" font-weight="700" fill="#64748b">10 ➔ 99 변경 후 소멸</text>
+
+  <text x="715" y="206" text-anchor="middle" font-size="10.8" font-weight="700" fill="#334155">다른 메모리 칸에 값만 베껴 가므로, 함수 안에서 고쳐도 원본은 안전함</text>
+
+  <!-- 2. Call by Pointer / Reference -->
+  <rect data-key="sp-ref" x="498" y="238" width="434" height="174" rx="9" fill="#fff7ed" stroke="#fb923c" stroke-width="1.6"/>
+  <rect x="510" y="248" width="212" height="22" rx="11" fill="#ea580c"/>
+  <text x="616" y="263" text-anchor="middle" font-size="10.8" font-weight="800" fill="#ffffff">② Call by Pointer · Reference (주소·참조)</text>
+  <text x="918" y="263" text-anchor="end" font-size="10.3" font-weight="700" fill="#9a3412">원본 직접 수정 가능!</text>
+
+  <!-- 메모리 화살표 비교 -->
+  <rect x="514" y="282" width="164" height="72" rx="7" fill="#ffffff" stroke="#ea580c" stroke-width="1.8"/>
+  <text x="596" y="302" text-anchor="middle" font-size="10.8" font-weight="800" fill="#9a3412">원본 input (0x100)</text>
+  <text x="596" y="332" text-anchor="middle" font-family="'D2Coding', monospace" font-size="17" font-weight="800" fill="#dc2626">10 ➔ 99 변경됨!</text>
+
+  <line x1="750" y1="318" x2="682" y2="318" stroke="#ea580c" stroke-width="2.2" marker-end="url(#spArrOrange)"/>
+  <text x="716" y="308" text-anchor="middle" font-size="9.8" font-weight="800" fill="#c2410c">주소 역참조</text>
+
+  <rect x="752" y="282" width="164" height="72" rx="7" fill="#ffedd5" stroke="#fdba74" stroke-width="1.5"/>
+  <text x="834" y="301" text-anchor="middle" font-size="10.5" font-weight="800" fill="#9a3412">포인터 p / 참조자 r</text>
+  <text x="834" y="321" text-anchor="middle" font-family="'D2Coding', monospace" font-size="10.2" fill="#7c2d12">C: int *p = &amp;input;</text>
+  <text x="834" y="339" text-anchor="middle" font-family="'D2Coding', monospace" font-size="10.2" fill="#7c2d12">C++: int &amp;r = input;</text>
+
+  <text x="715" y="382" text-anchor="middle" font-size="10.6" font-weight="700" fill="#9a3412">C는 주소(&amp;)를 넘겨 포인터(*)로 접근하고, C++은 참조자(&amp;) 별명 문법도 지원</text>
+  <text x="715" y="399" text-anchor="middle" font-size="10.2" fill="#7c2d12">원본 메모리(0x100)를 직접 찾아가 값을 바꾸므로 함수 종료 후에도 반영됨</text>
+</svg>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="script">
+          <p data-cue="p3scope:check sp-life:box sp-static:box">세 번째 슬라이드에서는 변수가 살아남는 수명과 함수로 값을 넘기는 방식을 비교합니다. 왼쪽 위의 데이터 영역에 놓이는 전역변수는 모든 함수에서 쓸 수 있지만 프로그램이 끝날 때까지 메모리를 차지합니다. 함수 안에 <code>static</code> 예약어를 붙여 선언한 정적 지역변수는 해당 함수 안에서만 보이지만, 함수가 끝나도 값이 사라지지 않고 다음 호출까지 그대로 유지됩니다.</p>
+          <p data-cue="sp-local:box">반면 왼쪽 아래 스택 영역에 만들어지는 일반 지역변수는 선언될 때 태어나 자신이 속한 중괄호(<code>}</code>)가 닫히는 순간 소멸합니다. 같은 이름의 변수 <code>i</code>가 겹쳐 선언된 경우에는 현재 위치에서 가장 가까운 안쪽 블록의 변수를 우선 참조합니다.</p>
+          <p data-cue="p3pass:check sp-pass:box sp-val:box">오른쪽은 함수에 변수를 전달하는 방식의 차이입니다. 기본 방식인 값에 의한 호출(Call by Value)은 원본의 숫자 값만 복사해 별도의 메모리 칸에 넘겨주므로, 함수 안에서 값을 아무리 바꾸어도 호출한 쪽의 원본 변수는 전혀 변하지 않습니다.</p>
+          <p data-cue="sp-ref:box"><mark>반대로 함수 안에서 호출자의 원본 변수까지 직접 수정하고 싶다면, C 언어에서는 원본의 메모리 주소(<code>&amp;</code>)를 포인터(<code>*</code>)로 넘기고 C++에서는 참조자(<code>&amp;</code>) 문법을 사용해 원본 메모리에 직접 접근합니다.</mark></p>
+          <p class="meta"><time datetime="2026-11-17">2026-11-17</time> · 포인터를 이용한 주소 전달의 세부 메모리 연산은 다음 장인 「포인터」 편에서 이어집니다</p>
+        </div>
+
+        <div class="c-slide-att">
+          <details>
+            <summary>첨부 · 변수의 범위와 생명주기 (Life Cycle)</summary>
+            <div class="c-att-body">
+              <p>
+                변수를 호출하면 컴파일러는 정해진 규칙에 의해서 정해진 위치에 순서대로 할당하게 됩니다.
+                컴파일러는, 현실세계와 마찬가지로, 같은 이름이더라도 어디에 속해있는지에 따라 호출되는 변수를 참조하게 됩니다.<br>
+                이러한 이유로 코더(Coder)는 호출되는 위치가 함수 안인지 밖인지를 주의해야하며, 만약 외부의 변수를 사용하고 싶다면 추가 문법을 명시해야 합니다.
+              </p>
+              <p>
+                기본적으로 변수의 Life cycle은 선언될 때 생성되고, 선언된 '}'(중괄호 닫힘)를 만나면 소멸합니다.<del>(실제로 삭제되는 것은 아닙니다.)</del>
+                정확한 내용은 pointer에서 다룹니다. 일반적으로:
+              </p>
+              <blockquote>
+                <pre>int i = 9; // 첫째 (전역변수)
+
+int main()
+{
+  int i = 8; // 둘째
+  {
+    int i = 7; // 셋째
+    {
+      int i = 6; // 넷째
+    }
+    // 위치 1
+  }
+  // 위치 2
+}</pre>
+              </blockquote>
+              <p>
+                똑같은 i라는 변수가 여러번 선언 되었다고 할 때, 컴파일러가 참조하는 변수는 각각 해제되지 않은 최근의 변수를 사용하게 됩니다. 예를들어:
+              </p>
+              <ul>
+                <li>첫째 위치에서는 첫째를 참조합니다.</li>
+                <li>둘째 위치에서는 둘째를 참조합니다.</li>
+                <li>셋째 위치에서는 셋째를 참조합니다.</li>
+                <li>넷째 위치에서는 넷째를 참조합니다.</li>
+                <li>위치 1에서는 셋째를 참조합니다.(넷째 소멸)</li>
+                <li>위치 2에서는 둘째를 참조합니다.(셋째 소멸)</li>
+              </ul>
+              <p>
+                첫 째의 위치는 변수가 해제될 수 없는 위치에 선언되었습니다. 따라서 모든 함수에서 사용될 수 있기 때문에 "<u>전역변수</u>"라고 합니다.<br>
+                전역변수는 높은 범용성을 지니지만, 항상 메모리에 상주하고 있으므로 일정부분의 손해를 감수해야 합니다.
+                전역변수와 대비되는 개념이 "<u>지역변수</u>"입니다. 지역변수는 함수 내에서 선언되는 변수를 말합니다. 지역변수는 종료와 함께 소멸한다는 것을 주의해야 합니다.
+              </p>
+            </div>
+          </details>
+
+          <details>
+            <summary>첨부 · 정적 지역변수 (static)</summary>
+            <div class="c-att-body">
+              <p>
+                <code>static</code> 예약어는 해당 변수가 호출된 후 유지되도록 요청합니다.
+              </p>
+              <blockquote>
+                <pre>void foo()
+{
+  static int i = 0;
+  i++;
+  printf("foo 호출: %d\n", i);
+}</pre>
+              </blockquote>
+            </div>
+          </details>
+
+          <details>
+            <summary>첨부 · 호출(Call) 방법 — Call by Value · Pointer · Reference</summary>
+            <div class="c-att-body">
+              <p>
+                변수를 전달하는 방법에 따라 Call by Value, Call by Reference, Call by Address가 있습니다. (포인터 편 참조)
+              </p>
+              <div class="blockquote-title">Call by Value</div>
+              <blockquote>
+                void callbyValue(int);<br><br>
+                callbyValue(input);
+              </blockquote>
+              <p>
+                값(value)를 직접 복사하여 전달합니다. 따라서, 값을 변경한다고 해도 원래 값에 변경이 적용되지 않습니다.
+              </p>
+
+              <div class="blockquote-title">Call by Address (Pointer)</div>
+              <blockquote>
+                void callbyPtr(int*);<br><br>
+                callbyPtr(&amp;input);
+              </blockquote>
+              <p>
+                주소(address, pointer)를 복사하여 전달합니다. 해당 주소의 값을 변경하기 때문에, 원래 값에 변경이 적용됩니다.
+              </p>
+
+              <div class="blockquote-title">Call by Reference (C++)</div>
+              <blockquote>
+                void callByRef(int&amp;);<br><br>
+                callByRef(input);
+              </blockquote>
+              <p>
+                변수에 대한 참조(reference 별명)를 전달합니다. 원본 변수를 직접 가리키기 때문에 값의 변경이 그대로 적용됩니다.
+              </p>
+            </div>
+          </details>
+
+          <details>
+            <summary>첨부 · 가변 인자 (va_list)</summary>
+            <div class="c-att-body">
+              <p>
+                참조: <a href="https://learn.microsoft.com/ko-kr/cpp/cpp/functions-with-variable-argument-lists-cpp?view=msvc-160" target="_blank" rel="noopener">https://learn.microsoft.com/ko-kr/cpp/cpp/functions-with-variable-argument-lists-cpp?view=msvc-160</a>
+              </p>
+              <p>
+                전달해야 하는 인자의 갯수가 변경되는 경우가 발생할 수 있습니다. 예를들어 <code>printf</code> 함수가 그렇습니다.
+              </p>
+              <blockquote>
+                printf("%d", i); <span class="comment">// 전달 인자 2개</span><br>
+                printf("%d %d", i, j); <span class="comment">// 전달 인자 3개</span>
+              </blockquote>
+              <p>
+                이를 해결하는 방법은 <code>va_</code> 구조를 사용하는 방법입니다. 간단한 예시는 다음과 같습니다.
+              </p>
+              <blockquote>
+                <pre>int addAll(int size, ...)
+{
+    int _Result = 0;
+
+    va_list vl;
+    va_start(vl, size);
+    for (int i = 0; i &lt; size; i++)
+        _Result += va_arg(vl, int);
+    va_end(vl);
+
+    return _Result;
+}</pre>
+              </blockquote>
+            </div>
+          </details>
+        </div>
+      </section>
+    </div>
+    <!-- ==================== /함수 단원 슬라이드 끝 ==================== -->
+
+    <script>
+      // -------------------- 1p 시뮬레이터 (끝까지 1회 실행 후 정지) --------------------
+      const Disposers = [];
+      const root1 = document.getElementById('fn-sim-root');
+      if (root1) {
+        const STEPS1 = [
+          {
+            row: 0, tone: 'prep', badge: '1행 · 선언', arc: '',
+            title: '① 프로토타입 선언 (개형 등록)',
+            desc: '위에서 아래로 읽는 컴파일러에게 "뒤에 Max(int, int) 함수가 등장한다"고 미리 알립니다. 실제 실행 코드는 아직 돌지 않습니다.',
+            mainState: '대기', mainVars: [['x', '-'], ['y', '-'], ['res', '-']],
+            maxLive: false, maxState: '미생성', maxVars: [['호출 전 대기', '']],
+            out: '> 콘솔 출력 대기 중...'
+          },
+          {
+            row: 1, tone: 'prep', badge: '2행 · main 진입', arc: '',
+            title: '② 프로그램 시작점 main() 진입',
+            desc: '모든 C 프로그램은 main 함수 첫 줄부터 순서대로 실행을 시작하며, 콜 스택에 main 프레임이 할당됩니다.',
+            mainState: '실행 중', mainVars: [['x', '?'], ['y', '?'], ['res', '?']],
+            maxLive: false, maxState: '미생성', maxVars: [['호출 전 대기', '']],
+            out: '> main() 실행 시작'
+          },
+          {
+            row: 2, tone: 'prep', badge: '3행 · 변수 초기화', arc: '',
+            title: '③ main 지역변수 x=3, y=7 저장',
+            desc: 'main 스택 프레임 안에 정수형 지역변수 x(3)와 y(7)가 준비됩니다.',
+            mainState: '실행 중', mainVars: [['x', '3', true], ['y', '7', true], ['res', '?']],
+            maxLive: false, maxState: '미생성', maxVars: [['호출 전 대기', '']],
+            out: '> x = 3, y = 7 준비 완료'
+          },
+          {
+            row: 3, tone: 'call', badge: '4행 ➔ 8행 호출!', arc: 'call',
+            title: '④ 함수 호출(Call): 인자(3, 7) 전달 및 점프!',
+            desc: '돌아올 복귀 위치(4행)를 스택에 기록한 뒤, 전달인자(Argument) 3과 7을 들고 8행 Max 함수로 실행 라인이 이동합니다.',
+            mainState: '복귀 대기', mainVars: [['x', '3'], ['y', '7'], ['res', '대기 중']],
+            maxLive: false, maxState: '진입 중', maxVars: [['인자 3, 7 수신 중...', '']],
+            out: '> Max(3, 7) 호출 점프 ──▶ 8행'
+          },
+          {
+            row: 7, tone: 'callee', badge: '8행 · Max 진입', arc: 'call',
+            title: '⑤ Max 프레임 생성 & 매개변수 복사 수신',
+            desc: '스택에 Max 전용 프레임이 새로 생기고, 매개변수(Parameter) a=3, b=7에 전달받은 값이 복사됩니다.',
+            mainState: '일시 정지', mainVars: [['x', '3'], ['y', '7'], ['res', '대기 중']],
+            maxLive: true, maxState: '실행 중', maxVars: [['a', '3', true], ['b', '7', true], ['m', '?']],
+            out: '> Max 진입 (a=3, b=7)'
+          },
+          {
+            row: 8, tone: 'callee', badge: '9행 · Body 연산', arc: '',
+            title: '⑥ 함수 본체(Body) 논리 수행',
+            desc: '(3 > 7) 조건을 비교해 더 큰 값인 7을 Max의 지역변수 m에 저장합니다.',
+            mainState: '일시 정지', mainVars: [['x', '3'], ['y', '7'], ['res', '대기 중']],
+            maxLive: true, maxState: '실행 중', maxVars: [['a', '3'], ['b', '7'], ['m', '7', true]],
+            out: '> Max 내부 연산: m = 7'
+          },
+          {
+            row: 9, tone: 'ret', badge: '10행 ➔ 4행 복귀!', arc: 'ret',
+            title: '⑦ return 7 수행 — 즉시 종료 및 호출 줄 복귀!',
+            desc: 'return을 만나는 순간 Max 실행이 끝나고 결과값 7을 반환하며 기억해 두었던 4행 호출 지점으로 되돌아갑니다.',
+            mainState: '복귀 수신', mainVars: [['x', '3'], ['y', '7'], ['res', '◀ 7 반환']],
+            maxLive: true, maxState: '반환·소멸 중', maxVars: [['return', '7', true]],
+            out: '> return 7 ──▶ 4행으로 복귀'
+          },
+          {
+            row: 4, tone: 'ret', badge: '5행 · 실행 완료', arc: '',
+            title: '⑧ res=7 대입 완료 후 5행 printf 출력 (정지)',
+            desc: 'Max의 지역변수는 소멸했고, main의 res에 7이 담긴 채 5행 출력을 마치고 시뮬레이션이 멈춥니다.',
+            mainState: '실행 완료', mainVars: [['x', '3'], ['y', '7'], ['res', '7', true]],
+            maxLive: false, maxState: '해제됨(Pop)', maxVars: [['메모리 회수 완료', '']],
+            out: '> max=7   [실행 완료]'
+          }
+        ];
+
+        let cur1 = 0;
+        let timer1 = null;
+        const pcBar1 = document.getElementById('fn-pc-bar');
+        const lines1 = Array.from(root1.querySelectorAll('.fn-line'));
+        const dots1 = Array.from(root1.querySelectorAll('.fn-dot'));
+        const playBtn1 = document.getElementById('fn-play');
+
+        function renderVars1(el, list) {
+          el.innerHTML = list.map(([k, v, ch]) =>
+            '<span class="fn-var' + (ch ? ' is-changed' : '') + '">' + (v ? (k + ': ' + v) : k) + '</span>'
+          ).join('');
+        }
+
+        function stopAuto1() {
+          if (timer1) { clearInterval(timer1); timer1 = null; }
+          playBtn1.textContent = cur1 >= STEPS1.length - 1 ? '↻ 다시 실행' : '▶ 실행';
+        }
+
+        function render1(idx) {
+          cur1 = Math.max(0, Math.min(STEPS1.length - 1, idx));
+          const s = STEPS1[cur1];
+          document.getElementById('fn-sim-step-label').textContent = 'STEP ' + (cur1 + 1) + ' / ' + STEPS1.length;
+
+          lines1.forEach(line => line.classList.toggle('is-active', Number(line.dataset.row) === s.row));
+          const activeLine = lines1[s.row];
+          if (activeLine && pcBar1) {
+            pcBar1.style.height = activeLine.offsetHeight + 'px';
+            pcBar1.style.transform = 'translateY(' + activeLine.offsetTop + 'px)';
+            pcBar1.dataset.tone = s.tone;
+          }
+
+          dots1.forEach((d, i) => d.classList.toggle('is-on', i === cur1));
+          document.getElementById('fn-arc-call').classList.toggle('is-on', s.arc === 'call');
+          document.getElementById('fn-arc-ret').classList.toggle('is-on', s.arc === 'ret');
+
+          const sc = document.getElementById('fn-status-card');
+          sc.dataset.tone = s.tone;
+          document.getElementById('fn-status-title').textContent = s.title;
+          document.getElementById('fn-pc-badge').textContent = s.badge;
+          document.getElementById('fn-status-desc').textContent = s.desc;
+
+          document.getElementById('fn-main-state').textContent = s.mainState;
+          renderVars1(document.getElementById('fn-main-vars'), s.mainVars);
+
+          const boxMax = document.getElementById('fn-box-max');
+          boxMax.classList.toggle('is-inactive', !s.maxLive);
+          boxMax.classList.toggle('is-live', s.maxLive);
+          document.getElementById('fn-max-state').textContent = s.maxState;
+          renderVars1(document.getElementById('fn-max-vars'), s.maxVars);
+
+          document.getElementById('fn-term-out').textContent = s.out;
+          if (!timer1) playBtn1.textContent = cur1 >= STEPS1.length - 1 ? '↻ 다시 실행' : '▶ 실행';
+        }
+
+        function toggleAuto1() {
+          if (timer1) {
+            stopAuto1();
+            return;
+          }
+          if (cur1 >= STEPS1.length - 1) render1(0);
+          playBtn1.textContent = '⏸ 정지';
+          timer1 = setInterval(() => {
+            if (cur1 >= STEPS1.length - 1) {
+              stopAuto1();
+            } else {
+              render1(cur1 + 1);
+              if (cur1 >= STEPS1.length - 1) stopAuto1();
+            }
+          }, 1500);
+        }
+
+        document.getElementById('fn-prev').addEventListener('click', () => { stopAuto1(); render1(cur1 - 1); });
+        document.getElementById('fn-next').addEventListener('click', () => { stopAuto1(); render1(cur1 + 1); });
+        document.getElementById('fn-reset').addEventListener('click', () => { stopAuto1(); render1(0); });
+        playBtn1.addEventListener('click', toggleAuto1);
+        dots1.forEach(d => d.addEventListener('click', () => { stopAuto1(); render1(Number(d.dataset.step)); }));
+        lines1.forEach(l => {
+          if (l.dataset.stepJump !== undefined) {
+            l.addEventListener('click', () => { stopAuto1(); render1(Number(l.dataset.stepJump)); });
+          }
+        });
+
+        const ro1 = new ResizeObserver(() => render1(cur1));
+        ro1.observe(root1);
+
+        const hookBox1 = root1.parentElement.querySelector('.fn-cue-hooks');
+        let mo1 = null;
+        if (hookBox1) {
+          mo1 = new MutationObserver(() => {
+            const active = hookBox1.querySelector('.cue-box');
+            if (active) {
+              const m = active.dataset.key.match(/^sim-s(\d+)$/);
+              if (m) { stopAuto1(); render1(Number(m[1])); }
+            }
+          });
+          mo1.observe(hookBox1, { subtree: true, attributes: true, attributeFilter: ['class'] });
+        }
+
+        requestAnimationFrame(() => render1(0));
+        Disposers.push(() => { stopAuto1(); ro1.disconnect(); if (mo1) mo1.disconnect(); });
+      }
+
+      // -------------------- 2p 8-Byte HEX 콜 스택 덮어쓰기 & 오버플로우 시뮬레이터 --------------------
+      const root2 = document.getElementById('cs-sim-root');
+      if (root2) {
+        const ADDRS = ['0x1000', '0x1008', '0x1010', '0x1018', '0x1020', '0x1028', '0x1030', '0x1038', '0x1040'];
+        // 초기 RAM 상태: 0x1000~0x100F는 인접 타 데이터 영역, 0x1010~0x1047은 미할당 랜덤 쓰레기값
+        const INIT_MEM = [
+          ['11', '22', '33', '44', '55', '66', '77', '88'], // 0x1000: 타 영역 기존 데이터 A
+          ['00', '00', '03', 'E8', 'DE', 'AD', 'BE', 'EF'], // 0x1008: 타 영역 기존 데이터 B
+          ['7F', '3A', '91', 'C4', 'E2', '08', '5B', 'D9'], // 0x1010: 스택 한계선 시작 (랜덤값)
+          ['4D', 'B0', '19', '8E', '63', 'F1', 'A7', '2C'], // 0x1018: 랜덤값
+          ['9A', '54', 'E6', '11', '38', 'C7', '40', 'F5'], // 0x1020: 랜덤값
+          ['C1', '82', '0F', '6B', 'D4', '29', '7E', 'A3'], // 0x1028: 랜덤값
+          ['58', 'E9', '3C', '71', '1F', 'B6', '84', '0D'], // 0x1030: 랜덤값
+          ['A2', '47', 'D8', '93', '76', '1C', 'E0', '59'], // 0x1038: 랜덤값
+          ['00', '40', '00', '00', 'F3', '9C', '21', '84']  // 0x1040: main 프레임 (우측 4B는 x 초기화 전 랜덤값)
+        ];
+
+        const INIT_TIPS = [
+          ['타 메모리 영역 기존 데이터 (0x11223344)', '타 메모리 영역 기존 데이터 (0x55667788)'],
+          ['타 메모리 영역 기존 데이터 (1000 = 0x03E8)', '타 메모리 영역 기존 데이터 (0xDEADBEEF)'],
+          ['미사용 스택 (랜덤 쓰레기값)', '미사용 스택 (랜덤 쓰레기값)'],
+          ['미사용 스택 (랜덤 쓰레기값)', '미사용 스택 (랜덤 쓰레기값)'],
+          ['미사용 스택 (랜덤 쓰레기값)', '미사용 스택 (랜덤 쓰레기값)'],
+          ['미사용 스택 (랜덤 쓰레기값)', '미사용 스택 (랜덤 쓰레기값)'],
+          ['미사용 스택 (랜덤 쓰레기값)', '미사용 스택 (랜덤 쓰레기값)'],
+          ['미사용 스택 (랜덤 쓰레기값)', '미사용 스택 (랜덤 쓰레기값)'],
+          ['main 복귀 주소 (OS)', 'main 지역변수 x (초기화 전 랜덤값)']
+        ];
+
+        const STEPS2 = [
+          {
+            row: 10, spRow: 8, tone: 'prep', spText: 'SP = 0x1040 (main 진입)',
+            title: '1단계 · main() 시작 — 빈 스택은 랜덤 HEX 값으로 차 있음',
+            desc: '0x1040에 main 프레임이 잡힙니다. 아직 쓰이지 않은 스택(0x1010~0x103F)과 초기화 전인 x 자리(0x1044~)에는 알 수 없는 랜덤 바이트들이 들어 있습니다.',
+            writes: [
+              { r: 8, c: 0, hex: ['00', '40', '00', '00'], tip: 'main 복귀 주소 (0x00400000)' }
+            ]
+          },
+          {
+            row: 11, spRow: 8, tone: 'call', spText: 'SP = 0x1040 (x = 10 기록)',
+            title: '2단계 · int x = 10; ➔ 00 00 00 0A 기록',
+            desc: '정수 10이 4바이트 HEX(00 00 00 0A)로 변환되어 0x1044~0x1047의 랜덤값(F3 9C 21 84) 위에 기록됩니다.',
+            writes: [
+              { r: 8, c: 4, hex: ['00', '00', '00', '0A'], tip: 'main::x = 10 (0x0000000A)' }
+            ]
+          },
+          {
+            row: 0, spRow: 6, tone: 'call', spText: 'SP = 0x1030 (func1 호출)',
+            showCallTags: true,
+            title: '3단계 · func1(x) 호출 — return 주소와 전달인자 기록',
+            desc: '스택 포인터가 0x1030으로 올라가며, 0x1038 행에 복귀 주소(return · 13행)와 전달인자 a=10(00 00 00 0A)이 먼저 기록됩니다.',
+            writes: [
+              { r: 7, c: 0, hex: ['00', '40', '00', '0D'], tip: 'func1 return 복귀 주소 (main 13행)' },
+              { r: 7, c: 4, hex: ['00', '00', '00', '0A'], tip: 'func1 전달인자 a = 10 (0x0A)' }
+            ]
+          },
+          {
+            row: 1, spRow: 6, tone: 'callee', spText: 'SP = 0x1030 (key 기록)',
+            title: '4단계 · key = 0xABCD8765 메모리 기록',
+            desc: '2행 실행으로 0x1030~0x1033 칸에 지역변수 key의 바이트 AB CD 87 65가 먼저 기록됩니다.',
+            writes: [
+              { r: 6, c: 0, hex: ['AB', 'CD', '87', '65'], tip: 'func1::key = 0xABCD8765' }
+            ]
+          },
+          {
+            row: 2, spRow: 6, tone: 'callee', spText: 'SP = 0x1030 (tmp = 0x0F 기록)',
+            title: '5단계 · tmp = a + 5 (0000 000F) 계산 및 메모리 기록',
+            desc: '3행에서 0000 000A + 0000 0005 = 0000 000F가 계산되어 0x1034~0x1037 칸에 00 00 00 0F가 기록됩니다.',
+            writes: [
+              { r: 6, c: 4, hex: ['00', '00', '00', '0F'], tip: 'func1::tmp = 15 (0x0000000F)' }
+            ]
+          },
+          {
+            row: 3, spRow: 6, tone: 'ret', spText: 'SP = 0x1030 (return tmp 준비)',
+            title: '6단계 · return tmp; — 반환값 0x0F 전달 준비',
+            desc: '4행 return 문을 만나 tmp의 값(0x0000000F)을 호출자(main)로 돌려줄 준비를 하고 함수를 빠져나갑니다.',
+            writes: []
+          },
+          {
+            row: 4, spRow: 6, tone: 'ret', spText: 'SP = 0x1030 (func1 블록 종료)',
+            title: '7단계 · } — func1 실행 종료 및 복귀 직전',
+            desc: '5행 닫는 중괄호에 도달해 func1 프레임 사용이 끝나며, 곧 SP를 0x1040으로 되돌리고 복귀 주소(13행)로 돌아갑니다.',
+            writes: []
+          },
+          {
+            row: 12, spRow: 8, tone: 'ret', spText: 'SP = 0x1040 (func1 리턴 · 값 잔류!)',
+            title: '8단계 · return 복귀 — SP만 내려가고 AB CD 87 65는 잔류!',
+            desc: '13행 x가 0F(15)로 갱신되고 SP는 0x1040으로 복귀했지만, 0x1030~0x103F의 AB CD 87 65 데이터는 지워지지 않고 남아 있습니다.',
+            writes: [
+              { r: 8, c: 4, hex: ['00', '00', '00', '0F'], tip: 'main::x = 15 (반환값 0x0F 수신)' }
+            ]
+          },
+          {
+            row: 13, spRow: 8, tone: 'call', spText: 'SP = 0x1040 (func2(1) 호출)',
+            title: '9단계 · 14행 func2(1); 호출',
+            desc: '다음 줄인 14행에서 func2(1)을 호출합니다. 아까 func1이 남긴 0x1030 영역이 어떻게 덮어써지는지 확인해 보세요.',
+            writes: []
+          },
+          {
+            row: 6, spRow: 6, tone: 'callee', spText: 'SP = 0x1030 (func2(1) 덮어쓰기!)',
+            title: '10단계 · func2(1) 진입 — 잔류하던 AB CD 87 65를 덮어씀!',
+            desc: '아까 func1이 쓰던 0x1030~0x103F 번지에 func2(1) 프레임이 들어오며, 남아 있던 AB CD 87 65 위에 tag(CA FE 00 01)를 그대로 덮어씁니다.',
+            writes: [
+              { r: 7, c: 0, hex: ['00', '40', '00', '0E'], tip: 'func2(1) 복귀 주소 (main 14행)' },
+              { r: 7, c: 4, hex: ['00', '00', '00', '01'], tip: 'func2(1) 매개변수 n = 1' },
+              { r: 6, c: 0, hex: ['CA', 'FE', '00', '01'], tip: 'func2(1)::tag = 0xCAFE0001 (옛 key 덮어씀!)' }
+            ]
+          },
+          {
+            row: 7, spRow: 6, tone: 'callee', spText: 'SP = 0x1030 (cnt = 1 기록)',
+            title: '11단계 · 8행 int cnt = n; — 남은 tmp 자리도 덮어씀',
+            desc: '8행에서 지역변수 cnt = 1(00 00 00 01)이 기록되며 이전 func1의 tmp(00 00 00 0F) 자리까지 완전히 새 값으로 덮어써집니다.',
+            writes: [
+              { r: 6, c: 4, hex: ['00', '00', '00', '01'], tip: 'func2(1)::cnt = 1 (옛 tmp 덮어씀!)' }
+            ]
+          },
+          {
+            row: 8, spRow: 4, tone: 'callee', spText: 'SP = 0x1020 (func2(2) 재귀)',
+            title: '12단계 · func2(2) 재귀 호출 — 반환 없이 0x1020으로 누적',
+            desc: '탈출 조건 없이 자기 자신을 다시 호출해 SP가 0x1020으로 올라가며 랜덤 쓰레기값 위에 새 프레임이 계속 쌓입니다.',
+            writes: [
+              { r: 5, c: 0, hex: ['00', '40', '00', '09'], tip: 'func2(2) 복귀 주소 (9행)' },
+              { r: 5, c: 4, hex: ['00', '00', '00', '02'], tip: 'func2(2) 매개변수 n = 2' },
+              { r: 4, c: 0, hex: ['CA', 'FE', '00', '02'], tip: 'func2(2)::tag = 0xCAFE0002' },
+              { r: 4, c: 4, hex: ['00', '00', '00', '02'], tip: 'func2(2)::cnt = 2' }
+            ]
+          },
+          {
+            row: 8, spRow: 2, tone: 'warn', spText: 'SP = 0x1010 (스택 한계 도달!)',
+            title: '13단계 · func2(3) 재귀 호출 — 스택 한계선(0x1010) 도달',
+            desc: '할당된 마지막 스택 공간(0x1010~0x101F)까지 모두 찼습니다. 바로 위 0x1000~0x100F에는 다른 영역의 데이터가 놓여 있습니다.',
+            writes: [
+              { r: 3, c: 0, hex: ['00', '40', '00', '09'], tip: 'func2(3) 복귀 주소 (9행)' },
+              { r: 3, c: 4, hex: ['00', '00', '00', '03'], tip: 'func2(3) 매개변수 n = 3' },
+              { r: 2, c: 0, hex: ['CA', 'FE', '00', '03'], tip: 'func2(3)::tag = 0xCAFE0003' },
+              { r: 2, c: 4, hex: ['00', '00', '00', '03'], tip: 'func2(3)::cnt = 3' }
+            ]
+          },
+          {
+            row: 8, spRow: 0, tone: 'crash', spText: 'SP = 0x1000 (⚠ 타 영역 침범·오염!)',
+            title: '14단계 · func2(4) 재귀 ➔ 오버플로우 (타 영역 데이터 오염!)',
+            desc: 'OS 보호가 개입하지 않으면 강제 종료되지도 않은 채, 한계선 너머 기존 데이터(11 22 33 44, DE AD BE EF)를 덮어써 조용히 파괴합니다!',
+            writes: [
+              { r: 1, c: 0, hex: ['00', '40', '00', '09'], tip: '[침범·오염!] 기존 00 00 03 E8 덮어씀' },
+              { r: 1, c: 4, hex: ['00', '00', '00', '04'], tip: '[침범·오염!] 기존 DE AD BE EF 덮어씀' },
+              { r: 0, c: 0, hex: ['CA', 'FE', '00', '04'], tip: '[침범·오염!] 기존 11 22 33 44 덮어씀' },
+              { r: 0, c: 4, hex: ['00', '00', '00', '04'], tip: '[침범·오염!] 기존 55 66 77 88 덮어씀' }
+            ]
+          }
+        ];
+
+        // 초기 9개 주소 행 + 0x1010 스택 한계선 + 3단계 전용 return/전달인자 라벨 행 생성
+        const hexGrid = document.getElementById('cs-hex-grid');
+        const addrEls = [];
+        const byteEls = [];
+        let callTagsEl = null;
+
+        ADDRS.forEach((addr, r) => {
+          if (r === 2) {
+            const lim = document.createElement('div');
+            lim.className = 'cs-limit-line';
+            lim.textContent = '▲ 타 데이터 영역 │ ▼ 콜 스택 한계선 (0x1010)';
+            hexGrid.appendChild(lim);
+          }
+          if (r === 7) {
+            callTagsEl = document.createElement('div');
+            callTagsEl.className = 'cs-hex-row cs-call-tags';
+            callTagsEl.hidden = true;
+            callTagsEl.innerHTML =
+              '<span></span>' +
+              '<span class="cs-call-tag is-ret">▼ return</span>' +
+              '<span></span>' +
+              '<span class="cs-call-tag is-arg">▼ 전달인자</span>';
+            hexGrid.appendChild(callTagsEl);
+          }
+          const rowEl = document.createElement('div');
+          rowEl.className = 'cs-hex-row';
+
+          const addrCell = document.createElement('span');
+          addrCell.className = 'cs-addr-cell';
+          addrCell.innerHTML = '<span>' + addr + '</span><span class="cs-sp-pill"></span>';
+          rowEl.appendChild(addrCell);
+          addrEls.push(addrCell);
+
+          const rowBytes = [];
+          for (let c = 0; c < 8; c++) {
+            if (c === 4) {
+              const gap = document.createElement('span');
+              gap.className = 'cs-gap-col';
+              gap.setAttribute('aria-hidden', 'true');
+              rowEl.appendChild(gap);
+            }
+            const b = document.createElement('span');
+            b.className = 'cs-byte';
+            b.textContent = INIT_MEM[r][c];
+            rowEl.appendChild(b);
+            rowBytes.push(b);
+          }
+          byteEls.push(rowBytes);
+          hexGrid.appendChild(rowEl);
+        });
+
+        let cur2 = 0;
+        let timer2 = null;
+        const pcBar2 = document.getElementById('cs-pc-bar');
+        const lines2 = Array.from(root2.querySelectorAll('.fn-line'));
+        const dots2 = Array.from(root2.querySelectorAll('.cs-bar'));
+        const playBtn2 = document.getElementById('cs-play');
+        const hexPanel = document.getElementById('cs-hex-panel');
+        const spReadout = document.getElementById('cs-sp-readout');
+        const helpBtn = document.getElementById('cs-help-btn');
+        const helpPop = document.getElementById('cs-help-pop');
+        const helpClose = document.getElementById('cs-help-close');
+
+        function setHelpOpen(open) {
+          helpPop.hidden = !open;
+          helpBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
+
+        helpBtn.addEventListener('click', () => setHelpOpen(helpPop.hidden));
+        helpClose.addEventListener('click', () => setHelpOpen(false));
+
+        function stopAuto2() {
+          if (timer2) { clearInterval(timer2); timer2 = null; }
+          playBtn2.textContent = cur2 >= STEPS2.length - 1 ? '↻ 다시 실행' : '▶ 실행';
+        }
+
+        function render2(idx) {
+          cur2 = Math.max(0, Math.min(STEPS2.length - 1, idx));
+          const s = STEPS2[cur2];
+          document.getElementById('cs-step-label').textContent = 'STEP ' + (cur2 + 1) + ' / ' + STEPS2.length;
+
+          lines2.forEach(line => line.classList.toggle('is-active', Number(line.dataset.row) === s.row));
+          const activeLine = lines2[s.row];
+          if (activeLine && pcBar2) {
+            pcBar2.style.height = activeLine.offsetHeight + 'px';
+            pcBar2.style.transform = 'translateY(' + activeLine.offsetTop + 'px)';
+            pcBar2.dataset.tone = s.tone;
+          }
+
+          dots2.forEach((d, i) => d.classList.toggle('is-on', i === cur2));
+
+          // 팝업 내용 동기화
+          helpPop.dataset.tone = s.tone;
+          document.getElementById('cs-help-title').textContent = s.title;
+          document.getElementById('cs-help-desc').textContent = s.desc;
+
+          // 0단계 ~ 현재 단계까지 실제 바이트 쓰기 누적 재생
+          const mem = INIT_MEM.map(row => row.slice());
+          const tips = INIT_TIPS.map(row => [row[0], row[0], row[0], row[0], row[1], row[1], row[1], row[1]]);
+          const everWritten = INIT_MEM.map(() => Array(8).fill(false));
+          const justWritten = INIT_MEM.map(() => Array(8).fill(false));
+
+          for (let st = 0; st <= cur2; st++) {
+            STEPS2[st].writes.forEach(w => {
+              for (let k = 0; k < 4; k++) {
+                mem[w.r][w.c + k] = w.hex[k];
+                tips[w.r][w.c + k] = w.tip;
+                everWritten[w.r][w.c + k] = true;
+                if (st === cur2) justWritten[w.r][w.c + k] = true;
+              }
+            });
+          }
+
+          const isOverflow = s.spRow < 2;
+          const isStep3Call = !!s.showCallTags;
+          if (callTagsEl) callTagsEl.hidden = !isStep3Call;
+          hexPanel.classList.toggle('is-corrupted', isOverflow);
+          spReadout.classList.toggle('is-corrupted', isOverflow);
+          spReadout.textContent = s.spText;
+
+          for (let r = 0; r < ADDRS.length; r++) {
+            const isSp = r === s.spRow;
+            const addrCell = addrEls[r];
+            addrCell.className = 'cs-addr-cell'
+              + (r < 2 ? (isOverflow ? ' is-corrupt-addr' : ' is-adj-addr') : '')
+              + (isSp && !isOverflow ? ' is-sp-addr' : '')
+              + (isSp && isOverflow ? ' is-corrupt-addr' : '');
+            addrCell.lastElementChild.textContent = isSp ? '◂SP' : '';
+
+            for (let c = 0; c < 8; c++) {
+              const bEl = byteEls[r][c];
+              bEl.textContent = mem[r][c];
+              bEl.title = ADDRS[r].slice(0, 5) + (r % 2 === 0 ? c : (8 + c)).toString(16).toUpperCase() + ' : ' + tips[r][c];
+
+              let cls = 'cs-byte';
+              if (isStep3Call && r === 7) {
+                cls += c < 4 ? ' is-step3-ret' : ' is-step3-arg';
+              } else if (justWritten[r][c]) {
+                cls += (r < 2) ? ' is-corrupt' : ' is-written';
+              } else if (r < 2) {
+                cls += everWritten[r][c] ? ' is-corrupt' : ' is-adj';
+              } else if (r >= s.spRow) {
+                cls += everWritten[r][c] ? ' is-active-mem' : ' is-frame-raw';
+              } else if (everWritten[r][c]) {
+                cls += ' is-residual';
+              }
+              bEl.className = cls;
+            }
+          }
+
+          if (!timer2) playBtn2.textContent = cur2 >= STEPS2.length - 1 ? '↻ 다시 실행' : '▶ 실행';
+        }
+
+        function toggleAuto2() {
+          if (timer2) {
+            stopAuto2();
+            return;
+          }
+          if (cur2 >= STEPS2.length - 1) render2(0);
+          playBtn2.textContent = '⏸ 정지';
+          timer2 = setInterval(() => {
+            if (cur2 >= STEPS2.length - 1) {
+              stopAuto2();
+            } else {
+              render2(cur2 + 1);
+              if (cur2 >= STEPS2.length - 1) stopAuto2(); // 한 번 끝까지 가면 자동 정지!
+            }
+          }, 1200);
+        }
+
+        document.getElementById('cs-prev').addEventListener('click', () => { stopAuto2(); render2(cur2 - 1); });
+        document.getElementById('cs-next').addEventListener('click', () => { stopAuto2(); render2(cur2 + 1); });
+        document.getElementById('cs-reset').addEventListener('click', () => { stopAuto2(); render2(0); });
+        playBtn2.addEventListener('click', toggleAuto2);
+        dots2.forEach(d => d.addEventListener('click', () => { stopAuto2(); render2(Number(d.dataset.step)); }));
+        lines2.forEach(l => {
+          if (l.dataset.stepJump !== undefined) {
+            l.addEventListener('click', () => { stopAuto2(); render2(Number(l.dataset.stepJump)); });
+          }
+        });
+
+        const ro2 = new ResizeObserver(() => render2(cur2));
+        ro2.observe(root2);
+
+        const hookBox2 = root2.parentElement.querySelector('.fn-cue-hooks');
+        let mo2 = null;
+        if (hookBox2) {
+          mo2 = new MutationObserver(() => {
+            const active = hookBox2.querySelector('.cue-box');
+            if (active) {
+              const m = active.dataset.key.match(/^cs-s(\d+)$/);
+              if (m) { stopAuto2(); render2(Number(m[1])); }
+            }
+          });
+          mo2.observe(hookBox2, { subtree: true, attributes: true, attributeFilter: ['class'] });
+        }
+
+        requestAnimationFrame(() => render2(0));
+        Disposers.push(() => { stopAuto2(); ro2.disconnect(); if (mo2) mo2.disconnect(); });
+      }
+
+      if (Disposers.length && window.SiteModules && window.SiteModules.Navigation && typeof window.SiteModules.Navigation.onLeave === 'function') {
+        window.SiteModules.Navigation.onLeave(() => {
+          Disposers.forEach(fn => fn());
+        });
+      }
+    </script>
+  </article>
+</body>
+
+</html>

@@ -1,7 +1,7 @@
 /**
  * @file modules/features/common-gui-demo.css
  * @module SiteModules.CommonGuiDemo
- * @description 「WebApp Common GUI」 묶음(column/ai/webapp-common-gui/*.html) 전용 스타일.
+ * @description 「WebApp Common GUI」 묶음(sh-standard/webapp-common-gui/*.html) 전용 스타일.
  *   한 번 붙은 스타일시트는 다른 문서로 옮겨도 남으므로, 모든 선택자를 이 묶음만 쓰는 이름 아래로 묶는다.
  *     .cg            공통 범위. 본문(.cg-doc) · 헤더 패널(.cg-panel) · 레일 패널(.cg-rail)에 함께 붙는다
  *     .cg-doc        문서 본문 (article 안의 감싸는 div)

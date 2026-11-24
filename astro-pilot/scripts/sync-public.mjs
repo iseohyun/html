@@ -19,7 +19,7 @@ const ENTRIES = [
   ['search-index.json', false],
   ['modules', false],
   ['source', false],
-  ['coding/svg', false],
+  ['basicStudy/engineering/language/svg', false],
 ];
 
 mkdirSync(publicDir, { recursive: true });

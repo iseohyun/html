@@ -25,14 +25,14 @@ set LEGACY_BASE=http://localhost:5174/html/# && npm.cmd run build
 
 | 파일 | 하는 일 |
 | :--- | :--- |
-| `scripts/sync-public.mjs` | 저장소 루트의 공통 자원(`style.css`, `modules/`, `source/`, `coding/svg/`, `hierarchy.json`)을 `public/`으로 복사합니다. dev · build 전에 저절로 실행됩니다. |
+| `scripts/sync-public.mjs` | 저장소 루트의 공통 자원(`style.css`, `modules/`, `source/`, `basicStudy/engineering/language/svg/`, `hierarchy.json`)을 `public/`으로 복사합니다. dev · build 전에 저절로 실행됩니다. |
 | `src/lib/site.mjs` | 사이트맵을 읽고, 옮긴 범위(`MIGRATED_PREFIXES`)와 기존 사이트로 보낼 주소를 정합니다. 사이트맵 순회는 `modules/core/hierarchy.js`를 그대로 불러 씁니다. |
 | `src/lib/legacy-doc.mjs` | 기존 문서 HTML을 jsdom으로 읽어 `<article>` 본문, 문서 전용 CSS · 스크립트, 설명문, 마지막 수정일을 꺼냅니다. |
-| `src/pages/[...slug].astro` | 옮긴 문서마다 `/coding/C/function.html` 같은 기존 주소로 페이지를 만듭니다. |
+| `src/pages/[...slug].astro` | 옮긴 문서마다 `/basicStudy/engineering/language/C/function.html` 같은 기존 주소로 페이지를 만듭니다. |
 | `src/layouts/Shell.astro` | 페이지 뼈대: 메타 태그(설명, canonical, OG, 이동 경로 JSON-LD), 본문, 공통 모듈. |
 | `src/components/Sidebar.astro`, `SitemapNode.astro` | 레일과 사이트맵 트리를 빌드할 때 그립니다. |
 | `public/pilot/navigation-static.js` | 기존 `navigation.js`(해시 라우터)를 대신합니다. 미리 그린 레일 · 트리에 동작을 붙이고 기존 모듈을 초기화합니다. |
-| `src/pages/index.astro` | 옮긴 문서 목록. 예전 공유 주소(`/#/coding/C/…`)로 오면 새 주소로 넘겨 줍니다. |
+| `src/pages/index.astro` | 옮긴 문서 목록. 예전 공유 주소(`/#/basicStudy/engineering/language/C/…`)로 오면 새 주소로 넘겨 줍니다. |
 
 원본 문서는 저장소 루트에 그대로 있고, 빌드할 때 읽어 옵니다. 문서를 고치면 다시 빌드하면 됩니다.
 

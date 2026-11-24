@@ -5,7 +5,7 @@ const crypto = require('crypto');
 const TEST_ADMIN_EMAIL = 'admin@example.com';
 const TEST_ADMIN_HASH = crypto.createHash('sha256').update(TEST_ADMIN_EMAIL).digest('hex');
 const DEV_PAGE_TITLE = '진법';
-const DEV_PAGE_URL = '/basicStudy/engineering/binary/binary.html';
+const DEV_PAGE_URL = '/basicStudy/engineering/representation/binary/binary.html';
 
 // 구글 로그인 창 대신 쓰는 가짜 Firebase: window.__fakeGoogleUser 를 로그인한 사용자로 돌려준다
 const FAKE_FIREBASE_APP = `
@@ -86,15 +86,15 @@ test.describe('로그인과 개발 중인 문서', () => {
     page.on('request', request => { if (request.url().includes('firebasejs')) firebaseRequests.push(request.url()); });
     await mockSite(page, { user: null });
 
-    await page.goto('/index.html#/sitemap/공학/표현 원리');
+    await page.goto('/index.html#/sitemap/공학/표현 기법');
     await expect(page.locator('article .auto-overview-card').first()).toBeVisible();
     await expect(page.locator('article .auto-overview-pages a', { hasText: DEV_PAGE_TITLE })).toHaveCount(0);
 
     await openSitemap(page);
     await expect(page.locator(`#sitemap-tree a[href="${DEV_PAGE_URL}"]`)).toHaveCount(0);
     await expect(page.locator('#sitemap-tree .tree-dev-count')).toHaveCount(0);
-    // 글 수에서도 빠진다: 표현 원리는 글자 3 + 베지어 2 = 5
-    await expect(folder(page, '표현 원리').locator(':scope > .tree-row > .tree-count')).toHaveText('(5)');
+    // 글 수에서도 빠진다: 표현 기법은 글자 3 + 베지어 2 + 정규표현식 · LaTeX 2 = 7
+    await expect(folder(page, '표현 기법').locator(':scope > .tree-row > .tree-count')).toHaveText('(7)');
 
     await page.goto(`/index.html#${DEV_PAGE_URL}`);
     await expect(page.locator('.error-state-title')).toHaveText('개발 중인 문서입니다');
@@ -134,8 +134,8 @@ test.describe('로그인과 개발 중인 문서', () => {
     await expect(devLink.locator('xpath=..')).toHaveClass(/this-doc/);
 
     // 공개 글 수는 그대로, 개발중 글 수는 빨간 +1 로: 그 문서를 품은 묶음마다 붙는다
-    const group = folder(page, '표현 원리');
-    await expect(group.locator(':scope > .tree-row > .tree-count')).toHaveText('(5)');
+    const group = folder(page, '표현 기법');
+    await expect(group.locator(':scope > .tree-row > .tree-count')).toHaveText('(7)');
     await expect(group.locator(':scope > .tree-row > .tree-dev-count')).toHaveText('+1');
     await expect(folder(page, '공학').locator(':scope > .tree-row > .tree-dev-count')).toHaveText('+1');
     await expect(folder(page, '수학').locator(':scope > .tree-row > .tree-dev-count')).toHaveCount(0);

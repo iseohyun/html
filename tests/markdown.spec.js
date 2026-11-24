@@ -267,7 +267,7 @@ test.describe('마크다운 문서 보기', () => {
 test.describe('칼럼 > AI 의 마크다운 문서', () => {
   test('Full Code Review Checklist 가 장 6개 · 표 5개 · 코드 1개로 보인다', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto('/index.html#/column/ai/full-code-review-checklist.md');
+    await page.goto('/index.html#/basicStudy/engineering/tools/full-code-review-checklist.md');
 
     const article = page.locator('article');
     await expect(page.locator('#header-title')).toHaveText('Full Code Review Checklist');

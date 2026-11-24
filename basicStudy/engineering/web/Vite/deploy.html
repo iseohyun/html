@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta keywords="iseohyun, 튜토리얼, Vite, 비트, 배포, GitHub Pages, base, SPA, 404">
+  <meta author="iseohyun">
+
+  <!-- 페이지 타이틀 -->
+  <title>배포와 팁: Vite - iseohyun </title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-453XSP5W9M');
+  </script>
+
+  <!-- 목차 및 공통 모듈 -->
+  <script src="/modules/script.js?v=20261119v11" defer></script>
+
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("/style.css?v=20261119v11");
+  </style>
+
+  <!-- 슬라이드 · 스크립트 (보고서 형식) -->
+  <link rel="stylesheet" href="/modules/features/slides.css?v=20261119v11">
+  <link rel="stylesheet" href="/basicStudy/engineering/web/slides-web.css?v=20261119v11">
+  <script src="/modules/features/slides.js?v=20261119v11" defer></script>
+</head>
+
+<body>
+  <tags>Vite, 비트, 배포, Deploy, GitHub Pages, Netlify, Firebase Hosting, base, SPA, 404, 캐시, 문제 해결, 팁</tags>
+  <article>
+    <!-- 형식: (슬라이드 + 대사 + 첨부) 의 반복. 공통 스타일은 /basicStudy/engineering/web/slides-web.css -->
+    <div class="slides-doc" data-page="vite-deploy" lang="ko">
+      <h1 class="sl-chapter">배포와 팁</h1>
+
+      <!-- 1p. 배포: dist를 서버에 올린다 -->
+      <section id="vd-s1" data-title="1 배포: dist를 서버에 올린다">
+        <h2>배포: dist를 서버에 올린다</h2>
+        <div class="slide-frame">
+          <div class="slide">
+            <div class="slide-body">
+              <div class="w-head">
+                <span class="slide-eyebrow"><b class="slide-no">1</b>Vite · 배포와 팁 · 정적 호스팅</span>
+                <div class="slide-title" role="heading" aria-level="3">배포: dist를 서버에 올린다</div>
+              </div>
+              <ul class="points">
+                <li data-key="vd1-static"><b>정적 파일</b>: <code>dist</code>는 서버에서 실행할 것이 없는 파일 묶음이므로 어떤 웹 서버에든 올릴 수 있음</li>
+                <li data-key="vd1-base"><b>base</b>: 도메인 바로 아래가 아닌 하위 경로에 올릴 때는 설정의 <code>base</code>를 그 경로로 맞춤</li>
+              </ul>
+              <div class="w-stage">
+<svg class="w-svg" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 340" role="img">
+  <title>빌드한 dist 폴더를 여러 호스팅에 올려 사용자에게 전달하는 흐름</title>
+  <desc>npm run build 로 만든 dist 폴더를 GitHub Pages, Netlify 나 Vercel, Firebase Hosting, 직접 운영하는 서버 가운데 한 곳에 올리면 사용자의 브라우저가 내려받습니다.</desc>
+  <defs><marker id="wm22-sbt0-blue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#2563eb"/></marker><marker id="wm22-sbt0-blue-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#2563eb"/></marker><marker id="wm22-sbt0-green" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#059669"/></marker><marker id="wm22-sbt0-green-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#059669"/></marker><marker id="wm22-sbt0-orange" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#d97706"/></marker><marker id="wm22-sbt0-orange-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#d97706"/></marker><marker id="wm22-sbt0-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#7c3aed"/></marker><marker id="wm22-sbt0-purple-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#7c3aed"/></marker><marker id="wm22-sbt0-red" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#dc2626"/></marker><marker id="wm22-sbt0-red-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#dc2626"/></marker><marker id="wm22-sbt0-gray" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#64748b"/></marker><marker id="wm22-sbt0-gray-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#64748b"/></marker><marker id="wm22-sbt0-teal" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#0891b2"/></marker><marker id="wm22-sbt0-teal-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#0891b2"/></marker></defs>
+  <rect x="20" y="124" width="160" height="92" rx="10" fill="#7c3aed" fill-opacity="0.12" stroke="#7c3aed" stroke-width="1.6" data-key="vd1-build"/><text x="100" y="154.5" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor" class="mono">npm run build</text><text x="100" y="174.4" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">내 컴퓨터 또는</text><text x="100" y="192.9" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">자동화 서버에서</text>
+  <line x1="180" y1="170" x2="208" y2="170" stroke="#64748b" stroke-width="2" marker-end="url(#wm22-sbt0-gray)"/>
+  <rect x="210" y="124" width="150" height="92" rx="10" fill="#059669" fill-opacity="0.12" stroke="#059669" stroke-width="1.6" data-key="vd1-dist"/><text x="285" y="155.1" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor" class="mono">dist/</text><text x="285" y="175.4" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">HTML · CSS · JS</text><text x="285" y="193.9" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">이미지</text>
+  <line x1="360" y1="150" x2="408" y2="54" stroke="#64748b" stroke-width="2" marker-end="url(#wm22-sbt0-gray)"/>
+  <line x1="360" y1="162" x2="408" y2="128" stroke="#64748b" stroke-width="2" marker-end="url(#wm22-sbt0-gray)"/>
+  <line x1="360" y1="178" x2="408" y2="212" stroke="#64748b" stroke-width="2" marker-end="url(#wm22-sbt0-gray)"/>
+  <line x1="360" y1="190" x2="408" y2="286" stroke="#64748b" stroke-width="2" marker-end="url(#wm22-sbt0-gray)"/>
+  <rect x="410" y="14" width="320" height="66" rx="10" fill="#2563eb" fill-opacity="0.12" stroke="#2563eb" stroke-width="1.6" data-key="vd1-gh"/><text x="570" y="41.4" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">GitHub Pages</text><text x="570" y="61.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">저장소에 올리면 무료 · 주소가 하위 경로</text>
+  <rect x="410" y="90" width="320" height="66" rx="10" fill="#2563eb" fill-opacity="0.12" stroke="#2563eb" stroke-width="1.6" data-key="vd1-nf"/><text x="570" y="116.7" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">Netlify · Vercel · Cloudflare Pages</text><text x="570" y="136.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">저장소를 연결하면 푸시할 때마다 자동 배포</text>
+  <rect x="410" y="166" width="320" height="66" rx="10" fill="#2563eb" fill-opacity="0.12" stroke="#2563eb" stroke-width="1.6" data-key="vd1-fb"/><text x="570" y="193.4" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">Firebase Hosting</text><text x="570" y="213.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">firebase deploy 명령으로 올림</text>
+  <rect x="410" y="242" width="320" height="66" rx="10" fill="#2563eb" fill-opacity="0.12" stroke="#2563eb" stroke-width="1.6" data-key="vd1-own"/><text x="570" y="269.4" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">직접 운영하는 서버</text><text x="570" y="289.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">Nginx · IIS 의 웹 폴더에 복사</text>
+  <line x1="730" y1="54" x2="778" y2="150" stroke="#64748b" stroke-width="2" marker-end="url(#wm22-sbt0-gray)"/>
+  <line x1="730" y1="128" x2="778" y2="162" stroke="#64748b" stroke-width="2" marker-end="url(#wm22-sbt0-gray)"/>
+  <line x1="730" y1="212" x2="778" y2="178" stroke="#64748b" stroke-width="2" marker-end="url(#wm22-sbt0-gray)"/>
+  <line x1="730" y1="286" x2="778" y2="190" stroke="#64748b" stroke-width="2" marker-end="url(#wm22-sbt0-gray)"/>
+  <rect x="780" y="124" width="160" height="92" rx="10" fill="#64748b" fill-opacity="0.12" stroke="#64748b" stroke-width="1.6" data-key="vd1-user"/><text x="860" y="155.1" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">사용자</text><text x="860" y="175.4" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">브라우저가</text><text x="860" y="193.9" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">파일을 내려받는다</text>
+  <text x="480" y="332" text-anchor="middle" font-size="13" fill="currentColor" fill-opacity="0.66">어디에 올리든 과정은 같다: 빌드하고, dist 의 내용을 웹 서버가 내주는 폴더에 둔다</text>
+</svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="script">
+          <p data-cue="vd1-build:box vd1-dist:box">첫 번째 슬라이드는 배포입니다. 앞 문서에서 <code>npm run build</code>가 <code>dist</code> 폴더를 만든다는 것까지 보았습니다. 배포는 그 폴더의 내용을 인터넷에서 접근할 수 있는 서버에 올리는 일입니다.</p>
+          <p data-cue="vd1-static:check vd1-user:box"><mark><code>dist</code>에는 서버에서 실행해야 할 프로그램이 없습니다. 파일을 요청받으면 그대로 내주기만 하면 됩니다.</mark> 이런 것을 정적 호스팅이라고 합니다. <a href="/basicStudy/engineering/web/html/domain.html">HTML 시작하기</a>에서 HTML 파일을 서버 폴더에 넣어 열었던 것과 같은 방식입니다.</p>
+          <p data-cue="vd1-gh:box vd1-nf:box">올릴 곳은 여러 가지입니다. GitHub Pages는 저장소만 있으면 무료로 쓸 수 있습니다. Netlify, Vercel, Cloudflare Pages는 저장소를 연결해 두면 푸시할 때마다 빌드와 배포를 대신 해 줍니다.</p>
+          <p data-cue="vd1-fb:box vd1-own:box">Firebase Hosting은 명령 한 줄로 올리고, 직접 운영하는 서버가 있다면 웹 서버가 내주는 폴더에 복사하면 됩니다. 어느 쪽이든 하는 일은 같습니다.</p>
+          <p data-cue="vd1-base:check">한 가지만 주의합니다. GitHub Pages의 기본 주소처럼 사이트가 도메인 바로 아래가 아니라 하위 경로에 놓이면, 설정의 <code>base</code>를 그 경로로 바꿔야 합니다. 바꾸지 않으면 자원을 엉뚱한 주소에서 찾아 빈 화면이 나옵니다.</p>
+          <p class="meta"><time datetime="2026-11-18">2026-11-18</time> · 도메인 연결은 HTML 시작하기 문서의 「도메인 구매」를 참고합니다</p>
+        </div>
+
+        <div class="w-att">
+          <details>
+            <summary>첨부 · base 설정</summary>
+            <div class="w-att-body">
+<p><code>index.html</code>이 자원을 부르는 주소는 <code>/assets/index-a1b2c3.js</code>처럼 슬래시로 시작합니다. 도메인의 맨 위에서부터 찾는다는 뜻입니다.</p>
+<table><thead><tr><th>사이트 주소</th><th><code>base</code></th><th>자원 주소</th></tr></thead><tbody><tr><td class="nowrap"><code>https://example.com/</code></td><td><code>'/'</code> (기본값)</td><td><code>/assets/index-a1b2c3.js</code></td></tr><tr><td class="nowrap"><code>https://이름.github.io/my-app/</code></td><td><code>'/my-app/'</code></td><td><code>/my-app/assets/index-a1b2c3.js</code></td></tr><tr><td class="nowrap">어느 경로에 놓일지 모름</td><td><code>'./'</code></td><td><code>./assets/index-a1b2c3.js</code> (상대 경로)</td></tr></tbody></table>
+<blockquote><pre>export default defineConfig({
+  base: '/my-app/',
+});</pre></blockquote>
+<p>코드에서 <code>public</code>의 파일을 가리킬 때도 <code>base</code>를 붙여야 합니다. <code>import.meta.env.BASE_URL</code>이 그 값을 갖고 있습니다.</p>
+<blockquote><pre>const icon = import.meta.env.BASE_URL + 'favicon.svg';</pre></blockquote>
+            </div>
+          </details>
+          <details>
+            <summary>첨부 · 예시 — GitHub Pages에 자동 배포</summary>
+            <div class="w-att-body">
+<ol>
+  <li><code>vite.config.js</code>의 <code>base</code>를 <code>'/저장소이름/'</code>으로 설정합니다 (<code>이름.github.io</code> 저장소이거나 자체 도메인을 쓰면 <code>'/'</code>).</li>
+  <li>저장소의 Settings → Pages → Source를 <q>GitHub Actions</q>로 바꿉니다.</li>
+  <li>아래 파일을 <code>.github/workflows/deploy.yml</code>로 저장하고 푸시합니다.</li>
+</ol>
+<blockquote><pre>name: Deploy
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - uses: actions/deploy-pages@v4</pre></blockquote>
+<p><code>main</code> 브랜치에 푸시할 때마다 GitHub의 서버가 빌드해서 올립니다. <code>dist</code>는 저장소에 올리지 않습니다. Git 사용법은 <a href="/basicStudy/engineering/tools/git/init.html">Git 기초 사용법</a>을 참고합니다.</p>
+            </div>
+          </details>
+          <details>
+            <summary>첨부 · 예시 — Firebase Hosting · 직접 운영하는 서버</summary>
+            <div class="w-att-body">
+<div class="blockquote-title">Firebase Hosting</div>
+<blockquote><pre>npm install -g firebase-tools
+firebase login
+firebase init hosting        # public 디렉터리를 묻는 질문에 dist 라고 답한다
+npm run build
+firebase deploy</pre></blockquote>
+<div class="blockquote-title">직접 운영하는 서버 (Nginx · IIS)</div>
+<p><code>dist</code> 안의 <b>내용</b>을 웹 서버의 문서 폴더(Nginx는 <code>/usr/share/nginx/html</code>, IIS는 <code>C:\inetpub\wwwroot</code>)에 복사합니다. <code>dist</code> 폴더 자체가 아니라 그 안의 <code>index.html</code>과 <code>assets</code>가 문서 폴더 바로 아래에 오게 합니다. IIS 설치는 <a href="/basicStudy/engineering/web/html/domain.html">HTML 시작하기</a>의 「IIS서버 설치」를 참고합니다.</p>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- 2p. 새로 고치면 404가 나오는 이유 -->
+      <section id="vd-s2" data-title="2 새로 고치면 404가 나오는 이유">
+        <h2>새로 고치면 404가 나오는 이유</h2>
+        <div class="slide-frame">
+          <div class="slide">
+            <div class="slide-body">
+              <div class="w-head">
+                <span class="slide-eyebrow"><b class="slide-no">2</b>Vite · 배포와 팁 · SPA 라우팅</span>
+                <div class="slide-title" role="heading" aria-level="3">새로 고치면 404가 나오는 이유</div>
+              </div>
+              <ul class="points">
+                <li data-key="vd2-why"><b>원인</b>: 화면 전환은 브라우저 안에서 일어났을 뿐, 서버에는 <code>/about</code>이라는 파일이 없음</li>
+                <li data-key="vd2-fix"><b>해결</b>: 서버가 모르는 경로에는 <code>index.html</code>을 내주게 설정하거나, 해시(<code>#</code>) 주소를 사용</li>
+              </ul>
+              <div class="w-stage">
+<svg class="w-svg" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 340" role="img">
+  <title>단일 페이지 앱에서 새로 고침이 404 가 되는 원인과 두 가지 해결 방법</title>
+  <desc>브라우저 안에서 주소만 /about 으로 바뀐 상태에서 새로 고치면 서버가 about 파일을 찾지 못해 404 를 돌려줍니다. 서버가 모르는 경로에 index.html 을 내주게 하거나 해시 주소를 쓰면 해결됩니다.</desc>
+  <defs><marker id="wm23-nkcb-blue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#2563eb"/></marker><marker id="wm23-nkcb-blue-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#2563eb"/></marker><marker id="wm23-nkcb-green" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#059669"/></marker><marker id="wm23-nkcb-green-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#059669"/></marker><marker id="wm23-nkcb-orange" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#d97706"/></marker><marker id="wm23-nkcb-orange-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#d97706"/></marker><marker id="wm23-nkcb-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#7c3aed"/></marker><marker id="wm23-nkcb-purple-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#7c3aed"/></marker><marker id="wm23-nkcb-red" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#dc2626"/></marker><marker id="wm23-nkcb-red-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#dc2626"/></marker><marker id="wm23-nkcb-gray" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#64748b"/></marker><marker id="wm23-nkcb-gray-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#64748b"/></marker><marker id="wm23-nkcb-teal" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#0891b2"/></marker><marker id="wm23-nkcb-teal-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#0891b2"/></marker></defs>
+  <rect x="20" y="10" width="410" height="320" rx="10" fill="#64748b" fill-opacity="0.05" stroke="#64748b" stroke-width="1.6" data-key="vd2-left"/>
+  <text x="225" y="38" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">문제</text>
+  <rect x="45" y="54" width="360" height="66" rx="10" fill="#2563eb" fill-opacity="0.12" stroke="#2563eb" stroke-width="1.6" data-key="vd2-p1"/><text x="225" y="80.7" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">① 앱 안에서 「소개」 를 누른다</text><text x="225" y="100.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">주소만 /about 으로 바뀐다 (서버 요청 없음)</text>
+  <line x1="225" y1="120" x2="225" y2="140" stroke="#64748b" stroke-width="2" marker-end="url(#wm23-nkcb-gray)"/>
+  <rect x="45" y="142" width="360" height="66" rx="10" fill="#d97706" fill-opacity="0.12" stroke="#d97706" stroke-width="1.6" data-key="vd2-p2"/><text x="225" y="168.7" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">② 새로 고침 또는 주소를 직접 입력</text><text x="225" y="188.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">브라우저가 서버에 /about 을 요청한다</text>
+  <line x1="225" y1="208" x2="225" y2="228" stroke="#64748b" stroke-width="2" marker-end="url(#wm23-nkcb-gray)"/>
+  <rect x="45" y="230" width="360" height="66" rx="10" fill="#dc2626" fill-opacity="0.12" stroke="#dc2626" stroke-width="1.6" data-key="vd2-p3"/><text x="225" y="256.7" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">③ 404 Not Found</text><text x="225" y="276.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">서버에는 index.html 과 assets 뿐이다</text>
+  <rect x="470" y="10" width="470" height="320" rx="10" fill="#64748b" fill-opacity="0.05" stroke="#64748b" stroke-width="1.6" data-key="vd2-right"/>
+  <text x="705" y="38" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">해결</text>
+  <rect x="495" y="54" width="420" height="116" rx="10" fill="#059669" fill-opacity="0.12" stroke="#059669" stroke-width="1.6" data-key="vd2-a"/><text x="705" y="87.5" text-anchor="middle" font-size="15" font-weight="700" fill="currentColor">방법 A — 서버 설정 (rewrite)</text><text x="705" y="107.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">서버가 모르는 경로에는 index.html 을 내준다</text><text x="705" y="126.2" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">앱이 주소를 읽어 /about 화면을 그린다</text><text x="705" y="144.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">주소가 깔끔하다 · 서버 설정이 필요하다</text>
+  <rect x="495" y="184" width="420" height="116" rx="10" fill="#7c3aed" fill-opacity="0.12" stroke="#7c3aed" stroke-width="1.6" data-key="vd2-b"/><text x="705" y="217.6" text-anchor="middle" font-size="15" font-weight="700" fill="currentColor">방법 B — 해시 주소</text><text x="705" y="237.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">주소를 /#/about 처럼 쓴다</text><text x="705" y="256.2" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66"># 뒤는 서버로 보내지 않으므로 항상 / 만 요청한다</text><text x="705" y="274.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">서버 설정이 필요 없다 · 주소에 # 이 들어간다</text>
+</svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="script">
+          <p data-cue="vd2-p1:box">두 번째 슬라이드는 배포한 뒤에 가장 자주 만나는 문제입니다. React 같은 단일 페이지 앱은 HTML 문서를 하나만 받고, 그 뒤의 화면 전환은 Javascript가 처리합니다. 라우팅 라이브러리를 쓰면 메뉴를 누를 때 주소창이 <code>/about</code>으로 바뀌지만, 서버에는 아무 요청도 가지 않습니다.</p>
+          <p data-cue="vd2-why:check vd2-p2:box vd2-p3:box"><mark>문제는 그 상태에서 새로 고치거나 그 주소를 다른 사람에게 보냈을 때입니다. 브라우저는 서버에 <code>/about</code>을 요청하는데, 서버에는 그런 파일이 없습니다.</mark> <code>dist</code>에는 <code>index.html</code>과 <code>assets</code>뿐이기 때문입니다. 개발 서버에서는 Vite가 알아서 처리해 주므로 배포한 뒤에야 드러납니다.</p>
+          <p data-cue="vd2-fix:check vd2-a:box">해결 방법은 두 가지입니다. 첫째는 서버가 모르는 경로를 요청받으면 404 대신 <code>index.html</code>을 내주게 설정하는 것입니다. 그러면 앱이 실행되어 주소창의 경로를 읽고 맞는 화면을 그립니다. 호스팅마다 설정 방법이 있고 첨부에 정리했습니다.</p>
+          <p data-cue="vd2-b:box">둘째는 해시 주소입니다. 주소에서 <code>#</code> 뒤는 서버로 보내지 않는다는 규칙을 이용합니다. 어떤 화면에 있든 서버가 받는 요청은 항상 루트이므로 서버 설정이 필요 없습니다. 지금 보고 있는 이 사이트가 이 방식입니다. 주소창을 보면 <code>index.html</code> 뒤에 <code>#</code>과 문서 경로가 붙어 있습니다.</p>
+          <p class="meta"><time datetime="2026-11-18">2026-11-18</time> · 라우팅을 쓰지 않는 한 화면짜리 앱에는 해당하지 않습니다</p>
+        </div>
+
+        <div class="w-att">
+          <details>
+            <summary>첨부 · 호스팅별 rewrite 설정</summary>
+            <div class="w-att-body">
+<table><thead><tr><th>호스팅</th><th>설정</th></tr></thead><tbody><tr><td class="nowrap">Netlify</td><td><code>public/_redirects</code> 파일에 <code>/*  /index.html  200</code></td></tr><tr><td class="nowrap">Vercel</td><td><code>vercel.json</code>에 <code>{ "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }] }</code></td></tr><tr><td class="nowrap">Firebase Hosting</td><td><code>firebase.json</code>의 <code>hosting.rewrites</code>에 <code>{ "source": "**", "destination": "/index.html" }</code> (<code>firebase init</code>에서 single-page app 질문에 예)</td></tr><tr><td class="nowrap">Cloudflare Pages</td><td><code>404.html</code>이 없으면 자동으로 SPA로 처리</td></tr><tr><td class="nowrap">Nginx</td><td><code>location / { try_files $uri $uri/ /index.html; }</code></td></tr><tr><td class="nowrap">GitHub Pages</td><td>rewrite 기능이 없음. <code>index.html</code>을 <code>404.html</code>로 복사하거나 해시 주소를 사용</td></tr></tbody></table>
+<p>React Router에서 해시 주소를 쓰려면 <code>createBrowserRouter</code> 대신 <code>createHashRouter</code>를 씁니다.</p>
+            </div>
+          </details>
+          <details>
+            <summary>첨부 · 참조 — 캐시 설정</summary>
+            <div class="w-att-body">
+<p>배포했는데 방문자에게 옛 화면이 보인다면 캐시 설정을 확인합니다. Vite의 빌드 결과는 두 종류로 나뉩니다.</p>
+<table><thead><tr><th>파일</th><th>이름</th><th>알맞은 캐시</th></tr></thead><tbody><tr><td class="nowrap"><code>assets/*</code></td><td>해시가 붙어 내용이 바뀌면 이름도 바뀜</td><td>길게 (1년, <code>immutable</code>)</td></tr><tr><td class="nowrap"><code>index.html</code></td><td>항상 같은 이름</td><td>캐시하지 않음 (<code>no-cache</code>)</td></tr></tbody></table>
+<p><code>index.html</code>만 매번 새로 받으면, 그 안에 적힌 새 해시 이름을 따라 새 자원을 받게 됩니다. 대부분의 정적 호스팅은 이렇게 기본 설정되어 있습니다.</p>
+<p>빌드 도구 없이 만든 사이트는 이 일을 직접 합니다. 이 사이트는 <code>script.js?v=20261119v11</code>처럼 주소 뒤에 날짜 기반 버전을 붙여 같은 효과를 냅니다. Vite의 해시는 이것을 자동으로, 파일마다 따로 해 주는 것입니다.</p>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- 3p. 자주 만나는 문제 -->
+      <section id="vd-s3" data-title="3 자주 만나는 문제">
+        <h2>자주 만나는 문제</h2>
+        <div class="slide-frame">
+          <div class="slide">
+            <div class="slide-body">
+              <div class="w-head">
+                <span class="slide-eyebrow"><b class="slide-no">3</b>Vite · 배포와 팁 · 문제 해결</span>
+                <div class="slide-title" role="heading" aria-level="3">자주 만나는 문제</div>
+              </div>
+              <ul class="points">
+                <li data-key="vd3-dev"><b>개발과 배포의 차이</b>: 개발 서버에서는 되는데 배포하면 안 되는 문제는 대부분 경로(<code>base</code>)와 환경 변수</li>
+                <li data-key="vd3-check"><b>확인 순서</b>: 브라우저 콘솔의 오류 → 네트워크 탭의 404 → <code>npm run preview</code>로 재현</li>
+              </ul>
+              <div class="w-stage">
+<svg class="w-svg" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 340" role="img">
+  <title>자주 만나는 네 가지 문제의 증상, 원인, 해결</title>
+  <desc>배포 후 빈 화면은 base 경로, 환경 변수 undefined 는 VITE_ 접두사와 서버 재시작, CORS 오류는 프록시, 다른 기기에서 접속 불가는 host 옵션으로 해결합니다.</desc>
+  <defs><marker id="wm24-ajqp-blue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#2563eb"/></marker><marker id="wm24-ajqp-blue-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#2563eb"/></marker><marker id="wm24-ajqp-green" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#059669"/></marker><marker id="wm24-ajqp-green-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#059669"/></marker><marker id="wm24-ajqp-orange" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#d97706"/></marker><marker id="wm24-ajqp-orange-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#d97706"/></marker><marker id="wm24-ajqp-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#7c3aed"/></marker><marker id="wm24-ajqp-purple-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#7c3aed"/></marker><marker id="wm24-ajqp-red" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#dc2626"/></marker><marker id="wm24-ajqp-red-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#dc2626"/></marker><marker id="wm24-ajqp-gray" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#64748b"/></marker><marker id="wm24-ajqp-gray-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#64748b"/></marker><marker id="wm24-ajqp-teal" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#0891b2"/></marker><marker id="wm24-ajqp-teal-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#0891b2"/></marker></defs>
+  <text x="165" y="26" text-anchor="middle" font-size="15" font-weight="700" fill="currentColor">증상</text>
+  <text x="475" y="26" text-anchor="middle" font-size="15" font-weight="700" fill="currentColor">원인</text>
+  <text x="790" y="26" text-anchor="middle" font-size="15" font-weight="700" fill="currentColor">해결</text>
+  <rect x="20" y="38" width="290" height="62" rx="10" fill="#dc2626" fill-opacity="0.12" stroke="#dc2626" stroke-width="1.6" data-key="vd3-r1a"/><text x="165" y="62.7" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">배포했더니 빈 화면</text><text x="165" y="82.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">콘솔에 js · css 의 404 가 찍힌다</text><line x1="310" y1="69" x2="328" y2="69" stroke="#64748b" stroke-width="2" marker-end="url(#wm24-ajqp-gray)"/><rect x="330" y="38" width="290" height="62" rx="10" fill="#d97706" fill-opacity="0.12" stroke="#d97706" stroke-width="1.6" data-key="vd3-r1b"/><text x="475" y="62.7" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">하위 경로에 올렸는데</text><text x="475" y="82.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">base 가 '/' 그대로다</text><line x1="620" y1="69" x2="638" y2="69" stroke="#64748b" stroke-width="2" marker-end="url(#wm24-ajqp-gray)"/><rect x="640" y="38" width="300" height="62" rx="10" fill="#059669" fill-opacity="0.12" stroke="#059669" stroke-width="1.6" data-key="vd3-r1c"/><text x="790" y="62.7" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">base: '/저장소이름/'</text><text x="790" y="82.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66" class="mono">vite.config.js</text>
+  <rect x="20" y="110" width="290" height="62" rx="10" fill="#dc2626" fill-opacity="0.12" stroke="#dc2626" stroke-width="1.6" data-key="vd3-r2a"/><text x="165" y="134.7" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">환경 변수가 undefined</text><text x="165" y="154.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">import.meta.env.API_URL</text><line x1="310" y1="141" x2="328" y2="141" stroke="#64748b" stroke-width="2" marker-end="url(#wm24-ajqp-gray)"/><rect x="330" y="110" width="290" height="62" rx="10" fill="#d97706" fill-opacity="0.12" stroke="#d97706" stroke-width="1.6" data-key="vd3-r2b"/><text x="475" y="134.7" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">이름이 VITE_ 로 시작하지 않거나</text><text x="475" y="154.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">.env 를 고친 뒤 재시작하지 않았다</text><line x1="620" y1="141" x2="638" y2="141" stroke="#64748b" stroke-width="2" marker-end="url(#wm24-ajqp-gray)"/><rect x="640" y="110" width="300" height="62" rx="10" fill="#059669" fill-opacity="0.12" stroke="#059669" stroke-width="1.6" data-key="vd3-r2c"/><text x="790" y="134.7" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">VITE_API_URL 로 고치고</text><text x="790" y="154.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">개발 서버 다시 시작</text>
+  <rect x="20" y="182" width="290" height="62" rx="10" fill="#dc2626" fill-opacity="0.12" stroke="#dc2626" stroke-width="1.6" data-key="vd3-r3a"/><text x="165" y="206.7" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">API 호출이 CORS 오류</text><text x="165" y="226.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">blocked by CORS policy</text><line x1="310" y1="213" x2="328" y2="213" stroke="#64748b" stroke-width="2" marker-end="url(#wm24-ajqp-gray)"/><rect x="330" y="182" width="290" height="62" rx="10" fill="#d97706" fill-opacity="0.12" stroke="#d97706" stroke-width="1.6" data-key="vd3-r3b"/><text x="475" y="206.7" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">개발 서버와 API 서버의</text><text x="475" y="226.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">출처(주소 · 포트)가 다르다</text><line x1="620" y1="213" x2="638" y2="213" stroke="#64748b" stroke-width="2" marker-end="url(#wm24-ajqp-gray)"/><rect x="640" y="182" width="300" height="62" rx="10" fill="#059669" fill-opacity="0.12" stroke="#059669" stroke-width="1.6" data-key="vd3-r3c"/><text x="790" y="206.7" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">server.proxy 로 전달</text><text x="790" y="226.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">'/api' → API 서버</text>
+  <rect x="20" y="254" width="290" height="62" rx="10" fill="#dc2626" fill-opacity="0.12" stroke="#dc2626" stroke-width="1.6" data-key="vd3-r4a"/><text x="165" y="278.7" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">휴대폰에서 접속이 안 된다</text><text x="165" y="298.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">같은 와이파이인데 열리지 않는다</text><line x1="310" y1="285" x2="328" y2="285" stroke="#64748b" stroke-width="2" marker-end="url(#wm24-ajqp-gray)"/><rect x="330" y="254" width="290" height="62" rx="10" fill="#d97706" fill-opacity="0.12" stroke="#d97706" stroke-width="1.6" data-key="vd3-r4b"/><text x="475" y="278.7" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">개발 서버가 기본적으로</text><text x="475" y="298.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">localhost 요청만 받는다</text><line x1="620" y1="285" x2="638" y2="285" stroke="#64748b" stroke-width="2" marker-end="url(#wm24-ajqp-gray)"/><rect x="640" y="254" width="300" height="62" rx="10" fill="#059669" fill-opacity="0.12" stroke="#059669" stroke-width="1.6" data-key="vd3-r4c"/><text x="790" y="278.7" text-anchor="middle" font-size="14" font-weight="700" fill="currentColor">npm run dev -- --host</text><text x="790" y="298.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">출력된 Network 주소로 접속</text>
+</svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="script">
+          <p data-cue="vd3-dev:check vd3-r1a:box vd3-r1b:box vd3-r1c:box">세 번째 슬라이드는 자주 만나는 문제 네 가지입니다. 첫째, 배포했더니 빈 화면만 나오는 경우입니다. 브라우저 콘솔을 열면 Javascript와 CSS 파일의 404가 찍혀 있습니다. 하위 경로에 올렸는데 <code>base</code>가 기본값 그대로여서 자원을 도메인 맨 위에서 찾은 것입니다.</p>
+          <p data-cue="vd3-r2a:box vd3-r2b:box vd3-r2c:box">둘째, 환경 변수가 <code>undefined</code>로 나오는 경우입니다. 이름이 <code>VITE_</code>로 시작하는지 먼저 확인합니다. 이름이 맞는데도 안 나온다면 <code>.env</code> 파일을 고친 뒤 개발 서버를 다시 시작하지 않은 것입니다. 이 파일은 서버가 뜰 때 한 번만 읽습니다.</p>
+          <p data-cue="vd3-r3a:box vd3-r3b:box vd3-r3c:box">셋째, API를 호출하면 CORS 오류가 나는 경우입니다. 개발 서버와 API 서버의 포트가 달라 브라우저가 막은 것입니다. 앞 문서의 프록시 설정으로 개발 서버가 요청을 대신 전달하게 합니다.</p>
+          <p data-cue="vd3-r4a:box vd3-r4b:box vd3-r4c:box">넷째, 휴대폰으로 화면을 확인하고 싶은데 접속이 안 되는 경우입니다. 개발 서버는 기본적으로 자기 컴퓨터의 요청만 받습니다. <code>--host</code> 옵션을 주면 같은 네트워크의 다른 기기에도 열리고, 접속할 주소가 터미널에 출력됩니다.</p>
+          <p data-cue="vd3-check:check"><mark>여기에 없는 문제를 만나면 순서대로 확인합니다. 브라우저 콘솔의 오류 메시지를 읽고, 네트워크 탭에서 실패한 요청의 주소를 보고, <code>npm run preview</code>로 내 컴퓨터에서 같은 증상이 나는지 재현합니다.</mark> 내 컴퓨터에서 재현되면 빌드의 문제이고, 재현되지 않으면 서버 설정의 문제입니다.</p>
+          <p class="meta"><time datetime="2026-11-18">2026-11-18</time> · 오류 메시지는 번역하지 말고 원문 그대로 검색합니다</p>
+        </div>
+
+        <div class="w-att">
+          <details>
+            <summary>첨부 · 문제 해결 — 그 밖의 증상</summary>
+            <div class="w-att-body">
+<table><thead><tr><th>증상</th><th>원인과 해결</th></tr></thead><tbody><tr><td class="nowrap"><code>dist/index.html</code>을 더블 클릭하면 빈 화면</td><td><code>file://</code>로 열면 <code>/assets/…</code>를 찾지 못합니다. <code>npm run preview</code>로 엽니다.</td></tr><tr><td class="nowrap">새로 고치면 404</td><td>앞 슬라이드의 SPA 라우팅 문제입니다. rewrite를 설정하거나 해시 주소를 씁니다.</td></tr><tr><td class="nowrap">이미지가 개발에서는 보이는데 배포하면 깨짐</td><td>경로를 문자열로 적었습니다(<code>src="./assets/logo.png"</code>). <code>import</code>해서 쓰거나 <code>public</code>으로 옮깁니다.</td></tr><tr><td class="nowrap">패키지를 바꿨는데 옛 코드가 나옴</td><td>사전 번들 캐시입니다. <code>npm run dev -- --force</code></td></tr><tr><td class="nowrap"><code>Port 5173 is in use</code></td><td>다른 개발 서버가 켜져 있습니다. 자동으로 다음 포트를 쓰므로 출력된 주소를 확인합니다.</td></tr><tr><td class="nowrap"><code>Cannot find module</code> / <code>Failed to resolve import</code></td><td>패키지를 설치하지 않았거나(<code>npm install</code>), 경로의 대소문자가 틀렸습니다. Windows는 대소문자를 구분하지 않지만 배포 서버(Linux)는 구분합니다.</td></tr><tr><td class="nowrap"><code>npm : 이 시스템에서 스크립트를 실행할 수 없으므로…</code></td><td>PowerShell 실행 정책입니다. <code>npm.cmd run dev</code>로 실행합니다.</td></tr><tr><td class="nowrap"><code>crypto.hash is not a function</code> 등 시작하자마자 오류</td><td>Node.js 버전이 낮습니다. <code>node --version</code>을 확인하고 LTS로 올립니다.</td></tr><tr><td class="nowrap">배포했는데 옛 화면이 보임</td><td><code>index.html</code>이 캐시되었습니다. 앞 슬라이드의 캐시 설정을 확인합니다.</td></tr></tbody></table>
+            </div>
+          </details>
+          <details>
+            <summary>첨부 · 명령 요약</summary>
+            <div class="w-att-body">
+<table><thead><tr><th>명령</th><th>하는 일</th></tr></thead><tbody><tr><td class="nowrap"><code>npm create vite@latest</code></td><td>프로젝트 만들기</td></tr><tr><td class="nowrap"><code>npm install</code></td><td><code>package.json</code>의 패키지 설치</td></tr><tr><td class="nowrap"><code>npm install 이름</code></td><td>실행에 필요한 패키지 추가</td></tr><tr><td class="nowrap"><code>npm install -D 이름</code></td><td>개발에만 필요한 패키지 추가</td></tr><tr><td class="nowrap"><code>npm run dev</code></td><td>개발 서버 (기본 5173)</td></tr><tr><td class="nowrap"><code>npm run build</code></td><td><code>dist</code>에 배포 파일 만들기</td></tr><tr><td class="nowrap"><code>npm run preview</code></td><td><code>dist</code>를 서버로 띄워 확인 (기본 4173)</td></tr><tr><td class="nowrap"><code>npm outdated</code></td><td>새 버전이 나온 패키지 확인</td></tr><tr><td class="nowrap"><code>npm update</code></td><td><code>package.json</code>이 허용하는 범위에서 올리기</td></tr></tbody></table>
+<p>Vite의 큰 버전(예: 6 → 7)을 올릴 때는 공식 문서의 Migration 안내를 먼저 읽습니다. 요구하는 Node.js 버전이 함께 올라가는 경우가 많습니다.</p>
+            </div>
+          </details>
+          <details>
+            <summary>첨부 · 배포 전 확인 목록</summary>
+            <div class="w-att-body">
+<ol>
+  <li><code>npm run build</code>가 오류와 경고 없이 끝나는가</li>
+  <li><code>npm run preview</code>에서 모든 화면이 열리고, 콘솔에 오류가 없는가</li>
+  <li><code>base</code>가 배포할 주소의 경로와 맞는가</li>
+  <li><code>.env.production</code>의 값이 운영 서버를 가리키는가. 비밀 값이 <code>VITE_</code> 변수에 들어 있지 않은가</li>
+  <li>라우팅을 쓴다면, 하위 주소에서 새로 고쳐도 열리는가</li>
+  <li><code>node_modules</code>와 <code>dist</code>, <code>.env.local</code>이 Git에 올라가 있지 않은가</li>
+</ol>
+            </div>
+          </details>
+        </div>
+      </section>
+    </div>
+  </article>
+</body>
+
+</html>

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+
+<head>
+  <meta charset="UTF-8" lang="ko">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta keywords="iseohyun, 튜토리얼, React, 리액트, 시작하기, 컴포넌트, Vite">
+  <meta author="iseohyun">
+
+  <!-- 페이지 타이틀 -->
+  <title>시작하기: React - iseohyun </title>
+  <link rel="shortcut icon" type="image/x-icon" href="/source/icon_seohyun.svg">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-453XSP5W9M"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-453XSP5W9M');
+  </script>
+
+  <!-- 목차 및 공통 모듈 -->
+  <script src="/modules/script.js?v=20261119v11" defer></script>
+
+  <!-- 공통스킨 -->
+  <style type="text/css">
+    @import url("/style.css?v=20261119v11");
+  </style>
+
+  <!-- 슬라이드 · 스크립트 (보고서 형식) -->
+  <link rel="stylesheet" href="/modules/features/slides.css?v=20261119v11">
+  <link rel="stylesheet" href="/basicStudy/engineering/web/slides-web.css?v=20261119v11">
+  <script src="/modules/features/slides.js?v=20261119v11" defer></script>
+</head>
+
+<body>
+  <tags>React, 리액트, 웹, Web, 프론트엔드, 컴포넌트, JSX, Vite, 시작하기</tags>
+  <article>
+    <!-- 형식: (슬라이드 + 대사 + 첨부) 의 반복. 공통 스타일은 /basicStudy/engineering/web/slides-web.css -->
+    <div class="slides-doc" data-page="react-start" lang="ko">
+      <h1 class="sl-chapter">React 시작하기</h1>
+      <p class="sl-prereq"><b>선수 과목</b>: <a href="/basicStudy/engineering/web/html/syntax.html">HTML 기초문법</a> · <a href="/basicStudy/engineering/web/Javascript/basic.html">Javascript 기초문법</a> — 이 문서는 두 과목의 내용을 안다고 보고 설명합니다.</p>
+
+      <!-- 1p. 직접 고치기에서 결과를 적기로 -->
+      <section id="rs-s1" data-title="1 직접 고치기에서 결과를 적기로">
+        <h2>직접 고치기에서 결과를 적기로</h2>
+        <div class="slide-frame">
+          <div class="slide">
+            <div class="slide-body">
+              <div class="w-head">
+                <span class="slide-eyebrow"><b class="slide-no">1</b>React · 시작하기 · 명령형과 선언형</span>
+                <div class="slide-title" role="heading" aria-level="3">직접 고치기에서 결과를 적기로</div>
+              </div>
+              <ul class="points">
+                <li data-key="rs1-imp"><b>명령형</b>: 요소를 찾아 만들고 붙이는 순서를 사람이 하나씩 지시 (Javascript의 객체 접근)</li>
+                <li data-key="rs1-dec"><b>선언형</b>: 데이터(state)에 따라 화면이 어떤 모습이어야 하는지만 적고, 고치는 일은 React에 위임</li>
+              </ul>
+              <div class="w-stage">
+<svg class="w-svg" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 340" role="img">
+  <title>명령형 DOM 조작과 선언형 React 비교</title>
+  <desc>왼쪽은 getElementById, createElement, appendChild 로 DOM 을 직접 고치는 순서, 오른쪽은 state 에서 화면을 계산하고 React 가 달라진 곳만 DOM 에 반영하는 흐름입니다.</desc>
+  <defs><marker id="wm1-r95i-blue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#2563eb"/></marker><marker id="wm1-r95i-blue-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#2563eb"/></marker><marker id="wm1-r95i-green" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#059669"/></marker><marker id="wm1-r95i-green-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#059669"/></marker><marker id="wm1-r95i-orange" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#d97706"/></marker><marker id="wm1-r95i-orange-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#d97706"/></marker><marker id="wm1-r95i-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#7c3aed"/></marker><marker id="wm1-r95i-purple-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#7c3aed"/></marker><marker id="wm1-r95i-red" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#dc2626"/></marker><marker id="wm1-r95i-red-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#dc2626"/></marker><marker id="wm1-r95i-gray" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#64748b"/></marker><marker id="wm1-r95i-gray-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#64748b"/></marker><marker id="wm1-r95i-teal" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#0891b2"/></marker><marker id="wm1-r95i-teal-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#0891b2"/></marker></defs>
+  <rect x="20" y="10" width="440" height="320" rx="10" fill="#64748b" fill-opacity="0.05" stroke="#64748b" stroke-width="1.6" data-key="rs1-left"/>
+  <text x="240" y="38" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">명령형 — 어떻게 고칠지 지시한다</text>
+  <rect x="45" y="54" width="390" height="40" rx="10" fill="#d97706" fill-opacity="0.12" stroke="#d97706" stroke-width="1.6"/><text x="240" y="78.2" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor" class="mono">const ul = document.getElementById('list')</text>
+  <rect x="45" y="104" width="390" height="40" rx="10" fill="#d97706" fill-opacity="0.12" stroke="#d97706" stroke-width="1.6"/><text x="240" y="128.2" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor" class="mono">const li = document.createElement('li')</text>
+  <rect x="45" y="154" width="390" height="40" rx="10" fill="#d97706" fill-opacity="0.12" stroke="#d97706" stroke-width="1.6"/><text x="240" y="178.2" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor" class="mono">li.textContent = 새_항목</text>
+  <rect x="45" y="204" width="390" height="40" rx="10" fill="#d97706" fill-opacity="0.12" stroke="#d97706" stroke-width="1.6"/><text x="240" y="228.2" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor" class="mono">ul.appendChild(li)</text>
+  <line x1="240" y1="94" x2="240" y2="103" stroke="#d97706" stroke-width="2" marker-end="url(#wm1-r95i-orange)"/>
+  <line x1="240" y1="144" x2="240" y2="153" stroke="#d97706" stroke-width="2" marker-end="url(#wm1-r95i-orange)"/>
+  <line x1="240" y1="194" x2="240" y2="203" stroke="#d97706" stroke-width="2" marker-end="url(#wm1-r95i-orange)"/>
+  <text x="240" y="274" text-anchor="middle" font-size="13" fill="currentColor" fill-opacity="0.66">개수 표시, 빈 목록 안내, 단추 상태…</text>
+  <text x="240" y="296" text-anchor="middle" font-size="13" font-weight="600" fill="#d97706">데이터가 바뀔 때 고칠 곳을 사람이 모두 기억해야 한다</text>
+  <rect x="500" y="10" width="440" height="320" rx="10" fill="#64748b" fill-opacity="0.05" stroke="#64748b" stroke-width="1.6" data-key="rs1-right"/>
+  <text x="720" y="38" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">선언형 — 어떤 모습인지 적는다</text>
+  <rect x="540" y="58" width="360" height="52" rx="10" fill="#2563eb" fill-opacity="0.12" stroke="#2563eb" stroke-width="1.6" data-key="rs1-state"/><text x="720" y="78.4" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">state (데이터)</text><text x="720" y="98.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">items = ['우유', '빵', '달걀']</text>
+  <line x1="720" y1="110" x2="720" y2="132" stroke="#2563eb" stroke-width="2" marker-end="url(#wm1-r95i-blue)"/>
+  <rect x="540" y="134" width="360" height="62" rx="10" fill="#7c3aed" fill-opacity="0.12" stroke="#7c3aed" stroke-width="1.6" data-key="rs1-fn"/><text x="720" y="159.4" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">컴포넌트 = 화면을 돌려주는 함수</text><text x="720" y="179.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66" class="mono">items.map(item =&gt; &lt;li&gt;{item}&lt;/li&gt;)</text>
+  <line x1="720" y1="196" x2="720" y2="218" stroke="#7c3aed" stroke-width="2" marker-end="url(#wm1-r95i-purple)"/>
+  <rect x="540" y="220" width="360" height="52" rx="10" fill="#059669" fill-opacity="0.12" stroke="#059669" stroke-width="1.6" data-key="rs1-dom"/><text x="720" y="240.4" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor">React가 달라진 곳만 DOM에 반영</text><text x="720" y="260.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">직접 getElementById 를 부르지 않는다</text>
+  <text x="720" y="300" text-anchor="middle" font-size="13" font-weight="600" fill="#2563eb">데이터만 바꾸면 화면은 따라온다</text>
+</svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="script">
+          <p data-cue="rs1-imp:check rs1-left:box">첫 번째 슬라이드는 React가 무엇을 대신해 주는지를 보여 줍니다. <a href="/basicStudy/engineering/web/Javascript/elements.html">Javascript 객체 접근</a> 문서에서는 <code>getElementById</code>로 요소를 찾고, <code>createElement</code>로 새 요소를 만들고, <code>appendChild</code>로 붙였습니다. 이렇게 화면을 고치는 순서를 하나씩 지시하는 방식을 명령형이라고 부릅니다.</p>
+          <p>명령형은 작은 화면에서는 충분합니다. 하지만 목록에 항목이 하나 늘어날 때 개수 표시도 고치고, 빈 목록 안내문도 숨기고, 단추의 활성 상태도 바꿔야 한다면, 데이터가 바뀔 때마다 고칠 곳을 사람이 전부 기억해야 합니다. 화면이 커질수록 빠뜨리는 곳이 생깁니다.</p>
+          <p data-cue="rs1-dec:check rs1-right:box rs1-state:box">React는 방향을 바꿉니다. 화면의 재료가 되는 데이터를 <b>state</b>라는 이름으로 한곳에 두고, 그 데이터가 주어졌을 때 화면이 어떤 모습이어야 하는지만 적습니다. 이것을 선언형이라고 합니다.</p>
+          <p data-cue="rs1-fn:box rs1-dom:box"><mark>화면을 적는 단위가 컴포넌트이고, 컴포넌트는 데이터를 받아 화면을 돌려주는 Javascript 함수입니다.</mark> 데이터가 바뀌면 React가 함수를 다시 불러 새 결과를 얻고, 앞의 결과와 비교해 달라진 곳만 실제 DOM에 반영합니다. 우리는 데이터만 바꾸면 됩니다.</p>
+          <p class="meta"><time datetime="2026-11-18">2026-11-18</time> · HTML · CSS · Javascript 문서를 먼저 읽었다고 가정합니다</p>
+        </div>
+
+        <div class="w-att">
+          <details>
+            <summary>첨부 · 용어 (Term)</summary>
+            <div class="w-att-body">
+<table><thead><tr><th>용어</th><th>한국어</th><th>의미</th></tr></thead><tbody><tr><td class="nowrap">Component</td><td>컴포넌트</td><td>화면의 한 조각을 돌려주는 함수. 이름은 대문자로 시작합니다.</td></tr><tr><td class="nowrap">JSX</td><td>-</td><td>Javascript 안에 HTML처럼 적는 문법. 빌드할 때 함수 호출로 바뀝니다.</td></tr><tr><td class="nowrap">props</td><td>속성</td><td>부모 컴포넌트가 자식에게 넘겨주는 값. 자식은 읽기만 합니다.</td></tr><tr><td class="nowrap">state</td><td>상태</td><td>컴포넌트가 기억하는 값. 바뀌면 화면을 다시 그립니다.</td></tr><tr><td class="nowrap">Hook</td><td>훅</td><td><code>use</code>로 시작하는 함수. state나 effect 같은 React 기능을 컴포넌트에 연결합니다.</td></tr><tr><td class="nowrap">Render</td><td>렌더링</td><td>React가 컴포넌트 함수를 불러 화면의 모습을 계산하는 일</td></tr><tr><td class="nowrap">Virtual DOM</td><td>가상 DOM</td><td>렌더링 결과를 담은 Javascript 객체 트리. 실제 DOM과 비교하는 데 씁니다.</td></tr><tr><td class="nowrap">SPA</td><td>단일 페이지 앱</td><td>HTML 문서는 하나만 받고, 이후 화면 전환은 Javascript가 처리하는 구조</td></tr></tbody></table>
+            </div>
+          </details>
+          <details>
+            <summary>첨부 · React란</summary>
+            <div class="w-att-body">
+<p>React는 Meta(당시 Facebook)가 2013년에 공개한 화면(UI) 라이브러리입니다. 화면을 그리는 일만 맡고, 주소에 따른 화면 전환(라우팅)이나 서버 통신은 다른 라이브러리와 조합합니다. 그래서 스스로를 프레임워크가 아니라 라이브러리라고 소개합니다.</p>
+<ul>
+  <li><b>react</b>: 컴포넌트와 Hook을 정의하는 핵심 패키지</li>
+  <li><b>react-dom</b>: 계산한 결과를 브라우저의 DOM에 반영하는 패키지 (모바일 앱은 React Native가 이 자리를 맡습니다)</li>
+</ul>
+<p>이 문서는 React 19와 함수 컴포넌트를 기준으로 합니다. 예전 자료에 나오는 클래스 컴포넌트(<code>class App extends React.Component</code>)는 지금도 동작하지만 새로 쓰지는 않습니다.</p>
+            </div>
+          </details>
+          <details>
+            <summary>첨부 · 같은 화면을 두 방식으로</summary>
+            <div class="w-att-body">
+<div class="blockquote-title">명령형: Javascript만으로</div>
+<blockquote><pre>&lt;ul id=&quot;list&quot;&gt;&lt;/ul&gt;
+&lt;script&gt;
+  const items = ['우유', '빵', '달걀'];
+  const ul = document.getElementById('list');
+  for (const item of items) {
+    const li = document.createElement('li');
+    li.textContent = item;
+    ul.appendChild(li);
+  }
+&lt;/script&gt;</pre></blockquote>
+<div class="blockquote-title">선언형: React 컴포넌트</div>
+<blockquote><pre>function List() {
+  const items = ['우유', '빵', '달걀'];
+  return (
+    &lt;ul&gt;
+      {items.map(item =&gt; &lt;li key={item}&gt;{item}&lt;/li&gt;)}
+    &lt;/ul&gt;
+  );
+}</pre></blockquote>
+<p>두 번째 코드에는 "찾는다, 만든다, 붙인다"가 없습니다. 목록이 어떤 모습인지만 적혀 있습니다.</p>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- 2p. 프로젝트 만들기와 폴더 구조 -->
+      <section id="rs-s2" data-title="2 프로젝트 만들기와 폴더 구조">
+        <h2>프로젝트 만들기와 폴더 구조</h2>
+        <div class="slide-frame">
+          <div class="slide">
+            <div class="slide-body">
+              <div class="w-head">
+                <span class="slide-eyebrow"><b class="slide-no">2</b>React · 시작하기 · 개발 환경</span>
+                <div class="slide-title" role="heading" aria-level="3">프로젝트 만들기와 폴더 구조</div>
+              </div>
+              <ul class="points">
+                <li data-key="rs2-cmd"><b>만들기</b>: Node.js를 설치한 뒤 Vite의 React 템플릿으로 프로젝트를 생성하고 개발 서버를 실행</li>
+                <li data-key="rs2-tree"><b>구조</b>: <code>index.html</code> → <code>src/main.jsx</code> → <code>src/App.jsx</code> 순서로 이어지고, 나머지는 설정과 자원</li>
+              </ul>
+              <div class="w-split">
+                <div class="w-code">
+                  <div class="w-code-top">터미널 (PowerShell · bash)</div>
+                  <div class="w-code-lines"><span class="w-ln"><span class="c"># 1. 프로젝트 만들기</span></span><span class="w-ln" data-key="rs2-c1">npm create vite@latest my-app -- --template react</span><span class="w-ln"> </span><span class="w-ln"><span class="c"># 2. 폴더로 들어가 패키지 설치</span></span><span class="w-ln" data-key="rs2-c2">cd my-app</span><span class="w-ln" data-key="rs2-c2b">npm install</span><span class="w-ln"> </span><span class="w-ln"><span class="c"># 3. 개발 서버 실행</span></span><span class="w-ln" data-key="rs2-c3">npm run dev</span><span class="w-ln"> </span><span class="w-ln">  ➜  Local:   http://localhost:5173/</span></div>
+                </div>
+                <div class="w-stage">
+<svg class="w-svg" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 350" role="img">
+  <title>Vite 로 만든 React 프로젝트의 폴더 구조</title>
+  <desc>index.html 이 src/main.jsx 를 부르고 main.jsx 가 App.jsx 를 그립니다. 그 아래에 public, src/assets, node_modules 폴더와 package.json, vite.config.js 설정 파일이 있습니다.</desc>
+  <defs><marker id="wm2-ffny-blue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#2563eb"/></marker><marker id="wm2-ffny-blue-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#2563eb"/></marker><marker id="wm2-ffny-green" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#059669"/></marker><marker id="wm2-ffny-green-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#059669"/></marker><marker id="wm2-ffny-orange" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#d97706"/></marker><marker id="wm2-ffny-orange-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#d97706"/></marker><marker id="wm2-ffny-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#7c3aed"/></marker><marker id="wm2-ffny-purple-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#7c3aed"/></marker><marker id="wm2-ffny-red" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#dc2626"/></marker><marker id="wm2-ffny-red-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#dc2626"/></marker><marker id="wm2-ffny-gray" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#64748b"/></marker><marker id="wm2-ffny-gray-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#64748b"/></marker><marker id="wm2-ffny-teal" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#0891b2"/></marker><marker id="wm2-ffny-teal-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#0891b2"/></marker></defs>
+  <text x="20" y="24" text-anchor="start" font-size="15" font-weight="700" fill="currentColor" class="mono">my-app/</text>
+  <text x="540" y="24" text-anchor="end" font-size="12" fill="currentColor" fill-opacity="0.66">실행이 이어지는 순서 →</text>
+  <rect x="20" y="38" width="160" height="64" rx="10" fill="#2563eb" fill-opacity="0.12" stroke="#2563eb" stroke-width="1.6" data-key="rs2-index"/><text x="100" y="55.1" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor" class="mono">index.html</text><text x="100" y="75.4" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">브라우저가 처음</text><text x="100" y="93.9" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">받는 문서</text>
+  <line x1="180" y1="70" x2="199" y2="70" stroke="#2563eb" stroke-width="2" marker-end="url(#wm2-ffny-blue)"/>
+  <rect x="200" y="38" width="160" height="64" rx="10" fill="#2563eb" fill-opacity="0.12" stroke="#2563eb" stroke-width="1.6" data-key="rs2-main"/><text x="280" y="55.1" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor" class="mono">src/main.jsx</text><text x="280" y="75.4" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">React를 시작하는</text><text x="280" y="93.9" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">진입 스크립트</text>
+  <line x1="360" y1="70" x2="379" y2="70" stroke="#2563eb" stroke-width="2" marker-end="url(#wm2-ffny-blue)"/>
+  <rect x="380" y="38" width="160" height="64" rx="10" fill="#2563eb" fill-opacity="0.12" stroke="#2563eb" stroke-width="1.6" data-key="rs2-app"/><text x="460" y="55.1" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor" class="mono">src/App.jsx</text><text x="460" y="75.4" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">첫 컴포넌트</text><text x="460" y="93.9" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">(여기부터 고친다)</text>
+  <text x="20" y="136" text-anchor="start" font-size="12.5" font-weight="700" fill="currentColor" fill-opacity="0.66">자원과 패키지</text>
+  <rect x="20" y="146" width="160" height="64" rx="10" fill="#059669" fill-opacity="0.12" stroke="#059669" stroke-width="1.6" data-key="rs2-public"/><text x="100" y="163.1" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor" class="mono">public/</text><text x="100" y="183.4" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">그대로 복사되는</text><text x="100" y="201.9" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">파일 (favicon 등)</text>
+  <rect x="200" y="146" width="160" height="64" rx="10" fill="#059669" fill-opacity="0.12" stroke="#059669" stroke-width="1.6" data-key="rs2-assets"/><text x="280" y="163.1" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor" class="mono">src/assets/</text><text x="280" y="183.4" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">import 해서 쓰는</text><text x="280" y="201.9" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">이미지 · CSS</text>
+  <rect x="380" y="146" width="160" height="64" rx="10" fill="#64748b" fill-opacity="0.12" stroke="#64748b" stroke-width="1.6" data-key="rs2-nm"/><text x="460" y="163.1" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor" class="mono">node_modules/</text><text x="460" y="183.4" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">설치된 패키지</text><text x="460" y="201.9" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">(Git에 올리지 않음)</text>
+  <text x="20" y="244" text-anchor="start" font-size="12.5" font-weight="700" fill="currentColor" fill-opacity="0.66">설정</text>
+  <rect x="20" y="254" width="250" height="64" rx="10" fill="#7c3aed" fill-opacity="0.12" stroke="#7c3aed" stroke-width="1.6" data-key="rs2-pkg"/><text x="145" y="271.1" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor" class="mono">package.json</text><text x="145" y="291.4" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">의존 패키지 목록과</text><text x="145" y="309.9" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">dev · build 명령</text>
+  <rect x="290" y="254" width="250" height="64" rx="10" fill="#7c3aed" fill-opacity="0.12" stroke="#7c3aed" stroke-width="1.6" data-key="rs2-vite"/><text x="415" y="271.1" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor" class="mono">vite.config.js</text><text x="415" y="291.4" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">개발 서버와 빌드 설정</text><text x="415" y="309.9" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">(React 플러그인 등록)</text>
+</svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="script">
+          <p data-cue="rs2-cmd:check rs2-c1:box">두 번째 슬라이드는 React 프로젝트를 만드는 과정입니다. React 코드는 브라우저가 그대로 읽지 못하는 문법을 쓰기 때문에 변환해 주는 도구가 필요하고, 지금은 그 도구로 Vite를 씁니다. 터미널에서 첫 번째 명령을 실행하면 <code>my-app</code> 폴더에 React 템플릿이 만들어집니다.</p>
+          <p data-cue="rs2-c2:box rs2-c2b:box rs2-nm:box">폴더로 들어가 <code>npm install</code>을 실행하면 <code>package.json</code>에 적힌 패키지를 내려받아 <code>node_modules</code> 폴더에 설치합니다. 이 폴더는 용량이 크고 언제든 다시 만들 수 있으므로 Git에 올리지 않습니다.</p>
+          <p data-cue="rs2-c3:box"><code>npm run dev</code>를 실행하면 개발 서버가 뜨고 주소가 출력됩니다. 브라우저에서 그 주소를 열어 두면, 파일을 저장할 때마다 화면이 바로 바뀝니다.</p>
+          <p data-cue="rs2-tree:check rs2-index:box rs2-main:box rs2-app:box"><mark>폴더에서 기억할 것은 세 파일이 이어지는 순서입니다. 브라우저는 <code>index.html</code>을 받고, 그 문서가 <code>src/main.jsx</code>를 부르고, <code>main.jsx</code>가 <code>App.jsx</code>의 컴포넌트를 화면에 그립니다.</mark> 우리가 고치기 시작하는 곳은 <code>App.jsx</code>입니다.</p>
+          <p data-cue="rs2-public:box rs2-assets:box rs2-pkg:box rs2-vite:box">나머지는 자원과 설정입니다. <code>public</code>에는 그대로 복사될 파일을, <code>src/assets</code>에는 코드에서 <code>import</code>해 쓰는 이미지를 둡니다. <code>package.json</code>은 의존 패키지와 명령을, <code>vite.config.js</code>는 빌드 설정을 담습니다. 설정의 세부는 <a href="/basicStudy/engineering/web/Vite/start.html">Vite 시작하기</a>에서 다룹니다.</p>
+          <p class="meta"><time datetime="2026-11-18">2026-11-18</time> · 명령은 Windows PowerShell과 macOS · Linux 터미널에서 같습니다</p>
+        </div>
+
+        <div class="w-att">
+          <details>
+            <summary>첨부 · 환경 준비 — Node.js와 에디터</summary>
+            <div class="w-att-body">
+<p>React 개발에는 <b>Node.js</b>가 필요합니다. 브라우저 밖에서 Javascript를 실행하는 프로그램이고, 패키지 관리자 <code>npm</code>이 함께 설치됩니다. 설치 방법은 <a href="/basicStudy/engineering/web/Javascript/basic.html">Javascript 기초문법</a>의 「환경2 : Node.js」와 같습니다. LTS 버전을 받으면 됩니다.</p>
+<div class="blockquote-title">설치 확인</div>
+<blockquote><pre>node --version
+npm --version</pre></blockquote>
+<p>에디터는 <a href="/basicStudy/engineering/tools/vscode/start.html">VS Code</a>를 권합니다. JSX 문법 강조와 자동 완성이 기본으로 들어 있습니다.</p>
+<p><b>Windows PowerShell에서 <code>npm</code>이 실행되지 않을 때</b>: "이 시스템에서 스크립트를 실행할 수 없으므로…"라는 오류가 나오면 실행 정책이 <code>npm.ps1</code>을 막은 것입니다. <code>npm.cmd install</code>처럼 <code>.cmd</code>를 붙여 실행하거나 명령 프롬프트(cmd)를 쓰면 됩니다.</p>
+            </div>
+          </details>
+          <details>
+            <summary>첨부 · Create React App은 쓰지 않습니다</summary>
+            <div class="w-att-body">
+<p>예전 자료는 <code>npx create-react-app my-app</code>으로 시작합니다. Create React App(CRA)은 2025년 2월에 공식적으로 지원이 끝났습니다. React 팀은 새 프로젝트에 다음 둘 중 하나를 권합니다.</p>
+<ul>
+  <li><b>빌드 도구</b>: Vite처럼 변환과 번들만 맡는 도구. 화면 구성은 직접 정합니다. 이 문서의 방식입니다.</li>
+  <li><b>프레임워크</b>: Next.js, React Router처럼 라우팅과 서버 렌더링까지 포함한 묶음. 규모가 큰 서비스에 맞습니다.</li>
+</ul>
+<p>React를 배우는 단계에서는 Vite가 알맞습니다. 숨겨진 규칙이 적어 무슨 일이 일어나는지 따라가기 쉽습니다.</p>
+            </div>
+          </details>
+          <details>
+            <summary>첨부 · 설치 없이 맛보기 (CDN)</summary>
+            <div class="w-att-body">
+<p>HTML 파일 하나에 <code>&lt;script&gt;</code>로 React를 불러올 수도 있습니다. JSX를 쓰지 못해 <code>createElement</code>를 직접 불러야 하므로 실제 개발에는 맞지 않지만, React가 결국 Javascript 라이브러리일 뿐이라는 점은 확인할 수 있습니다.</p>
+<blockquote><pre>&lt;div id=&quot;root&quot;&gt;&lt;/div&gt;
+&lt;script type=&quot;module&quot;&gt;
+  import { createElement } from 'https://esm.sh/react@19';
+  import { createRoot } from 'https://esm.sh/react-dom@19/client';
+
+  const hello = createElement('h1', null, '안녕, React');
+  createRoot(document.getElementById('root')).render(hello);
+&lt;/script&gt;</pre></blockquote>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- 3p. 첫 화면이 그려지는 경로 -->
+      <section id="rs-s3" data-title="3 첫 화면이 그려지는 경로">
+        <h2>첫 화면이 그려지는 경로</h2>
+        <div class="slide-frame">
+          <div class="slide">
+            <div class="slide-body">
+              <div class="w-head">
+                <span class="slide-eyebrow"><b class="slide-no">3</b>React · 시작하기 · main.jsx</span>
+                <div class="slide-title" role="heading" aria-level="3">첫 화면이 그려지는 경로</div>
+              </div>
+              <ul class="points">
+                <li data-key="rs3-root"><b>빈 상자</b>: <code>index.html</code>에는 <code>&lt;div id="root"&gt;</code> 하나뿐이고, 내용은 Javascript가 채움</li>
+                <li data-key="rs3-render"><b>시작점</b>: <code>createRoot(상자).render(&lt;App /&gt;)</code> 한 줄이 React와 DOM을 연결</li>
+              </ul>
+              <div class="w-split">
+                <div class="w-code">
+                  <div class="w-code-top">src/main.jsx</div>
+                  <div class="w-code-lines"><span class="w-ln" data-key="rs3-c1"><span class="k">import</span> { StrictMode } <span class="k">from</span> <span class="s">'react'</span></span><span class="w-ln" data-key="rs3-c2"><span class="k">import</span> { createRoot } <span class="k">from</span> <span class="s">'react-dom/client'</span></span><span class="w-ln" data-key="rs3-c3"><span class="k">import</span> App <span class="k">from</span> <span class="s">'./App.jsx'</span></span><span class="w-ln"> </span><span class="w-ln" data-key="rs3-c4"><span class="k">const</span> root = document.getElementById(<span class="s">'root'</span>)</span><span class="w-ln"> </span><span class="w-ln" data-key="rs3-c5">createRoot(root).render(</span><span class="w-ln" data-key="rs3-c6">  <span class="f">&lt;StrictMode</span><span class="f">&gt;</span></span><span class="w-ln" data-key="rs3-c7">    <span class="f">&lt;App</span> <span class="f">/&gt;</span></span><span class="w-ln" data-key="rs3-c6b">  <span class="f">&lt;/StrictMode</span><span class="f">&gt;</span>,</span><span class="w-ln">)</span></div>
+                </div>
+                <div class="w-stage">
+<svg class="w-svg" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 350" role="img">
+  <title>index.html 의 빈 상자가 React 로 채워지는 경로</title>
+  <desc>index.html 의 div#root 를 main.jsx 가 찾아 createRoot 로 연결하고, App 컴포넌트가 돌려준 결과가 브라우저 DOM 의 root 안에 그려집니다.</desc>
+  <defs><marker id="wm3-btgg-blue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#2563eb"/></marker><marker id="wm3-btgg-blue-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#2563eb"/></marker><marker id="wm3-btgg-green" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#059669"/></marker><marker id="wm3-btgg-green-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#059669"/></marker><marker id="wm3-btgg-orange" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#d97706"/></marker><marker id="wm3-btgg-orange-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#d97706"/></marker><marker id="wm3-btgg-purple" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#7c3aed"/></marker><marker id="wm3-btgg-purple-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#7c3aed"/></marker><marker id="wm3-btgg-red" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#dc2626"/></marker><marker id="wm3-btgg-red-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#dc2626"/></marker><marker id="wm3-btgg-gray" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#64748b"/></marker><marker id="wm3-btgg-gray-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#64748b"/></marker><marker id="wm3-btgg-teal" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1,1.5 L9,5 L1,8.5 Z" fill="#0891b2"/></marker><marker id="wm3-btgg-teal-s" viewBox="0 0 10 10" refX="1.5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M9,1.5 L1,5 L9,8.5 Z" fill="#0891b2"/></marker></defs>
+  <rect x="20" y="16" width="240" height="78" rx="10" fill="#2563eb" fill-opacity="0.12" stroke="#2563eb" stroke-width="1.6" data-key="rs3-html"/><text x="140" y="40.1" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor" class="mono">index.html</text><text x="140" y="60.4" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66" class="mono">&lt;div id=&quot;root&quot;&gt;&lt;/div&gt;</text><text x="140" y="78.9" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">&lt;script src=&quot;…/main.jsx&quot;&gt;</text>
+  <line x1="140" y1="94" x2="140" y2="124" stroke="#2563eb" stroke-width="2" marker-end="url(#wm3-btgg-blue)"/><text x="172" y="114" text-anchor="middle" font-size="12" font-weight="600" fill="#2563eb">부른다</text>
+  <rect x="20" y="126" width="240" height="78" rx="10" fill="#7c3aed" fill-opacity="0.12" stroke="#7c3aed" stroke-width="1.6" data-key="rs3-main"/><text x="140" y="150.1" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor" class="mono">main.jsx</text><text x="140" y="170.4" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">상자를 찾아</text><text x="140" y="188.9" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">createRoot(root).render()</text>
+  <line x1="140" y1="204" x2="140" y2="234" stroke="#7c3aed" stroke-width="2" marker-end="url(#wm3-btgg-purple)"/><text x="172" y="224" text-anchor="middle" font-size="12" font-weight="600" fill="#7c3aed">그린다</text>
+  <rect x="20" y="236" width="240" height="98" rx="10" fill="#059669" fill-opacity="0.12" stroke="#059669" stroke-width="1.6" data-key="rs3-app"/><text x="140" y="260.9" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor" class="mono">App.jsx</text><text x="140" y="281.2" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66" class="mono">function App() {</text><text x="140" y="299.7" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66">  return &lt;h1&gt;안녕&lt;/h1&gt;</text><text x="140" y="318.2" text-anchor="middle" font-size="13.5" fill="currentColor" fill-opacity="0.66" class="mono">}</text>
+  <rect x="310" y="16" width="230" height="318" rx="10" fill="#64748b" fill-opacity="0.05" stroke="#64748b" stroke-width="1.6" data-key="rs3-dom"/>
+  <text x="425" y="42" text-anchor="middle" font-size="15" font-weight="700" fill="currentColor">브라우저의 DOM</text>
+  <rect x="330" y="58" width="190" height="36" rx="10" fill="#64748b" fill-opacity="0.12" stroke="#64748b" stroke-width="1.6"/><text x="425" y="80.2" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor" class="mono">&lt;body&gt;</text>
+  <rect x="345" y="104" width="175" height="214" rx="10" fill="#2563eb" fill-opacity="0.08" stroke="#2563eb" stroke-width="1.6" data-key="rs3-box"/>
+  <text x="432" y="126" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor" class="mono">&lt;div id=&quot;root&quot;&gt;</text>
+  <rect x="362" y="142" width="141" height="44" rx="10" fill="#059669" fill-opacity="0.12" stroke="#059669" stroke-width="1.6"/><text x="432.5" y="168.2" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor" class="mono">&lt;h1&gt;안녕&lt;/h1&gt;</text>
+  <rect x="362" y="196" width="141" height="44" rx="10" fill="#059669" fill-opacity="0.12" stroke="#059669" stroke-width="1.6"/><text x="432.5" y="222.2" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor" class="mono">&lt;button&gt;…</text>
+  <text x="432" y="266" text-anchor="middle" font-size="12" font-weight="600" fill="#059669">React가 관리하는 영역</text>
+  <text x="432" y="286" text-anchor="middle" font-size="12" fill="currentColor" fill-opacity="0.66">직접 고치지 않는다</text>
+  <path d="M260,285 C290,285 300,165 360,165" fill="none" stroke="#059669" stroke-width="2" marker-end="url(#wm3-btgg-green)"/>
+</svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="script">
+          <p data-cue="rs3-root:check rs3-html:box">세 번째 슬라이드는 첫 화면이 그려지기까지의 경로입니다. <a href="/basicStudy/engineering/web/html/syntax.html">HTML 기초문법</a>에서는 보여 줄 내용을 <code>body</code> 안에 직접 적었습니다. React 프로젝트의 <code>index.html</code>에는 내용이 없고, <code>id</code>가 <code>root</code>인 빈 상자 하나와 <code>main.jsx</code>를 부르는 <code>script</code> 태그만 있습니다.</p>
+          <p data-cue="rs3-c1:box rs3-c2:box rs3-c3:box"><code>main.jsx</code>의 처음 세 줄은 재료를 가져옵니다. <code>react</code> 패키지에서 <code>StrictMode</code>를, <code>react-dom/client</code>에서 <code>createRoot</code>를, 그리고 우리가 만든 <code>App</code> 컴포넌트를 가져옵니다.</p>
+          <p data-cue="rs3-render:check rs3-c4:box rs3-c5:box rs3-main:box">이어서 <code>getElementById</code>로 빈 상자를 찾고, <code>createRoot</code>에 넘겨 React가 관리할 자리로 지정합니다. <code>render</code>에 넘긴 <code>&lt;App /&gt;</code>가 그 자리에 그려집니다. <mark>프로젝트 전체에서 DOM을 직접 찾는 코드는 이 한 줄뿐이고, 그 뒤로는 React가 맡습니다.</mark></p>
+          <p data-cue="rs3-c6:box rs3-c6b:box rs3-c7:box"><code>render</code>에 넘긴 <code>App</code>은 <code>StrictMode</code>라는 포장으로 한 번 감싸여 있습니다. 이 포장은 화면에 아무것도 보여 주지 않고, 안에 든 컴포넌트를 검사하는 일만 합니다. 무엇을 검사하는지 알려면 먼저 React가 컴포넌트에게 바라는 약속을 알아야 합니다.</p>
+          <p data-cue="rs3-app:box">React는 컴포넌트가 화면을 그릴 때 한 가지 약속을 지켜 주기를 바랍니다. 화면을 그리는 동안에는 바깥의 값을 읽어 오거나 바꾸지 말고, 받은 값만 보고 화면을 만들어 달라는 약속입니다. 이런 함수를 순수 함수라고 부릅니다.</p>
+          <p>이 약속을 지키면 두 가지를 얻습니다. 첫째는 안정성입니다. 같은 값을 받은 컴포넌트는 몇 번을 다시 그려도 늘 같은 화면을 보여 줍니다. 둘째는 효율성입니다. 결과가 늘 같다는 걸 믿을 수 있으니, React는 필요할 때 언제든 다시 그릴 수 있고, 그리다가 멈출 수도 있고, 받은 값이 그대로라면 다시 그리지 않고 건너뛸 수도 있습니다.</p>
+          <p data-cue="rs3-c6:box rs3-c6b:box"><code>StrictMode</code>는 이 약속이 잘 지켜지는지 검사해 줍니다. 개발하는 동안 자기가 감싼 컴포넌트들을 일부러 두 번씩 그려 봅니다. 약속을 지킨 컴포넌트라면 두 번 그려도 화면이 똑같습니다. <mark>하지만 그리는 도중에 바깥 값을 건드리는 컴포넌트라면 두 번째 결과가 달라지기 때문에 실수가 금방 드러납니다.</mark></p>
+          <p data-cue="rs3-dom:box rs3-box:box">이렇게 그려진 <code>App</code>의 내용은 오른쪽 그림처럼 <code>root</code> 상자 안에 들어갑니다. 이 영역은 React가 관리하므로 우리가 직접 고치지 않습니다.</p>
+          <p>몇 가지를 덧붙이겠습니다. 순수해야 하는 건 화면을 그리는 부분뿐입니다. 서버에 요청을 보내거나 타이머를 거는 일은 화면을 다 그린 뒤에 실행되는 <code>useEffect</code>나, 사용자가 버튼을 눌렀을 때 실행되는 이벤트 처리 함수에서 하면 됩니다. 그리고 이 약속은 <code>StrictMode</code>를 쓸 때만 지키는 규칙이 아닙니다. React로 만드는 모든 컴포넌트가 지켜야 하는 규칙이고, <code>StrictMode</code>는 그걸 확인해 줄 뿐입니다.</p>
+          <p>앞에서 그리다가 멈출 수 있다고 했는데, 여러 화면을 동시에 나란히 그린다는 뜻은 아닙니다. 그리던 일을 잠시 멈추고, 사용자의 입력처럼 더 급한 일을 먼저 처리할 수 있다는 뜻입니다.</p>
+          <p data-cue="rs3-c6:box rs3-c6b:box"><code>StrictMode</code>는 두 번 그려 보는 것 말고도 몇 가지를 더 합니다. <code>useEffect</code>를 한 번 더 실행해 보면서 뒷정리를 제대로 하는지 확인하고, 이제는 쓰지 않는 오래된 기능을 쓰면 경고를 띄워 줍니다. 이 검사는 개발하는 동안에만 동작합니다. 실제로 배포한 앱에서는 아무 일도 하지 않으니 속도가 느려질 걱정은 하지 않아도 됩니다.</p>
+          <p>마지막으로, <code>StrictMode</code>가 모든 실수를 잡아 주지는 못합니다. 두 번 그려도 겉으로 티가 나지 않는 실수는 그대로 지나갈 수 있다는 점을 기억해 두세요.</p>
+          <p class="meta"><time datetime="2026-11-18">2026-11-18</time> · 다음 문서 「JSX와 컴포넌트」에서 App.jsx 안을 채웁니다</p>
+        </div>
+
+        <div class="w-att">
+          <details>
+            <summary>첨부 · index.html 원문</summary>
+            <div class="w-att-body">
+<blockquote><pre>&lt;!doctype html&gt;
+&lt;html lang=&quot;ko&quot;&gt;
+  &lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot; /&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+    &lt;title&gt;my-app&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div id=&quot;root&quot;&gt;&lt;/div&gt;
+    &lt;script type=&quot;module&quot; src=&quot;/src/main.jsx&quot;&gt;&lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</pre></blockquote>
+<p><code>type="module"</code>은 이 스크립트가 <code>import</code> 문을 쓰는 ES 모듈이라는 표시입니다. 브라우저는 <code>.jsx</code>를 읽지 못하지만, 개발 서버(Vite)가 요청을 받아 Javascript로 바꿔서 돌려줍니다.</p>
+            </div>
+          </details>
+          <details>
+            <summary>첨부 · StrictMode가 하는 일</summary>
+            <div class="w-att-body">
+<ul>
+  <li>개발 모드에서 컴포넌트 함수와 effect를 <b>일부러 두 번</b> 실행합니다. 두 번 불러도 결과가 같은지 확인해, 숨은 부수 효과를 드러냅니다.</li>
+  <li>더 이상 쓰지 않는 API를 쓰면 경고합니다.</li>
+  <li>빌드한 결과(배포판)에서는 아무 일도 하지 않습니다.</li>
+</ul>
+<p><code>console.log</code>가 두 번 찍히는 것은 고장이 아니라 이 검사 때문입니다. 끄지 말고 그대로 둡니다.</p>
+            </div>
+          </details>
+          <details>
+            <summary>첨부 · React Developer Tools</summary>
+            <div class="w-att-body">
+<p>브라우저 확장 프로그램 <b>React Developer Tools</b>를 설치하면 개발자 도구(F12)에 <q>Components</q> 탭이 생깁니다. 요소 탭이 HTML 태그를 보여 주듯, 이 탭은 컴포넌트 트리와 각 컴포넌트의 props · state를 보여 줍니다. 값이 기대와 다를 때 가장 먼저 여는 곳입니다.</p>
+            </div>
+          </details>
+        </div>
+      </section>
+    </div>
+  </article>
+</body>
+
+</html>

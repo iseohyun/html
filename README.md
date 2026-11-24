@@ -16,10 +16,12 @@ An open-source interactive web application platform featuring educational conten
 ├── CHANGELOG.md             # Standardized version history
 ├── LICENSE                  # Open source license
 │
-├── basicStudy/              # Fundamental study subjects (Math, Science, History)
-├── coding/                  # Programming language tutorials & algorithms
+├── basicStudy/              # Study subjects, laid out like the sitemap
+│   ├── math/                # Math (elementary/, high/, ...)
+│   ├── science/             # Science
+│   └── engineering/         # Engineering: representation/, notation/, language/ (C, Java, Python),
+│                            #   web/ (HTML, CSS, JS, SVG, Canvas, React, Vite), tools/ (VScode, git), certificate/
 ├── column/                  # Technical essays and columns
-├── web-tech/                # Web technology docs & visualizers (HTML, CSS, JS, SVG, Canvas, LaTeX)
 ├── small-project/           # Interactive web simulators & standalone applications
 │   ├── bezier-simulator/    # Interactive Bezier curve visualizer
 │   ├── son-preference/      # Son preference demographic simulator
@@ -38,8 +40,8 @@ An open-source interactive web application platform featuring educational conten
 ## 🚀 Features & Main Categories
 
 1. **Basic Study (`/basicStudy/`)**: Mathematics, science, and fundamental school subjects.
-2. **Coding (`/coding/`)**: Algorithms, C/C++, Java, Python, and software concepts.
-3. **Web Tech (`/web-tech/`)**: Core web platform standards (HTML, CSS, JavaScript, Canvas 2D, SVG, LaTeX).
+2. **Programming languages (`/basicStudy/engineering/language/`)**: C/C++, Java, Python, and software concepts.
+3. **Web (`/basicStudy/engineering/web/`)**: Core web platform standards (HTML, CSS, JavaScript, Canvas 2D, SVG) plus React and Vite. LaTeX lives in `notation/`.
 4. **Small Projects (`/small-project/`)**: Standalone simulators, utilities, and browser tools.
 
 ---
