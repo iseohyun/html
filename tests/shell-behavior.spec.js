@@ -126,7 +126,7 @@ test.describe('본문 영역만 스크롤', () => {
     await expect(page.locator('#last-modified')).toBeAttached();
   });
 
-  test('문서는 밝은 종이로, 둘레의 바탕은 테마를 따른다', async ({ page }) => {
+  test('문서는 테마의 종이(어두운 테마는 표면색) 위에, 둘레의 바탕은 테마를 따른다', async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.setItem('iseohyun_settings_v1', JSON.stringify({ theme: 'navy', fontScale: '1' }));
     });
@@ -137,7 +137,7 @@ test.describe('본문 영역만 스크롤', () => {
       article: getComputedStyle(document.querySelector('article')).backgroundColor,
     }));
     expect(colors.body).toBe('rgb(15, 27, 45)');
-    expect(colors.article).toBe('rgb(255, 255, 255)');
+    expect(colors.article).toBe('rgb(22, 38, 61)');
   });
 
   test('목차는 본문 영역을 스크롤하면 지금 보는 항목을 강조한다', async ({ page }) => {

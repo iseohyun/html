@@ -1,14 +1,15 @@
 /**
  * @file modules/core/settings.js
  * @module SiteModules.Settings
- * @description 어느 화면에서나 같은 "전체 설정"(테마, 글자 크기)의 저장 · 적용과 전체 설정 페이지(settings.html) 그리기.
+ * @description 어느 화면에서나 같은 "전체 설정"(테마, 팔레트 색, 글자 크기)의 저장 · 적용과 전체 설정 페이지(settings.html) 그리기.
  *   - 값이 바뀔 때마다 localStorage 에 저장한다. 키 끝의 판 번호는 저장 모양이 바뀌면 올린다.
  *   - 읽을 때 항목마다 허용된 값인지 확인하고, 어긋난 항목만 기본값으로 둔다. 읽기/쓰기에 실패해도 기본값으로 동작한다.
- *   - 테마는 :root[data-skin] 으로 적용한다. 뼈대 · 홈 · 문서 둘레의 바탕에 적용되고, 문서 본문은 밝은 종이로 유지된다.
- *   - 「UniPalette」 테마는 UniPalette로 고른 색으로 만든 토큰을 :root 의 style 에 직접 쓴다
- *     (값은 modules/features/unipalette-theme.js 가 저장하고, 여기서는 저장된 값만 읽어 적용한다).
+ *   - 테마는 :root[data-skin] 으로 적용한다. 테마는 정해 둔 몇 가지 역할 색(바탕 · 표면 · 선 · 글자 …)이고,
+ *     뼈대 · 홈 · 문서 본문 모두에 적용된다.
+ *   - 「팔레트 색」은 테마가 정하지 않는 색(슬라이드 그림 · 도식 등)에 쓰는 5×3 색이다. 테마와 따로 고르며 테마를 바꾸지 않는다.
+ *     저장 · 적용 · 고르기는 modules/features/palette.js 가 맡고, 여기서는 줄만 그린다.
  *   - 「하이라이트」(선택·호버 면, --active)와 「인터페이스」(켜진 메뉴 글자, --sidebar-active-color)는 테마가 정한 색(자동)을 쓰고,
- *     후보색을 고르면 그 색으로 강제한다. 후보는 UniPalette 테마면 고른 팔레트의 색, 다른 테마면 정해 둔 목록(ACCENT_CANDIDATES).
+ *     후보색을 고르면 그 색으로 강제한다. 후보는 정해 둔 목록(ACCENT_CANDIDATES).
  *     후보색은 그대로 쓰지 않고, 테마의 밝기에 맞춰 면은 옅게(어두운 테마는 짙게), 글자는 면과 4.5:1 대비가 되게 다듬는다.
  *     비활성 탭의 면(--tab-idle)은 테마색의 음영이라 여기서 바꾸지 않는다.
  *   - 화면을 열 때의 첫 적용은 깜빡임을 줄이기 위해 modules/script.js 가 같은 키(와 계산해 둔 색 토큰)를 읽어 먼저 한다.
@@ -29,7 +30,6 @@ window.SiteModules.Settings = (function () {
     { value: "dark", label: "어둡게" },
     { value: "gray", label: "스톤" },
     { value: "navy", label: "네이비" },
-    { value: "custom", label: "UniPalette" },
     { value: "system", label: "시스템" }
   ];
   const FONT_SCALES = [
@@ -38,7 +38,7 @@ window.SiteModules.Settings = (function () {
     { value: "1.1", label: "크게" },
     { value: "1.25", label: "아주 크게" }
   ];
-  // UniPalette 가 아닌 테마에서 「하이라이트」·「인터페이스」로 고를 수 있는 후보색
+  // 「하이라이트」·「인터페이스」로 고를 수 있는 후보색
   const ACCENT_CANDIDATES = [
     { value: "#E53935", label: "빨강" },
     { value: "#FB8C00", label: "주황" },
@@ -60,7 +60,7 @@ window.SiteModules.Settings = (function () {
   let current = load();
 
   function isAllowed(key, value) {
-    // 하이라이트·인터페이스는 「자동」 또는 색 값 (UniPalette 팔레트의 색도 후보이므로 목록으로 막지 않는다)
+    // 하이라이트·인터페이스는 「자동」 또는 색 값
     if (key === "accent" || key === "ui") return value === "auto" || Color.isHex(value);
     return OPTIONS[key].some(option => option.value === value);
   }
@@ -90,10 +90,6 @@ window.SiteModules.Settings = (function () {
   function resolveSkin(theme) {
     if (theme !== "system") return theme;
     return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  }
-
-  function customTheme() {
-    return window.SiteModules && window.SiteModules.UniPaletteTheme;
   }
 
   function isDarkSkin() {
@@ -126,7 +122,7 @@ window.SiteModules.Settings = (function () {
   }
 
   // 테마를 적용한 뒤, 강제로 고른 하이라이트·인터페이스 색을 덮어쓴다
-  function applyAccent(usedCustom) {
+  function applyAccent() {
     const rootEl = document.documentElement;
     const dark = isDarkSkin();
     const tokens = {};
@@ -137,11 +133,6 @@ window.SiteModules.Settings = (function () {
     const face = tokenNow("--active");
     if (current.ui !== "auto" && face) {
       tokens["--sidebar-active-color"] = uiText(current.ui, face, dark);
-    } else if (usedCustom && tokens["--active"] && face) {
-      // UniPalette 의 자동 글자색(서브 1)은 바뀐 면 위에서도 읽히게 다시 맞춘다
-      const saved = customTheme().readSaved();
-      const sub1 = saved && saved.palette.length >= 5 ? customTheme().assignRoles(saved.palette).roles.sub1 : null;
-      if (sub1) tokens["--sidebar-active-color"] = uiText(sub1, face, dark);
     }
     if (tokens["--sidebar-active-color"]) rootEl.style.setProperty("--sidebar-active-color", tokens["--sidebar-active-color"]);
     saveAccentTokens(tokens);
@@ -149,60 +140,26 @@ window.SiteModules.Settings = (function () {
 
   function apply() {
     const rootEl = document.documentElement;
-    const custom = customTheme();
-    if (custom) custom.clearTokens();
     rootEl.style.removeProperty("--active");
     rootEl.style.removeProperty("--sidebar-active-color");
-    // 「UniPalette」인데 저장된 배색이 없으면(지워졌거나 모양이 바뀜) 밝게로 보인다
-    const usedCustom = current.theme === "custom" && custom && custom.applySaved();
-    if (!usedCustom) {
-      const skin = current.theme === "custom" ? "light" : resolveSkin(current.theme);
-      if (skin === "light") rootEl.removeAttribute("data-skin");
-      else rootEl.setAttribute("data-skin", skin);
-    }
-    applyAccent(!!usedCustom);
+    const skin = resolveSkin(current.theme);
+    if (skin === "light") rootEl.removeAttribute("data-skin");
+    else rootEl.setAttribute("data-skin", skin);
+    applyAccent();
     rootEl.style.setProperty("--font-scale", current.fontScale);
   }
 
   /**
-   * 하이라이트·인터페이스의 후보색. UniPalette 테마면 고른 팔레트의 색(역할 이름을 붙여서), 아니면 정해 둔 목록.
-   * 지금 고른 색이 후보에 없으면(테마를 바꾼 경우 등) 「지금 색」으로 덧붙인다.
+   * 하이라이트·인터페이스의 후보색: 정해 둔 목록.
+   * 지금 고른 색이 후보에 없으면(예전에 다른 후보에서 고른 경우 등) 「지금 색」으로 덧붙인다.
    */
   function accentCandidates(key) {
     let list = ACCENT_CANDIDATES;
-    const custom = customTheme();
-    const saved = current.theme === "custom" && custom ? custom.readSaved() : null;
-    if (saved && saved.palette.length >= 5) {
-      const roleNames = { primary: "테마색", sub1: "서브 1", sub2: "서브 2", sub3: "서브 3", highlight: "하이라이트" };
-      const byIndex = custom.assignRoles(saved.palette).byIndex;
-      list = saved.palette.map((hex, i) => ({ value: hex.toUpperCase(), label: roleNames[byIndex[i]] || hex }));
-    }
     const value = current[key];
     if (value !== "auto" && !list.some(c => c.value === value.toUpperCase())) {
       list = list.concat([{ value: value.toUpperCase(), label: "지금 색" }]);
     }
     return list;
-  }
-
-  /** 「UniPalette」 단추: 대화상자로 배색을 고르고, 고르면 테마를 custom 으로 둔다 */
-  function pickCustom(onPicked, onFailed) {
-    const custom = customTheme();
-    if (!custom) {
-      console.warn("[Settings] UniPalette 테마 모듈이 없습니다.");
-      return;
-    }
-    custom.pick(apply)
-      .then(picked => {
-        if (!picked) return;
-        current.theme = "custom";
-        save();
-        apply();
-        if (onPicked) onPicked();
-      })
-      .catch(err => {
-        console.error("[Settings] UniPalette 배색을 고르지 못했습니다:", err);
-        if (onFailed) onFailed(err);
-      });
   }
 
   function get(key) {
@@ -220,7 +177,7 @@ window.SiteModules.Settings = (function () {
   }
 
   function reset() {
-    current = Object.assign({}, DEFAULTS);   // 고른 UniPalette 배색 값은 남겨 두어, 다시 누르면 그 색에서 시작한다
+    current = Object.assign({}, DEFAULTS);   // 팔레트 색은 따로 저장하므로 그대로 둔다(그 줄의 「기본값」으로 되돌린다)
     save();
     apply();
   }
@@ -253,14 +210,6 @@ window.SiteModules.Settings = (function () {
         });
       };
       btn.addEventListener("click", () => {
-        // UniPalette 는 누를 때마다 대화상자를 열어 다시 고른다
-        if (key === "theme" && option.value === "custom") {
-          pickCustom(() => { markPressed(); refreshAccentRows(); }, () => {
-            btn.textContent = "UniPalette (불러오지 못함)";
-            setTimeout(() => { btn.textContent = option.label; }, 3000);
-          });
-          return;
-        }
         set(key, option.value);
         markPressed();
         if (key === "theme") refreshAccentRows();   // 후보색과 견본의 밝기가 테마를 따라 바뀐다
@@ -345,6 +294,16 @@ window.SiteModules.Settings = (function () {
     card.appendChild(createChoiceRow("테마", "theme"));
     accentRowEls = ACCENT_ROWS.map(createAccentRow);
     accentRowEls.forEach(el => card.appendChild(el));
+    const palette = window.SiteModules && window.SiteModules.Palette;
+    if (palette) {
+      const pal = createRow("팔레트 색");
+      const hint = document.createElement("span");
+      hint.className = "set-hint";
+      hint.textContent = "슬라이드 · 도식";
+      pal.row.firstChild.appendChild(hint);
+      palette.renderSettingsRow(pal.row, pal.controls);
+      card.appendChild(pal.row);
+    }
     card.appendChild(createChoiceRow("글자 크기", "fontScale"));
 
     const keys = createRow("단축키");
@@ -371,9 +330,9 @@ window.SiteModules.Settings = (function () {
 
     const note = document.createElement("p");
     note.className = "set-note";
-    note.textContent = "테마는 메뉴, 헤더, 홈 화면, 문서 둘레의 바탕에 적용됩니다. 문서 본문은 그림과 예제가 제대로 보이도록 밝은 종이로 유지합니다. 설정은 이 브라우저에 기억됩니다. " +
-      "「UniPalette」를 누르면 색 고르기 창이 열리고, 고르는 동안 사이트 배색이 바로 바뀝니다. 첫 색이 바탕·글자·비활성 탭의 색조, 가장 먼 색이 알림 점, 가장 가까운 색이 선택 면이 됩니다. 어두운 배색을 원하면 「어둡게」를 고른 뒤 「UniPalette」를 누르세요. " +
-      "「하이라이트」(선택·호버 면)와 「인터페이스」(켜진 메뉴 글자)는 보통 테마가 정하지만, 후보색을 누르면 그 색으로 바꿉니다. UniPalette 테마에서는 고른 팔레트의 색이 후보가 됩니다.";
+    note.textContent = "테마는 메뉴, 헤더, 홈 화면과 문서 본문에 함께 적용됩니다. 어두운 테마에서는 흰 바탕을 전제로 그린 도식(SVG)의 색을 뒤집어 보여 주고, 사진은 그대로 둡니다. 설정은 이 브라우저에 기억됩니다. " +
+      "「팔레트 색」은 테마가 정하지 않는 색(슬라이드 그림 · 도식)에 쓰는 5×3 색입니다. 「고르기」를 누르면 UniPalette 색 고르기 창이 열리고, 고르는 동안 바로 바뀝니다. 슬라이드 읽기 설정의 같은 줄과 같은 값입니다. " +
+      "「하이라이트」(선택·호버 면)와 「인터페이스」(켜진 메뉴 글자)는 보통 테마가 정하지만, 후보색을 누르면 그 색으로 바꿉니다.";
 
     container.append(card, note);
   }

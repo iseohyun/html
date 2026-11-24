@@ -20,7 +20,7 @@ test.describe('전체 설정', () => {
     await expect(page.locator('#header-drop')).not.toHaveClass(/is-open/);
   });
 
-  test('테마: 고르면 뼈대 색이 바뀌고, 새로 열어도 남아 있으며, 문서 본문은 밝게 유지된다', async ({ page }) => {
+  test('테마: 고르면 뼈대 색이 바뀌고, 새로 열어도 남아 있으며, 문서 본문도 테마를 따른다', async ({ page }) => {
     await page.goto('/index.html#/settings.html');
     const rail = page.locator('#sidebar-nav');
     await expect(page.locator('.set-card')).toBeVisible();
@@ -35,11 +35,17 @@ test.describe('전체 설정', () => {
     await expect(page.locator('html')).toHaveAttribute('data-skin', 'navy');
     await expect(page.locator('.pill-btn[data-setting="theme"][data-value="navy"]')).toHaveAttribute('aria-pressed', 'true');
 
-    // 문서 본문의 글자색은 테마와 무관하게 그대로다
+    // 문서 본문도 테마의 글자색 · 종이색(표면)을 따른다
     await page.evaluate(() => { window.location.hash = '#/column/swimming/freestyle.html'; });
     await expect(page.locator('#header-title')).not.toHaveText('전체 설정');
-    const articleColor = await page.locator('article').evaluate(el => getComputedStyle(el).color);
-    expect(articleColor).toBe('rgb(68, 68, 68)');
+    const article = page.locator('#app-main > article');
+    expect(await article.evaluate(el => getComputedStyle(el).color)).toBe('rgb(230, 237, 247)');
+    expect(await article.evaluate(el => getComputedStyle(el).backgroundColor)).toBe('rgb(22, 38, 61)');
+
+    // 밝게로 돌아오면 본문은 예전 그대로(흰 종이 · 짙은 회색 글자)
+    await page.evaluate(() => window.SiteModules.Settings.set('theme', 'light'));
+    expect(await article.evaluate(el => getComputedStyle(el).color)).toBe('rgb(68, 68, 68)');
+    expect(await article.evaluate(el => getComputedStyle(el).backgroundColor)).toBe('rgb(255, 255, 255)');
   });
 
   test('글자 크기: 단계를 바꾸면 화면 전체 글자 크기가 달라지고, 기본값으로 되돌릴 수 있다', async ({ page }) => {
@@ -172,74 +178,57 @@ test.describe('기본 테마', () => {
   });
 });
 
-test.describe('UniPalette 테마', () => {
-  test('고른 배색은 UniPalette를 불러오지 않고 저장된 토큰으로 적용되고, 다른 테마를 고르면 지워진다', async ({ page }) => {
-    const tokens = {
-      '--bg': '#F8F3F2', '--surface': '#FFFFFF', '--sunken': '#EDE3E0', '--line': '#DDCBC6',
-      '--fg': '#251410', '--muted': '#5D4C47', '--active': '#E3F2D3', '--alert': '#3B4FE8',
-      '--sidebar-active-color': '#3F6A12'
-    };
-    await page.addInitScript(t => {
-      if (sessionStorage.getItem('seeded')) return;
-      sessionStorage.setItem('seeded', '1');
-      localStorage.setItem('iseohyun_settings_v1', JSON.stringify({ theme: 'custom', fontScale: '1' }));
-      localStorage.setItem('iseohyun_custom_skin_v1', JSON.stringify({
-        palette: ['#E44D1B', '#8AE41B', '#1BE4A2', '#1B3EE4', '#E41BCF'], dark: false, tokens: t
-      }));
-    }, tokens);
-    await page.goto('/index.html#/settings.html');
-    await expect(page.locator('.set-card')).toBeVisible();
-
-    const bg = await page.evaluate(() => document.documentElement.style.getPropertyValue('--bg'));
-    expect(bg).toBe('#F8F3F2');
-    await expect(page.locator('[data-setting="theme"][data-value="custom"]')).toHaveAttribute('aria-pressed', 'true');
-    expect(await page.evaluate(() => typeof window.UniPalette)).toBe('undefined');
-
-    await page.locator('[data-setting="theme"][data-value="navy"]').click();
-    await expect(page.locator('html')).toHaveAttribute('data-skin', 'navy');
-    expect(await page.evaluate(() => document.documentElement.style.getPropertyValue('--bg'))).toBe('');
-  });
-
-  test('하이라이트·인터페이스 후보는 고른 팔레트의 색이고, 비활성 탭은 테마색의 음영이다', async ({ page }) => {
-    const palette = ['#E44D1B', '#8AE41B', '#1BE4A2', '#1B3EE4', '#E41BCF'];
+test.describe('팔레트 색', () => {
+  test('전체 설정의 「팔레트 색」 줄: 5칸 미리보기와 기본값, 저장한 팔레트는 UniPalette 를 불러오지 않고 적용된다', async ({ page }) => {
+    const saved = [
+      ['#102030', '#405060', '#A0B0C0'], ['#112233', '#445566', '#AABBCC'], ['#123456', '#456789', '#ABCDEF'],
+      ['#203040', '#506070', '#B0C0D0'], ['#213243', '#546576', '#BACBDC']
+    ];
     await page.addInitScript(p => {
       if (sessionStorage.getItem('seeded')) return;
       sessionStorage.setItem('seeded', '1');
+      // 예전 「슬라이드 색」 키에 있던 값은 새 키로 옮겨 쓴다
+      localStorage.setItem('iseohyun_slides_palette_v1', JSON.stringify(p));
+    }, saved);
+    await page.goto('/index.html#/settings.html');
+    const row = page.locator('.set-card [data-palette-row]');
+    await expect(row).toBeVisible();
+    await expect(row.locator('.pal-chip')).toHaveCount(5);
+    await expect(row.locator('[data-pal="reset"]')).toHaveAttribute('aria-pressed', 'false');
+    expect(await page.evaluate(() => document.documentElement.style.getPropertyValue('--sp1-d'))).toBe('#102030');
+    expect(await page.evaluate(() => typeof window.UniPalette)).toBe('undefined');
+    expect(await page.evaluate(() => localStorage.getItem('iseohyun_palette_v1'))).not.toBeNull();
+    expect(await page.evaluate(() => localStorage.getItem('iseohyun_slides_palette_v1'))).toBeNull();
+
+    // 기본값: 저장값을 지우고 CSS 기본 5×3 으로
+    await row.locator('[data-pal="reset"]').click();
+    await expect(row.locator('[data-pal="reset"]')).toHaveAttribute('aria-pressed', 'true');
+    expect(await page.evaluate(() => document.documentElement.style.getPropertyValue('--sp1-d'))).toBe('');
+    expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--sp1-d').trim().toUpperCase())).toBe('#5B1F0B');
+  });
+
+  test('테마에는 UniPalette 가 없고, 예전에 저장한 「UniPalette」 테마는 기본(시스템)으로 돌아간다', async ({ page }) => {
+    await page.addInitScript(() => {
+      if (sessionStorage.getItem('seeded')) return;
+      sessionStorage.setItem('seeded', '1');
       localStorage.setItem('iseohyun_settings_v1', JSON.stringify({ theme: 'custom', fontScale: '1' }));
-      // --tab-idle 이 없던 때 저장한 배색: 화면을 열 때 테마색으로 채운다
-      localStorage.setItem('iseohyun_custom_skin_v1', JSON.stringify({
-        palette: p, dark: false,
-        tokens: {
-          '--bg': '#F8F3F2', '--surface': '#FFFFFF', '--sunken': '#EDE3E0', '--line': '#DDCBC6',
-          '--fg': '#251410', '--muted': '#5D4C47', '--active': '#E3F2D3', '--alert': '#3B4FE8',
-          '--sidebar-active-color': '#3F6A12'
-        }
-      }));
-    }, palette);
+    });
+    await page.emulateMedia({ colorScheme: 'light' });
     await page.goto('/index.html#/settings.html');
     await expect(page.locator('.set-card')).toBeVisible();
+    await expect(page.locator('[data-setting="theme"][data-value="custom"]')).toHaveCount(0);
+    await expect(page.locator('[data-setting="theme"][data-value="system"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('html')).not.toHaveAttribute('data-skin', /.+/);
+  });
 
-    const swatches = page.locator('[data-accent-row="accent"] .color-swatch');
-    await expect(swatches).toHaveCount(5);
-    expect(await swatches.evaluateAll(els => els.map(e => e.dataset.value))).toEqual(palette);
-    await expect(page.locator('[data-accent-row="accent"] [data-value="auto"]')).toHaveAttribute('aria-pressed', 'true');
-
-    // 비활성 탭의 면은 선택 면(--active)이 아니라 테마색(첫 색)의 음영
-    const tabIdle = await page.evaluate(() => document.documentElement.style.getPropertyValue('--tab-idle'));
-    expect(tabIdle).toMatch(/^#[0-9A-F]{6}$/i);
-    expect(tabIdle.toUpperCase()).not.toBe('#E3F2D3');
-
-    // 서브 3(파랑 쪽)을 하이라이트로 고르면 선택 면이 바뀌고, 비활성 탭과 테마 토큰은 그대로
-    await swatches.nth(3).click();
-    await expect(page.locator('[data-accent-row="accent"] [data-value="#1B3EE4"]')).toHaveAttribute('aria-pressed', 'true');
-    const after = await page.evaluate(() => ({
-      active: document.documentElement.style.getPropertyValue('--active'),
-      tabIdle: document.documentElement.style.getPropertyValue('--tab-idle'),
-      bg: document.documentElement.style.getPropertyValue('--bg')
-    }));
-    expect(after.active.toUpperCase()).not.toBe('#E3F2D3');
-    expect(after.tabIdle).toBe(tabIdle);
-    expect(after.bg).toBe('#F8F3F2');
+  test('어두운 테마에서는 팔레트의 면과 글자 역할이 바뀐다', async ({ page }) => {
+    await page.goto('/index.html#/settings.html');
+    await page.locator('.pill-btn[data-setting="theme"][data-value="dark"]').click();
+    const roles = await page.evaluate(() => {
+      const cs = getComputedStyle(document.documentElement);
+      return { fill: cs.getPropertyValue('--sp1-fill').trim(), d: cs.getPropertyValue('--sp1-d').trim() };
+    });
+    expect(roles.fill.toUpperCase()).toBe(roles.d.toUpperCase());
   });
 });
 

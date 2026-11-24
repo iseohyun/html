@@ -32,9 +32,6 @@
   <link rel="stylesheet" href="/modules/features/slides.css">
   <script src="/modules/features/slides.js" defer></script>
 
-  <!-- 슬라이드 색: 5×3 팔레트, 읽기 설정의 「슬라이드 색」에서 UniPalette 로 고른다 -->
-  <link rel="stylesheet" href="/modules/features/slides-palette.css">
-  <script src="/modules/features/slides-palette.js" defer></script>
 </head>
 <!--
   개발 과정과 방향 · 협력 (VirtualMouse 이야기)
@@ -178,7 +175,7 @@
       .slides-doc .trust-link.cue-box { border-color: var(--sl-cue, #d32f2f); color: var(--sl-cue, #d32f2f); animation: trust-pulse 1.1s ease-in-out infinite; }
       @media (prefers-reduced-motion: reduce) { .slides-doc .trust-link.cue-box { animation: none; } }
 
-      /* 슬라이드 색 (slides-palette.css 의 역할 변수). 1 강조 · 2 정식·미래 · 4 흐름 · 5 하지 않는 것 */
+      /* 팔레트 색 (modules/features/palette.css 의 역할 변수). 1 강조 · 2 정식·미래 · 4 흐름 · 5 하지 않는 것 */
       .slides-doc .dg .bx-emph { fill: var(--sp1-fill, var(--active)); stroke: var(--sp1-ink, var(--c-fg)); }
       .slides-doc .dg .ln { stroke: var(--sp4-mid, var(--c-muted)); }
       .slides-doc .dg rect[data-key="official"] { fill: var(--sp2-fill, var(--bg)); stroke: var(--sp2-ink, var(--c-line)); }

@@ -1087,7 +1087,8 @@ em {
    기본 화면 토큰 ("새 프로젝트 기본 화면" 명세)
    - 뼈대(레일·패널·검색·모달) 규칙은 색 값을 직접 쓰지 않고 아래 역할 이름만 쓴다.
    - 테마는 역할 토큰의 값만 바꾼다. :root[data-skin] 으로 고르며 기본은 밝게.
-   - 문서 본문(article)은 아직 토큰을 쓰지 않으므로 어떤 테마에서도 밝은 종이로 남는다.
+   - 문서 본문(article)도 테마를 따른다. 밝은 테마의 본문 규칙은 예전 색 그대로이고,
+     어두운 테마(dark · navy)는 파일 끝의 「어두운 테마의 문서 본문」이 덮어쓴다.
    ========================================================================== */
 :root {
   /* 역할 색 */
@@ -1103,6 +1104,7 @@ em {
   --day-sun: #b3261e;     /* 일요일·공휴일 */
   --day-sat: #2456a6;     /* 토요일 */
   --alert: #d32f2f;       /* 알림 점 */
+  --paper: #ffffff;       /* 문서 본문의 종이 (어두운 테마는 표면색) */
 
   /* 치수 */
   --rail-w: 60px;
@@ -1131,6 +1133,7 @@ em {
   --bg: #141615; --surface: #1c1f1e; --sunken: #0f1110; --line: #303533;
   --fg: #e8ebe9; --muted: #9aa39f; --active: #2c312f; --tab-idle: #2c312f; --scrim: rgba(0, 0, 0, 0.6);
   --day-sun: #f0958d; --day-sat: #8fb4ef;
+  --paper: var(--surface);
 }
 
 :root[data-skin="gray"] {
@@ -1143,6 +1146,7 @@ em {
   --bg: #0f1b2d; --surface: #16263d; --sunken: #0a1322; --line: #2a3d5a;
   --fg: #e6edf7; --muted: #9db0c9; --active: #233652; --tab-idle: #233652; --scrim: rgba(0, 0, 0, 0.6);
   --day-sun: #ff9d94; --day-sat: #9cc4ff;
+  --paper: var(--surface);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -3678,7 +3682,7 @@ article a.pill-btn:hover {
 /* ==========================================================================
    본문 영역만 스크롤 (#app-main)
    - 페이지 전체는 스크롤하지 않는다. 헤더와 사이드바는 제자리에 있고 본문 영역만 세로로 스크롤한다.
-   - 바탕은 테마를 따르고, 문서(article)는 그림과 예제가 제대로 보이도록 밝은 종이로 올려 둔다.
+   - 바탕은 테마를 따르고, 문서(article)는 테마의 종이색(--paper) 위에 올려 둔다.
    ========================================================================== */
 html,
 body {
@@ -3726,11 +3730,11 @@ body {
   background-color: var(--muted);
 }
 
-/* 문서는 밝은 종이. 레이아웃 폭을 바꾸지 않도록 여백은 그림자로 넓힌다. 홈은 종이 없이 테마 바탕 위에 바로 그린다. */
+/* 문서는 종이(--paper). 레이아웃 폭을 바꾸지 않도록 여백은 그림자로 넓힌다. 홈은 종이 없이 테마 바탕 위에 바로 그린다. */
 body:not(:has(#site-history)) #app-main > article {
   margin-top: 36px;
-  background-color: #ffffff;
-  box-shadow: 0 0 0 20px #ffffff;
+  background-color: var(--paper);
+  box-shadow: 0 0 0 20px var(--paper);
   border-radius: 2px;
   color-scheme: light;
 }
@@ -4221,3 +4225,124 @@ article .auto-overview-pages a:hover {
   background-color: var(--dev-mark);
   vertical-align: middle;
 }
+
+/* ==========================================================================
+   어두운 테마의 문서 본문 (data-skin dark · navy)
+   - 밝은 테마의 본문 규칙은 색 값을 직접 쓴 것이 많아, 어두운 테마에서만 여기서 역할 토큰으로 덮어쓴다.
+   - 그림: 흰 바탕을 전제로 그린 도식(SVG 파일 · 문서 안의 svg)은 색을 뒤집는다(invert + hue-rotate 로 색조는 지킨다).
+     사진(PNG · JPG · GIF)은 그대로 둔다. 캔버스는 그림 내용을 바꿀 수 없으므로 흰 칸에 올린다.
+     슬라이드(.slides-doc)는 팔레트 색과 테마 토큰으로 스스로 맞추므로 뒤집지 않는다. 뒤집지 않을 그림은 class="no-invert".
+   ========================================================================== */
+:root[data-skin="dark"],
+:root[data-skin="navy"] {
+  --link: #8ab4f8;
+  --link-visited: #c58af9;
+  --link-external: #9cc0ff;
+  --code-bg: color-mix(in srgb, var(--fg) 9%, var(--paper));
+  --stripe: color-mix(in srgb, var(--fg) 5%, var(--paper));
+  --head-bg: color-mix(in srgb, var(--fg) 22%, var(--paper));
+}
+
+:root:is([data-skin="dark"], [data-skin="navy"]) body { color: var(--fg); }
+:root:is([data-skin="dark"], [data-skin="navy"]) body:not(:has(#site-history)) #app-main > article { color-scheme: dark; }
+
+/* 링크 */
+:root:is([data-skin="dark"], [data-skin="navy"]) article a { color: var(--link); }
+:root:is([data-skin="dark"], [data-skin="navy"]) article a:visited { color: var(--link-visited); }
+:root:is([data-skin="dark"], [data-skin="navy"]) article a:hover,
+:root:is([data-skin="dark"], [data-skin="navy"]) article a.external-link:hover { color: #ff8a80; }
+
+/* 제목 · 머리 */
+:root:is([data-skin="dark"], [data-skin="navy"]) h1 { border-bottom-color: var(--line); }
+:root:is([data-skin="dark"], [data-skin="navy"]) h2 { border-bottom-color: var(--line); }
+:root:is([data-skin="dark"], [data-skin="navy"]) h1::before,
+:root:is([data-skin="dark"], [data-skin="navy"]) del { color: var(--muted); }
+:root:is([data-skin="dark"], [data-skin="navy"]) article > span.list-title,
+:root:is([data-skin="dark"], [data-skin="navy"]) #title,
+:root:is([data-skin="dark"], [data-skin="navy"]) .doc-title-text,
+:root:is([data-skin="dark"], [data-skin="navy"]) .site-modal-header { color: var(--fg); }
+:root:is([data-skin="dark"], [data-skin="navy"]) .doc-path-text,
+:root:is([data-skin="dark"], [data-skin="navy"]) #last-modified { color: var(--muted) !important; }
+:root:is([data-skin="dark"], [data-skin="navy"]) #title-container,
+:root:is([data-skin="dark"], [data-skin="navy"]) details.h1-no > summary { border-bottom-color: var(--line); }
+:root:is([data-skin="dark"], [data-skin="navy"]) #subtitle { color: #f0a37a; }
+
+/* 표 */
+:root:is([data-skin="dark"], [data-skin="navy"]) table,
+:root:is([data-skin="dark"], [data-skin="navy"]) th,
+:root:is([data-skin="dark"], [data-skin="navy"]) table td,
+:root:is([data-skin="dark"], [data-skin="navy"]) table table { border-color: var(--line); }
+:root:is([data-skin="dark"], [data-skin="navy"]) table thead,
+:root:is([data-skin="dark"], [data-skin="navy"]) table table th { background-color: var(--head-bg); color: var(--fg); }
+:root:is([data-skin="dark"], [data-skin="navy"]) table.striped tr:nth-child(even) { background-color: var(--stripe); }
+:root:is([data-skin="dark"], [data-skin="navy"]) table.striped tr:nth-child(even):hover,
+:root:is([data-skin="dark"], [data-skin="navy"]) table.striped tr:nth-child(odd):hover { background-color: var(--active); }
+
+/* 인용 · 코드 · 상자 */
+:root:is([data-skin="dark"], [data-skin="navy"]) blockquote:not(.shell) { background-color: var(--code-bg); border-left-color: var(--line); }
+:root:is([data-skin="dark"], [data-skin="navy"]) blockquote span.comment { color: #7fd07f; }
+:root:is([data-skin="dark"], [data-skin="navy"]) code { background-color: var(--code-bg); }
+:root:is([data-skin="dark"], [data-skin="navy"]) var,
+:root:is([data-skin="dark"], [data-skin="navy"]) .img-box svg,
+:root:is([data-skin="dark"], [data-skin="navy"]) .img-box img,
+:root:is([data-skin="dark"], [data-skin="navy"]) .hljs-ln td,
+:root:is([data-skin="dark"], [data-skin="navy"]) [id^="affix-"],
+:root:is([data-skin="dark"], [data-skin="navy"]) .simple-box,
+:root:is([data-skin="dark"], [data-skin="navy"]) .summary { border-color: var(--line); }
+:root:is([data-skin="dark"], [data-skin="navy"]) table.hljs-ln tbody tr:nth-child(odd),
+:root:is([data-skin="dark"], [data-skin="navy"]) table.hljs-ln tbody tr:nth-child(even) { background-color: transparent; }
+:root:is([data-skin="dark"], [data-skin="navy"]) table.hljs-ln tbody tr:hover { background-color: var(--active); }
+:root:is([data-skin="dark"], [data-skin="navy"]) q,
+:root:is([data-skin="dark"], [data-skin="navy"]) .hl,
+:root:is([data-skin="dark"], [data-skin="navy"]) .hl1,
+:root:is([data-skin="dark"], [data-skin="navy"]) .highlight1 { background-color: #2f5a35; }
+:root:is([data-skin="dark"], [data-skin="navy"]) .moveto { background-color: var(--paper); }
+:root:is([data-skin="dark"], [data-skin="navy"]) .tooltip { border-bottom-color: var(--fg); }
+:root:is([data-skin="dark"], [data-skin="navy"]) .info div,
+:root:is([data-skin="dark"], [data-skin="navy"]) .info tspan,
+:root:is([data-skin="dark"], [data-skin="navy"]) .info span { background-color: #3a3824; border-color: var(--line); color: var(--fg); box-shadow: none; }
+
+/* 자동 개론 카드 */
+:root:is([data-skin="dark"], [data-skin="navy"]) .auto-overview,
+:root:is([data-skin="dark"], [data-skin="navy"]) article a.auto-overview-card,
+:root:is([data-skin="dark"], [data-skin="navy"]) article a.auto-overview-card:visited,
+:root:is([data-skin="dark"], [data-skin="navy"]) article .auto-overview-pages a,
+:root:is([data-skin="dark"], [data-skin="navy"]) article .auto-overview-pages a:visited { color: var(--fg); }
+:root:is([data-skin="dark"], [data-skin="navy"]) .auto-overview-lead,
+:root:is([data-skin="dark"], [data-skin="navy"]) .auto-overview-count,
+:root:is([data-skin="dark"], [data-skin="navy"]) .auto-overview-preview,
+:root:is([data-skin="dark"], [data-skin="navy"]) .auto-overview-pages li.is-app a::before { color: var(--muted); }
+:root:is([data-skin="dark"], [data-skin="navy"]) article a.auto-overview-card { background-color: var(--paper); border-color: var(--line); }
+:root:is([data-skin="dark"], [data-skin="navy"]) article a.auto-overview-card:hover,
+:root:is([data-skin="dark"], [data-skin="navy"]) article a.auto-overview-card:focus,
+:root:is([data-skin="dark"], [data-skin="navy"]) article .auto-overview-pages a:hover { background-color: var(--active); }
+:root:is([data-skin="dark"], [data-skin="navy"]) .auto-overview-pages,
+:root:is([data-skin="dark"], [data-skin="navy"]) .auto-overview-pages li { border-color: var(--line); }
+
+/* 그림: 도식은 색을 뒤집고 사진은 그대로, 캔버스는 흰 칸 */
+:root:is([data-skin="dark"], [data-skin="navy"]) article :is(img[src$=".svg" i], img[src*=".svg?" i], object[type="image/svg+xml"], svg):not(.no-invert):not(.slides-doc *):not(.no-invert *):not(button *):not(.pill-btn *):not(svg *):not(.material-symbols-outlined) {
+  filter: invert(1) hue-rotate(180deg);
+}
+:root:is([data-skin="dark"], [data-skin="navy"]) article canvas:not(.slides-doc *):not(.no-invert) {
+  background-color: #ffffff;
+}
+
+/* 어두운 테마: 코드 강조(highlight.js 의 밝은 배색 cupertino 를 덮는다) · 문서가 쓰는 글자색 변수 · 아래 첨자 · 형광펜 */
+:root:is([data-skin="dark"], [data-skin="navy"]) {
+  --board-font-color: var(--fg);
+}
+:root:is([data-skin="dark"], [data-skin="navy"]) sub { color: #f0a37a; }
+:root:is([data-skin="dark"], [data-skin="navy"]) article mark { color: #1b1e1d; }
+:root:is([data-skin="dark"], [data-skin="navy"]) .hljs,
+:root:is([data-skin="dark"], [data-skin="navy"]) .hljs-ln-line,
+:root:is([data-skin="dark"], [data-skin="navy"]) .hljs-params,
+:root:is([data-skin="dark"], [data-skin="navy"]) .hljs-selector-id,
+:root:is([data-skin="dark"], [data-skin="navy"]) .language-xml,
+:root:is([data-skin="dark"], [data-skin="navy"]) :is(.hljs-punctuation, .hljs-subst, .hljs-operator) { color: var(--fg); background: transparent; }
+:root:is([data-skin="dark"], [data-skin="navy"]) :is(.hljs-section, .hljs-strong, .hljs-emphasis, .hljs-code, .hljs-link) { color: #7cb6ff; }
+:root:is([data-skin="dark"], [data-skin="navy"]) :is(.hljs-keyword, .hljs-type, .hljs-built_in, .hljs-literal, .hljs-meta .hljs-keyword) { color: #d19df0; }
+:root:is([data-skin="dark"], [data-skin="navy"]) :is(.hljs-title, .hljs-title.function_, .hljs-attribute, .hljs-attr, .hljs-property) { color: #7cb6ff; }
+:root:is([data-skin="dark"], [data-skin="navy"]) :is(.hljs-string, .hljs-regexp, .hljs-addition) { color: #98d38a; }
+:root:is([data-skin="dark"], [data-skin="navy"]) :is(.hljs-number, .hljs-symbol, .hljs-bullet, .hljs-variable, .hljs-template-variable, .hljs-name, .hljs-selector-tag, .hljs-selector-class, .hljs-tag) { color: #f2a37f; }
+:root:is([data-skin="dark"], [data-skin="navy"]) :is(.hljs-comment, .hljs-quote, .hljs-meta, .hljs-deletion) { color: var(--muted); }
+:root:is([data-skin="dark"], [data-skin="navy"]) .hljs-ln-n { color: var(--muted); }

@@ -1,11 +1,11 @@
 /**
- * @file modules/features/slides-palette.css
- * @module SiteModules.SlidesPalette (스타일)
- * @description 보고서 형식 슬라이드에 입히는 5×3 색: 색조 5개 × 명암 3단계(어둡게 · 가운데 · 밝게).
- *   - 값(--spN-d · --spN-m · --spN-l)은 slides-palette.js 가 :root 에 적는다. 아래 :root 는 기본값(UniPalette 기본 5×3).
+ * @file modules/features/palette.css
+ * @module SiteModules.Palette (스타일)
+ * @description 사이트 전체의 「팔레트 색」: 테마가 정하지 않는 색에 쓰는 5×3 색(색조 5개 × 명암 3단계: 어둡게 · 가운데 · 밝게).
+ *   - 값(--spN-d · --spN-m · --spN-l)은 palette.js 가 :root 에 적는다. 아래 :root 는 기본값(UniPalette 기본 5×3).
  *   - 쓰는 쪽은 역할 이름만 쓴다: --spN-fill(면) · --spN-ink(선 · 글자) · --spN-mid(가운데 톤)
  *     밝은 테마는 밝은 톤을 면, 어두운 톤을 선 · 글자로 쓰고, 어두운 테마(data-skin dark · navy)는 그 반대로 쓴다.
- *   - 설정 줄(.sl-pal-*)은 슬라이드 읽기 설정(.sl-settings) 안에 붙는다.
+ *   - 설정 줄(.pal-*)은 전체 설정의 「팔레트 색」 줄과 슬라이드 읽기 설정(.sl-settings) 안에 붙는다.
  */
 
 :root {
@@ -14,11 +14,8 @@
   --sp3-d: #0B5B3F; --sp3-m: #1BE49E; --sp3-l: #A4F4D8;
   --sp4-d: #0B175B; --sp4-m: #1B39E4; --sp4-l: #A4B0F4;
   --sp5-d: #5B0B57; --sp5-m: #E41BDA; --sp5-l: #F4A4F0;
-}
 
-/* ---------- 역할: 밝은 테마 ---------- */
-.slides-doc,
-.sl-viewer {
+  /* ---------- 역할: 밝은 테마 ---------- */
   --sp1-fill: var(--sp1-l); --sp1-ink: var(--sp1-d); --sp1-mid: var(--sp1-m);
   --sp2-fill: var(--sp2-l); --sp2-ink: var(--sp2-d); --sp2-mid: var(--sp2-m);
   --sp3-fill: var(--sp3-l); --sp3-ink: var(--sp3-d); --sp3-mid: var(--sp3-m);
@@ -27,10 +24,8 @@
 }
 
 /* ---------- 역할: 어두운 테마 (면과 글자를 바꾼다) ---------- */
-:root[data-skin="dark"] .slides-doc,
-:root[data-skin="navy"] .slides-doc,
-:root[data-skin="dark"] .sl-viewer,
-:root[data-skin="navy"] .sl-viewer {
+:root[data-skin="dark"],
+:root[data-skin="navy"] {
   --sp1-fill: var(--sp1-d); --sp1-ink: var(--sp1-l);
   --sp2-fill: var(--sp2-d); --sp2-ink: var(--sp2-l);
   --sp3-fill: var(--sp3-d); --sp3-ink: var(--sp3-l);
@@ -48,14 +43,15 @@
   color: var(--sp1-mid);
 }
 
-/* ---------- 읽기 설정의 「슬라이드 색」 줄 ---------- */
-.sl-settings .sl-pal-chips {
+/* ---------- 「팔레트 색」 줄: 5칸 미리보기 (칸마다 명암 3단계를 위에서 아래로) ---------- */
+.pal-chips {
   display: inline-flex;
   gap: 3px;
   margin-right: 4px;
+  vertical-align: middle;
 }
 
-.sl-settings .sl-pal-chip {
+.pal-chip {
   display: inline-grid;
   grid-template-rows: repeat(3, 7px);
   width: 16px;
@@ -64,6 +60,6 @@
   overflow: hidden;
 }
 
-.sl-settings .sl-pal-chip i {
+.pal-chip i {
   display: block;
 }
