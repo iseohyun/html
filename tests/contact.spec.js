@@ -264,8 +264,8 @@ test.describe('문의 창 (레일의 문의 아이콘)', () => {
       await page.locator('#contact-login-btn').click();
       const popupPromise = page.waitForEvent('popup');
       await page.locator(`[data-provider="${c.id}"]`).click();
-      const popup = await popupPromise;
-      await popup.waitForEvent('close');
+      // 팝업은 콜백 페이지에서 곧바로 닫힌다. 닫힘 이벤트를 늦게 기다리면 놓칠 수 있어, 결과(상태 줄)로 확인한다
+      await popupPromise;
 
       await expect(page.locator('#contact-auth-status')).toContainText('테스트 서버');
       expect(authorizeUrl.searchParams.get('client_id')).toBe(c.clientId);

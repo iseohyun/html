@@ -832,6 +832,68 @@
               ]
             }
           ]
+        },
+        {
+          "title": "크롤링",
+          "projectId": "crawling",
+          "items": [
+            {
+              "title": "네이버페이 결제내역",
+              "projectId": "NaverPay",
+              "icon": "source/NaverPay/icon.png",
+              "platform": "desktop",
+              "links": [],
+              "showUrl": false,
+              "description": "네이버페이 결제·구매내역을 연도별로 모아 두고, 대시보드에서 찾아보고 내보내는 크롬 확장 프로그램",
+              "overview": [
+                "네이버페이 결제내역 페이지를 열면 결제·구매내역을 연도별로 수집해 브라우저에 기억해 두고, 다음부터는 새로 생긴 내역만 더 모읍니다.",
+                "• 스마트 수집(새 내역만) · 전체 강제 재수집 · 수집 중지",
+                "• 연도별 수집 기억 현황, 판매처가 빈 항목만 상세 페이지에서 다시 채우기",
+                "• 대시보드에서 검색·필터 후 전체 또는 필터 결과를 CSV · XLSX · TXT · JSON 으로 내보내기"
+              ],
+              "techStack": [
+                "Chrome 확장 프로그램 (Manifest V3)",
+                "JavaScript (ES6+)",
+                "chrome.storage (unlimitedStorage) 연도별 수집 기억",
+                "CSV / XLSX / TXT / JSON 내보내기"
+              ],
+              "changelog": [
+                {
+                  "date": "2026.11.24",
+                  "version": "v1.0.0",
+                  "content": "연도별 증분 수집과 결제내역 대시보드, CSV · XLSX · TXT · JSON 내보내기"
+                }
+              ]
+            },
+            {
+              "title": "쿠팡 결제내역",
+              "projectId": "Coupang",
+              "icon": "source/Coupang/icon.png",
+              "platform": "desktop",
+              "links": [],
+              "showUrl": false,
+              "description": "쿠팡 주문·결제내역을 연도별로 모아 두고, 대시보드에서 찾아보고 내보내는 크롬 확장 프로그램",
+              "overview": [
+                "쿠팡 주문목록 페이지를 열면 주문·결제내역을 연도별로 수집해 브라우저에 기억해 두고, 다음부터는 새로 생긴 내역만 더 모읍니다.",
+                "• 스마트 수집(새 내역만) · 전체 강제 재수집 · 수집 중지",
+                "• 연도별 수집 기억 현황",
+                "• 대시보드에서 검색·필터 후 전체 또는 필터 결과를 CSV · XLSX · TXT · JSON 으로 내보내기"
+              ],
+              "techStack": [
+                "Chrome 확장 프로그램 (Manifest V3)",
+                "JavaScript (ES6+)",
+                "chrome.storage (unlimitedStorage) 연도별 수집 기억",
+                "CSV / XLSX / TXT / JSON 내보내기"
+              ],
+              "changelog": [
+                {
+                  "date": "2026.11.24",
+                  "version": "v1.0.0",
+                  "content": "연도별 증분 수집과 주문·결제내역 대시보드, CSV · XLSX · TXT · JSON 내보내기"
+                }
+              ]
+            }
+          ]
         }
       ]
     },

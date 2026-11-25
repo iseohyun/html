@@ -74,7 +74,7 @@ test.describe('프로젝트 탭 (promo)', () => {
       };
     }));
     const byLabel = Object.fromEntries(groups.map(g => [g.label, g]));
-    expect(Object.keys(byLabel).sort()).toEqual(['대한민국 모든', '모듈', '취미', '퀴즈퀴즈', '편의 기능', '홍보'].sort());
+    expect(Object.keys(byLabel).sort()).toEqual(['대한민국 모든', '모듈', '취미', '퀴즈퀴즈', '편의 기능', '홍보', '크롤링'].sort());
     // 단어 암기는 개발중이라 로그인하지 않으면 빠진다 (3개도 2열이라 2x2 자리)
     expect(byLabel['퀴즈퀴즈']).toMatchObject({ cols: 2, rows: 2, names: ['문자 암기', '캐릭터 퀴즈', '지도 퀴즈'] });
     expect(byLabel['대한민국 모든']).toMatchObject({ cols: 2, rows: 1, names: ['행사', '이슈'] });
@@ -82,6 +82,7 @@ test.describe('프로젝트 탭 (promo)', () => {
     expect(byLabel['편의 기능']).toMatchObject({ cols: 2, rows: 2 });
     expect(byLabel['홍보'].names).toContain('거제몽꾸');
     expect(byLabel['취미'].names.length).toBe(3);
+    expect(byLabel['크롤링']).toMatchObject({ cols: 2, rows: 1, names: ['네이버페이 결제내역', '쿠팡 결제내역'] });
   });
 
   test('분류 이름(Web App 등)은 없고, 프로젝트 묶음의 칸을 누르면 그 프로젝트의 상세 창이 열린다', async ({ page }) => {
