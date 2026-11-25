@@ -3,7 +3,7 @@ title: "WebApp Common GUI · 보고서"
 status: "설계문서"
 category: "WebApp Common GUI"
 ---
-> 판: 다음 판(미정) · 견본은 [「보고서」 견본](#/sh-standard/webapp-common-gui/report.html)입니다. 처음 적용한 곳은 홈페이지의 칼럼 > AI > AI 패스트 팔로워 노트의 「1장 개요」입니다.
+> 판: v0.5.9 · 견본은 [「보고서」 견본](#/sh-standard/webapp-common-gui/report.html)입니다. 처음 적용한 곳은 홈페이지의 칼럼 > AI > AI 패스트 팔로워 노트의 「1장 개요」입니다.
 > 다루는 것: 16:9 슬라이드와 스크립트의 짝, 슬라이드 안의 배치, 글투, 전체 화면 보기, 읽어 주기(읽기 설정·슬라이드 짚기·자막과 긴 문장 끊기·자막의 줄 나누기·진행 막대·이어 재생), 슬라이드 색, 항목 카드, 좁은 화면
 
 # 보고서

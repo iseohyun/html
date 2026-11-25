@@ -3,7 +3,7 @@ title: "WebApp Common GUI · 그림 보기"
 status: "설계문서"
 category: "WebApp Common GUI"
 ---
-> 판: 다음 판(미정) · 견본은 [「그림 보기」 견본](#/sh-standard/webapp-common-gui/image-viewer.html)입니다. 처음 적용한 곳은 홈페이지의 칼럼 > AI > AI 패스트 팔로워 노트의 슬라이드 1-2입니다.
+> 판: v0.5.9 · 견본은 [「그림 보기」 견본](#/sh-standard/webapp-common-gui/image-viewer.html)입니다. 처음 적용한 곳은 홈페이지의 칼럼 > AI > AI 패스트 팔로워 노트의 슬라이드 1-2입니다.
 > 다루는 것: 작은 그림을 눌러 크게 보기, 여는 자리, 넘기기, 닫기
 
 # 그림 보기
