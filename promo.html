@@ -873,6 +873,17 @@
           font-size: 22px;
         }
       }
+
+      /* 개발중 항목(로그인한 사용자에게만 보임): 이름 뒤 빨간 점 */
+      .promo-dev-dot {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        margin-left: 6px;
+        border-radius: 50%;
+        background-color: var(--dev-mark, #d32f2f);
+        vertical-align: middle;
+      }
     </style>
 
     <div id="promo-page-wrapper">
@@ -919,6 +930,21 @@
         let currentViewMode = loadViewMode(); // 기본값: 아이콘 보기
         let searchQuery = '';
         let cachedPromoData = null;
+
+        // 「개발중」(status: "개발중") 항목 · 앱 · 링크는 로그인한 사용자에게만 보인다(관리자만이 아니다). 보일 때는 빨간 점을 붙인다
+        function canSeeDev() {
+          const Auth = window.SiteModules && window.SiteModules.Auth;
+          return !!(Auth && typeof Auth.isSignedIn === 'function' && Auth.isSignedIn());
+        }
+        function isDevEntry(x) { return !!x && typeof x === 'object' && x.status === '개발중'; }
+        function isVisible(x) { return !isDevEntry(x) || canSeeDev(); }
+        function devDot() {
+          const dot = document.createElement('span');
+          dot.className = 'promo-dev-dot';
+          dot.title = '개발중';
+          dot.setAttribute('aria-label', '개발중');
+          return dot;
+        }
 
         if (!rootEl) return;
 
@@ -969,7 +995,7 @@
 
         function normalizeLinks(item) {
           if (Array.isArray(item.links)) {
-            return item.links.map(function (l) {
+            return item.links.filter(isVisible).map(function (l) {
               if (typeof l === 'string') return { label: '', url: l };
               return { label: l.label || '', url: l.url || '' };
             }).filter(function (l) { return !!l.url; });
@@ -1239,11 +1265,13 @@
             const grid = document.createElement('div');
             grid.className = isIconMode ? 'promo-icon-grid' : 'promo-grid';
 
-            let items = sortByLatestUpdate(Array.isArray(section.items) ? section.items : []).filter(matchesSearch);
+            let items = sortByLatestUpdate(Array.isArray(section.items) ? section.items : []).filter(isVisible).filter(matchesSearch)
+              // 묶음은 보이는 프로젝트가 하나도 없으면 뺀다
+              .filter(function (it) { return !Array.isArray(it.items) || it.items.some(isVisible); });
             // 카드 보기에서는 프로젝트 묶음을 풀어 프로젝트마다 카드 한 장
             if (!isIconMode) {
               items = items.reduce(function (acc, it) {
-                return acc.concat(Array.isArray(it.items) ? sortByLatestUpdate(it.items).filter(matchesSearch) : [it]);
+                return acc.concat(Array.isArray(it.items) ? sortByLatestUpdate(it.items).filter(isVisible).filter(matchesSearch) : [it]);
               }, []);
             }
             // 검색 결과가 없는 분류는 통째로 숨긴다
@@ -1261,11 +1289,11 @@
               // items: 서로 다른 프로젝트를 모은 묶음(모듈, 편의 기능 등) — 칸마다 그 프로젝트의 상세 창
               const isProjectGroup = Array.isArray(item.items);
               const groupCells = isProjectGroup
-                ? sortByLatestUpdate(item.items).filter(matchesSearch).map(function (child) {
-                    return { label: child.label || child.title, icon: child.icon || child.아이콘, detail: child };
+                ? sortByLatestUpdate(item.items).filter(isVisible).filter(matchesSearch).map(function (child) {
+                    return { label: child.label || child.title, icon: child.icon || child.아이콘, detail: child, dev: isDevEntry(child) };
                   })
-                : (Array.isArray(item.members) ? item.members.map(function (m) {
-                    return { label: m.label, icon: m.icon, detail: item };
+                : (Array.isArray(item.members) ? item.members.filter(isVisible).map(function (m) {
+                    return { label: m.label, icon: m.icon, detail: item, dev: isDevEntry(m) };
                   }) : []);
 
               if (isIconMode && (isProjectGroup || groupCells.length > 1)) {
@@ -1295,6 +1323,7 @@
                   const name = document.createElement('div');
                   name.className = 'promo-icon-label';
                   name.textContent = member.label || '';
+                  if (member.dev) name.appendChild(devDot());
                   cell.appendChild(box);
                   cell.appendChild(name);
                   if (isProjectGroup) {
@@ -1355,6 +1384,7 @@
                 const labelDiv = document.createElement('div');
                 labelDiv.className = 'promo-icon-label';
                 labelDiv.textContent = item.title || '';
+                if (isDevEntry(item)) labelDiv.appendChild(devDot());
 
                 iconTile.appendChild(iconBox);
                 iconTile.appendChild(labelDiv);
@@ -1390,6 +1420,7 @@
               const titleDiv = document.createElement('div');
               titleDiv.className = 'promo-card-title';
               titleDiv.textContent = item.title || '';
+              if (isDevEntry(item)) titleDiv.appendChild(devDot());
               titleWrap.appendChild(titleDiv);
 
               header.appendChild(titleWrap);
@@ -1705,6 +1736,14 @@
           })
           .then(function (data) {
             renderPromoSections(data);
+            window.__promoRerender = function () {
+              if (cachedPromoData && rootEl.isConnected) renderPromoSections(cachedPromoData);
+            };
+            const Auth = window.SiteModules && window.SiteModules.Auth;
+            if (Auth && typeof Auth.onChange === 'function' && !window.__promoAuthHooked) {
+              window.__promoAuthHooked = true;
+              Auth.onChange(function () { if (window.__promoRerender) window.__promoRerender(); });
+            }
           })
           .catch(function (err) {
             console.error('[Promo] JSON 로드 오류:', err);

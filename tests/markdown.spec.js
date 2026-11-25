@@ -267,7 +267,7 @@ test.describe('마크다운 문서 보기', () => {
 test.describe('칼럼 > AI 의 마크다운 문서', () => {
   test('Full Code Review Checklist 가 장 6개 · 표 5개 · 코드 1개로 보인다', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto('/index.html#/engineering/tools/full-code-review-checklist.md');
+    await page.goto('/index.html#/sh-standard/full-code-review-checklist.md');
 
     const article = page.locator('article');
     await expect(page.locator('#header-title')).toHaveText('Full Code Review Checklist');
@@ -278,7 +278,7 @@ test.describe('칼럼 > AI 의 마크다운 문서', () => {
     await expect(article.locator('table.md-table').first().locator('tbody tr')).toHaveCount(18);
     await expect(article.locator('pre')).toHaveCount(1);
     await expect(article.locator('pre code.language-markdown')).toContainText('## 코드 전수 검사');
-    await expect(page.locator('#title-container')).toContainText('공학 > 개발 도구');
+    await expect(page.locator('#title-container')).toContainText('SH Standard');
     await expect(page.locator('.error-state')).toHaveCount(0);
 
     await page.locator('#header-toc-btn').click();
@@ -290,7 +290,7 @@ test.describe('칼럼 > AI 의 마크다운 문서', () => {
 
 test.describe('바깥 링크 표시', () => {
   test('다른 사이트로 가는 글자 링크에만 붙고, 자기 사이트 · 그림 · 단추 링크에는 붙지 않는다', async ({ page }) => {
-    await page.goto('/index.html#/column/swimming/freestyle.html');
+    await page.goto('/index.html#/engineering/language/C/pointer.html');
     await expect(page.locator('article h1').first()).toBeVisible();
 
     const marked = await page.evaluate(() => {

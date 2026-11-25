@@ -30,7 +30,7 @@ test.describe('홈 화면의 테마', () => {
 test.describe('오류 안내 화면', () => {
   test('문서를 불러오지 못하면 안내와 다시 시도 · 새로 고침 버튼이 나오고, 헤더와 사이드바는 그대로다', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto('/index.html#/column/swimming/없는-문서.html');
+    await page.goto('/index.html#/engineering/language/C/없는-문서.html');
 
     const errorBox = page.locator('.error-state');
     await expect(errorBox).toBeVisible();
@@ -48,11 +48,11 @@ test.describe('오류 안내 화면', () => {
 
   test('다시 시도는 같은 문서를 다시 불러온다', async ({ page }) => {
     let failNext = true;
-    await page.route('**/column/swimming/freestyle.html', route => {
+    await page.route('**/engineering/language/C/pointer.html', route => {
       if (failNext) { failNext = false; return route.fulfill({ status: 503, body: 'down' }); }
       return route.continue();
     });
-    await page.goto('/index.html#/column/swimming/freestyle.html');
+    await page.goto('/index.html#/engineering/language/C/pointer.html');
     await expect(page.locator('.error-state')).toBeVisible();
 
     await page.locator('#error-retry-btn').click();
@@ -64,7 +64,7 @@ test.describe('오류 안내 화면', () => {
 test.describe('스크롤 위치 기억', () => {
   test('다른 화면에 다녀오면 보던 자리로 돌아온다', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto('/index.html#/column/swimming/freestyle.html');
+    await page.goto('/index.html#/engineering/language/C/pointer.html');
     await expect(page.locator('article h1').first()).toBeVisible();
 
     await page.evaluate(() => document.getElementById('app-main').scrollTo({ top: 900, behavior: 'instant' }));
@@ -76,7 +76,7 @@ test.describe('스크롤 위치 기억', () => {
     await expect.poll(() => page.evaluate(() => Math.round(document.getElementById('app-main').scrollTop))).toBe(0);
 
     // 돌아오면 보던 자리
-    await page.evaluate(() => { window.location.hash = '#/column/swimming/freestyle.html'; });
+    await page.evaluate(() => { window.location.hash = '#/engineering/language/C/pointer.html'; });
     await expect(page.locator('#header-title')).not.toHaveText('사이트 소개');
     await expect.poll(() => page.evaluate(() => Math.round(document.getElementById('app-main').scrollTop))).toBe(900);
   });
@@ -101,7 +101,7 @@ test.describe('스크롤 위치 기억', () => {
 test.describe('본문 영역만 스크롤', () => {
   test('페이지는 스크롤되지 않고 본문 영역만 스크롤되며, 헤더는 제자리에 있다', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto('/index.html#/column/swimming/freestyle.html');
+    await page.goto('/index.html#/engineering/language/C/pointer.html');
     await expect(page.locator('article h1').first()).toBeVisible();
 
     const main = page.locator('#app-main');
@@ -130,7 +130,7 @@ test.describe('본문 영역만 스크롤', () => {
     await page.addInitScript(() => {
       localStorage.setItem('iseohyun_settings_v1', JSON.stringify({ theme: 'navy', fontScale: '1' }));
     });
-    await page.goto('/index.html#/column/swimming/freestyle.html');
+    await page.goto('/index.html#/engineering/language/C/pointer.html');
     await expect(page.locator('article h1').first()).toBeVisible();
     const colors = await page.evaluate(() => ({
       body: getComputedStyle(document.body).backgroundColor,
@@ -142,7 +142,7 @@ test.describe('본문 영역만 스크롤', () => {
 
   test('목차는 본문 영역을 스크롤하면 지금 보는 항목을 강조한다', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto('/index.html#/column/swimming/freestyle.html');
+    await page.goto('/index.html#/engineering/language/C/pointer.html');
     await expect(page.locator('article h1').first()).toBeVisible();
     await page.locator('#header-toc-btn').click();
     await expect(page.locator('#toc-tree li').first()).toBeVisible();

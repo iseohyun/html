@@ -85,7 +85,7 @@ test.describe('공통 뼈대: 헤더 · 레일 · 패널', () => {
     await expect(page.locator('#header-filter-dot')).toBeVisible();
 
     // 문서 페이지로 가면 필터 아이콘은 사라지고, 설정 아이콘은 남아 전체 설정으로 가는 길을 보여 준다
-    await page.evaluate(() => { window.location.hash = '#/column/swimming/swimming.html'; });
+    await page.evaluate(() => { window.location.hash = '#/engineering/language/C/control.html'; });
     await expect(page.locator('article h1').first()).toBeVisible();
     await expect(filterBtn).toBeHidden();
     await expect(settingsBtn).toBeVisible();

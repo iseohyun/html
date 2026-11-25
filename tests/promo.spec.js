@@ -75,7 +75,8 @@ test.describe('프로젝트 탭 (promo)', () => {
     }));
     const byLabel = Object.fromEntries(groups.map(g => [g.label, g]));
     expect(Object.keys(byLabel).sort()).toEqual(['대한민국 모든', '모듈', '취미', '퀴즈퀴즈', '편의 기능', '홍보'].sort());
-    expect(byLabel['퀴즈퀴즈']).toMatchObject({ cols: 2, rows: 2, names: ['문자 암기', '캐릭터 퀴즈', '지도 퀴즈', '단어 암기'] });
+    // 단어 암기는 개발중이라 로그인하지 않으면 빠진다 (3개도 2열이라 2x2 자리)
+    expect(byLabel['퀴즈퀴즈']).toMatchObject({ cols: 2, rows: 2, names: ['문자 암기', '캐릭터 퀴즈', '지도 퀴즈'] });
     expect(byLabel['대한민국 모든']).toMatchObject({ cols: 2, rows: 1, names: ['행사', '이슈'] });
     expect(byLabel['모듈']).toMatchObject({ cols: 2, rows: 2 });
     expect(byLabel['편의 기능']).toMatchObject({ cols: 2, rows: 2 });
@@ -131,14 +132,32 @@ test.describe('프로젝트 탭 (promo)', () => {
     await expect(modal).not.toHaveClass(/active/);
     expect(await page.evaluate(() => getComputedStyle(document.getElementById('app-main')).overflowY)).not.toBe('hidden');
   });
+
+  test('개발중 프로젝트(내 AI비서 · 단어 암기)는 로그인하지 않으면 보이지 않고, 로그인하면 빨간 점과 함께 보인다', async ({ page }) => {
+    const label = text => page.locator('.promo-icon-label', { hasText: new RegExp('^' + text + '$') });
+    await expect(label('VirtualMouse')).toBeVisible();
+    await expect(label('내 AI비서')).toHaveCount(0);
+    await expect(label('단어 암기')).toHaveCount(0);
+    await expect(label('문자 암기')).toBeVisible();
+
+    // 로그인한 사용자(관리자가 아니어도): 보이고 이름 뒤에 빨간 점
+    await page.evaluate(() => {
+      window.SiteModules.Auth.isSignedIn = () => true;
+      window.__promoRerender();
+    });
+    await expect(label('내 AI비서')).toBeVisible();
+    await expect(label('내 AI비서').locator('.promo-dev-dot')).toHaveCount(1);
+    await expect(label('단어 암기').locator('.promo-dev-dot')).toHaveCount(1);
+    await expect(label('VirtualMouse').locator('.promo-dev-dot')).toHaveCount(0);
+  });
 });
 
 test.describe('헤더 탭의 색과 자동 스크롤', () => {
   test('탭 글자색은 방문 여부와 상관없이 같고, 켜진 탭이 보이는 곳으로 스크롤된다', async ({ page }) => {
     await page.setViewportSize({ width: 700, height: 800 });
     // 초등수학 13편: 탭 줄이 화면보다 길다
-    await page.goto('/index.html#/math/elementary/6-2.html');
-    await expect(page.locator('#header-title')).toHaveText('6학년 2학기');
+    await page.goto('/index.html#/math/elementary/5-1.html');
+    await expect(page.locator('#header-title')).toHaveText('5학년 1학기');
 
     const nav = page.locator('#header-tabs');
     const selected = page.locator('#header-tabs .app-tab[aria-selected="true"]');

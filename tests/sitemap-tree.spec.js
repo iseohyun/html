@@ -171,19 +171,19 @@ test.describe('사이트맵 트리', () => {
     await folder(page, '수학').locator(':scope > .tree-row').click();
 
     const elementary = folder(page, '초등 수학');
-    await expect(elementary.locator(':scope > .tree-row > .tree-count')).toHaveText('(12)');
+    await expect(elementary.locator(':scope > .tree-row > .tree-count')).toHaveText('(8)');
     await elementary.locator(':scope > .tree-row > a.tree-label').click();
     await expect(page).toHaveURL(/#\/math\/elementary\/index\.html$/);
-    await expect(elementary.locator(':scope > ul > li > a')).toHaveCount(12);
+    await expect(elementary.locator(':scope > ul > li > a')).toHaveCount(8);
     await expect(elementary.locator(':scope > ul > li > a', { hasText: /^개론$/ })).toHaveCount(0);
 
-    // 헤더 탭: 개론 + 12편. 안의 문서로 가도 개론 탭이 맨 앞에 남는다
+    // 헤더 탭: 개론 + 공개된 8편(4-2 · 5-2 · 6-1 · 6-2 는 개발중). 안의 문서로 가도 개론 탭이 맨 앞에 남는다
     const tabs = page.locator('#header-tabs .app-tab');
-    await expect(tabs).toHaveCount(13);
+    await expect(tabs).toHaveCount(9);
     await expect(tabs.first()).toHaveText('개론');
     await expect(tabs.first()).toHaveAttribute('aria-selected', 'true');
     await page.goto('/index.html#/math/elementary/1-1.html');
-    await expect(tabs).toHaveCount(13);
+    await expect(tabs).toHaveCount(9);
     await expect(tabs.first()).toHaveText('개론');
     await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
   });

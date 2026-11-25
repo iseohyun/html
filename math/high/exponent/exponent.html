@@ -26,11 +26,6 @@
   <!-- 수식 -->
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
-  <!-- 소스코드 스타일 -->
-  <link rel="stylesheet" href="/highlight/styles/base16/cupertino.min.css" />
-  <script src="/highlight/highlight.min.js"></script>
-  <script src="/highlight/highlightjs-line-numbers.js"></script>
-
   <!-- 공통스킨 -->
   <style type="text/css">
     @import url("/style.css");
@@ -236,7 +231,7 @@
     입력을 받습니다. 이 때는 정확한 치수까지는 무리수의 영역까지 정확하게 구하더라도 마지막 순간에는 유효자릿수를 고려한 최소단위를 산출해야합니다.
     그러면 \( {10^{3.1}} \)를 어떻게 구하겠습니까? 물론 계산기를 이용해서 구하면 되겠지만, 이 계산기는 도대체 어떻게 알고 있는지 궁금해집니다.<br>
     우선 가장 간단한 것 부터 접근하는 것이 좋을 것 같습니다. <a href="#수기로 제곱근을 구하는 방법"><q>다음은 제곱근을 수기로 구하는 방법입니다.</q></a><br>
-    <iframe src="/examples/javascript/manualSqrt/manualSqrt.html"
+    <iframe src="/small-project/manualSqrt/index.html"
       style="overflow: hidden; width:100%; height: 720px;"></iframe>
     &nbsp;원리는 간단합니다. \( (p + q)^2 = p^2 + 2 p \dot q + q^2 \) 에서 \( p \) 를 10의 자리수, \( q \)를 1의 자리수라고 보면 됩니다. \( p^2 \)
     은 앞선 연산

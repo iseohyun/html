@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 // 오른쪽 목차 사이드바: 헤더의 목차 단추로 켜고 끄며, 고정하면 본문 옆에 붙는다 (modules/core/toc.js)
-const DOC_HASH = '#/column/swimming/freestyle.html';
+const DOC_HASH = '#/engineering/language/C/pointer.html';
 const STORAGE_KEY = 'iseohyun_toc_drawer_v1';
 const TOC_W = 260;
 
@@ -81,7 +81,7 @@ test.describe('오른쪽 목차 사이드바', () => {
 
     // 사이드바 안의 목차 항목을 눌러도 닫히지 않는다
     await page.locator('#toc-tree a').last().click();
-    await expect(page).toHaveURL(/freestyle\.html#/);
+    await expect(page).toHaveURL(/pointer\.html#/);
     await expect(drawer).toHaveClass(/open/);
 
     // 바깥(본문)을 누르면 닫힌다
@@ -174,7 +174,7 @@ test.describe('오른쪽 목차 사이드바', () => {
 
     // 목차 항목을 누르면 그 제목으로 가고 서랍이 닫힌다
     await page.locator('#toc-tree a').last().click();
-    await expect(page).toHaveURL(/freestyle\.html#/);
+    await expect(page).toHaveURL(/pointer\.html#/);
     await expect(drawer).not.toHaveClass(/open/);
     await expect(overlay).not.toHaveClass(/active/);
 

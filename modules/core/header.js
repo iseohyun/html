@@ -7,7 +7,7 @@
  *   탭 줄이 제목과 아이콘에 밀려 다 보이지 않으면 가려진 쪽에 스크롤 버튼이 생기고, 탭 줄을 끌어서도 밀 수 있다.
  *   필터와 화면별 설정은 헤더 바로 아래로 펼쳐지는 같은 자리의 패널이며 한 번에 하나만 열린다.
  *   패널의 내용은 각 화면이 setPanels() 로 등록한다. 필터 아이콘은 등록한 화면에서만 보이고,
- *   설정 아이콘은 어느 화면에나 있으며 맨 아래 줄에서 전체 설정 페이지로 간다.
+ *   설정 아이콘은 어느 화면에나 있으며, 맨 아래 줄은 「테마」(밝게 · 어둡게 · 스톤 · 네이비 · 시스템)와 전체 설정으로 가는 「상세」다.
  *   화면별 동작 단추(재생/정지 등)는 각 화면이 setActions() 로 등록하고 updateAction() 으로 모양을 바꾼다.
  *   패널과 동작 단추는 다른 문서로 옮길 때 라우터(navigation.js)가 비운다.
  * @requires SiteModules.Icons
@@ -227,17 +227,47 @@ window.SiteModules.Header = (function () {
       wrap.appendChild(note);
     }
 
+    // 맨 아래 줄: 어느 화면에서나 같은 「테마」 줄. 「상세」는 전체 설정 페이지로 간다
     const footer = document.createElement("div");
-    footer.className = "app-drop-foot";
+    footer.className = "app-drop-foot app-drop-row";
+    const label = document.createElement("span");
+    label.className = "app-drop-label";
+    label.textContent = "테마";
+    const line = document.createElement("div");
+    line.className = "controls-line";
+    const Settings = window.SiteModules && window.SiteModules.Settings;
+    (Settings ? Settings.THEMES : []).forEach(option => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "pill-btn";
+      btn.dataset.headerTheme = option.value;
+      btn.textContent = option.label;
+      btn.addEventListener("click", () => {
+        Settings.set("theme", option.value);
+        syncThemeButtons();
+      });
+      line.appendChild(btn);
+    });
     const link = document.createElement("a");
-    link.className = "app-drop-link";
+    link.className = "pill-btn app-drop-detail";
     link.id = "header-global-settings-link";
     link.href = GLOBAL_SETTINGS_HREF;
-    link.textContent = "전체 설정 (테마 · 글자 크기 · 단축키) →";
+    link.textContent = "상세";
+    link.title = "전체 설정 (테마 · 팔레트 색 · 글자 크기 · 단축키)";
     link.addEventListener("click", closePanel);
-    footer.appendChild(link);
+    line.appendChild(link);
+    footer.append(label, line);
     wrap.appendChild(footer);
     return wrap;
+  }
+
+  /** 테마 단추의 눌림을 지금 설정에 맞춘다 (헤더 패널과 전체 설정 페이지의 테마 단추 모두) */
+  function syncThemeButtons() {
+    const Settings = window.SiteModules && window.SiteModules.Settings;
+    if (!Settings) return;
+    const theme = Settings.get("theme");
+    document.querySelectorAll("[data-header-theme]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.headerTheme === theme)));
+    document.querySelectorAll('.set-card [data-setting="theme"]').forEach(b => b.setAttribute("aria-pressed", String(b.dataset.value === theme)));
   }
 
   function togglePanel(kind) {
@@ -249,6 +279,7 @@ window.SiteModules.Header = (function () {
 
     const content = el("header-drop-content");
     content.replaceChildren(panels[kind]);
+    if (kind === "settings") syncThemeButtons();   // 전체 설정 페이지에서 바꿨을 수 있다
     openKind = kind;
     el("header-drop").classList.add("is-open");
     PANEL_KINDS.forEach(k => {

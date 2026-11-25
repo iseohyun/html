@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
-const DOC_HASH = '#/column/swimming/freestyle.html';
-const OTHER_DOC_HASH = '#/column/swimming/swimming.html';
+const DOC_HASH = '#/engineering/language/C/pointer.html';
+const OTHER_DOC_HASH = '#/engineering/language/C/control.html';
 const BUILT_IN_RAIL_IDS = ['nav-home', 'nav-sitemap', 'nav-search', 'nav-kakao-channel', 'nav-info'];
 
 async function openDoc(page, hash = DOC_HASH) {
@@ -72,7 +72,7 @@ test.describe('레일 항목 더하기 (Navigation.addRailItem)', () => {
     // 패널을 연 채 다른 문서로 옮기면: 항목과 패널은 사라지고, 열려 있던 패널은 사이트맵으로 돌아간다
     await item.click();
     await goToHash(page, OTHER_DOC_HASH);
-    await expect(page.locator('#header-title')).toHaveText('수영 이론');
+    await expect(page.locator('#header-title')).toHaveText('제어문');
     await expect(page.locator('#nav-page-demo')).toHaveCount(0);
     await expect(page.locator('#tab-page-demo')).toHaveCount(0);
     for (const id of BUILT_IN_RAIL_IDS) await expect(page.locator(`#sidebar-nav #${id}`)).toBeVisible();
@@ -182,11 +182,11 @@ test.describe('헤더 동작 단추 (Header.setActions / updateAction)', () => {
     // 같은 문서 안에서 앵커만 옮길 때는 남아 있다
     await page.locator('#header-toc-btn').click();
     await page.locator('#toc-tree a').last().click();
-    await expect(page).toHaveURL(/freestyle\.html#/);
+    await expect(page).toHaveURL(/pointer\.html#/);
     await expect(playBtn).toBeVisible();
 
     await goToHash(page, OTHER_DOC_HASH);
-    await expect(page.locator('#header-title')).toHaveText('수영 이론');
+    await expect(page.locator('#header-title')).toHaveText('제어문');
     await expect(page.locator('.header-action')).toHaveCount(0);
     await expect(page.locator('#header-share-btn')).toBeVisible();
   });
@@ -230,12 +230,12 @@ test.describe('화면을 떠날 때 (Navigation.onLeave · site:page-leave)', ()
 
     await page.locator('#header-toc-btn').click();
     await page.locator('#toc-tree a').last().click();
-    await expect(page).toHaveURL(/freestyle\.html#/);
+    await expect(page).toHaveURL(/pointer\.html#/);
     expect(await page.evaluate(() => window.__leave)).toEqual({ hook: 0, cleanup: 0, events: [] });
 
     await goToHash(page, OTHER_DOC_HASH);
-    await expect(page.locator('#header-title')).toHaveText('수영 이론');
-    expect(await page.evaluate(() => window.__leave)).toEqual({ hook: 1, cleanup: 1, events: ['/column/swimming/freestyle.html'] });
+    await expect(page.locator('#header-title')).toHaveText('제어문');
+    expect(await page.evaluate(() => window.__leave)).toEqual({ hook: 1, cleanup: 1, events: ['/engineering/language/C/pointer.html'] });
 
     // 한 번 부른 정리 함수는 비워져서 다음 이동에는 다시 부르지 않는다
     await page.evaluate(() => { window.SiteModules.Navigation.onLeave(() => { window.__leave.hook += 10; }); });
@@ -244,7 +244,7 @@ test.describe('화면을 떠날 때 (Navigation.onLeave · site:page-leave)', ()
     expect(await page.evaluate(() => window.__leave.hook)).toBe(11);
     await goToHash(page, DOC_HASH);
     await expect(page.locator('article h1').first()).toBeVisible();
-    expect(await page.evaluate(() => window.__leave)).toEqual({ hook: 11, cleanup: 1, events: ['/column/swimming/freestyle.html'] });
+    expect(await page.evaluate(() => window.__leave)).toEqual({ hook: 11, cleanup: 1, events: ['/engineering/language/C/pointer.html'] });
   });
 });
 
@@ -292,7 +292,7 @@ test.describe('화면별 설정 패널 (Header.setPanels)', () => {
     await page.keyboard.press('Escape');
 
     await goToHash(page, OTHER_DOC_HASH);
-    await expect(page.locator('#header-title')).toHaveText('수영 이론');
+    await expect(page.locator('#header-title')).toHaveText('제어문');
     await settingsBtn.click();
     await expect(page.locator('.app-drop-note')).toHaveText('이 화면에만 해당하는 설정은 없습니다.');
     await expect(page.locator('#demo-rate')).toHaveCount(0);

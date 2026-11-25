@@ -3510,6 +3510,27 @@ textarea.contact-input {
   text-underline-offset: 3px;
 }
 
+/* 맨 아래 줄 「테마」: 왼쪽에 이름, 오른쪽에 테마 단추와 전체 설정으로 가는 「상세」 */
+.app-drop-row {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.app-drop-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fg);
+}
+
+.app-header a.app-drop-detail,
+.app-header a.app-drop-detail:visited {
+  color: var(--fg);
+  text-decoration: none;
+  margin-left: 4px;
+}
+
 /* ==========================================================================
    전체 설정 · 단축키 페이지: 줄 묶음 카드 (왼쪽에 항목 이름, 오른쪽에 버튼)
    ========================================================================== */

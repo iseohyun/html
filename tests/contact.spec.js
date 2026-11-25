@@ -374,7 +374,7 @@ test.describe('문의 창 (레일의 문의 아이콘)', () => {
       if (/firebasejs|firestore.googleapis|identitytoolkit/.test(request.url())) firebaseRequests.push(request.url());
     });
 
-    await page.goto('/index.html#/column/swimming/freestyle.html');
+    await page.goto('/index.html#/engineering/language/C/pointer.html');
     await expect(page.locator('article h1').first()).toBeVisible();
     await page.waitForTimeout(1500);
 

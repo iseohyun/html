@@ -20,6 +20,32 @@ test.describe('전체 설정', () => {
     await expect(page.locator('#header-drop')).not.toHaveClass(/is-open/);
   });
 
+  test('헤더 설정 패널의 맨 아래 줄 「테마」: 바로 바꾸고, 전체 설정 페이지와 눌림이 맞으며, 「상세」로 전체 설정에 간다', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'light' });
+    await page.goto('/index.html#/engineering/language/C/pointer.html');
+    await expect(page.locator('article h1').first()).toBeVisible();
+    await page.locator('#header-settings-btn').click();
+
+    const themes = page.locator('#header-drop [data-header-theme]');
+    await expect(themes).toHaveText(['밝게', '어둡게', '스톤', '네이비', '시스템']);
+    await expect(page.locator('#header-drop [data-header-theme="system"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('#header-global-settings-link')).toHaveText('상세');
+
+    await page.locator('#header-drop [data-header-theme="navy"]').click();
+    await expect(page.locator('html')).toHaveAttribute('data-skin', 'navy');
+    await expect(page.locator('#header-drop [data-header-theme="navy"]')).toHaveAttribute('aria-pressed', 'true');
+
+    // 「상세」: 전체 설정 페이지로 가고, 그곳의 테마 단추도 같은 값이 눌려 있다
+    await page.locator('#header-global-settings-link').click();
+    await expect(page).toHaveURL(/#\/settings\.html$/);
+    await expect(page.locator('.set-card [data-setting="theme"][data-value="navy"]')).toHaveAttribute('aria-pressed', 'true');
+
+    // 전체 설정에서 바꾸면 헤더 패널을 다시 열 때 그 값이 눌려 있다
+    await page.locator('.set-card [data-setting="theme"][data-value="light"]').click();
+    await page.locator('#header-settings-btn').click();
+    await expect(page.locator('#header-drop [data-header-theme="light"]')).toHaveAttribute('aria-pressed', 'true');
+  });
+
   test('테마: 고르면 뼈대 색이 바뀌고, 새로 열어도 남아 있으며, 문서 본문도 테마를 따른다', async ({ page }) => {
     await page.goto('/index.html#/settings.html');
     const rail = page.locator('#sidebar-nav');
@@ -36,7 +62,7 @@ test.describe('전체 설정', () => {
     await expect(page.locator('.pill-btn[data-setting="theme"][data-value="navy"]')).toHaveAttribute('aria-pressed', 'true');
 
     // 문서 본문도 테마의 글자색 · 종이색(표면)을 따른다
-    await page.evaluate(() => { window.location.hash = '#/column/swimming/freestyle.html'; });
+    await page.evaluate(() => { window.location.hash = '#/engineering/language/C/pointer.html'; });
     await expect(page.locator('#header-title')).not.toHaveText('전체 설정');
     const article = page.locator('#app-main > article');
     expect(await article.evaluate(el => getComputedStyle(el).color)).toBe('rgb(230, 237, 247)');

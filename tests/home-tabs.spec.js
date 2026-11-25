@@ -81,7 +81,7 @@ test.describe('헤더 탭과 홈의 리스트 보기', () => {
   });
 
   test('이어지는 문서는 같은 묶음의 문서가 탭으로 나오고, 켜진 탭이 현재 문서다', async ({ page }) => {
-    await page.goto('/index.html#/column/swimming/freestyle.html');
+    await page.goto('/index.html#/engineering/language/C/pointer.html');
     await expect(page.locator('article h1').first()).toBeVisible();
 
     const tabs = page.locator('#header-tabs .app-tab');

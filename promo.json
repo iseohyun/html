@@ -23,6 +23,7 @@
             },
             {
               "label": "VocaQuiz",
+              "status": "개발중",
               "url": "https://iseohyun.github.io/VocaQuiz/"
             },
             {
@@ -39,6 +40,7 @@
             },
             {
               "label": "VocaQuiz",
+              "status": "개발중",
               "url": "https://github.com/iseohyun/VocaQuiz"
             }
           ],
@@ -112,6 +114,7 @@
             },
             {
               "label": "단어 암기",
+              "status": "개발중",
               "icon": "source/VocaQuiz/icon.svg"
             }
           ]
@@ -464,6 +467,7 @@
             },
             {
               "title": "내 AI비서",
+              "status": "개발중",
               "projectId": "myLore",
               "icon": "source/mylore/icon.svg",
               "links": [
@@ -553,6 +557,44 @@
                   "content": "수영 출발 랜덤 신호기(Take Your Mark) 및 구간 기록 측정 타이머 안드로이드 앱 공개"
                 }
               ]
+            },
+            {
+              "title": "VirtualMouse",
+              "projectId": "virtual-mouse",
+              "icon": "source/virtual-mouse/icon.svg",
+              "links": [
+                {
+                  "label": "웹 가이드",
+                  "url": "https://virtual-mouse.iseohyun.com"
+                },
+                {
+                  "label": "GitHub",
+                  "url": "https://github.com/iseohyun/virtual-mouse"
+                }
+              ],
+              "showUrl": false,
+              "description": "아두이노 Uno R3를 실제 USB 마우스·키보드로 만들어, PC의 로컬 API로 입력을 자동화하는 장치",
+              "overview": [
+                "아두이노 Uno R3의 USB 칩(ATmega16U2)에 HID 펌웨어를 올려 PC가 일반 USB 마우스·키보드로 인식하게 하고, PC의 로컬 에이전트가 JSON API로 이동·클릭·입력 명령을 보냅니다.",
+                "• 사람 손처럼 움직이는 커서 엔진(베지어 곡선 · Minimum-Jerk · 손떨림 · 오버슈트)",
+                "• 로컬 HTTP JSON API(API 토큰 · Origin 검사 · 비상 정지), gh 스타일 명령줄 도구 vm, 시스템 트레이 에이전트",
+                "• 웹 가이드에서 펌웨어 설치(DFU · WinUSB 드라이버 자동 설치)부터 테스트까지 단계별 안내, SHA-256으로 확인하는 펌웨어 자동 업데이트"
+              ],
+              "techStack": [
+                "Arduino (C++) · ATmega16U2 USB HID 펌웨어",
+                "Python 로컬 에이전트 (HTTP JSON API · 시리얼)",
+                "PyInstaller 단독 실행 파일 · 시스템 트레이",
+                "웹 가이드 (HTML · CSS · JS, PWA)",
+                "GitHub Actions 릴리즈 · GitHub Pages"
+              ],
+              "changelog": [
+                {
+                  "date": "2026.11.24",
+                  "version": "v1.3.0",
+                  "content": "HID 마우스·키보드 펌웨어, 사람 움직임 엔진, 로컬 JSON API, 트레이 에이전트, vm 명령줄 도구, 웹 가이드, DFU 장치 WinUSB 드라이버 자동 설치"
+                }
+              ],
+              "platform": "desktop"
             }
           ]
         },
