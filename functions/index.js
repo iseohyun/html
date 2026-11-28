@@ -294,6 +294,81 @@ exports.swimmersPush = onRequest({ cors: LOGIN_ORIGINS }, async (req, res) => {
       return;
     }
 
+    if (action === "autoNotifyRace") {
+      const compId = oneLine(body.compId || "", 40);
+      const matchNo = oneLine(body.matchNo || "", 30);
+      const eventLabel = oneLine(body.eventLabel || "", 80);
+      const raceIndex = Number(body.raceIndex || 0);
+      const diff = Number(body.diff || 14);
+      const swimmers = Array.isArray(body.swimmers) ? body.swimmers : [];
+      const laneByName = new Map();
+      for (const sw of swimmers) {
+        const nm = oneLine(sw && sw.name ? sw.name : "", 40);
+        if (nm && !laneByName.has(nm)) {
+          laneByName.set(nm, oneLine(sw.lane != null ? String(sw.lane) : "", 10));
+        }
+      }
+      const uniqueNames = Array.from(laneByName.keys());
+      if (!uniqueNames.length) {
+        res.json({ ok: true, sent: 0, failed: 0 });
+        return;
+      }
+
+      // Firestore 'in' 쿼리는 최대 10개씩 분할 조회
+      const tokenDocs = [];
+      for (let i = 0; i < uniqueNames.length; i += 10) {
+        const chunk = uniqueNames.slice(i, i + 10);
+        const snap = await admin.firestore()
+          .collection("swimmers_push_tokens")
+          .where("swimmerName", "in", chunk)
+          .get();
+        snap.docs.forEach((d) => {
+          if (typeof d.get("token") === "string" && d.get("token")) {
+            tokenDocs.push(d);
+          }
+        });
+      }
+
+      if (!tokenDocs.length) {
+        res.json({ ok: true, sent: 0, failed: 0 });
+        return;
+      }
+
+      const tag = oneLine(`swimmers-auto-${compId || "default"}-${raceIndex || matchNo}`, 60);
+      const messages = tokenDocs.map((d) => {
+        const swName = String(d.get("swimmerName") || "").trim();
+        const lane = laneByName.get(swName) || "";
+        const detail = [
+          matchNo ? `${matchNo}번` : "",
+          eventLabel,
+          lane ? `(${lane}레인)` : ""
+        ].filter(Boolean).join(" ").trim();
+        return {
+          token: d.get("token"),
+          data: {
+            title: oneLine(`[Swimmers 자동 소집] ${swName}`, 80),
+            body: `${diff}경기 전입니다 · 대기실로 이동해 주세요.\n${detail}`.slice(0, 240),
+            url: "https://swimmers.iseohyun.com/",
+            tag
+          },
+          webpush: { headers: { Urgency: "high", TTL: "1800" } }
+        };
+      });
+
+      const result = await admin.messaging().sendEach(messages);
+      const dead = [];
+      result.responses.forEach((r, i) => {
+        if (!r.success && r.error && DEAD_TOKEN_CODES.has(r.error.code)) {
+          dead.push(tokenDocs[i].ref.delete());
+        } else if (!r.success) {
+          logger.warn("Swimmers 자동 푸시 실패", { code: r.error && r.error.code });
+        }
+      });
+      await Promise.all(dead);
+      res.json({ ok: true, sent: result.successCount, failed: result.failureCount, removed: dead.length });
+      return;
+    }
+
     res.status(400).json({ error: "지원하지 않는 action 입니다" });
   } catch (err) {
     logger.error("swimmersPush 처리 실패", { err: err.message });
