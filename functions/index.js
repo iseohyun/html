@@ -90,7 +90,7 @@ exports.notifyContact = onDocumentCreated("contact_messages/{messageId}", async 
 //   Client ID 는 로그인 화면 주소에 드러나는 공개 값이다(사이트 site-config.js 의 clientId 와 같아야 한다).
 //   Client Secret 은 Firebase 비밀값(KAKAO_CLIENT_SECRET · NAVER_CLIENT_SECRET)에만 둔다.
 // ---------------------------------------------------------------------------
-const LOGIN_ORIGINS = ["https://iseohyun.com", "http://localhost:8137"];
+const LOGIN_ORIGINS = ["https://iseohyun.com", "https://swimmers.iseohyun.com", "http://localhost:8137", "http://localhost:3000"];
 const KAKAO_CLIENT_ID = "e10f5dba1343212a115708b84584dad0"; // REST API 키
 const KAKAO_CLIENT_SECRET = defineSecret("KAKAO_CLIENT_SECRET");
 const NAVER_CLIENT_ID = "f1zKks6XzuAlapalQCEi";

@@ -702,6 +702,42 @@
                 }
               ],
               "label": "거제몽꾸"
+            },
+            {
+              "title": "수영대회 기록 (Swimmers)",
+              "label": "Swimmers",
+              "projectId": "Swimmers",
+              "icon": "source/Swimmers/logo-swimmer.svg",
+              "links": [
+                {
+                  "label": "Swimmers",
+                  "url": "https://swimmers.iseohyun.com/"
+                },
+                {
+                  "label": "GitHub",
+                  "url": "https://github.com/iseohyun/swimmers"
+                }
+              ],
+              "showUrl": false,
+              "description": "멀티 수영대회 실시간 대진표, 모집요강, 감독자회의 및 대회결과(접수분석·진행요약·결과분석·기록지DB) 통합 기록 포털",
+              "overview": [
+                "여러 수영대회의 모집·요강·실시간 대진표·결과를 하나의 포털에서 전환하며 열람·운영할 수 있는 멀티 대회 웹 애플리케이션입니다.",
+                "• 현재 대회 이름 클릭 시 등록된 대회 목록 모달 팝업으로 즉시 전환 (제4회 부산광역시체육회장배 2026 / 제19회 거제시장배 2026)",
+                "• 1. 모집(모집서 작성·팀별 모집현황) · 2. 대회요강(모집요강·감독자회의) · 3. 학생부 / 4. 성인부(4·8레인 실시간 대진표, 동적 종목·세부순서 서랍, 접수분석, 진행요약, 결과분석, 기록지DB)",
+                "• 5. 설정(내 이름·우리팀·브라우저 전용 전화번호부, 포털/사진 공유, 로컬 가상모드 테스트) · 7~15경기 전 호출 선수 자동 감지 및 실시간 호출 알람"
+              ],
+              "techStack": [
+                "JavaScript (ES6+ SPA)",
+                "Firebase Auth (Google · 카카오 · 네이버) / Firestore",
+                "GitHub Pages (swimmers.iseohyun.com)"
+              ],
+              "changelog": [
+                {
+                  "date": "2026.11.28",
+                  "version": "v1.0.0",
+                  "content": "Swimmers 멀티 대회 포털 최초 공개 — 제4회 부산광역시체육회장배(8레인·파닥) 및 제19회 거제시장배 통합, 모집·호출 알람·가상모드·소셜 로그인 지원"
+                }
+              ]
             }
           ]
         },
