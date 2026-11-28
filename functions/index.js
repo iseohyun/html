@@ -17,6 +17,7 @@ const { defineSecret } = require("firebase-functions/params");
 const { setGlobalOptions } = require("firebase-functions/v2");
 const logger = require("firebase-functions/logger");
 const admin = require("firebase-admin");
+const crypto = require("crypto");
 
 admin.initializeApp();
 setGlobalOptions({ region: "asia-northeast3", maxInstances: 2 });
@@ -213,5 +214,89 @@ exports.naverLogin = onRequest({ cors: LOGIN_ORIGINS, secrets: [NAVER_CLIENT_SEC
   } catch (err) {
     logger.error("네이버 로그인 처리 실패", { err: err.message });
     res.status(500).json({ error: "로그인을 처리하지 못했습니다" });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Swimmers 백그라운드 웹 푸시 (토큰 등록 & 호출 알람 발송)
+//   - action: "register" -> swimmers_push_tokens/{sha256(token)} 에 { compId, swimmerName, token, updatedAt } 저장
+//   - action: "send"     -> targetName 일치 기기들에 FCM data-only 푸시 발송 (sw.js 가 앱 종료 상태에서도 알림 표시)
+// ---------------------------------------------------------------------------
+exports.swimmersPush = onRequest({ cors: LOGIN_ORIGINS }, async (req, res) => {
+  if (req.method !== "POST") {
+    res.status(405).json({ error: "POST 만 받습니다" });
+    return;
+  }
+  const body = req.body || {};
+  const action = String(body.action || "").trim();
+
+  try {
+    if (action === "register") {
+      const token = String(body.token || "").trim();
+      const swimmerName = oneLine(body.swimmerName || "", 40);
+      const compId = oneLine(body.compId || "", 40);
+      if (!token || token.length > 512 || !swimmerName) {
+        res.status(400).json({ error: "token 과 swimmerName 이 필요합니다" });
+        return;
+      }
+      const docId = crypto.createHash("sha256").update(token).digest("hex");
+      await admin.firestore().collection("swimmers_push_tokens").doc(docId).set({
+        token,
+        swimmerName,
+        compId,
+        updatedAt: Date.now(),
+      }, { merge: true });
+      res.json({ ok: true });
+      return;
+    }
+
+    if (action === "send") {
+      const targetName = oneLine(body.targetName || "", 40);
+      const compId = oneLine(body.compId || "", 40);
+      if (!targetName) {
+        res.status(400).json({ error: "targetName 이 필요합니다" });
+        return;
+      }
+      const snap = await admin.firestore()
+        .collection("swimmers_push_tokens")
+        .where("swimmerName", "==", targetName)
+        .get();
+      const tokenDocs = snap.docs.filter((d) => typeof d.get("token") === "string" && d.get("token"));
+      if (!tokenDocs.length) {
+        res.json({ ok: true, sent: 0, failed: 0 });
+        return;
+      }
+
+      const title = oneLine(body.title || `[Swimmers 호출] ${targetName}`, 80);
+      const msgBody = String(body.body || "소집 호출이 도착했습니다.").slice(0, 240);
+      const url = typeof body.url === "string" && body.url.startsWith("https://swimmers.iseohyun.com")
+        ? body.url
+        : "https://swimmers.iseohyun.com/";
+      const tag = oneLine(body.tag || `swimmers-call-${compId || "default"}`, 60);
+
+      const messages = tokenDocs.map((d) => ({
+        token: d.get("token"),
+        data: { title, body: msgBody, url, tag },
+        webpush: { headers: { Urgency: "high", TTL: "1800" } },
+      }));
+
+      const result = await admin.messaging().sendEach(messages);
+      const dead = [];
+      result.responses.forEach((r, i) => {
+        if (!r.success && r.error && DEAD_TOKEN_CODES.has(r.error.code)) {
+          dead.push(tokenDocs[i].ref.delete());
+        } else if (!r.success) {
+          logger.warn("Swimmers 푸시 실패", { code: r.error && r.error.code });
+        }
+      });
+      await Promise.all(dead);
+      res.json({ ok: true, sent: result.successCount, failed: result.failureCount, removed: dead.length });
+      return;
+    }
+
+    res.status(400).json({ error: "지원하지 않는 action 입니다" });
+  } catch (err) {
+    logger.error("swimmersPush 처리 실패", { err: err.message });
+    res.status(500).json({ error: "푸시 처리 중 오류가 발생했습니다" });
   }
 });
