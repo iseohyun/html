@@ -244,6 +244,7 @@ exports.swimmersPush = onRequest({ cors: LOGIN_ORIGINS }, async (req, res) => {
         token,
         swimmerName,
         compId,
+        isVirtual: Boolean(body.isVirtual),
         updatedAt: Date.now(),
       }, { merge: true });
       res.json({ ok: true });
@@ -253,6 +254,7 @@ exports.swimmersPush = onRequest({ cors: LOGIN_ORIGINS }, async (req, res) => {
     if (action === "send") {
       const targetName = oneLine(body.targetName || "", 40);
       const compId = oneLine(body.compId || "", 40);
+      const isVirtualOnly = Boolean(body.isVirtual);
       if (!targetName) {
         res.status(400).json({ error: "targetName 이 필요합니다" });
         return;
@@ -261,7 +263,11 @@ exports.swimmersPush = onRequest({ cors: LOGIN_ORIGINS }, async (req, res) => {
         .collection("swimmers_push_tokens")
         .where("swimmerName", "==", targetName)
         .get();
-      const tokenDocs = snap.docs.filter((d) => typeof d.get("token") === "string" && d.get("token"));
+      const tokenDocs = snap.docs.filter((d) => {
+        if (typeof d.get("token") !== "string" || !d.get("token")) return false;
+        if (isVirtualOnly && !d.get("isVirtual")) return false;
+        return true;
+      });
       if (!tokenDocs.length) {
         res.json({ ok: true, sent: 0, failed: 0 });
         return;
@@ -300,6 +306,7 @@ exports.swimmersPush = onRequest({ cors: LOGIN_ORIGINS }, async (req, res) => {
       const eventLabel = oneLine(body.eventLabel || "", 80);
       const raceIndex = Number(body.raceIndex || 0);
       const diff = Number(body.diff || 14);
+      const isVirtualOnly = Boolean(body.isVirtual);
       const swimmers = Array.isArray(body.swimmers) ? body.swimmers : [];
       const laneByName = new Map();
       for (const sw of swimmers) {
@@ -323,9 +330,9 @@ exports.swimmersPush = onRequest({ cors: LOGIN_ORIGINS }, async (req, res) => {
           .where("swimmerName", "in", chunk)
           .get();
         snap.docs.forEach((d) => {
-          if (typeof d.get("token") === "string" && d.get("token")) {
-            tokenDocs.push(d);
-          }
+          if (typeof d.get("token") !== "string" || !d.get("token")) return;
+          if (isVirtualOnly && !d.get("isVirtual")) return;
+          tokenDocs.push(d);
         });
       }
 
@@ -334,7 +341,7 @@ exports.swimmersPush = onRequest({ cors: LOGIN_ORIGINS }, async (req, res) => {
         return;
       }
 
-      const tag = oneLine(`swimmers-auto-${compId || "default"}-${raceIndex || matchNo}`, 60);
+      const tag = oneLine(`swimmers-${isVirtualOnly ? "vauto" : "auto"}-${compId || "default"}-${raceIndex || matchNo}`, 60);
       const messages = tokenDocs.map((d) => {
         const swName = String(d.get("swimmerName") || "").trim();
         const lane = laneByName.get(swName) || "";
@@ -346,7 +353,7 @@ exports.swimmersPush = onRequest({ cors: LOGIN_ORIGINS }, async (req, res) => {
         return {
           token: d.get("token"),
           data: {
-            title: oneLine(`[Swimmers 자동 소집] ${swName}`, 80),
+            title: oneLine(`${isVirtualOnly ? "[가상모드 자동 소집]" : "[Swimmers 자동 소집]"} ${swName}`, 80),
             body: `${diff}경기 전입니다 · 대기실로 이동해 주세요.\n${detail}`.slice(0, 240),
             url: "https://swimmers.iseohyun.com/",
             tag
